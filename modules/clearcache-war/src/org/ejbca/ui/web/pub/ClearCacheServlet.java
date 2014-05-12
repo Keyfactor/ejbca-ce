@@ -35,6 +35,7 @@ import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -52,6 +53,8 @@ public class ClearCacheServlet extends HttpServlet {
 	
 	@EJB
 	private AccessControlSessionLocal accessControlSession;
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
 	@EJB
 	private GlobalConfigurationSessionLocal globalconfigurationsession;
 	@EJB
@@ -127,14 +130,20 @@ public class ClearCacheServlet extends HttpServlet {
                 if(log.isDebugEnabled()) {
                     log.debug("Publisher cache cleared");
                 }
+                internalKeyBindingDataSession.flushCache();
                 if(log.isDebugEnabled()) {
                     log.debug("InternalKeyBinding cache cleared");
                 }
-                internalKeyBindingDataSession.flushCache();
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
                 if(log.isDebugEnabled()) {
                     log.debug("OCSP signing cache cleared.");
                 }
-                ocspResponseGeneratorSession.reloadOcspSigningCache();
+                caAdminSession.reloadCaCertificateCache(); 
+                if(log.isDebugEnabled()) {
+                    log.debug("Certificate Store cache cleared and reloaded.");
+                }
+                
+                
         	}
         } else {
     		if (log.isDebugEnabled()) {

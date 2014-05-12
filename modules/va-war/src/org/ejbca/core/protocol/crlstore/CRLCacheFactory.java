@@ -16,7 +16,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.ejbca.core.protocol.certificatestore.ICertificateCache;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 
 /**
  * Factory for creating a {@link CRLCache} object to be used by the OCSP responder of the CA.
@@ -31,7 +31,7 @@ public class CRLCacheFactory {
     /**
      * @return  {@link CRLCache} for the CA.
      */
-    public static ICRLCache getInstance(CrlStoreSessionLocal crlSession, ICertificateCache certCache) {
+    public static ICRLCache getInstance(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
         if (instance != null) {
         	return instance;
         }

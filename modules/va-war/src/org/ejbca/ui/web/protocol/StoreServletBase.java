@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -26,36 +27,37 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.config.VAConfiguration;
-import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /**
  * Base class for servlets (CRL or Certificate) implementing rfc4378
  * 
- * @author Lars Silven PrimeKey
  * @version  $Id$
  */
 public abstract class StoreServletBase extends HttpServlet {
 
+    private static final String SPACE = "|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+    
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger log = Logger.getLogger(StoreServletBase.class);
 
-	protected ICertificateCache certCache;
-	final String space = "|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	protected CaCertificateCache certCache;
+	
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
 
 	/**
 	 * Called when the servlet is initialized.
 	 * @param config see {@link HttpServlet#init(ServletConfig)}
-	 * @param certificateStoreSession reference to store session bean
 	 * @throws ServletException
 	 */
-	public void init(ServletConfig config, CertificateStoreSessionLocal certificateStoreSession) throws ServletException {
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.certCache = CertificateCacheFactory.getInstance(certificateStoreSession);
+		this.certCache = CaCertificateCache.INSTANCE;
 	}
 
 	/**
@@ -66,7 +68,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws IOException
 	 * @throws ServletException
 	 */
-	abstract void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	public abstract void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	/**
 	 * Return certificate or CRL for the RFC4387 iHash http parameter
 	 * @param iHash
@@ -75,7 +77,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws IOException
 	 * @throws ServletException
 	 */
-	abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	public abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	/**
 	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter
 	 * @param sKIDHash
@@ -84,7 +86,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws IOException
 	 * @throws ServletException
 	 */
-	abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	public abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	/**
 	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter. In this case the alias name has been used to get the parameter.
 	 * @param sKIDHash
@@ -94,7 +96,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @throws IOException
 	 * @throws ServletException
 	 */
-	abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException;
+	public abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException;
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, java.io.IOException {
@@ -190,7 +192,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 		log.info("Reloading certificate and CRL caches due to request from "+req.getRemoteAddr());
 		// Reload CA certificates
-		this.certCache.forceReload();
+		caAdminSession.reloadCaCertificateCache();
 		return true;
 	}
 	private boolean checkIfAutorizedIP(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -211,7 +213,7 @@ public abstract class StoreServletBase extends HttpServlet {
 			if ( issuedCerts==null || issuedCerts.length<1 ) {
 				continue;
 			}
-			printInfo(issuedCerts, this.space+indent, pw, url);
+			printInfo(issuedCerts, SPACE+indent, pw, url);
 		}
 	}
 
@@ -222,11 +224,11 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @param pw
 	 * @param url
 	 */
-	abstract void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url);
+	public abstract void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url);
 	/**
 	 * @return the title of the page
 	 */
-	abstract String getTitle();
+	public abstract String getTitle();
 
 	private void returnInfoPage(HttpServletResponse response, String info) throws IOException {
 		response.setContentType("text/html");
