@@ -1764,6 +1764,11 @@ connect to as few logs as possible to satisfy the certificate profile requiremen
 Logs are connected to in the order they appear in the list, so fast logs (e.g. geographically close) should be added before slow logs.
 </p>
 </subsection>
+<subsection name="EJBCA audit logging">
+<p>The submission of pre-certificates is logged to the EJBCA audit log. When a pre-certificate
+has been submitted to the required number of CT log servers, then a SUCCESS is audit logged.
+Otherwise a FAILURE is logged. If the <em>generation</em> of the pre-certificate fails, then no CT log submission is performed and nothing is logged.</p>
+</subsection>
 <subsection name="Activating CT">
 <p>CT logs must be activated in your certificate profiles. See the <a href="userguide.html#Certificate%20Transparency%20(Enterprise%20only)">user guide</a>.</p>
 </subsection>
