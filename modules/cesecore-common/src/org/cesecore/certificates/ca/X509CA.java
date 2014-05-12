@@ -112,7 +112,6 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;

@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -28,7 +27,6 @@ import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -60,6 +58,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
  * @author tomas
  * @version $Id$
  */
+@SuppressWarnings("unused")
 public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
 	private static final Logger LOG = Logger.getLogger(ConfirmationMessageHandler.class);

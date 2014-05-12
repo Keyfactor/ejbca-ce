@@ -42,7 +42,6 @@ import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.FailInfo;

@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.approval;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;

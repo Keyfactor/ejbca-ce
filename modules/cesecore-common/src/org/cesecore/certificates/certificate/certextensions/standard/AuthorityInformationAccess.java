@@ -23,13 +23,12 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 

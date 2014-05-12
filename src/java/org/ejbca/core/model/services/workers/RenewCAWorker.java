@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.security.cert.CertPathValidatorException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -23,7 +22,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
