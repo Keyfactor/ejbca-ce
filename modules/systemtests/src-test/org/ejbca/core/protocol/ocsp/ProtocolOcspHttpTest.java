@@ -389,6 +389,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             Collection<Certificate> cacerts = new ArrayList<Certificate>();
             cacerts.add(cacert);
             CaCertificateCache certcache = CaCertificateCache.INSTANCE;
+            certcache.loadCertificates(cacerts);
             X509Certificate signer = checkRequestSignature("127.0.0.1", req, certcache);
             assertNotNull(signer);
             assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
