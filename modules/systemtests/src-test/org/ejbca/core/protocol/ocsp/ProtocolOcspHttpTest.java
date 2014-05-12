@@ -139,6 +139,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -152,9 +153,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceIn
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
@@ -389,7 +388,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             // First test with a signed OCSP request that can be verified
             Collection<Certificate> cacerts = new ArrayList<Certificate>();
             cacerts.add(cacert);
-            ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
+            CaCertificateCache certcache = CaCertificateCache.INSTANCE;
             X509Certificate signer = checkRequestSignature("127.0.0.1", req, certcache);
             assertNotNull(signer);
             assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
@@ -1810,7 +1809,7 @@ Content-Type: text/html; charset=iso-8859-1
      * @throws InvalidKeyException if the certificate, or CA key is invalid
      * @throws OperatorCreationException 
      */
-    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, ICertificateCache cacerts) throws SignRequestException,
+    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, CaCertificateCache cacerts) throws SignRequestException,
             OCSPException, NoSuchProviderException, CertificateException, NoSuchAlgorithmException, InvalidKeyException,
             SignRequestSignatureException, OperatorCreationException {
         

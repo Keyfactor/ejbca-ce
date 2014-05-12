@@ -30,9 +30,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.util.HTMLTools;
 
@@ -40,7 +40,6 @@ import org.ejbca.util.HTMLTools;
  * Servlet implementing server side of the Certificate Store.
  * For a detailed description see RFC 4387.
  * 
- * @author Lars Silven PrimeKey
  * @version  $Id$
  */
 public class CertStoreServlet extends StoreServletBase {
@@ -48,40 +47,43 @@ public class CertStoreServlet extends StoreServletBase {
 	private static final long serialVersionUID = 1L;
 
 	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
+	private CAAdminSessionLocal caAdminSession;
 	
 	private final static Logger log = Logger.getLogger(CertStoreServlet.class);
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		super.init(config, this.certificateStoreSession);
+		super.init(config);
 	}
 
 	@Override
-	void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
+	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+		if(certCache.isCacheExpired()) {
+		    caAdminSession.reloadCaCertificateCache();
+		}
+	    returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
 		return;
 	}
 
 
 	@Override
-	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
+	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
 		returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
 	}
 
 	@Override
-	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		sKIDHash( sKIDHash, resp, req, sKIDHash );
 	}
 
 	@Override
-	void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+	public void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		final X509Certificate cert = this.certCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
 		returnCert( cert, resp, sHash);
 	}
 
 	@Override
-	void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
+	public void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
 		pw.println(indent+cert.getSubjectX500Principal());
 		pw.println(indent+" "+RFC4387URL.sHash.getRef(url, HashID.getFromSubjectDN(cert)));
 		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert)));
@@ -89,7 +91,7 @@ public class CertStoreServlet extends StoreServletBase {
 	}
 
 	@Override
-	String getTitle() {
+	public String getTitle() {
 		return "CA certificates";
 	}
 
@@ -109,6 +111,7 @@ public class CertStoreServlet extends StoreServletBase {
 		resp.setContentLength(encoded.length);
 		resp.getOutputStream().write(encoded);
 	}
+	
 	private void returnCerts(X509Certificate certs[], HttpServletResponse resp, String name) throws IOException, ServletException {
 		if (certs==null) {
 			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificates with issuer hash DN: "+HTMLTools.htmlescape(name));
@@ -136,26 +139,6 @@ public class CertStoreServlet extends StoreServletBase {
 			throw new ServletException(e);
 		} catch (MessagingException e) {
 			throw new ServletException(e);
-		}/* old implementation that works.
-		final String BOUNDARY = "BOUNDARY";
-		resp.setContentType("multipart/mixed; boundary=\""+BOUNDARY+'"');
-		final PrintStream ps = new PrintStream(resp.getOutputStream());
-		ps.println("This is a multi-part message in MIME format.");
-		for( int i=0; i<certs.length; i++ ) {
-			// Upload the certificates with mime-header for user certificates.
-			ps.println("--"+BOUNDARY);
-			ps.println("Content-type: application/pkix-cert");
-			ps.println("Content-disposition: attachment; filename=\""+StringTools.stripFilename("cert" + name + '-' + i + ".der")+"\"");
-			ps.println();
-			try {
-				ps.write(certs[i].getEncoded());
-			} catch (CertificateEncodingException e) {
-				throw new ServletException(e);
-			}
-			ps.println();
 		}
-		// ready
-		ps.println("--"+BOUNDARY+"--");
-		ps.flush();*/
 	}
 }

@@ -23,7 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
@@ -35,7 +34,6 @@ import org.ejbca.util.HTMLTools;
  * Servlet implementing server side of the CRL Store.
  * For a detailed description see RFC 4387.
  * 
- * @author Lars Silven PrimeKey
  * @version  $Id$
  */
 public class CRLStoreServlet extends StoreServletBase {
@@ -44,39 +42,37 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@EJB
 	private CrlStoreSessionLocal crlSession;
-	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
 	
 	private ICRLCache crlCache;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		super.init(config, this.certificateStoreSession);
+		super.init(config);
 		this.crlCache = CRLCacheFactory.getInstance(this.crlSession, this.certCache);		
 	}
 
 	@Override
-	void sHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+	public void sHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		// do nothing for CRLs
 	}
 
 	@Override
-	void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		returnCrl( this.crlCache.findLatestByIssuerDN(HashID.getFromB64(iHash), isDelta(req)), resp, iHash, isDelta(req) );		
 	}
 
 	@Override
-	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		sKIDHash( sKIDHash, resp, req, sKIDHash);
 	}
 
 	@Override
-	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
+	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
 		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req)), resp, name, isDelta(req) );
 	}
 
 	@Override
-	void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
+	public void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
 		pw.println(indent+cert.getSubjectX500Principal());
 		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert)));
 		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef(url, HashID.getFromKeyID(cert)));
@@ -85,7 +81,7 @@ public class CRLStoreServlet extends StoreServletBase {
 	}
 
 	@Override
-	String getTitle() {
+	public String getTitle() {
 		return "CRLs";
 	}
 
