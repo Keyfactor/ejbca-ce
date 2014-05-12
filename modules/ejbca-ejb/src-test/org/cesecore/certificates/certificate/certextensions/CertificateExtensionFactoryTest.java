@@ -125,7 +125,7 @@ public class CertificateExtensionFactoryTest {
     	profile.setUsePrivateKeyUsagePeriodNotBefore(true);
     	profile.setUsePrivateKeyUsagePeriodNotAfter(true);
         List<String> usedStdCertExt = profile.getUsedStandardCertificateExtensions();
-        assertEquals(usedStdCertExt.size(), 15);
+        assertEquals(16, usedStdCertExt.size());
         Iterator<String> certStdExtIter = usedStdCertExt.iterator();
         while(certStdExtIter.hasNext()){
         	String oid = certStdExtIter.next();

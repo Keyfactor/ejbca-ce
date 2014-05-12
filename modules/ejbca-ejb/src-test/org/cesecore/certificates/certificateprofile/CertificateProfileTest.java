@@ -349,23 +349,25 @@ public class CertificateProfileTest {
     	
     	// Check standard values for the certificate profile
     	List<String> l = profile.getUsedStandardCertificateExtensions();
-    	assertEquals(l.size(), 5);
+    	assertEquals(6, l.size());
     	assertTrue(l.contains(Extension.keyUsage.getId()));
     	assertTrue(l.contains(Extension.basicConstraints.getId()));
     	assertTrue(l.contains(Extension.subjectKeyIdentifier.getId()));
     	assertTrue(l.contains(Extension.authorityKeyIdentifier.getId()));
     	assertTrue(l.contains(Extension.subjectAlternativeName.getId()));
+    	assertTrue(l.contains(Extension.issuerAlternativeName.getId()));
 
     	CertificateProfile eprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	
     	// Check standard values for the certificate profile
     	l = eprofile.getUsedStandardCertificateExtensions();
-    	assertEquals(l.size(), 6);
+    	assertEquals(7, l.size());
     	assertTrue(l.contains(Extension.keyUsage.getId()));
     	assertTrue(l.contains(Extension.basicConstraints.getId()));
     	assertTrue(l.contains(Extension.subjectKeyIdentifier.getId()));
     	assertTrue(l.contains(Extension.authorityKeyIdentifier.getId()));
     	assertTrue(l.contains(Extension.subjectAlternativeName.getId()));
+    	assertTrue(l.contains(Extension.issuerAlternativeName.getId()));
     	assertTrue(l.contains(Extension.extendedKeyUsage.getId()));
 
     	profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
@@ -379,12 +381,13 @@ public class CertificateProfileTest {
     	profile.setUseExtendedKeyUsage(true);
     	profile.setUseSubjectDirAttributes(true);
     	l = profile.getUsedStandardCertificateExtensions();
-    	assertEquals(l.size(), 14);
+    	assertEquals(15, l.size());
     	assertTrue(l.contains(Extension.keyUsage.getId()));
     	assertTrue(l.contains(Extension.basicConstraints.getId()));
     	assertTrue(l.contains(Extension.subjectKeyIdentifier.getId()));
     	assertTrue(l.contains(Extension.authorityKeyIdentifier.getId()));
     	assertTrue(l.contains(Extension.subjectAlternativeName.getId()));
+    	assertTrue(l.contains(Extension.issuerAlternativeName.getId()));
     	assertTrue(l.contains(Extension.extendedKeyUsage.getId()));
     	assertTrue(l.contains(Extension.authorityInfoAccess.getId()));
     	assertTrue(l.contains(Extension.certificatePolicies.getId()));
