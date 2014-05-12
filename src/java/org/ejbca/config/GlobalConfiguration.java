@@ -15,7 +15,6 @@
 package org.ejbca.config;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,7 +24,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
-import org.cesecore.util.Base64;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 

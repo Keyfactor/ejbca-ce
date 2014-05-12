@@ -24,7 +24,6 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.util.CertTools;
 
 /**
