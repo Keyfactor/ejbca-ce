@@ -74,7 +74,7 @@ public interface CAAdminSession {
      *            the key sequence.
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
-    public byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias)
+    byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias)
             throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException;
 
     /**
@@ -92,7 +92,7 @@ public interface CAAdminSession {
      *         also signed by the CA, or it might be the exact same if the CA
      *         does not support request signing
      */
-    public byte[] createAuthCertSignRequest(AuthenticationToken authenticationToken, int caid, byte[] certSignRequest)
+    byte[] createAuthCertSignRequest(AuthenticationToken authenticationToken, int caid, byte[] certSignRequest)
             throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException;
 
     /**
@@ -113,7 +113,7 @@ public interface CAAdminSession {
      * @param nextKeyAlias compare received certificate to this alias's public key
      * @throws EjbcaException
      */
-    public void receiveResponse(AuthenticationToken authenticationToken, int caid, ResponseMessage responsemessage, Collection<?> cachain,
+    void receiveResponse(AuthenticationToken authenticationToken, int caid, ResponseMessage responsemessage, Collection<?> cachain,
             String nextKeyAlias) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
 
     /**
@@ -123,11 +123,11 @@ public interface CAAdminSession {
      *            the info for the CA that should be created, or already exists.
      *            Don't forget to set signedBy in the info.
      */
-    public ResponseMessage processRequest(AuthenticationToken admin, CAInfo cainfo, RequestMessage requestmessage) throws CAExistsException,
+    ResponseMessage processRequest(AuthenticationToken admin, CAInfo cainfo, RequestMessage requestmessage) throws CAExistsException,
             CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /** Add an external CA's certificate as a CA */
-    public void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
+    void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException;
 
     /**
@@ -135,7 +135,7 @@ public interface CAAdminSession {
      * will be generated for this service, if it exists before. If it does not
      * exist before it will be created.
      */
-    public void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
+    void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
             AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException;
 
     /**
@@ -181,7 +181,7 @@ public interface CAAdminSession {
      * @throws CryptoTokenOfflineException 
      * @throws CryptoTokenAuthenticationFailedException 
      */
-    public void renewCA(AuthenticationToken administrator, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate)
+    void renewCA(AuthenticationToken administrator, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
 
     /**
@@ -208,7 +208,7 @@ public interface CAAdminSession {
      * @throws CADoesntExistsException if CA with ID caid didn't exist.
      * @throws CryptoTokenOfflineException 
      */
-    public void renewCA(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate)
+    void renewCA(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate)
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
@@ -217,7 +217,7 @@ public interface CAAdminSession {
      * 
      * @param reason one of RevokedCertInfo.REVOCATION_REASON values.
      */
-    public void revokeCA(AuthenticationToken admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException;
+    void revokeCA(AuthenticationToken admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Method that is used to create a new CA from an imported keystore from
@@ -234,7 +234,7 @@ public interface CAAdminSession {
      * @param privateEncryptionKeyAlias
      *            the alias for the private encryption key in the keystore
      */
-    public void importCAFromKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
+    void importCAFromKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
             String privateSignatureKeyAlias, String privateEncryptionKeyAlias);
 
     /**
@@ -253,7 +253,7 @@ public interface CAAdminSession {
      *            encryption key
      * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
      */
-    public void importCAFromKeys(AuthenticationToken admin, String caname, String keystorepass, java.security.cert.Certificate[] signatureCertChain,
+    void importCAFromKeys(AuthenticationToken admin, String caname, String keystorepass, java.security.cert.Certificate[] signatureCertChain,
             java.security.PublicKey p12PublicSignatureKey, java.security.PrivateKey p12PrivateSignatureKey,
             java.security.PrivateKey p12PrivateEncryptionKey, java.security.PublicKey p12PublicEncryptionKey)
             throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException,
@@ -286,7 +286,7 @@ public interface CAAdminSession {
      * @throws NoSuchSlotException if no slot as defined by the label in catokenproperties could be found
      * @throws IllegalCryptoTokenException the certificate chain is incomplete
      */
-    public void importCAFromHSM(AuthenticationToken admin, String caname, Certificate[] signatureCertChain, String catokenpassword,
+    void importCAFromHSM(AuthenticationToken admin, String caname, Certificate[] signatureCertChain, String catokenpassword,
             String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             IllegalCryptoTokenException, CAExistsException, AuthorizationDeniedException, CAOfflineException,
             NoSuchSlotException;
@@ -305,7 +305,7 @@ public interface CAAdminSession {
      * @return A byte array of the CAs p12 in case of X509 CA and pkcs8 private
      *         certificate signing key in case of CVC CA.
      */
-    public byte[] exportCAKeyStore(AuthenticationToken admin, String caname, String keystorepass, String privkeypass,
+    byte[] exportCAKeyStore(AuthenticationToken admin, String caname, String keystorepass, String privkeypass,
             String privateSignatureKeyAlias, String privateEncryptionKeyAlias);
 
     /**
@@ -314,7 +314,7 @@ public interface CAAdminSession {
      * certificate response are not returned, because we don't have certificates
      * for them. Uses getAvailableCAs to list CAs.
      */
-    public Collection<Certificate> getAllCACertificates();
+    Collection<Certificate> getAllCACertificates();
 
     /**
      * Activates an 'Offline' CA Token and sets the CA status to active and
@@ -333,7 +333,7 @@ public interface CAAdminSession {
      *             if approval is required and the action have been added in the
      *             approval queue.
      */
-    public void activateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, ApprovalException,
+    void activateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, ApprovalException,
             WaitingForApprovalException, CADoesntExistsException;
 
     /**
@@ -349,7 +349,7 @@ public interface CAAdminSession {
      * @throws EjbcaException
      *             if the given caid couldn't be found or its status is wrong.
      */
-    public void deactivateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
+    void deactivateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
      * Removes the catoken keystore from the database and sets its status to
@@ -370,7 +370,7 @@ public interface CAAdminSession {
 
      * @see CAAdminSession#exportCAKeyStore(AuthenticationToken, String, String, String, String, String)
      */
-    public void removeCAKeyStore(AuthenticationToken admin, String caname) throws EJBException;
+    void removeCAKeyStore(AuthenticationToken admin, String caname) throws EJBException;
 
     /**
      * Restores the keys for the CAToken from a KeyStore.
@@ -392,7 +392,7 @@ public interface CAAdminSession {
      *             not be found or if the KeyStore does not contain the right
      *             private key
      */
-    public void restoreCAKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
+    void restoreCAKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
             String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws EJBException;
 
     /**
@@ -406,7 +406,7 @@ public interface CAAdminSession {
      * @see org.ejbca.core.model.ca.caadmin.CAInfo
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
      */
-    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException;
+    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException;
 
     /**
      * Method used to check if certificate profile id exists in any CA.
@@ -415,13 +415,13 @@ public interface CAAdminSession {
      * @param certificateprofileid the ID of the sought certificate profile
      * @return a list of names of the CAs using the certificate profile 
      */
-    public List<String> getCAsUsingCertificateProfile(int certificateprofileid);
+    List<String> getCAsUsingCertificateProfile(int certificateprofileid);
 
     /**
      * Method used to check if publishers id exists in any CAs CRLPublishers
      * Collection.
      */
-    public boolean exitsPublisherInCAs(AuthenticationToken admin, int publisherid);
+    boolean exitsPublisherInCAs(AuthenticationToken admin, int publisherid);
 
     /**
      * Method that publishes the given CA certificate chain to the list of
@@ -437,7 +437,7 @@ public interface CAAdminSession {
      *            object to be used by the publisher this DN could be searched
      *            for the object.
      */
-    public void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers,
+    void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers,
             String caDataDN) throws AuthorizationDeniedException;
 
     /**
@@ -450,11 +450,11 @@ public interface CAAdminSession {
      * @param doPublishDeltaCRL should delta CRLs be published?
      * @throws AuthorizationDeniedException 
      */
-    public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN,
+    void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN,
             boolean doPublishDeltaCRL) throws AuthorizationDeniedException;
 
     /** @return a Collection of id:s (Integer) to authorized publishers. */
-    public Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
+    Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
 
     /**
      * Method used to create a new CA.
@@ -473,7 +473,7 @@ public interface CAAdminSession {
      * @see org.ejbca.core.model.ca.caadmin.CAInfo
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
      */
-    public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
+    void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidAlgorithmException;
 
     /**
@@ -492,7 +492,7 @@ public interface CAAdminSession {
      * @throws CertificateException 
      * @throws CertificateEncodingException 
      */
-    public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid, ExtendedCAServiceRequest request)
+    ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
             CADoesntExistsException, AuthorizationDeniedException, CertificateEncodingException, CertificateException, OperatorCreationException;
 
@@ -501,7 +501,7 @@ public interface CAAdminSession {
      * next time we try to access it.
      * Present in remote interface so we can call it from CLI.
      */
-    public void flushCACache();
+    void flushCACache();
 
     /** @return the latest link certificate (if any) */
     byte[] getLatestLinkCertificate(int caId) throws CADoesntExistsException;
