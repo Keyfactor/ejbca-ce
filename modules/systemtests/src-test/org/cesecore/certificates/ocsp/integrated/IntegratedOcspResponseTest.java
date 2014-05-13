@@ -605,40 +605,12 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
 
             // Create an inactive OSCP CA Service.
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, new Date(), "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
-                    (Collection<Certificate>) null, catoken, "TESTSIGNEDBYEXTERNAL", -1, null, null, // PolicyId
-                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                    new ArrayList<Integer>(), true, // Authority Key Identifier
-                    false, // Authority Key Identifier Critical
-                    true, // CRL Number
-                    false, // CRL Number Critical
-                    null, // defaultcrldistpoint
-                    null, // defaultcrlissuer
-                    null, // defaultocsplocator
-                    null, // Authority Information Access
-                    null, null, // Name Constraints
-                    null, // defaultfreshestcrl
-                    true, // Finish User
-                    new ArrayList<ExtendedCAServiceInfo>(), false, // use default utf8 settings
-                    new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    false, // Use UTF8 subject DN by default
-                    true, // Use LDAP DN order by default
-                    false, // Use CRL Distribution Point on CRL
-                    false, // CRL Distribution Point on CRL critical
-                    true, true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    null // cmpRaAuthSecret
-            );
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL",
+                    CAConstants.CA_WAITING_CERTIFICATE_RESPONSE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000,
+                    CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
+                    null, catoken);
+            cainfo.setDescription("TESTSIGNEDBYEXTERNAL");
             try {
                 CA ca = new X509CA(cainfo);
                 ca.setCAToken(catoken);

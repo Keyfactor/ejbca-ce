@@ -1503,21 +1503,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAInfo cainfo = null;
 
         // Parameters common for both X509 and CVC CAs
-        ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
-        int numofreqapprovals = 1;
-        boolean finishuser = false;
-        Collection<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
-        ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
-        long crlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
-        long crlIssueInterval = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
-        long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
-        long deltacrlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
         int certprofileid = CertTools.isSelfSigned(caCertificate) ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
                 : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
         String subjectdn = CertTools.getSubjectDN(caCertificate);
         long validity = 0;
         int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
-        String description = "CA created by certificate import.";
         log.info("Preparing to import of CA with Subject DN " + subjectdn);
 
         if (caCertificate instanceof X509Certificate) {
@@ -1531,41 +1521,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 policies.addAll(certprof.getCertificatePolicies());
             }
 
-            boolean useauthoritykeyidentifier = false;
-            boolean authoritykeyidentifiercritical = false;
-
-            boolean usecrlnumber = false;
-            boolean crlnumbercritical = false;
-
-            boolean useutf8policytext = false;
-            boolean useprintablestringsubjectdn = false;
-            boolean useldapdnorder = true; // Default value
-            boolean usecrldistpointoncrl = false;
-            boolean crldistpointoncrlcritical = false;
-
-            cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, new Date(), subjectaltname, certprofileid, validity,
-                    CertTools.getNotAfter(x509CaCertificate), CAInfo.CATYPE_X509, signedby, null, null, description, -1, null, policies, crlperiod,
-                    crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical,
-                    usecrlnumber, crlnumbercritical, "", "", "", null, null, null, "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings,
-                    numofreqapprovals, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, false, true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    null // cmpRaAuthSecret
-            );
+            X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL,
+                    certprofileid, validity, signedby, null, null);
+            x509cainfo.setSubjectAltName(subjectaltname);
+            x509cainfo.setPolicies(policies);
+            cainfo = x509cainfo;
+            cainfo.setExpireTime(CertTools.getNotAfter(x509CaCertificate));
+            
+            // These values were used before refactoring the X509CAInfo constructor.
+            // They might not be optimal and should be checked.
+            x509cainfo.setUseAuthorityKeyIdentifier(false);
+            x509cainfo.setUseCRLNumber(false);
+            x509cainfo.setUsePrintableStringSubjectDN(false);
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
-            cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC,
-                    signedby, null, null, description, -1, null, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers,
-                    finishuser, extendedcaserviceinfos, approvalsettings, numofreqapprovals, false, true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true // useCertificateStorage
-            );
+            cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validity, signedby, null, null);
         }
+        
+        cainfo.setDescription("CA created by certificate import.");
+        // These values were used before refactoring the X509CAInfo/CVCCAInfo constructors.
+        // They might not be optimal and should be checked.
+        cainfo.setCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
+        cainfo.setCRLIssueInterval(0 * SimpleTime.MILLISECONDS_PER_HOUR);
+        cainfo.setCRLOverlapTime(10 * SimpleTime.MILLISECONDS_PER_MINUTE);
+        cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
+        cainfo.setIncludeInHealthCheck(false);
+        cainfo.setFinishUser(false);
+        
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating a X509 CA (process request)");
             ca = new X509CA((X509CAInfo) cainfo);
@@ -2341,63 +2322,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, "
                     + CertTools.getSubjectDN(caSignatureCertificate), "", keySpecification, keyAlgorithm));
 
-            cainfo = new X509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE, new Date(), "", certprof,
-                    validity, CertTools.getNotAfter(caSignatureCertificate), // Expiretime
-                    CAInfo.CATYPE_X509, signedby, certificatechain, catoken, description, -1, // revocationReason
-                    null, // revocationDate
-                    null, // PolicyId
-                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssuePeriod
-                    10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRLOverlapTime
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                    crlpublishers, // CRL publishers
-                    true, // Authority Key Identifier
-                    false, // Authority Key Identifier Critical
-                    true, // CRL Number
-                    false, // CRL Number Critical
-                    "", // Default CRL Dist Point
-                    "", // Default CRL Issuer
-                    "", // Default OCSP Service Locator
-                    null, //Authority Information Access
-                    null, null, // Name Constraints
-                    "", // CA defined freshest CRL
-                    true, // Finish User
-                    extendedcaservices, false, // use default utf8 settings
-                    approvalsettings, // Approvals Settings
-                    1, // Number of Req approvals
-                    false, // Use UTF8 subject DN by default
-                    true, // Use LDAP DN order by default
-                    false, // Use CRL Distribution Point on CRL
-                    false, // CRL Distribution Point on CRL critical,
-                    true, // Include in HealthCheck
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    null // cmpRaAuthSecret
-            );
+            cainfo = new X509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE,
+                    certprof, validity, signedby, certificatechain, catoken);
+            cainfo.setExpireTime(CertTools.getNotAfter(caSignatureCertificate));
+            cainfo.setDescription(description);
+            cainfo.setCRLPublishers(crlpublishers);
+            cainfo.setExtendedCAServiceInfos(extendedcaservices);
+            cainfo.setApprovalSettings(approvalsettings);
             ca = new X509CA((X509CAInfo) cainfo);
         } else if (caSignatureCertificate.getType().equals("CVC")) {
             // Create a CVC CA
             // Create the CAInfo to be used for either generating the whole CA
             // or making a request
-            cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE, new Date(), certprof, validity,
-                    CertTools.getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby, certificatechain, catoken, description, -1,
-                    (Date) null, 24, 0, 10, 0, // CRL periods
-                    crlpublishers, // CRL publishers
-                    true, // Finish user
-                    extendedcaservices, approvalsettings, // Approvals Settings
-                    1, // Number of Req approvals
-                    true, // Include in HealthCheck
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true // useCertificateStorage
-            );
+            cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE,
+                    certprof, validity, signedby, certificatechain, catoken);
+            cainfo.setExpireTime(CertTools.getNotAfter(caSignatureCertificate));
+            cainfo.setDescription(description);
+            cainfo.setCRLPublishers(crlpublishers);
+            cainfo.setExtendedCAServiceInfos(extendedcaservices);
+            cainfo.setApprovalSettings(approvalsettings);
             ca = CvcCA.getInstance((CVCCAInfo) cainfo);
         }
         // We must activate the token, in case it does not have the default password
