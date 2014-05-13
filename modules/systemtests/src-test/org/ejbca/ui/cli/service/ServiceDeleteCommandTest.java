@@ -21,7 +21,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,20 +59,20 @@ public class ServiceDeleteCommandTest extends ServiceTestCase {
     }
     
     @Test
-    public void testExecuteDelete() throws ErrorAdminCommandException {
+    public void testExecuteDelete() {
         assertNotNull("service should have been created", getServiceSession().getService(SERVICE_NAME));
         serviceDeleteCommand.execute(DELETE_ARGS);
         assertNull("service should have been deleted", getServiceSession().getService(SERVICE_NAME));
     }
     
     @Test
-    public void testExecuteMissingName() throws ErrorAdminCommandException {
+    public void testExecuteMissingName() {
         // should log an error
         serviceDeleteCommand.execute(MISSING_NAME_ARGS);
     }
     
     @Test
-    public void testExecuteNonExistent() throws ErrorAdminCommandException {
+    public void testExecuteNonExistent() {
         // should log an error
         serviceDeleteCommand.execute(NONEXISTENT_ARGS);
         assertNotNull("service should still exist", getServiceSession().getService(SERVICE_NAME));

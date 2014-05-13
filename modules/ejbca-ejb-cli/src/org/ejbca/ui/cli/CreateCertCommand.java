@@ -50,8 +50,8 @@ public class CreateCertCommand extends EjbcaCliUserCommandBase {
 
     private static final Logger log = Logger.getLogger(CreateCertCommand.class);
 
-    private static final String ENTITY_NAME = "--entity-username";
-    private static final String ENTITY_PASSWORD = "--entity-password";
+    private static final String ENTITY_NAME = "--username";
+    private static final String ENTITY_PASSWORD = "--password";
     private static final String CSR = "-c";
     private static final String DESTINATION_FILE = "-f";
 
@@ -111,9 +111,11 @@ public class CreateCertCommand extends EjbcaCliUserCommandBase {
         try {
             resp = signSession.createCertificate(getAuthenticationToken(), req, X509ResponseMessage.class, null);
         } catch (EjbcaException e) {
-            throw new IllegalStateException("Exception was thrown during certificate creation", e);
+            log.error("Could not create certificate: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         } catch (CesecoreException e) {
-            throw new IllegalStateException("Exception was thrown during certificate creation", e);
+            log.error("Could not create certificate: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         } catch (AuthorizationDeniedException ee) {
             log.error("CLI user with username " + parameters.get(USERNAME_KEY) + " was not authorized to create a certificate.");
             return CommandResult.AUTHORIZATION_FAILURE;
@@ -133,7 +135,8 @@ public class CreateCertCommand extends EjbcaCliUserCommandBase {
             fos.write(pembytes);
             fos.close();
         } catch (IOException e) {
-            throw new IllegalStateException("Could not write to certificate file " + certf, e);
+            log.error("Could not write to certificate file " + certf + ". " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
         log.info("PEM certificate written to file '" + certf + "'");
         return CommandResult.SUCCESS;

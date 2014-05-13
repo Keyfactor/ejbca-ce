@@ -48,7 +48,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -135,7 +134,7 @@ public class KeyRecoveryNewestCommandTest {
     }
 
     @Test
-    public void testKeyRecovery() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testKeyRecovery() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertTrue("End Entity was not marked for recovery.", keyRecoverySession.isUserMarked(TESTCLASS_NAME));

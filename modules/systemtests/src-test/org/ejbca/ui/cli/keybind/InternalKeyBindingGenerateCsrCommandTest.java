@@ -32,7 +32,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -101,7 +100,7 @@ public class InternalKeyBindingGenerateCsrCommandTest {
     }
 
     @Test
-    public void testGenerateCsr() throws ErrorAdminCommandException, AuthorizationDeniedException, FileNotFoundException {
+    public void testGenerateCsr() throws AuthorizationDeniedException, FileNotFoundException {
         String[] args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath() };
         command.execute(args);
         try {

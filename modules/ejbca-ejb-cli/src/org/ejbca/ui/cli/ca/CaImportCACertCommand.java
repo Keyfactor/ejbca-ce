@@ -23,7 +23,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -73,7 +72,8 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
             CryptoProviderTools.installBCProvider();
             Collection<Certificate> certs = CertTools.getCertsFromPEM(pemFile);
             if (certs.size() != 1) {
-                throw new ErrorAdminCommandException("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
+                log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
             try {
                 // We need to check if the CA already exists to determine what to do:
@@ -90,8 +90,9 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                             resp, null, null);
                     log.info("Received certificate response and activated CA " + caName);
                 } else {
-                    throw new ErrorAdminCommandException("CA '" + caName
+                    log.error("CA '" + caName
                             + "' already exists and is not waiting for certificate response from an external CA.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 return CommandResult.SUCCESS;
             } catch (CADoesntExistsException e) {

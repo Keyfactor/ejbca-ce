@@ -34,7 +34,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -98,7 +97,7 @@ public class SetSubjDirAttrCommandTest {
     }
 
     @Test
-    public void testSetSubjDirAttr() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testSetSubjDirAttr() throws AuthorizationDeniedException {
         final String attributes = "placeOfBirth=FooTown";
         final String args[] = new String[] { TESTCLASS_NAME, attributes };
         command.execute(args);

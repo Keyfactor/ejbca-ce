@@ -37,7 +37,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -124,7 +123,7 @@ public class InternalKeyBindingImportCertificateCommandTest {
     }
 
     @Test
-    public void testImportCertificate() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testImportCertificate() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME, certificateFile.getAbsolutePath() };
         command.execute(args);
         InternalKeyBinding keyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);

@@ -19,7 +19,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.config.cmp.AddAliasCommand;
 import org.ejbca.ui.cli.config.cmp.RemoveAliasCommand;
 import org.ejbca.ui.cli.config.cmp.RenameAliasCommand;
@@ -35,7 +34,7 @@ public class CmpConfigCommandTest {
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @Test
-    public void testAliasOperations() throws ErrorAdminCommandException {
+    public void testAliasOperations() {
         final String aliasName = "foo";
         CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
         if(cmpConfiguration.aliasExists(aliasName)) {

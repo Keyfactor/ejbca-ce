@@ -35,7 +35,7 @@ public class UpgradeCommand extends EjbcaCommandBase {
 
     private static final String DATABASE_KEY = "-d";
     private static final String FROM_VERSION_KEY = "-v";
-    private static final String IS_POST_UPGRADE = "*";
+    private static final String IS_POST_UPGRADE = "--post";
 
     {
         registerParameter(new Parameter(DATABASE_KEY, "Database type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,

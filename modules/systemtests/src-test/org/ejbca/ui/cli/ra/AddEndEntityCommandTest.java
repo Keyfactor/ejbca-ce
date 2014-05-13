@@ -42,7 +42,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -138,7 +137,7 @@ public class AddEndEntityCommandTest {
 
 
     @Test
-    public void testSetPwdInvalidUser() throws ErrorAdminCommandException, IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, FinderException {
+    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, FinderException {
 
         try {
 

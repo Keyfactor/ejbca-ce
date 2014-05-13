@@ -17,9 +17,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -69,7 +68,7 @@ public class Asn1DumpCommand extends EjbcaCommandBase {
                 if (coll.isEmpty()) {
                     iscert = false;
                 }
-            } catch (CertificateException e) {
+            } catch (CertificateParsingException e) {
                 iscert = false;
             }
             if (!iscert) {
@@ -81,12 +80,12 @@ public class Asn1DumpCommand extends EjbcaCommandBase {
                     log.info(dump);
                     
                 } catch (IOException e) {
-                    throw new IllegalStateException("Could not read ASN1Primitive", e);
+                   //None of the above.
+                    log.error("File " + filename + " does not seem to contain either a PEM or DER encoded certificate.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 }
             } else {
-                Iterator<Certificate> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    Certificate cert = iter.next();
+                for (Certificate cert : coll) {
                     String dump = ASN1Dump.dumpAsString(cert);
                     log.info(dump);
                 }
@@ -101,12 +100,12 @@ public class Asn1DumpCommand extends EjbcaCommandBase {
 
     @Override
     public String getCommandDescription() {
-        return "Dumps PEM or DER file as readable ASN.1";
+        return "Dumps PEM or DER encoded certificate as readable ASN.1";
     }
 
     @Override
     public String getFullHelpText() {
-        return "Dumps PEM or DER file as readable ASN.1";
+        return getCommandDescription();
     }
     
     @Override

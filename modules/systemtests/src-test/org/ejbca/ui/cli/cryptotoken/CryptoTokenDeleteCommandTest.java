@@ -23,7 +23,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -67,7 +66,7 @@ public class CryptoTokenDeleteCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException {
+    public void testCommand() {
         String[] args = new String[] { CRYPTOTOKEN_NAME };
         command.execute(args);
         assertNull("CryptoToken was not deleted.", cryptoTokenManagementSession.getIdFromName(CRYPTOTOKEN_NAME));

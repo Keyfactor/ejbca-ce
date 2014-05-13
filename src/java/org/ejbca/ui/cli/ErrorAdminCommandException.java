@@ -13,12 +13,14 @@
  
 package org.ejbca.ui.cli;
 
+import org.ejbca.core.EjbcaException;
+
 /**
  * The exception thrown when an error occurs in an Admin Command (IAdminCommand)
  *
  * @version $Id$
  */
-public class ErrorAdminCommandException extends org.ejbca.core.EjbcaException {
+public class ErrorAdminCommandException extends EjbcaException {
     private static final long serialVersionUID = -6765140792703909521L;
 
     /**

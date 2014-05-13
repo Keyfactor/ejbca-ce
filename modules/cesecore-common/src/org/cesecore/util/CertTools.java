@@ -1093,10 +1093,10 @@ public abstract class CertTools {
      * 
      * @param certFile the file containing the certificates in PEM-format
      * @return Ordered List of Certificates, first certificate first, or empty List
-     * @throws CertificateException if the file contains an incorrect certificate.
      * @throws FileNotFoundException if certFile was not found
+     * @throws CertificateParsingException if the file contains an incorrect certificate.
      */
-    public static List<Certificate> getCertsFromPEM(String certFile) throws CertificateException, FileNotFoundException {
+    public static List<Certificate> getCertsFromPEM(String certFile) throws FileNotFoundException, CertificateParsingException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM: certFile=" + certFile);
         }
@@ -1151,7 +1151,7 @@ public abstract class CertTools {
                     if (temp == null) {
                         if (ret.isEmpty()) {
                             // There was no certificate in the file
-                            throw new IllegalArgumentException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE
+                            throw new CertificateParsingException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE
                                     + " boundary");
                         } else {
                             // There were certificates, but some blank lines or something in the end

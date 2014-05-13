@@ -20,9 +20,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -34,9 +36,17 @@ import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
  */
 public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
 
+    private static final Logger log = Logger.getLogger(BaseRolesCommand.class);
+    
     private static Set<String[]> commandAliases = new HashSet<String[]>();
     static {
         commandAliases.add(new String[] { "admins" });
+        try {
+            Class.forName(X500PrincipalAccessMatchValue.class.getName());
+            Class.forName(CliUserAccessMatchValue.class.getName());
+        } catch (ClassNotFoundException e) {
+            log.error("Failure during match value initialization", e);
+        }
     }
 
     @Override

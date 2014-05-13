@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -76,7 +77,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
     private static final String USERNAME_KEY = "--username";
     private static final String PASSWORD_KEY = "--password";
     private static final String DN_KEY = "--dn";
-    private static final String CA_NAME_KEY = "--ca";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String TYPE_KEY = "--type";
     private static final String TOKEN_KEY = "--token";
     private static final String SUBJECT_ALT_NAME_KEY = "--altname";
@@ -139,7 +140,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String username = parameters.get(USERNAME_KEY);
-        final String password = parameters.get(PASSWORD_KEY);
+        final String password = getAuthenticationCode(parameters.get(PASSWORD_KEY));
         final String dn = parameters.get(DN_KEY);
         final String caname = parameters.get(CA_NAME_KEY);
         final String subjectaltname = parameters.get(SUBJECT_ALT_NAME_KEY);
@@ -352,8 +353,22 @@ public class AddEndEntityCommand extends BaseRaCommand {
         return sb.toString();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
+    }
+    
+    private String getAuthenticationCode(final String commandLineArgument) {
+      
+        final String authenticationCode;
+        if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {
+            getLogger().info("Enter password: ");
+            getLogger().info("");
+            authenticationCode = StringTools.passwordDecryption(String.valueOf(System.console().readPassword()), "End Entity Password");
+        } else {
+            authenticationCode = StringTools.passwordDecryption(commandLineArgument, "End Entity Password");
+        }
+        return authenticationCode;
     }
 
 }

@@ -34,7 +34,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -99,7 +98,7 @@ public class SetCleartextPasswordCommandTest {
     }
 
     @Test
-    public void testSetCleartextPassword() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testSetCleartextPassword() throws AuthorizationDeniedException {
         final String newPassword = "bar123";
         final String args[] = new String[] { TESTCLASS_NAME, "--password", newPassword };
         assertEquals(CommandResult.SUCCESS, command.execute(args));

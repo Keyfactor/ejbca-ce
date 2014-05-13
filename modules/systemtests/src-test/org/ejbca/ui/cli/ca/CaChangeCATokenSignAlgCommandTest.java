@@ -25,7 +25,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -67,7 +66,7 @@ public class CaChangeCATokenSignAlgCommandTest {
     }
     
     @Test
-    public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
+    public void testCommand() throws CADoesntExistsException, AuthorizationDeniedException {
         String[] args = new String[] { CA_NAME, AlgorithmConstants.SIGALG_SHA1_WITH_RSA };
         command.execute(args);
         CAInfo result = caSession.getCAInfo(authenticationToken, ca.getCAId());

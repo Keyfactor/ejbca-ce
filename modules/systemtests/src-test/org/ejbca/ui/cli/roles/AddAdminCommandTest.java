@@ -30,7 +30,6 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -88,7 +87,7 @@ public class AddAdminCommandTest {
     }
 
     @Test
-    public void testAddAdminCommand() throws ErrorAdminCommandException {
+    public void testAddAdminCommand() {
         final String matchValue = TESTCLASS_NAME;
         String[] args = new String[] { TESTCLASS_NAME, x509ca.getName(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
                 AccessMatchType.TYPE_EQUALCASEINS.toString(), matchValue };

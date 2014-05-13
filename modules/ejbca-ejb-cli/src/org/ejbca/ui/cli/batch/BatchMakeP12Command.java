@@ -68,7 +68,7 @@ import org.ejbca.util.keystore.P12toPEM;
  */
 public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
-    private static final String END_ENTITY_USERNAME_KEY = "-e";
+    private static final String END_ENTITY_USERNAME_KEY = "--username";
     private static final String DIRECTORY_KEY = "-dir";
 
     private static final Logger log = Logger.getLogger(BatchMakeP12Command.class);

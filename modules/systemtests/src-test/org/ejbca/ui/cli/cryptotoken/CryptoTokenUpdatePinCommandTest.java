@@ -26,7 +26,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -78,7 +77,7 @@ public class CryptoTokenUpdatePinCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException, CryptoTokenOfflineException,
+    public void testCommand() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         final String newPin = "bar123";
         String[] args = new String[] { TOKEN_NAME, TOKEN_PIN, newPin };

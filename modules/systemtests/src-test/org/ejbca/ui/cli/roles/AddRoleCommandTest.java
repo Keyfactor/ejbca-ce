@@ -20,7 +20,6 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Test;
 
@@ -48,7 +47,7 @@ public class AddRoleCommandTest {
     }
 
     @Test
-    public void testAddRoleCommand() throws ErrorAdminCommandException {
+    public void testAddRoleCommand() {
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertNotNull("Role was not added.", roleAccessSession.findRole(TESTCLASS_NAME));

@@ -38,7 +38,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
@@ -112,7 +111,7 @@ public class CaImportCertCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
+    public void testCommand() throws CADoesntExistsException, AuthorizationDeniedException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", "--email", "foo@foo.com", certificateFile.getAbsolutePath(),
                 "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
         assertEquals(CommandResult.SUCCESS, command.execute(args));

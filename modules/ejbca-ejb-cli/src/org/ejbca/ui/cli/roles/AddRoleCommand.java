@@ -33,7 +33,7 @@ public class AddRoleCommand extends BaseRolesCommand {
 
     private static final Logger log = Logger.getLogger(AddRoleCommand.class);
 
-    private static final String NAME_KEY = "--name";
+    private static final String NAME_KEY = "--role";
 
     {
         registerParameter(new Parameter(NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,

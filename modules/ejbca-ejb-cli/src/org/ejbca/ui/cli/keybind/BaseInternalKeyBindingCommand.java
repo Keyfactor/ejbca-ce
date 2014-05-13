@@ -85,14 +85,14 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
         final StringBuilder sb = new StringBuilder();
         sb.append("Registered implementation types and implemention specific properties:\n");
         for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
-            sb.append("  ").append(entry.getKey()).append(":\n    {");
+            sb.append("  ").append(entry.getKey()).append(":\n");
             for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
-                sb.append(property.getName()).append(",");
+                sb.append("    " + property.getName()).append(",\n");
             }
-            if (sb.charAt(sb.length() - 1) == ',') {
-                sb.deleteCharAt(sb.length() - 1);
+            if (sb.charAt(sb.length() - 2) == ',') {
+                sb.deleteCharAt(sb.length() - 2);
             }
-            sb.append("}\n");
+            sb.append("\n");
         }
         return sb.toString();
     }
