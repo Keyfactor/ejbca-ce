@@ -21,6 +21,7 @@ import javax.ejb.ObjectNotFoundException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -127,9 +128,13 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     void resetRemainingLoginAttempts(String username) throws FinderException;
     
     /**
-     * Changes the CAId. Intended to be used when an uninitialized CA's subject DN and CAId is changed
-     * (CAs can be in the uninitialized state when they have been imported from a statedump)
+     * Changes the CAId of the given end-entity. Intended to be used when an uninitialized CA's subject DN and CAId is changed
+     * (CAs can be in the uninitialized state when they have been imported from a statedump).
+     * 
+     * @param admin Authentication token
+     * @param username End-entity to change CAId of
+     * @param newCAId CA id to change to.
      */
-    public void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, FinderException;
+    void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, NoSuchEndEntityException;
 
 }
