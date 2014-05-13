@@ -51,7 +51,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -164,6 +163,7 @@ import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
@@ -386,7 +386,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 endEntityInfo.setCAId(toId);
                 try {
                     endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
-                } catch (FinderException e) {
+                } catch (NoSuchEndEntityException e) {
                     log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
                 }
             }
