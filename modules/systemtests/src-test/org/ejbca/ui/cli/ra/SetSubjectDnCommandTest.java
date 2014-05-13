@@ -35,7 +35,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -99,7 +98,7 @@ public class SetSubjectDnCommandTest {
     }
 
     @Test
-    public void testSubjectDn() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testSubjectDn() throws AuthorizationDeniedException {
         final String newDn = "C=DE,O=Primekey Labs,CN=foo";
         final String args[] = new String[] { TESTCLASS_NAME, newDn };
         command.execute(args);

@@ -32,7 +32,6 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -85,7 +84,7 @@ public class InternalKeyBindingCreateCommandTest {
     }
 
     @Test
-    public void testAddVanillaKeyBinding() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testAddVanillaKeyBinding() throws AuthorizationDeniedException {
         try {
             assertEquals(CommandResult.SUCCESS, command.execute(STANDARD_ARGS));
             Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
@@ -110,7 +109,7 @@ public class InternalKeyBindingCreateCommandTest {
      * Note that this test may give false positives of creation fails for any other reason.
      */
     @Test
-    public void testAddUnknownProperties() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testAddUnknownProperties() throws AuthorizationDeniedException {
         try {
             String[] args = Arrays.copyOf(STANDARD_ARGS, STANDARD_ARGS.length);
             args[args.length - 1] = "fakeproperty=3";
@@ -130,7 +129,7 @@ public class InternalKeyBindingCreateCommandTest {
      * Note that this test may give false positives of creation fails for any other reason.
      */
     @Test
-    public void testAddKeyWithInvalidProperty() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testAddKeyWithInvalidProperty() throws AuthorizationDeniedException {
         try {
             String[] args = Arrays.copyOf(STANDARD_ARGS, STANDARD_ARGS.length);
             args[11] = "maxAge=banana";

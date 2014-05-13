@@ -21,7 +21,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,7 +54,7 @@ public class CryptoTokenCreateCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException {
+    public void testCommand() {
         String[] args = new String[] { CRYPTOTOKEN_NAME, "foo123", "true", SoftCryptoToken.class.getSimpleName(), "true" };
         command.execute(args);
         assertNotNull("No crypto token was created.", cryptoTokenManagementSession.getIdFromName(CRYPTOTOKEN_NAME));

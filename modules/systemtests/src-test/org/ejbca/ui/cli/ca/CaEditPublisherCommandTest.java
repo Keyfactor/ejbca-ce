@@ -26,7 +26,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +65,7 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws PublisherExistsException, AuthorizationDeniedException, ErrorAdminCommandException {
+    public void testExecuteHappyPath() throws PublisherExistsException, AuthorizationDeniedException {
         LdapPublisher publisher = new LdapPublisher();
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
@@ -112,7 +111,7 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteWithMissingArgs() throws PublisherExistsException, AuthorizationDeniedException, ErrorAdminCommandException {
+    public void testExecuteWithMissingArgs() throws PublisherExistsException, AuthorizationDeniedException {
         LdapPublisher publisher = new LdapPublisher();
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);

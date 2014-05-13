@@ -44,7 +44,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -125,7 +124,7 @@ public class RevokeCertificateCommandTest {
     }
 
     @Test
-    public void testRevokeCertificate() throws ErrorAdminCommandException {
+    public void testRevokeCertificate() {
         final String args[] = new String[] { x509ca.getSubjectDN(), serialNumber, "0" };
         command.execute(args);
         assertTrue("Certificate was not revoked.",

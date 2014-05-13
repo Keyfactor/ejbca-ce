@@ -28,7 +28,6 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -99,7 +98,7 @@ public class InternalKeyBindingModifyCommandTest {
     }
 
     @Test
-    public void testModifyBinding() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testModifyBinding() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME, "--nextkeypair", NEXT_KEYPAIR_NAME, "-"+OcspKeyBinding.PROPERTY_MAX_AGE + "=30" };
         assertEquals(CommandResult.SUCCESS, command.execute(args));
         InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken,

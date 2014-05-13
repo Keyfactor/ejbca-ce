@@ -54,6 +54,11 @@ public class CaListExpiredCommand extends EjbcaCommandBase {
     }
 
     @Override
+    public String[] getCommandPath() {
+        return new String[] { "ca" };
+    }
+    
+    @Override
     public CommandResult execute(ParameterContainer parameters) {
         CryptoProviderTools.installBCProvider();
         long days;

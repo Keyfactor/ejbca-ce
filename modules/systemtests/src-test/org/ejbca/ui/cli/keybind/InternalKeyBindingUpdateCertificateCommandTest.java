@@ -41,7 +41,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -113,7 +112,7 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
     }
 
     @Test
-    public void testUpdateCertificate() throws ErrorAdminCommandException, AuthorizationDeniedException, CustomCertificateSerialNumberException,
+    public void testUpdateCertificate() throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
             IllegalKeyException, CADoesntExistsException, CertificateCreateException, CesecoreException, CertificateExtensionException {
         EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=" + TESTCLASS_NAME, x509ca.getCAId(), null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,

@@ -27,7 +27,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -76,7 +75,7 @@ public class CaChangeCertProfileCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
+    public void testCommand() throws CADoesntExistsException, AuthorizationDeniedException {
         String[] args = new String[] { CA_NAME, CERTIFICATE_PROFILE};
         command.execute(args);
         CAInfo result = caSession.getCAInfo(authenticationToken, ca.getCAId());

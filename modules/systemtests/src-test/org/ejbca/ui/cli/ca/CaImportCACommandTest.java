@@ -29,7 +29,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +86,7 @@ public class CaImportCACommandTest {
     }
 
     @Test
-    public void testSoftKey() throws ErrorAdminCommandException, CertificateException, IOException, CADoesntExistsException, AuthorizationDeniedException {
+    public void testSoftKey() throws CertificateException, IOException, CADoesntExistsException, AuthorizationDeniedException {
         String[] args = new String[] { ca.getName(), keyStoreFile.getAbsolutePath(), CaImportCACommand.KEYSTORE_PASSWORD_KEY, KEYSTORE_PASSWORD };
         command.execute(args);
         //Verify that CA is imported
