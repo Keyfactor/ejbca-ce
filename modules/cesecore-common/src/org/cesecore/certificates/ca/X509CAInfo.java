@@ -80,8 +80,8 @@ public class X509CAInfo extends CAInfo{
              null, // PolicyId
              24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
              0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-             10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRLOverlapTime
-             0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+             10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+             10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
              new ArrayList<Integer>(),
              true, // Authority Key Identifier
              false, // Authority Key Identifier Critical
