@@ -597,39 +597,12 @@ public class CrmfRequestTest extends CmpTestCase {
             extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             String caname = CertTools.getPartFromDN(subcaDN, "CN");
             boolean ldapOrder = !CertTools.isDNReversed(subcaDN);
-            X509CAInfo cainfo = new X509CAInfo(subcaDN, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA,
-                    3650, null, // Expiretime
-                    CAInfo.CATYPE_X509, caid, testx509ca.getCertificateChain(), catoken, "JUnit RSA SubCA", -1, null, null, // PolicyId
-                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                    new ArrayList<Integer>(), true, // Authority Key Identifier
-                    false, // Authority Key Identifier Critical
-                    true, // CRL Number
-                    false, // CRL Number Critical
-                    null, // defaultcrldistpoint
-                    null, // defaultcrlissuer
-                    null, // defaultocsplocator
-                    null, // Authority Information Access
-                    null, null, // Name Constraints
-                    null, // defaultfreshestcrl
-                    true, // Finish User
-                    extendedCaServices, false, // use default utf8 settings
-                    new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    false, // Use UTF8 subject DN by default
-                    ldapOrder, // Use LDAP DN order by default
-                    false, // Use CRL Distribution Point on CRL
-                    false, // CRL Distribution Point on CRL critical
-                    true, true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    "foo123" // cmpRaAuthSecret
-                    );
+            X509CAInfo cainfo = new X509CAInfo(subcaDN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA,
+                    3650, caid, testx509ca.getCertificateChain(), catoken);
+            cainfo.setDescription("JUnit RSA SubCA");
+            cainfo.setExtendedCAServiceInfos(extendedCaServices);
+            cainfo.setUseLdapDnOrder(ldapOrder);
+            cainfo.setCmpRaAuthSecret("foo123");
 
             CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
             caAdminSession.createCA(admin, cainfo);

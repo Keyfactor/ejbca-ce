@@ -1403,39 +1403,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         String caname = CertTools.getPartFromDN(ecdsaCADN, "CN");
-        X509CAInfo ecdsaCaInfo = new X509CAInfo(ecdsaCADN, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
-                3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedCaServices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo ecdsaCaInfo = new X509CAInfo(ecdsaCADN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+                3650, CAInfo.SELFSIGNED, null, catoken);
+        ecdsaCaInfo.setExtendedCAServiceInfos(extendedCaServices);
         X509CA ecdsaCA = new X509CA(ecdsaCaInfo);
         ecdsaCA.setCAToken(catoken);
         // A CA certificate

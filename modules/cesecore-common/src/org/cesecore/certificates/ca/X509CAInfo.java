@@ -16,6 +16,7 @@ import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
 
@@ -55,7 +57,66 @@ public class X509CAInfo extends CAInfo{
 	private List<String> nameConstraintsPermitted;
 	private List<String> nameConstraintsExcluded;
     
-    /** Constructor that should be used when creating CA and retrieving CA info. */
+    /**
+     * This constructor can be used when creating a CA.
+     * This constructor uses defaults for the fields that are not specified.
+     */
+    public X509CAInfo(final String subjectdn, final String name, final int status,
+            final int certificateProfileId, final long validity, int signedby, final Collection<Certificate> certificatechain, final CAToken catoken) {
+        this(subjectdn,
+             name,
+             status, // CA status (CAConstants.CA_ACTIVE, etc.)
+             new Date(), // update time
+             "", // Subject Alternative name
+             certificateProfileId, // CA certificate profile
+             validity, null, // Expiretime
+             CAInfo.CATYPE_X509, // CA type (X509/CVC)
+             signedby, // Signed by CA
+             certificatechain, // Certificate chain
+             catoken, // CA Token
+             "", // Description
+             -1, // Revocation reason
+             null, // Revocation date
+             null, // PolicyId
+             24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+             0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+             10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRLOverlapTime
+             0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+             new ArrayList<Integer>(),
+             true, // Authority Key Identifier
+             false, // Authority Key Identifier Critical
+             true, // CRL Number
+             false, // CRL Number Critical
+             null, // defaultcrldistpoint
+             null, // defaultcrlissuer
+             null, // defaultocsplocator
+             null, // Authority Information Access
+             null, null, // Name Constraints (permitted/excluded)
+             null, // defaultfreshestcrl
+             true, // Finish User
+             new ArrayList<ExtendedCAServiceInfo>(), // no extended services
+             false, // use default utf8 settings
+             new ArrayList<Integer>(), // Approvals Settings
+             1, // Number of Req approvals
+             false, // Use UTF8 subject DN by default
+             true, // Use LDAP DN order by default
+             false, // Use CRL Distribution Point on CRL
+             false, // CRL Distribution Point on CRL critical
+             true, // Include in HealthCheck
+             true, // isDoEnforceUniquePublicKeys
+             true, // isDoEnforceUniqueDistinguishedName
+             false, // isDoEnforceUniqueSubjectDNSerialnumber
+             false, // useCertReqHistory
+             true, // useUserStorage
+             true, // useCertificateStorage
+             null // cmpRaAuthSecret
+        );
+    }
+    
+    /**
+     * Constructor that should be used when creating CA and retrieving CA info.
+     * Please use the shorter form if you do not need to set all of the values.
+     */
     public X509CAInfo(final String subjectdn,final  String name, final int status, final Date updateTime, 
     		final String subjectaltname, final int certificateprofileid, final long validity, final Date expiretime, 
     		final int catype, final int signedby, final Collection<Certificate> certificatechain, final CAToken catoken,

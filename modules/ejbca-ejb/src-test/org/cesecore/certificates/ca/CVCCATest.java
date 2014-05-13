@@ -190,26 +190,9 @@ public class CVCCATest {
 		catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 		catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // No extended services
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        CVCCAInfo cainfo = new CVCCAInfo(cadn, "TEST", CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CVC CA", -1, null, 
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
-                new ArrayList<Integer>(), 
-                true, // Finish User
-                extendedcaservices, 
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                true, // includeInHelathCheck
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true // useCertificateStorage
-        );
+        CVCCAInfo cainfo = new CVCCAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit RSA CVC CA");
         CvcCA cvcca = CvcCA.getInstance(cainfo);
         cvcca.setCAToken(catoken);
         // A CA certificate

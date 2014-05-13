@@ -631,64 +631,20 @@ public class CaInitCommand extends BaseCaAdminCommand {
     }
 
     private CAInfo createX509CaInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCAId, CAToken catokeninfo,
-            ArrayList<CertificatePolicy> policies, ArrayList<ExtendedCAServiceInfo> extendedcaservices) {
-        return new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, new Date(), "", certificateProfileId, validity, null, // Expiretime                                             
-                CAInfo.CATYPE_X509, signedByCAId, new ArrayList<Certificate>(), // empty certificate chain
-                catokeninfo, caname + "created using CLI", -1, null, policies, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                "", // Default CRL Dist Point
-                "", // Default CRL Issuer
-                "", // Default OCSP Service Locator
-                null, // Authority Information Access
-                null, null, // Name Constraints (permitted/excluded)
-                "", // CA defined freshest CRL
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null //cmpRaAuthSecret
-        );
+            List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
+        X509CAInfo cainfo = new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validity,                                             
+                signedByCAId, new ArrayList<Certificate>(), catokeninfo);
+        cainfo.setDescription(caname + "created using CLI");
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
+        return cainfo;
     }
 
     private CAInfo createCVCCAInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCa, CAToken catokeninfo) {
-        return new CVCCAInfo(dn, caname, CAConstants.CA_ACTIVE, new Date(), certificateProfileId, validity,
-                null, // Expiretime
-                CAInfo.CATYPE_CVC, signedByCa, new ArrayList<Certificate>(), catokeninfo, "Initial CA", -1, null,
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), // CRL publishers
-                true, // Finish User
-                new ArrayList<ExtendedCAServiceInfo>(), // extendedcaservices, 
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                true, // Include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true // useCertificateStorage
-        );
+        CVCCAInfo cainfo = new CVCCAInfo(dn, caname, CAConstants.CA_ACTIVE,
+                certificateProfileId, validity, signedByCa, new ArrayList<Certificate>(), catokeninfo);
+        cainfo.setDescription("Initial CA");
+        return cainfo;
     }
 
     @Override

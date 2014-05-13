@@ -440,16 +440,11 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(
-                System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catoken,
-                "Used for testing approvals", -1, null, null, 
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, false, true, false, "", "", "", null, null, null, "", true,
-                extendedcaservices, false, approvalSettings, 1, false, true, false, false, true, true, true, false, false, true,
-                true, null);
+        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, certProfileId, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
+        cainfo.setDescription("Used for testing approvals");
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
+        cainfo.setApprovalSettings(approvalSettings);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
