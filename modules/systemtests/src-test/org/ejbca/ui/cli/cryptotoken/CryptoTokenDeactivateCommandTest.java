@@ -24,7 +24,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,7 +70,7 @@ public class CryptoTokenDeactivateCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testCommand() throws AuthorizationDeniedException {
         String[] args = new String[] { TOKEN_NAME};
         command.execute(args);
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);

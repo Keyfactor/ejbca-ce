@@ -148,7 +148,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
     @Override
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getCommandDescription() + "Optional Type specific properties are listed below and are written as [propertyname=value].\n");
+        sb.append(getCommandDescription() + "\n\nOptional Type specific properties are listed below and are written as -propertyname=value, e.g. \"-nonexistingisgood=true\". \n");
         sb.append(showTypesProperties() + "\n");
         sb.append(showStatuses() + "\n");
         sb.append(showSigAlgs() + "\n");

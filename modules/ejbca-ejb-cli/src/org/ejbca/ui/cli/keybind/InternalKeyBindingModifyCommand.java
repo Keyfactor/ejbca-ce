@@ -269,7 +269,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
     @Override
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getCommandDescription() + "Optional Type specific properties are listed below and are written as [propertyname=value].\n");
+        sb.append(getCommandDescription() + "\n\nOptional Type specific properties are listed below and are written as -propertyname=value, e.g. \"-nonexistingisgood=true\". \n");
         sb.append(showTypesProperties() + "\n");
         return sb.toString();
     }

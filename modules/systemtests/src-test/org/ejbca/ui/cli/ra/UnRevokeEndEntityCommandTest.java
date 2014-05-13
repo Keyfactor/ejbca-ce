@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -130,7 +129,7 @@ public class UnRevokeEndEntityCommandTest {
     }
 
     @Test
-    public void testUnrevokeEndEntity() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testUnrevokeEndEntity() throws AuthorizationDeniedException {
         final String args[] = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertFalse("Certificate was not unrevoked.",

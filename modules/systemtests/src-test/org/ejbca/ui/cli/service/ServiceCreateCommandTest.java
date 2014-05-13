@@ -24,7 +24,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,14 +59,14 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
     }
     
     @Test
-    public void testExecuteCreate() throws ErrorAdminCommandException {
+    public void testExecuteCreate() {
         assertNull("service should not yet exist", getServiceSession().getService(SERVICE_NAME));
         serviceCreateCommand.execute(CREATE_ARGS);
         assertNotNull("service should have been created", getServiceSession().getService(SERVICE_NAME));
     }
     
     @Test
-    public void testExecuteCreateWithProperties() throws ErrorAdminCommandException {
+    public void testExecuteCreateWithProperties() {
         assertNull("service should not yet exist", getServiceSession().getService(SERVICE_NAME));
         
         serviceCreateCommand.execute(CREATE_WITH_PROPERTIES_ARGS);
@@ -81,13 +80,13 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
     }
     
     @Test
-    public void testExecuteMissingName() throws ErrorAdminCommandException {
+    public void testExecuteMissingName() {
         // should log an error
         serviceCreateCommand.execute(MISSING_NAME_ARGS);
     }
     
     @Test
-    public void testExecuteDuplicate() throws ErrorAdminCommandException {
+    public void testExecuteDuplicate() {
         // should log an error
         serviceCreateCommand.execute(CREATE_ARGS);
         serviceCreateCommand.execute(CREATE_ARGS);

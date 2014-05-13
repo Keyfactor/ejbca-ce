@@ -88,7 +88,7 @@ public class CliCommandAuthenticationTest {
     }
 
     @Test
-    public void testWithoutSuppliedDefaultUser() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testWithoutSuppliedDefaultUser() throws AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(true);
         log.debug("oldValue (user): " + oldValue);
         try {

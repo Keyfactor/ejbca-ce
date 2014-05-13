@@ -39,24 +39,31 @@ public class InternalKeyBindingUpdateCertificateCommand extends RudInternalKeyBi
 
     @Override
     public CommandResult executeCommand(Integer internalKeyBindingId, ParameterContainer parameters) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, CertificateImportException {
+            CryptoTokenOfflineException {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
 
-        final String certificateId = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(getAdmin(), internalKeyBindingId);
-        if (certificateId == null) {
-            getLogger().info("Operation complete successfully. No change was made.");
-        } else {
-            final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
-                    .getRemoteSession(CertificateStoreSessionRemote.class);
-            final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(certificateId);
-            getLogger().info("Operation complete successfully.");
-            getLogger().info(" InternalKeyBinding:       " + parameters.get(KEYBINDING_NAME_KEY));
-            getLogger().info(" Issuer DN:                " + certificateInfo.getIssuerDN());
-            getLogger().info(" Certificate Serialnumber: " + certificateInfo.getSerialNumber().toString(16).toUpperCase());
-            getLogger().info(" Subject DN:               " + certificateInfo.getSubjectDN());
+        String certificateId;
+        try {
+            certificateId = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(getAdmin(), internalKeyBindingId);
+            if (certificateId == null) {
+                getLogger().info("Operation completed successfully. No change was made.");
+            } else {
+                final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
+                        .getRemoteSession(CertificateStoreSessionRemote.class);
+                final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(certificateId);
+                getLogger().info("Operation completed successfully.");
+                getLogger().info(" InternalKeyBinding:       " + parameters.get(KEYBINDING_NAME_KEY));
+                getLogger().info(" Issuer DN:                " + certificateInfo.getIssuerDN());
+                getLogger().info(" Certificate Serialnumber: " + certificateInfo.getSerialNumber().toString(16).toUpperCase());
+                getLogger().info(" Subject DN:               " + certificateInfo.getSubjectDN());
+            }
+            return CommandResult.SUCCESS;
+        } catch (CertificateImportException e) {
+            log.error("Could not update certificate: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-        return CommandResult.SUCCESS;
+       
     }
 
     @Override

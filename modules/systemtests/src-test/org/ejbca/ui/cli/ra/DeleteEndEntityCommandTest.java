@@ -34,7 +34,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -97,7 +96,7 @@ public class DeleteEndEntityCommandTest {
     }
     
     @Test
-    public void testDeleteEndEntity() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testDeleteEndEntity() throws AuthorizationDeniedException {
         String[] args = new String[] { "-force", TESTCLASS_NAME };
         command.execute(args);
         assertNull("End Entity was not deleted.", endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME));

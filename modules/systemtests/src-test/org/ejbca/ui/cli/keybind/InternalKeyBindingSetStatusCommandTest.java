@@ -28,7 +28,6 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,7 +95,7 @@ public class InternalKeyBindingSetStatusCommandTest {
     }
 
     @Test
-    public void testSetStatus() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testSetStatus() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME, InternalKeyBindingStatus.ACTIVE.name()};
         command.execute(args);
         InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken,

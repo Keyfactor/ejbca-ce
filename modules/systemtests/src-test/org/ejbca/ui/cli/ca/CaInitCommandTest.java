@@ -58,7 +58,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Assert;
@@ -144,7 +143,7 @@ public class CaInitCommandTest {
     }
 
     @Test
-    public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, ErrorAdminCommandException,
+    public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException,
             AuthorizationDeniedException, CADoesntExistsException {
         if (certificateProfileSessionRemote.getCertificateProfile(CERTIFICATE_PROFILE_NAME) == null) {
             CertificateProfile certificateProfile = new CertificateProfile();
@@ -275,7 +274,7 @@ public class CaInitCommandTest {
      * Create a root CA, then create a sub CA signed by that root.
      */
     @Test
-    public void testCreateSubCa() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testCreateSubCa() throws AuthorizationDeniedException {
         final String rootCaName = "rootca";
         final String subCaName = "subca";
         final String[] ROOT_CA_ARGS = { rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };

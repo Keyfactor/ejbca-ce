@@ -610,7 +610,7 @@
         <property name="upgrade.post" value=""/>
     </target>
     <target name="set-post-upgrade">
-        <property name="upgrade.post" value="*"/>
+        <property name="upgrade.post" value="--post"/>
     </target>
     <target name="upgrade" depends="set-upgrade,base-upgrade"/>
     <target name="post-upgrade" depends="set-post-upgrade,base-upgrade"/>

@@ -50,7 +50,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -139,7 +138,7 @@ public class KeyRecoveryCommandTest {
     }
 
     @Test
-    public void testKeyRecovery() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testKeyRecovery() throws AuthorizationDeniedException {
         X509Certificate userCertificate = certificateStoreSession.findLatestX509CertificateBySubject(END_ENTITY_SUBJECT_DN);
         String[] args = new String[] { CertTools.getSerialNumberAsString(userCertificate), x509ca.getSubjectDN() };
         command.execute(args);

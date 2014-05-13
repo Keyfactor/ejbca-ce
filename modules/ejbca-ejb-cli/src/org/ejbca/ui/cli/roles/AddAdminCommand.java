@@ -50,7 +50,7 @@ public class AddAdminCommand extends BaseRolesCommand {
     private static final Logger log = Logger.getLogger(AddAdminCommand.class);
 
     private static final String ROLE_NAME_KEY = "--role";
-    private static final String CA_NAME_KEY = "--ca";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String MATCH_WITH_KEY = "--with";
     private static final String MATCH_TYPE_KEY = "--type";
     private static final String MATCH_VALUE_KEY = "--value";

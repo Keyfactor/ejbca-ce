@@ -34,7 +34,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -98,7 +97,7 @@ public class SetEndEntityStatusCommandTest {
     }
 
     @Test
-    public void testSetEndEntityStatus() throws ErrorAdminCommandException, AuthorizationDeniedException {
+    public void testSetEndEntityStatus() throws AuthorizationDeniedException {
         final int newStatus = 11;
         final String args[] = new String[] { TESTCLASS_NAME, Integer.toString(newStatus) };
         command.execute(args);
