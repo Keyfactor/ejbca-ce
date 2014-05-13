@@ -48,8 +48,8 @@ public class CVCCAInfo extends CAInfo {
                 null, // Revocation date
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL period
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL issue interval
-                10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRL overlap time
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // Delta CRL period
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL overlap time
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // Delta CRL period
                 new ArrayList<Integer>(), // CRL publishers
                 true, // Finish user
                 new ArrayList<ExtendedCAServiceInfo>(), // Extended CA services
