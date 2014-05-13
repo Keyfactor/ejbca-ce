@@ -507,7 +507,13 @@ public interface CAAdminSession {
     byte[] getLatestLinkCertificate(int caId) throws CADoesntExistsException;
 
     /**
-     * Updates all references to the given CAId in the database.
+     * Updates all references to the given CAId/SubjectDN in the database.
+     * This method must be called when the Subject DN of a CA is changed.
+     * 
+     * @param authenticationToken Authentication token
+     * @param fromId CA Id to change from.
+     * @param toId CA Id to change to.
+     * @param toDN Subject DN to change to.
      */
     void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId, String toDN) throws AuthorizationDeniedException;
 }
