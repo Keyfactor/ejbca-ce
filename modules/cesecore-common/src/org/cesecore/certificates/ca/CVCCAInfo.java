@@ -13,12 +13,14 @@
 package org.cesecore.certificates.ca;
 
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
 
@@ -31,8 +33,41 @@ public class CVCCAInfo extends CAInfo {
 
 	private static final long serialVersionUID = 2L;
 
+    /**
+     * This constructor can be used when creating a CA.
+     * This constructor uses defaults for the fields that are not specified.
+     * */
+    public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, long validity, int signedby, Collection<Certificate> certificatechain, CAToken catoken) {
+        this(subjectdn, name, status, new Date(), certificateprofileid,
+                validity, null, // expire time
+                CAInfo.CATYPE_CVC, signedby,
+                certificatechain, // Certificate chain
+                catoken, // CA token
+                "", // Description
+                -1, // Revocation reason
+                null, // Revocation date
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL period
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL issue interval
+                10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRL overlap time
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // Delta CRL period
+                new ArrayList<Integer>(), // CRL publishers
+                true, // Finish user
+                new ArrayList<ExtendedCAServiceInfo>(), // Extended CA services
+                new ArrayList<Integer>(), // Approval settings
+                1, // Number of request approvals
+                true, // includeInHealthCheck 
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                false, // useCertReqHistory
+                true, // useUserStorage
+                true // useCertificateStorage
+            );
+    }
+
 	/**
 	 * Constructor that should be used when creating CA and retrieving CA info.
+	 * Please use the shorter form if you do not need to set all of the values.
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
 			long validity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 

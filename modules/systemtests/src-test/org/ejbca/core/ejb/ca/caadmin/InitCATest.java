@@ -293,40 +293,10 @@ public class InitCATest extends CaTestCase {
         catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        final X509CAInfo x509CaInfo = new X509CAInfo("CN="+caName, caName, CAConstants.CA_UNINITIALIZED, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
-                3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                new ArrayList<ExtendedCAServiceInfo>(), false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
-        
+        final X509CAInfo x509CaInfo = new X509CAInfo("CN="+caName, caName, CAConstants.CA_UNINITIALIZED,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, CAInfo.SELFSIGNED, null, catoken);
+        x509CaInfo.setDescription("JUnit RSA CA");
+                
         log.trace("<createUnititializedCaInfo");
         return x509CaInfo;
     }

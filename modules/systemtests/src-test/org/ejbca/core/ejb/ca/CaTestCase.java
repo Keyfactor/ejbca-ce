@@ -318,41 +318,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        X509CAInfo cainfo = new X509CAInfo(dn, caName, CAConstants.CA_ACTIVE, new Date(), "",
+        X509CAInfo cainfo = new X509CAInfo(dn, caName, CAConstants.CA_ACTIVE,
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
-                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, signedBy, certificateChain, catoken, "JUnit RSA CA", -1, null, 
-                null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, signedBy, certificateChain, catoken);
+        cainfo.setDescription("JUnit RSA CA");
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         caAdminSession.createCA(internalAdmin, cainfo);
         final CAInfo info = caSession.getCAInfo(internalAdmin, caName);
         final String normalizedDN = CertTools.stringToBCDNString(dn);
@@ -533,52 +503,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 AlgorithmConstants.KEYALGORITHM_RSA));
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, name, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        final X509CAInfo cainfo = new X509CAInfo(
-                dn,
-                name,
-                CAConstants.CA_ACTIVE,
-                new Date(),
-                "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
-                365,
-                null, // Expiretime
-                CAInfo.CATYPE_X509,
-                CAInfo.SELFSIGNED,
-                (Collection<Certificate>) null,
-                catoken,
-                "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
-                -1, null, null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvalsremoveOldCa
-                false, // Use UTF8 subject DN by default
-                false, // Use X500 DN order
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // Include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        final X509CAInfo cainfo = new X509CAInfo(dn, name, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs");
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
+        cainfo.setUseLdapDnOrder(false); // not sure if this is correct, but it was false before the X509CAInfo refactoring
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(admin, cainfo);
     }
@@ -603,40 +532,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + TEST_SHA256_WITH_MFG1_CA_DN, "", "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA));
-        final X509CAInfo cainfo = new X509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
-                365, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // Include in healthCheck
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        final X509CAInfo cainfo = new X509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit RSA CA");
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
     }
@@ -654,42 +553,12 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        final X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
+        final X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365,
-                null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA ImplicitlyCA CA", -1, null,
-                policies, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // Include in healthCheck
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+                CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit ECDSA ImplicitlyCA CA");
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
     }
@@ -706,40 +575,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA CA", -1, null, policies, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // include in Health Check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit ECDSA CA");
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         removeOldCa(TEST_ECDSA_CA_NAME);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
@@ -758,40 +598,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit GOST3410 CA", -1, null, policies, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // include in Health Check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit GOST3410 CA");
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         removeOldCa(TEST_ECGOST3410_CA_NAME);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
@@ -810,40 +621,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSTU4145 CA", -1, null, policies, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // include in Health Check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit DSTU4145 CA");
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         removeOldCa(TEST_DSTU4145_CA_NAME);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
@@ -865,25 +647,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);        
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, "secp256r1");
         // TODO: Using ECDSA for decryption seems fishy..!
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();      
-        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, CAConstants.CA_ACTIVE, new Date(), subcaProfileId, 3650, null, // Expiretime
-                CAInfo.CATYPE_CVC, TEST_CVC_ECC_CA_DN.hashCode(), null, catoken, "JUnit CVC CA", -1, null, 24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
-                new ArrayList<Integer>(), // CRL publishers
-                true, // Finish User
-                extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                true, // Include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true // useCertificateStorage
-        );
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);      
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, CAConstants.CA_ACTIVE,
+                subcaProfileId, 3650, TEST_CVC_ECC_CA_DN.hashCode(), null, catoken);
+        cvccainfo.setDescription("JUnit CVC CA");
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cvccainfo);
     }
@@ -896,39 +663,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTDSA", "", "1024",
                 AlgorithmConstants.KEYALGORITHM_DSA));
-        X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
-                null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit DSA CA");
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
     }
@@ -941,24 +679,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         removeOldCa(TEST_CVC_ECC_CA_NAME, TEST_CVC_ECC_CA_DN);
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_ECC_CA_NAME, "secp256r1");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
-        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_CA_DN, TEST_CVC_ECC_CA_NAME, CAConstants.CA_ACTIVE, new Date(), certProfileId, 3650, null, // Expiretime
-                CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catoken, "JUnit CVC CA", -1, null, 24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
-                new ArrayList<Integer>(), // CRL publishers
-                true, // Finish User
-                extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                true, // Include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true // useCertificateStorage
-        );
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_CA_DN, TEST_CVC_ECC_CA_NAME, CAConstants.CA_ACTIVE,
+                certProfileId, 3650, CAInfo.SELFSIGNED, null, catoken);
+        cvccainfo.setDescription("JUnit CVC CA");
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cvccainfo);
     }
@@ -973,24 +696,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         removeOldCa(TEST_CVC_RSA_CA_NAME, TEST_CVC_RSA_CA_DN);
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_RSA_CA_NAME, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
-        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_RSA_CA_DN, TEST_CVC_RSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), certProfileId, 3650, null, // Expiretime
-                CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catoken, "JUnit CVC CA", -1, null, 24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
-                new ArrayList<Integer>(), // CRL publishers
-                true, // Finish User
-                extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                true, // Include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true // useCertificateStorage
-        );
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_RSA_CA_DN, TEST_CVC_RSA_CA_NAME, CAConstants.CA_ACTIVE,
+                certProfileId, 3650, CAInfo.SELFSIGNED, null, catoken);
+        cvccainfo.setDescription("JUnit CVC CA");
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cvccainfo);
     }

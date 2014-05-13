@@ -371,47 +371,10 @@ public class CAKeystoreExportRemoveRestoreTest {
      * @return The new X509CAInfo for testing.
      */
     private X509CAInfo getNewCAInfo(String caname, CAToken catoken) {
-        X509CAInfo cainfo = new X509CAInfo("CN=" + caname, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, new Date(System
-                .currentTimeMillis()
-                + 364 * 24 * 3600 * 1000), // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, // certificatechain
-                catoken, "Used for testing CA keystore export, remove and restore",
-                -1, // revocationReason
-                null, // revocationDate
-                new ArrayList<CertificatePolicy>(), // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), // crlpublishers 
-                true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                "", // Default CRL Dist Point
-                "", // Default CRL Issuer
-                "", // Default OCSP Service Locator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                new ArrayList<ExtendedCAServiceInfo>(), // extendedcaservices
-                false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // include in health check
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=" + caname, caname, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
+        cainfo.setDescription("Used for testing CA keystore export, remove and restore");
         return cainfo;
     }
 }

@@ -191,39 +191,11 @@ public class CAsTest extends CaTestCase {
         List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
         CertificatePolicy pol = new CertificatePolicy("1.2.3.4", null, null);
         policies.add(pol);
-        X509CAInfo cainfo = new X509CAInfo("CN=TEST", caName, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, 
-                policies, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=TEST", caName, CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("JUnit RSA CA");
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
         caAdminSession.createCA(admin, cainfo);
         CAInfo info = caSession.getCAInfo(caAdmin, caName);
         Collection<Certificate> rootcacertchain = info.getCertificateChain();
@@ -474,52 +446,10 @@ public class CAsTest extends CaTestCase {
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + dn, "", "2048",
                     AlgorithmConstants.KEYALGORITHM_RSA));
-            X509CAInfo cainfo = new X509CAInfo(
-                    dn,
-                    "TESTRSA4096",
-                    CAConstants.CA_ACTIVE,
-                    new Date(),
-                    "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
-                    365,
-                    null, // Expiretime
-                    CAInfo.CATYPE_X509,
-                    CAInfo.SELFSIGNED,
-                    (Collection<Certificate>) null,
-                    caToken,
-                    "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
-                    -1, null, null, // PolicyId
-                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                    new ArrayList<Integer>(), true, // Authority Key Identifier
-                    false, // Authority Key Identifier Critical
-                    true, // CRL Number
-                    false, // CRL Number Critical
-                    null, // defaultcrldistpoint
-                    null, // defaultcrlissuer
-                    null, // defaultocsplocator
-                    null, // Authority Information Access
-                    null, null, // Name Constraints
-                    null, // defaultfreshestcrl
-                    true, // Finish User
-                    extendedcaservices, false, // use default utf8 settings
-                    new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    false, // Use UTF8 subject DN by default
-                    true, // Use LDAP DN order by default
-                    false, // Use CRL Distribution Point on CRL
-                    false, // CRL Distribution Point on CRL critical
-                    true, // Include in HealthCheck
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    null // cmpRaAuthSecret
-            );
+            X509CAInfo cainfo = new X509CAInfo(dn, "TESTRSA4096", CAConstants.CA_ACTIVE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, caToken);
+            cainfo.setDescription("JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs");
+            cainfo.setExtendedCAServiceInfos(extendedcaservices);
             caAdminSession.createCA(admin, cainfo);
             CAInfo info = caSession.getCAInfo(admin, "TESTRSA4096");
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
@@ -593,41 +523,10 @@ public class CAsTest extends CaTestCase {
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "",
                     "1024", AlgorithmConstants.KEYALGORITHM_RSA));
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE, new Date(), "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
-                    (Collection<Certificate>) null, caToken, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
-                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                    new ArrayList<Integer>(), true, // Authority Key Identifier
-                    false, // Authority Key Identifier Critical
-                    true, // CRL Number
-                    false, // CRL Number Critical
-                    null, // defaultcrldistpoint
-                    null, // defaultcrlissuer
-                    null, // defaultocsplocator
-                    null, // Authority Information Access
-                    null, null, // Name Constraints
-                    null, // defaultfreshestcrl
-                    true, // Finish User
-                    extendedcaservices, false, // use default utf8 settings
-                    new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    false, // Use UTF8 subject DN by default
-                    true, // Use LDAP DN order by default
-                    false, // Use CRL Distribution Point on CRL
-                    false, // CRL Distribution Point on CRL critical
-                    true, true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    null // cmpRaAuthSecret
-            );
-
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE,
+                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
+            cainfo.setDescription("JUnit RSA CA Signed by external");
+            cainfo.setExtendedCAServiceInfos(extendedcaservices);
             try {
                 caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
                 fail("External CA exists in database. Test can't continue.");
@@ -1014,39 +913,10 @@ public class CAsTest extends CaTestCase {
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TEST", "", "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA));
 
-        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
-                null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, caToken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, null, // Name Constraints
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                null // cmpRaAuthSecret
-        );
+        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, CAInfo.SELFSIGNED, null, caToken);
+        cainfo.setDescription("JUnit RSA CA");
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
 
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
