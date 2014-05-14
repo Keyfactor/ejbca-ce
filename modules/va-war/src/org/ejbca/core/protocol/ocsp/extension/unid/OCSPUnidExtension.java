@@ -147,7 +147,7 @@ public class OCSPUnidExtension implements OCSPExtension {
 	
 	@Override
 	public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
-            X509Certificate cert, CertificateStatus status) throws IOException {
+            X509Certificate cert, CertificateStatus status) {
         if (m_log.isTraceEnabled()) {
             m_log.trace(">process()");            
         }
@@ -214,7 +214,11 @@ public class OCSPUnidExtension implements OCSPExtension {
         m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         HashMap<ASN1ObjectIdentifier, Extension> ret = new HashMap<ASN1ObjectIdentifier, Extension>();
-        ret.put(FnrFromUnidExtension.FnrFromUnidOid, new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(ext)));
+        try {
+            ret.put(FnrFromUnidExtension.FnrFromUnidOid, new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(ext)));
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException caught.", e);
+        }
 		return ret;
 	}
 	

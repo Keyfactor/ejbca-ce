@@ -47,6 +47,10 @@ public enum OcspSigningCache {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
 
+    /**
+     * 
+     * @return the entry corresponding to the default responder, or null if it wasn't found.
+     */
     public OcspSigningCacheEntry getDefaultEntry() {
         return defaultResponderCacheEntry;
     }
@@ -68,7 +72,6 @@ public enum OcspSigningCache {
     public void stagingCommit() {
         OcspSigningCacheEntry defaultResponderCacheEntry = null;
         for (final OcspSigningCacheEntry entry : staging.values()) {
-
             if (entry.getOcspSigningCertificate() == null) {
                 final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
                 if (CertTools.getSubjectDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
@@ -93,12 +96,7 @@ public enum OcspSigningCache {
         }
         if (defaultResponderCacheEntry == null) {
             log.info("Default OCSP responder with subject '" + OcspConfiguration.getDefaultResponderId() + "' was not found."
-                    + " OCSP requests for certificates issued by unknown CAs will fail with response code 2 (internal error).");
-            if (staging.values().size() > 0) {
-                // We could pick a responder at chance here, but it may be a feature to the user to not waste HSM signatures on Unknown responses..
-                log.info("No default OCSP responder has been configured. OCSP requests for certificates issued by unknown CAs "
-                        + "will fail with response code 2 (internal error).");
-            }
+                    + " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3");
         }
         if (log.isDebugEnabled()) {
             log.debug("Committing the following to OCSP cache:");

@@ -24,6 +24,7 @@ import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
@@ -44,8 +45,12 @@ public class OcspResponseInformation implements Serializable {
     private Long thisUpdate = null;
     private String responseHeader = null;
 
-    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge) throws OCSPException, IOException {
-        this.ocspResponse = ocspResponse.getEncoded();
+    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge) throws OCSPException {
+        try {
+            this.ocspResponse = ocspResponse.getEncoded();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException caught when encoding ocsp response.", e);
+        }
         this.maxAge = maxAge;
         /*
          * This may seem like a somewhat odd place to perform the below operations (instead of in the end servlet which demanded 
@@ -82,7 +87,7 @@ public class OcspResponseInformation implements Serializable {
                 nextUpdate = singleRespones[0].getNextUpdate().getTime();
                 thisUpdate = singleRespones[0].getThisUpdate().getTime();
                 try {
-                    responseHeader = new String(Hex.encode(MessageDigest.getInstance("SHA-1", "BC").digest(ocspResponse.getEncoded())));
+                    responseHeader = new String(Hex.encode(MessageDigest.getInstance("SHA-1", BouncyCastleProvider.PROVIDER_NAME).digest(this.ocspResponse)));
                 } catch (NoSuchProviderException e) {
                     throw new OcspFailureException("Bouncycastle was not available as a provider", e);
                 } catch (NoSuchAlgorithmException e) {

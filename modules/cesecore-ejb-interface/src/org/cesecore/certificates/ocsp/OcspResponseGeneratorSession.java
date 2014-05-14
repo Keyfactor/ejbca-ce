@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 import org.bouncycastle.cert.ocsp.OCSPException;
@@ -43,12 +42,11 @@ public interface OcspResponseGeneratorSession {
      * 
      * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
-     * @throws IOException 
      * @throws OCSPException if OCSP response generation fails
      */
     OcspResponseInformation getOcspResponse(byte[] requestBytes,
             X509Certificate[] requestCertificates, String remoteAddress, String remoteHost, StringBuffer requestUrl, AuditLogger auditLogger,
-            TransactionLogger transactionLogger) throws MalformedRequestException, IOException, OCSPException;
+            TransactionLogger transactionLogger) throws MalformedRequestException, OCSPException;
     
     /**
      * Reloads the chache of OCSP signers.

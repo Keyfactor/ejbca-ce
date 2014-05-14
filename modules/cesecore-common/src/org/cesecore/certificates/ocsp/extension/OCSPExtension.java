@@ -31,7 +31,7 @@ public interface OCSPExtension {
     /** Called after construction
      * 
      */
-    public void init();
+    void init();
 
     /**
      * Called by OCSP responder when the configured extension is found in the request.
@@ -50,13 +50,13 @@ public interface OCSPExtension {
      *         error occurs
      * @throws IOException 
      */
-    public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
-            X509Certificate cert, CertificateStatus status) throws IOException;
+    Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
+            X509Certificate cert, CertificateStatus status);
 
     /**
      * Returns the last error that occured during process(), when process returns null
      * 
      * @return error code as defined by implementing class
      */
-    public int getLastErrorCode();
+    int getLastErrorCode();
 }
