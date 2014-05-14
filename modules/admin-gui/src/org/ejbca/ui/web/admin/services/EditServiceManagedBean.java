@@ -27,7 +27,9 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
@@ -36,6 +38,7 @@ import org.ejbca.core.model.services.IAction;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.CRLDownloadWorker;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
@@ -48,6 +51,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseEmailNotifyingWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.CRLDownloadWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CRLUpdateWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
@@ -205,6 +209,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		if ( (cp != null) && cp.equals(CRLUpdateWorker.class.getName()) ) {
 			ret = CRLUpdateWorkerType.NAME;
 		}
+        if ( (cp != null) && cp.equals(CRLDownloadWorker.class.getName()) ) {
+            ret = CRLDownloadWorkerType.NAME;
+        }
 		return ret;
 	}
 
@@ -218,7 +225,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	public PublishQueueWorkerType getPublishWorkerType() {
 		return (PublishQueueWorkerType)serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PublishQueueWorkerType.NAME);
 	}
-	
+    
+	/** Help method used to edit data in the CRLDownloadWorkerType. */
+    public CRLDownloadWorkerType getCrlDownloadWorkerType() {
+        String name = CRLDownloadWorkerType.NAME;
+        return (CRLDownloadWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+    }
+
 	/** Help method used to edit data in the custom interval type. */
 	public PeriodicalIntervalType getPeriodicalIntervalType(){
 		return (PeriodicalIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PeriodicalIntervalType.NAME);
@@ -274,15 +287,32 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 * 
 	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
 	 */
-    /** Returns the list of available CAs, also including the special option 'Any CA'.
-     * 
-     * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
-     */
     public List<SelectItem> getAvailableCAsWithAnyOption() {
         List<SelectItem> availableCANames = new ArrayList<SelectItem>();
         String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
         availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         availableCANames.addAll(getAvailableCAs());
+        return availableCANames;
+    }
+
+    /** Returns the list of available external X509 CAs, also including the special option 'Any CA'.
+     * 
+     * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+     */
+    public List<SelectItem> getAvailableExternalX509CAsWithAnyOption() {
+        final List<SelectItem> availableCANames = new ArrayList<SelectItem>();
+        final String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
+        availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
+        for (final Integer caid : ejb.getCaSession().getAuthorizedCAs(getAdmin())) {
+            try {
+                CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caid);
+                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName(), null, caInfo.getCAType()!=CAInfo.CATYPE_X509 || caInfo.getStatus()!=CAConstants.CA_EXTERNAL));
+            } catch (CADoesntExistsException e) {
+                log.debug("CA does not exist: " + caid);
+            } catch (AuthorizationDeniedException e) {
+                log.debug("Not authorized to CA: " + caid);
+            }
+        }
         return availableCANames;
     }
     

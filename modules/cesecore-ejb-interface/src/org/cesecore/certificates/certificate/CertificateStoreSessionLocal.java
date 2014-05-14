@@ -156,4 +156,20 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
 
+    /**
+     * Method for populating the CertificateData table with limited information for example from a CRL, so the OCSP responder can answer if a certificate is revoked.
+     * 
+     * Existing entries may only be modified if they were created through this method.
+     * Updating an entry by providing RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL as reasonCode will remove the row from the table.
+     * 
+     * @param admin an admin that is authorized to the CA that issued the certificate
+     * @param caId the CA identifier
+     * @param issuerDn the BC normalized version of the issuer DN
+     * @param serialNumber the certificate serial number
+     * @param revocationDate the date of revocation
+     * @param reasonCode one of RevokedCertInfo.REVOCATION_REASON_...
+     * @param caFingerprint the SHA-1 of the CA Certificate that issued this entry
+     * @throws AuthorizationDeniedException
+     */
+    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
 }

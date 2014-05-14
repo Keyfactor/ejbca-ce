@@ -108,6 +108,7 @@ java.security.InvalidAlgorithmParameterException
  
   // Buttons used in editcapage.jsp
   static final String BUTTON_SAVE                       = "buttonsave";
+  static final String BUTTON_SAVE_EXTERNALCA            = "buttonsaveexternalca";
   static final String BUTTON_CREATE                     = "buttoncreate";
   static final String BUTTON_CANCEL                     = "buttoncancel";
   static final String BUTTON_INITIALIZE                 = "buttoninitialize";
@@ -126,7 +127,8 @@ java.security.InvalidAlgorithmParameterException
 
   static final String TEXTFIELD_KEYSEQUENCE           = "textfieldkeysequence";
   static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
-  static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
+  static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";
+  static final String TEXTFIELD_EXTERNALCDP           = "textfieldexternalcdp";
   static final String TEXTFIELD_CRLPERIOD             = "textfieldcrlperiod";
   static final String TEXTFIELD_CRLISSUEINTERVAL      = "textfieldcrlissueinterval";
   static final String TEXTFIELD_CRLOVERLAPTIME        = "textfieldcrloverlaptime";
@@ -472,6 +474,14 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(BUTTON_PUBLISHCA) != null) {
                 cadatahandler.publishCA(caid);
                 capublished = true;             
+            }
+            if (requestMap.get(BUTTON_SAVE_EXTERNALCA) != null) {
+            	if (cadatahandler.getCAInfo(caid).getCAInfo().getCAType()==CAInfo.CATYPE_X509) {
+                	final String externalCdp = requestMap.get(TEXTFIELD_EXTERNALCDP).trim();
+                	X509CAInfo x509caInfo = (X509CAInfo)cadatahandler.getCAInfo(caid).getCAInfo();
+                	x509caInfo.setExternalCdp(externalCdp);
+                	cadatahandler.editCA(x509caInfo);
+            	}
             }
             if (requestMap.get(BUTTON_SAVE)  != null || requestMap.get(BUTTON_MAKEREQUEST) != null ||
                 requestMap.get(BUTTON_INITIALIZE) != null) {

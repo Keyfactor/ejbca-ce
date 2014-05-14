@@ -318,6 +318,7 @@
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerDoesntExistsException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerExistsException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/CustomUserDataSourceContainer.java"/>
+		<include name="org/ejbca/core/model/services/workers/CRLDownloadWorker.java"/>
 		<include name="org/ejbca/core/model/services/workers/CRLUpdateWorker.java"/>
 		<include name="org/ejbca/core/model/services/workers/CertificateExpirationNotifierWorker.java"/>
 		<include name="org/ejbca/core/model/services/workers/HsmKeepAliveWorker.java"/>

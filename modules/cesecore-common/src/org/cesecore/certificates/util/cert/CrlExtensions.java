@@ -16,13 +16,24 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DEREnumerated;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * A class for reading values from CRL extensions.
@@ -90,5 +101,67 @@ public class CrlExtensions {
         return aIn.readObject();
     } //getExtensionValue
 
+    /** @return the revocation reason code as defined in RevokedCertInfo.REVOCATION_REASON_... */
+    public static int extractReasonCode(final X509CRLEntry crlEntry) {
+        int reasonCode = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
+        if (crlEntry.hasExtensions()) {
+            final byte[] extensionValue = crlEntry.getExtensionValue(Extension.reasonCode.getId());
+            try {
+                final DEREnumerated reasonCodeExtension = DEREnumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionValue));
+                if (reasonCodeExtension!=null) {
+                    reasonCode = reasonCodeExtension.getValue().intValue();
+                }
+            } catch (IOException e) {
+                log.debug("Failed to parse reason code of CRLEntry: " + e.getMessage());
+            }
+        }
+        return reasonCode;
+    }
 
+    /** @return a list of URLs in String format with present freshest CRL extensions or an empty List */
+    public static List<String> extractFreshestCrlDistributionPoints(final X509CRL crl) {
+        final List<String> freshestCdpUrls = new ArrayList<String>();
+        final byte[] extensionValue = crl.getExtensionValue(Extension.freshestCRL.getId());
+        if (extensionValue!=null) {
+            final ASN1OctetString asn1OctetString = getAsn1ObjectFromBytes(extensionValue, ASN1OctetString.class);
+            if (asn1OctetString!=null) {
+                final ASN1Sequence asn1Sequence = getAsn1ObjectFromBytes(asn1OctetString.getOctets(), ASN1Sequence.class);
+                if (asn1Sequence!=null) {
+                    final CRLDistPoint cdp = CRLDistPoint.getInstance(asn1Sequence);
+                    for (final DistributionPoint distributionPoint : cdp.getDistributionPoints()) {
+                        freshestCdpUrls.add(((DERIA5String) ((GeneralNames) distributionPoint.getDistributionPoint().getName()).getNames()[0].getName()).getString());
+                    }
+                }
+            }
+        }
+        return freshestCdpUrls;
+    }
+    
+    /** @return the first object found when treating the provided byte array as an ASN1InputStream */
+    @SuppressWarnings("unchecked")
+    private static <T> T getAsn1ObjectFromBytes(final byte[] bytes, final Class<T> clazz) {
+        T ret = null;
+        ASN1InputStream asn1InputStream = null;
+        try {
+            if (bytes!=null) {
+                asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(bytes));
+                ret = (T) asn1InputStream.readObject();
+            }
+        } catch (ClassCastException e) {
+            // Ignore
+            log.info("Failed to extract expected ASN1 object from bytes array.", e);
+        } catch (IOException e) {
+            // Ignore
+            log.info("Failed to extract ASN1 object from bytes array.", e);
+        } finally {
+            if (asn1InputStream!=null) {
+                try {
+                    asn1InputStream.close();
+                } catch (IOException e) {
+                    log.info("Failed to extract expected ASN1 object from bytes array.", e);
+                }
+            }
+        }
+        return ret;
+    }
 }
