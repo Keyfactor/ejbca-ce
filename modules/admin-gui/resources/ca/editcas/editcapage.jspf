@@ -416,7 +416,7 @@ function checkallfields(){
         // begin "IF CVC AVAILABLE", search for "IF CVC AVAILABLE" to find the end } in the end of this file 
         %>
         
-        <% if (editca && !isUninitialized) { %>
+        <% if (editca && !isUninitialized && !isexternal) { %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">
             <strong><%= ejbcawebbean.getText("SIGNINGALGORITHM") %></strong></td>
@@ -472,7 +472,7 @@ function checkallfields(){
             </td>
         </tr>
             <% } %>
-        <% } else { %>
+        <% } else if (!isexternal) { %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">
             <strong><%= ejbcawebbean.getText("SIGNINGALGORITHM") %></strong>
@@ -854,7 +854,7 @@ function checkallfields(){
         <td width="50%">&nbsp;</td>
     </tr>
 
-    
+    <% if (!isexternal) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("ORENDDATE") %>
@@ -878,6 +878,7 @@ function checkallfields(){
         <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
       </td>
     </tr>
+    <% } %>
 
     
     <tr id="Row<%=row++%2%>"> 
@@ -1131,9 +1132,6 @@ function checkallfields(){
 
     <%-- ---------- CRL Specific Data -------------------- --%>
 
-    <!--  external CAs does not have any settings at all basically, we just import the certificate -->
-    <!--  if we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA -->
-   <% if(!isexternal){ %>
     <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("CRLSPECIFICDATA") %></strong>
@@ -1143,6 +1141,21 @@ function checkallfields(){
       </td>
     </tr>
 
+   <% if (isexternal && catype==CAInfo.CATYPE_X509) { %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right">
+         <%= ejbcawebbean.getText("CRLDISTPOINT_EXTERNAL") %>
+      </td>
+      <td width="50%">
+         <input type="text" name="<%=TEXTFIELD_EXTERNALCDP%>" size="40" maxlength="255"
+         <% if (editca) {%>value="<c:out value="<%= x509cainfo.getExternalCdp() %>"/>"<%}%>>
+      </td>
+    </tr>
+   <% } %>
+
+    <!--  external CAs does not have any settings at all basically, we just import the certificate -->
+    <!--  if we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA -->
+   <% if(!isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
          <%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYKEYID") %>
@@ -1555,7 +1568,12 @@ function checkallfields(){
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <% } else { %>
         &nbsp;&nbsp;&nbsp;
+        <%  if (catype==CAInfo.CATYPE_X509) {  %>
+            <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE_EXTERNALCA %>"  value="<%= ejbcawebbean.getText("SAVE") %>">
+            <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+        <%  } else { %>
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("BACK") %>">
+        <%  } %>
         <% } %>
         </td>
     </tr>
