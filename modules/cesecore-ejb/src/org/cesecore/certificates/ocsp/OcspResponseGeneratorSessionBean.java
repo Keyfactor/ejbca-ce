@@ -952,7 +952,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
             String remoteHost, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger)
-            throws MalformedRequestException, IOException, OCSPException {
+            throws MalformedRequestException, OCSPException {
         //Check parameters
         if (auditLogger == null) {
             throw new InvalidParameterException("Illegal to pass a null audit logger to OcspResponseSession.getOcspResponse");
@@ -1220,7 +1220,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if(addExtendedRevokedExtension) { 
                 // id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
                 final ASN1ObjectIdentifier extendedRevokedOID = new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9");
-                responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
+                try {
+                    responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
+                } catch (IOException e) {
+                    throw new IllegalStateException("Could not get encodig from DERNull.", e);
+                }
             }
             
             if (ocspSigningCacheEntry != null) {
@@ -1233,26 +1237,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             } else {
-                // Only unknown CAs in requests and no default responder's cert
-                final String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
-                // This will be logged by the OcspServlet as INFO
-                //log.info(errMsg);
-                if (log.isTraceEnabled()) {
-                    Collection<OcspSigningCacheEntry> entries = OcspSigningCache.INSTANCE.getEntries();
-                    if (entries.isEmpty()) {
-                        log.trace("OcspSigningCache contains no entries.");
-                    } else {
-                        log.trace("Dumping contents of OCSP signing cache:");
-                        for (OcspSigningCacheEntry ocspSigningCacheEntry2 : entries) {
-                            final X509Certificate cert = ocspSigningCacheEntry2.getOcspSigningCertificate();
-                            log.trace("SubjectDN: "+(cert == null ? "null" : cert.getSubjectDN().toString()));
-                            final CertificateID id = ocspSigningCacheEntry2.getCertificateID();
-                            log.trace("- IssuerNameHash: "+id == null ? "null" : new String(Hex.encode(id.getIssuerNameHash())));
-                            log.trace("- IssuerKeyHash: "+id == null ? "null" : new String(Hex.encode(id.getIssuerKeyHash())));
-                        }
-                    }
+                // Only unknown CAs in requests and no default responder's cert, return an unsigned response
+                if (log.isDebugEnabled()) {
+                    log.debug(intres.getLocalizedMessage("ocsp.errornocacreateresp"));
                 }
-                throw new OcspFailureException(errMsg);
+                ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
             }
         } catch (SignRequestException e) {
             transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
@@ -1303,7 +1292,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         } catch (IOException e) {
-            log.error("", e);
+            log.error("Unexpected IOException caught.", e);
             transactionLogger.flush();
             auditLogger.flush();
         }
@@ -1326,7 +1315,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return false;
     }
     
-    private void addArchiveCutoff(OCSPResponseItem respItem) throws IOException {
+    private void addArchiveCutoff(OCSPResponseItem respItem) {
         long archPeriod = OcspConfiguration.getExpiredArchiveCutoff();
         if(archPeriod == -1) {
             return;
@@ -1334,7 +1323,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         
         long res = (new Date()).getTime() - archPeriod;
         ExtensionsGenerator gen = new ExtensionsGenerator();
-        gen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, new ASN1GeneralizedTime(new Date(res))); 
+        try {
+            gen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, new ASN1GeneralizedTime(new Date(res)));
+        } catch (IOException e) {
+            throw new IllegalStateException("IOException was caught when decoding static value.", e);
+        } 
         Extensions exts = gen.generate();
         respItem.setExtentions(exts);
     }
