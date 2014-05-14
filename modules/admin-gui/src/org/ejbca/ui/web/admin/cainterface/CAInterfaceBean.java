@@ -737,7 +737,7 @@ public class CAInterfaceBean implements Serializable {
                             cryptoTokenProperties, null, null);
                 } catch (CryptoTokenNameInUseException e) {
                     // If the name was already in use we simply add a timestamp to the name to manke it unique
-                    final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());;
+                    final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
                     cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName+postfix, SoftCryptoToken.class.getName(),
                             cryptoTokenProperties, null, null);
                 }
