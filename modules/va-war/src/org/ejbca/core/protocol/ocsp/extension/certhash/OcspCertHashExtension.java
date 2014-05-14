@@ -52,7 +52,7 @@ public class OcspCertHashExtension implements OCSPExtension{
 
     @Override
     public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
-            X509Certificate cert, org.bouncycastle.cert.ocsp.CertificateStatus status) throws IOException {
+            X509Certificate cert, org.bouncycastle.cert.ocsp.CertificateStatus status) {
         MessageDigest md = null;
         try {
             md = MessageDigest.getInstance("SHA256");
@@ -70,8 +70,12 @@ public class OcspCertHashExtension implements OCSPExtension{
             throw new IllegalStateException("Could not encode certificate " + cert, e);
         }
         HashMap<ASN1ObjectIdentifier, Extension> result = new HashMap<ASN1ObjectIdentifier, Extension>();
-        result.put(new ASN1ObjectIdentifier(CERT_HASH_OID), new Extension(new ASN1ObjectIdentifier(CERT_HASH_OID), false,
-                new DEROctetString(certHash)));
+        try {
+            result.put(new ASN1ObjectIdentifier(CERT_HASH_OID), new Extension(new ASN1ObjectIdentifier(CERT_HASH_OID), false,
+                    new DEROctetString(certHash)));
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not construct an ASN.1Primitive.", e);
+        }
         return result;
     }
 

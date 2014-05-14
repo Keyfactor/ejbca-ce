@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -47,6 +45,7 @@ import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
@@ -73,7 +72,6 @@ import org.cesecore.certificates.ocsp.OcspResponseInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
-import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
@@ -593,32 +591,17 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         
         try {
-            // At first try, it should throw an exception because it can not find the default responder
-            try {
-                final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-                // Create the transaction logger for this transaction.
-                TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-                // Create the audit logger for this transaction.
-                AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-                ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger);
-                fail("Should throw OcspFailureException");
-            } catch (OcspFailureException e) {
-                // In JBoss this works, the client actually gets an OcspException
-                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
-            } catch (EJBException e) {
-                // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
-                Throwable e1 = e.getCausedByException();
-                // In JBoss 7 is is wrapped in only one layer
-                if (e1 instanceof OcspFailureException) {
-                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());
-                } else {
-                    Throwable e2 = e1.getCause();
-                    Throwable e3 = e2.getCause();
-                    assertTrue(e3 instanceof OcspFailureException);
-                    OcspFailureException e4 = (OcspFailureException) e3;
-                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
-                }
-            }
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            // Create the transaction logger for this transaction.
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            // Create the audit logger for this transaction.
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+                    .getOcspResponse();
+            //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
+            assertNotNull("OCSP resonder replied null", responseBytes);
+            OCSPResp response = new OCSPResp(responseBytes);
+            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
         } finally {
             try {
                 if (ocspTestCert != null)
