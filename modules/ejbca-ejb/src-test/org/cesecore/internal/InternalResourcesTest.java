@@ -30,8 +30,8 @@ public class InternalResourcesTest {
     public void testGetLocalizedMessageString() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.testmsg");
-        assertEquals("Test ENG                        ", res);
-        assertEquals("Test ENG                        ", intres.getLocalizedMessageCs("raadmin.testmsg").toString());
+        assertEquals("Test en-US                        ", res);
+        assertEquals("Test en-US                        ", intres.getLocalizedMessageCs("raadmin.testmsg").toString());
         // This message will only exist in the secondary language file
         res = intres.getLocalizedMessage("raadmin.testmsgsv");
         assertEquals("Test SV", res);

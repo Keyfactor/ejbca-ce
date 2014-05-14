@@ -30,8 +30,8 @@ public class InternalEjbcaResourcesTest {
     public void testGetLocalizedMessageString() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.testmsg");
-        assertEquals("Test ENG", res);
-        assertEquals("Test ENG", intres.getLocalizedMessageCs("test.testmsg").toString());
+        assertEquals("Test en-US", res);
+        assertEquals("Test en-US", intres.getLocalizedMessageCs("test.testmsg").toString());
         // This message will only exist in the secondary language file
         res = intres.getLocalizedMessage("test.testmsgsv");
         assertEquals("Test SV", res);
