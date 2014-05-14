@@ -241,10 +241,18 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         
         configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=error");
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        super.testOcspInternalError();
+        testOcspUnauthorized();
 
     }
 
+    private void testOcspUnauthorized() throws Exception { // NOPMD, this is not a test class itself
+        log.trace(">testocspInternalError()");
+        loadUserCert(this.caid);
+        // An OCSP request for a certificate from an unknwon CA
+        this.helper.verifyResponseUnauthorized(this.caid, this.unknowncacert, new BigInteger("1"));
+        log.trace("<testocspInternalError()");
+    }
+    
     @Test
     public void test06OcspSendWrongContentType() throws Exception {
         super.test06OcspSendWrongContentType();

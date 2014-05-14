@@ -245,6 +245,10 @@ public class OcspJunitHelper {
     public void verifyResponseInternalError(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
         verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.INTERNAL_ERROR, Status.Unknown, Integer.MIN_VALUE, null);
     }
+    
+    public void verifyResponseUnauthorized(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, OperatorCreationException, CertificateException, IOException, OCSPException {
+        verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.UNAUTHORIZED, Status.Unknown, Integer.MIN_VALUE, null);
+    }
 
 	/**
 	 * Verify that the status is "Good"
@@ -296,6 +300,10 @@ public class OcspJunitHelper {
 		if (ocspResponseStatus == OCSPRespBuilder.INTERNAL_ERROR) {
 		    return;
 		}
+		
+		if (ocspResponseStatus == OCSPRespBuilder.UNAUTHORIZED) {
+            return;
+        }
 		assertEquals("No of SingleResps should be 1.", 1, singleResps.length);
 		final SingleResp singleResp = singleResps[0];
 
