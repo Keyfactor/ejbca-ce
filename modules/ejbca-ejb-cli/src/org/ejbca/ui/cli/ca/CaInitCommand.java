@@ -635,8 +635,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
         X509CAInfo cainfo = new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validity,                                             
                 signedByCAId, new ArrayList<Certificate>(), catokeninfo);
         cainfo.setDescription(caname + "created using CLI");
+        cainfo.setCertificateChain(new ArrayList<Certificate>());
         cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
+        cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
         return cainfo;
     }
 
