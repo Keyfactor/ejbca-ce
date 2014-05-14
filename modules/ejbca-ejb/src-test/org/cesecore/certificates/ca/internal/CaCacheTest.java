@@ -12,12 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -27,10 +26,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.util.SimpleTime;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
