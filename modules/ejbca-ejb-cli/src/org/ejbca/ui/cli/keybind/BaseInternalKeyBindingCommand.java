@@ -52,15 +52,15 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
         InternalKeyBindingPropertyValidationWrapper validatedProperties = InternalKeyBindingFactory.INSTANCE.validateProperties(type, dataMap);
         if (!validatedProperties.arePropertiesValid()) {
             StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append("\n");
+            stringBuffer.append('\n');
             stringBuffer.append("ERROR: Could not parse properties\n");
-            stringBuffer.append("\n");
+            stringBuffer.append('\n');
             if (validatedProperties.getUnknownProperties().size() > 0) {
                 stringBuffer.append("The following properties were unknown for the type: " + type + "\n");
                 for (String propertyName : validatedProperties.getUnknownProperties()) {
                     stringBuffer.append("    * '" + propertyName + "'\n");
                 }
-                stringBuffer.append("\n");
+                stringBuffer.append('\n');
             }
             if (validatedProperties.getInvalidValues().size() > 0) {
                 stringBuffer.append("The following values were invalid:\n");
@@ -68,7 +68,7 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
                     stringBuffer.append("Value '" + dataMap.get(entry.getKey()) + "' for property '" + entry.getKey() + "' was not of type "
                             + entry.getValue().getSimpleName() + "\n");
                 }
-                stringBuffer.append("\n");
+                stringBuffer.append('\n');
             }
             getLogger().error(stringBuffer);
             return null;
@@ -85,14 +85,14 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
         final StringBuilder sb = new StringBuilder();
         sb.append("Registered implementation types and implemention specific properties:\n");
         for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
-            sb.append("  ").append(entry.getKey()).append(":\n");
+            sb.append(' ').append(entry.getKey()).append(":\n");
             for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
                 sb.append("    " + property.getName()).append(",\n");
             }
             if (sb.charAt(sb.length() - 2) == ',') {
                 sb.deleteCharAt(sb.length() - 2);
             }
-            sb.append("\n");
+            sb.append('\n');
         }
         return sb.toString();
     }
@@ -100,10 +100,10 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
     protected String showStatuses() {
         final StringBuilder sb = new StringBuilder("Status is one of ");
         for (InternalKeyBindingStatus internalKeyBindingStatus : InternalKeyBindingStatus.values()) {
-            sb.append(internalKeyBindingStatus.name()).append(",");
+            sb.append(internalKeyBindingStatus.name()).append(',');
         }
         sb.deleteCharAt(sb.length() - 1);
-        return  sb.append("\n").toString();
+        return  sb.append('\n').toString();
     }
 
     protected String showSigAlgs() {
@@ -113,6 +113,6 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
                 sbAlg.append(algorithm).append(',');
             }
         }
-        return sbAlg.deleteCharAt(sbAlg.length() - 1).append("\n").toString();
+        return sbAlg.deleteCharAt(sbAlg.length() - 1).append('\n').toString();
     }
 }
