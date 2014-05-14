@@ -39,7 +39,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -94,7 +93,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
