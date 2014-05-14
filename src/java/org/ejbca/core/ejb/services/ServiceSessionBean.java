@@ -54,6 +54,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ProfileID;
@@ -137,6 +138,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlCreateSessionLocal crlCreateSession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -603,6 +606,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CertificateProfileSessionLocal.class, certificateProfileSession);
             ejbs.put(CertificateStoreSessionLocal.class, certificateStoreSession);
             ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
+            ejbs.put(CrlStoreSessionLocal.class, crlStoreSession);
             ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
             ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
             ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);

@@ -171,6 +171,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String CMPRAAUTHSECRET = "cmpraauthsecret";
     protected static final String NAMECONSTRAINTSPERMITTED = "nameconstraintspermitted";
     protected static final String NAMECONSTRAINTSEXCLUDED = "nameconstraintsexcluded";
+    protected static final String EXTERNALCDP = "externalcdp";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -236,6 +237,7 @@ public class X509CA extends CA implements Serializable {
                 getUsePrintableStringSubjectDN(), getUseLdapDNOrder(), getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
                 isDoEnforceUniqueSubjectDNSerialnumber(), isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), getCmpRaAuthSecret());
+        ((X509CAInfo)info).setExternalCdp(getExternalCdp());
         super.setCAInfo(info);
         setCAId(caId);
     }
@@ -403,16 +405,30 @@ public class X509CA extends CA implements Serializable {
 
 
     public String getCmpRaAuthSecret() {
-        Object o = data.get(CMPRAAUTHSECRET);
-        if (o == null) {
-            // Default to empty value if it is not set. An empty value will be denied by CRMFMessageHandler
-            return "";
-        }
-        return (String) o;
+        // Default to empty value if it is not set. An empty value will be denied by CRMFMessageHandler
+        return (String) getMapValueWithDefault(CMPRAAUTHSECRET, "");
     }
 
     public void setCmpRaAuthSecret(String cmpRaAuthSecret) {
         data.put(CMPRAAUTHSECRET, cmpRaAuthSecret);
+    }
+
+    /** @return what should be a String formatted URL pointing to an external CA's CDP. */
+    public String getExternalCdp() {
+        return (String) getMapValueWithDefault(EXTERNALCDP, "");
+    }
+
+    /** Set what should be a String formatted URL pointing to an external CA's CDP. */
+    public void setExternalCdp(final String externalCdp) {
+        data.put(EXTERNALCDP, externalCdp);
+    }
+    
+    private Object getMapValueWithDefault(final String key, final Object defaultValue) {
+        final Object o = data.get(key);
+        if (o == null) {
+            return defaultValue;
+        }
+        return o;
     }
 
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
@@ -436,6 +452,7 @@ public class X509CA extends CA implements Serializable {
         setCmpRaAuthSecret(info.getCmpRaAuthSecret());
         setNameConstraintsPermitted(info.getNameConstraintsPermitted());
         setNameConstraintsExcluded(info.getNameConstraintsExcluded());
+        setExternalCdp(info.getExternalCdp());
     }
     
     /**

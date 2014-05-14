@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
+import org.ejbca.ui.web.admin.services.servicetypes.CRLDownloadWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CRLUpdateWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
@@ -78,6 +79,7 @@ public class ServiceTypeManager implements Serializable {
 		ServiceTypeManager.registerServiceType(new NoActionType());	
 		ServiceTypeManager.registerServiceType(new MailActionType());	
 		ServiceTypeManager.registerServiceType(new CustomWorkerType());
+        ServiceTypeManager.registerServiceType(new CRLDownloadWorkerType());
 		ServiceTypeManager.registerServiceType(new CRLUpdateWorkerType());
 		ServiceTypeManager.registerServiceType(new CertificateExpirationNotifierWorkerType());
 		ServiceTypeManager.registerServiceType(new UserPasswordExpireWorkerType());

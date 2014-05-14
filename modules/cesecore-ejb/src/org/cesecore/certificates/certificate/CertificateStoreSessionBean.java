@@ -1169,4 +1169,64 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         storeCertificate(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final BigInteger serialNumber,
+            final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
+        if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
+            final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
+            throw new AuthorizationDeniedException(msg);
+        }
+        final CertificateInfo certificateInfo = findFirstCertificateInfo(issuerDn, serialNumber);
+        final String limitedFingerprint = getLimitedCertificateDataFingerprint(issuerDn, serialNumber);
+        final CertificateData limitedCertificateData = createLimitedCertificateData(admin, limitedFingerprint, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
+        if (certificateInfo==null) {
+        	// Create a limited entry
+            log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
+        	entityManager.persist(limitedCertificateData);
+        } else if (limitedFingerprint.equals(certificateInfo.getFingerprint())) {
+        	if (reasonCode==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+                // Remove the limited entry (we don't really know if it is good or expired)
+                log.info("Removing limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
+        		entityManager.remove(limitedCertificateData);
+        	} else {
+        	    if (certificateInfo.getStatus()!=limitedCertificateData.getStatus() || certificateInfo.getRevocationDate().getTime()!=limitedCertificateData.getRevocationDate() ||
+        	            certificateInfo.getRevocationReason()!=limitedCertificateData.getRevocationReason()) {
+                    // Update the limited entry
+                    log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
+                    entityManager.merge(limitedCertificateData);
+        	    } else {
+        	        if (log.isDebugEnabled()) {
+                        log.debug("Limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"' was already up to date.");
+        	        }
+        	    }
+        	}
+        } else {
+            // Refuse to update a normal entry with this method
+        	throw new UnsupportedOperationException("Only limited certificate entries can be updated using this method.");
+        }
+    }
+
+    /** @return a limited CertificateData object based on the information we have */
+    private CertificateData createLimitedCertificateData(final AuthenticationToken admin, final String limitedFingerprint, final String issuerDn, final BigInteger serialNumber,
+            final Date revocationDate, final int reasonCode, final String caFingerprint) {
+        CertificateData certificateData = new CertificateData();
+        certificateData.setFingerprint(limitedFingerprint);
+        certificateData.setSerialNumber(serialNumber.toString());
+        certificateData.setIssuer(issuerDn);
+        // Below does not work on all databases since subjectDN is "not null"
+        certificateData.setSubjectDN("");
+        certificateData.setCertificateProfileId(new Integer(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+        certificateData.setStatus(CertificateConstants.CERT_REVOKED);
+        certificateData.setRevocationReason(reasonCode);
+        certificateData.setRevocationDate(revocationDate);
+        certificateData.setUpdateTime(new Long(new Date().getTime()));
+        certificateData.setCaFingerprint(caFingerprint);
+        return certificateData;
+    }
+    
+    /** @return something that looks like a normal certificate fingerprint and is unique for each certificate entry */
+    private String getLimitedCertificateDataFingerprint(final String issuerDn, final BigInteger serialNumber) {
+        return CertTools.getFingerprintAsString((issuerDn+";"+serialNumber).getBytes());
+    }
 }

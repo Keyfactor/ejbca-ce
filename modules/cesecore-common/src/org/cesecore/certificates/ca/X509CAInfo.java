@@ -56,6 +56,7 @@ public class X509CAInfo extends CAInfo{
 	private List<String> authorityInformationAccess;
 	private List<String> nameConstraintsPermitted;
 	private List<String> nameConstraintsExcluded;
+	private String externalCdp;
     
     /**
      * This constructor can be used when creating a CA.
@@ -349,5 +350,14 @@ public class X509CAInfo extends CAInfo{
     public void setNameConstraintsExcludedNames(List<String> encodedNames) {
         nameConstraintsExcluded = encodedNames;
     }
-  
+
+    /** @return what should be a String formatted URL pointing to an external CA's CDP. */
+    public String getExternalCdp() {
+        return externalCdp;
+    }
+
+    /** Set what should be a String formatted URL pointing to an external CA's CDP. */
+    public void setExternalCdp(final String externalCdp) {
+        this.externalCdp = externalCdp;
+    }
 }
