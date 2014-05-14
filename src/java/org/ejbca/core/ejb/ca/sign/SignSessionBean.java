@@ -127,8 +127,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();

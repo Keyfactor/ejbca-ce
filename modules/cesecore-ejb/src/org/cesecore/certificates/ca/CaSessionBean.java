@@ -89,8 +89,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
