@@ -311,6 +311,9 @@ public interface SignSession {
      * This information is needed by CESeCore methods that create certificates, since it must be fetched
      * from the EJBCA configuration. Currently, this is needed in
      * {@link org.cesecore.certificates.certificate.CertificateCreateSession CertificateCreateSession} and {@link org.cesecore.certificates.ca.X509CA X509CA}.
+     * 
+     * The return value should only be passed directly into one of the CeSECore methods that use it.
+     * There's no point in accessing it from EJBCA code.
      */
     CertificateGenerationParams fetchCertGenParams();
 }
