@@ -29,6 +29,10 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
  * functions arguments, and never as e.g. instance variables of non-temporary
  * classes.
  * 
+ * @note Since it might not be possible to obtain the parameters, all methods that
+ * accept objects of this class should also accept a null value, or null values
+ * inside the CertificateGenerationParams object.
+ * 
  * @see CTAuditLogCallback
  * 
  * @version $Id$
