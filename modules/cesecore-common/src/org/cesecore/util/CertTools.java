@@ -2834,7 +2834,6 @@ public abstract class CertTools {
         // log.trace(">generateSHA1Fingerprint");
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
-
             return md.digest(ba);
         } catch (NoSuchAlgorithmException nsae) {
             log.error("SHA1 algorithm not supported", nsae);
@@ -2853,7 +2852,6 @@ public abstract class CertTools {
     public static byte[] generateSHA256Fingerprint(byte[] ba) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-
             return md.digest(ba);
         } catch (NoSuchAlgorithmException nsae) {
             log.error("SHA-256 algorithm not supported", nsae);
@@ -2871,7 +2869,6 @@ public abstract class CertTools {
     public static byte[] generateMD5Fingerprint(byte[] ba) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-
             return md.digest(ba);
         } catch (NoSuchAlgorithmException nsae) {
             log.error("MD5 algorithm not supported", nsae);
