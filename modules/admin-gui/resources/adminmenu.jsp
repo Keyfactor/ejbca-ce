@@ -355,19 +355,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 
 <%
-   // If authorized to edit services then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
-       if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
-         systemheaderprinted=true;
-         }  %>
-				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){} 
-%>
-
-<%
     // If authorized to edit CMP Configuration then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
@@ -376,6 +363,28 @@ org.cesecore.keybind.InternalKeyBindingRules
         systemheaderprinted = true;
           } %>
 				<li><a href="<%= CMPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CMPCONFIGURATION") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
+
+<%   
+   // If authorized to edit Internal Key Bindings then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){}
+%>
+
+<%
+    // If authorized to edit user preferences then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
+				<li><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
 %>
@@ -393,17 +402,17 @@ org.cesecore.keybind.InternalKeyBindingRules
   }catch(AuthorizationDeniedException e){}
 %>
 
-<%   
-   // If authorized to edit Internal Key Bindings then display related links.
+<%
+   // If authorized to edit services then display related links.
    try{
-     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
+     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
        if(!systemheaderprinted){
          out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
          systemheaderprinted=true;
          }  %>
-				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
+				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
 <%   }
-  }catch(AuthorizationDeniedException e){}
+  }catch(AuthorizationDeniedException e){} 
 %>
 
 <%
@@ -419,14 +428,7 @@ org.cesecore.keybind.InternalKeyBindingRules
    }catch(AuthorizationDeniedException e){}
 %>
 
-<%
-    // If authorized to edit user preferences then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
-				<li><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-%>
+
 
 <%
    if(systemheaderprinted){
@@ -443,16 +445,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
 		</li>
 <% } %>
-<%
-    // If authorized to view help pages then display related links.
-/*  try{
-     if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ */%>
-<%--
-		<li id="cat9"><a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("index_help.html") %>")'><%=ejbcawebbean.getText("HELP") %></a>
-		</li>
---%>
-<% /*  }
-    }catch(AuthorizationDeniedException e){} */%>
 
 		<li id="cat10"><a href="<%= LOGOUT_LINK %>" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
 
