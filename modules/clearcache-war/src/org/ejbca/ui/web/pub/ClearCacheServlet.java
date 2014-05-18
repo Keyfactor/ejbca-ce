@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -54,6 +55,8 @@ public class ClearCacheServlet extends HttpServlet {
 	@EJB
 	private AccessControlSessionLocal accessControlSession;
 	@EJB
+	private CaSessionLocal caSession;
+	@EJB
 	private CAAdminSessionLocal caAdminSession;
 	@EJB
 	private GlobalConfigurationSessionLocal globalconfigurationsession;
@@ -62,7 +65,7 @@ public class ClearCacheServlet extends HttpServlet {
 	@EJB
 	private CertificateProfileSessionLocal certificateprofilesession;
 	@EJB
-	private CaSessionLocal casession;
+	private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
@@ -118,7 +121,7 @@ public class ClearCacheServlet extends HttpServlet {
         		if(log.isDebugEnabled()) {
         			log.debug("Authorization Rule cache cleared");
         		}
-        		casession.flushCACache();
+        		caSession.flushCACache();
         		if(log.isDebugEnabled()) {
         			log.debug("CA cache cleared");
         		}
@@ -138,7 +141,7 @@ public class ClearCacheServlet extends HttpServlet {
                 if(log.isDebugEnabled()) {
                     log.debug("OCSP signing cache cleared.");
                 }
-                caAdminSession.reloadCaCertificateCache(); 
+                certificateStoreSession.reloadCaCertificateCache(); 
                 if(log.isDebugEnabled()) {
                     log.debug("Certificate Store cache cleared and reloaded.");
                 }

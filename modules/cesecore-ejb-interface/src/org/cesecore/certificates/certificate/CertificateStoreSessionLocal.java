@@ -172,4 +172,10 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException
      */
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
+
+    /**
+     * Reloads the cache containing CA certificates
+     */
+    void reloadCaCertificateCache();
+    
 }

@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.ca.store;
+package org.cesecore.certificates.ca.internal;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,14 +28,14 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.protocol.certificatestore.HashID;
 
 
 /**
- * See {@link ICertificateCache} to see what this is.
+ * A cache for storing CA certificates
  *
  * @version $Id$
  *
@@ -235,18 +235,4 @@ public enum CaCertificateCache  {
 		}
 	} // loadCertificates
 
-	/**
-	 *
-	 * @param adm
-	 * @param type
-	 * @param issuerDN
-	 * @return Collection of Certificate never null
-	 *//*
-	private Collection<Certificate> findCertificatesByType(int type, String issuerDN) {
-		if ( this.certificateStoreSession==null ) {
-			// Use classes CertificateCacheStandalone or CertificateCacheInternal for non-test caches
-			return this.testcerts;
-		}
-		return this.certificateStoreSession.findCertificatesByType(type, issuerDN);
-	}*/
 }

@@ -59,6 +59,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -1207,6 +1208,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS) 
+    public void reloadCaCertificateCache(){
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
+                CertificateConstants.CERTTYPE_ROOTCA, null);
+        CaCertificateCache.INSTANCE.loadCertificates(certs);
+    }
+    
     /** @return a limited CertificateData object based on the information we have */
     private CertificateData createLimitedCertificateData(final AuthenticationToken admin, final String limitedFingerprint, final String issuerDn, final BigInteger serialNumber,
             final Date revocationDate, final int reasonCode, final String caFingerprint) {

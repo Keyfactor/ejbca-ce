@@ -20,11 +20,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ca.store.CaCertificateCache;
-import org.ejbca.core.protocol.certificatestore.HashID;
 
 /**
  * See {@link ICRLCache} to see what this is.

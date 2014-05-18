@@ -15,8 +15,8 @@ package org.ejbca.core.protocol.crlstore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 
 /**
  * Factory for creating a {@link CRLCache} object to be used by the OCSP responder of the CA.
