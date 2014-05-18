@@ -101,6 +101,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -159,7 +160,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
-import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -759,7 +759,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Update local OCSP's CA certificate cache
-        reloadCaCertificateCache();
+        certificateStoreSession.reloadCaCertificateCache();
 
         // caSession already audit logged that the CA was added
 
@@ -2888,12 +2888,4 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.flushCACache();
     }
     
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS) 
-    public void reloadCaCertificateCache(){
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
-                CertificateConstants.CERTTYPE_ROOTCA, null);
-        CaCertificateCache.INSTANCE.loadCertificates(certs);
-    }
-
 }

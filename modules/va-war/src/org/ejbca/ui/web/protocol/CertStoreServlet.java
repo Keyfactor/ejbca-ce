@@ -30,10 +30,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.util.HTMLTools;
 
 /** 
@@ -46,9 +47,9 @@ public class CertStoreServlet extends StoreServletBase {
 	
 	private static final long serialVersionUID = 1L;
 
-	@EJB
-	private CAAdminSessionLocal caAdminSession;
-	
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+
 	private final static Logger log = Logger.getLogger(CertStoreServlet.class);
 
 	@Override
@@ -59,7 +60,7 @@ public class CertStoreServlet extends StoreServletBase {
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		if(certCache.isCacheExpired()) {
-		    caAdminSession.reloadCaCertificateCache();
+		    certificateStoreSession.reloadCaCertificateCache();
 		}
 	    returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
 		return;
@@ -68,7 +69,10 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
-		returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
+	    if(certCache.isCacheExpired()) {
+	        certificateStoreSession.reloadCaCertificateCache();
+        }
+	    returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
 	}
 
 	@Override
@@ -78,7 +82,10 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		final X509Certificate cert = this.certCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
+	    if(certCache.isCacheExpired()) {
+	        certificateStoreSession.reloadCaCertificateCache();
+        }
+	    final X509Certificate cert = this.certCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
 		returnCert( cert, resp, sHash);
 	}
 

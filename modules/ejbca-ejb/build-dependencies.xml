@@ -388,6 +388,7 @@
 							<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
 							<include name="org/cesecore/certificates/ca/internal/SernoGenerator.java"/>
 							<include name="org/cesecore/certificates/ca/internal/SernoGeneratorRandom.java"/>
+							<include name="org/cesecore/certificates/certificate/HashID.java"/>						
 							<include name="org/cesecore/certificates/certificate/request/RequestMessageUtils.java"/>
 							<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
 							<include name="org/cesecore/certificates/certificate/request/PKCS10RequestMessage.java"/>
@@ -400,7 +401,6 @@
 							<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
 							<include name="org/cesecore/certificates/util/dn/PrintableStringEntryConverter.java"/>
 							<include name="org/cesecore/util/SimpleTime.java"/>
-							<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>						
 							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/BaseSigningCAServiceInfo.java"/>
 							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceTypes.java"/>
 							<!-- Dependency on Certificate Extensions -->					
@@ -1022,10 +1022,10 @@
 					<include name="org/ejbca/util/SqlExecutor.java"/>
 					<!-- Upgrade of extended CA services in EJBCA 5.0 -->
 					<include name="org/cesecore/config/*Configuration.java"/>
+					<include name="org/cesecore/certificates/certificate/HashID.java"/>						
 					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 					<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
-					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
 					<include name="org/ejbca/config/*Configuration.java"/>
 					<!-- upgrade of CertificatePolicy, change from ejbca to cesecore class -->
 					<include name="org/ejbca/core/model/ca/certificateprofiles/CertificatePolicy.java"/>					

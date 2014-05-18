@@ -34,10 +34,10 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.protocol.certificatestore.HashID;
 import org.junit.Assert;
 
 /**

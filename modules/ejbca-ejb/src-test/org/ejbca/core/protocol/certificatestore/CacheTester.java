@@ -15,7 +15,8 @@ package org.ejbca.core.protocol.certificatestore;
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.ejb.ca.store.CaCertificateCache;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.HashID;
 
 /** class used from TestCertificateCache
  * 

@@ -53,11 +53,5 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @return an error message or an empty String if all are ok.
      */
     String healthCheck();
-    
-    
-    /**
-     * Reloads the cache containing CA certificates
-     */
-    void reloadCaCertificateCache();
 
 }
