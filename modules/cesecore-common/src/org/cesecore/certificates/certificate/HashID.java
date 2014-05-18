@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.certificatestore;
+package org.cesecore.certificates.certificate;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -29,7 +29,7 @@ import org.cesecore.util.CertTools;
 
 /**
  * An object of this class is identifying one or several certificates or a CRL.
- * @author Lars Silven PrimeKey
+ *
  * @version $Id$
  */
 public class HashID {

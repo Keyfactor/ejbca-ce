@@ -23,9 +23,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.crlstore.CRLCacheFactory;
 import org.ejbca.core.protocol.crlstore.ICRLCache;
 import org.ejbca.util.HTMLTools;

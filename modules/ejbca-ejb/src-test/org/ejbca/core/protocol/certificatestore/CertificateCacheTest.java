@@ -25,11 +25,12 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
-import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

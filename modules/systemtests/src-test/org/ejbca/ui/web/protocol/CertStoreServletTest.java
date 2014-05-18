@@ -37,7 +37,6 @@ import java.util.Set;
 import javax.mail.MessagingException;
 
 import org.junit.Assert;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -46,11 +45,11 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.protocol.certificatestore.HashID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

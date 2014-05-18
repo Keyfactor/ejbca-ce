@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.crlstore;
 
-import org.ejbca.core.protocol.certificatestore.HashID;
+import org.cesecore.certificates.certificate.HashID;
 
 /**
  * An implementation of this is managing a cache of Certificates. The implementation should be optimized for quick lookups of CRLs that the 

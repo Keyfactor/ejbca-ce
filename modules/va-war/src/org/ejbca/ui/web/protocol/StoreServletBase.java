@@ -27,10 +27,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.HashID;
 import org.ejbca.config.VAConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.CaCertificateCache;
-import org.ejbca.core.protocol.certificatestore.HashID;
 
 /**
  * Base class for servlets (CRL or Certificate) implementing rfc4378
@@ -48,7 +49,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	protected CaCertificateCache certCache;
 	
 	@EJB
-	private CAAdminSessionLocal caAdminSession;
+	private CertificateStoreSessionLocal certificateStoreSession;
 
 	/**
 	 * Called when the servlet is initialized.
@@ -192,7 +193,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 		log.info("Reloading certificate and CRL caches due to request from "+req.getRemoteAddr());
 		// Reload CA certificates
-		caAdminSession.reloadCaCertificateCache();
+		certificateStoreSession.reloadCaCertificateCache();
 		return true;
 	}
 	private boolean checkIfAutorizedIP(HttpServletRequest req, HttpServletResponse resp) throws IOException {
