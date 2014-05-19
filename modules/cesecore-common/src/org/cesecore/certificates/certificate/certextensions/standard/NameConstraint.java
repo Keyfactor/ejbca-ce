@@ -22,6 +22,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
@@ -35,6 +36,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.CeSecoreNameStyle;
 
 /**
  * Extension for Name Constraints.
@@ -102,7 +104,11 @@ public class NameConstraint extends StandardCertificateExtension {
             GeneralName genname;
             switch (type) {
             case GeneralName.dNSName:
+            case GeneralName.rfc822Name:
                 genname = new GeneralName(type, (String)data);
+                break;
+            case GeneralName.directoryName:
+                genname = new GeneralName(new X500Name(CeSecoreNameStyle.INSTANCE, (String)data));
                 break;
             case GeneralName.iPAddress:
                 genname = new GeneralName(type, new DEROctetString((byte[])data));
@@ -119,6 +125,8 @@ public class NameConstraint extends StandardCertificateExtension {
         String typeString = encoded.split(":", 2)[0];
         if ("iPAddress".equals(typeString)) return GeneralName.iPAddress;
         if ("dNSName".equals(typeString)) return GeneralName.dNSName;
+        if ("directoryName".equals(typeString)) return GeneralName.directoryName;
+        if ("rfc822Name".equals(typeString)) return GeneralName.rfc822Name;
         throw new UnsupportedOperationException("Unsupported name constraint type "+typeString);
     }
 
@@ -128,6 +136,8 @@ public class NameConstraint extends StandardCertificateExtension {
         
         switch (type) {
         case GeneralName.dNSName:
+        case GeneralName.directoryName:
+        case GeneralName.rfc822Name:
             return data;
         case GeneralName.iPAddress:
             try {
@@ -179,6 +189,17 @@ public class NameConstraint extends StandardCertificateExtension {
         } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
             // DNS name (it can start with a ".", this means "all subdomains")
             return "dNSName:"+str;
+        } else if (str.matches("^[^=,]*@[a-zA-Z0-9_.\\[\\]:-]+$")) {
+            // RFC 822 Name (i.e. e-mail)
+            if (str.startsWith("@")) {
+                // In EJBCA, rfc822Names without a user part start with @ to distinguish them from domain names.
+                // This is not the case in the encoded form.
+                str = str.substring(1);
+            }
+            return "rfc822Name:"+str;
+        } else if (str.contains("=")) {
+            // Directory name
+            return "directoryName:" + new X500Name(CeSecoreNameStyle.INSTANCE, str).toString();
         } else {
             throw new CertificateExtensionException("Cannot parse name constraint entry, only IPv4/6 addresses with a /netmask and DNS names are supported: "+str);
         }
@@ -211,6 +232,7 @@ public class NameConstraint extends StandardCertificateExtension {
         
         switch (type) {
         case GeneralName.dNSName:
+        case GeneralName.directoryName:
             return (String)data; // not changed during encoding
         case GeneralName.iPAddress:
             byte[] bytes = (byte[])data;
@@ -235,6 +257,10 @@ public class NameConstraint extends StandardCertificateExtension {
             } catch (UnknownHostException e) {
                 throw new IllegalArgumentException(e);
             }
+        case GeneralName.rfc822Name:
+            // Prepend @ is it's only the domain part to distinguish from DNS names
+            String str = (String)data;
+            return (str.contains("@") ? str : "@"+str); 
         default:
             throw new UnsupportedOperationException("Unsupported name constraint type "+type);
         }
