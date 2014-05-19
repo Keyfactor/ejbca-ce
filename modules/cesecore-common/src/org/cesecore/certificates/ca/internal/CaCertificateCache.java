@@ -78,9 +78,9 @@ public enum CaCertificateCache  {
             }
         }
 
-        X509Certificate ret = this.certsFromSubjectDN.get(id.key);
+        X509Certificate ret = this.certsFromSubjectDN.get(id.getKey());
         if ((ret == null) && log.isDebugEnabled()) {
-            log.debug("Certificate not found from SubjectDN HashId in certsFromSubjectDN map. HashID=" + id.b64);
+            log.debug("Certificate not found from SubjectDN HashId in certsFromSubjectDN map. HashID=" + id.getB64());
         }
         return ret;
 
@@ -95,10 +95,10 @@ public enum CaCertificateCache  {
             }
         }
 
-        final Set<X509Certificate> sCert = this.certsFromIssuerDN.get(id.key);
+        final Set<X509Certificate> sCert = this.certsFromIssuerDN.get(id.getKey());
         if (sCert == null || sCert.size() < 1) {
             if (log.isDebugEnabled()) {
-                log.debug("Certificate not found from IssuerDN HashId in certsFromIssuerDN map. HashID=" + id.b64);
+                log.debug("Certificate not found from IssuerDN HashId in certsFromIssuerDN map. HashID=" + id.getB64());
             }
             return null;
         }
@@ -125,9 +125,9 @@ public enum CaCertificateCache  {
                 throw new IllegalStateException("Interrupted while waiting for build lock to release", e);
             }
         }
-        X509Certificate ret = this.certsFromSubjectKeyIdentifier.get(id.key);
+        X509Certificate ret = this.certsFromSubjectKeyIdentifier.get(id.getKey());
         if ((ret == null) && log.isDebugEnabled()) {
-            log.debug("Certificate not found from SubjectKeyIdentifier HashId in certsFromSubjectKeyIdentifier map. HashID=" + id.b64);
+            log.debug("Certificate not found from SubjectKeyIdentifier HashId in certsFromSubjectKeyIdentifier map. HashID=" + id.getB64());
         }
         return ret;
     }
@@ -160,7 +160,7 @@ public enum CaCertificateCache  {
 				}
 				final X509Certificate cert = (X509Certificate)tmp;
 	            try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
-					this.certsFromSubjectKeyIdentifier.put(HashID.getFromKeyID(cert).key, cert);
+					this.certsFromSubjectKeyIdentifier.put(HashID.getFromKeyID(cert).getKey(), cert);
 	            } catch ( Throwable t ) { // NOPMD: catch all to not break with an error here.
 	            	if ( log.isDebugEnabled() ) {
 		            	final StringWriter sw = new StringWriter();
@@ -181,7 +181,7 @@ public enum CaCertificateCache  {
 	            	}
             		continue;
 	            }
-				final Integer subjectDNKey = HashID.getFromSubjectDN(cert).key;
+				final Integer subjectDNKey = HashID.getFromSubjectDN(cert).getKey();
 				// Check if we already have a certificate from this issuer in the HashMap.
 				// We only want to store the latest cert from each issuer in this map
 				final X509Certificate pastCert = this.certsFromSubjectDN.get(subjectDNKey);
@@ -197,7 +197,7 @@ public enum CaCertificateCache  {
 				}
 				if ( isLatest ) {
 					this.certsFromSubjectDN.put(subjectDNKey, cert);
-					final Integer issuerDNKey = HashID.getFromIssuerDN(cert).key;
+					final Integer issuerDNKey = HashID.getFromIssuerDN(cert).getKey();
 					if ( !issuerDNKey.equals(subjectDNKey) ) { // don't add root to them self
 						Set<X509Certificate> sIssuer = this.certsFromIssuerDN.get(issuerDNKey);
 						if ( sIssuer==null ) {

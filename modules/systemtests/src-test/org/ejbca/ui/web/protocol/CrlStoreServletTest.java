@@ -136,7 +136,7 @@ public class CrlStoreServletTest extends CaTestCase {
         }
         final String alias = "alias";
         {
-            final String sURI = getBaseUrl(true) + "?setAlias="+alias+"="+id.b64url;
+            final String sURI = getBaseUrl(true) + "?setAlias="+alias+"="+id.getB64url();
             final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
             connection.connect();
             if ( connection.getResponseCode()!=HttpURLConnection.HTTP_OK ) {

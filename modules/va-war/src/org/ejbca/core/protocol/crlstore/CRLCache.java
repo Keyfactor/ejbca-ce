@@ -96,7 +96,7 @@ class CRLCache implements ICRLCache {
 				return null;
 			}
 			final Map<Integer, CRLEntity> usedCrls = isDelta ? this.deltaCrls : this.crls;
-			final CRLEntity cachedCRL = usedCrls.get(id.key);
+			final CRLEntity cachedCRL = usedCrls.get(id.getKey());
 			if ( cachedCRL!=null && !crlInfo.getCreateDate().after(cachedCRL.crlInfo.getCreateDate()) ) {
 				if (log.isDebugEnabled()) {
 					log.debug("Retrieved CRL (from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
@@ -104,7 +104,7 @@ class CRLCache implements ICRLCache {
 				return cachedCRL.encoded;
 			}
 			final CRLEntity entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, isDelta) );
-			usedCrls.put(id.key, entry);
+			usedCrls.put(id.getKey(), entry);
 			if (log.isDebugEnabled()) {
 				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
 			}
