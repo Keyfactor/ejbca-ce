@@ -111,7 +111,7 @@ import org.junit.rules.TestRule;
 public class StandaloneOcspResponseGeneratorSessionTest {
 
     //private static final String PASSWORD = "foo123";
-    private static final String CA_DN = "C=SE,O=Foo,CN=OcspDefaultTestCA";
+    private static final String CA_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
     
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName();
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionTest.class);
@@ -421,11 +421,12 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), null);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
+        certificateStoreSession.reloadCaCertificateCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
         final OCSPResp ocspResponseSigned = sendRequest(ocspRequestSigned);
-        assertEquals("We expected a 'Successful' status code: ", OCSPResp.SUCCESSFUL, ocspResponseSigned.getStatus());
+        assertEquals("Expected a 'Successful' status code: ", OCSPResp.SUCCESSFUL, ocspResponseSigned.getStatus());
         validateSuccessfulResponse((BasicOCSPResp)ocspResponseSigned.getResponseObject(), ocspSigningCertificate.getPublicKey());
     }
     
