@@ -7,7 +7,8 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.cesecore.certificates.endentity.EndEntityConstants,
                  javax.ejb.CreateException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils,
-                 org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants" %>
+                 org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
+                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -40,6 +41,8 @@
   static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
 
   static final String TEXTAREA_EXTENSIONDATA      = "textareaextensiondata";
+  static final String TEXTAREA_NC_PERMITTED       = "textarencpermitted"; // Name Constraints
+  static final String TEXTAREA_NC_EXCLUDED        = "textarencexcluded";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -78,6 +81,8 @@
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
   static final String CHECKBOX_REQUIRED_MAXFAILEDLOGINS	  = "checkboxrequiredmaxfailedlogins";
   static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER  = "checkboxrequiredcertserialnumber";
+  static final String CHECKBOX_REQUIRED_NC_PERMITTED      = "checkboxrequiredncpermitted";
+  static final String CHECKBOX_REQUIRED_NC_EXCLUDED       = "checkboxrequiredncexcluded";
   static final String CHECKBOX_REQUIRED_EXTENSIONDATA     = "checkboxrequiredextensiondata";
 
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
@@ -601,6 +606,32 @@
 				}
 				newuser.setExtendedInformation(ei);
 			}
+			if( oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0) ) {
+                ExtendedInformation ei = newuser.getExtendedInformation();
+                if (ei == null) {
+                    ei = new ExtendedInformation();
+                }
+                value = request.getParameter(TEXTAREA_NC_PERMITTED);
+                if ( value!=null && !value.trim().isEmpty() ) {
+                    ei.setNameConstraintsPermitted(NameConstraint.parseNameConstraintsList(value));
+                } else {
+                    ei.setNameConstraintsPermitted(null);
+                }
+                newuser.setExtendedInformation(ei);
+            }
+            if( oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0) ) {
+                ExtendedInformation ei = newuser.getExtendedInformation();
+                if (ei == null) {
+                    ei = new ExtendedInformation();
+                }
+                value = request.getParameter(NAMECONSTRAINTS_EXCLUDED);
+                if ( value!=null && !value.trim().isEmpty() ) {
+                    ei.setNameConstraintsExcluded(NameConstraint.parseNameConstraintsList(value));
+                } else {
+                    ei.setNameConstraintsExcluded(null);
+                }
+                newuser.setExtendedInformation(ei);
+            }
            
            // See if user already exists
            if(rabean.userExist(newuser.getUsername())){
@@ -1695,6 +1726,8 @@ function checkallfields(){
 		  || profile.getUse(EndEntityProfile.STARTTIME, 0)
 		  || profile.getUse(EndEntityProfile.ENDTIME, 0)
 		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
+		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0)
+		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0)
 		   ) { %>
 	    <tr id="Row<%=(row++)%2%>" class="section">
 		<td align="right">
@@ -1794,6 +1827,32 @@ function checkallfields(){
 			<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
 		</tr>
 	<%	} %>
+	
+	<% if( profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0) ) { %>
+        <tr id="Row<%=(row)%2%>">
+            <td align="right">
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>"/><br />
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/></p>
+            </td>
+            <td>
+                <textarea name="<%=TEXTAREA_NC_PERMITTED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"><c:if test="${!useradded}"><c:out value="<%= NameConstraint.formatNameConstraintsList(profile.getNameConstraintsPermitted()) %>"/></c:if></textarea>
+            </td>
+            <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_NC_PERMITTED %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.NAMECONSTRAINTS_PERMITTED,0)) out.write(" CHECKED "); %>></td>
+        </tr>
+    <% } %>
+    <% if( profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0) ) { %>
+        <tr id="Row<%=(row++)%2%>">
+            <td align="right">
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>"/></p>
+            </td>
+            <td>
+                <textarea name="<%=TEXTAREA_NC_EXCLUDED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"><c:if test="${!useradded}"><c:out value="<%= NameConstraint.formatNameConstraintsList(profile.getNameConstraintsExcluded()) %>"/></c:if></textarea>
+            </td>
+            <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_NC_EXCLUDED %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED,0)) out.write(" CHECKED "); %>></td>
+        </tr>
+    <%  } %>
 
         <%	if (profile.getUseExtensiondata()) { %>
 		<tr  id="Row<%=(row++)%2%>"> 

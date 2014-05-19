@@ -144,6 +144,8 @@ function checkallfields(){
       document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
       document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
       document.editprofile.<%= CHECKBOX_REQUIRED_CARDNUMBER %>.disabled = false;
+      document.editprofile.<%= CHECKBOX_REQUIRED_NC_PERMITTED %>.disabled = false;
+      document.editprofile.<%= CHECKBOX_REQUIRED_NC_EXCLUDED %>.disabled = false;
       document.editprofile.<%= CHECKBOX_ALLOW_MERGEDN_WEBSERVICES %>.disabled = false;
     }
 
@@ -1246,6 +1248,54 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                 out.write("CHECKED");
            %> id="<%=CHECKBOX_REQUIRED_CARDNUMBER%>" />
         <label for="<%=CHECKBOX_REQUIRED_CARDNUMBER%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row%2%>">
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>" />
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+      </td>
+      <td width="50%" valign="top"> 
+        <% used = profiledata.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED,0); %>
+        <input type="checkbox" name="<%=CHECKBOX_USE_NC_PERMITTED %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox2('<%=CHECKBOX_USE_NC_PERMITTED %>', '<%=CHECKBOX_REQUIRED_NC_PERMITTED%>');"
+           <% if(used)
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_USE_NC_PERMITTED%>" />
+        <label for="<%=CHECKBOX_USE_NC_PERMITTED%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+        &nbsp;
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_NC_PERMITTED%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.isRequired(EndEntityProfile.NAMECONSTRAINTS_PERMITTED,0) && used)
+                out.write("CHECKED");
+           %> id="<%=CHECKBOX_REQUIRED_NC_PERMITTED%>" />
+        <label for="<%=CHECKBOX_REQUIRED_NC_PERMITTED%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>">
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right">
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>" />
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+      </td>
+      <td width="50%" valign="top">
+        <% used = profiledata.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED,0); %>
+        <input type="checkbox" name="<%=CHECKBOX_USE_NC_EXCLUDED %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox2('<%=CHECKBOX_USE_NC_EXCLUDED %>', '<%=CHECKBOX_REQUIRED_NC_EXCLUDED%>');"
+           <% if(used)
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_USE_NC_EXCLUDED%>" />
+        <label for="<%=CHECKBOX_USE_NC_EXCLUDED%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+        &nbsp;
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_NC_EXCLUDED%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.isRequired(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED,0) && used)
+                out.write("CHECKED");
+           %> id="<%=CHECKBOX_REQUIRED_NC_EXCLUDED%>" />
+        <label for="<%=CHECKBOX_REQUIRED_NC_EXCLUDED%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
       </td>
     </tr>
 

@@ -103,6 +103,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static final String STARTTIME          = ExtendedInformation.CUSTOM_STARTTIME;	//"STARTTIME"
     public static final String ENDTIME            = ExtendedInformation.CUSTOM_ENDTIME;	//"ENDTIME"
     public static final String CERTSERIALNR       = "CERTSERIALNR";
+    public static final String NAMECONSTRAINTS_PERMITTED = "NAMECONSTRAINTS_PERMITTED";
+    public static final String NAMECONSTRAINTS_EXCLUDED  = "NAMECONSTRAINTS_EXCLUDED";
     /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
      * before user is finalized (status set to GENERATED). Counter is only used when finishUser is
      * enabled in the CA (by default it is)
@@ -153,6 +155,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	dataConstants.put(MAXFAILEDLOGINS, Integer.valueOf(93));
     	dataConstants.put(CERTSERIALNR, Integer.valueOf(92));
     	dataConstants.put(MINPWDSTRENGTH, Integer.valueOf(90));
+    	dataConstants.put(NAMECONSTRAINTS_PERMITTED, Integer.valueOf(89));
+    	dataConstants.put(NAMECONSTRAINTS_EXCLUDED, Integer.valueOf(88));
     }
 	// The max value in dataConstants (we only want to do this once)
     private static final int dataConstantsMaxValue = Collections.max(dataConstants.values()).intValue();
@@ -283,6 +287,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setRequired(ALLOWEDREQUESTS,0,false);
         	setRequired(CARDNUMBER,0,false);
         	setRequired(MAXFAILEDLOGINS,0,false);
+        	setRequired(NAMECONSTRAINTS_EXCLUDED,0,false);
+        	setRequired(NAMECONSTRAINTS_PERMITTED,0,false);
         	setValue(DEFAULTCERTPROFILE,0, CONST_DEFAULTCERTPROFILE);
         	setValue(AVAILCERTPROFILES,0, CONST_AVAILCERTPROFILES1);
         	setValue(DEFKEYSTORE,0, CONST_DEFKEYSTORE);
@@ -299,6 +305,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(MAXFAILEDLOGINS,0,false);
             setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
         	setUse(MINPWDSTRENGTH,0,false);
+        	setUse(NAMECONSTRAINTS_PERMITTED,0,false);
+        	setUse(NAMECONSTRAINTS_EXCLUDED,0,false);
         } else {
         	// initialize profile data
         	addFieldWithDefaults(USERNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -322,6 +330,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	addFieldWithDefaults(CARDNUMBER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(ISSUANCEREVOCATIONREASON, CONST_ISSUANCEREVOCATIONREASON, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(MAXFAILEDLOGINS, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(NAMECONSTRAINTS_PERMITTED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(NAMECONSTRAINTS_EXCLUDED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         }
     }
 
@@ -1964,6 +1974,28 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public static String[] getSubjectDirAttrProfileFields() {
     	return (String[])DnComponents.getDirAttrFields().toArray(new String[0]);
+    }
+    
+    public List<String> getNameConstraintsPermitted() {
+        List<String> ret = new ArrayList<String>();
+        String value = getValue(NAMECONSTRAINTS_PERMITTED, 0);
+        if (value != null && !value.trim().isEmpty()) { ret.addAll(Arrays.asList(value.split(SPLITCHAR))); }
+        return ret;
+    }
+    
+    public void setNameConstraintsPermitted(List<String> encodedNames) {
+        setValue(NAMECONSTRAINTS_PERMITTED, 0, StringUtils.join(encodedNames, SPLITCHAR));
+    }
+    
+    public List<String> getNameConstraintsExcluded() {
+        List<String> ret = new ArrayList<String>();
+        String value = getValue(NAMECONSTRAINTS_EXCLUDED, 0);
+        if (value != null && !value.trim().isEmpty()) { ret.addAll(Arrays.asList(value.split(SPLITCHAR))); }
+        return ret;
+    }
+    
+    public void setNameConstraintsExcluded(List<String> encodedNames) {
+        setValue(NAMECONSTRAINTS_EXCLUDED, 0, StringUtils.join(encodedNames, SPLITCHAR));
     }
     
     /**

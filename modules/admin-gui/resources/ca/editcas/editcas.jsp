@@ -63,6 +63,7 @@ org.ejbca.ui.web.ParameterException,
 org.cesecore.util.StringTools,
 org.cesecore.certificates.util.AlgorithmConstants,
 org.cesecore.certificates.util.AlgorithmTools,
+org.cesecore.certificates.certificate.certextensions.standard.NameConstraint,
 org.ejbca.core.model.authorization.AccessRulesConstants,
 java.security.cert.CertificateException,
 javax.ejb.EJBException,
@@ -536,8 +537,8 @@ java.security.InvalidAlgorithmParameterException
                     CAInfo cainfo = cadatahandler.getCAInfo(caid).getCAInfo();
                     subjectdn = cainfo.getSubjectDN();
                     if (cainfo instanceof X509CAInfo) {
-                        nameConstraintsPermitted = cabean.formatNameConstraintsString(((X509CAInfo)cainfo).getNameConstraintsPermitted());
-                        nameConstraintsExcluded = cabean.formatNameConstraintsString(((X509CAInfo)cainfo).getNameConstraintsExcluded());
+                        nameConstraintsPermitted = NameConstraint.formatNameConstraintsList(((X509CAInfo)cainfo).getNameConstraintsPermitted());
+                        nameConstraintsExcluded = NameConstraint.formatNameConstraintsList(((X509CAInfo)cainfo).getNameConstraintsExcluded());
                     } else {
                         nameConstraintsPermitted = null;
                         nameConstraintsExcluded = null;

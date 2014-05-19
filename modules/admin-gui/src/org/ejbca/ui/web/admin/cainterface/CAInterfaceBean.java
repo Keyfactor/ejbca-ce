@@ -939,8 +939,8 @@ public class CAInterfaceBean implements Serializable {
 	                cadefinedfreshestcrl = caDefinedFreshestCrlString;
 	            }
 	            
-	            final List<String> nameConstraintsPermitted = parseNameConstraintsString(nameConstraintsPermittedString);
-	            final List<String> nameConstraintsExcluded = parseNameConstraintsString(nameConstraintsExcludedString);
+	            final List<String> nameConstraintsPermitted = parseNameConstraintsInput(nameConstraintsPermittedString);
+	            final List<String> nameConstraintsExcluded = parseNameConstraintsInput(nameConstraintsExcludedString);
 	            final boolean hasNameConstraints = !nameConstraintsPermitted.isEmpty() || !nameConstraintsExcluded.isEmpty();
 	            if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
 	               throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
@@ -1081,37 +1081,12 @@ public class CAInterfaceBean implements Serializable {
 	    return illegaldnoraltname;
 	}
 
-	private List<String> parseNameConstraintsString(String input) throws ParameterException {
-        List<String> encodedNames = new ArrayList<String>();
-        if (input != null) {
-            String[] pieces = input.split(",");
-            for (String piece : pieces) {
-                piece = piece.trim();
-                if (!piece.isEmpty()) {
-                    try {
-                        encodedNames.add(NameConstraint.parseNameConstraintEntry(piece));
-                    } catch (CertificateExtensionException e) {
-                        throw new ParameterException(MessageFormat.format(ejbcawebbean.getText("INVALIDNAMECONSTRAINT"), piece) + e.getMessage() + e);
-                    }
-                }
-            }
+	private List<String> parseNameConstraintsInput(String input) throws ParameterException {
+        try {
+            return NameConstraint.parseNameConstraintsList(input);
+        } catch (CertificateExtensionException e) {
+            throw new ParameterException(MessageFormat.format(ejbcawebbean.getText("INVALIDNAMECONSTRAINT"), e.getMessage()));
         }
-        return encodedNames;
-    }
-    
-    public String formatNameConstraintsString(List<String> encodedList) {
-        StringBuilder sb = new StringBuilder();
-        if (encodedList != null) {
-            boolean first = true;
-            for (String encodedName : encodedList) {
-                if (!first) {
-                    sb.append(", ");
-                }
-                first = false;
-                sb.append(NameConstraint.formatNameConstraintEntry(encodedName));
-            }
-        }
-        return sb.toString();
     }
     
     private boolean isNameConstraintAllowedInProfile(int certProfileId) {
@@ -1260,7 +1235,7 @@ public class CAInterfaceBean implements Serializable {
                        defaultcrlissuer,
                        defaultocsplocator, 
                        authorityInformationAccess,
-                       parseNameConstraintsString(nameConstraintsPermittedString), parseNameConstraintsString(nameConstraintsExcludedString),
+                       parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
                        cadefinedfreshestcrl,
                        finishUser,extendedcaservices,
                        useutf8policytext,

@@ -385,6 +385,7 @@ public class X509CA extends CA implements Serializable {
         data.put(CRLDISTRIBUTIONPOINTONCRLCRITICAL, Boolean.valueOf(crlDistributionPointOnCrlCritical));
     }
     
+    /** @return Encoded name constraints to permit */
     @SuppressWarnings("unchecked")
     public List<String> getNameConstraintsPermitted() {
         return (List<String>) data.get(NAMECONSTRAINTSPERMITTED);
@@ -394,6 +395,7 @@ public class X509CA extends CA implements Serializable {
         data.put(NAMECONSTRAINTSPERMITTED, encodedNames);
     }
     
+    /** @return Encoded name constraints to exclude */
     @SuppressWarnings("unchecked")
     public List<String> getNameConstraintsExcluded() {
         return (List<String>) data.get(NAMECONSTRAINTSEXCLUDED);

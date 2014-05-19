@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
@@ -33,6 +34,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 
 /**
  * Extension for Name Constraints.
@@ -52,19 +54,38 @@ public class NameConstraint extends StandardCertificateExtension {
     public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
             PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         NameConstraints nc = null;
+        
+        List<String> permittedNames = null;
+        List<String> excludedNames = null;
         if ((certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
             certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) &&
             ca instanceof X509CA) {
+            // Issuing a CA
             
             X509CAInfo x509ca = (X509CAInfo)ca.getCAInfo();
-            GeneralSubtree[] permitted = toGeneralSubtrees(x509ca.getNameConstraintsPermitted());
-            GeneralSubtree[] excluded = toGeneralSubtrees(x509ca.getNameConstraintsExcluded());
+            permittedNames = x509ca.getNameConstraintsPermitted();
+            excludedNames = x509ca.getNameConstraintsExcluded();
+        } else if (certProfile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
+            // Issuing a end-entity certificate
+            ExtendedInformation ei = userData.getExtendedinformation();
+            permittedNames = ei.getNameConstraintsPermitted();
+            excludedNames = ei.getNameConstraintsExcluded();
+            
+            if (!(ca instanceof X509CA)) {
+                throw new CertificateExtensionException("Can't issue non-X509 certificate with Name Constraint");
+            }
+        }
+        
+        if (permittedNames != null && excludedNames != null) {
+            GeneralSubtree[] permitted = toGeneralSubtrees(permittedNames);
+            GeneralSubtree[] excluded = toGeneralSubtrees(excludedNames);
             
             // Do not include an empty name constraints extension
             if (permitted.length != 0 || excluded.length != 0) {
                 nc = new NameConstraints(permitted, excluded);
             }
         }
+        
         return nc;
     }
     
@@ -129,7 +150,7 @@ public class NameConstraint extends StandardCertificateExtension {
      * 
      * @throws CertificateExtensionException if the string can not be parsed.
      */
-    public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
+    private static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
         if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
             str.matches("^[0-9a-fA-F]{0,4}:[0-9a-fA-F]{0,4}:[0-9a-fA-F:]*/[0-9]+$")) {
             // IPv4 or IPv6 address
@@ -142,7 +163,7 @@ public class NameConstraint extends StandardCertificateExtension {
                 // The second half in the encoded form is the netmask
                 int netmask = Integer.parseInt(pieces[1]);
                 if (netmask > 8*addr.length) {
-                    throw new CertificateExtensionException("Netmask is too large");
+                    throw new CertificateExtensionException("Netmask is too large: "+str);
                 }
                 for (int i = 0; i < netmask; i++) {
                     encoded[addr.length + i/8] |= 1 << (7 - i%8);
@@ -153,20 +174,34 @@ public class NameConstraint extends StandardCertificateExtension {
                 }
                 return "iPAddress:"+Hex.encodeHexString(encoded);
             } catch (UnknownHostException e) {
-                throw new CertificateExtensionException("Failed to parse IP address in name constraint", e);
+                throw new CertificateExtensionException("Failed to parse IP address in name constraint: "+str, e);
             }
         } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
             // DNS name (it can start with a ".", this means "all subdomains")
             return "dNSName:"+str;
         } else {
-            throw new CertificateExtensionException("Cannot parse name constraint entry, only IPv4/6 addresses with a /netmask and DNS names are supported. Input string: "+str);
+            throw new CertificateExtensionException("Cannot parse name constraint entry, only IPv4/6 addresses with a /netmask and DNS names are supported: "+str);
         }
+    }
+    
+    public static List<String> parseNameConstraintsList(String input) throws CertificateExtensionException {
+        List<String> encodedNames = new ArrayList<String>();
+        if (input != null) {
+            String[] pieces = input.split("\n");
+            for (String piece : pieces) {
+                piece = piece.trim();
+                if (!piece.isEmpty()) {
+                    encodedNames.add(NameConstraint.parseNameConstraintEntry(piece));
+                }
+            }
+        }
+        return encodedNames;
     }
     
     /**
      * Formats an encoded name constraint from parseNameConstraintEntry into human-readable form.
      */
-    public static String formatNameConstraintEntry(String encoded) {
+    private static String formatNameConstraintEntry(String encoded) {
         if (encoded == null) {
             return "";
         }
@@ -203,6 +238,24 @@ public class NameConstraint extends StandardCertificateExtension {
         default:
             throw new UnsupportedOperationException("Unsupported name constraint type "+type);
         }
+    }
+    
+    /**
+     * Formats an encoded list of name constraints into a human-readable list, with one entry per line
+     */
+    public static String formatNameConstraintsList(List<String> encodedList) {
+        StringBuilder sb = new StringBuilder();
+        if (encodedList != null) {
+            boolean first = true;
+            for (String encodedName : encodedList) {
+                if (!first) {
+                    sb.append('\n');
+                }
+                first = false;
+                sb.append(formatNameConstraintEntry(encodedName));
+            }
+        }
+        return sb.toString();
     }
     
 }

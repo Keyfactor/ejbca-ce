@@ -83,6 +83,8 @@
   static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR    = "checkboxrequiredsubjectdirattr";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
   static final String CHECKBOX_REQUIRED_CARDNUMBER        = "checkboxrequiredcardnumber";
+  static final String CHECKBOX_REQUIRED_NC_PERMITTED      = "checkboxrequiredncpermitted";
+  static final String CHECKBOX_REQUIRED_NC_EXCLUDED       = "checkboxrequiredncexcluded";
   static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_PRINTING          = "checkboxrequiredprinting";
@@ -110,7 +112,9 @@
   static final String CHECKBOX_USE_ALLOWEDRQUESTS    = "checkboxuseallowedrequests";
   static final String CHECKBOX_USE_ISSUANCEREVOCATIONREASON = "checkboxuseissuancerevocationreason";
   static final String CHECKBOX_USE_MAXFAILEDLOGINS	 = "checkboxusemaxfailedlogins";
-  static final String CHECKBOX_USE_CERTSERIALNR      =  "checkboxusecertserialonr";
+  static final String CHECKBOX_USE_CERTSERIALNR      = "checkboxusecertserialonr";
+  static final String CHECKBOX_USE_NC_PERMITTED      = "checkboxusencpermitted";
+  static final String CHECKBOX_USE_NC_EXCLUDED       = "checkboxusencexcluded";
   static final String CHECKBOX_USE_EXTENSIONDATA     = "checkboxuseextensiondata";
   
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
@@ -473,6 +477,14 @@
              profiledata.setModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON)));
              profiledata.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_ISSUANCEREVOCATIONREASON))); 
              profiledata.setRequired(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0,true);
+
+             profiledata.setValue(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0, "");
+             profiledata.setRequired(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_NC_PERMITTED)));
+             profiledata.setUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_NC_PERMITTED)));
+             
+             profiledata.setValue(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0, "");
+             profiledata.setRequired(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_NC_EXCLUDED)));
+             profiledata.setUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_NC_EXCLUDED)));
 
              profiledata.setUse(EndEntityProfile.CERTSERIALNR, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_CERTSERIALNR)));
 
