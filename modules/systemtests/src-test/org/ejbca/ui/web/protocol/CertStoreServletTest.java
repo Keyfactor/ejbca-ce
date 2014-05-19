@@ -172,7 +172,7 @@ class CAInHierarchy {
         final CAInfo info = getCAInfo();
         final Collection<Certificate> newCertificateChain = info.getCertificateChain();
         final X509Certificate caCert = (X509Certificate) newCertificateChain.iterator().next();
-        setOfSubjectKeyIDs.add(HashID.getFromKeyID(caCert).key);
+        setOfSubjectKeyIDs.add(HashID.getFromKeyID(caCert).getKey());
         final Iterator<CAInHierarchy> i = this.subs.iterator();
         final int caid = info.getCAId();
         while (i.hasNext()) {

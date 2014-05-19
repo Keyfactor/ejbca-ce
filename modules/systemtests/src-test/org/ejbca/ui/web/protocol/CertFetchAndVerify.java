@@ -192,7 +192,7 @@ public class CertFetchAndVerify {
 
 		final String sURI = RFC4387URL.iHash.appendQueryToURL(getURL(), subjectID);
 		// remove keyID from list of CA keyIds to be checked.
-		Assert.assertTrue("The certificate '"+theCert.getSubjectX500Principal().getName()+"' already tested.", setOfSubjectKeyIDs.remove(keyID.key));
+		Assert.assertTrue("The certificate '"+theCert.getSubjectX500Principal().getName()+"' already tested.", setOfSubjectKeyIDs.remove(keyID.getKey()));
 		log.debug("Trying to get all issuers with MimeMultiPart. URL: '"+sURI+"'.");
 		final Multipart multipart;
 		try {

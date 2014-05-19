@@ -27,7 +27,7 @@ public enum RFC4387URL {
 	private String getID(HashID hash, boolean isDelta, boolean isHTML) {
 		final String theAmp = isHTML ? "&amp;" : "&";
 		final String deltaParam = isDelta ? theAmp+"delta=" : "";
-		return hash.b64url + deltaParam;
+		return hash.getB64url() + deltaParam;
 	}
 	private String appendQueryToURL(String url, String id) {
 		return url+"?"+this.toString()+"="+id;
@@ -61,7 +61,7 @@ public enum RFC4387URL {
 	 */
 	public String getRef(String url, HashID hash, boolean isDelta) {
 		final String resURL = appendQueryToURL(url, getID(hash, isDelta, true));
-		return this.toString()+" = "+hash.b64+(isDelta ? " delta":"")+" <a href=\""+resURL+"\">Download</a>";
+		return this.toString()+" = "+hash.getB64()+(isDelta ? " delta":"")+" <a href=\""+resURL+"\">Download</a>";
 	}
 	/**
 	 * See {@link #getRef(String, HashID, boolean)}, isDelta is false.

@@ -38,19 +38,21 @@ public class HashID {
 	/**
 	 * True if the ID confirms to a RFC4387 ID.
 	 */
-	public final boolean isOK;
+	private final boolean isOK;
 	/*
 	 * The RFC4387 identification string. This is a base64 encoding of the hash.
 	 */
-	public final String b64;
-	/**
+	private final String b64;
+
+    /**
 	 * The b64 with \ substituted with %2B to be used for URLs
 	 */
-	public final String b64url;
+	private final String b64url;
 	/**
 	 * Key to be used for hash tables.
 	 */
-	public final Integer key;
+	private final Integer key;
+	
 	private HashID(byte hash[]) {
 		final String b64padded = new String(Base64.encode(hash));
 		if ( b64padded.length()!=28 || b64padded.charAt(27)!='=' ) {
@@ -142,4 +144,14 @@ public class HashID {
 		}
 		return id;
 	}
+    public String getB64url() {
+        return b64url;
+    }
+    public Integer getKey() {
+        return key;
+    }
+    
+    public String getB64() {
+        return b64;
+    }
 }

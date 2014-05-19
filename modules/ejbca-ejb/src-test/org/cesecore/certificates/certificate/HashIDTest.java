@@ -43,7 +43,7 @@ public class HashIDTest {
         final String subjectDn = "CN=HashIDTest,O=Test,C=SE";
         X509Certificate testCertificate = CertTools.genSelfCert(subjectDn, 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        assertEquals(HashID.getFromSubjectDN(testCertificate).key, HashID.getFromDNString(subjectDn).key);
-        assertEquals(HashID.getFromSubjectDN(testCertificate).key, HashID.getFromDNString(CertTools.reverseDN(subjectDn)).key);
+        assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(subjectDn).getKey());
+        assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(CertTools.reverseDN(subjectDn)).getKey());
     }
 }
