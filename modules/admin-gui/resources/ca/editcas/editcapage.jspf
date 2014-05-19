@@ -1097,8 +1097,8 @@ function checkallfields(){
     <% } %>
     
     <%
-    String nameConstraintsPermittedString = !editca ? "" : cabean.formatNameConstraintsString(x509cainfo.getNameConstraintsPermitted());
-    String nameConstraintsExcludedString = !editca ? "" : cabean.formatNameConstraintsString(x509cainfo.getNameConstraintsExcluded());
+    String nameConstraintsPermittedString = !editca ? "" : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsPermitted());
+    String nameConstraintsExcludedString = !editca ? "" : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsExcluded());
     %>
     <tr id="Row<%=row%2%>">
       <td width="50%"  align="right">
@@ -1107,11 +1107,11 @@ function checkallfields(){
       </td>
       <td width="50%">
         <% if (!editca || isUninitialized) { %>
-            <input type="text" name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" size="40" maxlength="256" value="<c:out value="<%= nameConstraintsPermittedString %>"/>">
+            <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
             <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>" /><br />
             <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>" /></p>
         <% } else { %>
-            <c:out value="<%= !StringUtils.isEmpty(nameConstraintsPermittedString) ? nameConstraintsPermittedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" />
+            <pre><code><c:out value="<%= !StringUtils.isEmpty(nameConstraintsPermittedString) ? nameConstraintsPermittedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" /></pre></code>
         <% } %>
       </td>
     </tr>
@@ -1122,10 +1122,10 @@ function checkallfields(){
       </td>
       <td width="50%">
         <% if (!editca || isUninitialized) { %>
-            <input type="text" name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" size="40" maxlength="256" value="<c:out value="<%= nameConstraintsExcludedString %>"/>"><br />
+            <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsExcludedString %>"/></textarea>
             <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
         <% } else { %>
-            <c:out value="<%= !StringUtils.isEmpty(nameConstraintsExcludedString) ? nameConstraintsExcludedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" />
+            <pre><code><c:out value="<%= !StringUtils.isEmpty(nameConstraintsExcludedString) ? nameConstraintsExcludedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" /></pre></code>
         <% } %>
       </td>
     </tr>

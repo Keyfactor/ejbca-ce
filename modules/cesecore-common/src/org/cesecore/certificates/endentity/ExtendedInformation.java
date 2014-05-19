@@ -16,8 +16,12 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
@@ -96,6 +100,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
+    private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
+    private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
 
 
     /** Creates a new instance of EndEntity Profile */
@@ -232,6 +238,40 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     */
     public void setIssuanceRevocationReason(int reason) {
     	setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + reason);
+    }
+    
+    /** @return Encoded name constraints to permit */
+    public List<String> getNameConstraintsPermitted() {
+        String value = (String) data.get(NAMECONSTRAINTS_PERMITTED);
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        return new ArrayList<String>(Arrays.asList(value.split(";")));
+    }
+    
+    public void setNameConstraintsPermitted(List<String> encodedNames) {
+        if (encodedNames == null) {
+            data.remove(NAMECONSTRAINTS_PERMITTED);
+        } else {
+            data.put(NAMECONSTRAINTS_PERMITTED, StringUtils.join(encodedNames, ';'));
+        }
+    }
+    
+    /** @return Encoded name constraints to exclude */
+    public List<String> getNameConstraintsExcluded() {
+        String value = (String) data.get(NAMECONSTRAINTS_EXCLUDED);
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        return new ArrayList<String>(Arrays.asList(value.split(";")));
+    }
+    
+    public void setNameConstraintsExcluded(List<String> encodedNames) {
+        if (encodedNames == null) {
+            data.remove(NAMECONSTRAINTS_EXCLUDED);
+        } else {
+            data.put(NAMECONSTRAINTS_EXCLUDED, StringUtils.join(encodedNames, ';'));
+        }
     }
     
     /**

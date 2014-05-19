@@ -1013,7 +1013,7 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CB_NAMECONSTRAINTS%>" value="<%=CB_VALUE %>" 
+           <input type="checkbox" name="<%=CB_NAMECONSTRAINTS%>" value="<%=CB_VALUE %>" onClick="checkusefield('<%=CB_NAMECONSTRAINTS%>', '<%=CB_NAMECONSTRAINTSCRITICAL %>')"
            <% if(cpd.getUseNameConstraints())
                  out.write("CHECKED");
            %> id="<%=CB_NAMECONSTRAINTS%>">
