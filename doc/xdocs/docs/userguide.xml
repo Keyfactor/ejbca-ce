@@ -936,6 +936,12 @@ extended key usages in the end. Be sure to follow the numbering.
 After editing the file, simply build and re-deploy EJBCA (ant clean; ant deploy).
 </p>
 </subsubsection>
+
+<subsubsection name="Document Type List">
+<p>The DocumentTypeList extension is used to indicate the document types that the corresponding document signer is allowed to produce. 
+The list should be separated with a comma ','. For example: "P,ID"</p>
+</subsubsection>
+
 <subsubsection name="Private Key Usage Period">
 <p>
 The Private Key Usage Period certificate extension is specified in <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280</a>.

@@ -51,7 +51,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 36.0;
+    public static final float LATEST_VERSION = (float) 37.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -195,6 +195,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEEXTENDEDKEYUSAGE = "useextendedkeyusage";
     protected static final String EXTENDEDKEYUSAGE = "extendedkeyusage";
     protected static final String EXTENDEDKEYUSAGECRITICAL = "extendedkeyusagecritical";
+    protected static final String USEDOCUMENTTYPELIST = "usedocumenttypelist";
+    protected static final String DOCUMENTTYPELISTCRITICAL = "documenttypelistcritical";
+    protected static final String DOCUMENTTYPELIST = "documenttypelist";
     protected static final String USEOCSPNOCHECK = "useocspnocheck";
     protected static final String USEAUTHORITYINFORMATIONACCESS = "useauthorityinformationaccess";
     protected static final String USEOCSPSERVICELOCATOR = "useocspservicelocator";
@@ -259,6 +262,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USEFRESHESTCRL, Extension.freshestCRL.getId());
         useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
         useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
+        useStandardCertificateExtensions.put(USEDOCUMENTTYPELIST, "2.23.136.1.1.6.2");
         useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
         useStandardCertificateExtensions.put(USENAMECONSTRAINTS, Extension.nameConstraints.getId());
         useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, Extension.subjectDirectoryAttributes.getId());
@@ -353,6 +357,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseExtendedKeyUsage(false);
         setExtendedKeyUsage(new ArrayList<String>());
         setExtendedKeyUsageCritical(false);
+        
+        setUseDocumentTypeList(false);
+        setDocumentTypeListCritical(false);
+        setDocumentTypeList(new ArrayList<String>());
 
         ArrayList<Integer> availablecas = new ArrayList<Integer>();
         availablecas.add(Integer.valueOf(ANYCA));
@@ -1039,6 +1047,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return value!=null && value instanceof Boolean && ((Boolean)value).booleanValue();
     }
 
+    public void setUseDocumentTypeList(boolean use) {
+        data.put(USEDOCUMENTTYPELIST, Boolean.valueOf(use));
+    }
+    
+    public boolean getUseDocumentTypeList() {
+        return ((Boolean) data.get(USEDOCUMENTTYPELIST)).booleanValue();
+    }
+    
+    public void setDocumentTypeListCritical(boolean critical) {
+        data.put(DOCUMENTTYPELISTCRITICAL, Boolean.valueOf(critical));
+    }
+    
+    public boolean getDocumentTypeListCritical() {
+        return ((Boolean) data.get(DOCUMENTTYPELISTCRITICAL)).booleanValue();
+    }
+
+    public void setDocumentTypeList(ArrayList<String> docTypes) {
+        data.put(DOCUMENTTYPELIST, docTypes);
+    }
+    
+    public ArrayList<String> getDocumentTypeList() {
+        return (ArrayList<String>) data.get(DOCUMENTTYPELIST);
+    }
+    
     public void setUseExtendedKeyUsage(boolean use) {
         data.put(USEEXTENDEDKEYUSAGE, Boolean.valueOf(use));
     }
@@ -2189,6 +2221,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if(data.get(ISSUERALTERNATIVENAMECRITICAL) == null) { // v 36
                 setIssuerAlternativeNameCritical(false);
+            }
+            if(data.get(USEDOCUMENTTYPELIST) == null) { // v 37
+                setUseDocumentTypeList(false);
+            }
+            if(data.get(DOCUMENTTYPELISTCRITICAL) == null) { // v 37
+                setDocumentTypeListCritical(false);
+            }
+            if(data.get(DOCUMENTTYPELIST) == null) { // v 37
+            	setDocumentTypeList(new ArrayList<String>());
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));
