@@ -624,7 +624,7 @@
                 if (ei == null) {
                     ei = new ExtendedInformation();
                 }
-                value = request.getParameter(NAMECONSTRAINTS_EXCLUDED);
+                value = request.getParameter(TEXTAREA_NC_EXCLUDED);
                 if ( value!=null && !value.trim().isEmpty() ) {
                     ei.setNameConstraintsExcluded(NameConstraint.parseNameConstraintsList(value));
                 } else {
