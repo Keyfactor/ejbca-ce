@@ -113,9 +113,11 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
@@ -782,7 +784,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         /*
                          * Also check that the signer certificate can be verified by one of the CA-certificates that we answer for
                          */
-                        final X509Certificate signerca = certificateStoreSession.findLatestX509CertificateBySubject(signerissuer);
+                        if(CaCertificateCache.INSTANCE.isCacheExpired()) {
+                            certificateStoreSession.reloadCaCertificateCache();
+                        }
+                        final X509Certificate signerca = CaCertificateCache.INSTANCE.findLatestBySubjectDN(HashID.getFromDNString(signerissuer));
                         String subject = signerSubjectDn;
                         String issuer = signerissuer;
                         if (signerca != null) {

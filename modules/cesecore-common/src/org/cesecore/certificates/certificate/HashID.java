@@ -106,7 +106,8 @@ public class HashID {
      */
     public static HashID getFromDNString(String sDN) {
 		// Note that the DN string has to be encoded to an ASN1 with the BC lib. BC endcoding is EJBCA standard.
-		return getFromDN( new X500Principal(new X509Principal(sDN).getEncoded()) );
+		return getFromDN( new X500Principal(new X509Principal(CertTools
+                .isDNReversed(sDN) ? CertTools.reverseDN(sDN) : sDN).getEncoded()) );
 	}
 	/**
 	 * @param s The hash base64 encoded. See RFC4387
