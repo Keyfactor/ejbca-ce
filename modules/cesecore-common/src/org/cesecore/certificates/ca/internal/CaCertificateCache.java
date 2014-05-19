@@ -67,9 +67,6 @@ public enum CaCertificateCache  {
 	 */
 	final private ReentrantLock rebuildlock = new ReentrantLock();
 
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.protocol.certificatestore.ICertificateCache#findLatestBySubjectDN(org.ejbca.core.protocol.ocsp.HashID)
-	 */
 	public X509Certificate findLatestBySubjectDN(HashID id) {
 
 		// Keep the lock as small as possible, but do not try to read the cache while it is being rebuilt
