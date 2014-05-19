@@ -20,7 +20,7 @@
 
   static final String INHERITFROMCA = "inheritfromca";
 
-  static final String CHECKBOX_VALUE           = CertificateProfile.TRUE;
+  static final String CB_VALUE           = CertificateProfile.TRUE;
 
 //  Used in profiles.jsp
   static final String BUTTON_EDIT_CERTIFICATEPROFILES      = "buttoneditcertificateprofile"; 
@@ -68,59 +68,62 @@
   static final String TEXTFIELD_CTMINSCTS              = "textfieldctminscts";
   static final String TEXTFIELD_CTMAXSCTS              = "textfieldctmaxscts";
   static final String TEXTFIELD_CTMAXRETRIES           = "textfieldctmaxretries";
+  static final String TEXTFIELD_DOCUMENTTYPE			 = "textfielddocumenttype";
   
-  static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
-  static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
-  static final String CHECKBOX_KEYUSAGE                           = "checkboxkeyusage";
-  static final String CHECKBOX_KEYUSAGECRITICAL                   = "checkboxkeyusagecritical";
-  static final String CHECKBOX_SUBJECTKEYIDENTIFIER               = "checkboxsubjectkeyidentifier";
-  static final String CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL       = "checkboxsubjectkeyidentifiercritical";
-  static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
-  static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
-  static final String CHECKBOX_SUBJECTALTERNATIVENAME             = "checkboxsubjectalternativename";
-  static final String CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL     = "checkboxsubjectalternativenamecritical";
-  static final String CHECKBOX_ISSUERALTERNATIVENAME              = "checkboxissueralternativename";
-  static final String CHECKBOX_ISSUERALTERNATIVENAMECRITICAL      = "checkboxissueralternativenamecritical";
-  static final String CHECKBOX_SUBJECTDIRATTRIBUTES               = "checksubjectdirattributes";
-  static final String CHECKBOX_NAMECONSTRAINTS                    = "checknameconstraints";
-  static final String CHECKBOX_NAMECONSTRAINTSCRITICAL            = "checknameconstraintscritical";
-  static final String CHECKBOX_CRLDISTRIBUTIONPOINT               = "checkboxcrldistributionpoint";
-  static final String CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT     = "checkboxusedefaultcrldistributionpoint";
-  static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
-  static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
-  static final String CHECKBOX_USEFRESHESTCRL                     = "checkboxusefreshestcrl";
-  static final String CHECKBOX_USECADEFINEDFRESHESTCRL            = "checkboxusecadefinedfreshestcrl";
-  static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
-  static final String CHECKBOX_ALLOWDNOVERRIDE                    = "checkallowdnoverride";
-  static final String CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE      = "allowcertserialnumberoverride";
-  static final String CHECKBOX_ALLOWEXTENSIONOVERRIDE             = "checkallowextensionoverride";
-  static final String CHECKBOX_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
-  static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
-  static final String CHECKBOX_ALLOWBACKDATEDREVOCATION           = "checkallowbackdatedrevokation";
-  static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
-  static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
-  static final String CHECKBOX_USEOCSPNOCHECK                     = "checkuseocspnocheck";
-  static final String CHECKBOX_USEAUTHORITYINFORMATIONACCESS      = "checkuseauthorityinformationaccess";
-  static final String CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
-  static final String CHECKBOX_USELDAPDNORDER                      = "checkuseldapdnorder";
-  static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
-  static final String CHECKBOX_USECARDNUMBER                      = "checkusecardnumber";
-  static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
-  static final String CHECKBOX_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
-  static final String CHECKBOX_USESUBJECTALTNAMESUBSET            = "checkusesubjectaltnamesubset";
-  static final String CHECKBOX_USEPATHLENGTHCONSTRAINT            = "checkusepathlengthconstraint";
-  static final String CHECKBOX_USEQCSTATEMENT                     = "checkuseqcstatement";
-  static final String CHECKBOX_QCSTATEMENTCRITICAL                = "checkqcstatementcritical";
-  static final String CHECKBOX_USEPKIXQCSYNTAXV2                  = "checkpkixqcsyntaxv2";
-  static final String CHECKBOX_USEQCETSIQCCOMPLIANCE              = "checkqcetsiqcompliance";
-  static final String CHECKBOX_USEQCETSIVALUELIMIT                = "checkqcetsivaluelimit";
-  static final String CHECKBOX_USEQCETSIRETENTIONPERIOD           = "checkqcetsiretentionperiod";
-  static final String CHECKBOX_USEQCETSISIGNATUREDEVICE           = "checkqcetsisignaturedevice";
-  static final String CHECKBOX_USEQCCUSTOMSTRING                  = "checkqccustomstring";
-  static final String CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE	  = "checkboxuseprivkeyusageperiodnotbefore";
-  static final String CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER	  = "checkboxuseprivkeyusageperiodnotafter";
-  static final String CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS  = "checkboxusecertificatetransparencyincerts";
-  static final String CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP   = "checkboxusecertificatetransparencyinocsp";
+  static final String CB_BASICCONSTRAINTS                   = "cbbasicconstraints";
+  static final String CB_BASICCONSTRAINTSCRITICAL           = "cbbasicconstraintscritical";
+  static final String CB_KEYUSAGE                           = "cbkeyusage";
+  static final String CB_KEYUSAGECRITICAL                   = "cbkeyusagecritical";
+  static final String CB_SUBJECTKEYIDENTIFIER               = "cbsubjectkeyidentifier";
+  static final String CB_SUBJECTKEYIDENTIFIERCRITICAL       = "cbsubjectkeyidentifiercritical";
+  static final String CB_AUTHORITYKEYIDENTIFIER             = "cbauthoritykeyidentifier";
+  static final String CB_AUTHORITYKEYIDENTIFIERCRITICAL     = "cbauthoritykeyidentifiercritical";
+  static final String CB_SUBJECTALTERNATIVENAME             = "cbsubjectalternativename";
+  static final String CB_SUBJECTALTERNATIVENAMECRITICAL     = "cbsubjectalternativenamecritical";
+  static final String CB_ISSUERALTERNATIVENAME              = "cbissueralternativename";
+  static final String CB_ISSUERALTERNATIVENAMECRITICAL      = "cbissueralternativenamecritical";
+  static final String CB_USEDOCUMENTTYPE					  = "cbusedocumenttype";
+  static final String CB_DOCUMENTTYPECRITICAL				  = "cbdocumenttypecritical";
+  static final String CB_SUBJECTDIRATTRIBUTES               = "checksubjectdirattributes";
+  static final String CB_NAMECONSTRAINTS                    = "checknameconstraints";
+  static final String CB_NAMECONSTRAINTSCRITICAL            = "checknameconstraintscritical";
+  static final String CB_CRLDISTRIBUTIONPOINT               = "cbcrldistributionpoint";
+  static final String CB_USEDEFAULTCRLDISTRIBUTIONPOINT     = "cbusedefaultcrldistributionpoint";
+  static final String CB_CRLDISTRIBUTIONPOINTCRITICAL       = "cbcrldistributionpointcritical";
+  static final String CB_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
+  static final String CB_USEFRESHESTCRL                     = "cbusefreshestcrl";
+  static final String CB_USECADEFINEDFRESHESTCRL            = "cbusecadefinedfreshestcrl";
+  static final String CB_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
+  static final String CB_ALLOWDNOVERRIDE                    = "checkallowdnoverride";
+  static final String CB_ALLOWCERTSERIALNUMBEROVERRIDE      = "allowcertserialnumberoverride";
+  static final String CB_ALLOWEXTENSIONOVERRIDE             = "checkallowextensionoverride";
+  static final String CB_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
+  static final String CB_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
+  static final String CB_ALLOWBACKDATEDREVOCATION           = "checkallowbackdatedrevokation";
+  static final String CB_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
+  static final String CB_EXTENDEDKEYUSAGECRITICAL           = "cbextendedkeyusagecritical";
+  static final String CB_USEOCSPNOCHECK                     = "checkuseocspnocheck";
+  static final String CB_USEAUTHORITYINFORMATIONACCESS      = "checkuseauthorityinformationaccess";
+  static final String CB_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
+  static final String CB_USELDAPDNORDER                     = "checkuseldapdnorder";
+  static final String CB_USEMSTEMPLATE                      = "checkusemstemplate";
+  static final String CB_USECARDNUMBER                      = "checkusecardnumber";
+  static final String CB_USECNPOSTFIX                       = "checkusecnpostfix";
+  static final String CB_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
+  static final String CB_USESUBJECTALTNAMESUBSET            = "checkusesubjectaltnamesubset";
+  static final String CB_USEPATHLENGTHCONSTRAINT            = "checkusepathlengthconstraint";
+  static final String CB_USEQCSTATEMENT                     = "checkuseqcstatement";
+  static final String CB_QCSTATEMENTCRITICAL                = "checkqcstatementcritical";
+  static final String CB_USEPKIXQCSYNTAXV2                  = "checkpkixqcsyntaxv2";
+  static final String CB_USEQCETSIQCCOMPLIANCE              = "checkqcetsiqcompliance";
+  static final String CB_USEQCETSIVALUELIMIT                = "checkqcetsivaluelimit";
+  static final String CB_USEQCETSIRETENTIONPERIOD           = "checkqcetsiretentionperiod";
+  static final String CB_USEQCETSISIGNATUREDEVICE           = "checkqcetsisignaturedevice";
+  static final String CB_USEQCCUSTOMSTRING                  = "checkqccustomstring";
+  static final String CB_USEPRIVKEYUSAGEPERIODNOTBEFORE	 = "cbuseprivkeyusageperiodnotbefore";
+  static final String CB_USEPRIVKEYUSAGEPERIODNOTAFTER	  	 = "cbuseprivkeyusageperiodnotafter";
+  static final String CB_USECERTIFICATETRANSPARENCYINCERTS  = "cbusecertificatetransparencyincerts";
+  static final String CB_USECERTIFICATETRANSPARENCYINOCSP   = "cbusecertificatetransparencyinocsp";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -139,36 +142,31 @@
   static final String SELECT_APPROVALSETTINGS                     = "selectapprovalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "selectnumofrequiredapprovals";
   static final String SELECT_CTLOGS                               = "selectctlogs";
-
   // Declare Language file.
 %>
 <% 
-
   // Initialize environment
-  String certprofile = null;
+  String cp = null;
   String includefile = "certificateprofilespage.jspf"; 
-  boolean  triedtoeditfixedcertificateprofile   = false;
-  boolean  triedtodeletefixedcertificateprofile = false;
-  boolean  triedtoaddfixedcertificateprofile    = false;
-  boolean  certificateprofileexists             = false;
-  boolean  certificateProfileDeletionFailed = false;
-  List<String> servicesContainingCertificateProfile = new ArrayList<String>();
-  long numberOfEndEntitiesContainingCertificateProfile = 0;
-  List<String> endEntitiesContainingCertificateProfile = new ArrayList<String>();
-  List<String> endEntityProfilesContainingCertificateProfile = new ArrayList<String>();
-  List<String> hardTokenProfilesContainingCertificateProfile = new ArrayList<String>();
-  List<String> casUsingCertificateProfile = new ArrayList<String>();
-
+  boolean  triedtoeditfixcp   = false;
+  boolean  triedtodeletefixcp = false;
+  boolean  triedtoaddfixcp    = false;
+  boolean  cpexists           = false;
+  boolean  cpDeleteFailed = false;
+  List<String> servicesWithCP = new ArrayList<String>();
+  long numEEsWithCP = 0;
+  List<String> eentitiesWithCP = new ArrayList<String>();
+  List<String> eepsWithCP = new ArrayList<String>();
+  List<String> htpsWithCP = new ArrayList<String>();
+  List<String> casWithCP = new ArrayList<String>();
+  
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES); 
                                             cabean.initialize(ejbcawebbean); 
-
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcertificateprofiles/editcertificateprofiles.jsp";
-  
   boolean issuperadministrator = false;
   try{
     issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
   }catch(AuthorizationDeniedException ade){}   
-
   String[] keyusagetexts = CertificateView.KEYUSAGETEXTS;
   int[] defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 %>
@@ -187,24 +185,35 @@
   RequestHelper.setDefaultCharacterEncoding(request);
   if( request.getParameter(ACTION) != null){
   		if( request.getParameter(ACTION).equals(ACTION_EDIT_CERTIFICATEPROFILES)){
+				cp = request.getParameter(SELECT_CERTIFICATEPROFILES);
+		
+				servicesWithCP = cabean.getServicesUsingCertificateProfile(cp); 
+				numEEsWithCP = cabean.countEndEntitiesUsingCertificateProfile(cp);
+				//Don't query for end entities of their number exceeds 1000
+				if(numEEsWithCP > 0 && numEEsWithCP < 1000) {
+					eentitiesWithCP = cabean.getEndEntitiesUsingCertificateProfile(cp);
+				}
+				eepsWithCP = cabean.getEndEntityProfilesUsingCertificateProfile(cp);
+				htpsWithCP = cabean.getHardTokenTokensUsingCertificateProfile(cp);
+				casWithCP = cabean.getCaUsingCertificateProfile(cp);
+				
       			if( request.getParameter(BUTTON_EDIT_CERTIFICATEPROFILES) != null){
           				// Display  profilepage.jsp
-         				certprofile = request.getParameter(SELECT_CERTIFICATEPROFILES);
-         				if(certprofile != null){
+         				if(cp != null){
            						// clear any stored temporary certificate profile
            						cabean.setTempCertificateProfile(null);
-           						if(!certprofile.trim().equals("")){
-             							if(!certprofile.endsWith("(FIXED)")){ 
+           						if(!cabean.cpNameEmpty(cp)){
+             							if(!cabean.cpFixed(cp)){ 
                									includefile="certificateprofilepage.jspf"; 
              							}else{
-                								triedtoeditfixedcertificateprofile=true;
-                								certprofile= null;
+                								triedtoeditfixcp=true;
+                								cp= null;
              							}
            						}else{ 
-            							certprofile= null;
+            							cp= null;
           						} 
         				}
-        				if(certprofile == null){   
+        				if(cp == null){   
           						includefile="certificateprofilespage.jspf";     
         				}
       			} // if( request.getParameter(BUTTON_EDIT_CERTIFICATEPROFILES) != null)
@@ -212,32 +221,16 @@
       
       			if( request.getParameter(BUTTON_DELETE_CERTIFICATEPROFILES) != null) {
           				// Delete profile and display profilespage. 
-          				certprofile = request.getParameter(SELECT_CERTIFICATEPROFILES);
-          				if(certprofile != null){
-            					if(!certprofile.trim().equals("")){
-              							if(!certprofile.endsWith("(FIXED)")){ 
-                  								servicesContainingCertificateProfile = cabean.getServicesUsingCertificateProfile(certprofile); 
-                  								numberOfEndEntitiesContainingCertificateProfile = cabean.countEndEntitiesUsingCertificateProfile(certprofile);
-                  								//Don't query for end entities of their number exceeds 1000
-                  								if(numberOfEndEntitiesContainingCertificateProfile > 0 && numberOfEndEntitiesContainingCertificateProfile < 1000) {
-                      									endEntitiesContainingCertificateProfile = cabean.getEndEntitiesUsingCertificateProfile(certprofile);
-                  								}
-                  								endEntityProfilesContainingCertificateProfile = cabean.getEndEntityProfilesUsingCertificateProfile(certprofile);
-      		      								hardTokenProfilesContainingCertificateProfile = cabean.getHardTokenTokensUsingCertificateProfile(certprofile);
-      		      								casUsingCertificateProfile = cabean.getCaUsingCertificateProfile(certprofile);
-      		      								if( !servicesContainingCertificateProfile.isEmpty() 
-      		       																		|| numberOfEndEntitiesContainingCertificateProfile > 0
-      		       																		|| !endEntityProfilesContainingCertificateProfile.isEmpty()
-      		       																		|| !hardTokenProfilesContainingCertificateProfile.isEmpty()
-      		       																		|| !casUsingCertificateProfile.isEmpty()) {
-      		          									certificateProfileDeletionFailed = true;
-      		    								} else {
-      		        									cabean.removeCertificateProfile(certprofile);
-      		    								}
-              							}else{
-                								triedtodeletefixedcertificateprofile=true;
-              							}
-            					}
+          				if(!cabean.cpNameEmpty(cp)){
+              					if(!cabean.cpFixed(cp)){
+				      					if(cabean.canDeleteCertProfile(cp, numEEsWithCP)) {
+      		          							cpDeleteFailed = true;
+      		    						} else {
+      		        							cabean.removeCertificateProfile(cp);
+      		    						}
+              					}else{
+                						triedtodeletefixcp=true;
+              					}
           				}
           						includefile="certificateprofilespage.jspf";             
       			} // if( request.getParameter(BUTTON_DELETE_CERTIFICATEPROFILES) != null)
@@ -245,59 +238,53 @@
     	  
       			if( request.getParameter(BUTTON_RENAME_CERTIFICATEPROFILES) != null){ 
          				// Rename selected profile and display profilespage.
-       					String newcertificateprofilename = request.getParameter(TEXTFIELD_CERTIFICATEPROFILESNAME);
-       					String oldcertificateprofilename = request.getParameter(SELECT_CERTIFICATEPROFILES);
-       					if(oldcertificateprofilename != null && newcertificateprofilename != null){
-         						if(!newcertificateprofilename.trim().equals("") && !oldcertificateprofilename.trim().equals("")){
-           								if(!oldcertificateprofilename.endsWith("(FIXED)")){ 
-             									try{
-               											cabean.renameCertificateProfile(oldcertificateprofilename.trim(),newcertificateprofilename.trim());
-             									}catch( CertificateProfileExistsException e){
-               											certificateprofileexists=true;
-             									}
-           								}else{
-              									triedtoeditfixedcertificateprofile=true;
-           								}        
-         						}
-       					}      
+       					String newcpname = request.getParameter(TEXTFIELD_CERTIFICATEPROFILESNAME);
+       					String oldcpname = cp;
+       					if(!cabean.cpNameEmpty(oldcpname) && !cabean.cpNameEmpty(newcpname)){
+           						if(!cabean.cpFixed(oldcpname)){ 
+             							try{
+               									cabean.renameCertificateProfile(oldcpname.trim(),newcpname.trim());
+             							}catch( CertificateProfileExistsException e){
+               									cpexists=true;
+             							}
+           						}else{
+              							triedtoeditfixcp=true;
+           						}        
+       					}
        					includefile="certificateprofilespage.jspf"; 
       			} // if( request.getParameter(BUTTON_RENAME_CERTIFICATEPROFILES) != null)
     	  
     	  
       			if( request.getParameter(BUTTON_ADD_CERTIFICATEPROFILES) != null){
          				// Add profile and display profilespage.
-         				certprofile = request.getParameter(TEXTFIELD_CERTIFICATEPROFILESNAME);
-         				if(certprofile != null){
-           						if(!certprofile.trim().equals("")){
-             							if(!certprofile.endsWith("(FIXED)")){
-               									try{
-                 										cabean.addCertificateProfile(certprofile.trim());
-               									}catch( CertificateProfileExistsException e){
-                 										certificateprofileexists=true;
-               									}
-             							}else{
-               									triedtoaddfixedcertificateprofile=true; 
-             							}
-           						}
+         				cp = request.getParameter(TEXTFIELD_CERTIFICATEPROFILESNAME);
+         				if(!cabean.cpNameEmpty(cp)){
+             					if(!cabean.cpFixed(cp)){
+               							try{
+                 								cabean.addCertificateProfile(cp.trim());
+               							}catch( CertificateProfileExistsException e){
+                 								cpexists=true;
+               							}
+             					}else{
+               							triedtoaddfixcp=true; 
+             					}
          				}
          				includefile="certificateprofilespage.jspf"; 
       			} // if( request.getParameter(BUTTON_ADD_CERTIFICATEPROFILES) != null)
     	  
       			if( request.getParameter(BUTTON_CLONE_CERTIFICATEPROFILES) != null){
          				// clone profile and display profilespage.
-       					String newcertificateprofilename = request.getParameter(TEXTFIELD_CERTIFICATEPROFILESNAME);
-       					String oldcertificateprofilename = request.getParameter(SELECT_CERTIFICATEPROFILES);
-       					if(oldcertificateprofilename != null && newcertificateprofilename != null){
-         						if(!newcertificateprofilename.trim().equals("") && !oldcertificateprofilename.trim().equals("")){
-             							if(oldcertificateprofilename.endsWith("(FIXED)")) {
-               									oldcertificateprofilename = oldcertificateprofilename.substring(0,oldcertificateprofilename.length()-8);
-             							}
-             							try{ 
-               									cabean.cloneCertificateProfile(oldcertificateprofilename.trim(),newcertificateprofilename.trim());
-             							}catch( CertificateProfileExistsException e){
-               									certificateprofileexists=true;
-             							}
-         						}
+       					String newcpname = request.getParameter(TEXTFIELD_CERTIFICATEPROFILESNAME);
+       					String oldcpname = cp;
+       					if(!cabean.cpNameEmpty(oldcpname) && !cabean.cpNameEmpty(newcpname)){
+             					if(cabean.cpFixed(oldcpname)) {
+               							oldcpname = oldcpname.substring(0,oldcpname.length()-8);
+             					}
+             					try{ 
+               							cabean.cloneCertificateProfile(oldcpname.trim(),newcpname.trim());
+             					}catch( CertificateProfileExistsException e){
+               							cpexists=true;
+             					}
        					}
           				includefile="certificateprofilespage.jspf"; 
       			} // if( request.getParameter(BUTTON_CLONE_CERTIFICATEPROFILES) != null)
@@ -306,15 +293,13 @@
     	
     	if( request.getParameter(ACTION).equals(ACTION_EDIT_CERTIFICATEPROFILE)){
         		// Display edit access rules page.
-       			certprofile = request.getParameter(HIDDEN_CERTIFICATEPROFILENAME);
-       			if(certprofile != null){
-         				if(!certprofile.trim().equals("")){
-
+       			cp = request.getParameter(HIDDEN_CERTIFICATEPROFILENAME);
+       			if(!cabean.cpNameEmpty(cp)){
              					CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
              					if(certprofiledata == null) {
-                 						certprofiledata = cabean.getCertificateProfile(certprofile);
+                 						certprofiledata = cabean.getCertificateProfile(cp);
              					}
-             					CertificateProfile certificateprofiledata = (CertificateProfile) certprofiledata.clone();
+             					CertificateProfile cpd = (CertificateProfile) certprofiledata.clone();
        
              					String value = request.getParameter(TEXTFIELD_VALIDITY).trim();
              					if ( value!=null && value.length()>0 ){
@@ -322,210 +307,232 @@
                  						if ( validity<0 ) {
                      							throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
                  						}
-                 						certificateprofiledata.setValidity(validity);
+                 						cpd.setValidity(validity);
              					}
   
              					boolean use = false;
-             					value = request.getParameter(CHECKBOX_ALLOWVALIDITYOVERRIDE);
+             					value = request.getParameter(CB_ALLOWVALIDITYOVERRIDE);
              					if(value != null){
-                						use = value.equals(CHECKBOX_VALUE);
-                						certificateprofiledata.setAllowValidityOverride(use);
+                						use = value.equals(CB_VALUE);
+                						cpd.setAllowValidityOverride(use);
              					} else {
-                						certificateprofiledata.setAllowValidityOverride(false);
+                						cpd.setAllowValidityOverride(false);
              					}
              
-             					value = request.getParameter(CHECKBOX_ALLOWEXTENSIONOVERRIDE);
+             					value = request.getParameter(CB_ALLOWEXTENSIONOVERRIDE);
              					if(value != null){
-                						use = value.equals(CHECKBOX_VALUE);
-                						certificateprofiledata.setAllowExtensionOverride(use);
+                						use = value.equals(CB_VALUE);
+                						cpd.setAllowExtensionOverride(use);
              					} else {
-                						certificateprofiledata.setAllowExtensionOverride(false);
+                						cpd.setAllowExtensionOverride(false);
              					}
 
-             					value = request.getParameter(CHECKBOX_ALLOWDNOVERRIDE);
+             					value = request.getParameter(CB_ALLOWDNOVERRIDE);
              					if(value != null){
-                						use = value.equals(CHECKBOX_VALUE);
-                						certificateprofiledata.setAllowDNOverride(use);
+                						use = value.equals(CB_VALUE);
+                						cpd.setAllowDNOverride(use);
              					} else {
-               							certificateprofiledata.setAllowDNOverride(false);
+               							cpd.setAllowDNOverride(false);
              					}
 
-             					value = request.getParameter(CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE);
+             					value = request.getParameter(CB_ALLOWCERTSERIALNUMBEROVERRIDE);
              					if( value!=null && cabean.isUniqueIndexForSerialNumber() ){
-                						use = value.equals(CHECKBOX_VALUE);
-                						certificateprofiledata.setAllowCertSerialNumberOverride(use);
+                						use = value.equals(CB_VALUE);
+                						cpd.setAllowCertSerialNumberOverride(use);
              					} else {
-                						certificateprofiledata.setAllowCertSerialNumberOverride(false);
+                						cpd.setAllowCertSerialNumberOverride(false);
              					}
 
-             					value = request.getParameter(CHECKBOX_BASICCONSTRAINTS);
+             					value = request.getParameter(CB_BASICCONSTRAINTS);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseBasicConstraints(use);
-                 						value = request.getParameter(CHECKBOX_BASICCONSTRAINTSCRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseBasicConstraints(use);
+                 						value = request.getParameter(CB_BASICCONSTRAINTSCRITICAL); 
                  						if(value != null){
-                   								certificateprofiledata.setBasicConstraintsCritical(value.equals(CHECKBOX_VALUE));
+                   								cpd.setBasicConstraintsCritical(value.equals(CB_VALUE));
                  						} else {
-                   								certificateprofiledata.setBasicConstraintsCritical(false);
+                   								cpd.setBasicConstraintsCritical(false);
                  						}
              					}else{
-                 						certificateprofiledata.setUseBasicConstraints(false);
-                 						certificateprofiledata.setBasicConstraintsCritical(false); 
+                 						cpd.setUseBasicConstraints(false);
+                 						cpd.setBasicConstraintsCritical(false); 
              					}
              
              					use = false;
-             					value = request.getParameter(CHECKBOX_USEPATHLENGTHCONSTRAINT);
+             					value = request.getParameter(CB_USEPATHLENGTHCONSTRAINT);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUsePathLengthConstraint(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUsePathLengthConstraint(use);
                  						value = request.getParameter(TEXTFIELD_PATHLENGTHCONSTRAINT); 
                  						if(value != null){
-                   								certificateprofiledata.setPathLengthConstraint(Integer.parseInt(value));
+                   								cpd.setPathLengthConstraint(Integer.parseInt(value));
                  						} 
              					}else{
-                 						certificateprofiledata.setUsePathLengthConstraint(false);
-                 						certificateprofiledata.setPathLengthConstraint(0); 
+                 						cpd.setUsePathLengthConstraint(false);
+                 						cpd.setPathLengthConstraint(0); 
              					}
        
              					use = false;
-             					value = request.getParameter(CHECKBOX_KEYUSAGE);
+             					value = request.getParameter(CB_KEYUSAGE);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseKeyUsage(use);
-                 						value = request.getParameter(CHECKBOX_KEYUSAGECRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseKeyUsage(use);
+                 						value = request.getParameter(CB_KEYUSAGECRITICAL); 
                  						if(value != null)
-                   								certificateprofiledata.setKeyUsageCritical(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setKeyUsageCritical(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setKeyUsageCritical(false); 
+                   								cpd.setKeyUsageCritical(false); 
              					}else{
-                 						certificateprofiledata.setUseKeyUsage(false);
-                 						certificateprofiledata.setKeyUsageCritical(false); 
+                 						cpd.setUseKeyUsage(false);
+                 						cpd.setKeyUsageCritical(false); 
              					}
     
              					use = false;
-             					value = request.getParameter(CHECKBOX_SUBJECTKEYIDENTIFIER);
+             					value = request.getParameter(CB_SUBJECTKEYIDENTIFIER);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseSubjectKeyIdentifier(use);
-                 						value = request.getParameter(CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseSubjectKeyIdentifier(use);
+                 						value = request.getParameter(CB_SUBJECTKEYIDENTIFIERCRITICAL); 
                  						if(value != null)
-                   								certificateprofiledata.setSubjectKeyIdentifierCritical(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setSubjectKeyIdentifierCritical(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setSubjectKeyIdentifierCritical(false); 
+                   								cpd.setSubjectKeyIdentifierCritical(false); 
              					}else{
-                 						certificateprofiledata.setUseSubjectKeyIdentifier(false);
-                 						certificateprofiledata.setSubjectKeyIdentifierCritical(false); 
+                 						cpd.setUseSubjectKeyIdentifier(false);
+                 						cpd.setSubjectKeyIdentifierCritical(false); 
              					}
 
              					use = false;
-             					value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
+             					value = request.getParameter(CB_AUTHORITYKEYIDENTIFIER);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseAuthorityKeyIdentifier(use);
-                 						value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseAuthorityKeyIdentifier(use);
+                 						value = request.getParameter(CB_AUTHORITYKEYIDENTIFIERCRITICAL); 
                  						if(value != null)
-                   								certificateprofiledata.setAuthorityKeyIdentifierCritical(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setAuthorityKeyIdentifierCritical(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setAuthorityKeyIdentifierCritical(false); 
+                   								cpd.setAuthorityKeyIdentifierCritical(false); 
              					}else{
-                 						certificateprofiledata.setUseAuthorityKeyIdentifier(false);
-                 						certificateprofiledata.setAuthorityKeyIdentifierCritical(false); 
+                 						cpd.setUseAuthorityKeyIdentifier(false);
+                 						cpd.setAuthorityKeyIdentifierCritical(false); 
              					}
 
              					use = false;
-             					value = request.getParameter(CHECKBOX_SUBJECTALTERNATIVENAME);
+             					value = request.getParameter(CB_SUBJECTALTERNATIVENAME);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseSubjectAlternativeName(use);
-                 						value = request.getParameter(CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseSubjectAlternativeName(use);
+                 						value = request.getParameter(CB_SUBJECTALTERNATIVENAMECRITICAL); 
                  						if(value != null)
-                   								certificateprofiledata.setSubjectAlternativeNameCritical(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setSubjectAlternativeNameCritical(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setSubjectAlternativeNameCritical(false); 
+                   								cpd.setSubjectAlternativeNameCritical(false); 
              					}else{
-                 						certificateprofiledata.setUseSubjectAlternativeName(false);
-                 						certificateprofiledata.setSubjectAlternativeNameCritical(false); 
+                 						cpd.setUseSubjectAlternativeName(false);
+                 						cpd.setSubjectAlternativeNameCritical(false); 
              					}
              					
              					use = false;
-             					value = request.getParameter(CHECKBOX_ISSUERALTERNATIVENAME);
+             					value = request.getParameter(CB_ISSUERALTERNATIVENAME);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseIssuerAlternativeName(use);
-                 						value = request.getParameter(CHECKBOX_ISSUERALTERNATIVENAMECRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseIssuerAlternativeName(use);
+                 						value = request.getParameter(CB_ISSUERALTERNATIVENAMECRITICAL); 
                  						if(value != null)
-                   								certificateprofiledata.setIssuerAlternativeNameCritical(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setIssuerAlternativeNameCritical(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setIssuerAlternativeNameCritical(false); 
+                   								cpd.setIssuerAlternativeNameCritical(false); 
              					}else{
-                 						certificateprofiledata.setUseIssuerAlternativeName(false);
-                 						certificateprofiledata.setIssuerAlternativeNameCritical(false); 
+                 						cpd.setUseIssuerAlternativeName(false);
+                 						cpd.setIssuerAlternativeNameCritical(false); 
              					}
 								
-            					value = request.getParameter(CHECKBOX_SUBJECTDIRATTRIBUTES);
-             					if(value != null){                  
-                  						certificateprofiledata.setUseSubjectDirAttributes(value.equals(CHECKBOX_VALUE));
-             					} else {
-                 						certificateprofiledata.setUseSubjectDirAttributes(false);
+             					use = false;
+             					value = request.getParameter(CB_USEDOCUMENTTYPE);
+             					if(value != null){
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseDocumentTypeList(use);
+                 						value = request.getParameter(CB_DOCUMENTTYPECRITICAL); 
+                 						if(value != null)
+                   								cpd.setDocumentTypeListCritical(value.equals(CB_VALUE)); 
+                 						else
+                   								cpd.setDocumentTypeListCritical(false); 
+                 						
+                 						value = request.getParameter(TEXTFIELD_DOCUMENTTYPE);
+                 						if(use && value != null)
+                 								cpd.setDocumentTypeList(cabean.getListFromString(value));
+                 						else
+                 								cpd.setDocumentTypeList(new ArrayList<String>());
+             					}else{
+                 						cpd.setUseDocumentTypeList(false);
+                 						cpd.setDocumentTypeListCritical(false);
+                 						cpd.setDocumentTypeList(new ArrayList<String>());
              					}
              					
-             					value = request.getParameter(CHECKBOX_NAMECONSTRAINTS);
+            					value = request.getParameter(CB_SUBJECTDIRATTRIBUTES);
+             					if(value != null){                  
+                  						cpd.setUseSubjectDirAttributes(value.equals(CB_VALUE));
+             					} else {
+                 						cpd.setUseSubjectDirAttributes(false);
+             					}
+             					
+             					value = request.getParameter(CB_NAMECONSTRAINTS);
                                 if(value != null){                  
-                                        certificateprofiledata.setUseNameConstraints(value.equals(CHECKBOX_VALUE));
-                                        value = request.getParameter(CHECKBOX_NAMECONSTRAINTSCRITICAL); 
+                                        cpd.setUseNameConstraints(value.equals(CB_VALUE));
+                                        value = request.getParameter(CB_NAMECONSTRAINTSCRITICAL); 
                                         if(value != null)
-                                                certificateprofiledata.setNameConstraintsCritical(value.equals(CHECKBOX_VALUE)); 
+                                                cpd.setNameConstraintsCritical(value.equals(CB_VALUE)); 
                                         else
-                                                certificateprofiledata.setNameConstraintsCritical(false);
+                                                cpd.setNameConstraintsCritical(false);
                                 } else {
-                                        certificateprofiledata.setUseNameConstraints(false);
-                                        certificateprofiledata.setNameConstraintsCritical(false);
+                                        cpd.setUseNameConstraints(false);
+                                        cpd.setNameConstraintsCritical(false);
                                 }
 
              					use = false;
-             					value = request.getParameter(CHECKBOX_CRLDISTRIBUTIONPOINT);
+             					value = request.getParameter(CB_CRLDISTRIBUTIONPOINT);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseCRLDistributionPoint(use);
-                 						value = request.getParameter(CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseCRLDistributionPoint(use);
+                 						value = request.getParameter(CB_CRLDISTRIBUTIONPOINTCRITICAL); 
                  						if(value != null)
-                   								certificateprofiledata.setCRLDistributionPointCritical(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setCRLDistributionPointCritical(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setCRLDistributionPointCritical(false); 
+                   								cpd.setCRLDistributionPointCritical(false); 
                    
-                 						value = request.getParameter(CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT); 
+                 						value = request.getParameter(CB_USEDEFAULTCRLDISTRIBUTIONPOINT); 
                  						if(value != null)
-                   								certificateprofiledata.setUseDefaultCRLDistributionPoint(value.equals(CHECKBOX_VALUE)); 
+                   								cpd.setUseDefaultCRLDistributionPoint(value.equals(CB_VALUE)); 
                  						else
-                   								certificateprofiledata.setUseDefaultCRLDistributionPoint(false); 
+                   								cpd.setUseDefaultCRLDistributionPoint(false); 
                    
                  						value = request.getParameter(TEXTFIELD_CRLDISTURI);
-                 						if(value != null && !certificateprofiledata.getUseDefaultCRLDistributionPoint()){
+                 						if(value != null && !cpd.getUseDefaultCRLDistributionPoint()){
                    								value=value.trim();
-                   								certificateprofiledata.setCRLDistributionPointURI(value);
+                   								cpd.setCRLDistributionPointURI(value);
                  						}
                  						value = request.getParameter(TEXTFIELD_CRLISSUER);
-                 						if(value != null && !certificateprofiledata.getUseDefaultCRLDistributionPoint()){
+                 						if(value != null && !cpd.getUseDefaultCRLDistributionPoint()){
                    								value=value.trim();
-                   								certificateprofiledata.setCRLIssuer(value);
+                   								cpd.setCRLIssuer(value);
                  						}
                  
              					}else{
-                 						certificateprofiledata.setUseCRLDistributionPoint(false);
-                 						certificateprofiledata.setCRLDistributionPointCritical(false); 
-                 						certificateprofiledata.setCRLDistributionPointURI("");
+                 						cpd.setUseCRLDistributionPoint(false);
+                 						cpd.setCRLDistributionPointCritical(false); 
+                 						cpd.setCRLDistributionPointURI("");
              					}
 
              					use = false;
-            					value = request.getParameter(CHECKBOX_USECERTIFICATEPOLICIES);
+            					value = request.getParameter(CB_USECERTIFICATEPOLICIES);
              					if(value != null) {
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseCertificatePolicies(use);
-                 						value = request.getParameter(CHECKBOX_CERTIFICATEPOLICIESCRITICAL); 
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseCertificatePolicies(use);
+                 						value = request.getParameter(CB_CERTIFICATEPOLICIESCRITICAL); 
                  						if(value != null) {
-		   										certificateprofiledata.setCertificatePoliciesCritical(value.equals(CHECKBOX_VALUE)); 
+		   										cpd.setCertificatePoliciesCritical(value.equals(CB_VALUE)); 
                  						} else {
-			 									certificateprofiledata.setCertificatePoliciesCritical(false); 
+			 									cpd.setCertificatePoliciesCritical(false); 
                  						}
 
 		 								value = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID);
@@ -536,25 +543,25 @@
                    								if (userNotice != null) {
                      									userNotice = userNotice.trim();
                      									if (userNotice.length() > 0) {
-                       											certificateprofiledata.addCertificatePolicy(new CertificatePolicy(value.trim(), CertificatePolicy.id_qt_unotice, userNotice));
+                       											cpd.addCertificatePolicy(new CertificatePolicy(value.trim(), CertificatePolicy.id_qt_unotice, userNotice));
                        											added = true;
                      									}
                    								}
                    								if (cpsUri != null) {
                      									cpsUri = cpsUri.trim();
                      									if (cpsUri.length() > 0) {
-                       											certificateprofiledata.addCertificatePolicy(new CertificatePolicy(value.trim(), CertificatePolicy.id_qt_cps, cpsUri));
+                       											cpd.addCertificatePolicy(new CertificatePolicy(value.trim(), CertificatePolicy.id_qt_cps, cpsUri));
                        											added = true;
                      									}
                    								}
                    								if (!added) {
-                     									certificateprofiledata.addCertificatePolicy(new CertificatePolicy(value.trim(), null, null));
+                     									cpd.addCertificatePolicy(new CertificatePolicy(value.trim(), null, null));
                    								}
                  						}
              					} else {
-                 						certificateprofiledata.setUseCertificatePolicies(false);
-                 						certificateprofiledata.setCertificatePoliciesCritical(false); 
-                 						certificateprofiledata.setCertificatePolicies(null);
+                 						cpd.setUseCertificatePolicies(false);
+                 						cpd.setCertificatePoliciesCritical(false); 
+                 						cpd.setCertificatePolicies(null);
              					}
 
               					String[] values = request.getParameterValues(SELECT_AVAILABLEBITLENGTHS); 
@@ -563,16 +570,16 @@
                 						for(int i=0; i< values.length;i++){
                   								abl[i] = Integer.parseInt(values[i]);
                 						}
-                						certificateprofiledata.setAvailableBitLengths(abl);
+                						cpd.setAvailableBitLengths(abl);
               					}
 
               					value = request.getParameter(SELECT_SIGNATUREALGORITHM);
               					value = value.trim();
               					if(value != null) {
                   						if(value.equals(INHERITFROMCA)) {
-                      							certificateprofiledata.setSignatureAlgorithm(null);
+                      							cpd.setSignatureAlgorithm(null);
                   						} else {
-                      							certificateprofiledata.setSignatureAlgorithm(value);
+                      							cpd.setSignatureAlgorithm(value);
                   						}
               					}
 
@@ -583,16 +590,16 @@
                     							ku[Integer.parseInt(values[i])] = true;
                  						}
               					}
-              					certificateprofiledata.setKeyUsage(ku);      
+              					cpd.setKeyUsage(ku);      
  
-             					value = request.getParameter(CHECKBOX_USEEXTENDEDKEYUSAGE);
-             					if(value != null && value.equals(CHECKBOX_VALUE)){
-               							certificateprofiledata.setUseExtendedKeyUsage(true); 
-               							value = request.getParameter(CHECKBOX_EXTENDEDKEYUSAGECRITICAL); 
+             					value = request.getParameter(CB_USEEXTENDEDKEYUSAGE);
+             					if(value != null && value.equals(CB_VALUE)){
+               							cpd.setUseExtendedKeyUsage(true); 
+               							value = request.getParameter(CB_EXTENDEDKEYUSAGECRITICAL); 
                							if(value != null)
-                 								certificateprofiledata.setExtendedKeyUsageCritical(value.equals(CHECKBOX_VALUE));
+                 								cpd.setExtendedKeyUsageCritical(value.equals(CB_VALUE));
                							else
-                 								certificateprofiledata.setExtendedKeyUsageCritical(false);
+                 								cpd.setExtendedKeyUsageCritical(false);
                  
                							values = request.getParameterValues(SELECT_EXTENDEDKEYUSAGE);
                							ArrayList eku = new ArrayList(); 
@@ -601,11 +608,11 @@
                       									eku.add(values[i]);
                    								}
                 						}
-                						certificateprofiledata.setExtendedKeyUsage(eku);    
+                						cpd.setExtendedKeyUsage(eku);    
              					}else{
-                						certificateprofiledata.setUseExtendedKeyUsage(false); 
-                						certificateprofiledata.setExtendedKeyUsageCritical(false); 
-                						certificateprofiledata.setExtendedKeyUsage(new ArrayList());        
+                						cpd.setUseExtendedKeyUsage(false); 
+                						cpd.setExtendedKeyUsageCritical(false); 
+                						cpd.setExtendedKeyUsage(new ArrayList());        
              					}
              					
              					value = request.getParameter(SELECT_CVCTERMTYPE);
@@ -613,14 +620,14 @@
                                 if(value != null){
                                         termtype = Integer.parseInt(value);
                                 }
-                                certificateprofiledata.setCVCTerminalType(termtype);
+                                cpd.setCVCTerminalType(termtype);
                                 
                                 value = request.getParameter(SELECT_CVCSIGNTERMDVTYPE);
                                 int dvtype  = CertificateProfile.CVC_SIGNTERM_DV_AB;
                                 if(value != null){
                                         dvtype = Integer.parseInt(value);
                                 }
-                                certificateprofiledata.setCVCSignTermDVType(dvtype);
+                                cpd.setCVCSignTermDVType(dvtype);
 
                                 switch (termtype) {
                                 case CertificateProfile.CVC_TERMTYPE_IS:
@@ -638,8 +645,8 @@
                                             ar |= bit;
                                         }
                                     }
-                                    certificateprofiledata.setCVCAccessRights(ar);
-                                    certificateprofiledata.setCVCLongAccessRights(null);
+                                    cpd.setCVCAccessRights(ar);
+                                    cpd.setCVCLongAccessRights(null);
                   					break;
               					case CertificateProfile.CVC_TERMTYPE_AT:
               					    values = request.getParameterValues(SELECT_CVCACCESSRIGHTS);
@@ -649,8 +656,8 @@
                                     for (int i=0; i < values.length; i++) {
                                         atrights.setFlag(Integer.parseInt(values[i]), true);
                                     }
-                                    certificateprofiledata.setCVCAccessRights(0);
-                                    certificateprofiledata.setCVCLongAccessRights(atrights.getEncoded());
+                                    cpd.setCVCAccessRights(0);
+                                    cpd.setCVCLongAccessRights(atrights.getEncoded());
             					    break;
                                 }
 
@@ -659,18 +666,18 @@
               					if(value != null){
                 						type = Integer.parseInt(value);
               					}
-              					certificateprofiledata.setType(type);    
+              					cpd.setType(type);    
               
-              					value = request.getParameter(CHECKBOX_ALLOWKEYUSAGEOVERRIDE);
+              					value = request.getParameter(CB_ALLOWKEYUSAGEOVERRIDE);
               					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setAllowKeyUsageOverride(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setAllowKeyUsageOverride(use);
               					} else {
-                 						certificateprofiledata.setAllowKeyUsageOverride(false);
+                 						cpd.setAllowKeyUsageOverride(false);
               					}
               					{
-            	  						final String v = request.getParameter(CHECKBOX_ALLOWBACKDATEDREVOCATION);
-            	  						certificateprofiledata.setAllowBackdatedRevocation( v!=null && v.equals(CHECKBOX_VALUE) );
+            	  						final String v = request.getParameter(CB_ALLOWBACKDATEDREVOCATION);
+            	  						cpd.setAllowBackdatedRevocation( v!=null && v.equals(CB_VALUE) );
               					}
               					values = request.getParameterValues(SELECT_AVAILABLECAS);
               					ArrayList availablecas = new ArrayList(); 
@@ -684,7 +691,7 @@
                     							availablecas.add(Integer.valueOf(values[i]));
                  						}
               					}
-              					certificateprofiledata.setAvailableCAs(availablecas);
+              					cpd.setAvailableCAs(availablecas);
 
               					values = request.getParameterValues(SELECT_AVAILABLEPUBLISHERS);
               					ArrayList availablepublishers = new ArrayList(); 
@@ -693,127 +700,127 @@
                     							availablepublishers.add(Integer.valueOf(values[i]));
                  						}
               					}
-              					certificateprofiledata.setPublisherList(availablepublishers);
+              					cpd.setPublisherList(availablepublishers);
 
               					use = false;
-              					value = request.getParameter(CHECKBOX_USEOCSPNOCHECK);
+              					value = request.getParameter(CB_USEOCSPNOCHECK);
               					if(value != null){
-                  						use = value.equals(CHECKBOX_VALUE);
-                  						certificateprofiledata.setUseOcspNoCheck(use);
+                  						use = value.equals(CB_VALUE);
+                  						cpd.setUseOcspNoCheck(use);
               					}else{
-                  						certificateprofiledata.setUseOcspNoCheck(false);
+                  						cpd.setUseOcspNoCheck(false);
               					}
 
               					/* Authority Information Access extension */
               					use = false;
-              					value = request.getParameter(CHECKBOX_USEAUTHORITYINFORMATIONACCESS);
+              					value = request.getParameter(CB_USEAUTHORITYINFORMATIONACCESS);
               					if(value != null){
-           		  						use = value.equals(CHECKBOX_VALUE);
-                  						certificateprofiledata.setUseAuthorityInformationAccess(use);
+           		  						use = value.equals(CB_VALUE);
+                  						cpd.setUseAuthorityInformationAccess(use);
                   						// Ocsp service locator
-                  						value = request.getParameter(CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR);
+                  						value = request.getParameter(CB_USEDEFAULTOCSPSERVICELOCALTOR);
                   						if(value != null){
-                    							certificateprofiledata.setUseDefaultOCSPServiceLocator(value.equals(CHECKBOX_VALUE));
+                    							cpd.setUseDefaultOCSPServiceLocator(value.equals(CB_VALUE));
                   						}else{
-                    							certificateprofiledata.setUseDefaultOCSPServiceLocator(false);
+                    							cpd.setUseDefaultOCSPServiceLocator(false);
                   						}
                   
                   						value = request.getParameter(TEXTFIELD_OCSPSERVICELOCATOR);
-                  						if(value != null && !certificateprofiledata.getUseDefaultOCSPServiceLocator()){
+                  						if(value != null && !cpd.getUseDefaultOCSPServiceLocator()){
                     							value=value.trim();
-                    							certificateprofiledata.setOCSPServiceLocatorURI(value);
+                    							cpd.setOCSPServiceLocatorURI(value);
                   						}
                   						// CA issuers
                   						value = request.getParameter(TEXTFIELD_CAISSUERURI);
                	  						if( value != null ) {
-                 	  							certificateprofiledata.addCaIssuer(value);
+                 	  							cpd.addCaIssuer(value);
                	  						}
               					} else {
-            	  						certificateprofiledata.setUseAuthorityInformationAccess(false);
-               	  						certificateprofiledata.setCaIssuers(null);
-                  						certificateprofiledata.setOCSPServiceLocatorURI("");
+            	  						cpd.setUseAuthorityInformationAccess(false);
+               	  						cpd.setCaIssuers(null);
+                  						cpd.setOCSPServiceLocatorURI("");
               					}
              
              					/* Freshest CRL extension */
              					use = false;
-             					value = request.getParameter(CHECKBOX_USEFRESHESTCRL);
+             					value = request.getParameter(CB_USEFRESHESTCRL);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseFreshestCRL(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseFreshestCRL(use);
 
-                 						value = request.getParameter(CHECKBOX_USECADEFINEDFRESHESTCRL);
+                 						value = request.getParameter(CB_USECADEFINEDFRESHESTCRL);
                  						if(value != null){
-                   								certificateprofiledata.setUseCADefinedFreshestCRL(value.equals(CHECKBOX_VALUE));
+                   								cpd.setUseCADefinedFreshestCRL(value.equals(CB_VALUE));
                  						}else{
-                   								certificateprofiledata.setUseCADefinedFreshestCRL(false);
+                   								cpd.setUseCADefinedFreshestCRL(false);
                  						}
                   
                  						value = request.getParameter(TEXTFIELD_FRESHESTCRLURI);
-                 						if(value != null && !certificateprofiledata.getUseCADefinedFreshestCRL()){
+                 						if(value != null && !cpd.getUseCADefinedFreshestCRL()){
                    								value=value.trim();
-                   								certificateprofiledata.setFreshestCRLURI(value);
+                   								cpd.setFreshestCRLURI(value);
                  						}
              					}else{
-                 						certificateprofiledata.setUseFreshestCRL(false);                 
-                 						certificateprofiledata.setFreshestCRLURI("");
+                 						cpd.setUseFreshestCRL(false);                 
+                 						cpd.setFreshestCRLURI("");
              					}
 
              					/* Use LDAP DN oder */
              					use = false;
-             					value = request.getParameter(CHECKBOX_USELDAPDNORDER);
+             					value = request.getParameter(CB_USELDAPDNORDER);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseLdapDnOrder(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseLdapDnOrder(use);
              					} else{
-                 						certificateprofiledata.setUseLdapDnOrder(false);                 
+                 						cpd.setUseLdapDnOrder(false);                 
              					}
 
              					/* MS Domain controller extension */
              					use = false;
-             					value = request.getParameter(CHECKBOX_USEMSTEMPLATE);
+             					value = request.getParameter(CB_USEMSTEMPLATE);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseMicrosoftTemplate(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseMicrosoftTemplate(use);
 
                  						value = request.getParameter(SELECT_MSTEMPLATE);
                  						if(value != null){
                    								value=value.trim();
-                   								certificateprofiledata.setMicrosoftTemplate(value);
+                   								cpd.setMicrosoftTemplate(value);
                  						}
              					}else{
-                 						certificateprofiledata.setUseMicrosoftTemplate(false);                 
-                 						certificateprofiledata.setMicrosoftTemplate("");
+                 						cpd.setUseMicrosoftTemplate(false);                 
+                 						cpd.setMicrosoftTemplate("");
              					}
              
              					use = false; 
-             					value = request.getParameter(CHECKBOX_USECARDNUMBER);
+             					value = request.getParameter(CB_USECARDNUMBER);
              					if(value != null) {
-            	 						use = value.equals(CHECKBOX_VALUE);
-            	 						certificateprofiledata.setUseCardNumber(use);
+            	 						use = value.equals(CB_VALUE);
+            	 						cpd.setUseCardNumber(use);
              					} else {
-            	 						certificateprofiledata.setUseCardNumber(false);
+            	 						cpd.setUseCardNumber(false);
              					}
 
              					use = false;
-             					value = request.getParameter(CHECKBOX_USECNPOSTFIX);
+             					value = request.getParameter(CB_USECNPOSTFIX);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseCNPostfix(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseCNPostfix(use);
 
                  						value = request.getParameter(TEXTFIELD_CNPOSTFIX);
                  						if(value != null){
-                   								certificateprofiledata.setCNPostfix(value);
+                   								cpd.setCNPostfix(value);
                  						}
              					}else{
-                 						certificateprofiledata.setUseCNPostfix(false);                 
-                 						certificateprofiledata.setCNPostfix("");
+                 						cpd.setUseCNPostfix(false);                 
+                 						cpd.setCNPostfix("");
              					}
              
              					use = false;
-             					value = request.getParameter(CHECKBOX_USESUBJECTDNSUBSET);
+             					value = request.getParameter(CB_USESUBJECTDNSUBSET);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseSubjectDNSubSet(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseSubjectDNSubSet(use);
 
                  						values = request.getParameterValues(SELECT_SUBJECTDNSUBSET);
                  						if(values != null){
@@ -821,18 +828,18 @@
                      							for(int i=0;i< values.length;i++){
                          								usefields.add(Integer.valueOf(values[i]));	
                      							}
-                     							certificateprofiledata.setSubjectDNSubSet(usefields);
+                     							cpd.setSubjectDNSubSet(usefields);
                  						}
              					}else{
-                 						certificateprofiledata.setUseSubjectDNSubSet(false);                 
-                 						certificateprofiledata.setSubjectDNSubSet(new ArrayList());
+                 						cpd.setUseSubjectDNSubSet(false);                 
+                 						cpd.setSubjectDNSubSet(new ArrayList());
              					}
              
              					use = false;
-             					value = request.getParameter(CHECKBOX_USESUBJECTALTNAMESUBSET);
+             					value = request.getParameter(CB_USESUBJECTALTNAMESUBSET);
              					if(value != null){
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUseSubjectAltNameSubSet(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUseSubjectAltNameSubSet(use);
 
                  						values = request.getParameterValues(SELECT_SUBJECTALTNAMESUBSET);
                  						if(values != null){
@@ -840,11 +847,11 @@
                      							for(int i=0;i< values.length;i++){
                          								usefields.add(Integer.valueOf(values[i]));	
                      							}
-                     							certificateprofiledata.setSubjectAltNameSubSet(usefields);
+                     							cpd.setSubjectAltNameSubSet(usefields);
                  						}
              					}else{
-                 						certificateprofiledata.setUseSubjectAltNameSubSet(false);                 
-                 						certificateprofiledata.setSubjectAltNameSubSet(new ArrayList());
+                 						cpd.setUseSubjectAltNameSubSet(false);                 
+                 						cpd.setSubjectAltNameSubSet(new ArrayList());
              					}
              
              					values = request.getParameterValues(SELECT_USEDCERTIFICATEEXTENSIONS);
@@ -853,18 +860,18 @@
                 						for(int i=0;i< values.length;i++){
                   								useextensions.add(Integer.valueOf(values[i]));	
                 						}
-                						certificateprofiledata.setUsedCertificateExtensions(useextensions);
+                						cpd.setUsedCertificateExtensions(useextensions);
              					} else {
             	 						// Make sure we remove everything if there is something there
                  						ArrayList useextensions = new ArrayList();
-                 						certificateprofiledata.setUsedCertificateExtensions(useextensions);
+                 						cpd.setUsedCertificateExtensions(useextensions);
              					}
              
              					// PrivateKeyUsagePeriod extension
-             					value = request.getParameter(CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE);
+             					value = request.getParameter(CB_USEPRIVKEYUSAGEPERIODNOTBEFORE);
              					if (value != null) {
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUsePrivateKeyUsagePeriodNotBefore(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUsePrivateKeyUsagePeriodNotBefore(use);
                  						if (use) {
 		             							value = request.getParameter(TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET);
 		             							if (value != null) {
@@ -874,18 +881,18 @@
 		                 										if (validity < 0) {
 		                 	    										throw new ParameterException(ejbcawebbean.getText("INVALIDPRIVKEYSTARTOFFSET"));
 		                 										}
-		                 										certificateprofiledata.setPrivateKeyUsagePeriodStartOffset(validity * 24 * 3600);
+		                 										cpd.setPrivateKeyUsagePeriodStartOffset(validity * 24 * 3600);
 		             									}
 		             							}
                  						}
              					} else {
-             							certificateprofiledata.setUsePrivateKeyUsagePeriodNotBefore(false);
+             							cpd.setUsePrivateKeyUsagePeriodNotBefore(false);
              					}
              
-             					value = request.getParameter(CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER);
+             					value = request.getParameter(CB_USEPRIVKEYUSAGEPERIODNOTAFTER);
              					if (value != null) {
-                 						use = value.equals(CHECKBOX_VALUE);
-                 						certificateprofiledata.setUsePrivateKeyUsagePeriodNotAfter(use);
+                 						use = value.equals(CB_VALUE);
+                 						cpd.setUsePrivateKeyUsagePeriodNotAfter(use);
                  						if (use) {
 		             							value = request.getParameter(TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH);
 		             							if (value != null) {
@@ -895,86 +902,86 @@
 			                 									if (validity < 0) {
 			                     										throw new ParameterException(ejbcawebbean.getText("INVALIDPRIVKEYPERIOD"));
 			                 									}
-			                 									certificateprofiledata.setPrivateKeyUsagePeriodLength(validity * 24 * 3600);
+			                 									cpd.setPrivateKeyUsagePeriodLength(validity * 24 * 3600);
 		             									}
 		             							}
                  						}
              					} else {
-             							certificateprofiledata.setUsePrivateKeyUsagePeriodNotAfter(false);
+             							cpd.setUsePrivateKeyUsagePeriodNotAfter(false);
              					}
              
-             					certificateprofiledata.setUseQCStatement(false);
-             					certificateprofiledata.setQCStatementCritical(false);
-             					certificateprofiledata.setUsePkixQCSyntaxV2(false);
-             					certificateprofiledata.setUseQCEtsiQCCompliance(false);
-             					certificateprofiledata.setUseQCEtsiSignatureDevice(false);
-             					certificateprofiledata.setUseQCEtsiValueLimit(false);
-             					certificateprofiledata.setUseQCEtsiRetentionPeriod(false);
-             					certificateprofiledata.setQCSemanticsId("");
-             					certificateprofiledata.setQCStatementRAName("");
-             					certificateprofiledata.setQCEtsiValueLimit(0);
-             					certificateprofiledata.setQCEtsiValueLimitExp(0);
-             					certificateprofiledata.setQCEtsiValueLimitCurrency("");
-             					certificateprofiledata.setQCEtsiRetentionPeriod(0);
-             					certificateprofiledata.setUseQCCustomString(false);
-             					certificateprofiledata.setQCCustomStringOid("");
-             					certificateprofiledata.setQCCustomStringText("");
+             					cpd.setUseQCStatement(false);
+             					cpd.setQCStatementCritical(false);
+             					cpd.setUsePkixQCSyntaxV2(false);
+             					cpd.setUseQCEtsiQCCompliance(false);
+             					cpd.setUseQCEtsiSignatureDevice(false);
+             					cpd.setUseQCEtsiValueLimit(false);
+             					cpd.setUseQCEtsiRetentionPeriod(false);
+             					cpd.setQCSemanticsId("");
+             					cpd.setQCStatementRAName("");
+             					cpd.setQCEtsiValueLimit(0);
+             					cpd.setQCEtsiValueLimitExp(0);
+             					cpd.setQCEtsiValueLimitCurrency("");
+             					cpd.setQCEtsiRetentionPeriod(0);
+             					cpd.setUseQCCustomString(false);
+             					cpd.setQCCustomStringOid("");
+             					cpd.setQCCustomStringText("");
              
-             					value = request.getParameter(CHECKBOX_USEQCSTATEMENT);
+             					value = request.getParameter(CB_USEQCSTATEMENT);
              					if(value != null){                  
-                  						certificateprofiledata.setUseQCStatement(value.equals(CHECKBOX_VALUE));
+                  						cpd.setUseQCStatement(value.equals(CB_VALUE));
                   
-                  						if(certificateprofiledata.getUseQCStatement()){
-                     							value = request.getParameter(CHECKBOX_QCSTATEMENTCRITICAL);
+                  						if(cpd.getUseQCStatement()){
+                     							value = request.getParameter(CB_QCSTATEMENTCRITICAL);
                      							if(value != null) {
-                       									certificateprofiledata.setQCStatementCritical(value.equals(CHECKBOX_VALUE));
+                       									cpd.setQCStatementCritical(value.equals(CB_VALUE));
                      							}
-                     							value = request.getParameter(CHECKBOX_USEPKIXQCSYNTAXV2);
+                     							value = request.getParameter(CB_USEPKIXQCSYNTAXV2);
                      							if(value != null) {
-                       									certificateprofiledata.setUsePkixQCSyntaxV2(value.equals(CHECKBOX_VALUE));
+                       									cpd.setUsePkixQCSyntaxV2(value.equals(CB_VALUE));
                      							}
-                     							value = request.getParameter(CHECKBOX_USEQCETSIQCCOMPLIANCE);
+                     							value = request.getParameter(CB_USEQCETSIQCCOMPLIANCE);
                      							if(value != null) {
-                       									certificateprofiledata.setUseQCEtsiQCCompliance(value.equals(CHECKBOX_VALUE));
+                       									cpd.setUseQCEtsiQCCompliance(value.equals(CB_VALUE));
                      							}
-                     							value = request.getParameter(CHECKBOX_USEQCETSISIGNATUREDEVICE);
+                     							value = request.getParameter(CB_USEQCETSISIGNATUREDEVICE);
                      							if(value != null) {
-                       									certificateprofiledata.setUseQCEtsiSignatureDevice(value.equals(CHECKBOX_VALUE));
+                       									cpd.setUseQCEtsiSignatureDevice(value.equals(CB_VALUE));
                      							}
-                     							value = request.getParameter(CHECKBOX_USEQCETSIVALUELIMIT);
+                     							value = request.getParameter(CB_USEQCETSIVALUELIMIT);
                      							if(value != null) {
-                       									certificateprofiledata.setUseQCEtsiValueLimit(value.equals(CHECKBOX_VALUE));
-                       									certificateprofiledata.setQCEtsiValueLimit(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
-                       									certificateprofiledata.setQCEtsiValueLimitExp(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
-                       									certificateprofiledata.setQCEtsiValueLimitCurrency(request.getParameter(TEXTFIELD_QCETSIVALUELIMITCUR));                                                                    
+                       									cpd.setUseQCEtsiValueLimit(value.equals(CB_VALUE));
+                       									cpd.setQCEtsiValueLimit(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
+                       									cpd.setQCEtsiValueLimitExp(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
+                       									cpd.setQCEtsiValueLimitCurrency(request.getParameter(TEXTFIELD_QCETSIVALUELIMITCUR));                                                                    
                      							}
-                    							value = request.getParameter(CHECKBOX_USEQCETSIRETENTIONPERIOD);
+                    							value = request.getParameter(CB_USEQCETSIRETENTIONPERIOD);
                      							if(value != null) {
-                       									certificateprofiledata.setUseQCEtsiRetentionPeriod(value.equals(CHECKBOX_VALUE));
-                       									certificateprofiledata.setQCEtsiRetentionPeriod(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIRETENTIONPERIOD)).intValue());
+                       									cpd.setUseQCEtsiRetentionPeriod(value.equals(CB_VALUE));
+                       									cpd.setQCEtsiRetentionPeriod(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIRETENTIONPERIOD)).intValue());
                      							}
-                     							value = request.getParameter(CHECKBOX_USEQCCUSTOMSTRING);
+                     							value = request.getParameter(CB_USEQCCUSTOMSTRING);
                      							if(value != null) {
-                       									certificateprofiledata.setUseQCCustomString(value.equals(CHECKBOX_VALUE));
-                       									certificateprofiledata.setQCCustomStringOid(request.getParameter(TEXTFIELD_QCCUSTOMSTRINGOID));
-                       									certificateprofiledata.setQCCustomStringText(request.getParameter(TEXTFIELD_QCCUSTOMSTRINGTEXT));  
+                       									cpd.setUseQCCustomString(value.equals(CB_VALUE));
+                       									cpd.setQCCustomStringOid(request.getParameter(TEXTFIELD_QCCUSTOMSTRINGOID));
+                       									cpd.setQCCustomStringText(request.getParameter(TEXTFIELD_QCCUSTOMSTRINGTEXT));  
                      							}
-                    							certificateprofiledata.setQCSemanticsId(request.getParameter(TEXTFIELD_QCSSEMANTICSID));
-                     							certificateprofiledata.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));
+                    							cpd.setQCSemanticsId(request.getParameter(TEXTFIELD_QCSSEMANTICSID));
+                     							cpd.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));
                   						}
              					}
              					
              					/* Certificate Transparency extension */
                                 boolean useCTInCerts = false;
-                                value = request.getParameter(CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS);
-                                if (value != null) { useCTInCerts = value.equals(CHECKBOX_VALUE); }
+                                value = request.getParameter(CB_USECERTIFICATETRANSPARENCYINCERTS);
+                                if (value != null) { useCTInCerts = value.equals(CB_VALUE); }
                                 
                                 boolean useCTInOCSP = false;
-                                value = request.getParameter(CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP);
-                                if (value != null) { useCTInOCSP = value.equals(CHECKBOX_VALUE); }
+                                value = request.getParameter(CB_USECERTIFICATETRANSPARENCYINOCSP);
+                                if (value != null) { useCTInOCSP = value.equals(CB_VALUE); }
                                 
-                                certificateprofiledata.setUseCertificateTransparencyInCerts(useCTInCerts);
-                                certificateprofiledata.setUseCertificateTransparencyInOCSP(useCTInOCSP);
+                                cpd.setUseCertificateTransparencyInCerts(useCTInCerts);
+                                cpd.setUseCertificateTransparencyInOCSP(useCTInOCSP);
                                 
                                 if (useCTInCerts || useCTInOCSP) {
                                         values = request.getParameterValues(SELECT_CTLOGS);
@@ -984,15 +991,15 @@
                                                         enabledLogs.add(Integer.valueOf(selected));
                                                 }
                                         }
-                                        certificateprofiledata.setEnabledCTLogs(enabledLogs);
+                                        cpd.setEnabledCTLogs(enabledLogs);
                                         
                                         int minSCTs = Integer.parseInt(request.getParameter(TEXTFIELD_CTMINSCTS));
                                         if (minSCTs > enabledLogs.size()) {
                                                 throw new ParameterException(ejbcawebbean.getText("TOOMANYREQUIREDCTLOGS"));
                                         }
-                                        certificateprofiledata.setCTMinSCTs(minSCTs);
-                                        certificateprofiledata.setCTMaxSCTs(Integer.parseInt(request.getParameter(TEXTFIELD_CTMAXSCTS)));
-                                        certificateprofiledata.setCTMaxRetries(Integer.parseInt(request.getParameter(TEXTFIELD_CTMAXRETRIES)));
+                                        cpd.setCTMinSCTs(minSCTs);
+                                        cpd.setCTMaxSCTs(Integer.parseInt(request.getParameter(TEXTFIELD_CTMAXSCTS)));
+                                        cpd.setCTMaxRetries(Integer.parseInt(request.getParameter(TEXTFIELD_CTMAXRETRIES)));
                                 }
              
              					values = request.getParameterValues(SELECT_APPROVALSETTINGS);
@@ -1002,19 +1009,19 @@
             	   								approvalsettings.add(Integer.valueOf(values[i]));
                							}
              					}
-								certificateprofiledata.setApprovalSettings(approvalsettings);
+								cpd.setApprovalSettings(approvalsettings);
 								value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
 								int numofreqapprovals = 1;
 								if(value != null){
 			 							numofreqapprovals = Integer.parseInt(value);
 								}
-								certificateprofiledata.setNumOfReqApprovals(numofreqapprovals);
+								cpd.setNumOfReqApprovals(numofreqapprovals);
              
            						/*
             					 * Save changes.
             					 */
            						if(request.getParameter(BUTTON_SAVE) != null) {
-               							cabean.changeCertificateProfile(certprofile, certificateprofiledata);
+               							cabean.changeCertificateProfile(cp, cpd);
                							cabean.setTempCertificateProfile(null);
                							includefile="certificateprofilespage.jspf";
            						}
@@ -1022,16 +1029,16 @@
              					 * Add policy.
               					 */
              					if(request.getParameter(BUTTON_ADD_POLICY) != null) {
-  	             						cabean.setTempCertificateProfile(certificateprofiledata);
+  	             						cabean.setTempCertificateProfile(cpd);
                  						includefile = "certificateprofilepage.jspf";
              					}
 
              					/*
               					 * Remove policy.
               					 */
-             					if(certificateprofiledata.getCertificatePolicies() != null) {
+             					if(cpd.getCertificatePolicies() != null) {
                  						boolean removed = false;
-                 						for(int i = 0; i < certificateprofiledata.getCertificatePolicies().size(); i++) {
+                 						for(int i = 0; i < cpd.getCertificatePolicies().size(); i++) {
                      							value = request.getParameter(BUTTON_DELETE_POLICY + i);
                      							if(value != null) {
                          								removed = true;
@@ -1045,7 +1052,7 @@
                            										CertificatePolicy policy = new CertificatePolicy(policyId,    // policyID
                                                    								                                 CertificatePolicy.id_qt_unotice,  // policyQualifier UserNotice
                                                    																 userNotice);     // user notice text
-                           										certificateprofiledata.removeCertificatePolicy(policy);
+                           										cpd.removeCertificatePolicy(policy);
                          								}
                          								String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL + i);
                          								if ( (cpsUri != null) && (cpsUri.trim().length() > 0) ) {
@@ -1053,44 +1060,44 @@
                            										CertificatePolicy policy = new CertificatePolicy(policyId,    // policyID
                                                    													CertificatePolicy.id_qt_cps,  // policyQualifier CPS URI
                                                    													cpsUri);     // cps uri
-                           										certificateprofiledata.removeCertificatePolicy(policy);
+                           										cpd.removeCertificatePolicy(policy);
                          								}
                         								if ( ((userNotice == null) || (userNotice.trim().length() == 0)) && 
                               											((cpsUri == null) || (cpsUri.trim().length() == 0)) && 
                               											(policyId != null) ) {
                              									CertificatePolicy policy = new CertificatePolicy(policyId, null, null);
-                             									certificateprofiledata.removeCertificatePolicy(policy);                           
+                             									cpd.removeCertificatePolicy(policy);                           
                         								}
                                                
-                         								cabean.setTempCertificateProfile(certificateprofiledata);
+                         								cabean.setTempCertificateProfile(cpd);
                      							}
                  						}
                  						if (removed) {
                    								includefile = "certificateprofilepage.jspf";
                  						}
-             					} // if(certificateprofiledata.getCertificatePolicies() != null)
+             					} // if(cpd.getCertificatePolicies() != null)
              
              					/*
               					 * Add caIssuer URI.
               					 */
              					if(request.getParameter(BUTTON_ADD_CAISSUERURI) != null) {
-    	           						cabean.setTempCertificateProfile(certificateprofiledata);
+    	           						cabean.setTempCertificateProfile(cpd);
                  						includefile = "certificateprofilepage.jspf";
              					} // if(request.getParameter(BUTTON_ADD_CAISSUERURI) != null)
 
              					/*
               					 * Remove caIssuer URI.
               					 */
-             					if(certificateprofiledata.getCaIssuers() != null) {
-               							for(int i = 0; i < certificateprofiledata.getCaIssuers().size(); i++) {
+             					if(cpd.getCaIssuers() != null) {
+               							for(int i = 0; i < cpd.getCaIssuers().size(); i++) {
                    								value = request.getParameter(BUTTON_DELETE_CAISSUERURI + i);
                    								if(value != null) {
-                       									certificateprofiledata.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i));                                                 
-                       									cabean.setTempCertificateProfile(certificateprofiledata);
+                       									cpd.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i));                                                 
+                       									cabean.setTempCertificateProfile(cpd);
                        									includefile = "certificateprofilepage.jspf";
                    								}
                							}
-             					} // if(certificateprofiledata.getCaIssuers() != null)
+             					} // if(cpd.getCaIssuers() != null)
              					
            						if(request.getParameter(BUTTON_CANCEL) != null){
               							// Don't save changes.
@@ -1100,8 +1107,7 @@
            						if(includefile == null ) {
                  						includefile="certificateprofilespage.jspf";
            						}
-         				} // if(!certprofile.trim().equals(""))
-       			} // if(certprofile != null)
+       			} // if(cp != null)
     	} // if( request.getParameter(ACTION).equals(ACTION_EDIT_CERTIFICATEPROFILE))
   } // if( request.getParameter(ACTION) != null)
 

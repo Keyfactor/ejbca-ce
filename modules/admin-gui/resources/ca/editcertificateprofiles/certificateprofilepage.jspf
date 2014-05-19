@@ -1,29 +1,18 @@
 <%@ page import="org.cesecore.certificates.ca.catoken.CATokenConstants, java.text.MessageFormat"%>
 <%
-  CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
-  if(certprofiledata == null) {
-    certprofiledata = cabean.getCertificateProfile(certprofile.trim());
-  }
-  CertificateProfile certificateprofiledata = (CertificateProfile) certprofiledata.clone();
-
+  CertificateProfile cpd = cabean.getEditableCP(cp);
   CertificateExtensionFactory certExtFact = CertificateExtensionFactory.getInstance();
  
   String[] SUPERADMIN_TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
-  int[] SUPERADMIN_TYPE_IDS = {CertificateConstants.CERTTYPE_ENDENTITY,
-		  					   CertificateConstants.CERTTYPE_SUBCA,
-		  					   CertificateConstants.CERTTYPE_ROOTCA};
-   
+  int[] SUPERADMIN_TYPE_IDS = cabean.getSuperAdminTypeIDs();
   String[] TYPE_NAMES = {"ENDENTITY"};
   int[] TYPE_IDS = {CertificateConstants.CERTTYPE_ENDENTITY};
   if (issuperadministrator) {
     TYPE_NAMES = SUPERADMIN_TYPE_NAMES;
     TYPE_IDS = SUPERADMIN_TYPE_IDS;
   }
-
-
   Collection authorizedcas = cabean.getAuthorizedCAs();
   Map caidtonamemap = cabean.getCAIdToNameMap();
-
   TreeMap authorizedpublishers = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
   Map publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
@@ -33,8 +22,8 @@
 <!--  
 
 function checkusefield(usefield, criticalfield){
-  var usebox = eval("document.editcertificateprofile." + usefield);
-  var cribox = eval("document.editcertificateprofile." + criticalfield);
+  var usebox = eval("document.editcp." + usefield);
+  var cribox = eval("document.editcp." + criticalfield);
   if(usebox.checked){
     cribox.disabled = false;
   }
@@ -45,374 +34,385 @@ function checkusefield(usefield, criticalfield){
 }
 
 function checkusecrldisturifield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>.checked){
-    document.editcertificateprofile.<%= CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = true;
+  if(document.editcp.<%=CB_CRLDISTRIBUTIONPOINT %>.checked){
+    document.editcp.<%= CB_CRLDISTRIBUTIONPOINTCRITICAL %>.disabled = false;
+    document.editcp.<%= CB_USEDEFAULTCRLDISTRIBUTIONPOINT %>.disabled = false;
+    document.editcp.<%= CB_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = true;
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "";   
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "";   
+    document.editcp.<%= CB_CRLDISTRIBUTIONPOINTCRITICAL %>.disabled = true;
+    document.editcp.<%= CB_CRLDISTRIBUTIONPOINTCRITICAL %>.checked = false;
+    document.editcp.<%= CB_USEDEFAULTCRLDISTRIBUTIONPOINT %>.disabled = true;
+    document.editcp.<%= CB_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = false;
+    document.editcp.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CRLDISTURI %>.value = "";   
+    document.editcp.<%= TEXTFIELD_CRLISSUER %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CRLISSUER %>.value = "";   
   }
 
 }
 
 function checkusedefaultsecrldisturifield(){
-  if(!document.editcertificateprofile.<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked){
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "<%= globalconfiguration.getStandardCRLDistributionPointURI() %>";
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "<%= globalconfiguration.getStandardCRLIssuer() %>";
+  if(!document.editcp.<%=CB_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked){
+    document.editcp.<%= TEXTFIELD_CRLDISTURI %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CRLDISTURI %>.value = "<%= globalconfiguration.getStandardCRLDistributionPointURI() %>";
+    document.editcp.<%= TEXTFIELD_CRLISSUER %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CRLISSUER %>.value = "<%= globalconfiguration.getStandardCRLIssuer() %>";
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "";
+    document.editcp.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CRLDISTURI %>.value = "";
+    document.editcp.<%= TEXTFIELD_CRLISSUER %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CRLISSUER %>.value = "";
   }
 
 }
 
 function checkusefreshestcrlfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEFRESHESTCRL %>.checked){
-    document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked = true;
+  if(document.editcp.<%=CB_USEFRESHESTCRL %>.checked){
+    document.editcp.<%= CB_USECADEFINEDFRESHESTCRL %>.disabled = false;
+    document.editcp.<%= CB_USECADEFINEDFRESHESTCRL %>.checked = true;
   }
   else{
-  	document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+  	document.editcp.<%= CB_USECADEFINEDFRESHESTCRL %>.disabled = true;
+    document.editcp.<%= CB_USECADEFINEDFRESHESTCRL %>.checked = false;
+    document.editcp.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
   }
 }
 
 function checkusecadefinedfreshestcrlfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked){
-  	document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+  if(document.editcp.<%=CB_USECADEFINEDFRESHESTCRL %>.checked){
+  	document.editcp.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "<%= globalconfiguration.getStandardDeltaCRLDistributionPointURI() %>";
+    document.editcp.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "<%= globalconfiguration.getStandardDeltaCRLDistributionPointURI() %>";
   }
 }
 
 function checkuseaiafield(caIssuersURIcount){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>.checked){    
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = true;
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
-    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
+  if(document.editcp.<%=CB_USEAUTHORITYINFORMATIONACCESS %>.checked){    
+    document.editcp.<%= CB_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
+    document.editcp.<%= CB_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = true;
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CAISSUERURI %>.value = "";
+    document.editcp.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
     // For already defined caIssuers URIs
     for (var i = 0; i < caIssuersURIcount; i++) {
-      eval("document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>" + i + ".disabled = false");
-      eval("document.editcertificateprofile.<%= BUTTON_DELETE_CAISSUERURI %>" + i + ".disabled = false");
+      eval("document.editcp.<%= TEXTFIELD_CAISSUERURI %>" + i + ".disabled = false");
+      eval("document.editcp.<%= BUTTON_DELETE_CAISSUERURI %>" + i + ".disabled = false");
     }
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
-    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = true;
+    document.editcp.<%= CB_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = true;
+    document.editcp.<%= CB_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = false;
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
+    document.editcp.<%= TEXTFIELD_CAISSUERURI %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CAISSUERURI %>.value = "";
+    document.editcp.<%= BUTTON_ADD_CAISSUERURI %>.disabled = true;
     // For already defined caIssuers URIs
     for (var i = 0; i < caIssuersURIcount; i++) {
-      eval("document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>" + i + ".disabled = true");
-      eval("document.editcertificateprofile.<%= BUTTON_DELETE_CAISSUERURI %>" + i + ".disabled = true");
+      eval("document.editcp.<%= TEXTFIELD_CAISSUERURI %>" + i + ".disabled = true");
+      eval("document.editcp.<%= BUTTON_DELETE_CAISSUERURI %>" + i + ".disabled = true");
     }
   }
 }
 
 function checkdefaultocspservicelocatorfield(){
-  if(!document.editcertificateprofile.<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked){    
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "<%= globalconfiguration.getStandardOCSPServiceLocatorURI() %>";
+  if(!document.editcp.<%=CB_USEDEFAULTOCSPSERVICELOCALTOR %>.checked){    
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "<%= globalconfiguration.getStandardOCSPServiceLocatorURI() %>";
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
   }
 }
 
 function checkuseqcstatementfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT %>.checked){    
-    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIRETENTIONPERIOD %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.disabled = false;
+  if(document.editcp.<%=CB_USEQCSTATEMENT %>.checked){    
+    document.editcp.<%= CB_QCSTATEMENTCRITICAL %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = false;
+    document.editcp.<%= CB_USEPKIXQCSYNTAXV2 %>.disabled = false;
+    document.editcp.<%= CB_USEQCETSIQCCOMPLIANCE %>.disabled = false;
+    document.editcp.<%= CB_USEQCETSIVALUELIMIT %>.disabled = false;
+    document.editcp.<%= CB_USEQCETSIRETENTIONPERIOD %>.disabled = false;
+    document.editcp.<%= CB_USEQCETSISIGNATUREDEVICE %>.disabled = false;
+    document.editcp.<%= CB_USEQCCUSTOMSTRING %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value = "";
-    document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIRETENTIONPERIOD %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIRETENTIONPERIOD %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
+    document.editcp.<%= CB_QCSTATEMENTCRITICAL %>.disabled = true;
+    document.editcp.<%= CB_QCSTATEMENTCRITICAL %>.checked = false;
+    document.editcp.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCSSEMANTICSID %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value = "";
+    document.editcp.<%= CB_USEPKIXQCSYNTAXV2 %>.disabled = true;
+    document.editcp.<%= CB_USEPKIXQCSYNTAXV2 %>.checked = false;
+    document.editcp.<%= CB_USEQCETSIQCCOMPLIANCE %>.disabled = true;
+    document.editcp.<%= CB_USEQCETSIQCCOMPLIANCE %>.checked = false;
+    document.editcp.<%= CB_USEQCETSIVALUELIMIT %>.disabled = true;
+    document.editcp.<%= CB_USEQCETSIVALUELIMIT %>.checked = false;
+    document.editcp.<%= CB_USEQCETSIRETENTIONPERIOD %>.disabled = true;
+    document.editcp.<%= CB_USEQCETSIRETENTIONPERIOD %>.checked = false;
+    document.editcp.<%= CB_USEQCETSISIGNATUREDEVICE %>.disabled = true;
+    document.editcp.<%= CB_USEQCETSISIGNATUREDEVICE %>.checked = false;
+    document.editcp.<%= CB_USEQCCUSTOMSTRING %>.disabled = true;
+    document.editcp.<%= CB_USEQCCUSTOMSTRING %>.checked = false;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
   }
 }
 
 function checkusecertificatetransparencyfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS %>.checked ||
-     document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP %>.checked){
-    document.editcertificateprofile.<%= SELECT_CTLOGS %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.value = <%=certificateprofiledata.getCTMinSCTs()%>;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.value = <%=certificateprofiledata.getCTMaxSCTs()%>;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.value = <%=certificateprofiledata.getCTMaxRetries()%>;
+  if(document.editcp.<%=CB_USECERTIFICATETRANSPARENCYINCERTS %>.checked ||
+     document.editcp.<%=CB_USECERTIFICATETRANSPARENCYINOCSP %>.checked){
+    document.editcp.<%= SELECT_CTLOGS %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CTMINSCTS %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CTMINSCTS %>.value = <%=cpd.getCTMinSCTs()%>;
+    document.editcp.<%= TEXTFIELD_CTMAXSCTS %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CTMAXSCTS %>.value = <%=cpd.getCTMaxSCTs()%>;
+    document.editcp.<%= TEXTFIELD_CTMAXRETRIES %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CTMAXRETRIES %>.value = <%=cpd.getCTMaxRetries()%>;
 
   }
   else{
-    document.editcertificateprofile.<%= SELECT_CTLOGS %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.value = "";
+    document.editcp.<%= SELECT_CTLOGS %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CTMINSCTS %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CTMINSCTS %>.value = "";
+    document.editcp.<%= TEXTFIELD_CTMAXSCTS %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CTMAXSCTS %>.value = "";
+    document.editcp.<%= TEXTFIELD_CTMAXRETRIES %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CTMAXRETRIES %>.value = "";
   }
 }
 
 function checkuseetsivaluelimitfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEQCETSIVALUELIMIT %>.checked){    
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = false;
+  if(document.editcp.<%=CB_USEQCETSIVALUELIMIT %>.checked){    
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
   }
 }
 
 function checkusetsiretentionperiod(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEQCETSIRETENTIONPERIOD %>.checked){
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = false;
+  if(document.editcp.<%=CB_USEQCETSIRETENTIONPERIOD %>.checked){
+    document.editcp.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.value = "";
   }
 }
 
 function checkuseqccustomstring(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEQCCUSTOMSTRING %>.checked){    
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.disabled = false;
+  if(document.editcp.<%=CB_USEQCCUSTOMSTRING %>.checked){    
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
+    document.editcp.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
   }
 }
 
 function checkusemstemplatefield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEMSTEMPLATE %>.checked){    
-    document.editcertificateprofile.<%= SELECT_MSTEMPLATE %>.disabled = false;    
+  if(document.editcp.<%=CB_USEMSTEMPLATE %>.checked){    
+    document.editcp.<%= SELECT_MSTEMPLATE %>.disabled = false;    
   }
   else{
-    document.editcertificateprofile.<%= SELECT_MSTEMPLATE %>.disabled = true;
+    document.editcp.<%= SELECT_MSTEMPLATE %>.disabled = true;
   }
 }
 
 function checkusecnpostfixfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USECNPOSTFIX %>.checked){    
-    document.editcertificateprofile.<%= TEXTFIELD_CNPOSTFIX %>.disabled = false;    
+  if(document.editcp.<%=CB_USECNPOSTFIX %>.checked){    
+    document.editcp.<%= TEXTFIELD_CNPOSTFIX %>.disabled = false;    
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_CNPOSTFIX %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CNPOSTFIX %>.disabled = true;
   }
 }
 
 function checkusesubjectdnsubsetfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USESUBJECTDNSUBSET %>.checked){    
-    document.editcertificateprofile.<%= SELECT_SUBJECTDNSUBSET %>.disabled = false;    
+  if(document.editcp.<%=CB_USESUBJECTDNSUBSET %>.checked){    
+    document.editcp.<%= SELECT_SUBJECTDNSUBSET %>.disabled = false;    
   }
   else{
-    document.editcertificateprofile.<%= SELECT_SUBJECTDNSUBSET %>.disabled = true;
+    document.editcp.<%= SELECT_SUBJECTDNSUBSET %>.disabled = true;
   }
 }
 
 function checkusesubjectaltnamesubsetfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USESUBJECTALTNAMESUBSET %>.checked){    
-    document.editcertificateprofile.<%=SELECT_SUBJECTALTNAMESUBSET%>.disabled = false;    
+  if(document.editcp.<%=CB_USESUBJECTALTNAMESUBSET %>.checked){    
+    document.editcp.<%=SELECT_SUBJECTALTNAMESUBSET%>.disabled = false;    
   }
   else{
-    document.editcertificateprofile.<%=SELECT_SUBJECTALTNAMESUBSET%>.disabled = true;
+    document.editcp.<%=SELECT_SUBJECTALTNAMESUBSET%>.disabled = true;
   }
 }
 
 function typechanged(){
-  var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
-  var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
+  var seltype = document.editcp.<%=SELECT_TYPE %>.options.selectedIndex;
+  var type = document.editcp.<%=SELECT_TYPE %>.options[seltype].value; 
 
   if (type == <%= CertificateConstants.CERTTYPE_ENDENTITY %>) {
-    document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=false;
-    document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=true;
-    document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked=false;
-    document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
-    document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
+    document.editcp.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=false;
+    document.editcp.<%=CB_USEPATHLENGTHCONSTRAINT %>.disabled=true;
+    document.editcp.<%=CB_USEPATHLENGTHCONSTRAINT %>.checked=false;
+    document.editcp.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
+    document.editcp.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
   } else {
-    document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=true;
-    if(document.editcertificateprofile.<%=CHECKBOX_BASICCONSTRAINTS %>.checked){    
-      document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=false;
+    document.editcp.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=true;
+    if(document.editcp.<%=CB_BASICCONSTRAINTS %>.checked){    
+      document.editcp.<%=CB_USEPATHLENGTHCONSTRAINT %>.disabled=false;
     }
   }
 }
 
 function checkusebasicconstraintfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_BASICCONSTRAINTS %>.checked){
-    document.editcertificateprofile.<%= CHECKBOX_BASICCONSTRAINTSCRITICAL %>.disabled = false;
+  if(document.editcp.<%=CB_BASICCONSTRAINTS %>.checked){
+    document.editcp.<%= CB_BASICCONSTRAINTSCRITICAL %>.disabled = false;
     
-    var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
-    var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
+    var seltype = document.editcp.<%=SELECT_TYPE %>.options.selectedIndex;
+    var type = document.editcp.<%=SELECT_TYPE %>.options[seltype].value; 
     if (type == <%= CertificateConstants.CERTTYPE_SUBCA %> ||
     	type == <%= CertificateConstants.CERTTYPE_ROOTCA %>) {
-      document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=false;
+      document.editcp.<%=CB_USEPATHLENGTHCONSTRAINT %>.disabled=false;
     }          
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_BASICCONSTRAINTSCRITICAL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_BASICCONSTRAINTSCRITICAL %>.checked = false;
-    document.editcertificateprofile.<%= CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
-    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
+    document.editcp.<%= CB_BASICCONSTRAINTSCRITICAL %>.disabled = true;
+    document.editcp.<%= CB_BASICCONSTRAINTSCRITICAL %>.checked = false;
+    document.editcp.<%= CB_USEPATHLENGTHCONSTRAINT %>.disabled = true;
+    document.editcp.<%= CB_USEPATHLENGTHCONSTRAINT %>.checked = false;
+    document.editcp.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
+    document.editcp.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
   }
 }
 
+function checkusedocumenttypefield(){
+	if(document.editcp.<%=CB_USEDOCUMENTTYPE %>.checked){
+		document.editcp.<%= CB_DOCUMENTTYPECRITICAL %>.disabled = false;
+	    document.editcp.<%= TEXTFIELD_DOCUMENTTYPE %>.disabled = false;
+	} else{
+	    document.editcp.<%= CB_DOCUMENTTYPECRITICAL %>.disabled = true;
+	    document.editcp.<%= TEXTFIELD_DOCUMENTTYPE %>.disabled = true;
+	}
+}
+
+
 function checkusecertificatepoliciesfield(policyCount){
-  if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
-    document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = false;
-    document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = false;
+  if(document.editcp.<%=CB_USECERTIFICATEPOLICIES %>.checked){
+    document.editcp.<%= CB_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = false;
+    document.editcp.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = false;
+    document.editcp.<%= BUTTON_ADD_POLICY %>.disabled = false;
     // For already defined policies
     for (var i = 0; i < policyCount; i++) {
-      eval("document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>" + i + ".disabled = false");
-      eval("document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>" + i + ".disabled = false");
-      eval("document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>" + i + ".disabled = false");
-      eval("document.editcertificateprofile.<%= BUTTON_DELETE_POLICY %>" + i + ".disabled = false");
+      eval("document.editcp.<%= TEXTFIELD_CERTIFICATEPOLICYID %>" + i + ".disabled = false");
+      eval("document.editcp.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>" + i + ".disabled = false");
+      eval("document.editcp.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>" + i + ".disabled = false");
+      eval("document.editcp.<%= BUTTON_DELETE_POLICY %>" + i + ".disabled = false");
     }
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.checked = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
-    document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.value = "";
-    document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.value = "";
-    document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = true;
+    document.editcp.<%= CB_CERTIFICATEPOLICIESCRITICAL %>.disabled = true;
+    document.editcp.<%= CB_CERTIFICATEPOLICIESCRITICAL %>.checked = false;
+    document.editcp.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
+    document.editcp.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = true;
+    document.editcp.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.value = "";
+    document.editcp.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.value = "";
+    document.editcp.<%= BUTTON_ADD_POLICY %>.disabled = true;
     // For already defined policies
     for (var i = 0; i < policyCount; i++) {
-      eval("document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>" + i + ".disabled = true");
-      eval("document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>" + i + ".disabled = true");
-      eval("document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>" + i + ".disabled = true");
-      eval("document.editcertificateprofile.<%= BUTTON_DELETE_POLICY %>" + i + ".disabled = true");
+      eval("document.editcp.<%= TEXTFIELD_CERTIFICATEPOLICYID %>" + i + ".disabled = true");
+      eval("document.editcp.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>" + i + ".disabled = true");
+      eval("document.editcp.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>" + i + ".disabled = true");
+      eval("document.editcp.<%= BUTTON_DELETE_POLICY %>" + i + ".disabled = true");
     }
   }
 }
 
 function checkusepathlengtconstraintfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked){  
-    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value = "1";
+  if(document.editcp.<%=CB_USEPATHLENGTHCONSTRAINT %>.checked){  
+    document.editcp.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value = "1";
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value = "";
+    document.editcp.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value = "";
   }
 }
 
 function checkusekeyusagefield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_KEYUSAGE %>.checked){
-    document.editcertificateprofile.<%= CHECKBOX_KEYUSAGECRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= SELECT_KEYUSAGE %>.disabled = false;
+  if(document.editcp.<%=CB_KEYUSAGE %>.checked){
+    document.editcp.<%= CB_KEYUSAGECRITICAL %>.disabled = false;
+    document.editcp.<%= SELECT_KEYUSAGE %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_KEYUSAGECRITICAL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_KEYUSAGECRITICAL %>.checked = false;
-    document.editcertificateprofile.<%= SELECT_KEYUSAGE %>.disabled = true;
+    document.editcp.<%= CB_KEYUSAGECRITICAL %>.disabled = true;
+    document.editcp.<%= CB_KEYUSAGECRITICAL %>.checked = false;
+    document.editcp.<%= SELECT_KEYUSAGE %>.disabled = true;
   }
 }
 
 function checkuseextendedkeyusagefield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>.checked){
-    document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = false;
+  if(document.editcp.<%=CB_USEEXTENDEDKEYUSAGE %>.checked){
+    document.editcp.<%= CB_EXTENDEDKEYUSAGECRITICAL %>.disabled = false;
+    document.editcp.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = true;
-    document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.checked = false;
-    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
+    document.editcp.<%= CB_EXTENDEDKEYUSAGECRITICAL %>.disabled = true;
+    document.editcp.<%= CB_EXTENDEDKEYUSAGECRITICAL %>.checked = false;
+    document.editcp.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
   }
 }
 
 function checkprivkeyusageperiodnotbeforefield() {
-  if (document.editcertificateprofile.<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>.checked) {
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.value = "0d";
+  if (document.editcp.<%=CB_USEPRIVKEYUSAGEPERIODNOTBEFORE%>.checked) {
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.value = "0d";
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.value = "";
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.value = "";
   }
 }
 function checkprivkeyusageperiodnotafterfield() {
-  if (document.editcertificateprofile.<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>.checked) {
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = document.editcertificateprofile.<%= TEXTFIELD_VALIDITY %>.value;
+  if (document.editcp.<%=CB_USEPRIVKEYUSAGEPERIODNOTAFTER%>.checked) {
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = false;
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = document.editcp.<%= TEXTFIELD_VALIDITY %>.value;
   }
   else{
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = "";
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = true;
+    document.editcp.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = "";
   }
 }
 
@@ -421,10 +421,10 @@ var cvctermtype_is = [];
 var cvctermtype_at = [];
 var cvctermtype_st = [];
 function cvctermtypechanged() {
-  var termtype = document.editcertificateprofile.<%= SELECT_CVCTERMTYPE %>.value;
-  var selectbox = document.editcertificateprofile.<%=SELECT_CVCACCESSRIGHTS%>;
+  var termtype = document.editcp.<%= SELECT_CVCTERMTYPE %>.value;
+  var selectbox = document.editcp.<%=SELECT_CVCACCESSRIGHTS%>;
   
-  document.editcertificateprofile.<%=SELECT_CVCSIGNTERMDVTYPE%>.disabled = (termtype != <%= CertificateProfile.CVC_TERMTYPE_ST %>);
+  document.editcp.<%=SELECT_CVCSIGNTERMDVTYPE%>.disabled = (termtype != <%= CertificateProfile.CVC_TERMTYPE_ST %>);
   
   // Add options for the selected terminal type
   var addopts;
@@ -469,7 +469,7 @@ function cvctermtypechanged() {
 function checkallfields(){
     var illegalfields = 0;
 
-    var availablebitlengths = document.editcertificateprofile.<%= SELECT_AVAILABLEBITLENGTHS%>.options;
+    var availablebitlengths = document.editcp.<%= SELECT_AVAILABLEBITLENGTHS%>.options;
     var selected = 0;
     for(var i=0; i < availablebitlengths.length; i++){
       if(availablebitlengths[i].selected==true)
@@ -481,48 +481,48 @@ function checkallfields(){
       illegalfields++; 
     }
 
-    if(!document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.disabled){
-      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINPATHLEN") %>")){
+    if(!document.editcp.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcp.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINPATHLEN") %>")){
          illegalfields++;
       }    
-      if(document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.value==""){
+      if(document.editcp.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.value==""){
          alert("<%= ejbcawebbean.getText("PATHLENCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
 
-    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.disabled){
-      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
+    if(!document.editcp.<%=TEXTFIELD_QCETSIVALUELIMIT%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcp.<%=TEXTFIELD_QCETSIVALUELIMIT%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
          illegalfields++;
       }    
-      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.value==""){
+      if(document.editcp.<%=TEXTFIELD_QCETSIVALUELIMIT%>.value==""){
          alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
 
-    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>.disabled){
-      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>","<%= ejbcawebbean.getText("ONLYDECINETSIRETPERIOD") %>")){
+    if(!document.editcp.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcp.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>","<%= ejbcawebbean.getText("ONLYDECINETSIRETPERIOD") %>")){
          illegalfields++;
       }    
-      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>.value==""){
+      if(document.editcp.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>.value==""){
          alert("<%= ejbcawebbean.getText("ETSIRETPERIODCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
     
-    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.disabled){
-      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
+    if(!document.editcp.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcp.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
          illegalfields++;
       }    
-      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.value==""){
+      if(document.editcp.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.value==""){
          alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
     
-    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.disabled){   
-      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.value==""){
+    if(!document.editcp.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.disabled){   
+      if(document.editcp.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.value==""){
       
          alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
          illegalfields++;
@@ -537,12 +537,12 @@ function checkallfields(){
 
 <div align="center"> 
   <h2><c:out value="<%= ejbcawebbean.getText(\"EDITCERTIFICATEPROFILE\") %>" /></h2>
-  <h3><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILE\")+ \" : \" + certprofile %>" /></h3>
+  <h3><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILE\")+ \" : \" + cp %>" /></h3>
 </div>
 
-<form name="editcertificateprofile" method="post" action="<%=THIS_FILENAME %>">
+<form name="editcp" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CERTIFICATEPROFILE %>'>
-  <input type="hidden" name='<%= HIDDEN_CERTIFICATEPROFILENAME %>' value='<c:out value="<%=certprofile %>"/>'>
+  <input type="hidden" name='<%= HIDDEN_CERTIFICATEPROFILENAME %>' value='<c:out value="<%=cp %>"/>'>
   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
@@ -552,9 +552,6 @@ function checkallfields(){
       </td>
       <td width="50%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"BACKTOCERTIFICATEPROFILES\") %>" /></a>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-        <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></a> -->
       </td>
     </tr>
 
@@ -564,7 +561,7 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILEID\") %>" />
       </td>
       <td width="50%"> 
-        <%= cabean.getCertificateProfileId(certprofile)  %>
+        <%= cabean.getCertificateProfileId(cp)  %>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -573,7 +570,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_TYPE%>" size="1" onchange='typechanged()' >
-           <%  int type = certificateprofiledata.getType();
+           <%  int type = cpd.getType();
                 for(int i=0; i<TYPE_IDS.length;i++){ %>
            <option  value="<%= TYPE_IDS[i] %>" 
               <%  if(TYPE_IDS[i] == type)
@@ -592,7 +589,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLEBITLENGTHS%>" size="5" style="text-align:right;" multiple >
-           <%  int[] availablebits = certificateprofiledata.getAvailableBitLengths();
+           <%  int[] availablebits = cpd.getAvailableBitLengths();
                 for(int i=0; i<defaultavailablebitlengths.length;i++){ %>
            <option  value="<%= defaultavailablebitlengths[i] %>" 
               <% for(int j=0; j<availablebits.length;j++){
@@ -611,7 +608,7 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"SIGNATUREALGORITHM\") %>" />
       </td>
       <td width="50%">
-        <% String signAlg = certificateprofiledata.getSignatureAlgorithm(); %>
+        <% String signAlg = cpd.getSignatureAlgorithm(); %>
         <select name="<%=SELECT_SIGNATUREALGORITHM%>" size="1">
              <option style="font-style:italic" value="<%= INHERITFROMCA %>" <% if(signAlg == null) { %>selected="selected"<% } %>><c:out value="<%= ejbcawebbean.getText(\"INHERITFROMCA\") %>" /></option>
            <% for(int i = 0; i < AlgorithmConstants.AVAILABLE_SIGALGS.length; i++) { %>
@@ -628,7 +625,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" 
-           value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"
+           value="<%= ValidityDate.getString(cpd.getValidity())  %>"
            title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>" />
            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"DATE_HELP\") %>" /> <c:out value="<%= ejbcawebbean.getDateExample()  %>" /></p>
       </td>
@@ -652,11 +649,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"ALLOWVALIDITYOVERRIDE\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_ALLOWVALIDITYOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getAllowValidityOverride())
+           <input type="checkbox" name="<%=CB_ALLOWVALIDITYOVERRIDE %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getAllowValidityOverride())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ALLOWVALIDITYOVERRIDE%>">
-           <label for="<%=CHECKBOX_ALLOWVALIDITYOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           %> id="<%=CB_ALLOWVALIDITYOVERRIDE%>">
+           <label for="<%=CB_ALLOWVALIDITYOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
 
@@ -665,11 +662,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"ALLOWEXTENSIONOVERRIDE\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20extension%20override") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getAllowExtensionOverride())
+           <input type="checkbox" name="<%=CB_ALLOWEXTENSIONOVERRIDE %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getAllowExtensionOverride())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE%>">
-           <label for="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           %> id="<%=CB_ALLOWEXTENSIONOVERRIDE%>">
+           <label for="<%=CB_ALLOWEXTENSIONOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
 
@@ -679,12 +676,12 @@ function checkallfields(){
       </td>
       <td width="50%">
         <% if ( cabean.isUniqueIndexForSerialNumber() ) { %>
-           <input type="checkbox" name="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getAllowCertSerialNumberOverride()) {
+           <input type="checkbox" name="<%=CB_ALLOWCERTSERIALNUMBEROVERRIDE %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getAllowCertSerialNumberOverride()) {
                  out.write("CHECKED");
            }
-           %> id="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE%>">
-           <label for="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           %> id="<%=CB_ALLOWCERTSERIALNUMBEROVERRIDE%>">
+           <label for="<%=CB_ALLOWCERTSERIALNUMBEROVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
         <%} else {%>
            <c:out value="<%= ejbcawebbean.getText(\"CERTSERIALNOUNIQUEIX\") %>" />
         <%}%>
@@ -696,11 +693,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"ALLOWDNOVERRIDE\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20subject%20DN%20override") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_ALLOWDNOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getAllowDNOverride())
+           <input type="checkbox" name="<%=CB_ALLOWDNOVERRIDE %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getAllowDNOverride())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ALLOWDNOVERRIDE%>">
-           <label for="<%=CHECKBOX_ALLOWDNOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           %> id="<%=CB_ALLOWDNOVERRIDE%>">
+           <label for="<%=CB_ALLOWDNOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
 
@@ -709,11 +706,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"ALLOWKEYUSAGEOVERRIDE\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_ALLOWKEYUSAGEOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getAllowKeyUsageOverride())
+           <input type="checkbox" name="<%=CB_ALLOWKEYUSAGEOVERRIDE %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getAllowKeyUsageOverride())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ALLOWKEYUSAGEOVERRIDE%>">
-           <label for="<%=CHECKBOX_ALLOWKEYUSAGEOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           %> id="<%=CB_ALLOWKEYUSAGEOVERRIDE%>">
+           <label for="<%=CB_ALLOWKEYUSAGEOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
 
@@ -723,11 +720,11 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20back%20dated%20revocation") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_ALLOWBACKDATEDREVOCATION %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getAllowBackdatedRevocation())
+           <input type="checkbox" name="<%=CB_ALLOWBACKDATEDREVOCATION %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getAllowBackdatedRevocation())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ALLOWBACKDATEDREVOCATION%>">
-           <label for="<%=CHECKBOX_ALLOWBACKDATEDREVOCATION%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           %> id="<%=CB_ALLOWBACKDATEDREVOCATION%>">
+           <label for="<%=CB_ALLOWBACKDATEDREVOCATION%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
 
@@ -749,21 +746,21 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_BASICCONSTRAINTS\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTS%>"   onClick="checkusebasicconstraintfield()" value="<%=CHECKBOX_VALUE %>"
-           <% if(certificateprofiledata.getUseBasicConstraints()) 
+           <input type="checkbox" name="<%=CB_BASICCONSTRAINTS%>"   onClick="checkusebasicconstraintfield()" value="<%=CB_VALUE %>"
+           <% if(cpd.getUseBasicConstraints()) 
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_BASICCONSTRAINTS%>">
-           <label for="<%=CHECKBOX_BASICCONSTRAINTS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_BASICCONSTRAINTS%>">
+           <label for="<%=CB_BASICCONSTRAINTS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL%>" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CB_BASICCONSTRAINTSCRITICAL%>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseBasicConstraints())
+               if(!cpd.getUseBasicConstraints())
                  out.write(" disabled ");  
                else
-               if(certificateprofiledata.getBasicConstraintsCritical())
+               if(cpd.getBasicConstraintsCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL%>">
-           <label for="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label> 
+           %> id="<%=CB_BASICCONSTRAINTSCRITICAL%>">
+           <label for="<%=CB_BASICCONSTRAINTSCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label> 
       </td>
     </tr>  
     <tr  id="Row<%=row++%2%>"> 
@@ -772,22 +769,22 @@ function checkallfields(){
       </td>
       <td width="50%">
            <% boolean enablepathlenconstraint =
-           			certificateprofiledata.getUseBasicConstraints() &&
-           			(certificateprofiledata.getType() == CertificateConstants.CERTTYPE_SUBCA ||
-           			 certificateprofiledata.getType() == CertificateConstants.CERTTYPE_ROOTCA); %>
-           <input type="checkbox" name="<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>"   onClick="checkusepathlengtconstraintfield()" value="<%=CHECKBOX_VALUE %>" <% if(!enablepathlenconstraint) out.write(" disabled "); %>
-           <% if(certificateprofiledata.getUsePathLengthConstraint() && enablepathlenconstraint) 
+           			cpd.getUseBasicConstraints() &&
+           			(cpd.getType() == CertificateConstants.CERTTYPE_SUBCA ||
+           			 cpd.getType() == CertificateConstants.CERTTYPE_ROOTCA); %>
+           <input type="checkbox" name="<%=CB_USEPATHLENGTHCONSTRAINT %>"   onClick="checkusepathlengtconstraintfield()" value="<%=CB_VALUE %>" <% if(!enablepathlenconstraint) out.write(" disabled "); %>
+           <% if(cpd.getUsePathLengthConstraint() && enablepathlenconstraint) 
                  out.write(" CHECKED ");
-           %> id="<%=CHECKBOX_USEPATHLENGTHCONSTRAINT%>">
-           <label for="<%=CHECKBOX_USEPATHLENGTHCONSTRAINT%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
+           %> id="<%=CB_USEPATHLENGTHCONSTRAINT%>">
+           <label for="<%=CB_USEPATHLENGTHCONSTRAINT%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"VALUE\") %>" />
            <input type="text" name="<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>" size="2" maxlength="2"
                   title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>" 
-           <%      if(!certificateprofiledata.getUsePathLengthConstraint() || !enablepathlenconstraint) 
+           <%      if(!cpd.getUsePathLengthConstraint() || !enablepathlenconstraint) 
                        out.write(" disabled ");
                     else                       
-                       out.write(" value=\"" + certificateprofiledata.getPathLengthConstraint() + "\""); 
+                       out.write(" value=\"" + cpd.getPathLengthConstraint() + "\""); 
                       %>>
       </td>
     </tr>  
@@ -798,28 +795,11 @@ function checkallfields(){
          <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AUTHORITYKEYID\") %>" />
       </td>
       <td width="50%">
-           <!-- Disable the use of critical flag, since it's easy to make misstakes
-           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseAuthorityKeyIdentifier())
+           <input type="checkbox" name="<%=CB_AUTHORITYKEYIDENTIFIER %>" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseAuthorityKeyIdentifier())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>">
-           <label for="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
-           &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>"
-           <%
-             if(!certificateprofiledata.getUseAuthorityKeyIdentifier())
-                 out.write(" disabled ");  
-             else
-             if(certificateprofiledata.getAuthorityKeyIdentifierCritical())
-                 out.write("CHECKED");
-           %> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL%>">
-           <label for="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
-           -->
-           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseAuthorityKeyIdentifier())
-                 out.write("CHECKED");
-           %> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>">
-           <label for="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_AUTHORITYKEYIDENTIFIER%>">
+           <label for="<%=CB_AUTHORITYKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
 
@@ -829,28 +809,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTKEYID\") %>" /> 
       </td>
       <td width="50%">
-           <!-- Disable the use of critical flag, since it's easy to make misstakes
-           <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>', '<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
+           <input type="checkbox" name="<%=CB_SUBJECTKEYIDENTIFIER %>" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseSubjectKeyIdentifier())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_SUBJECTKEYIDENTIFIER%>">
-           <label for="<%=CHECKBOX_SUBJECTKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
-           &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>"
-           <%
-             if(!certificateprofiledata.getUseSubjectKeyIdentifier())
-                 out.write(" disabled "); 
-              else
-              if(certificateprofiledata.getSubjectKeyIdentifierCritical())
-                 out.write("CHECKED");
-           %> id="<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL%>">
-           <label for="<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
-           -->
-           <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
-                 out.write("CHECKED");
-           %> id="<%=CHECKBOX_SUBJECTKEYIDENTIFIER%>">
-           <label for="<%=CHECKBOX_SUBJECTKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_SUBJECTKEYIDENTIFIER%>">
+           <label for="<%=CB_SUBJECTKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
 
@@ -860,21 +823,21 @@ function checkallfields(){
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_KEYUSAGE\") %>" /></strong>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_KEYUSAGE %>" onClick="checkusekeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseKeyUsage())
+           <input type="checkbox" name="<%=CB_KEYUSAGE %>" onClick="checkusekeyusagefield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseKeyUsage())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_KEYUSAGE%>">
-           <label for="<%=CHECKBOX_KEYUSAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_KEYUSAGE%>">
+           <label for="<%=CB_KEYUSAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_KEYUSAGECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CB_KEYUSAGECRITICAL %>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseKeyUsage())
+               if(!cpd.getUseKeyUsage())
                  out.write(" disabled ");  
                else
-               if(certificateprofiledata.getKeyUsageCritical())
+               if(cpd.getKeyUsageCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_KEYUSAGECRITICAL%>">
-           <label for="<%=CHECKBOX_KEYUSAGECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_KEYUSAGECRITICAL%>">
+           <label for="<%=CB_KEYUSAGECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -883,7 +846,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_KEYUSAGE%>" size="9" multiple >
-           <%  boolean[] ku = certificateprofiledata.getKeyUsage();
+           <%  boolean[] ku = cpd.getKeyUsage();
                 for(int i=0; i<keyusagetexts.length;i++){ %>
            <option  value="<%= i %>" 
               <% if(ku[i]) out.write(" selected "); %>> 
@@ -900,17 +863,17 @@ function checkallfields(){
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_EXTENDEDKEYUSAGE\") %>" /></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseExtendedKeyUsage())
+           <input type="checkbox" name="<%=CB_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseExtendedKeyUsage())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEEXTENDEDKEYUSAGE%>">
-           <label for="<%=CHECKBOX_USEEXTENDEDKEYUSAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEEXTENDEDKEYUSAGE%>">
+           <label for="<%=CB_USEEXTENDEDKEYUSAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>"  <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %> value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getExtendedKeyUsageCritical())
+           <input type="checkbox" name="<%=CB_EXTENDEDKEYUSAGECRITICAL %>"  <% if(!cpd.getUseExtendedKeyUsage()) out.write(" disabled "); %> value="<%=CB_VALUE %>" 
+           <% if(cpd.getExtendedKeyUsageCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_EXTENDEDKEYUSAGECRITICAL%>">
-           <label for="<%=CHECKBOX_EXTENDEDKEYUSAGECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_EXTENDEDKEYUSAGECRITICAL%>">
+           <label for="<%=CB_EXTENDEDKEYUSAGECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -921,8 +884,8 @@ function checkallfields(){
         <% List allekuoids = CertificateProfile.getAllExtendedKeyUsageOIDStrings();
            Map allekutexts = CertificateProfile.getAllExtendedKeyUsageTexts();
         %>
-        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="10" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
-           <%   ArrayList eku = certificateprofiledata.getExtendedKeyUsageOids();
+        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="10" multiple <% if(!cpd.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
+           <%   ArrayList eku = cpd.getExtendedKeyUsageOids();
                 Iterator oiditer = allekuoids.iterator();
                 while (oiditer.hasNext()) {
                 	String oid = (String)oiditer.next();
@@ -946,21 +909,21 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTALTNAME\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAME %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTALTERNATIVENAME %>', '<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectAlternativeName())
+           <input type="checkbox" name="<%=CB_SUBJECTALTERNATIVENAME %>" onClick="checkusefield('<%=CB_SUBJECTALTERNATIVENAME %>', '<%=CB_SUBJECTALTERNATIVENAMECRITICAL %>')" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseSubjectAlternativeName())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_SUBJECTALTERNATIVENAME%>">
-           <label for="<%=CHECKBOX_SUBJECTALTERNATIVENAME%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_SUBJECTALTERNATIVENAME%>">
+           <label for="<%=CB_SUBJECTALTERNATIVENAME%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CB_SUBJECTALTERNATIVENAMECRITICAL %>" value="<%=CB_VALUE %>" 
            <% 
-             if(!certificateprofiledata.getUseSubjectAlternativeName())
+             if(!cpd.getUseSubjectAlternativeName())
                  out.write(" disabled "); 
               else
-              if(certificateprofiledata.getSubjectAlternativeNameCritical())
+              if(cpd.getSubjectAlternativeNameCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL%>"> 
-           <label for="<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_SUBJECTALTERNATIVENAMECRITICAL%>"> 
+           <label for="<%=CB_SUBJECTALTERNATIVENAMECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
 
@@ -970,23 +933,65 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_ISSUERALTNAME\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_ISSUERALTERNATIVENAME %>" onClick="checkusefield('<%=CHECKBOX_ISSUERALTERNATIVENAME %>', '<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseIssuerAlternativeName())
+           <input type="checkbox" name="<%=CB_ISSUERALTERNATIVENAME %>" onClick="checkusefield('<%=CB_ISSUERALTERNATIVENAME %>', '<%=CB_ISSUERALTERNATIVENAMECRITICAL %>')" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseIssuerAlternativeName())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ISSUERALTERNATIVENAME%>">
-           <label for="<%=CHECKBOX_ISSUERALTERNATIVENAME%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_ISSUERALTERNATIVENAME%>">
+           <label for="<%=CB_ISSUERALTERNATIVENAME%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CB_ISSUERALTERNATIVENAMECRITICAL %>" value="<%=CB_VALUE %>" 
            <% 
-             if(!certificateprofiledata.getUseIssuerAlternativeName())
+             if(!cpd.getUseIssuerAlternativeName())
                  out.write(" disabled "); 
               else
-              if(certificateprofiledata.getIssuerAlternativeNameCritical())
+              if(cpd.getIssuerAlternativeNameCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL%>"> 
-           <label for="<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_ISSUERALTERNATIVENAMECRITICAL%>"> 
+           <label for="<%=CB_ISSUERALTERNATIVENAMECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
+
+    <%-- Document Type List (DTL) extension --%>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_DOCUMENTTYPELIST\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Document%20Type%20List") %>
+      </td>
+      <td width="50%">
+      		<input type="checkbox" name="<%=CB_USEDOCUMENTTYPE %>" onClick="checkusedocumenttypefield()" value="<%=CB_VALUE %>" 
+           	<% if(cpd.getUseDocumentTypeList())
+                 out.write("CHECKED");
+           	%> id="<%=CB_USEDOCUMENTTYPE%>">
+    	    <label for="<%=CB_USEDOCUMENTTYPE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           	&nbsp;
+           	<input type="checkbox" name="<%=CB_DOCUMENTTYPECRITICAL %>" value="<%=CB_VALUE %>" 
+           	<% 
+             if(!cpd.getUseDocumentTypeList())
+                 out.write(" disabled "); 
+              else
+              if(cpd.getDocumentTypeListCritical())
+                 out.write("CHECKED");
+           	%> id="<%=CB_DOCUMENTTYPECRITICAL%>"> 
+           	<label for="<%=CB_DOCUMENTTYPECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        <input type="text" name="<%=TEXTFIELD_DOCUMENTTYPE%>" size="45" maxlength="4096"  
+           <%       if(!cpd.getUseDocumentTypeList())
+                      out.write(" disabled "); 
+                    else 
+                      if(cpd.getDocumentTypeList().size() > 0) {%>
+                       value="<c:out value="<%= cabean.getDocumentTypeListStr(cpd) %>"/>"
+                      <%} else {%>
+                       value="<c:out value=""/>"
+                      <%}%> >
+      </td>
+    </tr>
+    
+    
 
     <%-- Subject Directory Attributes (SDA) extension --%>
     <tr  id="Row<%=row++%2%>"> 
@@ -994,11 +999,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTDIRATTRS\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_SUBJECTDIRATTRIBUTES %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectDirAttributes())
+           <input type="checkbox" name="<%=CB_SUBJECTDIRATTRIBUTES %>" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseSubjectDirAttributes())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_SUBJECTDIRATTRIBUTES%>">
-           <label for="<%=CHECKBOX_SUBJECTDIRATTRIBUTES%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_SUBJECTDIRATTRIBUTES%>">
+           <label for="<%=CB_SUBJECTDIRATTRIBUTES%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     
@@ -1008,21 +1013,21 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_NAMECONSTRAINTS%>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseNameConstraints())
+           <input type="checkbox" name="<%=CB_NAMECONSTRAINTS%>" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseNameConstraints())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_NAMECONSTRAINTS%>">
-           <label for="<%=CHECKBOX_NAMECONSTRAINTS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_NAMECONSTRAINTS%>">
+           <label for="<%=CB_NAMECONSTRAINTS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_NAMECONSTRAINTSCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CB_NAMECONSTRAINTSCRITICAL %>" value="<%=CB_VALUE %>" 
            <% 
-             if(!certificateprofiledata.getUseNameConstraints())
+             if(!cpd.getUseNameConstraints())
                  out.write(" disabled "); 
               else
-              if(certificateprofiledata.getNameConstraintsCritical())
+              if(cpd.getNameConstraintsCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_NAMECONSTRAINTSCRITICAL%>"> 
-           <label for="<%=CHECKBOX_NAMECONSTRAINTSCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_NAMECONSTRAINTSCRITICAL%>"> 
+           <label for="<%=CB_NAMECONSTRAINTSCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
 
@@ -1033,21 +1038,21 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCRLDistributionPoint())
+           <input type="checkbox" name="<%=CB_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseCRLDistributionPoint())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_CRLDISTRIBUTIONPOINT%>">
-           <label for="<%=CHECKBOX_CRLDISTRIBUTIONPOINT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_CRLDISTRIBUTIONPOINT%>">
+           <label for="<%=CB_CRLDISTRIBUTIONPOINT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-          <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%=CB_CRLDISTRIBUTIONPOINTCRITICAL %>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseCRLDistributionPoint())
+               if(!cpd.getUseCRLDistributionPoint())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getCRLDistributionPointCritical())
+                 if(cpd.getCRLDistributionPointCritical())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL%>">
-           <label for="<%=CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_CRLDISTRIBUTIONPOINTCRITICAL%>">
+           <label for="<%=CB_CRLDISTRIBUTIONPOINTCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
          </td>
        </tr>
        <tr  id="Row<%=row%2%>">
@@ -1056,15 +1061,15 @@ function checkallfields(){
            
          </td>
          <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>" onClick="checkusedefaultsecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CB_USEDEFAULTCRLDISTRIBUTIONPOINT %>" onClick="checkusedefaultsecrldisturifield()" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseCRLDistributionPoint())
+               if(!cpd.getUseCRLDistributionPoint())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseDefaultCRLDistributionPoint())
+                 if(cpd.getUseDefaultCRLDistributionPoint())
                  out.write(" CHECKED ");
-           %> id="<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT%>">
-           <label for="<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEDEFAULTCRLDISTRIBUTIONPOINT%>">
+           <label for="<%=CB_USEDEFAULTCRLDISTRIBUTIONPOINT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
          </td>
        </tr>
        <tr  id="Row<%=row%2%>">
@@ -1073,11 +1078,11 @@ function checkallfields(){
          </td>
          <td width="50%">
            <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="45" maxlength="4096" title="<%= ejbcawebbean.getText("FORMAT_URI") %>" 
-           <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
+           <%       if(!cpd.getUseCRLDistributionPoint() || cpd.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
-                      if(!certificateprofiledata.getCRLDistributionPointURI().equals("")) {%>
-                       value="<c:out value="<%= certificateprofiledata.getCRLDistributionPointURI() %>"/>"
+                      if(!cpd.getCRLDistributionPointURI().equals("")) {%>
+                       value="<c:out value="<%= cpd.getCRLDistributionPointURI() %>"/>"
                       <%} else {%>
                        value="<c:out value="<%= globalconfiguration.getStandardCRLDistributionPointURI() %>"/>"
                       <%}%> >
@@ -1089,12 +1094,12 @@ function checkallfields(){
            </td>
            <td width="50%">
            <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
-           <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
+           <%       if(!cpd.getUseCRLDistributionPoint() || cpd.getUseDefaultCRLDistributionPoint()) {
                       out.write(" disabled "); 
                     } else {
-                      if(!certificateprofiledata.getCRLIssuer().equals("")) {%>
-                       value="<c:out value="<%= certificateprofiledata.getCRLIssuer() %>"/>"
-                      <%} else if(certificateprofiledata.getCRLDistributionPointURI().equals("")) {
+                      if(!cpd.getCRLIssuer().equals("")) {%>
+                       value="<c:out value="<%= cpd.getCRLIssuer() %>"/>"
+                      <%} else if(cpd.getCRLDistributionPointURI().equals("")) {
                     	  // Only add default CRLIssuer if this was the first time we enabled this checkbox, so both fields are empty
                     	  %>
                          value="<c:out value="<%= globalconfiguration.getStandardCRLIssuer() %>"/>"
@@ -1111,11 +1116,11 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
        </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEFRESHESTCRL %>" onClick="checkusefreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseFreshestCRL())
+           <input type="checkbox" name="<%=CB_USEFRESHESTCRL %>" onClick="checkusefreshestcrlfield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseFreshestCRL())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEFRESHESTCRL%>">
-           <label for="<%=CHECKBOX_USEFRESHESTCRL%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEFRESHESTCRL%>">
+           <label for="<%=CB_USEFRESHESTCRL%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
          </td>
        </tr>
        
@@ -1124,15 +1129,15 @@ function checkallfields(){
            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_FCRL_CADEFINED\") %>" />
          </td>
          <td width="50%">
-          <input type="checkbox" name="<%=CHECKBOX_USECADEFINEDFRESHESTCRL %>" onClick="checkusecadefinedfreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%=CB_USECADEFINEDFRESHESTCRL %>" onClick="checkusecadefinedfreshestcrlfield()" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseFreshestCRL())
+               if(!cpd.getUseFreshestCRL())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseCADefinedFreshestCRL())
+                 if(cpd.getUseCADefinedFreshestCRL())
                  out.write(" CHECKED ");
-           %> id="<%=CHECKBOX_USECADEFINEDFRESHESTCRL%>">
-           <label for="<%=CHECKBOX_USECADEFINEDFRESHESTCRL%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USECADEFINEDFRESHESTCRL%>">
+           <label for="<%=CB_USECADEFINEDFRESHESTCRL%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
          </td>
        </tr>
        
@@ -1142,11 +1147,11 @@ function checkallfields(){
          </td>
          <td width="50%">
            <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-           <%       if(!certificateprofiledata.getUseFreshestCRL() || certificateprofiledata.getUseCADefinedFreshestCRL())
+           <%       if(!cpd.getUseFreshestCRL() || cpd.getUseCADefinedFreshestCRL())
                       out.write(" disabled "); 
                     else 
-                      if(!certificateprofiledata.getFreshestCRLURI().equals("")) {%>
-                         value="<c:out value="<%= certificateprofiledata.getFreshestCRLURI() %>"/>"
+                      if(!cpd.getFreshestCRLURI().equals("")) {%>
+                         value="<c:out value="<%= cpd.getFreshestCRLURI() %>"/>"
                       <%} else {%>
                          value="<c:out value="<%= globalconfiguration.getStandardDeltaCRLDistributionPointURI() %>"/>"
                       <%}%> >
@@ -1154,34 +1159,34 @@ function checkallfields(){
     </tr>
     
     <%-- Certificate Policies extension --%>
-    <% List policies = certificateprofiledata.getCertificatePolicies(); %>
+    <% List policies = cpd.getCertificatePolicies(); %>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CERTIFICATEPOLICIES\") %>" /></strong>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield(<%= policies.size() %>)" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCertificatePolicies())
+           <input type="checkbox" name="<%=CB_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield(<%= policies.size() %>)" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseCertificatePolicies())
                  out.write("CHECKED");
-            %> id="<%=CHECKBOX_USECERTIFICATEPOLICIES%>">
-            <label for="<%=CHECKBOX_USECERTIFICATEPOLICIES%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+            %> id="<%=CB_USECERTIFICATEPOLICIES%>">
+            <label for="<%=CB_USECERTIFICATEPOLICIES%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
             &nbsp;
-          <input type="checkbox" name="<%=CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%=CB_CERTIFICATEPOLICIESCRITICAL %>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseCertificatePolicies())
+               if(!cpd.getUseCertificatePolicies())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getCertificatePoliciesCritical())
+                 if(cpd.getCertificatePoliciesCritical())
                  out.write("CHECKED");
-            %> id="<%=CHECKBOX_CERTIFICATEPOLICIESCRITICAL%>">
-            <label for="<%=CHECKBOX_CERTIFICATEPOLICIESCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+            %> id="<%=CB_CERTIFICATEPOLICIESCRITICAL%>">
+            <label for="<%=CB_CERTIFICATEPOLICIESCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
     <%-- List of already defined policies. --%>
     <% if((policies != null) && (policies.size() > 0)) {
            CertificatePolicy policy;
            int i = 0;
-           for(Iterator it = certificateprofiledata.getCertificatePolicies().iterator(); it.hasNext(); i++) {
+           for(Iterator it = cpd.getCertificatePolicies().iterator(); it.hasNext(); i++) {
                policy = (CertificatePolicy) it.next();
            %>
     <tr id="Row<%=row%2%>">
@@ -1216,12 +1221,12 @@ function checkallfields(){
     <%-- Editable policy input form section --%>
     <tr id="Row<%=row%2%>">
  	      <td width="50%" align="right">
- 	            <input type="submit" name="<%= BUTTON_ADD_POLICY %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
+ 	            <input type="submit" name="<%= BUTTON_ADD_POLICY %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=cpd.getUseCertificatePolicies() ? "" : "disabled"%>/>
  	            &nbsp;&nbsp;&nbsp;
  	            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_POLICYID\") %>" />
  	      </td>
  	      <td width="50%">
- 	        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="20" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_OID") %>"/>
+ 	        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="20" maxlength="255" <%=cpd.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_OID") %>"/>
  	      </td>
  	    </tr>
  	    <tr id="Row<%=row%2%>">
@@ -1229,7 +1234,7 @@ function checkallfields(){
  	            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_USERNOTICE\") %>" />
  	      </td>
  	      <td width="50%">
- 	        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
+ 	        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=cpd.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
  	      </td>
  	    </tr>    
     <tr id="Row<%=row++%2%>">
@@ -1237,22 +1242,22 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_CPSURI\") %>" />
       </td>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_URI") %>"/>
+        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="45" maxlength="255" <%=cpd.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_URI") %>"/>
       </td>
     </tr>
     
     <%-- Authority Information Access (AIA) extension --%>
-	<% List caissuers = certificateprofiledata.getCaIssuers(); %>
+	<% List caissuers = cpd.getCaIssuers(); %>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AUTHORITYINFOACCESS\") %>" /> 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield(<%= caissuers.size() %>)" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseAuthorityInformationAccess())
+           <input type="checkbox" name="<%=CB_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield(<%= caissuers.size() %>)" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseAuthorityInformationAccess())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS%>">
-           <label for="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEAUTHORITYINFORMATIONACCESS%>">
+           <label for="<%=CB_USEAUTHORITYINFORMATIONACCESS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <%-- ocsp service locator part of authority information access (aia) extension --%>
@@ -1262,13 +1267,13 @@ function checkallfields(){
       </td>
       <%-- ocsp service locator part of authority information access (aia) extension --%>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>" onClick="checkdefaultocspservicelocatorfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(!certificateprofiledata.getUseAuthorityInformationAccess())
+           <input type="checkbox" name="<%=CB_USEDEFAULTOCSPSERVICELOCALTOR %>" onClick="checkdefaultocspservicelocatorfield()" value="<%=CB_VALUE %>" 
+           <% if(!cpd.getUseAuthorityInformationAccess())
                  out.write(" disabled ");
-              if(certificateprofiledata.getUseDefaultOCSPServiceLocator())
+              if(cpd.getUseDefaultOCSPServiceLocator())
                  out.write(" CHECKED ");
-           %> id="<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR%>">
-           <label for="<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEDEFAULTOCSPSERVICELOCALTOR%>">
+           <label for="<%=CB_USEDEFAULTOCSPSERVICELOCALTOR%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
          </td>
        </tr>
        <tr  id="Row<%=row%2%>"> 
@@ -1277,10 +1282,10 @@ function checkallfields(){
  	      </td>
  	      <td width="50%">
            <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-           <%       if(!certificateprofiledata.getUseAuthorityInformationAccess() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
+           <%       if(!cpd.getUseAuthorityInformationAccess() || cpd.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 
                     else {
-                       String ocspuri = certificateprofiledata.getOCSPServiceLocatorURI();
+                       String ocspuri = cpd.getOCSPServiceLocatorURI();
                        if (ocspuri == null) {ocspuri = "";} %>
                        value="<c:out value="<%= ocspuri %>"/>"
                     <%}
@@ -1311,12 +1316,12 @@ function checkallfields(){
     <%-- Editable caIssuers URI input form section --%>
     <tr id="Row<%=row++%2%>">
       <td width="50%" align="right">
-        <input type="submit" name="<%= BUTTON_ADD_CAISSUERURI %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/>
+        <input type="submit" name="<%= BUTTON_ADD_CAISSUERURI %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=cpd.getUseAuthorityInformationAccess() ? "" : "disabled"%>/>
         &nbsp;&nbsp;&nbsp;
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AIA_CAISSUERS_URI\") %>" />
       </td>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="45" maxlength="255" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/>
+        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="45" maxlength="255" <%=cpd.getUseAuthorityInformationAccess() ? "" : "disabled"%>/>
       </td>
     </tr>
 
@@ -1326,12 +1331,12 @@ function checkallfields(){
 	  	<c:out value="<%=ejbcawebbean.getText(\"EXT_PKIX_PRIVKEYUSAGEPERIOD\")%>" /> <%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%>
 	  </td>
 	  <td width="50%">
-	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>" onclick="checkprivkeyusageperiodnotbeforefield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "CHECKED" : ""%>
-	    id="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>">
-	    <label for="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_PKUP_STARTOFFSET\") %>" /></label>
+	    <input name="<%=CB_USEPRIVKEYUSAGEPERIODNOTBEFORE%>" onclick="checkprivkeyusageperiodnotbeforefield()" type="checkbox" value="<%=CB_VALUE%>" <%=cpd.isUsePrivateKeyUsagePeriodNotBefore() ? "CHECKED" : ""%>
+	    id="<%=CB_USEPRIVKEYUSAGEPERIODNOTBEFORE%>">
+	    <label for="<%=CB_USEPRIVKEYUSAGEPERIODNOTBEFORE%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_PKUP_STARTOFFSET\") %>" /></label>
 	    <c:out value="<%= ejbcawebbean.getText(\"FORMAT_TIME_YMD\") %>" />
 	    &nbsp;
-	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %>" />
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="20" maxlength="255" <%=cpd.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=cpd.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(cpd.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %>" />
 	  </td>
 	</tr>
 	
@@ -1340,12 +1345,12 @@ function checkallfields(){
 	  	&nbsp;
 	  </td>
 	  <td width="50%">
-	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>" onclick="checkprivkeyusageperiodnotafterfield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "CHECKED" : ""%>
-	    id="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>">
-	    <label for="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_PKUP_PERIODLENGTH\") %>" /></label>
+	    <input name="<%=CB_USEPRIVKEYUSAGEPERIODNOTAFTER%>" onclick="checkprivkeyusageperiodnotafterfield()" type="checkbox" value="<%=CB_VALUE%>" <%=cpd.isUsePrivateKeyUsagePeriodNotAfter() ? "CHECKED" : ""%>
+	    id="<%=CB_USEPRIVKEYUSAGEPERIODNOTAFTER%>">
+	    <label for="<%=CB_USEPRIVKEYUSAGEPERIODNOTAFTER%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_PKUP_PERIODLENGTH\") %>" /></label>
 	    <c:out value="<%= ejbcawebbean.getText(\"FORMAT_TIME_YMD\") %>" />
 	    &nbsp;
-	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %>" />
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="20" maxlength="255" <%=cpd.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=cpd.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(cpd.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %>" />
 	  </td>
 	</tr>
 
@@ -1363,174 +1368,174 @@ function checkallfields(){
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCSTATEMENTS\") %>" /></strong>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEQCSTATEMENT %>" onClick="checkuseqcstatementfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseQCStatement())
+           <input type="checkbox" name="<%=CB_USEQCSTATEMENT %>" onClick="checkuseqcstatementfield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseQCStatement())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEQCSTATEMENT%>">
-           <label for="<%=CHECKBOX_USEQCSTATEMENT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEQCSTATEMENT%>">
+           <label for="<%=CB_USEQCSTATEMENT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
-           <input type="checkbox" name="<%=CHECKBOX_QCSTATEMENTCRITICAL %>" value="<%=CHECKBOX_VALUE %>"              
+           <input type="checkbox" name="<%=CB_QCSTATEMENTCRITICAL %>" value="<%=CB_VALUE %>"              
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getQCStatementCritical())
+                 if(cpd.getQCStatementCritical())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_QCSTATEMENTCRITICAL%>">
-           <label for="<%=CHECKBOX_QCSTATEMENTCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+           %> id="<%=CB_QCSTATEMENTCRITICAL%>">
+           <label for="<%=CB_QCSTATEMENTCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_PKIXQCSYNTAXV2\") %>" /></td>
       <td width="50%" valign="top">
-         <input type="checkbox" name="<%=CHECKBOX_USEPKIXQCSYNTAXV2 %>" value="<%=CHECKBOX_VALUE %>" 
+         <input type="checkbox" name="<%=CB_USEPKIXQCSYNTAXV2 %>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUsePkixQCSyntaxV2())
+                 if(cpd.getUsePkixQCSyntaxV2())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEPKIXQCSYNTAXV2%>">
-           <label for="<%=CHECKBOX_USEPKIXQCSYNTAXV2%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEPKIXQCSYNTAXV2%>">
+           <label for="<%=CB_USEPKIXQCSYNTAXV2%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_SEMANTICSID\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement()) {
+           <%       if(!cpd.getUseQCStatement()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCSemanticsId() %>"/>"
+                      value="<c:out value="<%= cpd.getQCSemanticsId() %>"/>"
                     <%}%> >
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_NAMERA\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement()) {
+           <%       if(!cpd.getUseQCStatement()) {
                       out.write(" disabled "); 
                     } else { %> 
-                      value="<c:out value="<%= certificateprofiledata.getQCStatementRAName() %>"/>"
+                      value="<c:out value="<%= cpd.getQCStatementRAName() %>"/>"
                     <%}%> >
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_QCCOMPLIANCE\") %>" /> </td>
-      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIQCCOMPLIANCE %>" value="<%=CHECKBOX_VALUE %>" 
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CB_USEQCETSIQCCOMPLIANCE %>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseQCEtsiQCCompliance())
+                 if(cpd.getUseQCEtsiQCCompliance())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEQCETSIQCCOMPLIANCE%>">
-           <label for="<%=CHECKBOX_USEQCETSIQCCOMPLIANCE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEQCETSIQCCOMPLIANCE%>">
+           <label for="<%=CB_USEQCETSIQCCOMPLIANCE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_SSCD\") %>" /> </td>
-      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSISIGNATUREDEVICE %>" value="<%=CHECKBOX_VALUE %>" 
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CB_USEQCETSISIGNATUREDEVICE %>" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseQCEtsiSignatureDevice())
+                 if(cpd.getUseQCEtsiSignatureDevice())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEQCETSISIGNATUREDEVICE%>">
-           <label for="<%=CHECKBOX_USEQCETSISIGNATUREDEVICE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEQCETSISIGNATUREDEVICE%>">
+           <label for="<%=CB_USEQCETSISIGNATUREDEVICE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_VALUELIMIT\") %>" /> </td>
-      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIVALUELIMIT %>" onClick="checkuseetsivaluelimitfield()" value="<%=CHECKBOX_VALUE %>" 
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CB_USEQCETSIVALUELIMIT %>" onClick="checkuseetsivaluelimitfield()" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseQCEtsiValueLimit())
+                 if(cpd.getUseQCEtsiValueLimit())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEQCETSIVALUELIMIT%>">
-           <label for="<%=CHECKBOX_USEQCETSIVALUELIMIT%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
+           %> id="<%=CB_USEQCETSIVALUELIMIT%>">
+           <label for="<%=CB_USEQCETSIVALUELIMIT%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_VL_CURRENCY\") %>" />
            <input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITCUR %>" size="3" maxlength="3"
                title="<%= ejbcawebbean.getText("FORMAT_ISO4217") %>" style="text-align: center;"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit()) {
+           <%       if(!cpd.getUseQCStatement() || !cpd.getUseQCEtsiValueLimit()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCEtsiValueLimitCurrency() %>"/>"
+                      value="<c:out value="<%= cpd.getQCEtsiValueLimitCurrency() %>"/>"
                     <%}%> >
            &nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_VL_AMOUNT\") %>" />
            <input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMIT %>" size="3" maxlength="6"
                title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit()) {
+           <%       if(!cpd.getUseQCStatement() || !cpd.getUseQCEtsiValueLimit()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCEtsiValueLimit() %>"/>"
+                      value="<c:out value="<%= cpd.getQCEtsiValueLimit() %>"/>"
                     <%}%> >
            &times;10^
            <c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_VL_EXPONENT\") %>" />
            <input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITEXP %>" size="2" maxlength="2"
                title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit()) {
+           <%       if(!cpd.getUseQCStatement() || !cpd.getUseQCEtsiValueLimit()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCEtsiValueLimitExp() %>"/>"
+                      value="<c:out value="<%= cpd.getQCEtsiValueLimitExp() %>"/>"
                     <%}%> >
       </td>
     </tr>                     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_ETSI_QCS_RETENTIONPERIOD\") %>" /> </td>
-      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIRETENTIONPERIOD %>" onClick="checkusetsiretentionperiod()" value="<%=CHECKBOX_VALUE %>"
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CB_USEQCETSIRETENTIONPERIOD %>" onClick="checkusetsiretentionperiod()" value="<%=CB_VALUE %>"
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseQCEtsiRetentionPeriod())
+                 if(cpd.getUseQCEtsiRetentionPeriod())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEQCETSIRETENTIONPERIOD%>">
-           <label for="<%=CHECKBOX_USEQCETSIRETENTIONPERIOD%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
+           %> id="<%=CB_USEQCETSIRETENTIONPERIOD%>">
+           <label for="<%=CB_USEQCETSIRETENTIONPERIOD%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"VALUE\") %>" />
            <c:out value="<%= ejbcawebbean.getText(\"UNIT_YEARS\") %>" />
            <input type="text" name="<%=TEXTFIELD_QCETSIRETENTIONPERIOD %>" size="2" maxlength="3"
                title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiRetentionPeriod()) {
+           <%       if(!cpd.getUseQCStatement() || !cpd.getUseQCEtsiRetentionPeriod()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCEtsiRetentionPeriod() %>"/>"
+                      value="<c:out value="<%= cpd.getQCEtsiRetentionPeriod() %>"/>"
                     <%}%> >
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTRING\") %>" /> </td>
-      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCCUSTOMSTRING %>" onClick="checkuseqccustomstring()" value="<%=CHECKBOX_VALUE %>" 
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CB_USEQCCUSTOMSTRING %>" onClick="checkuseqccustomstring()" value="<%=CB_VALUE %>" 
            <%
-               if(!certificateprofiledata.getUseQCStatement())
+               if(!cpd.getUseQCStatement())
                  out.write(" disabled "); 
                else
-                 if(certificateprofiledata.getUseQCCustomString())
+                 if(cpd.getUseQCCustomString())
                    out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEQCCUSTOMSTRING%>">
-           <label for="<%=CHECKBOX_USEQCCUSTOMSTRING%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
+           %> id="<%=CB_USEQCCUSTOMSTRING%>">
+           <label for="<%=CB_USEQCCUSTOMSTRING%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTR_OID\") %>" />
            <input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString()) {
+           <%       if(!cpd.getUseQCStatement() || !cpd.getUseQCCustomString()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCCustomStringOid() %>"/>"
+                      value="<c:out value="<%= cpd.getQCCustomStringOid() %>"/>"
                     <%}%> >
       </td>
     </tr>     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTR_TEXT\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString()) {
+           <%       if(!cpd.getUseQCStatement() || !cpd.getUseQCCustomString()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getQCCustomStringText() %>"/>"
+                      value="<c:out value="<%= cpd.getQCCustomStringText() %>"/>"
                     <%}%> >
       </td>
     </tr>  
@@ -1538,7 +1543,7 @@ function checkallfields(){
     <%-- Certificate Transparency --%>
     <%
     if (CertificateTransparencyFactory.isCTAvailable()) {
-        Set<Integer> enabledCTLogs = certificateprofiledata.getEnabledCTLogs();
+        Set<Integer> enabledCTLogs = cpd.getEnabledCTLogs();
         Map<Integer,CTLogInfo> availableCTLogs = globalconfiguration.getCTLogs();
     %>
     
@@ -1555,21 +1560,21 @@ function checkallfields(){
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_CERTIFICATE_TRANSPARENCY\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></strong>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS %>" onClick="checkusecertificatetransparencyfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if (certificateprofiledata.isUseCertificateTransparencyInCerts())
+           <input type="checkbox" name="<%=CB_USECERTIFICATETRANSPARENCYINCERTS %>" onClick="checkusecertificatetransparencyfield()" value="<%=CB_VALUE %>" 
+           <% if (cpd.isUseCertificateTransparencyInCerts())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS%>">
-           <label for="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_USE_IN_CERTS\") %>" /></label>
+           %> id="<%=CB_USECERTIFICATETRANSPARENCYINCERTS%>">
+           <label for="<%=CB_USECERTIFICATETRANSPARENCYINCERTS%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_USE_IN_CERTS\") %>" /></label>
            
            <br />
            
-           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP %>" onClick="checkusecertificatetransparencyfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if (certificateprofiledata.isUseCertificateTransparencyInOCSP())
+           <input type="checkbox" name="<%=CB_USECERTIFICATETRANSPARENCYINOCSP %>" onClick="checkusecertificatetransparencyfield()" value="<%=CB_VALUE %>" 
+           <% if (cpd.isUseCertificateTransparencyInOCSP())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP%>">
-           <label for="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_USE_IN_OCSP\") %>" /></label>
+           %> id="<%=CB_USECERTIFICATETRANSPARENCYINOCSP%>">
+           <label for="<%=CB_USECERTIFICATETRANSPARENCYINOCSP%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_USE_IN_OCSP\") %>" /></label>
            <%
-           boolean ctEnabled = certificateprofiledata.isUseCertificateTransparencyInCerts() || certificateprofiledata.isUseCertificateTransparencyInOCSP();
+           boolean ctEnabled = cpd.isUseCertificateTransparencyInCerts() || cpd.isUseCertificateTransparencyInOCSP();
            %>
       </td>
     </tr>
@@ -1592,7 +1597,7 @@ function checkallfields(){
            <%       if (!ctEnabled) {
                       out.write(" disabled ");
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getCTMinSCTs() %>"/>"
+                      value="<c:out value="<%= cpd.getCTMinSCTs() %>"/>"
                     <%}%> >
       </td>
     </tr>
@@ -1602,7 +1607,7 @@ function checkallfields(){
            <%       if (!ctEnabled) {
                       out.write(" disabled ");
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getCTMaxSCTs() %>"/>"
+                      value="<c:out value="<%= cpd.getCTMaxSCTs() %>"/>"
                     <%}%> >
       </td>
     </tr>
@@ -1612,7 +1617,7 @@ function checkallfields(){
            <%       if (!ctEnabled) {
                       out.write(" disabled ");
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getCTMaxRetries() %>"/>"
+                      value="<c:out value="<%= cpd.getCTMaxRetries() %>"/>"
                     <%}%> >
       </td>
     </tr>
@@ -1635,11 +1640,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_OCSPNOCHECK\") %>" />
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEOCSPNOCHECK %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseOcspNoCheck())
+           <input type="checkbox" name="<%=CB_USEOCSPNOCHECK %>" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseOcspNoCheck())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEOCSPNOCHECK%>">
-           <label for="<%=CHECKBOX_USEOCSPNOCHECK%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USEOCSPNOCHECK%>">
+           <label for="<%=CB_USEOCSPNOCHECK%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     
@@ -1649,19 +1654,19 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATENAME\") %>" /> 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEMSTEMPLATE %>"  onclick="checkusemstemplatefield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseMicrosoftTemplate())
+           <input type="checkbox" name="<%=CB_USEMSTEMPLATE %>"  onclick="checkusemstemplatefield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseMicrosoftTemplate())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USEMSTEMPLATE%>">
-           <label for="<%=CHECKBOX_USEMSTEMPLATE%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
+           %> id="<%=CB_USEMSTEMPLATE%>">
+           <label for="<%=CB_USEMSTEMPLATE%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"VALUE\") %>" />
-           <select name="<%=SELECT_MSTEMPLATE%>"  <% if(!certificateprofiledata.getUseMicrosoftTemplate()) out.write(" disabled "); %>>
+           <select name="<%=SELECT_MSTEMPLATE%>"  <% if(!cpd.getUseMicrosoftTemplate()) out.write(" disabled "); %>>
            <%  
                 for(int i=0; i < CertificateProfile.AVAILABLE_MSTEMPLATES.length;i++){ %>
                   <option  value="<%= CertificateProfile.AVAILABLE_MSTEMPLATES[i] %>" 
               <% 
-                   if(CertificateProfile.AVAILABLE_MSTEMPLATES[i] == certificateprofiledata.getMicrosoftTemplate() ) out.write(" selected "); %>> 
+                   if(CertificateProfile.AVAILABLE_MSTEMPLATES[i] == cpd.getMicrosoftTemplate() ) out.write(" selected "); %>> 
               <%=  CertificateProfile.AVAILABLE_MSTEMPLATES[i] %>
                   </option>
            <%   } %> 
@@ -1678,11 +1683,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_SEIS_CARDNUMBER\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USECARDNUMBER %>"  value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCardNumber())
+           <input type="checkbox" name="<%=CB_USECARDNUMBER %>"  value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseCardNumber())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USECARDNUMBER%>">
-           <label for="<%=CHECKBOX_USECARDNUMBER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USECARDNUMBER%>">
+           <label for="<%=CB_USECARDNUMBER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>    
 
@@ -1704,7 +1709,7 @@ function checkallfields(){
       </td>
       <td width="50%">
         <select name="<%=SELECT_CVCTERMTYPE%>" size="1" onclick="cvctermtypechanged();" onchange="cvctermtypechanged();" onkeyup="cvctermtypechanged();">
-           <%  int termtype = certificateprofiledata.getCVCTerminalType(); %>
+           <%  int termtype = cpd.getCVCTerminalType(); %>
            <option  value="<%=CertificateProfile.CVC_TERMTYPE_IS%>"
                  <% if (termtype == CertificateProfile.CVC_TERMTYPE_IS ) out.write(" selected "); %>>
                 <c:out value="<%= ejbcawebbean.getText(\"CVCINSPECTIONSYSTEM\") %>" />
@@ -1727,7 +1732,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_CVCSIGNTERMDVTYPE%>" size="1" >
-           <%  int signdvtype = certificateprofiledata.getCVCSignTermDVType(); %>
+           <%  int signdvtype = cpd.getCVCSignTermDVType(); %>
            <option  value="<%=CertificateProfile.CVC_SIGNTERM_DV_AB%>"
                  <% if (signdvtype == CertificateProfile.CVC_SIGNTERM_DV_AB ) out.write(" selected "); %>>
                 <c:out value="<%= ejbcawebbean.getText(\"CVCACCREDITATIONBODY\") %>" />
@@ -1747,8 +1752,8 @@ function checkallfields(){
       <td width="50%"> 
         <select name="<%=SELECT_CVCACCESSRIGHTS%>" multiple="multiple" size="8">
            <%
-           int ar = certificateprofiledata.getCVCAccessRights();
-           byte[] arl = certificateprofiledata.getCVCLongAccessRights();
+           int ar = cpd.getCVCAccessRights();
+           byte[] arl = cpd.getCVCLongAccessRights();
            if (arl == null) arl = CertificateProfile.DEFAULT_CVC_RIGHTS_AT;
            AccessRightAuthTerm arlflags;
            try {
@@ -1825,11 +1830,11 @@ function checkallfields(){
         <strong><c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_LDAPORDER\") %>" /></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20LDAP%20DN%20order") %>
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseLdapDnOrder())
+        <input type="checkbox" name="<%=CB_USELDAPDNORDER %>" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseLdapDnOrder())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USELDAPDNORDER%>">
-           <label for="<%=CHECKBOX_USELDAPDNORDER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           %> id="<%=CB_USELDAPDNORDER%>">
+           <label for="<%=CB_USELDAPDNORDER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
 
@@ -1838,18 +1843,18 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_CNPOSTFIX\") %>" /> 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USECNPOSTFIX  %>"  onclick="checkusecnpostfixfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCNPostfix())
+           <input type="checkbox" name="<%=CB_USECNPOSTFIX  %>"  onclick="checkusecnpostfixfield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseCNPostfix())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USECNPOSTFIX%>">
-           <label for="<%=CHECKBOX_USECNPOSTFIX%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
+           %> id="<%=CB_USECNPOSTFIX%>">
+  CB <label for="<%=CB_USECNPOSTFIX%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"VALUE\") %>" />
            <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
-           <%       if(!certificateprofiledata.getUseCNPostfix()) {
+           <%       if(!cpd.getUseCNPostfix()) {
                       out.write(" disabled "); 
                     } else {%> 
-                      value="<c:out value="<%= certificateprofiledata.getCNPostfix() %>"/>"
+                      value="<c:out value="<%= cpd.getCNPostfix() %>"/>"
                     <%}%> >
            <br />
            <p class="help">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1862,11 +1867,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_SUBSET\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Subset%20of%20Subject%20DN") %>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USESUBJECTDNSUBSET  %>"  onclick="checkusesubjectdnsubsetfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectDNSubSet())
+           <input type="checkbox" name="<%=CB_USESUBJECTDNSUBSET  %>"  onclick="checkusesubjectdnsubsetfield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseSubjectDNSubSet())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USESUBJECTDNSUBSET%>">
-           <label for="<%=CHECKBOX_USESUBJECTDNSUBSET%>"><c:out value="<%= ejbcawebbean.getText(\"RESTRICT\") %>" /></label>
+           %> id="<%=CB_USESUBJECTDNSUBSET%>">
+           <label for="<%=CB_USESUBJECTDNSUBSET%>"><c:out value="<%= ejbcawebbean.getText(\"RESTRICT\") %>" /></label>
       </td>
     </tr>        
     <tr id="Row<%=row++%2%>"> 
@@ -1874,8 +1879,8 @@ function checkallfields(){
           &nbsp;
       </td>
       <td width="50%" valign="top">   
-        <select name="<%=SELECT_SUBJECTDNSUBSET%>" size="10" multiple <%if(!certificateprofiledata.getUseSubjectDNSubSet()){out.write(" disabled ");} %>>       
-            <% HashSet currentfields = new HashSet(certificateprofiledata.getSubjectDNSubSet());
+        <select name="<%=SELECT_SUBJECTDNSUBSET%>" size="10" multiple <%if(!cpd.getUseSubjectDNSubSet()){out.write(" disabled ");} %>>       
+            <% HashSet currentfields = new HashSet(cpd.getSubjectDNSubSet());
                Integer[] usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
                String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
                for(int i=0;i < usefieldsindn.length; i++){ %>                                  
@@ -1892,11 +1897,11 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SAN_SUBSET\") %>" /> 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USESUBJECTALTNAMESUBSET  %>"  onclick="checkusesubjectaltnamesubsetfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseSubjectAltNameSubSet())
+           <input type="checkbox" name="<%=CB_USESUBJECTALTNAMESUBSET  %>"  onclick="checkusesubjectaltnamesubsetfield()" value="<%=CB_VALUE %>" 
+           <% if(cpd.getUseSubjectAltNameSubSet())
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_USESUBJECTALTNAMESUBSET%>">
-           <label for="<%=CHECKBOX_USESUBJECTALTNAMESUBSET%>"><c:out value="<%= ejbcawebbean.getText(\"RESTRICT\") %>" /></label>
+           %> id="<%=CB_USESUBJECTALTNAMESUBSET%>">
+           <label for="<%=CB_USESUBJECTALTNAMESUBSET%>"><c:out value="<%= ejbcawebbean.getText(\"RESTRICT\") %>" /></label>
       </td>
     </tr>        
     <tr id="Row<%=row++%2%>"> 
@@ -1904,8 +1909,8 @@ function checkallfields(){
           &nbsp;
       </td>
       <td width="50%" valign="top">   
-        <select name="<%=SELECT_SUBJECTALTNAMESUBSET%>" size="6" multiple <%if(!certificateprofiledata.getUseSubjectAltNameSubSet()){out.write(" disabled ");} %>>       
-            <% currentfields = new HashSet(certificateprofiledata.getSubjectAltNameSubSet());
+        <select name="<%=SELECT_SUBJECTALTNAMESUBSET%>" size="6" multiple <%if(!cpd.getUseSubjectAltNameSubSet()){out.write(" disabled ");} %>>       
+            <% currentfields = new HashSet(cpd.getSubjectAltNameSubSet());
                Integer[] usefieldsinaltname = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
                String[] usefieldsinaltnametexts = (String[])DnComponents.getAltNameLanguageTexts().toArray(new String[0]);
                for(int i=0;i < usefieldsinaltname.length; i++){ %>                                  
@@ -1924,7 +1929,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_USEDCERTIFICATEEXTENSIONS%>" size="5" multiple >
-           <%  List usedCertExt = certificateprofiledata.getUsedCertificateExtensions();               
+           <%  List usedCertExt = cpd.getUsedCertificateExtensions();               
                List availableCertExt = certExtFact.getAvailableCertificateExtensions();
                for(int i=0; i<availableCertExt.size();i++){ 
                  AvailableCertificateExtension availCertExt = (AvailableCertificateExtension) availableCertExt.get(i); %>
@@ -1950,7 +1955,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLECAS%>" size="7" multiple >
-           <% Collection usedcas = certificateprofiledata.getAvailableCAs(); 
+           <% Collection usedcas = cpd.getAvailableCAs(); 
               if(issuperadministrator){ %>
            <option  value="<%= CertificateProfile.ANYCA %>" 
               <% if(usedcas.contains(Integer.valueOf(CertificateProfile.ANYCA)))
@@ -1978,9 +1983,9 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5"
-        	multiple  <% if(certificateprofiledata.getType() != CertificateConstants.CERTTYPE_ENDENTITY)
+        	multiple  <% if(cpd.getType() != CertificateConstants.CERTTYPE_ENDENTITY)
         					out.write(" disabled "); %>>
-           <%   Collection usedpublishers = certificateprofiledata.getPublisherList(); 
+           <%   Collection usedpublishers = cpd.getPublisherList(); 
                 iter = authorizedpublishers.keySet().iterator(); 
                 while(iter.hasNext()){
                   String next = (String) iter.next(); 
@@ -2006,7 +2011,7 @@ function checkallfields(){
                 for(int i=0;i< CAInfo.AVAILABLE_APPROVALSETTINGS.length;i++){
                    %>
            <option  value="<%= CAInfo.AVAILABLE_APPROVALSETTINGS[i] %>" 
-              <%    if(certificateprofiledata.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i]))
+              <%    if(cpd.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i]))
                       out.write(" selected ");
                   %>>
               <c:out value="<%= ejbcawebbean.getText(CAInfo.AVAILABLE_APPROVALSETTINGS_TEXTS[i]) %>" />         
@@ -2024,7 +2029,7 @@ function checkallfields(){
            <%  for(int i=1;i<= 4;i++){
                    %>
            <option  value="<%= i %>" 
-              <%    if(certificateprofiledata.getNumOfReqApprovals() == i)
+              <%    if(cpd.getNumOfReqApprovals() == i)
                       out.write(" selected ");
                   %>>
               <%= i %>         

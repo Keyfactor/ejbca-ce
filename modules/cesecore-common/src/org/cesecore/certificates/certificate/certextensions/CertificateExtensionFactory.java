@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.AuthorityKe
 import org.cesecore.certificates.certificate.certextensions.standard.BasicConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.CertificatePolicies;
 import org.cesecore.certificates.certificate.certextensions.standard.CrlDistributionPoints;
+import org.cesecore.certificates.certificate.certextensions.standard.DocumentTypeList;
 import org.cesecore.certificates.certificate.certextensions.standard.ExtendedKeyUsage;
 import org.cesecore.certificates.certificate.certextensions.standard.FreshestCrl;
 import org.cesecore.certificates.certificate.certextensions.standard.IssuerAltNames;
@@ -82,6 +83,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(Extension.extendedKeyUsage.getId(), ExtendedKeyUsage.class.getName());
 		standardCertificateExtensions.put(Extension.subjectAlternativeName.getId(), SubjectAltNames.class.getName());
 		standardCertificateExtensions.put(Extension.issuerAlternativeName.getId(), IssuerAltNames.class.getName());
+		standardCertificateExtensions.put("2.23.136.1.1.6.2", DocumentTypeList.class.getName());
 		standardCertificateExtensions.put(Extension.cRLDistributionPoints.getId(), CrlDistributionPoints.class.getName());
 		standardCertificateExtensions.put(Extension.freshestCRL.getId(), FreshestCrl.class.getName());
 		standardCertificateExtensions.put(Extension.certificatePolicies.getId(), CertificatePolicies.class.getName());
