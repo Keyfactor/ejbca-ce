@@ -105,7 +105,9 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.asn1.x509.ReasonFlags;
@@ -118,7 +120,10 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
@@ -127,6 +132,8 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
@@ -3552,6 +3559,70 @@ public abstract class CertTools {
             certificateHolderChain[i] = new JcaX509CertificateHolder(certificateChain[i]);
         }
         return certificateHolderChain;
+    }
+
+    /**
+     * Checks that the given SubjectDN / SAN satisfies the Name Constraints of the given issuer (if there are any).
+     * This method checks the Name Constraints in the given issuer only. A complete implementation of
+     * name constraints should check the whole certificate chain.
+     * 
+     * @param issuer Issuing CA.
+     * @param subjectDNName Subject DN to check. Optional.
+     * @param subjectAltName Subject Alternative Name to check. Optional.
+     * @throws CertificateExtensionException
+     */
+    public static void checkNameConstraints(X509Certificate issuer, X500Name subjectDNName, GeneralNames subjectAltName) throws IllegalNameException {
+        final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());
+        final ASN1OctetString ncstr = (ncbytes != null ? DEROctetString.getInstance(ncbytes) : null);
+        final ASN1Sequence ncseq = (ncbytes != null ? DERSequence.getInstance(ncstr.getOctets()) : null);
+        final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
+        
+        if (nc != null) {
+            if (subjectDNName != null) {
+                // Skip check for root CAs
+                final X500Name issuerDNName = X500Name.getInstance(issuer.getSubjectX500Principal().getEncoded());
+                if (issuerDNName.equals(subjectDNName)) {
+                    return;
+                }
+            }
+            
+            final PKIXNameConstraintValidator validator = new PKIXNameConstraintValidator();
+            
+            GeneralSubtree[] permitted = nc.getPermittedSubtrees();
+            GeneralSubtree[] excluded = nc.getExcludedSubtrees();
+            
+            if (permitted != null) {
+                validator.intersectPermittedSubtree(permitted);
+            }
+            if (excluded != null) {
+                for (GeneralSubtree subtree : excluded) {
+                    validator.addExcludedSubtree(subtree);
+                }
+            }
+
+            if (subjectDNName != null) {
+                GeneralName dngn = new GeneralName(subjectDNName);
+                try {
+                    validator.checkPermitted(dngn);
+                    validator.checkExcluded(dngn);
+                } catch (PKIXNameConstraintValidatorException e) {
+                    final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectdn", subjectDNName);
+                    throw new IllegalNameException(msg, e);
+                }
+            }
+            
+            if (subjectAltName != null) {
+                for (GeneralName sangn : subjectAltName.getNames()) {
+                    try {
+                        validator.checkPermitted(sangn);
+                        validator.checkExcluded(sangn);
+                    } catch (PKIXNameConstraintValidatorException e) {
+                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                        throw new IllegalNameException(msg, e);
+                    }
+                }
+            }
+        }
     }
 
 }
