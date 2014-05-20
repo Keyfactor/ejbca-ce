@@ -101,17 +101,20 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database
      */
-    public void setUniqueSernoIndexTrue();
+    void setUniqueSernoIndexTrue();
 
     /** Setting unique serno check to false, i.e. force EJBCA to believe we don't have a unique issuerDN/SerialNo index in the database
      */
-    public void setUniqueSernoIndexFalse();
+    void setUniqueSernoIndexFalse();
 
     /** Resets the current (static) check for unique index and re-checks. */
-    public boolean existsUniqueSernoIndex();
+    boolean existsUniqueSernoIndex();
 
     /** Resetting unique serno check */
-    public void resetUniqueSernoCheck();
+    void resetUniqueSernoCheck();
 
-
+    /**
+     * Reloads the cache containing CA certificates
+     */
+    void reloadCaCertificateCache();
 }

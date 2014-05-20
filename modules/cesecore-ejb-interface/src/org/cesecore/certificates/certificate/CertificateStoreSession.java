@@ -347,9 +347,4 @@ public interface CertificateStoreSession {
      */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
     
-    /**
-     * Reloads the cache containing CA certificates
-     */
-    void reloadCaCertificateCache();
-
 }

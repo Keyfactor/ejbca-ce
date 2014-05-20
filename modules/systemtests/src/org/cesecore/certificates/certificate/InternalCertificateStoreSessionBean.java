@@ -212,4 +212,9 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         certStore.resetUniqueCertificateSerialNumberIndex();        
     }
 
+    @Override
+    public void reloadCaCertificateCache() {
+        certStore.reloadCaCertificateCache();
+    }
+    
 }
