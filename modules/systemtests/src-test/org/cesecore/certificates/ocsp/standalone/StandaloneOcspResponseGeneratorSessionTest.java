@@ -421,7 +421,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), null);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
-        certificateStoreSession.reloadCaCertificateCache();
+        internalCertificateStoreSession.reloadCaCertificateCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
