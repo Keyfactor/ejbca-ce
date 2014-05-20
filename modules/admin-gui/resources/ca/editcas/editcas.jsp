@@ -526,23 +526,14 @@ java.security.InvalidAlgorithmParameterException
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
+                final String nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
+                final String nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
                 final String subjectdn;
-                final String nameConstraintsPermitted;
-                final String nameConstraintsExcluded;
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                     subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
-                    nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
-                    nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
                 } else {
                     CAInfo cainfo = cadatahandler.getCAInfo(caid).getCAInfo();
                     subjectdn = cainfo.getSubjectDN();
-                    if (cainfo instanceof X509CAInfo) {
-                        nameConstraintsPermitted = NameConstraint.formatNameConstraintsList(((X509CAInfo)cainfo).getNameConstraintsPermitted());
-                        nameConstraintsExcluded = NameConstraint.formatNameConstraintsList(((X509CAInfo)cainfo).getNameConstraintsExcluded());
-                    } else {
-                        nameConstraintsPermitted = null;
-                        nameConstraintsExcluded = null;
-                    }
                 }
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, description, validityString,
