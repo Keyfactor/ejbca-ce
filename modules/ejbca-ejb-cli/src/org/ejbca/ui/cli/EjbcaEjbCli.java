@@ -30,8 +30,9 @@ public class EjbcaEjbCli {
             CommandLibrary.INSTANCE.listRootCommands();
         } else {
             CryptoProviderTools.installBCProvider();
-            if(CommandLibrary.INSTANCE.findAndExecuteCommandFromParameters(args) != CommandResult.SUCCESS) {
-                System.exit(1);
+            CommandResult result = CommandLibrary.INSTANCE.findAndExecuteCommandFromParameters(args);
+            if(result != CommandResult.SUCCESS) {
+                System.exit(result.getReturnCode());
             }
         }
     }

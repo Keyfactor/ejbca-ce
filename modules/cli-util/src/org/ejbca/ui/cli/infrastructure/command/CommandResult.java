@@ -20,5 +20,15 @@ package org.ejbca.ui.cli.infrastructure.command;
  *
  */
 public enum CommandResult {
-    SUCCESS, AUTHORIZATION_FAILURE, FUNCTIONAL_FAILURE, CLI_FAILURE;
+    SUCCESS(0), FUNCTIONAL_FAILURE(1), AUTHORIZATION_FAILURE(2), CLI_FAILURE(3);
+    
+    private final int returnCode;
+    
+    private CommandResult(int returnCode) {
+        this.returnCode = returnCode;
+    }
+    
+    public int getReturnCode() {
+        return returnCode;
+    }
 }

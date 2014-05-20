@@ -5439,10 +5439,12 @@ This will log EJBCA (and CESeCore) event of INFO level, while only logging other
 </section>
 
 <section name="Command Line Interfaces">
-<p>There are two types of command line interfaces (CLI) in EJBCA.
+<p>There are four types of command line interfaces (CLI) in EJBCA.
 <ul>
 <li>The Local CLI that can only be run on the CA machine.</li>
 <li>ClientToolBox with commands that can be run remotely, for example the Web Service CLI.</li>
+<li>The Local Database CLI , which provides direct access to a local database.</li>
+<li>The Validation/Conformance Check Tool </li>
 </ul>
 </p>
 <subsection name="Client Toolbox">
@@ -5474,7 +5476,18 @@ This will give documentation about available options.
 To access the usage information for some commands, that does not take parameters, the option '-?' can normally be provided.
 </p>
 
-<subsubsection name="Local CLI authentication">
+<subsubsection name="Return Codes">
+<p>Since EJBCA 6.2.0 the local CLI uses return codes, to faciliate scripting. Currently, these are:
+<ul>
+<li>0 - Normal exit</li>
+<li>1 - Functional failure, command was inputed correctly but failed for some other reason</li>
+<li>2 - Authentcation failure</li>
+<li>3 - CLI failure, command failed due to incorrect parameter use.</li>
+</ul>
+</p>
+</subsubsection>
+
+<subsubsection name="Local CLI Authentication">
 <p>By default, the CLI authenticates using a standard user defined in ejbca.properties. Disabling this user on the server will lead 
 to all CLI operations demanding authentication in the form of the following flags appended to the argument list:</p>
 <source>
@@ -5503,7 +5516,7 @@ before they expire!
 </p>
 </subsubsection>
 
-<subsubsection name="Disable command line interface">
+<subsubsection name="Disabling the Command Line Interface">
 <p>
 It is possible to completely disable the command line interface to prevent someone from running the operations that require authorization.
 </p>
