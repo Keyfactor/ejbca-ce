@@ -1106,13 +1106,9 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
       </td>
       <td width="50%">
-        <% if (!editca || isUninitialized) { %>
-            <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
-            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>" /><br />
-            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>" /></p>
-        <% } else { %>
-            <pre><code><c:out value="<%= !StringUtils.isEmpty(nameConstraintsPermittedString) ? nameConstraintsPermittedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" /></pre></code>
-        <% } %>
+        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>" /><br />
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>" /></p>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>">
@@ -1121,12 +1117,8 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
       </td>
       <td width="50%">
-        <% if (!editca || isUninitialized) { %>
-            <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsExcludedString %>"/></textarea>
-            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
-        <% } else { %>
-            <pre><code><c:out value="<%= !StringUtils.isEmpty(nameConstraintsExcludedString) ? nameConstraintsExcludedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" /></pre></code>
-        <% } %>
+        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsExcludedString %>"/></textarea>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
       </td>
     </tr>
 
