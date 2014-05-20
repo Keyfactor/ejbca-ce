@@ -127,7 +127,7 @@ public enum CommandLibrary {
             if (path.length == 0) {
                 Iterator<String> aliases = command.getMainCommandAliases().iterator();
                 while (aliases.hasNext()) {
-                    String alias = aliases.next();
+                    String alias = aliases.next();             
                     if (commands.containsKey(alias)) {
                         throw new CliCommandLibraryConflictException("Command alias" + alias + " for command " + command.getMainCommand()
                                 + " has been added twice.");
@@ -263,13 +263,18 @@ public enum CommandLibrary {
                 return CommandResult.SUCCESS;
             } else {
                 String key = parameters[0].toLowerCase(Locale.ENGLISH);
-                if (commands.containsKey(key)) {
+                if (commands.containsKey(key) || alternateCommands.containsKey(key)) {
                     if (isAlternate) {
                         log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
                                 + " Please start using the updated path as soon as possible.\n");
                     }
-                    return commands.get(key).execute(Arrays.copyOfRange(parameters, 1, parameters.length));
-
+                    if(alternateCommands.containsKey(key)) {
+                        log.warn("WARNING: The command \"" + key + "\" used is an unlisted alternate command and may be deprecated, and may cease to exist at any point."
+                                + " Please start using the updated command \"" + alternateCommands.get(key).getMainCommand() + "\" as soon as possible.\n");
+                        return alternateCommands.get(key).execute(Arrays.copyOfRange(parameters, 1, parameters.length));
+                    } else {
+                        return commands.get(key).execute(Arrays.copyOfRange(parameters, 1, parameters.length));
+                    }
                 } else if (!subBranches.containsKey(key)) {
                     if (isAlternate) {
                         log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
