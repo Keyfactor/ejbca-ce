@@ -464,6 +464,21 @@ jSCEP uses EJBCA as one of the servers it is tested against.
 <p>
 There is a <a href="https://github.com/asyd/jscep-cli-jdk6">CLI for jSCEP</a> by Bruno Bonfils.
 </p>
+<p>You can test the CLI easily by creating a SCEP alias and issuing a SCEP request. For example:
+</p>
+<source>
+$ cd ejbca
+$ cat > scepalias-camode.properties
+scep.operationmode = ca
+uploaded.includeca = true
+
+$ bin/ejbca.sh config scep uploadfile --alias scep --file scepalias-camode.properties
+$ bin/ejbca.sh ra addendentity --username=user --password=foo123 --dn="CN=User Usersson" --caname=ManagementCA --type=1 --token=USERGENERATED
+$ cd ../jscep-cli-jdk6
+$ openssl genrsa -out test.key
+$ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM
+$ java -jar target/jscepcli-1.0-SNAPSHOT-exe.jar --ca-identifier ManagementCA --challenge foo123 --csr-file test.pemreq --dn "CN=user" --key-file test.key --url http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
+</source>
 </subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
@@ -5481,7 +5496,7 @@ To access the usage information for some commands, that does not take parameters
 <ul>
 <li>0 - Normal exit</li>
 <li>1 - Functional failure, command was inputed correctly but failed for some other reason</li>
-<li>2 - Authentcation failure</li>
+<li>2 - Authentication failure</li>
 <li>3 - CLI failure, command failed due to incorrect parameter use.</li>
 </ul>
 </p>
