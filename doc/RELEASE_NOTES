@@ -7,7 +7,7 @@ modern standard with option handling and manual pages.
 
 * Noteworthy changes:
 - Completely reworked command handling of local command line interface (CLI).
-- xyz
+-- The getrootcert command has changed name to getcacert, though the old one still works for legacy support
 
 Note 1: If you are customizing the EJBCA public web to be embedded in a frame, note that EJBCA now uses the X-FRAME-OPTIONS HTTP header, 
 preventing web GUIs from being framed in modern browsers. 
