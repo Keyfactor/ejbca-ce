@@ -729,7 +729,7 @@ function checkallfields(){
     </tr>
 
 
-    <%-- X.509v3 extensions --%>
+    <%-- X.509v3 extensions (PKIX) --%>
 
     <tr  id="Row<%=row%2%>" class="section"> 
       <td width="50%"  align="right"> 
@@ -740,7 +740,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Basic Constraints extension --%>
+    <%-- PKIX Basic Constraints extension --%>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right">
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_BASICCONSTRAINTS\") %>" />
@@ -789,7 +789,7 @@ function checkallfields(){
       </td>
     </tr>  
 
-    <%-- Authority Key Identifier (AKI) extension --%>
+    <%-- PKIX Authority Key Identifier (AKI) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
          <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AUTHORITYKEYID\") %>" />
@@ -803,7 +803,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Subject Key Identifier (SKI) extension --%>
+    <%-- PKIX Subject Key Identifier (SKI) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTKEYID\") %>" /> 
@@ -817,7 +817,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Key Usage (KU) extension --%>
+    <%-- PKIX Key Usage (KU) extension --%>
     <tr  id="Row<%=row%2%>">
       <td width="50%"  align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_KEYUSAGE\") %>" /></strong>
@@ -857,7 +857,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Extended Key Usage (EKU) extension --%>
+    <%-- PKIX Extended Key Usage (EKU) extension --%>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_EXTENDEDKEYUSAGE\") %>" /></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
@@ -903,7 +903,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Subject Alternative Name (SAN) extension --%>
+    <%-- PKIX Subject Alternative Name (SAN) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTALTNAME\") %>" />
@@ -927,7 +927,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Issuer Alternative Name (IAN) extension --%>
+    <%-- PKIX Issuer Alternative Name (IAN) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_ISSUERALTNAME\") %>" />
@@ -951,49 +951,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Document Type List (DTL) extension --%>
-    <tr  id="Row<%=row%2%>"> 
-      <td width="50%"  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_DOCUMENTTYPELIST\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Document%20Type%20List") %>
-      </td>
-      <td width="50%">
-      		<input type="checkbox" name="<%=CB_USEDOCUMENTTYPE %>" onClick="checkusedocumenttypefield()" value="<%=CB_VALUE %>" 
-           	<% if(cpd.getUseDocumentTypeList())
-                 out.write("CHECKED");
-           	%> id="<%=CB_USEDOCUMENTTYPE%>">
-    	    <label for="<%=CB_USEDOCUMENTTYPE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
-           	&nbsp;
-           	<input type="checkbox" name="<%=CB_DOCUMENTTYPECRITICAL %>" value="<%=CB_VALUE %>" 
-           	<% 
-             if(!cpd.getUseDocumentTypeList())
-                 out.write(" disabled "); 
-              else
-              if(cpd.getDocumentTypeListCritical())
-                 out.write("CHECKED");
-           	%> id="<%=CB_DOCUMENTTYPECRITICAL%>"> 
-           	<label for="<%=CB_DOCUMENTTYPECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="right"> 
-        &nbsp;
-      </td>
-      <td width="50%"> 
-        <input type="text" name="<%=TEXTFIELD_DOCUMENTTYPE%>" size="45" maxlength="4096"  
-           <%       if(!cpd.getUseDocumentTypeList())
-                      out.write(" disabled "); 
-                    else 
-                      if(cpd.getDocumentTypeList().size() > 0) {%>
-                       value="<c:out value="<%= cabean.getDocumentTypeListStr(cpd) %>"/>"
-                      <%} else {%>
-                       value="<c:out value=""/>"
-                      <%}%> >
-      </td>
-    </tr>
-    
-    
-
-    <%-- Subject Directory Attributes (SDA) extension --%>
+    <%-- PKIX Subject Directory Attributes (SDA) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTDIRATTRS\") %>" />
@@ -1007,7 +965,7 @@ function checkallfields(){
       </td>
     </tr>
     
-    <%-- Name Constraints extension --%>
+    <%-- PKIX Name Constraints extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS\") %>" />
@@ -1031,7 +989,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- CRL Distribution Points (CRL-DP) extension --%>
+    <%-- PKIX CRL Distribution Points (CRL-DP) extension --%>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CRLDISTRIBPOINTS\") %>" /></strong>
@@ -1109,7 +1067,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Freshest CRL extension --%>
+    <%-- PKIX Freshest CRL extension --%>
     <tr  id="Row<%=row%2%>">
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_FRESHESTCRL\") %>" />
@@ -1158,7 +1116,7 @@ function checkallfields(){
       </td>
     </tr>
     
-    <%-- Certificate Policies extension --%>
+    <%-- PKIX Certificate Policies extension --%>
     <% List policies = cpd.getCertificatePolicies(); %>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
@@ -1246,7 +1204,7 @@ function checkallfields(){
       </td>
     </tr>
     
-    <%-- Authority Information Access (AIA) extension --%>
+    <%-- PKIX Authority Information Access (AIA) extension --%>
 	<% List caissuers = cpd.getCaIssuers(); %>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
@@ -1325,7 +1283,7 @@ function checkallfields(){
       </td>
     </tr>
 
- 	<%-- Private Key Usage Period extension --%>
+ 	<%-- PKIX Private Key Usage Period extension --%>
 	<tr id="Row<%=row%2%>">
 	  <td width="50%" align="right">
 	  	<c:out value="<%=ejbcawebbean.getText(\"EXT_PKIX_PRIVKEYUSAGEPERIOD\")%>" /> <%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%>
@@ -1354,7 +1312,9 @@ function checkallfields(){
 	  </td>
 	</tr>
 
+
     <%-- Qualified Certificates Statements (qcStatements) extension --%>
+
     <tr  id="Row<%=row++%2%>" class="section">
  	  <td width="50%"  align="right"> 
  	    <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_HEADER_QCSTATEMENTS\") %>" /></strong>
@@ -1540,7 +1500,9 @@ function checkallfields(){
       </td>
     </tr>  
 
+
     <%-- Certificate Transparency --%>
+
     <%
     if (CertificateTransparencyFactory.isCTAvailable()) {
         Set<Integer> enabledCTLogs = cpd.getEnabledCTLogs();
@@ -1625,6 +1587,7 @@ function checkallfields(){
 
 
     <%-- Other extensions --%>
+
     <tr  id="Row<%=row%2%>" class="section">
       <td width="50%"  align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"OTHEREXTENSIONS\") %>" /></strong>
@@ -1647,7 +1610,7 @@ function checkallfields(){
            <label for="<%=CB_USEOCSPNOCHECK%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
-    
+
     <%-- MS Template extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -1677,6 +1640,46 @@ function checkallfields(){
       </td>
     </tr>
 
+    <%-- ICAO Document Type List (DTL) extension --%>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_ICAO_DOCUMENTTYPELIST\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Document%20Type%20List") %>
+      </td>
+      <td width="50%">
+      		<input type="checkbox" name="<%=CB_USEDOCUMENTTYPE %>" onClick="checkusedocumenttypefield()" value="<%=CB_VALUE %>" 
+           	<% if(cpd.getUseDocumentTypeList())
+                 out.write("CHECKED");
+           	%> id="<%=CB_USEDOCUMENTTYPE%>">
+    	    <label for="<%=CB_USEDOCUMENTTYPE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           	&nbsp;
+           	<input type="checkbox" name="<%=CB_DOCUMENTTYPECRITICAL %>" value="<%=CB_VALUE %>" 
+           	<% 
+             if(!cpd.getUseDocumentTypeList())
+                 out.write(" disabled "); 
+              else
+              if(cpd.getDocumentTypeListCritical())
+                 out.write("CHECKED");
+           	%> id="<%=CB_DOCUMENTTYPECRITICAL%>"> 
+           	<label for="<%=CB_DOCUMENTTYPECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        <input type="text" name="<%=TEXTFIELD_DOCUMENTTYPE%>" size="45" maxlength="4096"  
+           <%       if(!cpd.getUseDocumentTypeList())
+                      out.write(" disabled "); 
+                    else 
+                      if(cpd.getDocumentTypeList().size() > 0) {%>
+                       value="<c:out value="<%= cabean.getDocumentTypeListStr(cpd) %>"/>"
+                      <%} else {%>
+                       value="<c:out value=""/>"
+                      <%}%> >
+      </td>
+    </tr>
+
     <%-- SEIS Card Number extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -1692,7 +1695,7 @@ function checkallfields(){
     </tr>    
 
 
-    <%-- CVC --%>
+    <%-- CVC (ePassport) --%>
 
     <tr  id="Row<%=row%2%>" class="section">
           <td width="50%"  align="right">
