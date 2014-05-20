@@ -336,56 +336,7 @@ org.cesecore.keybind.InternalKeyBindingRules
    }
 %>
 
-<%
-   // --------------------------------------------------------------------------
-   // SYSTEM CONFIGURATION
-%>
 
-<%
-    // If authorized to edit CMP Configuration then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
-          if(!configheaderprinted){      
-        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
-        configheaderprinted = true;
-          } %>
-				<li><a href="<%= CMPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CMPCONFIGURATION") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-%>
-
-<%
-   // If authorized to edit SCEP configuration then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){
-       if(!configheaderprinted){
-         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>"); 
-         configheaderprinted=true;
-         }  %>
-				<li><a href="<%= SCEPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SCEPCONFIGURATION") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){}
-%>
-
-
-<%
-    // If authorized to configure Ejbca then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
-          if(!configheaderprinted){      
-        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
-        configheaderprinted = true;
-          } %>
-				<li><a href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-%>
-
-<%
-if(configheaderprinted){
-     out.write("</ul></li>"); 
-   }
-%>
 <%
    // --------------------------------------------------------------------------
    // SYSTEM FUNCTIONS
@@ -431,7 +382,6 @@ if(configheaderprinted){
   }catch(AuthorizationDeniedException e){} 
 %>
 
-
 <%
    if(systemheaderprinted){
      out.write("</ul></li>"); 
@@ -439,25 +389,81 @@ if(configheaderprinted){
 %>
 
 
-		<li id="cat8"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
-		</li>
+<%
+   // --------------------------------------------------------------------------
+   // SYSTEM CONFIGURATION
+%>
 
-<% if (ejbcawebbean.isHelpEnabled()) { %>
-		<li id="cat9"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
-			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
-		</li>
-<% } %>
+<%
+    // If authorized to edit CMP Configuration then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
+          if(!configheaderprinted){      
+        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
+        configheaderprinted = true;
+          } %>
+				<li><a href="<%= CMPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CMPCONFIGURATION") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
+
+<%
+   // If authorized to edit SCEP configuration then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){
+       if(!configheaderprinted){
+         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>"); 
+         configheaderprinted=true;
+         }  %>
+				<li><a href="<%= SCEPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SCEPCONFIGURATION") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){}
+%>
+
+<%
+    // If authorized to configure Ejbca then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
+          if(!configheaderprinted){      
+        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
+        configheaderprinted = true;
+          } %>
+				<li><a href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
+
+<%
+if(configheaderprinted){
+     out.write("</ul></li>"); 
+   }
+%>
+
+
+<%
+   // --------------------------------------------------------------------------
+   // END OF MENU
+%>
 
 <%
     // If authorized to edit user preferences then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
-				<li id="cat11"><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
+				<li id="cat8"><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
 %>
 
-		<li id="cat10"><a href="<%= LOGOUT_LINK %>" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
+		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
+		</li>
+
+<% if (ejbcawebbean.isHelpEnabled()) { %>
+		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
+			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
+		</li>
+<% } %>
+
+		<li id="cat11"><a href="<%= LOGOUT_LINK %>" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
 
 	</ul>
 	</div><!-- id="navigation" -->
