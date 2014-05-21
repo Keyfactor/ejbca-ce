@@ -78,6 +78,7 @@ public class ErrorCode implements Serializable {
 	private static final String _CRYPTOTOKEN_NAME_IN_USE = "CRYPTOTOKEN_NAME_IN_USE"; // A CryptoToken with the name already exists
     private static final String _INTERNAL_KEY_BINDING_NAME_IN_USE = "INTERNAL_KEY_BINDING_NAME_IN_USE"; // An InternalKeyBinding with the name already exists
     private static final String _CERTIFICATE_IMPORT = "CERTIFICATE_IMPORT"; // Failure during import of a certificate
+    private static final String _NAMECONSTRAINT_VIOLATION = "NAMECONSTRAINT_VIOLATION"; // End-entity does not satisfy name constraints of CA
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -170,6 +171,8 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode CRYPTOTOKEN_NAME_IN_USE = new ErrorCode(_CRYPTOTOKEN_NAME_IN_USE);
     public static final ErrorCode INTERNAL_KEY_BINDING_NAME_IN_USE = new ErrorCode(_INTERNAL_KEY_BINDING_NAME_IN_USE);
     public static final ErrorCode CERTIFICATE_IMPORT = new ErrorCode(_CERTIFICATE_IMPORT);
+    public static final ErrorCode NAMECONSTRAINT_VIOLATION = new ErrorCode(_NAMECONSTRAINT_VIOLATION);
+
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {

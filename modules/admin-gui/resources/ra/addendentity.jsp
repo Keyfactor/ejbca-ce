@@ -658,6 +658,9 @@
     	   if(e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)){
     		   approvalmessage = e.getMessage();
     	   }
+    	   if(e.getErrorCode().equals(ErrorCode.NAMECONSTRAINT_VIOLATION)){
+               approvalmessage = e.getMessage();
+           }
        }
        
      }
