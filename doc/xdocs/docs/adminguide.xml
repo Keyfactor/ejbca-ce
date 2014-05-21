@@ -480,6 +480,11 @@ $ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM
 $ java -jar target/jscepcli-1.0-SNAPSHOT-exe.jar --ca-identifier ManagementCA --challenge foo123 --csr-file test.pemreq --dn "CN=user" --key-file test.key --url http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
 </source>
 </subsubsection>
+<subsubsection name="MobileIron">
+<p>
+EJBCA has been confirmed to work with MobileIron MDM system.
+</p>
+</subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
 Works well.
