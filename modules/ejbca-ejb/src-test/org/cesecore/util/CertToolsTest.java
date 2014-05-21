@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -48,6 +49,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -60,6 +62,8 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
@@ -67,6 +71,8 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
@@ -1730,4 +1736,71 @@ public class CertToolsTest {
             fail("Exception " + e.getClass() + " should not been thrown.");
         }
     }
+    
+    /**
+     * Tests the following methods:
+     * <ul>
+     * <li>{@link CertTools.checkNameConstraints}</li>
+     * <li>{@link NameConstraint.parseNameConstraintsList}</li>
+     * <li>{@link NameConstraint.toGeneralSubtrees}</li>
+     * </ul>
+     */
+    @Test
+    public void testNameConstraints() throws Exception {
+        final String permitted = "C=SE,CN=example.com\n" +
+                                 "example.com\n" +
+                                 "@mail.example\n" +
+                                 "user@host.com\n" +
+                                 "10.0.0.0/8\n" +
+                                 "   C=SE,  CN=spacing    \n";
+        final String excluded = "forbidden.example.com\n" +
+                                "postmaster@mail.example\n" +
+                                "10.1.0.0/16\n" +
+                                "::/0"; // IPv6
+        
+        final List<Extension> extensions = new ArrayList<Extension>();
+        GeneralSubtree[] permittedSubtrees = NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(permitted));
+        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(excluded));
+        byte[] extdata = new NameConstraints(permittedSubtrees, excludedSubtrees).toASN1Primitive().getEncoded();
+        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
+        
+        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
+                testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
+                X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
+        
+        // Allowed subject DNs
+        final X500Name validDN = new X500Name("C=SE,CN=example.com"); // re-used below
+        CertTools.checkNameConstraints(cacert, validDN, null);
+        CertTools.checkNameConstraints(cacert, new X500Name("C=SE,CN=spacing"), null);
+        
+        // Allowed subject alternative names
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.dNSName, "example.com")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.dNSName, "x.sub.example.com")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.rfc822Name, "someuser@mail.example")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.rfc822Name, "user@host.com")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.0.0.1").getAddress()))));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.255.255.255").getAddress()))));
+        
+        // Disallowed subject DN
+        checkNCException(cacert, new X500Name("C=DK,CN=example.com"), null, "Disallowed DN (wrong field value) was accepted");
+        checkNCException(cacert, new X500Name("C=SE,O=Company,CN=example.com"), null, "Disallowed DN (extra field) was accepted");
+        
+        // Disallowed SAN
+        // The commented out lines are allowed by BouncyCastle but disallowed by the RFC
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "bad.com"), "Disallowed SAN (wrong DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "forbidden.example.com"), "Disallowed SAN (excluded DNS subdomain) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.rfc822Name, "wronguser@host.com"), "Disallowed SAN (wrong e-mail) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.1.0.1").getAddress())), "Disallowed SAN (excluded IPv4 address) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("192.0.2.1").getAddress())), "Disallowed SAN (wrong IPv4 address) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("2001:DB8::").getAddress())), "Disallowed SAN (IPv6 address) was accepted");
+    }
+    
+    private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
+        try {
+            CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
+            fail(message);
+        } catch (IllegalNameException e) { /* NOPMD expected */ }
+    }
+
 }
