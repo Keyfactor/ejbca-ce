@@ -1,0 +1,52 @@
+<%
+	int row = 0;
+%>
+<body > 
+<script type="text/javascript">
+<!--  
+function check()
+{
+	if ( document.recievefile.<%= FILE_RECIEVEFILE %>.value == '' ) {   
+		alert("<%= ejbcawebbean.getText("YOUMUSTSELECT", true) %>");
+	   return false;
+	}
+	return true;
+}
+-->
+</script>
+<div align="center">   
+	<h2><%= ejbcawebbean.getText("IMPORTCA_CERTIFICATE") %></h2>
+</div>
+
+	<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+	<table class="action" width="100%" border="0" cellspacing="3" cellpadding="3">
+		<tr id="Row<%=row++%2%>"> 
+			<td width="45%" valign="top">
+				&nbsp;
+			</td>
+			<td width="55%" valign="top" align="right"> 
+       			<a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOCAS") %></a>
+			</td>
+			</td>
+		</tr>
+		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+		<tr id="Row<%=row++%2%>"> 
+			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTEDENDENTITYPROFILENAME") %></td>
+			<td width="55%" valign="top">
+					<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORTPROFILE %>'>
+					<input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>">
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="45%" valign="top" align="right">
+				&nbsp;
+			</td>
+			<td width="55%" valign="top">
+				<input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORTENDENTITYPROFILE") %>" >
+				&nbsp;&nbsp;&nbsp;
+				<input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
+			</td>
+		</tr>
+	</table>
+	</form>
+	

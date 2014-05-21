@@ -20,6 +20,7 @@
   static final String ACTION_EDIT_PROFILES          = "editprofiles";
   static final String ACTION_EDIT_PROFILE           = "editprofile";
   static final String ACTION_UPLOADTEMP             = "uploadtemp";
+  static final String ACTION_IMPORTPROFILE          = "importprofile";
 
   static final String CHECKBOX_VALUE           = EndEntityProfile.TRUE;
 
@@ -29,6 +30,7 @@
   static final String BUTTON_ADD_PROFILE       = "buttonaddprofile"; 
   static final String BUTTON_RENAME_PROFILE    = "buttonrenameprofile";
   static final String BUTTON_CLONE_PROFILE     = "buttoncloneprofile";
+  static final String BUTTON_IMPORT_EEPROFILE 	= "buttonimporteeprofile";
 
   static final String SELECT_PROFILE           = "selectprofile";
   static final String TEXTFIELD_PROFILENAME    = "textfieldprofilename";
@@ -43,6 +45,7 @@
   static final String BUTTON_ADD_NOTIFICATION    = "buttonaddnotification";
   static final String BUTTON_DELETEALL_NOTIFICATION = "buttondeleteallnotification";
   static final String BUTTON_DELETE_NOTIFICATION = "buttondeleltenotification";
+  static final String BUTTON_RECIEVEFILE             = "buttonrecievefile"; 
  
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
@@ -162,6 +165,8 @@
   static final String OLDVALUE 								= "_oldvalue";
   static final String NEWVALUE 								= "_newvalue";
   
+  static final String FILE_RECIEVEFILE                        = "filerecievefile";
+  
   public static final String FILE_TEMPLATE             = "filetemplate";
   String profile = null;
   // Declare Language file.
@@ -216,45 +221,10 @@
 
 <%  // Determine action 
   RequestHelper.setDefaultCharacterEncoding(request);
-
-
-
-  if(FileUploadBase.isMultipartContent(request)){
-  	try{     	  	
-	  DiskFileUpload upload = new DiskFileUpload();
-	  upload.setSizeMax(2000000);                   
-	  upload.setSizeThreshold(1999999);
-	  List /* FileItem */ items = upload.parseRequest(request);     
-
-	  Iterator iter = items.iterator();
-	  while (iter.hasNext()) {     
-	  FileItem item = (FileItem) iter.next();
-
-	    if (item.isFormField()) {         
-		  if(item.getFieldName().equals(ACTION))
-		    action = item.getString(); 
-		  if(item.getFieldName().equals(BUTTON_CANCEL)) {
-		      // do nothing
-          }
-		  if(item.getFieldName().equals(BUTTON_UPLOADFILE)){
-			 buttonupload = true;
-		  }
-	    }else{         
-		  templateData = item.getInputStream();
-		  templateFilename = item.getName(); 
-	    }
-	  }
-  	}catch(IOException e){
-  	  fileuploadfailed = true;
-	  includefile="endentityprofilepage.jspf";	  
-  	}catch(FileUploadException e){
-	  fileuploadfailed = true;	  
-	  includefile="endentityprofilepage.jspf";
-    }
-  }else{
-		action = request.getParameter(ACTION);
-  }
-
+  Map<String, String> requestMap = new HashMap<String, String>();
+  byte[] filebuffer = ejbcarabean.getXMLfileBuffer(request, requestMap);
+  action = requestMap.get(ACTION);
+  
   if( action != null){
     if( action.equals(ACTION_EDIT_PROFILES)){
       if( request.getParameter(BUTTON_EDIT_PROFILE) != null){
@@ -344,7 +314,25 @@
        }      
           includefile="endentityprofilespage.jspf"; 
       }
+      
+      if (request.getParameter(BUTTON_IMPORT_EEPROFILE) != null) {
+    	  includefile="importendentityprofile.jspf";
+      }
+      
     }
+
+    if(action.equals(ACTION_IMPORTPROFILE)) {
+        try {
+            // Upload XML file
+      	    ejbcarabean.importEndEntityProfile(filebuffer);
+          } catch (Exception e) {
+			    %> <div style="color: #FF0000;">
+				    	<c:out value="<%= e.getMessage() %>"/>
+			       </div> <%
+			    includefile="importendentityprofile.jspf";
+		  }
+    }
+    
     
     if( action.equals(ACTION_EDIT_PROFILE)){
          // Display edit access rules page.
@@ -877,7 +865,10 @@
   if( includefile.equals("uploadtemplate.jspf")){ %>
    <%@ include file="uploadtemplate.jspf" %> 
 <%}
-
+  if( includefile.equals("importendentityprofile.jspf")){ %>
+  <%@ include file="importendentityprofile.jspf" %> 
+<%}
+  
    // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
    
