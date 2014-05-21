@@ -780,13 +780,109 @@
         <antcall target="signjar">
             <param name="signjar.file" value="../${basezipfile}.zip"/>
         </antcall>
-        <checksum file="../${basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
+        <checksum file="../${basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
         <checksum file="../${basezipfile}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
-        <checksum file="../${basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes"/>      
+        <checksum file="../${basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
         <checksum file="../${basezipfile}.zip" algorithm="SHA-256" property="ejbcaSHA256"/>      
-        <echo message="SHA1 checksum: ${ejbcaSHA1}" />
-        <echo message="SHA256 checksum: ${ejbcaSHA256}" />
+            <echo>
+File:             ../${basezipfile}.zip
+SHA1 checksum:    ${ejbcaSHA1}
+SHA-256 checksum: ${ejbcaSHA256}
+            </echo>
 	</target>
+
+        <!-- ======================================================================= -->
+        <!-- Make a ZIP source release for CESeCore.                                 -->
+        <!-- Creates a fat source zip containing all CESeCore source files and can   -->
+        <!-- be included in your IDE to be able to browse the source.                -->
+        <!-- ======================================================================= -->
+        <target name="ziprelease-cesecore-src" description="Make a source zip for the CESeCore modules">
+            <property name="cesecore.src.basezipfile" value="cesecore-${edition}-${app.version.number}-src"/>
+            <delete file="../${cesecore.src.basezipfile}.zip"/>
+
+            <property name="cesecore.src.release.dir" location="${tmp}/cesecore-release-src"/>
+            <delete dir="${cesecore.src.release.dir}"/>
+            <mkdir dir="${cesecore.src.release.dir}"/>
+            <copy todir="${cesecore.src.release.dir}">
+                <fileset dir="${basedir}/modules/">
+                    <include name="cesecore-*/src/**" />
+                </fileset>
+                <!-- Don't include directories above src. -->
+                <regexpmapper handledirsep="yes" from="^[-_a-zA-Z0-9]+/src/(.*)" to="\1" />
+            </copy>
+
+            <zip destfile="../${cesecore.src.basezipfile}.zip">
+                <zipfileset dir="${cesecore.src.release.dir}" filemode="600" dirmode="700">
+                    <exclude name="**/META-INF/*"/>
+                    <exclude name="META-INF"/>
+                </zipfileset>
+            </zip>
+
+            <antcall target="signjar">
+                <param name="signjar.file" value="../${cesecore.src.basezipfile}.zip"/>
+            </antcall>
+            <checksum file="../${cesecore.src.basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
+            <checksum file="../${cesecore.src.basezipfile}.zip" algorithm="SHA1" property="cesecoresrcSHA1"/>
+            <checksum file="../${cesecore.src.basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
+            <checksum file="../${cesecore.src.basezipfile}.zip" algorithm="SHA-256" property="cesecoresrcSHA256"/>
+            <echo>
+File:             ../${cesecore.src.basezipfile}.zip
+SHA1 checksum:    ${cesecoresrcSHA1}
+SHA-256 checksum: ${cesecoresrcSHA256}
+            </echo>
+        </target>
+
+        <!-- ======================================================================= -->
+        <!-- Make a ZIP binary release for CESeCore.                                 -->
+        <!-- Includes all the CESeCore JARs.                                         -->
+        <!-- ======================================================================= -->
+        <target name="ziprelease-cesecore-bin" description="Make a binary zip release of the CESeCore modules">
+            <echo>Clean CESeCore modules</echo>
+            <subant target="clean" verbose="false">
+                <fileset dir="${basedir}/modules/" includes="cesecore-*/build.xml"/>
+            </subant>
+            <echo>Build CESeCorer modules</echo>
+            <subant target="jar" verbose="false">
+                <fileset dir="${basedir}/modules/" includes="cesecore-*/build.xml"/>
+            </subant>
+            <property name="cesecore.bin.basezipfile" value="cesecore-${edition}-${app.version.number}-bin"/>
+
+            <property name="cesecore.bin.release.dir" location="${tmp}/cesecore-release-bin"/>
+            <delete dir="${cesecore.bin.release.dir}"/>
+            <mkdir dir="${cesecore.bin.release.dir}"/>
+
+            <copy todir="${cesecore.bin.release.dir}" flatten="true">
+                <fileset dir="${basedir}/modules/">
+                    <include name="cesecore-*/**/*.jar" />
+                </fileset>
+                <fileset dir="${basedir}/doc/licenses/">
+                    <include name="LICENSE-LGPL"/>
+                </fileset>
+            </copy>
+
+            <checksum algorithm="SHA-256">
+                <fileset dir="${cesecore.bin.release.dir}">
+                  <include name="*.jar"/>
+                </fileset>
+            </checksum>
+
+            <zip destfile="../${cesecore.bin.basezipfile}.zip">
+                <zipfileset dir="${cesecore.bin.release.dir}" prefix="${cesecore.bin.basezipfile}" filemode="600" dirmode="700"/>
+            </zip>
+
+            <antcall target="signjar">
+                <param name="signjar.file" value="../${cesecore.bin.basezipfile}.zip"/>
+            </antcall>
+            <checksum file="../${cesecore.bin.basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
+            <checksum file="../${cesecore.bin.basezipfile}.zip" algorithm="SHA1" property="cesecorebinSHA1"/>
+            <checksum file="../${cesecore.bin.basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
+            <checksum file="../${cesecore.bin.basezipfile}.zip" algorithm="SHA-256" property="cesecorebinSHA256"/>
+            <echo>
+File:             ../${cesecore.bin.basezipfile}.zip
+SHA1 checksum:    ${cesecorebinSHA1}
+SHA-256 checksum: ${cesecorebinSHA256}
+            </echo>
+        </target>
 
     <!-- ======================================================================= -->
     <!-- Display application version string                                      -->
