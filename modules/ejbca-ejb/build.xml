@@ -60,6 +60,7 @@
 
 	<path id="compile-test.classpath">
 		<path refid="compile-util.classpath"/>
+		<path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<!-- TODO: Refactor so this isn't neccessary for building the tests..? -->
