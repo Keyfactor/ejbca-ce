@@ -408,9 +408,7 @@ EJBCA supports domain name, directory name, e-mail (RFC 822 name) and IP address
 </p>
 <dl>
 <dt><code>example.com</code></dt>
-<dd>Matches example.com, but <strong>not</strong> subdomains.</dd>
-<dt><code>.example.com</code></dt>
-<dd>Matches subdomains of example.com, but <strong>not</strong> example.com itself. To match both the domain itself and its subdomains, then both forms must be used.</dd>
+<dd>Matches example.com and subdomains.</dd>
 
 <dt><code>@example.com</code></dt>
 <dd>Matches all mailboxes at example.com.</dd>
