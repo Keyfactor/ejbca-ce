@@ -404,13 +404,22 @@ You may restrict the domain names and IP addresses under which the CA is allowed
 <strong>Note:</strong> Name constraints must first be enabled in the Certificate Profile of the CA. At the time of writing (May 2014) they are not supported in Apple Safari or on iOS devices, so this extension can not yet be marked as critical if there are such clients. The default mode is non-critical for this reason.
 </p>
 <p>
-EJBCA supports domain name and IP address (both IPv4 and IPv6) constraints. These syntaxes are accepted:
+EJBCA supports domain name, directory name, e-mail (RFC 822 name) and IP address (both IPv4 and IPv6) constraints. These syntaxes are accepted:
 </p>
 <dl>
 <dt><code>example.com</code></dt>
 <dd>Matches example.com, but <strong>not</strong> subdomains.</dd>
 <dt><code>.example.com</code></dt>
 <dd>Matches subdomains of example.com, but <strong>not</strong> example.com itself. To match both the domain itself and its subdomains, then both forms must be used.</dd>
+
+<dt><code>@example.com</code></dt>
+<dd>Matches all mailboxes at example.com.</dd>
+<dt><code>mailbox@example.com</code></dt>
+<dd>Matches a specific e-mail address.</dd>
+
+<dt><code>CN=User,C=SE</code></dt>
+<dd>Matches a Subject DN. The Subject DN must match exactly.</dd>
+
 <dt><code>198.51.100.0/24</code></dt>
 <dd>Matches an IPv4 subnet. The IP address checked is the one in the certificate, which in turn is checked if the host is accessed by IP address.</dd>
 <dt><code>2001:db8::/32</code></dt>
