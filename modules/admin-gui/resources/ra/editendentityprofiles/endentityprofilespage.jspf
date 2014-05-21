@@ -75,9 +75,19 @@
             <td align="center">
               &nbsp;
             </td>
-            <td align="right">
+            <td align="center">
               <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_PROFILE %>" value="<%= ejbcawebbean.getText("DELETEENDENTITYPROFILE") %>">
             </td>
+            <td align="center">
+              &nbsp;
+            </td>
+            
+            <td width="25%" align="right">
+              <input type="submit" name="<%= BUTTON_IMPORT_EEPROFILE%>" value="<%= ejbcawebbean.getText("IMPORTENDENTITYPROFILE")+"..." %>">
+            </td>
+            
+            
+            
           </tr>
         </table> 
       </td>
