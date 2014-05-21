@@ -1182,14 +1182,16 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String limitedFingerprint = getLimitedCertificateDataFingerprint(issuerDn, serialNumber);
         final CertificateData limitedCertificateData = createLimitedCertificateData(admin, limitedFingerprint, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
         if (certificateInfo==null) {
-        	// Create a limited entry
-            log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
-        	entityManager.persist(limitedCertificateData);
+            if (reasonCode==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+                deleteLimitedCertificateData(limitedFingerprint);
+            } else {
+                // Create a limited entry
+                log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
+                entityManager.persist(limitedCertificateData);
+            }
         } else if (limitedFingerprint.equals(certificateInfo.getFingerprint())) {
         	if (reasonCode==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
-                // Remove the limited entry (we don't really know if it is good or expired)
-                log.info("Removing limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
-        		entityManager.remove(limitedCertificateData);
+                deleteLimitedCertificateData(limitedFingerprint);
         	} else {
         	    if (certificateInfo.getStatus()!=limitedCertificateData.getStatus() || certificateInfo.getRevocationDate().getTime()!=limitedCertificateData.getRevocationDate() ||
         	            certificateInfo.getRevocationReason()!=limitedCertificateData.getRevocationReason()) {
@@ -1237,5 +1239,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     /** @return something that looks like a normal certificate fingerprint and is unique for each certificate entry */
     private String getLimitedCertificateDataFingerprint(final String issuerDn, final BigInteger serialNumber) {
         return CertTools.getFingerprintAsString((issuerDn+";"+serialNumber).getBytes());
+    }
+
+    /** Remove limited CertificateData by fingerprint (and ensures that this is not a full entry by making sure that subjectKeyId is NULL */
+    private boolean deleteLimitedCertificateData(final String fingerprint) {
+        log.info("Removing CertificateData entry with fingerprint=" + fingerprint + " and no subjectKeyId is defined.");
+        final Query query = entityManager.createQuery("DELETE FROM CertificateData a WHERE a.fingerprint=:fingerprint AND subjectKeyId IS NULL");
+        query.setParameter("fingerprint", fingerprint);
+        final int deletedRows = query.executeUpdate();
+        if (log.isDebugEnabled()) {
+            log.debug("Deleted "+deletedRows+" rows with fingerprint " + fingerprint);
+        }
+        return deletedRows == 1;
     }
 }
