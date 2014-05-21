@@ -216,5 +216,10 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     public void reloadCaCertificateCache() {
         certStore.reloadCaCertificateCache();
     }
-    
+
+    @Override
+    public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber,
+            Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
+        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
+    }
 }

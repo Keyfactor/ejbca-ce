@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
@@ -654,6 +655,85 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(cert);
         }
     }
+    
+    
+    // certificateStoreSession.updateLimitedCertificateDataStatus should not be able to tamper with locally issued certs in CertificateData
+    @Test
+    public void testLimitedCertificateDataWontUpdateFullEntire() throws Exception {
+        final Certificate certificate = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+        try {
+            final String issuerDn = CertTools.getIssuerDN(certificate);
+            final BigInteger serialNumber = CertTools.getSerialNumber(certificate);
+            try {
+                internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                        RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, "fakecafp");
+            } catch (EJBTransactionRolledbackException e) {
+                if (e.getCausedByException() != null && e.getCausedByException() instanceof UnsupportedOperationException) {
+                    // This is expected to be unsupported
+                } else {
+                    throw e;
+                }
+            } catch (UnsupportedOperationException e) {
+                // This is expected to be unsupported
+            }
+            assertNotNull("Limited CertificateData update removed real certificate.", certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn, serialNumber));
+            try {
+                internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                        RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, "fakecafp");
+            } catch (EJBTransactionRolledbackException e) {
+                if (e.getCausedByException() != null && e.getCausedByException() instanceof UnsupportedOperationException) {
+                    // This is expected to be unsupported
+                } else {
+                    throw e;
+                }
+            } catch (UnsupportedOperationException e) {
+                // This really should be unsupported
+            }
+            final CertificateStatus certificateStatus = certificateStoreSession.getStatus(issuerDn, serialNumber);
+            assertTrue("Limited CertificateData updated real certificate entry.", certificateStatus.equals(CertificateStatus.OK));
+        } finally {
+            internalCertStoreSession.removeCertificate(certificate);
+        }
+    }
+    
+    // verify that certificateStoreSession.getStatus (used by OcspResponseGeneratorSessionBean) returns the correct CertificateStatus for limited entries 
+    @Test
+    public void testLimitedCertificateDataAddUpdateRemove() throws Exception {
+        final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final X509Certificate caCertificate = CertTools.genSelfCert("CN=testLimitedCertificateDataCA", 3600, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        final String issuerDn = CertTools.getSubjectDN(caCertificate);
+        final String caFingerprint = CertTools.getFingerprintAsString(caCertificate);
+        final BigInteger serialNumber = new BigInteger("1234567890");
+        // Remove any previous entry created due to a failed test
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, caFingerprint);
+        final CertificateStatus certificateStatus1 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Fake limited CertificateData entry already existed in the database.",
+                certificateStatus1.equals(CertificateStatus.NOT_AVAILABLE));
+        // certificateStoreSession.updateLimitedCertificateDataStatus should be able to add limited CertificateData entries
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, caFingerprint);
+        final CertificateStatus certificateStatus2 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not created properly.",
+                certificateStatus2.equals(CertificateStatus.REVOKED));
+        assertEquals("Limited CertificateData entry was not created properly.",
+                certificateStatus2.revocationReason, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        // certificateStoreSession.updateLimitedCertificateDataStatus should be able to update limited CertificateData entries (e.g. ONHOLD→REVOKED)
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, caFingerprint);
+        final CertificateStatus certificateStatus3 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not updated properly.",
+                certificateStatus3.equals(CertificateStatus.REVOKED));
+        assertEquals("Limited CertificateData entry was not updated properly.",
+                certificateStatus3.revocationReason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        // certificateStoreSession.updateLimitedCertificateDataStatus should be able to remove limited CertificateData entries when REMOVE_FROM_CRL
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, caFingerprint);
+        final CertificateStatus certificateStatus4 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not removed properly.",
+                certificateStatus4.equals(CertificateStatus.NOT_AVAILABLE));
+    }
+    
 	
 	// Commented out code.
 	// Keep it here, because it can be nice to have as a reference how this can be done.

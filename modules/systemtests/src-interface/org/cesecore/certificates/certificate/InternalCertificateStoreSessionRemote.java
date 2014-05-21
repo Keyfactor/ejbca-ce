@@ -117,4 +117,10 @@ public interface InternalCertificateStoreSessionRemote {
      * Reloads the cache containing CA certificates
      */
     void reloadCaCertificateCache();
+
+    /**
+     * Make updateLimitedCertificateDataStatus invokable from system tests.
+     * @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, BigInteger, Date, int, String)
+     */
+    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
 }
