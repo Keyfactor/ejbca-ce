@@ -13,8 +13,14 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.beans.XMLDecoder;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +29,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -41,11 +53,14 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -119,8 +134,9 @@ public class RAInterfaceBean implements Serializable {
     private boolean initialized=false;
     
     private String[] printerNames = null;
+    private String importedProfileName = null;
     
-    private EndEntityProfile temporateendentityprofile = null; 
+    private EndEntityProfile temporateendentityprofile = null;
     
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {
@@ -885,5 +901,162 @@ public class RAInterfaceBean implements Serializable {
             }
         }
         return sb.toString();
+    }
+    
+    public void importEndEntityProfile(byte[] filebuffer) throws Exception {
+        
+        String filename = importedProfileName;
+        if(StringUtils.isEmpty(filename) || filebuffer.length == 0) {
+            throw new Exception("No input file");
+        }
+        
+        CryptoProviderTools.installBCProvider();
+        log.info("Filename: " + filename);
+        int index1 = filename.indexOf("_");
+        int index2 = filename.lastIndexOf("-");
+        int index3 = filename.lastIndexOf(".xml");
+        if (index1 < 0 || index2 < 0 || index3 < 0 || (filename.indexOf("entityprofile_") < 0) ) {
+            String msg = "Filename not as expected. It should look like: entityprofile_<profile name>-<profile id>.xml";
+            log.error(msg);
+            throw new Exception(msg);
+        } else {
+            String profilename;
+            try {
+                profilename = URLDecoder.decode(filename, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
+            }
+            profilename = profilename.substring(index1 + 1, index2);
+            int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
+            // We don't add the fixed profiles, EJBCA handles those automagically
+            if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                log.error("Not adding fixed entity profile '" + profilename + "'.");
+            } else {
+                // Check if the profiles already exist, and change the name and id if already taken
+                boolean error = false;
+                if (endEntityProfileSession.getEndEntityProfile(profilename) != null) {
+                    log.error("Entity profile '" + profilename + "' already exist in database.");
+                    error = true;
+                } else if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
+                    int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
+                    log.warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
+                            + " instead.");
+                    profileid = newprofileid;
+                }
+                
+                if (!error) {
+                    EndEntityProfile eprofile = null;
+                    ByteArrayInputStream is = new ByteArrayInputStream(filebuffer);
+                    XMLDecoder decoder = new XMLDecoder(is);
+                    // Add end entity profile
+                    eprofile = new EndEntityProfile();
+                    eprofile.loadData(decoder.readObject());
+                    // Translate cert profile ids that have changed after import
+                    String availableCertProfiles = "";
+                    String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
+                    //getLogger().debug("Debug: Org - AVAILCERTPROFILES " + eprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0) + " DEFAULTCERTPROFILE "+defaultCertProfile);
+                    for (String currentCertProfile : (Collection<String>) eprofile.getAvailableCertificateProfileIds()) {
+                        Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
+                            
+                        if (certificateProfileSession.getCertificateProfile(currentCertProfileId) != null
+                                || CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
+                            availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + currentCertProfile;
+                        } else {
+                            log.warn("End Entity Profile '" + profilename + "' references certificate profile "
+                                    + currentCertProfile + " that does not exist.");
+                            if (currentCertProfile.equals(defaultCertProfile)) {
+                                defaultCertProfile = "";
+                            }
+                        }
+                    }
+                    if (availableCertProfiles.equals("")) {
+                        log.warn("End Entity Profile only references certificate profile(s) that does not exist. Using ENDUSER profile.");
+                        availableCertProfiles = "1"; // At least make sure the default profile is available
+                    }
+                    if (defaultCertProfile.equals("")) {
+                        defaultCertProfile = availableCertProfiles.split(";")[0]; // Use first available profile from list as default if original default was missing
+                    }
+                    eprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
+                    eprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultCertProfile);
+                    // Remove any unknown CA and break if none is left
+                    String defaultCA = eprofile.getValue(EndEntityProfile.DEFAULTCA, 0);
+                    String availableCAs = eprofile.getValue(EndEntityProfile.AVAILCAS, 0);
+                    //getOutputStream().println("Debug: Org - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
+                    List<String> cas = Arrays.asList(availableCAs.split(";"));
+                    availableCAs = "";
+                    for (String currentCA : cas) {
+                        Integer currentCAInt = Integer.parseInt(currentCA);
+                        // The constant ALLCAS will not be searched for among available CAs
+                        try {
+                            if (currentCAInt.intValue() != SecConst.ALLCAS) {
+                                caSession.getCAInfo(administrator, currentCAInt);
+                            }
+                            availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
+                        } catch (CADoesntExistsException e) {
+                            log.warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '"
+                                    + profilename + "'.");
+                            if (defaultCA.equals(currentCA)) {
+                                defaultCA = "";
+                            }
+                        }
+                    }
+                    if (availableCAs.equals("")) {
+                        log.error("No CAs left in end entity profile '" + profilename + "'. Using ALLCAs.");
+                        availableCAs = Integer.toString(SecConst.ALLCAS);
+                    }
+                    if (defaultCA.equals("")) {
+                        defaultCA = availableCAs.split(";")[0]; // Use first available
+                        log.warn("Changing default CA in end entity profile '" + profilename + "' to " + defaultCA + ".");
+                    }
+                    //getLogger().debug("New - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
+                    eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
+                    eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
+                    profiles.addEndEntityProfile(profilename, eprofile);
+                        
+                    decoder.close();
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
+                    }
+                }
+            }   
+        }
+    }
+    
+    public byte[]  getXMLfileBuffer(HttpServletRequest request, Map<String, String> requestMap) throws IOException, FileUploadException {
+        byte[] fileBuffer = null;
+            if (FileUpload.isMultipartContent(request)) {
+                final DiskFileUpload upload = new DiskFileUpload();
+                upload.setSizeMax(60000);                   
+                upload.setSizeThreshold(59999);
+                final List<FileItem> items = upload.parseRequest(request);     
+                for (final FileItem item : items) {
+                    if (item.isFormField()) {
+                        final String fieldName = item.getFieldName();
+                        final String currentValue = requestMap.get(fieldName);
+                        if (currentValue != null) {
+                            requestMap.put(fieldName, currentValue + ";" + item.getString("UTF8"));
+                        } else {
+                            requestMap.put(fieldName, item.getString("UTF8"));
+                        }
+                    } else {
+                        importedProfileName = item.getName();
+                        final InputStream file = item.getInputStream();
+                        byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
+                        if (fileBuffer == null && fileBufferTmp.length > 0) {
+                            fileBuffer = fileBufferTmp;
+                        }
+                    }
+                } 
+            } else {
+                final Set<String> keySet = request.getParameterMap().keySet();
+                for (final String key : keySet) {
+                    requestMap.put(key, request.getParameter(key));
+                }
+            }
+        
+        return fileBuffer;
+        
     }
 }
