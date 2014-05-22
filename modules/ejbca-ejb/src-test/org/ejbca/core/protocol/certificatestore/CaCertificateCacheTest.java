@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.certificatestore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.SignatureException;
@@ -68,8 +67,7 @@ public class CaCertificateCacheTest {
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
 		CaCertificateCache cache = CaCertificateCache.INSTANCE;
-		cache.setCertValidTo(-1);
-		assertTrue("Cache wasn't reloaded.", cache.loadCertificates(certs));
+		cache.loadCertificates(certs);
 		
 		// Test lookup of not existing cert
 		X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString("CN=Foo,C=SE"));
@@ -107,8 +105,7 @@ public class CaCertificateCacheTest {
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
 		CaCertificateCache cache =  CaCertificateCache.INSTANCE;
-        cache.setCertValidTo(-1);
-        assertTrue("Cache wasn't reloaded.", cache.loadCertificates(certs));
+		cache.loadCertificates(certs);
 
 		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1"); // NOPMD we want to use thread here, it's not a JEE app
 		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2"); // NOPMD we want to use thread here, it's not a JEE app
