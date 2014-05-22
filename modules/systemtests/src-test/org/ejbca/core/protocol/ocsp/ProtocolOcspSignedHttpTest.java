@@ -139,6 +139,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     	internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, caSession.getCAInfo(admin, getTestCAId()).getCAToken().getCryptoTokenId(),
     	        OcspKeyBinding.IMPLEMENTATION_ALIAS, ProtocolOcspSignedHttpTest.class.getSimpleName(), "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
     	ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+    	internalCertificateStoreSession.reloadCaCertificateCache();
     }
 
     @After
