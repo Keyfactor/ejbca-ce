@@ -42,6 +42,10 @@ import org.cesecore.util.CeSecoreNameStyle;
  * Extension for Name Constraints.
  * <a href="https://tools.ietf.org/html/rfc5280#section-4.2.1.10">RFC 5280</a>
  * 
+ * For storing Name Constraints, an internal encoded form is used. The format is "type-id:data"
+ * where data is either a regular string or hex-encoded data, depending on the type.
+ * Use parseNameConstraintList to convert human-readable strings into encoded strings.
+ * 
  * @version $Id$
  */
 public class NameConstraint extends StandardCertificateExtension {
@@ -91,6 +95,11 @@ public class NameConstraint extends StandardCertificateExtension {
         return nc;
     }
     
+    /**
+     * Converts a list of encoded strings of Name Constraints into ASN1 GeneralSubtree objects.
+     * This is needed when creating an BouncyCastle ASN1 NameConstraint object for inclusion
+     * in a certificate.
+     */
     public static GeneralSubtree[] toGeneralSubtrees(List<String> list) {
         if (list == null) {
             return new GeneralSubtree[0];
@@ -121,7 +130,10 @@ public class NameConstraint extends StandardCertificateExtension {
         return ret;
     }
     
-    public static int getNameConstraintType(String encoded) {
+    /**
+     * Returns the GeneralName type code for an encoded Name Constraint.
+     */
+    private static int getNameConstraintType(String encoded) {
         String typeString = encoded.split(":", 2)[0];
         if ("iPAddress".equals(typeString)) return GeneralName.iPAddress;
         if ("dNSName".equals(typeString)) return GeneralName.dNSName;
@@ -130,6 +142,9 @@ public class NameConstraint extends StandardCertificateExtension {
         throw new UnsupportedOperationException("Unsupported name constraint type "+typeString);
     }
 
+    /**
+     * Returns the GeneralName data (as a byte array or String) from an encoded string.
+     */
     private static Object getNameConstraintData(String encoded) {
         int type = getNameConstraintType(encoded);
         String data = encoded.split(":", 2)[1];
@@ -205,6 +220,10 @@ public class NameConstraint extends StandardCertificateExtension {
         }
     }
     
+    /**
+     * Parses human readable name constraints, one entry per line, into a list of encoded name constraints.
+     * @see parseNameConstraintEntry
+     */
     public static List<String> parseNameConstraintsList(String input) throws CertificateExtensionException {
         List<String> encodedNames = new ArrayList<String>();
         if (input != null) {
