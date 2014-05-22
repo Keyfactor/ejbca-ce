@@ -280,7 +280,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		} catch (CertificateExtensionException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e); // info because this is something we should expect and we handle it
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
         }							
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("<handleMessage");
@@ -440,7 +440,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (CertificateExtensionException e) {
 			    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-                resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
+                resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
             }
 		} catch (HandlerException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
