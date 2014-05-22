@@ -17,7 +17,7 @@ import org.cesecore.CesecoreException;
 /**
  * An exception thrown when an end entity is thought to exist but does not.
  *
- * @version $Id: EndEntityExistsException.java 18029 2013-10-30 14:13:21Z samuellb $
+ * @version $Id$
  */
 public class NoSuchEndEntityException extends CesecoreException {
 
