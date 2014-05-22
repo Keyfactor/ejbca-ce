@@ -39,6 +39,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -214,6 +215,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 
     @Override
     public void reloadCaCertificateCache() {
+        CaCertificateCache.INSTANCE.setCertValidTo(-1);
         certStore.reloadCaCertificateCache();
     }
 
