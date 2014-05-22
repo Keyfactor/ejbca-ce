@@ -3380,9 +3380,6 @@ public abstract class CertTools {
                 } catch (CertificateParsingException e1) {
                     throw new CertPathValidatorException(e1);
                 }
-                if (cert == null) {
-                   
-                }
             }
             if (CertTools.isSelfSigned(cert)) {
                 rootca = cert;
