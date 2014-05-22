@@ -193,7 +193,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 log.debug("Creating a STATUS_OK message.");
             } else {
             	if (status.equals(ResponseStatus.FAILURE)) {
-                    log.debug("Creating a STATUS_FAILED message (or throwing an exception).");
+                    log.debug("Creating a STATUS_FAILED message (or returning false).");
                     if (failInfo.equals(FailInfo.WRONG_AUTHORITY)) {
                     	return false;      
                     }
