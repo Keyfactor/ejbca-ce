@@ -113,12 +113,12 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
                 final CacheEntry newCacheEntry = new CacheEntry(System.currentTimeMillis(), digest, name, object);
                 setCacheEntry(key, newCacheEntry);
                 if (log.isDebugEnabled()) {
-                    log.debug("Updated " + object.getClass().getSimpleName() + " cache. Digest was " + digest + ", cacheEntry digest was " + cacheEntry == null ? "null" : cacheEntry.digest);
+                    log.debug("Updated " + object.getClass().getSimpleName() + " cache. Digest was " + digest + ", cacheEntry digest was " + (cacheEntry == null ? "null" : cacheEntry.digest));
                 }
             } else {
                 // Cached object is fine. No action needed.
                 if (log.isDebugEnabled()) {
-                    log.debug("Did not update " + object.getClass().getSimpleName() + " cache. Digest was " + digest + ", cacheEntry digest was " + cacheEntry == null ? "null" : cacheEntry.digest);
+                    log.debug("Did not update " + object.getClass().getSimpleName() + " cache. Digest was " + digest + ", cacheEntry digest was " + (cacheEntry == null ? "null" : cacheEntry.digest));
                 }
             }
         }
