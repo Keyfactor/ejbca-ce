@@ -111,8 +111,6 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  * </dd>
  * </dl>
  * 
- *
- * @author Ville Skytta
  * @version $Id$
  */
 public class AdminCertReqServlet extends HttpServlet {

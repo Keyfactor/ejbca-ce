@@ -36,7 +36,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 /**
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
- * @author Philip Vendil, Created 2002-11-03 12:06
  * @version $Id$
  */
 public class ApplyBean implements java.io.Serializable {
