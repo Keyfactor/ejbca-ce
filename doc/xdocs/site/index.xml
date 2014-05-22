@@ -94,6 +94,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Secure mobile networks, i.e. <a href="http://www.3gpp.org/">3GPP</a>/LTE/4G using the <a href="docs/adminguide.html#CMP">CMP protocol</a>.</li>
 <li>Counterfeit prevention by signing and pairing accessories.</li>
 <li>Internet of Things (IoT). Need some hundreds of millions of certificates fast? EJBCA will handle it.</li>
+<li>Mobile Device Management (MdM).</li>
 <li>Issue citizen certificates for access to government resources, used in passports etc.</li>
 <li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for <a href="cvccas.html">EU EAC ePassports</a>.</li>
 <li>... and many many more ...</li>
