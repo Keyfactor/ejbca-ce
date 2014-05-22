@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.certificatestore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.SignatureException;
@@ -38,8 +39,8 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
-public class CertificateCacheTest {
-	private static final Logger log = Logger.getLogger(CertificateCacheTest.class);
+public class CaCertificateCacheTest {
+	private static final Logger log = Logger.getLogger(CaCertificateCacheTest.class);
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
@@ -67,7 +68,8 @@ public class CertificateCacheTest {
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
 		CaCertificateCache cache = CaCertificateCache.INSTANCE;
-		cache.loadCertificates(certs);
+		cache.setCertValidTo(-1);
+		assertTrue("Cache wasn't reloaded.", cache.loadCertificates(certs));
 		
 		// Test lookup of not existing cert
 		X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString("CN=Foo,C=SE"));
@@ -105,8 +107,9 @@ public class CertificateCacheTest {
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
 		CaCertificateCache cache =  CaCertificateCache.INSTANCE;
-		cache.loadCertificates(certs);
-		
+        cache.setCertValidTo(-1);
+        assertTrue("Cache wasn't reloaded.", cache.loadCertificates(certs));
+
 		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1"); // NOPMD we want to use thread here, it's not a JEE app
 		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2"); // NOPMD we want to use thread here, it's not a JEE app
 		Thread no3 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3"); // NOPMD we want to use thread here, it's not a JEE app

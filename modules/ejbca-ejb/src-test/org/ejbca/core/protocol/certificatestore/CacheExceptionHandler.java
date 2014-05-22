@@ -14,12 +14,13 @@ package org.ejbca.core.protocol.certificatestore;
 
 
 
+
 /** class used from TestCertificateCache, depends on TestCertificateCache
  * @author tomas
  * @version $Id$
  */
 public class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
 	public void uncaughtException(Thread t, Throwable e) { // NOPMD, this is not a JEE app, only a test
-		CertificateCacheTest.threadException = e;
+		CaCertificateCacheTest.threadException = e;
 	}
 }
