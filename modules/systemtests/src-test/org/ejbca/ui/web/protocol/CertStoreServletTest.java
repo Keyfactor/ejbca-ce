@@ -36,7 +36,6 @@ import java.util.Set;
 
 import javax.mail.MessagingException;
 
-import org.junit.Assert;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -46,11 +45,14 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,7 +64,10 @@ import org.junit.Test;
  */
 public class CertStoreServletTest extends CaTestCase {
     private final static Logger log = Logger.getLogger(CertStoreServletTest.class);
-
+    
+    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     @Override
     @Before
     public void setUp() throws Exception{
@@ -104,11 +109,11 @@ public class CertStoreServletTest extends CaTestCase {
         ca1_1.subs.add(ca2_1_1);
         final CAInHierarchy ca3_1_1 = new CAInHierarchy("3 from 1 from root", this);
         ca1_1.subs.add(ca3_1_1);
-
         try {
             final Set<Integer> setOfSubjectKeyIDs = new HashSet<Integer>();
             final X509Certificate rootCert = ca1.createCA(setOfSubjectKeyIDs);
             log.info("The number of CAs created was " + setOfSubjectKeyIDs.size() + ".");
+            internalCertificateStoreSession.reloadCaCertificateCache();
             new CertFetchAndVerify().doIt(rootCert, setOfSubjectKeyIDs);
             assertEquals("All created CA certificates not found.", 0, setOfSubjectKeyIDs.size());
         } finally {
@@ -153,6 +158,9 @@ class CAInHierarchy {
     final Set<CAInHierarchy> subs;
     final CaTestCase testCase;
 
+    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     CAInHierarchy(String _name, CaTestCase _testCase) {
         this.name = _name;
         this.subs = new HashSet<CAInHierarchy>();
@@ -187,6 +195,7 @@ class CAInHierarchy {
             i.next().deleteCA();
         }
         CaTestCase.removeTestCA(this.name);
+        internalCertificateStoreSession.removeCertificatesBySubject("CN=" + this.name + ",O=EJBCA junit,OU=CertStoreServletTest");
     }
 
     private CAInfo getCAInfo() throws CADoesntExistsException, AuthorizationDeniedException {
