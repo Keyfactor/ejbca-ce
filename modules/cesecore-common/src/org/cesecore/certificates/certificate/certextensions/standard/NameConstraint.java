@@ -216,7 +216,7 @@ public class NameConstraint extends StandardCertificateExtension {
             // Directory name
             return "directoryName:" + new X500Name(CeSecoreNameStyle.INSTANCE, str).toString();
         } else {
-            throw new CertificateExtensionException("Cannot parse name constraint entry, only IPv4/6 addresses with a /netmask and DNS names are supported: "+str);
+            throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
         }
     }
     
