@@ -333,6 +333,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         ocspKeyBinding.setRequireTrustedSignature(false);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
+        internalCertificateStoreSession.reloadCaCertificateCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -361,6 +362,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         ocspKeyBinding.setRequireTrustedSignature(true);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
+        internalCertificateStoreSession.reloadCaCertificateCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -482,6 +484,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), ocspAuthenticationCertificate.getSerialNumber());
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
+        internalCertificateStoreSession.reloadCaCertificateCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -546,6 +549,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), ocspAuthenticationCertificate.getSerialNumber());
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
+        internalCertificateStoreSession.reloadCaCertificateCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
