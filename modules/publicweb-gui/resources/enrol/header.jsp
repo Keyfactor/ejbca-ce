@@ -9,7 +9,7 @@
 %>
 
 <c:set var="hidemenu" value="${param['hidemenu'] == 'true' ? 'true' : 'false'}" />
-<%@page import="org.ejbca.config.WebConfiguration"%><html>
+<%@page import="org.ejbca.config.WebConfiguration, org.ejbca.util.HTMLTools"%><html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
     <meta http-equiv="x-ua-compatible" content="IE=10">
@@ -19,7 +19,12 @@
     <script type="text/javascript" src="../scripts/functions.js"></script>
     <script type="text/vbscript" src="../scripts/functions.vbs"></script>
     <c:if test="${!empty header_redirect_url}">
-        <meta http-equiv="Refresh" content="1; URL=<c:out value="${header_redirect_url}"/>">
+        <noscript><meta http-equiv="Refresh" content="1; URL=<c:out value="${header_redirect_url}"/>"></noscript>
+        <script type="text/javascript">
+        //<![CDATA[
+        setTimeout(function(){window.location = '<%= HTMLTools.javascriptEscape((String)request.getAttribute("header_redirect_url")) %>';}, 500);
+        //]]>
+        </script>
     </c:if>
   </head>
 
