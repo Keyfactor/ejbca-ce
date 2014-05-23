@@ -215,8 +215,8 @@ public class HTMLTools {
     
     public static String javascriptEscape(String str) {
     	String ret = str;
-    	// In javascript the apostrof will destroy strings and cause the javascript to break
-    	ret = ret.replaceAll("'", "\\\\'");
+    	// In Javascript strings we need to escape the backslash and apostrophe characters
+    	ret = ret.replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\'");
     	return ret;
     }
 }
