@@ -14,9 +14,9 @@
 package org.ejbca.core.model.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
 import java.security.cert.CRLException;
@@ -440,28 +440,24 @@ public class PublisherTest {
 	 * @throws PublisherConnectionException
 	 * @throws CertificateException
 	 * @throws CRLException
+	 * @throws PublisherExistsException 
 	 */
 	@Test
-	public void test15VAPublisher() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException, CRLException {
+	public void testVAPublisher() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException, CRLException, PublisherExistsException {
 		log.trace(">test15ExternalOCSPPublisher()");
 		final String publisherName = "TESTEXTOCSP2";
-		final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
-		{
-			try {
-				// We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-				final String jndiPrefix = this.configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
-				final String jndiName = jndiPrefix + this.configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
-				log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
-				publisher.setDataSource(jndiName);
-				publisher.setDescription("Used in Junit Test, Remove this one");
-				publisherNames.add(publisherName);
-				this.publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
-			} catch (PublisherExistsException pee) {
-				log.error(pee);
-				assertTrue("Creating External OCSP Publisher failed", false);
-			}
-		}
-		final int id = this.publisherProxySession.getPublisherId(publisherName);
+        final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
+
+        // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+        final String jndiPrefix = this.configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
+        final String jndiName = jndiPrefix + this.configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
+        log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
+        publisher.setDataSource(jndiName);
+        publisher.setDescription("Used in Junit Test, Remove this one");
+        publisherNames.add(publisherName);
+        publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
+
+        final int id = this.publisherProxySession.getPublisherId(publisherName);
 		this.publisherProxySession.testConnection(id);
 		final Certificate cert = CertTools.getCertfromByteArray(testcert);
 		try {
@@ -472,32 +468,58 @@ public class PublisherTest {
 			storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, false);
 			time += 12345;// test that the revocation is published
 			revokeCert(publishers, cert, time);
-
-			publisher.setOnlyPublishRevoked(true);// activate only publish when revoked
-			this.publisherSession.changePublisher(internalAdmin, publisherName, publisher);
-
-			time += 12345;// check that the revoked certificate is removed from DB
-			storeCert(publishers, cert, time, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, true);
-			time += 12345;// check that the certificate is not published when added
-			storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
-			time += 12345;// check that the certificate is published when revoked.
-			revokeCert(publishers, cert, time);
-
-			time += 12345; // just test that it is working a second time
-			storeCert(publishers, cert, time, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, true);
-			time += 12345;
-			storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
-
-			final String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
-			// Test storing and updating CRLs as well
-			this.publisherSession.storeCRL(this.admin, publishers, testcrl, "test05", 1, issuerDn);
-			this.publisherSession.storeCRL(this.admin, publishers, testcrl, "test05", 1, issuerDn);
-
 		} finally {
 			this.internalCertStoreSession.removeCertificate(cert);
 		}
 		log.trace("<test15ExternalOCSPPublisher()");
 	}
+		
+    @Test
+    public void testVAPublisherOnlyPublishRevoked() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException,
+            CRLException, PublisherExistsException {
+        log.trace(">test15ExternalOCSPPublisher()");
+        final String publisherName = "TESTEXTOCSP3";
+        final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
+
+        // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+        final String jndiPrefix = this.configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
+        final String jndiName = jndiPrefix + this.configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
+        log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
+        publisher.setDataSource(jndiName);
+        publisher.setDescription("Used in Junit Test, Remove this one");
+        publisherNames.add(publisherName);
+        publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
+
+        final int id = this.publisherProxySession.getPublisherId(publisherName);
+        this.publisherProxySession.testConnection(id);
+        final Certificate cert = CertTools.getCertfromByteArray(testcert);
+        try {
+            final ArrayList<Integer> publishers = new ArrayList<Integer>();
+            publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(publisherName)));
+            long time = new Date().getTime();// check that certificate is published when added (no only published when revoked)
+            publisher.setOnlyPublishRevoked(true);// activate only publish when revoked
+            this.publisherSession.changePublisher(internalAdmin, publisherName, publisher);
+            time += 12345;// check that the revoked certificate is removed from DB
+            storeCert(publishers, cert, time, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, true);
+            time += 12345;// check that the certificate is not published when added
+            storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
+            time += 12345;// check that the certificate is published when revoked.
+            revokeCert(publishers, cert, time);
+
+            time += 12345; // just test that it is working a second time
+            storeCert(publishers, cert, time, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, true);
+            time += 12345;
+            storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
+
+            final String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
+            // Test storing and updating CRLs as well
+            this.publisherSession.storeCRL(this.admin, publishers, testcrl, "test05", 1, issuerDn);
+
+        } finally {
+            this.internalCertStoreSession.removeCertificate(cert);
+        }
+        log.trace("<test15ExternalOCSPPublisher()");
+    }
 
 	/**
 	 * removes all publishers
