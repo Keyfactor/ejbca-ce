@@ -49,7 +49,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
  *
- * @author Tomas Gustavsson
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueSessionRemote")

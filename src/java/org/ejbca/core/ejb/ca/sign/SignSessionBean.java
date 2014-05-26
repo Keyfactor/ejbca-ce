@@ -698,11 +698,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final long updateTime = System.currentTimeMillis();
 
             final long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
-            final int certstatus = CertificateConstants.CERT_ACTIVE;
+            final int certstatus;
             final ExtendedInformation ei = endEntity.getExtendedinformation();
             int revreason = RevokedCertInfo.NOT_REVOKED;
             if (ei != null) {
+                certstatus = CertificateConstants.CERT_REVOKED;
                 revreason = ei.getIssuanceRevocationReason();
+            } else {
+                certstatus = CertificateConstants.CERT_ACTIVE;
             }
             publisherSession.storeCertificate(authenticationToken, publishers, certificate, username, endEntity.getPassword(),
                     endEntity.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId,
