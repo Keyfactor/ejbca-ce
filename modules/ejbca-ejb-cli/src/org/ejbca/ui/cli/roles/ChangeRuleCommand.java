@@ -57,10 +57,10 @@ public class ChangeRuleCommand extends BaseRolesCommand {
 
     {
         registerParameter(new Parameter(NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Name of the new role."));
+                "Name of the role to modify."));
         registerParameter(new Parameter(RULE_KEY, "Rule", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The rule to change"));
         registerParameter(new Parameter(STATE_KEY, "Rule State", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Name of the new role."));
+                "The state of the rule."));
         registerParameter(Parameter.createFlag(RECURSIVE_KEY, "Set this switch if rule is to be recursive. Default is false."));
     }
 
