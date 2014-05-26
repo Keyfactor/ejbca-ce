@@ -20,7 +20,7 @@
   static final String ACTION_EDIT_PROFILES          = "editprofiles";
   static final String ACTION_EDIT_PROFILE           = "editprofile";
   static final String ACTION_UPLOADTEMP             = "uploadtemp";
-  static final String ACTION_IMPORTPROFILE          = "importprofile";
+  static final String ACTION_IMPORT_EXPORT			 = "importexportprofiles";
 
   static final String CHECKBOX_VALUE           = EndEntityProfile.TRUE;
 
@@ -34,7 +34,10 @@
 
   static final String SELECT_PROFILE           = "selectprofile";
   static final String TEXTFIELD_PROFILENAME    = "textfieldprofilename";
+  static final String TEXTFIELD_EXPORT_DESTINATION	   = "textfieldexportdestination";
   static final String HIDDEN_PROFILENAME       = "hiddenprofilename";
+  static final String BUTTON_IMPORT_PROFILES   = "buttonimportprofiles";
+  static final String BUTTON_EXPORT_PROFILES	 = "buttonexportprofiles";
  
 // Buttons used in profile.jsp
   static final String BUTTON_SAVE              = "buttonsave";
@@ -45,7 +48,6 @@
   static final String BUTTON_ADD_NOTIFICATION    = "buttonaddnotification";
   static final String BUTTON_DELETEALL_NOTIFICATION = "buttondeleteallnotification";
   static final String BUTTON_DELETE_NOTIFICATION = "buttondeleltenotification";
-  static final String BUTTON_RECIEVEFILE             = "buttonrecievefile"; 
  
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
@@ -165,7 +167,7 @@
   static final String OLDVALUE 								= "_oldvalue";
   static final String NEWVALUE 								= "_newvalue";
   
-  static final String FILE_RECIEVEFILE                        = "filerecievefile";
+  static final String FILE_IMPORTFILE                        = "fileimportfile";
   
   public static final String FILE_TEMPLATE             = "filetemplate";
   String profile = null;
@@ -222,7 +224,8 @@
 <%  // Determine action 
   RequestHelper.setDefaultCharacterEncoding(request);
   Map<String, String> requestMap = new HashMap<String, String>();
-  byte[] filebuffer = ejbcarabean.getXMLfileBuffer(request, requestMap);
+  byte[] filebuffer = ejbcarabean.getfileBuffer(request, requestMap);
+  
   action = requestMap.get(ACTION);
   
   if( action != null){
@@ -315,22 +318,31 @@
           includefile="endentityprofilespage.jspf"; 
       }
       
-      if (request.getParameter(BUTTON_IMPORT_EEPROFILE) != null) {
-    	  includefile="importendentityprofile.jspf";
-      }
-      
     }
 
-    if(action.equals(ACTION_IMPORTPROFILE)) {
-        try {
-            // Upload XML file
-      	    ejbcarabean.importEndEntityProfile(filebuffer);
-          } catch (Exception e) {
+    if(action.equals(ACTION_IMPORT_EXPORT)) {
+    	
+    	if (requestMap.get(BUTTON_IMPORT_PROFILES) != null) {
+        	try {
+            	// Upload XML file
+      	    	ejbcarabean.importProfilesFromZip(filebuffer);
+          	} catch (Exception e) {
 			    %> <div style="color: #FF0000;">
 				    	<c:out value="<%= e.getMessage() %>"/>
 			       </div> <%
-			    includefile="importendentityprofile.jspf";
-		  }
+		  	}
+    	}
+    	
+    	if(requestMap.get(BUTTON_EXPORT_PROFILES) != null) {
+    		try {
+    			String directoryname = requestMap.get(TEXTFIELD_EXPORT_DESTINATION);
+    			ejbcarabean.exportProfiles(directoryname);
+    		} catch (Exception e) {
+			    %> <div style="color: #FF0000;">
+				    	<c:out value="<%= e.getMessage() %>"/>
+			       </div> <%
+		  	}
+    	}
     }
     
     
@@ -864,9 +876,6 @@
 <%}  
   if( includefile.equals("uploadtemplate.jspf")){ %>
    <%@ include file="uploadtemplate.jspf" %> 
-<%}
-  if( includefile.equals("importendentityprofile.jspf")){ %>
-  <%@ include file="importendentityprofile.jspf" %> 
 <%}
   
    // Include Footer 

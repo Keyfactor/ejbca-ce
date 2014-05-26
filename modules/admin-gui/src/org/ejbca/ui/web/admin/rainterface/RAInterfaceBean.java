@@ -14,13 +14,18 @@
 package org.ejbca.ui.web.admin.rainterface;
 
 import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
@@ -59,7 +66,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
@@ -903,128 +909,13 @@ public class RAInterfaceBean implements Serializable {
         return sb.toString();
     }
     
-    public void importEndEntityProfile(byte[] filebuffer) throws Exception {
-        
-        String filename = importedProfileName;
-        if(StringUtils.isEmpty(filename) || filebuffer.length == 0) {
-            throw new Exception("No input file");
-        }
-        
-        CryptoProviderTools.installBCProvider();
-        log.info("Filename: " + filename);
-        int index1 = filename.indexOf("_");
-        int index2 = filename.lastIndexOf("-");
-        int index3 = filename.lastIndexOf(".xml");
-        if (index1 < 0 || index2 < 0 || index3 < 0 || (filename.indexOf("entityprofile_") < 0) ) {
-            String msg = "Filename not as expected. It should look like: entityprofile_<profile name>-<profile id>.xml";
-            log.error(msg);
-            throw new Exception(msg);
-        } else {
-            String profilename;
-            try {
-                profilename = URLDecoder.decode(filename, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-            }
-            profilename = profilename.substring(index1 + 1, index2);
-            int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
-            // We don't add the fixed profiles, EJBCA handles those automagically
-            if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
-                log.error("Not adding fixed entity profile '" + profilename + "'.");
-            } else {
-                // Check if the profiles already exist, and change the name and id if already taken
-                boolean error = false;
-                if (endEntityProfileSession.getEndEntityProfile(profilename) != null) {
-                    log.error("Entity profile '" + profilename + "' already exist in database.");
-                    error = true;
-                } else if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
-                    int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
-                    log.warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
-                            + " instead.");
-                    profileid = newprofileid;
-                }
-                
-                if (!error) {
-                    EndEntityProfile eprofile = null;
-                    ByteArrayInputStream is = new ByteArrayInputStream(filebuffer);
-                    XMLDecoder decoder = new XMLDecoder(is);
-                    // Add end entity profile
-                    eprofile = new EndEntityProfile();
-                    eprofile.loadData(decoder.readObject());
-                    // Translate cert profile ids that have changed after import
-                    String availableCertProfiles = "";
-                    String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-                    //getLogger().debug("Debug: Org - AVAILCERTPROFILES " + eprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0) + " DEFAULTCERTPROFILE "+defaultCertProfile);
-                    for (String currentCertProfile : (Collection<String>) eprofile.getAvailableCertificateProfileIds()) {
-                        Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
-                            
-                        if (certificateProfileSession.getCertificateProfile(currentCertProfileId) != null
-                                || CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
-                            availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + currentCertProfile;
-                        } else {
-                            log.warn("End Entity Profile '" + profilename + "' references certificate profile "
-                                    + currentCertProfile + " that does not exist.");
-                            if (currentCertProfile.equals(defaultCertProfile)) {
-                                defaultCertProfile = "";
-                            }
-                        }
-                    }
-                    if (availableCertProfiles.equals("")) {
-                        log.warn("End Entity Profile only references certificate profile(s) that does not exist. Using ENDUSER profile.");
-                        availableCertProfiles = "1"; // At least make sure the default profile is available
-                    }
-                    if (defaultCertProfile.equals("")) {
-                        defaultCertProfile = availableCertProfiles.split(";")[0]; // Use first available profile from list as default if original default was missing
-                    }
-                    eprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
-                    eprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultCertProfile);
-                    // Remove any unknown CA and break if none is left
-                    String defaultCA = eprofile.getValue(EndEntityProfile.DEFAULTCA, 0);
-                    String availableCAs = eprofile.getValue(EndEntityProfile.AVAILCAS, 0);
-                    //getOutputStream().println("Debug: Org - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
-                    List<String> cas = Arrays.asList(availableCAs.split(";"));
-                    availableCAs = "";
-                    for (String currentCA : cas) {
-                        Integer currentCAInt = Integer.parseInt(currentCA);
-                        // The constant ALLCAS will not be searched for among available CAs
-                        try {
-                            if (currentCAInt.intValue() != SecConst.ALLCAS) {
-                                caSession.getCAInfo(administrator, currentCAInt);
-                            }
-                            availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
-                        } catch (CADoesntExistsException e) {
-                            log.warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '"
-                                    + profilename + "'.");
-                            if (defaultCA.equals(currentCA)) {
-                                defaultCA = "";
-                            }
-                        }
-                    }
-                    if (availableCAs.equals("")) {
-                        log.error("No CAs left in end entity profile '" + profilename + "'. Using ALLCAs.");
-                        availableCAs = Integer.toString(SecConst.ALLCAS);
-                    }
-                    if (defaultCA.equals("")) {
-                        defaultCA = availableCAs.split(";")[0]; // Use first available
-                        log.warn("Changing default CA in end entity profile '" + profilename + "' to " + defaultCA + ".");
-                    }
-                    //getLogger().debug("New - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
-                    eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
-                    eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
-                    profiles.addEndEntityProfile(profilename, eprofile);
-                        
-                    decoder.close();
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
-                    }
-                }
-            }   
-        }
-    }
     
-    public byte[]  getXMLfileBuffer(HttpServletRequest request, Map<String, String> requestMap) throws IOException, FileUploadException {
+    
+    
+    //-------------------------------------------------------
+    //         Import/Export  profiles related code
+    //-------------------------------------------------------
+    public byte[]  getfileBuffer(HttpServletRequest request, Map<String, String> requestMap) throws IOException, FileUploadException {
         byte[] fileBuffer = null;
             if (FileUpload.isMultipartContent(request)) {
                 final DiskFileUpload upload = new DiskFileUpload();
@@ -1057,6 +948,236 @@ public class RAInterfaceBean implements Serializable {
             }
         
         return fileBuffer;
-        
     }
+    
+    public void exportProfiles(String directoryPath) throws Exception {
+        if(log.isDebugEnabled()) {
+            log.debug("Exporting End Entity Profiles to: " + directoryPath);
+        }
+
+        if (!new File(directoryPath).isDirectory()) {
+            String msg = "Error: '" + directoryPath + "' is not a directory.";
+            log.error(msg);
+            throw new Exception(msg);
+        }
+        Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator);
+        
+        log.info("Exporting non-fixed end entity profiles: ");
+        try {
+            for (int profileid : endentityprofids) {
+                if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
+                    log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
+                } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
+                    }
+                } else {
+                    String profilename = endEntityProfileSession.getEndEntityProfileName(profileid);
+                    EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profileid);
+                    if (profile == null) {
+                        log.error("Error : Couldn't find entity profile '" + profilename + "'-" + profileid + " in database.");
+                    } else {
+                        String profilenameEncoded;
+                        try {
+                            profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {
+                            throw new IllegalStateException("UTF-8 was not a known encoding", e);
+                        }
+                        final String outfile = directoryPath + "/entityprofile_" + profilenameEncoded + "-" + profileid + ".xml";
+                        log.info(outfile + ".");
+                        XMLEncoder encoder = new XMLEncoder(new FileOutputStream(outfile));
+                        encoder.writeObject(profile.saveData());
+                        encoder.close();
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            String msg = "Could not create export files";
+            log.error(msg, e);
+            throw new Exception(msg);
+        }
+    }
+    
+    public void importProfilesFromZip(byte[] filebuffer) throws Exception {
+        if(log.isTraceEnabled()) {
+            log.trace(">importProfiles(): " + importedProfileName + " - " + filebuffer.length + " bytes");
+        }
+        if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
+            throw new Exception("No input file");
+        }
+        
+        if(importedProfileName.lastIndexOf(".zip") != (importedProfileName.length() - 4 )) {
+            throw new Exception("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
+        }
+        
+        int importedFiles = 0;
+        int ignoredFiles = 0;
+        int nrOfFiles = 0;
+        
+        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
+        ZipEntry ze = null;
+        while((ze=zis.getNextEntry()) != null) {
+            nrOfFiles++;
+            String filename = ze.getName();
+            if(log.isDebugEnabled()) {
+                log.info("Importing file: " + filename);
+            }
+
+            
+            if(ignoreFile(filename)) {
+                ignoredFiles++;
+                continue;
+            }
+            
+            String profilename;
+            int index1 = filename.indexOf("_");
+            int index2 = filename.lastIndexOf("-");
+            int index3 = filename.lastIndexOf(".xml");
+            try {
+                profilename = URLDecoder.decode(filename, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
+            }
+            profilename = profilename.substring(index1 + 1, index2);
+            int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
+            
+            if(ignoreProfile(filename, profilename, profileid)) {
+                ignoredFiles++;
+                continue;
+            }
+            
+            
+            if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
+                int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
+                log.warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
+                            + " instead.");
+                profileid = newprofileid;
+            }
+            
+            
+            byte[] filebytes = new byte[102400];
+            int i = 0;
+            while(zis.available() == 1) {
+                filebytes[i++] = (byte) zis.read();
+            }
+            
+            EndEntityProfile eprofile = getEEProfileFromByteArray(profilename, filebytes);
+            profiles.addEndEntityProfile(profilename, eprofile);
+            importedFiles++;
+
+        }
+        zis.closeEntry();
+        zis.close();
+        
+        log.info(importedProfileName + " contained " + nrOfFiles + " files. " +
+        		importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.");
+    }
+    
+    private EndEntityProfile getEEProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
+        ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
+        XMLDecoder decoder = new XMLDecoder(is);
+        // Add end entity profile
+        EndEntityProfile eprofile = new EndEntityProfile();
+        eprofile.loadData(decoder.readObject());
+        // Translate cert profile ids that have changed after import
+        String availableCertProfiles = "";
+        String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
+        for (String currentCertProfile : (Collection<String>) eprofile.getAvailableCertificateProfileIds()) {
+            Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
+            
+            if (certificateProfileSession.getCertificateProfile(currentCertProfileId) != null
+                    || CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
+                availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + currentCertProfile;
+            } else {
+                log.warn("End Entity Profile '" + profilename + "' references certificate profile "
+                        + currentCertProfile + " that does not exist.");
+                if (currentCertProfile.equals(defaultCertProfile)) {
+                    defaultCertProfile = "";
+                }
+            }
+        }
+        if (availableCertProfiles.equals("")) {
+            log.warn("End Entity Profile only references certificate profile(s) that does not exist. Using ENDUSER profile.");
+            availableCertProfiles = "1"; // At least make sure the default profile is available
+        }
+        if (defaultCertProfile.equals("")) {
+            defaultCertProfile = availableCertProfiles.split(";")[0]; // Use first available profile from list as default if original default was missing
+        }
+        eprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
+        eprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultCertProfile);
+        // Remove any unknown CA and break if none is left
+        String defaultCA = eprofile.getValue(EndEntityProfile.DEFAULTCA, 0);
+        String availableCAs = eprofile.getValue(EndEntityProfile.AVAILCAS, 0);
+        List<String> cas = Arrays.asList(availableCAs.split(";"));
+        availableCAs = "";
+        for (String currentCA : cas) {
+            Integer currentCAInt = Integer.parseInt(currentCA);
+            // The constant ALLCAS will not be searched for among available CAs
+            try {
+                if (currentCAInt.intValue() != SecConst.ALLCAS) {
+                    caSession.getCAInfo(administrator, currentCAInt);
+                }
+                availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
+            } catch (CADoesntExistsException e) {
+                log.warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '"
+                        + profilename + "'.");
+                if (defaultCA.equals(currentCA)) {
+                    defaultCA = "";
+                }
+            }
+        }
+        if (availableCAs.equals("")) {
+            log.error("No CAs left in end entity profile '" + profilename + "'. Using ALLCAs.");
+            availableCAs = Integer.toString(SecConst.ALLCAS);
+        }
+        if (defaultCA.equals("")) {
+            defaultCA = availableCAs.split(";")[0]; // Use first available
+            log.warn("Changing default CA in end entity profile '" + profilename + "' to " + defaultCA + ".");
+        }
+        eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
+        eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
+        
+        decoder.close();
+        try {
+            is.close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
+        }
+        return eprofile;
+    }
+    
+    private boolean ignoreFile(String filename) {
+        if(filename.lastIndexOf(".xml") != (filename.length() - 4)) {
+            if(log.isDebugEnabled()) {
+                log.debug(filename + " is not an XML file. IGNORED");
+            }
+            return true;
+        }
+            
+        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("entityprofile_") < 0) ) {
+            if(log.isDebugEnabled()) {
+                log.debug(filename + " is not in the expected format. " +
+                		"The file name should look like: entityprofile_<profile name>-<profile id>.xml. IGNORED");
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean ignoreProfile(String filename, String profilename, int profileid) {
+        // We don't add the fixed profiles, EJBCA handles those automagically
+        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+            log.info(filename + " contains a fixed profile. IGNORED");
+            return true;
+        }
+        
+        // Check if the profiles already exist, and change the name and id if already taken
+        if (endEntityProfileSession.getEndEntityProfile(profilename) != null) {
+            log.info("Entity profile '" + profilename + "' already exist in database. IGNORED");
+            return true;
+        }
+        
+        return false;
+    }
+    
 }
