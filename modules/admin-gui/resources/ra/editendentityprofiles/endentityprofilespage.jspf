@@ -75,19 +75,9 @@
             <td align="center">
               &nbsp;
             </td>
-            <td align="center">
+            <td align="right">
               <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_PROFILE %>" value="<%= ejbcawebbean.getText("DELETEENDENTITYPROFILE") %>">
             </td>
-            <td align="center">
-              &nbsp;
-            </td>
-            
-            <td width="25%" align="right">
-              <input type="submit" name="<%= BUTTON_IMPORT_EEPROFILE%>" value="<%= ejbcawebbean.getText("IMPORTENDENTITYPROFILE")+"..." %>">
-            </td>
-            
-            
-            
           </tr>
         </table> 
       </td>
@@ -108,6 +98,29 @@
       </td>
     </tr>
   </table>
+</form>
 
+<%int row = 0;%>
+<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+	<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
+		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+		<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORT_EXPORT %>'>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="25%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTPROFILESFROM") %></td>
+			<td width="75%" valign="top">
+					<input TYPE="FILE" NAME="<%= FILE_IMPORTFILE %>">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="submit" name="<%= BUTTON_IMPORT_PROFILES %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+		    <td width="25%" valign="top" align="right"><%= ejbcawebbean.getText("EXPORTROFILESTO") %></td>
+			<td width="75%" valign="top">
+				<input type="text" name="<%=TEXTFIELD_EXPORT_DESTINATION%>" size="35" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
+				&nbsp;&nbsp;&nbsp;
+				<input type="submit" name="<%= BUTTON_EXPORT_PROFILES %>" onClick='return check()' value="<%= ejbcawebbean.getText("EXPORT") %>" >     
+			</td>
+		</tr>
+	</table>
 </form>
 
