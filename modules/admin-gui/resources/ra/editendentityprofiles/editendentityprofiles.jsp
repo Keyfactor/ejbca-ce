@@ -30,7 +30,6 @@
   static final String BUTTON_ADD_PROFILE       = "buttonaddprofile"; 
   static final String BUTTON_RENAME_PROFILE    = "buttonrenameprofile";
   static final String BUTTON_CLONE_PROFILE     = "buttoncloneprofile";
-  static final String BUTTON_IMPORT_EEPROFILE 	= "buttonimporteeprofile";
 
   static final String SELECT_PROFILE           = "selectprofile";
   static final String TEXTFIELD_PROFILENAME    = "textfieldprofilename";
