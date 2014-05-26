@@ -444,7 +444,7 @@ public class PublisherTest {
 	 */
 	@Test
 	public void testVAPublisher() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException, CRLException, PublisherExistsException {
-		log.trace(">test15ExternalOCSPPublisher()");
+		log.trace(">testVAPublisher()");
 		final String publisherName = "TESTEXTOCSP2";
         final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
 
@@ -471,13 +471,13 @@ public class PublisherTest {
 		} finally {
 			this.internalCertStoreSession.removeCertificate(cert);
 		}
-		log.trace("<test15ExternalOCSPPublisher()");
+		log.trace("<testVAPublisher()");
 	}
 		
     @Test
     public void testVAPublisherOnlyPublishRevoked() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException,
             CRLException, PublisherExistsException {
-        log.trace(">test15ExternalOCSPPublisher()");
+        log.trace(">testVAPublisherOnlyPublishRevoked()");
         final String publisherName = "TESTEXTOCSP3";
         final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
 
@@ -512,13 +512,13 @@ public class PublisherTest {
             storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
 
             final String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
-            // Test storing and updating CRLs as well
+            // Test storing  as well
             this.publisherSession.storeCRL(this.admin, publishers, testcrl, "test05", 1, issuerDn);
 
         } finally {
             this.internalCertStoreSession.removeCertificate(cert);
         }
-        log.trace("<test15ExternalOCSPPublisher()");
+        log.trace("<testVAPublisherOnlyPublishRevoked()");
     }
 
 	/**
