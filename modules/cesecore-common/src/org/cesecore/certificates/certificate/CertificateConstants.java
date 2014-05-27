@@ -50,9 +50,9 @@ public final class CertificateConstants {
     /** Certificate is still active and the user is notified that it 
      * will soon expire. */
     public static final int CERT_NOTIFIEDABOUTEXPIRATION = 21;
-    /** Certificate is temporarily blocked (reversible) */
-    public static final int CERT_TEMP_REVOKED = 30;
-    /** Certificate is permanently blocked (terminated) */
+    // there was previously a status 30, CERT_TEMP_REVOKED here as well, but it was not used so
+    // it was removed to avoid misunderstandings.
+    /** Certificate is blocked (can be permanently or temporarily) */
     public static final int CERT_REVOKED = 40;
     // there was previously a status 50, EXPIRED here as well, but it was not used so
     // it was removed to avoid misunderstandings.
