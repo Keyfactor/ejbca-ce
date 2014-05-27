@@ -39,7 +39,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.CesecoreException;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
@@ -696,14 +695,15 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String cafingerprint = CertTools.getFingerprintAsString(cacert);
             final String tag = null; // TODO: this should not be hard coded here, but as of now (2012-02-14) tag is not used, but only there for the future.
             final long updateTime = System.currentTimeMillis();
-
             final long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
             final int certstatus;
             final ExtendedInformation ei = endEntity.getExtendedinformation();
             int revreason = RevokedCertInfo.NOT_REVOKED;
-            if (ei != null) {
+            if (ei != null) {          
+                revreason = ei.getIssuanceRevocationReason();            
+            } 
+            if(revreason != RevokedCertInfo.NOT_REVOKED) {
                 certstatus = CertificateConstants.CERT_REVOKED;
-                revreason = ei.getIssuanceRevocationReason();
             } else {
                 certstatus = CertificateConstants.CERT_ACTIVE;
             }
