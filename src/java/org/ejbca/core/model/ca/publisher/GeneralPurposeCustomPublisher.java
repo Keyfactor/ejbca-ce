@@ -120,8 +120,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             log.trace(">storeCertificate, Storing Certificate for user: " + username);
         }
 
-        if ((status == CertificateConstants.CERT_REVOKED) ||
-            (status == CertificateConstants.CERT_TEMP_REVOKED)) {
+        if (status == CertificateConstants.CERT_REVOKED) {
             // Call separate script for revocation
             revokeCertificate(admin, incert, revocationReason);
         } else if (status == CertificateConstants.CERT_ACTIVE) {
