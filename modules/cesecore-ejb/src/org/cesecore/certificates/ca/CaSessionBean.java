@@ -52,7 +52,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CaCache;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -88,8 +87,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     
     @EJB
     private AccessControlSessionLocal accessSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
