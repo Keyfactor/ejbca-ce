@@ -701,12 +701,19 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             int revreason = RevokedCertInfo.NOT_REVOKED;
             if (ei != null) {          
                 revreason = ei.getIssuanceRevocationReason();            
-            } 
-            if(revreason != RevokedCertInfo.NOT_REVOKED) {
-                certstatus = CertificateConstants.CERT_REVOKED;
-            } else {
-                certstatus = CertificateConstants.CERT_ACTIVE;
             }
+            switch (revreason) {
+            case RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD:
+                certstatus = CertificateConstants.CERT_TEMP_REVOKED;
+                break;
+            case CertificateConstants.CERT_ACTIVE:
+                certstatus = CertificateConstants.CERT_ACTIVE;
+                break;
+            default:
+                certstatus = CertificateConstants.CERT_REVOKED;
+                break;
+            }
+
             publisherSession.storeCertificate(authenticationToken, publishers, certificate, username, endEntity.getPassword(),
                     endEntity.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId,
                     updateTime, endEntity.getExtendedinformation());
