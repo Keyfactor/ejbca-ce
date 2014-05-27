@@ -187,8 +187,7 @@ public class LdapPublisher extends BasePublisher {
 			log.trace(">storeCertificate(username="+username+")");
 		}
 
-		if ((status == CertificateConstants.CERT_REVOKED) ||
-		    (status == CertificateConstants.CERT_TEMP_REVOKED)) {
+		if (status == CertificateConstants.CERT_REVOKED) {
         	// Call separate script for revocation
         	revokeCertificate(admin, incert, username, revocationReason, userDN);
         } else if (status == CertificateConstants.CERT_ACTIVE) {

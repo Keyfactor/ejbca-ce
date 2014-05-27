@@ -1067,22 +1067,6 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /**
-     * @return the certificates that have CERT_TEMP_REVOKED.
-     * @param firstResult pagination variable, 0 for the first call, insrease by maxRows for further calls if return value is == maxRows
-     * @param maxRows pagination variable max number of rows that should be returned, used in order to make it somewhat efficient on large data
-     *            volumes
-     * */
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findAllOnHold(EntityManager entityManager, String issuerDN, int firstResult, int maxRows) {
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status=:status");
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("status", CertificateConstants.CERT_TEMP_REVOKED);
-        query.setFirstResult(firstResult);
-        query.setMaxResults(maxRows);
-        return query.getResultList();
-    }
-
-    /**
      * @return the certificates that have CertificateConstants.CERT_REVOKED.
      * @param firstResult pagination variable, 0 for the first call, insrease by maxRows for further calls if return value is == maxRows
      * @param maxRows pagination variable max number of rows that should be returned, used in order to make it somewhat efficient on large data
