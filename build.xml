@@ -841,7 +841,7 @@ SHA-256 checksum: ${cesecoresrcSHA256}
             <subant target="clean" verbose="false">
                 <fileset dir="${basedir}/modules/" includes="cesecore-*/build.xml"/>
             </subant>
-            <echo>Build CESeCorer modules</echo>
+            <echo>Build CESeCore modules</echo>
             <subant target="jar" verbose="false">
                 <fileset dir="${basedir}/modules/" includes="cesecore-*/build.xml"/>
             </subant>
