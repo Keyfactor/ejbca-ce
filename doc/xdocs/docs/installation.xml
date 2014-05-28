@@ -576,7 +576,7 @@ Or for MariaDB, mariadb-java-client-1.1.5.jar:
 </li>
 <li>Register the driver by running the following two commands in the JBoss 7 CLI administration tool:
 <pre>
-/subsystem=datasources/jdbc-driver=com.mysql.jdbc.Driver:add(driver-name=com.mysql.jdbc.Driver,driver-module-name=com.mysql,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc.jdbc2.optional.MysqlXADataSource)
+/subsystem=datasources/jdbc-driver=com.mysql.jdbc.Driver:add(driver-name=com.mysql.jdbc.Driver,driver-class-name=com.mysql.jdbc.Driver,driver-module-name=com.mysql,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc.jdbc2.optional.MysqlXADataSource)
 :reload
 </pre>
 Or for MariaDB, mariadb-java-client-1.1.5.jar:
