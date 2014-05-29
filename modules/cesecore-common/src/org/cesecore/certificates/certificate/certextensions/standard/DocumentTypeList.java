@@ -31,8 +31,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
- * Class for standard X509 certificate extension. 
- * See rfc3280 or later for spec of this extension.
+ * Class for ICAO X509 certificate extension. 
+ * See ICAO MRTD Technical Report LDS and PKI Maintenance 1.0 or later for spec of this extension.
  * 
  * @version $Id$
  */
