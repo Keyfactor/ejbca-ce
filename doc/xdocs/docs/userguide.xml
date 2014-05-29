@@ -945,8 +945,9 @@ After editing the file, simply build and re-deploy EJBCA (ant clean; ant deploy)
 </subsubsection>
 
 <subsubsection name="Document Type List">
-<p>The DocumentTypeList extension is used to indicate the document types that the corresponding document signer is allowed to produce. 
-The list should be separated with a comma ','. For example: "P,ID"</p>
+<p>The DocumentTypeList extension is used to indicate the document types (as contained in the MRZ) that the corresponding document signer is allowed to produce. 
+The list should be separated with a comma ','. For example: "P", or "P,ID"</p>
+<p>See ICAO MRTD Technical Report LDS and PKI Maintenance for reference.</p>
 </subsubsection>
 
 <subsubsection name="Private Key Usage Period">
