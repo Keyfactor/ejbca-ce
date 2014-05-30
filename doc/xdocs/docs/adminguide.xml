@@ -336,7 +336,7 @@ http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe
 <p>
 The URL contains a reference to a configuration alias 'ALIAS'. 'ALIAS' is an alphanumeric string that refers to 
 the set of SCEP configurations that should be used when handling the SCEP reqest coming through this URL. It is possible 
-to configure as many configuration aliases as desired through the command line or the AdminGUI. Documentations on how to 
+to configure as many configuration aliases as desired through the command line or the AdminGUI. Documentation on how to 
 create and configure the SCEP aliases in the command line are available when executing the following command from EJBCA home directory:
 </p>
 <source>
