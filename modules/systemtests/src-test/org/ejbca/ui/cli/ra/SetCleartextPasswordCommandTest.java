@@ -66,7 +66,7 @@ public class SetCleartextPasswordCommandTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
     }
 
     @AfterClass

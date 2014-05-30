@@ -49,7 +49,7 @@ import org.cesecore.util.StringTools;
 public abstract class CATokenTestBase {
 
     private static final Logger log = Logger.getLogger(CATokenTestBase.class);
-	public static final String tokenpin = "userpin1";
+	public static final String TOKEN_PIN = "userpin1";
 
 	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
 	NoSuchAlgorithmException, CertificateException, IOException,
@@ -66,7 +66,7 @@ public abstract class CATokenTestBase {
 			catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 			catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 			// First we start by deleting all old entries
-            cryptoToken.activate(tokenpin.toCharArray());
+            cryptoToken.activate(TOKEN_PIN.toCharArray());
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("rsatest0000"+i);
             }
@@ -80,7 +80,7 @@ public abstract class CATokenTestBase {
 			assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
             assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
-			cryptoToken.activate(tokenpin.toCharArray());
+			cryptoToken.activate(TOKEN_PIN.toCharArray());
 			assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
 			assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
 			// Generate the first key, will get name of the certsign property when generating with renew=false
@@ -274,7 +274,7 @@ public abstract class CATokenTestBase {
 		assertEquals("SHA1WithDSA", catoken.getSignatureAlgorithm());
 		assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
 		assertEquals(getProvider(), cryptoToken.getSignProviderName());
-		cryptoToken.activate(tokenpin.toCharArray());
+		cryptoToken.activate(TOKEN_PIN.toCharArray());
 		assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
 		assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
 		// Generate the first key, will get name rsatest+nextsequence = rsatest00001
@@ -339,7 +339,7 @@ public abstract class CATokenTestBase {
 			assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
 			assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
-			cryptoToken.activate(tokenpin.toCharArray());
+			cryptoToken.activate(TOKEN_PIN.toCharArray());
 			assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
 			assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
 
@@ -492,7 +492,7 @@ public abstract class CATokenTestBase {
 			} catch (CryptoTokenOfflineException e) {
 				// NOPMD
 			}
-			cryptoToken.activate(tokenpin.toCharArray());
+			cryptoToken.activate(TOKEN_PIN.toCharArray());
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("rsatest0000"+i);
             }
@@ -514,19 +514,19 @@ public abstract class CATokenTestBase {
 			}
 			// Activate with wrong PIN should not work
 			try {
-				cryptoToken.activate((tokenpin+"x").toCharArray());
+				cryptoToken.activate((TOKEN_PIN+"x").toCharArray());
 				assertTrue("should throw", false);
 			} catch (CryptoTokenAuthenticationFailedException e) {
 				String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
 				String strp11 = "Failed to initialize PKCS11 provider slot '1'.";
 				assert(e.getMessage().equals(strsoft)||e.getMessage().equals(strp11));
 			}
-			cryptoToken.activate(tokenpin.toCharArray());
+			cryptoToken.activate(TOKEN_PIN.toCharArray());
 			KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
 					cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
 		} finally {
 			// End by deleting all old entries
-            cryptoToken.activate(tokenpin.toCharArray());
+            cryptoToken.activate(TOKEN_PIN.toCharArray());
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("rsatest0000"+i);
             }
@@ -538,7 +538,7 @@ public abstract class CATokenTestBase {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		try {
-		    cryptoToken.activate(tokenpin.toCharArray());
+		    cryptoToken.activate(TOKEN_PIN.toCharArray());
 		    cryptoToken.generateKeyPair(keySpecification, "defaultKey");
 		    catoken.setNextCertSignKey("defaultKey");
 		    catoken.activateNextSignKey();
@@ -556,7 +556,7 @@ public abstract class CATokenTestBase {
 			assertEquals(keyhash, newkeyhash);
 		} finally {
 			// End by deleting all old entries
-		    cryptoToken.activate(tokenpin.toCharArray());
+		    cryptoToken.activate(TOKEN_PIN.toCharArray());
 			cryptoToken.deleteEntry("rsatest00000");
 			cryptoToken.deleteEntry("rsatest00001");
 		}

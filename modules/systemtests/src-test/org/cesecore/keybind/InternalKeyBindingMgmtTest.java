@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -41,35 +40,31 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.junit.util.VariableCryptoTokenTestRunner;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
 
 /**
  * @see InternalKeyBindingMgmtSession
  * @version $Id$
  */
+@RunWith(VariableCryptoTokenTestRunner.class)
 public class InternalKeyBindingMgmtTest {
 
     private static final Logger log = Logger.getLogger(InternalKeyBindingMgmtTest.class);
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(InternalKeyBindingMgmtTest.class.getSimpleName()));
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     
@@ -79,37 +74,17 @@ public class InternalKeyBindingMgmtTest {
     private static final String KEYBINDING_TYPE_ALIAS = OcspKeyBinding.IMPLEMENTATION_ALIAS;
     private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
 
-    private static X509CA x509ca = null;
-    private static int cryptoTokenId = 0;
+    private final X509CA x509ca;
+    private final int cryptoTokenId;
 
+    public InternalKeyBindingMgmtTest(X509CA x509ca, int cryptotokenId) {
+        this.x509ca = x509ca;
+        this.cryptoTokenId = cryptotokenId;
+    }
+    
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
-    
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        CryptoProviderTools.installBCProvider();
-        x509ca = CryptoTokenTestUtils.createTestCA(alwaysAllowToken, "CN="+TESTCLASSNAME);
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(alwaysAllowToken, TESTCLASSNAME);
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
-        if (x509ca != null) {
-            final int caCryptoTokenId = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
-            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
-            caSession.removeCA(alwaysAllowToken, x509ca.getCAId());
-        }
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
+        
     @Test
     public void assertTestPreRequisites() throws Exception {
         // Request all available implementations from server and verify that the implementation we intend to use exists
@@ -274,4 +249,5 @@ public class InternalKeyBindingMgmtTest {
             log.info("Removed keybinding with name " + name + ".");
         }
     }
+
 }

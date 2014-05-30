@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.util.Properties;
+
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.catoken.CATokenTestBase;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.EjbRemoteHelper;
 
@@ -27,7 +30,7 @@ import org.cesecore.util.EjbRemoteHelper;
  */
 public class CryptoTokenTestUtils {
 
-    public static X509CA createTestCA(AuthenticationToken authenticationToken, String dN) throws Exception {
+    public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         
@@ -45,7 +48,7 @@ public class CryptoTokenTestUtils {
         return x509ca;
     }
     
-    public static int createCryptoToken(AuthenticationToken authenticationToken, String cryptoTokenName) throws AuthorizationDeniedException,
+    public static int createSoftCryptoToken(AuthenticationToken authenticationToken, String cryptoTokenName) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -54,7 +57,26 @@ public class CryptoTokenTestUtils {
         if (oldCryptoTokenId != null) {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, oldCryptoTokenId.intValue());
         }
-        // Create one additional CryptoToken to use from the tests below
+        return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), null, null,
+                "foo123".toCharArray());
+    }
+    
+    public static int createPKCS11Token(AuthenticationToken authenticationToken, String cryptoTokenName, boolean useAutoActivationPin)
+            throws NoSuchSlotException, AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException {
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        // Remove any old CryptoToken created by this setup
+        final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (oldCryptoTokenId != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, oldCryptoTokenId.intValue());
+        }
+        CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
+        Properties cryptoTokenProperties = cryptoToken.getProperties();
+        if (useAutoActivationPin) {
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CATokenTestBase.TOKEN_PIN);
+        }
+        cryptoToken.setProperties(cryptoTokenProperties);
         return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), null, null,
                 "foo123".toCharArray());
     }

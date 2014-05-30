@@ -72,8 +72,8 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, CA_DN);
+        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, TESTCLASSNAME);
         internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
                 OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);  
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, SIGNER_DN, internalKeyBindingId, x509ca.getCAId());
