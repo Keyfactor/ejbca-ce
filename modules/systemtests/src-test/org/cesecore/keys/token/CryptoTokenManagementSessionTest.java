@@ -284,7 +284,9 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public static CryptoToken getCryptoTokenFromServer(int cryptoTokenId, char[] tokenpin) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
         // Since we are now operating on the token in a different JVM it will not be active anymore unless it is autoactivated..
-        cryptoToken.activate(tokenpin);
+        if(!cryptoToken.isAutoActivationPinPresent()) {
+            cryptoToken.activate(tokenpin);
+        }
         return cryptoToken;
     }
     
