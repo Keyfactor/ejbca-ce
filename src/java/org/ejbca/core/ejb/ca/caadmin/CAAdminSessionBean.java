@@ -1525,27 +1525,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     certprofileid, validity, signedby, null, null);
             x509cainfo.setSubjectAltName(subjectaltname);
             x509cainfo.setPolicies(policies);
+            x509cainfo.setExpireTime(CertTools.getNotAfter(x509CaCertificate));
             cainfo = x509cainfo;
-            cainfo.setExpireTime(CertTools.getNotAfter(x509CaCertificate));
-            
-            // These values were used before refactoring the X509CAInfo constructor.
-            // They might not be optimal and should be checked.
-            x509cainfo.setUseAuthorityKeyIdentifier(false);
-            x509cainfo.setUseCRLNumber(false);
-            x509cainfo.setUsePrintableStringSubjectDN(false);
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validity, signedby, null, null);
         }
         
         cainfo.setDescription("CA created by certificate import.");
-        // These values were used before refactoring the X509CAInfo/CVCCAInfo constructors.
-        // They might not be optimal and should be checked.
-        cainfo.setCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
-        cainfo.setCRLIssueInterval(0 * SimpleTime.MILLISECONDS_PER_HOUR);
-        cainfo.setCRLOverlapTime(10 * SimpleTime.MILLISECONDS_PER_MINUTE);
-        cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
-        cainfo.setIncludeInHealthCheck(false);
-        cainfo.setFinishUser(false);
         
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating a X509 CA (process request)");
