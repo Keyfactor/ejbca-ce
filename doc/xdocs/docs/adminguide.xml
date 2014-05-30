@@ -1278,7 +1278,7 @@ received for a certificate that is not signed by any CA on this server. Set this
 CA for example. This value should be set during deployment of EJBCA. After the values have been edited, they are
 installed with the 'ant deploy' command. If no default responder is defined, or if no certificate exists that corresponds
 to the specified value, and no other responders defined in the request could be used to sign the reply, the responder will reply
-"Unauthorized" (as per RFC2650) with a null payload.  
+"Unauthorized" (as per RFC2560) with a null payload.  
 </p><p>
 Example to generate an OCSP request using OpenSSL (works with both internal and external OCSP responders):
 </p>
