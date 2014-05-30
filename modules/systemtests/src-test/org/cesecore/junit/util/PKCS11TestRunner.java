@@ -31,8 +31,8 @@ import org.junit.runners.model.InitializationError;
  */
 public class PKCS11TestRunner extends CryptoTokenTestRunner {
 
-    public static final String TOKEN_PIN = "userpin1";
-
+    private static final String TOKEN_PIN = "userpin1";
+    
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -72,5 +72,7 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
     public String getSubtype() {
         return "PKCS#11";
     };
+
+    
 
 }
