@@ -7,13 +7,16 @@
   <faqsection title="General">
     <faq id="jboss600">
      <question>
-      I get an error during installation on JBoss 5, 6 or 7 using Oracle JDK.
+      I get an error during installation on JBoss 5, 6 or 7 using Oracle JDK (JCE cannot authenticate the provider BC).
       </question>
       <answer>
+      <p>Note that if you are using EJBCA 6.1 with JBoss 7, you should not encounter this issue as it was worked around in <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a>.
+      </p>
       <p>
+      For older versions this answer still applies:<br/>
       This is because JBoss 5, 6 and 7 have a bug using security providers with Oracle JDK. See JBoss issue <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>.
       </p><p>Everything works fine using OpenJDK, such as the one included with RedHat or Ubuntu servers. 
-      <br/>The way to work around this is different on JBoss 5, 6 and 7.</p>
+      <br/>The way to work around this is different on JBoss 5 and JBoss 7.</p>
       <p>On JBoss 6 with Oracle JDK copy ejbca/lib/bc*.jar to $JAVA_HOME/jre/lib/ext, and remove lib/bc*.jar from the deployed ejbca.ear file. If you are unsure about this workaround
       (and the implications it has for upgrades) we suggest using JBoss 5.1.0 instead, where there is a simpler workaround.
       </p>
