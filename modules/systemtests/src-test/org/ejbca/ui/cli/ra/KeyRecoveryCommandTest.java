@@ -92,7 +92,7 @@ public class KeyRecoveryCommandTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
         GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         configuration.setEnableKeyRecovery(true);
         globalConfigurationSession.saveConfiguration(authenticationToken, configuration, Configuration.GlobalConfigID);

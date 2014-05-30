@@ -77,8 +77,8 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASS_NAME);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
+        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, TESTCLASS_NAME);
         cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, TESTCLASS_NAME, "RSA2048");
     }
 

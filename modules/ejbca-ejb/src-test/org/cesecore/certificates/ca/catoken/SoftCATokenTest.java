@@ -63,7 +63,7 @@ public class SoftCATokenTest extends CATokenTestBase {
 		// false parameter means we should enable default password
     	CryptoToken cryptoToken = createSoftToken(true);
     	CAToken catoken = new CAToken(cryptoToken.getId(), getCaTokenPropertes("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
-    	cryptoToken.activate(tokenpin.toCharArray());
+    	cryptoToken.activate(TOKEN_PIN.toCharArray());
         cryptoToken.generateKeyPair("1024", "rsatest" + CAToken.DEFAULT_KEYSEQUENCE);
 		KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
 		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), null);
@@ -82,7 +82,7 @@ public class SoftCATokenTest extends CATokenTestBase {
 	@Test
 	public void testDefaultEjbcaSoftTokenProperties() throws Exception {
     	CryptoToken cryptoToken = createSoftToken(false);
-        cryptoToken.activate(tokenpin.toCharArray());
+        cryptoToken.activate(TOKEN_PIN.toCharArray());
         cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
         // Crypto token is not so picky about all aliases being populated
         assertEquals("crypto token status should be active after key generation", CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
@@ -100,7 +100,7 @@ public class SoftCATokenTest extends CATokenTestBase {
 		Properties cryptoTokenProperties = cryptoToken.getProperties();
         // Use autoactivation for easy testing
         if (useAutoActivationPin) {
-        	cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
+        	cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, TOKEN_PIN);
         }
         cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;

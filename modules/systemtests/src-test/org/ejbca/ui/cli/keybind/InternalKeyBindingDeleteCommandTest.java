@@ -59,8 +59,8 @@ public class InternalKeyBindingDeleteCommandTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, "CN=" + TESTCLASS_NAME);
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASS_NAME);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "CN=" + TESTCLASS_NAME);
+        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, TESTCLASS_NAME);
         cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, TESTCLASS_NAME, "RSA2048");
     }
 

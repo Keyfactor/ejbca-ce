@@ -76,7 +76,7 @@ public class PKCS11CATokenTest extends CATokenTestBase {
 		CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
     	Properties cryptoTokenProperties = cryptoToken.getProperties();
     	if (useAutoActivationPin) {
-            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CATokenTestBase.tokenpin);
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CATokenTestBase.TOKEN_PIN);
         }
         cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;

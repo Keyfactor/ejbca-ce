@@ -135,12 +135,12 @@ public class OcspKeyRenewalTest {
         cleanup();
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         
-        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, CA_DN);
         log.debug("OCSP CA Id: " + x509ca.getCAId() + " CA SubjectDN: " + x509ca.getSubjectDN());
-        x509eccca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_ECC_DN);
+        x509eccca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, CA_ECC_DN);
         log.debug("OCSP ECC CA Id: " + x509eccca.getCAId() + " CA SubjectDN: " + x509eccca.getSubjectDN());
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
-        cryptoTokenIdEcc = CryptoTokenTestUtils.createCryptoToken(authenticationToken, ECC_CRYPTOTOKEN_NAME);
+        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, TESTCLASSNAME);
+        cryptoTokenIdEcc = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, ECC_CRYPTOTOKEN_NAME);
         ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocsp", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         ocspKeyBindingIdEcc = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenIdEcc, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocspecc", "secp256r1", AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
         assertNotEquals("key binding Ids should not be the same", ocspKeyBindingId, ocspKeyBindingIdEcc);

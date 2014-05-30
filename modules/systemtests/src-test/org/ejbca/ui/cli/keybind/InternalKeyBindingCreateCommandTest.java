@@ -68,8 +68,8 @@ public class InternalKeyBindingCreateCommandTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509ca = CryptoTokenTestUtils.createTestCA(alwaysAllowToken, "CN=" + TESTCLASSNAME);
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(alwaysAllowToken, TESTCLASSNAME);
+        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, "CN=" + TESTCLASSNAME);
+        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, TESTCLASSNAME);
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
     }
 
