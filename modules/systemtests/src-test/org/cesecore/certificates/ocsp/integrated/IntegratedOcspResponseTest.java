@@ -27,8 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.ejb.EJBException;
-
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
@@ -80,7 +78,6 @@ import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
-import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
@@ -238,7 +235,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         byte[] responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
@@ -270,7 +267,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         byte[] responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
@@ -305,7 +302,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         byte[] responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
@@ -346,7 +343,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         byte[] responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger, transactionLogger).getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
@@ -363,7 +360,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
 
         responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger, transactionLogger).getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
 
         response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
@@ -399,20 +396,15 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         final Integer timeToWait = 2;
         // Set the validity time to a single second for testing purposes.
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME, timeToWait.toString());
-
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-
         try {
-
             // An OCSP request
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
             Extension[] extensions = new Extension[1];
             extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
             gen.setRequestExtensions(new Extensions(extensions));
-
             OCSPReq req = gen.build();
-
             byte[] responseBytes;
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -422,7 +414,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
             responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
-            assertNotNull("OCSP resonder replied null", responseBytes);
+            assertNotNull("OCSP responder replied null", responseBytes);
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because initial ocsp response failed.",
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
@@ -433,17 +425,16 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because cache changed before the entire test could run.",
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
-
             // Now sleep and try again, Glassfish has a default "minimum-delivery-interval-in-millis" of 7 seconds, so we have
             // to wait that long, make it 8 seconds. We have set the timer to 2 seconds above.
             Thread.sleep(8 * 1000);
-
             // Since the CA is gone, expect an unauthorized response
             responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger,
                         transactionLogger).getOcspResponse();
-            assertNotNull("OCSP resonder replied null", responseBytes);
+            assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+            assertNull("Response should not have contained a response object.", response.getResponseObject());
         } finally {
             // Reset sign trust valid time.
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME,
@@ -486,7 +477,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         byte[] responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not SUCCESSFUL.", response.getStatus(), OCSPRespBuilder.SUCCESSFUL);
@@ -527,7 +518,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
     }
