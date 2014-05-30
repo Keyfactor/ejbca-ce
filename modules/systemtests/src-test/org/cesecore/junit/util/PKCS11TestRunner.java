@@ -18,7 +18,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.catoken.CATokenTestBase;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -32,6 +31,7 @@ import org.junit.runners.model.InitializationError;
  */
 public class PKCS11TestRunner extends CryptoTokenTestRunner {
 
+    public static final String TOKEN_PIN = "userpin1";
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -49,7 +49,7 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
     protected void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
-        x509ca = CaTestUtils.createTestX509CA("CN=" + super.getName(), CATokenTestBase.TOKEN_PIN.toCharArray(), true);
+        x509ca = CaTestUtils.createTestX509CA("CN=" + super.getName(), TOKEN_PIN.toCharArray(), true);
     };
 
     @Override
