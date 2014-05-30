@@ -174,14 +174,6 @@
   if(action!=null){
     if(action.equals(ACTION_EDIT_CPS)){
 	  cp=request.getParameter(SELECT_CERTIFICATEPROFILES);
-	  servicesWithCP=cabean.getServicesUsingCertificateProfile(cp);
-	  numEEsWithCP=cabean.countEndEntitiesUsingCertificateProfile(cp);
-	  if(numEEsWithCP>0&&numEEsWithCP<100){
-	    eentitiesWithCP=cabean.getEndEntitiesUsingCertificateProfile(cp);
-	  }
-	  eepsWithCP=cabean.getEndEntityProfilesUsingCertificateProfile(cp);
-	  htpsWithCP=cabean.getHardTokenTokensUsingCertificateProfile(cp);
-	  casWithCP=cabean.getCaUsingCertificateProfile(cp);
       if(request.getParameter(BUTTON_EDIT_CERTIFICATEPROFILES)!=null){
         if(cp!=null){
           cabean.setTempCertificateProfile(null);
@@ -203,6 +195,14 @@
       if(request.getParameter(BUTTON_DELETE_CERTIFICATEPROFILES)!=null) {
         if(!cabean.cpNameEmpty(cp)){
           if(!cabean.cpFixed(cp)){
+        	servicesWithCP=cabean.getServicesUsingCertificateProfile(cp);
+        	numEEsWithCP=cabean.countEndEntitiesUsingCertificateProfile(cp);
+        	if(numEEsWithCP>0&&numEEsWithCP<100){
+        	  eentitiesWithCP=cabean.getEndEntitiesUsingCertificateProfile(cp);
+        	}
+        	eepsWithCP=cabean.getEndEntityProfilesUsingCertificateProfile(cp);
+        	htpsWithCP=cabean.getHardTokenTokensUsingCertificateProfile(cp);
+        	casWithCP=cabean.getCaUsingCertificateProfile(cp);
 			if(!cabean.canDeleteCertProfile(cp,numEEsWithCP)){
       		  cpDeleteFailed=true;
       		}else{
