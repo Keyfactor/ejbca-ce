@@ -49,7 +49,7 @@ public class IssuerAltNames extends StandardCertificateExtension {
         }
         if (ret == null) {
             if (log.isDebugEnabled()) {
-                log.debug("No altnames trying to make SubjectAltName extension: "+altName);
+                log.debug("No altnames (SubjectAltName in issuing CA certificate) trying to make IssuerAltName extension: "+altName);
             }
         }
         return ret;
