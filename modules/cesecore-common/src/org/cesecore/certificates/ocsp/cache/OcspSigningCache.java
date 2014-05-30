@@ -42,7 +42,11 @@ public enum OcspSigningCache {
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
     private final ReentrantLock lock = new ReentrantLock(false);
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
-
+    /** Flag to cache if we have logged the existence of a default responder */
+    private volatile boolean loggedDefaultResponder = false;
+    /** Flag to cache if we have logged the non-existence of a default responder */
+    private volatile boolean loggedNoDefaultResponder = false;
+    
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
@@ -76,9 +80,10 @@ public enum OcspSigningCache {
                 final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
                 if (CertTools.getSubjectDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
                     defaultResponderCacheEntry = entry;
-                    if (log.isDebugEnabled()) {
+                    if (!loggedDefaultResponder) {
                         log.info("Setting CA with DN "
-                                + OcspConfiguration.getDefaultResponderId() + " as default responder.");
+                                + OcspConfiguration.getDefaultResponderId() + " as default OCSP responder.");
+                        loggedDefaultResponder = true; // we should only log this once, unless status changes
                     }
                     break;
                 }
@@ -86,17 +91,24 @@ public enum OcspSigningCache {
                 final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
                 if (CertTools.getIssuerDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
                     defaultResponderCacheEntry = entry;
-                    if (log.isDebugEnabled()) {
+                    if (!loggedDefaultResponder) {
                         log.info("Setting keybinding with ID" + entry.getOcspKeyBinding().getId() + " and DN "
-                                + OcspConfiguration.getDefaultResponderId() + " as default responder.");
+                                + OcspConfiguration.getDefaultResponderId() + " as default OCSP responder.");
+                        loggedDefaultResponder = true; // we should only log this once, unless status changes
                     }
                     break;
                 }
             }
         }
         if (defaultResponderCacheEntry == null) {
-            log.info("Default OCSP responder with subject '" + OcspConfiguration.getDefaultResponderId() + "' was not found."
-                    + " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3");
+            if (!loggedNoDefaultResponder) {
+                log.info("The default OCSP responder with subject '" + OcspConfiguration.getDefaultResponderId() + "' was not found."
+                        + " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3");
+                loggedNoDefaultResponder = true; // we should only log this once, unless status changes
+            }
+            loggedDefaultResponder = false; // if we get a default responder again, log it
+        } else {
+            loggedNoDefaultResponder = false; // if we loose a default responder again, log it
         }
         if (log.isDebugEnabled()) {
             log.debug("Committing the following to OCSP cache:");
