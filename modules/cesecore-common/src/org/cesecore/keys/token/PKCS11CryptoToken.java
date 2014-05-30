@@ -26,7 +26,6 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
 
-import javax.persistence.Transient;
 import javax.security.auth.DestroyFailedException;
 
 import org.apache.commons.lang.StringUtils;
@@ -71,9 +70,8 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
      * java provider name is used (SunPKCS11-pkcs11LibName-slotNr for example SunPKCS11-libcryptoki.so-slot1).
      */
     public final static String TOKEN_FRIENDLY_NAME = "tokenFriendlyName";
-
-    @Transient
-    private P11Slot p11slot;
+    
+    private transient P11Slot p11slot;
 
     private String sSlotLabel = null;
     
