@@ -604,9 +604,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
             //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
-            assertNotNull("OCSP resonder replied null", responseBytes);
+            assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+            assertNull("Response should not have contained a response object.", response.getResponseObject());
         } finally {
             try {
                 if (ocspTestCert != null)
@@ -682,7 +683,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OcspResponseInformation responseInformation = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", "", null,
                 auditLogger, transactionLogger);
         byte[] responseBytes = responseInformation.getOcspResponse();
-        assertNotNull("OCSP resonder replied null", responseBytes);
+        assertNotNull("OCSP responder replied null", responseBytes);
         return new OCSPResp(responseBytes);
     }
     
