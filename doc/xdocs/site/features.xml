@@ -19,7 +19,7 @@
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
 <li>Support multiple hash algorithms for signatures, SHA-1, SHA-2.</li>
 <li>Compliant with NSA SUITE B algorithms and certificates.</li>
-<li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports">EU EAC ePassports</a>).</li> 
+<li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by EU <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports">EAC ePassports</a>) and eIDs.</li> 
 <li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Issues SSL/TLS certificates that work with all common servers.</li>
@@ -116,7 +116,7 @@
 <li>Full database integrity protection of all tables, to detect database manipulation.</li>
 <li>Command line tool for verification of audit and database integrity protection.</li>
 <li>Validation tool for conformance checking of certificates and OCSP responders.</li>
-<li>EAC ePassport PKI, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
+<li>EAC PKI for ePassports and eIDs, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
 <li>Penetration tested with improved security.</li>
 <li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a> with multiple Vendor CAs.</li>
