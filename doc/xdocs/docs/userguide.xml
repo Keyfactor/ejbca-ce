@@ -810,6 +810,16 @@ not appear, no limit is imposed.
 </source>
 </subsubsection>
 
+<subsubsection name="Issuer Alternative Name">
+<p>
+Using the Issuer Alternative Name extension simply copies the Subject Alternative Name value from the issuing CA certificate and places it into the certificate produced.
+</p>
+<p>An example of usage is to create a CA with Subject Alternative Name "rfc822Name=ca@org.org", and including that in the CA certificate. If you include Issuer Alternative Name in the 
+certificate profile used to issue end entity (or sub CA) certificates, the end entity certificates will get Issuer Alternative Name "rfc822Name=ca@org.org". 
+The end entity certificates can have a totally different Subject Alternative Name, as this is registered for the specific end entity.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Distribution Points">
 <p>
 The CRL Distribution Point (CDP) extension is provided as info for clients verifying a certificate. The value is a URI 

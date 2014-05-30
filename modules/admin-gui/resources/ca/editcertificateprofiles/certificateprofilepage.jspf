@@ -870,7 +870,7 @@ function checkallfields(){
     <%-- PKIX Issuer Alternative Name (IAN) extension --%>
     <tr  id="Row<%=row++%2%>">
       <td width="50%"  align="right">
-        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_ISSUERALTNAME\") %>" />
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_ISSUERALTNAME\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Issuer%20Alternative%20Name") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CB_ISSUERALTERNATIVENAME %>" onClick="checkusefield('<%=CB_ISSUERALTERNATIVENAME %>', '<%=CB_ISSUERALTERNATIVENAMECRITICAL %>')" value="<%=CB_VALUE %>" 
