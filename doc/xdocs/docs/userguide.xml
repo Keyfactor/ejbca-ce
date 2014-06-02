@@ -416,7 +416,7 @@ EJBCA supports domain name, directory name, e-mail (RFC 822 name) and IP address
 <dd>Matches a specific e-mail address.</dd>
 
 <dt><code>C=SE,O=Company</code></dt>
-<dd>Matches against the beginning of the Subject DN. The certificates must use <strong>LDAP DN order</strong>!</dd>
+<dd>Matches against the beginning of the Subject DN. The certificates must <strong>not</strong> use LDAP DN order, which is the default!</dd>
 
 <dt><code>198.51.100.0/24</code></dt>
 <dd>Matches an IPv4 subnet. The IP address checked is the one in the certificate, which in turn is checked if the host is accessed by IP address.</dd>
