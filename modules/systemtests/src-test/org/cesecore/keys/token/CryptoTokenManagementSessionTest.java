@@ -278,17 +278,6 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
             removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
-
-    /** Strange way of handling tokens.. exporting the whole thing so we can do sign stuff client JVM JUnit tests! Try to avoid this. */
-    @Deprecated
-    public static CryptoToken getCryptoTokenFromServer(int cryptoTokenId, char[] tokenpin) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
-        // Since we are now operating on the token in a different JVM it will not be active anymore unless it is autoactivated..
-        if(!cryptoToken.isAutoActivationPinPresent()) {
-            cryptoToken.activate(tokenpin);
-        }
-        return cryptoToken;
-    }
     
     /** Create CryptoToken and generate CA's keys */
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec) {

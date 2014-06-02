@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
@@ -37,5 +40,23 @@ public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagem
     @Override
     public boolean isCryptoTokenNameUsed(String cryptoTokenName) {
         return cryptoTokenSession.isCryptoTokenNameUsed(cryptoTokenName);
+    }
+    
+    @Override
+    public PublicKey getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException {
+        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+        return cryptoToken.getPublicKey(alias);
+    }
+    
+    @Override
+    public PrivateKey getPrivateKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException {
+        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+        return cryptoToken.getPrivateKey(alias);
+    }
+    
+    @Override
+    public String getSignProviderName(int cryptoTokenId) {
+        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+        return cryptoToken.getSignProviderName();
     }
 }
