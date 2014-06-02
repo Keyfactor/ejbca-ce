@@ -2,3 +2,5 @@
 -- ALTER TABLE KeyRecoveryData ADD cryptoTokenId INT4 NOT NULL;
 -- ALTER TABLE KeyRecoveryData ADD keyAlias TEXT DEFAULT NULL;
 -- ALTER TABLE KeyRecoveryData ADD publicKeyId TEXT DEFAULT NULL;
+-- If there were existing data in the table, we need to set the value of cryptoTokenId to 0
+-- UPDATE KeyRecoveryData SET cryptoTokenId=0;
