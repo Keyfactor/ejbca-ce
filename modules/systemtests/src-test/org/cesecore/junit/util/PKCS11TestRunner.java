@@ -49,7 +49,8 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
     protected void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
-        x509ca = CaTestUtils.createTestX509CA("CN=" + super.getName(), TOKEN_PIN.toCharArray(), true);
+        x509ca = CaTestUtils.createTestX509CAOptionalGenKeys("CN=" + super.getName(), TOKEN_PIN.toCharArray(), false, true);
+        CaTestUtils.addCAUseSessionBeanToGenerateKeys2(x509ca, "CN=" + super.getName(), TOKEN_PIN);
     };
 
     @Override

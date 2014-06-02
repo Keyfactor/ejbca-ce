@@ -79,7 +79,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     public void addCAUseSessionBeanToGenerateKeys2() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
         final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
-        testBase.addCAUseSessionBeanToGenerateKeys2(ca, cadn, tokenpin);
+        CaTestUtils.addCAUseSessionBeanToGenerateKeys2(ca, cadn, tokenpin);
     }
 
 }

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -50,10 +51,17 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
@@ -64,9 +72,11 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
@@ -302,5 +312,65 @@ public abstract class CaTestUtils {
 
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, final String keyspec) throws Exception {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, keyspec, -1);
+    }
+    
+    public static void addCAUseSessionBeanToGenerateKeys2(CA ca, String cadn, String tokenpwd) throws Exception {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+
+        AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken("addCAUseSessionBeanToGenerateKeys2");
+        // Generate CA keys
+        Certificate cert = null;
+        try {
+            CAToken caToken = ca.getCAToken();
+            caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "signKeyAlias");
+            caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, "signKeyAlias");
+            ca.setCAToken(caToken);
+            caSession.addCA(authenticationToken, ca);
+            final int cryptoTokenId = caToken.getCryptoTokenId();
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", "1024");
+            PublicKey pubK = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, "signKeyAlias");
+            assertNotNull(pubK);
+            // Now create a CA certificate
+            CAInfo info = caSession.getCAInfo(authenticationToken, ca.getCAId());
+            Collection<Certificate> certs = info.getCertificateChain();
+            assertEquals(0, certs.size());
+
+            EndEntityInformation user = new EndEntityInformation("casessiontestca", ca.getSubjectDN(), ca.getCAId(), null, null, new EndEntityType(
+                    EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
+            SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());
+            X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, user, req,
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+            cert = (X509Certificate) resp.getCertificate();
+            assertNotNull("Failed to create certificate", cert);
+            // Verifies with CA token?
+            cert.verify(pubK);
+            // Add the new CA cert
+            certs.add(cert);
+            info.setCertificateChain(certs);
+            caSession.editCA(authenticationToken, info);
+
+            // Get it again
+            CAInfo info1 = caSession.getCAInfo(authenticationToken, ca.getCAId());
+            Collection<Certificate> certs1 = info1.getCertificateChain();
+            assertEquals(1, certs1.size());
+            Certificate cert1 = certs1.iterator().next();
+            cert1.verify(pubK);
+        } finally {
+            // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
+            int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+            final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            cryptoTokenManagementSession.removeKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+            caSession.removeCA(authenticationToken, ca.getCAId());
+            internalCertificateStoreSession.removeCertificate(cert);
+        }
     }
 }

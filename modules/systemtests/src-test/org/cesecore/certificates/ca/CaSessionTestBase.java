@@ -347,55 +347,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	}    	
     }
     
-    public void addCAUseSessionBeanToGenerateKeys2(CA ca, String cadn, String tokenpwd) throws Exception {
-    	// Generate CA keys
-    	Certificate cert = null;
-    	try {
-            CAToken caToken = ca.getCAToken();
-            caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "signKeyAlias");
-            caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, "signKeyAlias");
-            ca.setCAToken(caToken);
-            caSession.addCA(roleMgmgToken, ca);
-            final int cryptoTokenId = caToken.getCryptoTokenId();
-            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, "signKeyAlias", "1024");
-        	PublicKey pubK = cryptoTokenManagementSession.getPublicKey(roleMgmgToken, cryptoTokenId, "signKeyAlias");
-            assertNotNull(pubK);
-        	// Now create a CA certificate
-        	CAInfo info = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
-        	Collection<Certificate> certs = info.getCertificateChain(); 
-        	assertEquals(0, certs.size());
 
-            EndEntityInformation user = new EndEntityInformation("casessiontestca", ca.getSubjectDN(), ca.getCAId(), null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
-            user.setStatus(EndEntityConstants.STATUS_NEW);
-            user.setPassword("foo123");
-        	SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());
-            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
-            cert = (X509Certificate)resp.getCertificate();
-            assertNotNull("Failed to create certificate", cert);
-            // Verifies with CA token?
-            cert.verify(pubK);
-            // Add the new CA cert
-            certs.add(cert);
-            info.setCertificateChain(certs);
-            caSession.editCA(roleMgmgToken, info);
-            
-            // Get it again
-            CAInfo info1 = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
-        	Collection<Certificate> certs1 = info1.getCertificateChain(); 
-        	assertEquals(1, certs1.size());
-        	Certificate cert1 = certs1.iterator().next();
-            cert1.verify(pubK);
-    	} finally {
-            // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
-            int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-            final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
-    		caSession.removeCA(roleMgmgToken, ca.getCAId());
-    		internalCertStoreSession.removeCertificate(cert);
-    	}    	
-    }
 
     public void extendedCAServices(CA ca) throws Exception {
     	// Generate CA keys

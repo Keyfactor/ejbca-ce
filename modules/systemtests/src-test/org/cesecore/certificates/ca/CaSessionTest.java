@@ -93,7 +93,7 @@ public class CaSessionTest extends RoleUsingTestCase {
         final String tokenpwd = "thisisatest";
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpwd.toCharArray(), false, false);
         final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-        testBase.addCAUseSessionBeanToGenerateKeys2(ca, cadn, tokenpwd);
+        CaTestUtils.addCAUseSessionBeanToGenerateKeys2(ca, cadn, tokenpwd);
         CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
     }
 
