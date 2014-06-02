@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.pub;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -206,7 +207,9 @@ public class RegisterReqBean {
     }
     
     private String[] getAvailableTokenTypes() {
-        return eeprofile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
+        String[] tokenTypes = eeprofile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR).clone();
+        Arrays.sort(tokenTypes);
+        return tokenTypes;
     }
     
     public boolean isTokenTypeVisible() {
