@@ -269,10 +269,9 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         String cadn = "CN=TEST,O=Foo,C=SE";
         CAToken catoken = ca1.getCAToken();
         Collection<Certificate> cachain = new ArrayList<Certificate>();
-        CryptoToken cryptoToken = CryptoTokenManagementSessionTest.getCryptoTokenFromServer(catoken.getCryptoTokenId(), null);
-        PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        PublicKey publicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true, cryptoToken.getSignProviderName());
+        final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true, cryptoTokenManagementProxySession.getSignProviderName(catoken.getCryptoTokenId()));
         assertNotNull(cacert);
         cachain.add(cacert);
         CAInfo cainfo = ca1.getCAInfo();
