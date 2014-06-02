@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
 import javax.ejb.Remote;
 
 /**
@@ -24,6 +27,12 @@ public interface CryptoTokenManagementProxySessionRemote {
 
     /** @see CryptoTokenManagementSessionLocal#getCryptoToken(int) */
     CryptoToken getCryptoToken(int cryptoTokenId);
-    
+
     boolean isCryptoTokenNameUsed(final String cryptoTokenName);
+
+    PublicKey getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException;
+
+    PrivateKey getPrivateKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException;
+    
+    String getSignProviderName(int cryptoTokenId);
 }
