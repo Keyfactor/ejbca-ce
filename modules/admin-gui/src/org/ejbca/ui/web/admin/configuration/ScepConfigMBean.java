@@ -65,7 +65,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             if(alias != null) {
                 this.alias = alias;
                 if(scepConfig.aliasExists(alias)) {
-                    this.mode = scepConfig.getRAMode(alias)?"ra":"ca";
+                    this.mode = scepConfig.getRAMode(alias)?"RA":"CA";
                     this.includeCA = scepConfig.getIncludeCA(alias);
                     this.raCertProfile = scepConfig.getRACertProfile(alias);
                     this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
@@ -76,7 +76,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.raNameGenPrefix = scepConfig.getRANameGenerationPrefix(alias);
                     this.raNameGenPostfix = scepConfig.getRANameGenerationPostfix(alias);
                 } else {
-                    this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE;
+                    this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
                     this.includeCA = Boolean.parseBoolean(ScepConfiguration.DEFAULT_INCLUDE_CA);
                     this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
                     this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
@@ -89,12 +89,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-
-        /*
-        public String getStatusImg() {
-            return getEjbcaWebBean().getImagefileInfix(isActive()?"status-ca-active.png":"status-ca-offline.png");
-        }
-        */
 
         public String getAlias() { return alias; }
         public void setAlias(String alias) { this.alias = alias; }
@@ -153,6 +147,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         currentAlias = null;
         aliasGuiList = null;
         currentAliasEditMode = false;
+        scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
     }
     
     public String getNewAlias() { return newAlias; }
@@ -164,20 +159,19 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
        
     /** Build a list sorted by name from the existing SCEP configuration aliases */
     @SuppressWarnings({ "rawtypes", "unchecked" }) //JDK6 does not support typing for ListDataModel
-    public ListDataModel getAliasGuiList() throws AuthorizationDeniedException {
-        if (aliasGuiList==null) {
-            final List<ScepAliasGuiInfo> list = new ArrayList<ScepAliasGuiInfo>();
-            Iterator<String> itr = scepConfig.getAliasList().iterator();
-            while(itr.hasNext()) {
-                String alias = (String) itr.next();
-                list.add(new ScepAliasGuiInfo(scepConfig, alias));
-                Collections.sort(list, new Comparator<ScepAliasGuiInfo>() {
-                    @Override
-                    public int compare(ScepAliasGuiInfo alias1, ScepAliasGuiInfo alias2) {
-                        return alias1.getAlias().compareToIgnoreCase(alias2.getAlias());
-                    }
-                });
-            }
+    public ListDataModel getAliasGuiList() {
+        flushCache();
+        final List<ScepAliasGuiInfo> list = new ArrayList<ScepAliasGuiInfo>();
+        Iterator<String> itr = scepConfig.getAliasList().iterator();
+        while(itr.hasNext()) {
+            String alias = (String) itr.next();
+            list.add(new ScepAliasGuiInfo(scepConfig, alias));
+            Collections.sort(list, new Comparator<ScepAliasGuiInfo>() {
+                @Override
+                public int compare(ScepAliasGuiInfo alias1, ScepAliasGuiInfo alias2) {
+                    return alias1.getAlias().compareToIgnoreCase(alias2.getAlias());
+                }
+            });
             aliasGuiList = new ListDataModel(list);
         }
         // If show the list, then we are on the main page and want to flush the cache
@@ -201,8 +195,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return currentAliasStr;
     }
 
-    /** @return cached or populate a new CryptoToken GUI representation for view or edit */
-    public ScepAliasGuiInfo getCurrentAlias() throws AuthorizationDeniedException {
+    /** @return cached or populate a new SCEP alias GUI representation for view or edit */
+    public ScepAliasGuiInfo getCurrentAlias() {
         if (this.currentAlias == null) {
             final String alias = getCurrentAliasStr();
             this.currentAlias = new ScepAliasGuiInfo(scepConfig, alias);
@@ -212,7 +206,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
    
     /** Invoked when admin saves the SCEP alias configurations */
-    public void saveCurrentAlias() throws AuthorizationDeniedException {
+    public void saveCurrentAlias() {
         if(currentAlias != null) {
             String alias = currentAlias.getAlias();  
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
@@ -226,7 +220,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setRANameGenerationPrefix(alias, currentAlias.getRaNameGenPrefix());
             scepConfig.setRANameGenerationPostfix(alias, currentAlias.getRaNameGenPostfix());
             
-            globalConfigSession.saveConfiguration(authenticationToken, scepConfig, Configuration.ScepConfigID);
+            try {
+                globalConfigSession.saveConfiguration(authenticationToken, scepConfig, Configuration.ScepConfigID);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Cannot save alias. Administrator is not authorized.";
+                log.info(msg + e.getLocalizedMessage());
+                super.addNonTranslatedErrorMessage(msg);
+            }
         }
         flushCache();
     }
@@ -297,8 +297,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     /** @return a list of usable operational modes */
     public List<SelectItem> getAvailableModes() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem("ra", "ra"));
-        ret.add(new SelectItem("ca", "ca"));
+        ret.add(new SelectItem("RA", "RA"));
+        ret.add(new SelectItem("CA", "CA"));
         return ret;
     }
     

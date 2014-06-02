@@ -49,7 +49,7 @@ org.cesecore.authorization.control.AuditLogRules
 		
 		<h:panelGroup id="placeholder1" rendered="true"/>
 		
-		<h:outputLabel for="currentAlias" value="#{web.text.SCEP_ALIAS}"/>
+		<h:outputLabel for="currentAlias" value="#{web.text.SCEP_ALIAS}:"/>
 		<h:panelGroup id="currentAlias">
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" rendered="true"/>
 		</h:panelGroup>
@@ -70,8 +70,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<h:outputText value="#{scepConfigMBean.currentAlias.mode}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="eep"  rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="eep"  rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
 				<h:selectOneMenu id="selectOneMenuEEP" value="#{scepConfigMBean.currentAlias.raEEProfile}"
 						onchange="document.getElementById('currentAliasForm:selectEEP').click();">
@@ -83,8 +83,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<h:outputText value="#{scepConfigMBean.currentAlias.raEEProfile}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="cp" value="#{web.text.SCEP_RA_CERT_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="cp" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="cp" value="#{web.text.SCEP_RA_CERT_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="cp" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
 				<h:selectOneMenu id="selectOneMenuCP" value="#{scepConfigMBean.currentAlias.raCertProfile}"
 						onchange="document.getElementById('currentAliasForm:selectCP').click();">
@@ -96,8 +96,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<h:outputText value="#{scepConfigMBean.currentAlias.raCertProfile}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="raca" value="#{web.text.SCEP_RA_CA}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="raca" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="raca" value="#{web.text.SCEP_RA_CA}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="raca" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
 				<h:selectOneMenu id="selectOneMenuRACA" value="#{scepConfigMBean.currentAlias.raDefaultCA}"
 						onchange="document.getElementById('currentAliasForm:selectRACA').click();">
@@ -109,16 +109,16 @@ org.cesecore.authorization.control.AuditLogRules
 			<h:outputText value="#{scepConfigMBean.currentAlias.raDefaultCA}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 	    	<h:inputText  value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="rascheme" value="#{web.text.SCEP_RA_NAME_GEN_SCHEME}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="rascheme" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="rascheme" value="#{web.text.SCEP_RA_NAME_GEN_SCHEME}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="rascheme" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
 				<h:selectOneMenu id="selectOneMenuRAScheme" value="#{scepConfigMBean.currentAlias.raNameGenScheme}"
 						onchange="document.getElementById('currentAliasForm:selectRAScheme').click();">
@@ -130,8 +130,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenScheme}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="raparam" value="#{web.text.SCEP_RA_NAME_GEN_PARAMS}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="raparam"  rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="raparam" value="#{web.text.SCEP_RA_NAME_GEN_PARAMS}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="raparam"  rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAlias.raNameGenScheme==\"DN\"}">
 				<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
 					<h:selectOneMenu id="selectOneMenuRAParam" value="#{scepConfigMBean.currentAlias.raNameGenParams}"
@@ -152,16 +152,16 @@ org.cesecore.authorization.control.AuditLogRules
 			</h:panelGroup>	
 		</h:panelGroup>
 
-		<h:outputLabel for="raprefix" value="#{web.text.SCEP_RA_NAME_GEN_PREFIX}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="raprefix" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="raprefix" value="#{web.text.SCEP_RA_NAME_GEN_PREFIX}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="raprefix" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 	    	<h:inputText  value="#{scepConfigMBean.currentAlias.raNameGenPrefix}" rendered="#{scepConfigMBean.currentAliasEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenPrefix}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="rapostfix" value="#{web.text.SCEP_RA_NAME_GEN_POSTFIX}" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}"/>
-		<h:panelGroup id="rapostfix" rendered="#{scepConfigMBean.currentAlias.mode == \"ra\"}">
+		<h:outputLabel for="rapostfix" value="#{web.text.SCEP_RA_NAME_GEN_POSTFIX}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
+		<h:panelGroup id="rapostfix" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 	    	<h:inputText  value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{scepConfigMBean.currentAliasEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
