@@ -101,7 +101,6 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -1123,19 +1122,43 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             List<Certificate> tmpchain = new ArrayList<Certificate>();
             tmpchain.add(cacert);
-            // If we have a chain given as parameter, we will use that.
-            // If no parameter is given we assume that the request chain was stored when the request was created.
+  
             Collection<Certificate> reqchain = null;
             if (cachain != null && cachain.size() > 0) {
+                //  1. If we have a chain given as parameter, we will use that.
                 reqchain = CertTools.createCertChain(cachain);
                 log.debug("Using CA certificate chain from parameter of size: " + reqchain.size());
             } else {
+                // 2. If no parameter is given we assume that the request chain was stored when the request was created.
                 reqchain = ca.getRequestCertificateChain();
-                log.debug("Using pre-stored CA certificate chain.");
                 if (reqchain == null) {
-                    String msg = intres.getLocalizedMessage("caadmin.errornorequestchain", caid, ca.getSubjectDN());
-                    log.info(msg);
-                    throw new CertPathValidatorException(msg);
+                    // 3. Lastly, if that failed we'll check if the certificate chain in it's entirety already exists in the database. 
+                    reqchain = new ArrayList<Certificate>();
+                    Certificate issuer = certificateStoreSession.findLatestX509CertificateBySubject(CertTools.getIssuerDN(cacert));
+                    if(issuer != null) {
+                        reqchain.add(issuer);
+                        while(!CertTools.isSelfSigned(issuer)) {
+                            issuer = certificateStoreSession.findLatestX509CertificateBySubject(CertTools.getIssuerDN(issuer));
+                            if(issuer != null) {
+                                reqchain.add(issuer);
+                            } else {
+                                String msg = intres.getLocalizedMessage("caadmin.errorincompleterequestchain", caid, ca.getSubjectDN());
+                                log.info(msg);
+                                throw new CertPathValidatorException(msg);
+                            }                      
+                        }
+                    }
+                    if(reqchain.size() == 0) {
+                        String msg = intres.getLocalizedMessage("caadmin.errornorequestchain", caid, ca.getSubjectDN());
+                        log.info(msg);
+                        throw new CertPathValidatorException(msg);
+                    }
+                    
+                   
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using pre-stored CA certificate chain.");
+                    }
                 }
             }
             log.debug("Picked up request certificate chain of size: " + reqchain.size());
