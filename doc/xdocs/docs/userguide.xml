@@ -477,14 +477,19 @@ the CA becomes activated.
 In order to have your CA signed by an external CA you have to go through the following steps.
 <ol>
 <li>Go the the 'Edit Certificate Authorities' page in the Administration GUI.</li>
-<li>Create a new CA in the same way as internal CA:s. But when selecting signing CA, select 'External CA' instead.
-The fields 'Certificate Profile', 'Validity', 'Subject Alternative Name' and 'Policy Id' 
-will become gray and are no longer editable.
-Fill in the Description and CRL Specific data.
-Optionally select a file containing the CA certificate chain of the signing CA.
-This file should be in PEM encoding. If there is more than one top CA certificate then all their certificates should be appended into one single file. 
-It should be in plain PEM format without blank lines before or after. An example is below.
-Click on the 'Make Certificate Request' button in the bottom of the page.</li>
+<ol>
+<li>Create a new CA in the same way as internal CAs, but when selecting signing CA, select 'External CA' instead. The fields 'Certificate Profile', 'Validity', 'Subject Alternative Name' 
+and 'Policy Id' will become gray and are no longer editable.</li>
+<li>Fill in the Description and CRL Specific data.</li>
+<li>Make sure that the certificate chain is available, this can be done in one of three ways:</li>
+<ol>
+<li>Select a file containing the CA certificate chain of the signing CA. This file should be in PEM encoding. If there is more than one top CA certificate then all their certificates should be 
+appended into one single file. It should be in plain PEM format without blank lines before or after. An example is below.</li>
+<li>Append the chain to the signed certificate file in the same way when receiving the request (see below).</li>
+<li>Import the complete certificate chain as external CAs.</li>
+</ol>
+<li>Click on the 'Make Certificate Request' button in the bottom of the page.</li>
+</ol>
 <li>After successfully clicking 'Make Certificate Request' the generated PKCS10 certificate request will be displayed.
 You can copy and paste it to the signing CA or download the PEM file if that approach is preferred.</li>
 <li>The external CA should sign the certificate request and return a certificate. Meanwhile, the newly created CA will

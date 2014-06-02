@@ -24,6 +24,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -407,9 +408,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 for (final String b64Cert : storechain) {
                     try {
                         this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                    } catch (CertificateParsingException e) {
+                       throw new IllegalStateException("Database seems to contain invalid certificate information.", e);
                     }
+
                 }
             }
         }

@@ -3298,9 +3298,7 @@ public abstract class CertTools {
         // set certificate chain
         Certificate rootcert = null;
         ArrayList<Certificate> calist = new ArrayList<Certificate>();
-        Iterator<Certificate> iter = certlist.iterator();
-        while (iter.hasNext()) {
-            Certificate next = iter.next();
+        for (Certificate next : certlist) {
             if (CertTools.isSelfSigned(next)) {
                 rootcert = next;
             } else {

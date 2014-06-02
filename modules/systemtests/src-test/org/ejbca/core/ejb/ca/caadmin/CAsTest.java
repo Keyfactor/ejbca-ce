@@ -633,7 +633,89 @@ public class CAsTest extends CaTestCase {
             }
         }
 
-    } // test10RSASignedByExternal
+    } 
+    
+    /**
+     * Test that we can create a SubCA signed by an external RootCA. The SubCA create a certificate request sent to the RootCA that creates a
+     * certificate which is then received on the SubCA again.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRSASignedByExternalWithPreloadedChain() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
+        removeOldCa("TESTSIGNEDBYEXTERNAL");
+        List<Certificate> toremove = new ArrayList<Certificate>();
+        try {
+            final CAToken caToken = createCaToken("test11", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
+                    "", "1024", AlgorithmConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "",
+                    "1024", AlgorithmConstants.KEYALGORITHM_RSA));
+
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE,
+                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
+            cainfo.setDescription("JUnit RSA CA Signed by external");
+            cainfo.setExtendedCAServiceInfos(extendedcaservices);
+            try {
+                caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+                fail("External CA exists in database. Test can't continue.");
+            } catch (CADoesntExistsException e) {
+                // Life is awesome
+            }
+            caAdminSession.createCA(admin, cainfo);
+
+            CAInfo info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals("Creating an initial CA signed by external should have the CA in status WAITING_CERTIFICATE_RESPONSE", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+
+            // Generate a certificate request from the CA and send to the TEST CA
+            byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), null, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals("Making an initial certificate request should have the CA in status WAITING_CERTIFICATE_RESPONSE", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
+            // Receive the certificate request on the TEST CA
+            info.setSignedBy("CN=TEST".hashCode());
+            ResponseMessage resp = caAdminSession.processRequest(admin, info, msg);
+            // Receive the signed certificate back on our SubCA
+            caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
+            Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            toremove.addAll(certs); // Remove CA certificate after completed test
+
+            // Check that the CA has the correct certificate chain now
+            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
+            Iterator<Certificate> iter = info.getCertificateChain().iterator();
+            Certificate cert = iter.next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
+            assertTrue("Error in created ca certificate", CertTools.getSubjectDN(cert).equals("CN=TESTSIGNEDBYEXTERNAL"));
+            assertTrue("Error in created ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTSIGNEDBYEXTERNAL"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+                RSAPublicKey rsapk = (RSAPublicKey) pk;
+                assertEquals(rsapk.getAlgorithm(), "RSA");
+            } else {
+                assertTrue("Public key is not EC", false);
+            }
+            cert = (X509Certificate) iter.next();
+            assertTrue("Error in root ca certificate", CertTools.getSubjectDN(cert).equals("CN=TEST"));
+          
+            
+        } catch (CAExistsException pee) {
+            log.info("CA exists: ", pee);
+        } finally {
+            removeOldCa("TESTSIGNEDBYEXTERNAL");            
+            // Remove the test certificates from the database
+            for (Certificate certificate : toremove) {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
+            }
+        }
+
+    } 
 
     /**
      * adds a CA using DSA keys to the database.
