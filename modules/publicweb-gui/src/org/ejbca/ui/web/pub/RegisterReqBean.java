@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -78,6 +79,7 @@ public class RegisterReqBean {
     
     private String username;
     private String email;
+    private int tokenType;
     private String captcha;
     
     // Form errors
@@ -203,6 +205,48 @@ public class RegisterReqBean {
         return value.trim().split(";");
     }
     
+    private String[] getAvailableTokenTypes() {
+        return eeprofile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
+    }
+    
+    public boolean isTokenTypeVisible() {
+        return getAvailableTokenTypes().length >= 2;
+    }
+    
+    public String getDefaultTokenType() {
+        return eeprofile.getValue(EndEntityProfile.DEFKEYSTORE, 0);
+    }
+    
+    private String getTokenTypeName(String idString) {
+        int id = Integer.parseInt(idString);
+        switch (id) {
+        case SecConst.TOKEN_SOFT_BROWSERGEN: return "Browser generated";
+        case SecConst.TOKEN_SOFT_P12: return "PKCS12 file";
+        case SecConst.TOKEN_SOFT_PEM: return "PEM file";
+        case SecConst.TOKEN_SOFT_JKS: return "JKS file";
+        default: return idString;
+        }
+    }
+    
+    public static class TokenTypeInfo {
+        private final String key;
+        private final String text;
+        TokenTypeInfo(String key, String text) {
+            this.key = key;
+            this.text = text;
+        }
+        public String getKey() { return key; }
+        public String getText() { return text; }
+    }
+    
+    public List<TokenTypeInfo> getSelectableTokenTypeItems() {
+        List<TokenTypeInfo> items = new ArrayList<TokenTypeInfo>();
+        for (String keystore : getAvailableTokenTypes()) {
+            items.add(new TokenTypeInfo(keystore, getTokenTypeName(keystore)));
+        }
+        return items;
+    }
+    
     public boolean isUsernameVisible() {
         return getUsernameMapping() == null;
     }
@@ -295,6 +339,8 @@ public class RegisterReqBean {
         if (domain != null && !email.isEmpty()) email += "@" + domain;
         captcha = request.getParameter("code");
         
+        String tokenStr = request.getParameter("tokenType");
+        tokenType = Integer.parseInt(tokenStr != null ? tokenStr : getDefaultTokenType());
         if ("1".equals(request.getParameter("emailindn"))) {
             formDNFields.put("e", email);
         }
@@ -331,6 +377,11 @@ public class RegisterReqBean {
         if (email == null || !email.matches("[^@]+@.+")) {
             errors.add("E-mail is not specified.");
             if (!isUsernameVisible()) cantDoCaptcha = true;
+        }
+        
+        // Token type
+        if (!ArrayUtils.contains(getAvailableTokenTypes(), String.valueOf(tokenType))) {
+            errors.add("Token type is not allowed by end-entity profile.");
         }
 
         String captchaField = isUsernameVisible() ? username : email;
@@ -426,7 +477,7 @@ public class RegisterReqBean {
         
         final EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, subjectAltName, 
                 null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
-                null,null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                null,null, tokenType, 0, null);
         if (eeprofile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)) {
             endEntity.setSendNotification(true);
         }

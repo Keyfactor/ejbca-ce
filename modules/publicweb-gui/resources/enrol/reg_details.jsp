@@ -185,6 +185,18 @@
         <br />
         <small style="width: 50%">An auto-generated password will be sent to this e-mail adress once the request has been approved.</small>
         <br />
+        
+        <!-- Token type -->
+        <c:if test="${reg.tokenTypeVisible}">
+            <label for="tokenType">Token type</label>
+            <select name="tokenType" id="tokenType">
+                <c:forEach var="item" items="${reg.selectableTokenTypeItems}">
+                    <option value="<c:out value="${item.key}" />"<c:if test="${reg.defaultTokenType == item.key}"> selected="selected"</c:if>><c:out value="${item.text}" /></option>
+                </c:forEach>
+            </select>
+            <br />
+        </c:if>
+        
         <br />
         
         <!-- CAPTCHA -->
