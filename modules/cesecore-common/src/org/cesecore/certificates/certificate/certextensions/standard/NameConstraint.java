@@ -63,11 +63,14 @@ public class NameConstraint extends StandardCertificateExtension {
         
         List<String> permittedNames = null;
         List<String> excludedNames = null;
-        if ((certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
-            certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) &&
-            ca instanceof X509CA) {
+        
+        if (!(ca instanceof X509CA)) {
+            throw new CertificateExtensionException("Can't issue non-X509 certificate with Name Constraint");
+        }
+        
+        if (certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
+            certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) {
             // Issuing a CA
-            
             X509CAInfo x509ca = (X509CAInfo)ca.getCAInfo();
             permittedNames = x509ca.getNameConstraintsPermitted();
             excludedNames = x509ca.getNameConstraintsExcluded();
@@ -76,10 +79,6 @@ public class NameConstraint extends StandardCertificateExtension {
             ExtendedInformation ei = userData.getExtendedinformation();
             permittedNames = ei.getNameConstraintsPermitted();
             excludedNames = ei.getNameConstraintsExcluded();
-            
-            if (!(ca instanceof X509CA)) {
-                throw new CertificateExtensionException("Can't issue non-X509 certificate with Name Constraint");
-            }
         }
         
         if (permittedNames != null || excludedNames != null) {
