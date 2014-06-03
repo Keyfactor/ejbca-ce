@@ -1835,6 +1835,7 @@ function checkallfields(){
         <tr id="Row<%=(row)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
+                <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>"/><br />
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/></p>
             </td>
@@ -1848,6 +1849,7 @@ function checkallfields(){
         <tr id="Row<%=(row++)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
+                <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>"/></p>
             </td>
             <td>
