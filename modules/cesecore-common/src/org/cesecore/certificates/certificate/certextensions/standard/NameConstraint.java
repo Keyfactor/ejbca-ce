@@ -82,7 +82,7 @@ public class NameConstraint extends StandardCertificateExtension {
             }
         }
         
-        if (permittedNames != null && excludedNames != null) {
+        if (permittedNames != null || excludedNames != null) {
             GeneralSubtree[] permitted = toGeneralSubtrees(permittedNames);
             GeneralSubtree[] excluded = toGeneralSubtrees(excludedNames);
             
