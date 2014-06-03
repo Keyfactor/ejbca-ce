@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.security.InvalidKeyException;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -23,12 +27,21 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.runners.model.InitializationError;
 
 /**
@@ -38,10 +51,13 @@ import org.junit.runners.model.InitializationError;
 public class PKCS11TestRunner extends CryptoTokenTestRunner {
 
     private static final String TOKEN_PIN = "userpin1";
+    private static final String ALIAS = "signKeyAlias";
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             PKCS11TestRunner.class.getSimpleName()));
@@ -57,19 +73,29 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
         cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
         x509ca = CaTestUtils.createTestX509CAOptionalGenKeys("CN=" + super.getName(), TOKEN_PIN.toCharArray(), false, true);
         CAToken caToken = x509ca.getCAToken();
-        caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "signKeyAlias");
-        caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, "signKeyAlias");
+        caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
+        caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, ALIAS);
         x509ca.setCAToken(caToken);
         caSession.addCA(alwaysAllowToken, x509ca);
         final int cryptoTokenId = caToken.getCryptoTokenId();
-        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, "signKeyAlias", "1024");
+        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");
+        CAInfo info = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId());
+        // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
+        PublicKey pk = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, ALIAS);
+        EndEntityInformation user = new EndEntityInformation("casessiontestca", info.getSubjectDN(), x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword("foo123");
+        SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
+        certificateCreateSession.createCertificate(alwaysAllowToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+
     };
 
     @Override
     protected void afterClass() {
         try {
             try {
-                cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, "signKeyAlias");
+                cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS);
             } catch (InvalidKeyException e) {
                 throw new IllegalStateException(e);
             } catch (CryptoTokenOfflineException e) {
