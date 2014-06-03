@@ -398,10 +398,12 @@ This means that if you have a value defined in both places, both Certificate Pol
 
 <subsubsection name="Name Constraints">
 <p>
-You may restrict the domain names and IP addresses under which the CA is allowed to issue certificates. Root CA operators might require that this certificate extension is used in sub CAs that are operated by customers.
+You may restrict the domain names and IP addresses under which a CA is allowed to issue certificates. Root CA operators might require that this certificate extension is used in sub CAs that are operated by customers.
+The intended work-flow is to specify the name constraints on the end-entity for a sub CA, which will cause the name constraints extension to be included in the sub CA certificate once it's generated.
+It's also possible to add name constraints directly on a CA.
 </p>
 <p>
-<strong>Note:</strong> Name constraints must first be enabled in the Certificate Profile of the CA. At the time of writing (May 2014) they are not supported in Apple Safari or on iOS devices, so this extension can not yet be marked as critical if there are such clients. The default mode is non-critical for this reason.
+<strong>Note:</strong> Name constraints must first be enabled in the Certificate Profile and the End-Entity Profile (the latter is for end-entities only). At the time of writing (May 2014) they are not supported in Apple Safari or on iOS devices, so this extension can not yet be marked as critical if there are such clients. The default mode is non-critical for this reason.
 </p>
 <p>
 EJBCA supports domain name, directory name, e-mail (RFC 822 name) and IP address (both IPv4 and IPv6) constraints. These syntaxes are accepted:
