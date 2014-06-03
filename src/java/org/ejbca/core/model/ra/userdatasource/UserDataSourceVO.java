@@ -23,7 +23,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
  * of a user data source.
  * 
  * Contains two things one is the EndEntityInformationand the other is
- * a set of contants indicating which fields that should be modifyable by the RA.
+ * a set of constants indicating which fields that should be modifyable by the RA.
  * 
  *  
  * @version $Id$
@@ -53,7 +53,8 @@ public class UserDataSourceVO implements Serializable {
     	DNFieldExtractor.DC , DNFieldExtractor.C , DNFieldExtractor.UNSTRUCTUREDADDRESS , DNFieldExtractor.UNSTRUCTUREDNAME ,
     	DNFieldExtractor.DNSNAME , DNFieldExtractor.IPADDRESS ,
     	DNFieldExtractor.DIRECTORYNAME, DNFieldExtractor.URI ,
-    	DNFieldExtractor.UPN , DNFieldExtractor.GUID , DNFieldExtractor.KRB5PRINCIPAL,  
+    	DNFieldExtractor.UPN , DNFieldExtractor.GUID , DNFieldExtractor.KRB5PRINCIPAL ,
+    	DNFieldExtractor.PERMANTIDENTIFIER ,
     	DNFieldExtractor.DATEOFBIRTH , DNFieldExtractor.PLACEOFBIRTH , DNFieldExtractor.GENDER , DNFieldExtractor.COUNTRYOFCITIZENSHIP ,
     	DNFieldExtractor.COUNTRYOFRESIDENCE 
     };
@@ -62,7 +63,7 @@ public class UserDataSourceVO implements Serializable {
     private Set<Integer> isModifyableSet = null;
 	
     /**
-	 * Constuctor that should be used from the User Data Source Implementations
+	 * Constructor that should be used from the User Data Source Implementations
 	 * @param endEntityInformation
 	 */
 	public UserDataSourceVO(EndEntityInformation endEntityInformation) {
@@ -71,7 +72,7 @@ public class UserDataSourceVO implements Serializable {
 	}
 	
 	/**
-	 * Method that should be used bu BaseUserDataSource only.
+	 * Method that should be used by BaseUserDataSource only.
 	 * @param isModifyableSet
 	 */
 	void setIsModifyableSet(Set<Integer> isModifyableSet){
@@ -88,7 +89,7 @@ public class UserDataSourceVO implements Serializable {
 	/**
 	 * Method used to check if a field can be modifyable by the RA.
 	 * 
-	 * @param field constaining one of the UserDataSourceVO.ISMODIFYABLE_ or
+	 * @param field containing one of the UserDataSourceVO.ISMODIFYABLE_ or
 	 * DNFieldExtractor constants defined in the AVAILABLEMODIFYABLEFIELDS array.
 	 * @return true if the field should be modifyable.
 	 */
