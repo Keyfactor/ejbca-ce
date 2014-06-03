@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
+import java.util.Collection;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -28,8 +27,9 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
-import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -52,11 +52,15 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
 
     private static final String TOKEN_PIN = "userpin1";
     private static final String ALIAS = "signKeyAlias";
-    
+    private final String SUBJECT_DN = "CN=" + super.getName();
+
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateCreateSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
@@ -71,7 +75,7 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
     protected void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
-        x509ca = CaTestUtils.createTestX509CAOptionalGenKeys("CN=" + super.getName(), TOKEN_PIN.toCharArray(), false, true);
+        x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(SUBJECT_DN, TOKEN_PIN.toCharArray(), false, true);
         CAToken caToken = x509ca.getCAToken();
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, ALIAS);
@@ -87,7 +91,11 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
-        certificateCreateSession.createCertificate(alwaysAllowToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+        CertificateResponseMessage response = certificateCreateSession.createCertificate(alwaysAllowToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+        Collection<Certificate> certs = info.getCertificateChain(); 
+        certs.add(response.getCertificate());
+        info.setCertificateChain(certs);
+        caSession.editCA(alwaysAllowToken, info);
 
     };
 
@@ -113,6 +121,7 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
                     // NOPMD Ignore
                 }      
             }
+            internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN);
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         } 
