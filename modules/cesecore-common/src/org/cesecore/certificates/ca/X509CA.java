@@ -785,6 +785,19 @@ public class X509CA extends CA implements Serializable {
             CertTools.checkNameConstraints((X509Certificate)cacert, subjectDNName, altNameGNs);
         }
         
+        // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
+        if (subject.getExtendedinformation() != null) {
+            final ExtendedInformation ei = subject.getExtendedinformation();
+            final List<String> permittedNC = ei.getNameConstraintsPermitted();
+            final List<String> excludedNC = ei.getNameConstraintsExcluded();
+            if ((permittedNC != null && !permittedNC.isEmpty()) ||
+                (excludedNC != null && !excludedNC.isEmpty())) {
+                if (!certProfile.getUseNameConstraints()) {
+                    throw new CertificateCreateException("Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
+                }
+            }
+        }
+        
         //
         // X509 Certificate Extensions
         //
