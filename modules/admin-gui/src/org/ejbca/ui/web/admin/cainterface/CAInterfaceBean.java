@@ -1668,7 +1668,7 @@ public class CAInterfaceBean implements Serializable {
             nrOfFiles++;
             String filename = ze.getName();
             if(log.isDebugEnabled()) {
-                log.info("Importing file: " + filename);
+                log.debug("Importing file: " + filename);
             }
 
             
@@ -1677,18 +1677,19 @@ public class CAInterfaceBean implements Serializable {
                 continue;
             }
             
-            String profilename;
-            int index1 = filename.indexOf("_");
-            int index2 = filename.lastIndexOf("-");
-            int index3 = filename.lastIndexOf(".xml");
             try {
-                profilename = URLDecoder.decode(filename, "UTF-8");
+                filename = URLDecoder.decode(filename, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException("UTF-8 was not a known character encoding", e);
             }
-            profilename = profilename.substring(index1 + 1, index2);
+            int index1 = filename.indexOf("_");
+            int index2 = filename.lastIndexOf("-");
+            int index3 = filename.lastIndexOf(".xml");
+            String profilename = filename.substring(index1 + 1, index2);
             int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
-            
+            if(log.isDebugEnabled()) {
+                log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
+            }
 
             if(ignoreProfile(filename, profilename, profileid)) {
                 ignoredFiles++;
@@ -1710,6 +1711,7 @@ public class CAInterfaceBean implements Serializable {
             CertificateProfile cprofile = getCertProfileFromByteArray(profilename, filebytes);
             certificateprofiles.addCertificateProfile(profilename, cprofile);
             importedFiles++;
+            log.info("Added Certificate profile: " + profilename);
         }
         zis.closeEntry();
         zis.close();
@@ -1810,7 +1812,7 @@ public class CAInterfaceBean implements Serializable {
         }
         // Check if the profiles already exist
         if (certificateProfileSession.getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-            log.info("Error: Certificate profile '" + profilename + "' already exist in database. IGNORED");
+            log.info("Certificate profile '" + profilename + "' already exist in database. IGNORED");
             return true;
         }
         return false;
