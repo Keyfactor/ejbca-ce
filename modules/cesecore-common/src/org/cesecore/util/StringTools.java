@@ -84,7 +84,7 @@ public final class StringTools {
     // Characters that are allowed to escape in strings.
     // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
     // Also allow '=' to be escaped.
-    private static final char[] allowedEscapeChars = { ',', '\"', '\\', '+', '<', '>', ';', '=', '#' };
+    private static final char[] allowedEscapeChars = { ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' };
 
     private static final Pattern WS = Pattern.compile("\\s+");
 
