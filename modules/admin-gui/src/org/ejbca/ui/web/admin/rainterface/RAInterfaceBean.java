@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
 import javax.ejb.FinderException;
@@ -950,7 +951,7 @@ public class RAInterfaceBean implements Serializable {
         return fileBuffer;
     }
     
-    public void exportProfiles(String directoryPath) throws Exception {
+    public void exportProfiles(String directoryPath) throws FileNotFoundException {
         if(log.isDebugEnabled()) {
             log.debug("Exporting End Entity Profiles to: " + directoryPath);
         }
@@ -958,7 +959,7 @@ public class RAInterfaceBean implements Serializable {
         if (!new File(directoryPath).isDirectory()) {
             String msg = "Error: '" + directoryPath + "' is not a directory.";
             log.error(msg);
-            throw new Exception(msg);
+            throw new IllegalArgumentException(msg);
         }
         Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator);
         
@@ -992,22 +993,21 @@ public class RAInterfaceBean implements Serializable {
                 }
             }
         } catch (FileNotFoundException e) {
-            String msg = "Could not create export files";
-            log.error(msg, e);
-            throw new Exception(msg);
+            log.error(e);
+            throw e;
         }
     }
     
-    public void importProfilesFromZip(byte[] filebuffer) throws Exception {
+    public void importProfilesFromZip(byte[] filebuffer) throws NumberFormatException, IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
         if(log.isTraceEnabled()) {
             log.trace(">importProfiles(): " + importedProfileName + " - " + filebuffer.length + " bytes");
         }
         if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
-            throw new Exception("No input file");
+            throw new IllegalArgumentException("No input file");
         }
         
         if(importedProfileName.lastIndexOf(".zip") != (importedProfileName.length() - 4 )) {
-            throw new Exception("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
+            throw new ZipException("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
         }
         
         int importedFiles = 0;
