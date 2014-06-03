@@ -43,12 +43,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -81,6 +81,8 @@ import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -116,7 +118,6 @@ class CMPTest extends ClientToolBox {
         final private X509Certificate cacert;
         final private CertificateFactory certificateFactory;
         final private Provider bcProvider = new BouncyCastleProvider();
-        final private String keyId;
         final private String hostName;
         final private int port;
         final private boolean isHttp;
@@ -126,22 +127,22 @@ class CMPTest extends ClientToolBox {
         boolean firstTime = true;
         //private int lastNextInt = 0;
 
+        @SuppressWarnings("synthetic-access")
         StressTest( final String _hostName,
                     final int _port,
                     final boolean _isHttp,
                     final InputStream certInputStream,
                     final int numberOfThreads,
                     final int waitTime,
-                    final String _keyId,
+                    final String alias,
                     final String _urlPath,
                     final String _resultCertFilePrefix) throws Exception {
             this.hostName = _hostName;
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
-            this.keyId = _keyId;
             this.port = _port;
             this.isHttp = _isHttp;
-            this.urlPath = _urlPath;
+            this.urlPath = _urlPath + (alias!=null?"/"+alias:"");
             this.resultCertFilePrefix = _resultCertFilePrefix;
 
             final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
@@ -151,7 +152,7 @@ class CMPTest extends ClientToolBox {
             this.performanceTest = new PerformanceTest();
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
-        private CertRequest genCertReq(final String userDN,
+        private CertRequest genCertReq(final X500Name userDN,
                                        final Extensions extensions) throws IOException {
             final ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
             final int day = 1000*60*60*24;
@@ -161,8 +162,8 @@ class CMPTest extends ClientToolBox {
 
             final CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
             myCertTemplate.setValidity( myOptionalValidity );
-            myCertTemplate.setIssuer(new X500Name(this.cacert.getSubjectDN().getName()));
-            myCertTemplate.setSubject(new X500Name(userDN));
+            myCertTemplate.setIssuer(X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded()));
+            myCertTemplate.setSubject(userDN);
             final byte[]                  bytes = this.keyPair.getPublic().getEncoded();
             final ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
             final ASN1InputStream         dIn = new ASN1InputStream(bIn);
@@ -226,9 +227,9 @@ class CMPTest extends ClientToolBox {
 
             final PKIHeaderBuilder myPKIHeader =
                 new PKIHeaderBuilder( 2,
-                               new GeneralName(new X500Name(sessionData.getUserDN())),
-                               new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())) );
-            myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+                               new GeneralName(sessionData.getUserDN()),
+                               new GeneralName(X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded())) );
+            myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
 
@@ -238,7 +239,7 @@ class CMPTest extends ClientToolBox {
         
         private PKIMessage protectPKIMessage(final PKIMessage msg,
                                              final boolean badObjectId,
-                                             final String password) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+                                             final String password) throws NoSuchAlgorithmException, InvalidKeyException {
             // SHA1
             final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26"));
             // 567 iterations
@@ -253,7 +254,7 @@ class CMPTest extends ClientToolBox {
             {
                 // Create the PasswordBased protection of the message
                 headbuilder = CmpMessageHelper.getHeaderBuilder(msg.getHeader());
-                headbuilder.setSenderKID(new DEROctetString(this.keyId.getBytes()));
+                headbuilder.setSenderKID(new byte[0]); // must set it
                 final ASN1Integer iteration = new ASN1Integer(iterationCount);
 
                 // Create the new protected return message
@@ -335,6 +336,7 @@ class CMPTest extends ClientToolBox {
                 return null;
             }
         }
+        @SuppressWarnings("synthetic-access")
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
             final CMPSendHTTP send = CMPSendHTTP.doIt(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
             if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
@@ -442,9 +444,6 @@ class CMPTest extends ClientToolBox {
                         StressTest.this.performanceTest.getLog().error("Not possible to verify signature.", e);
                     }
                 } else {
-                    //final DEROctetString os = header.getSenderKID();
-                    //if ( os!=null )
-                    //    StressTest.this.performanceTest.getLog().info("Found a sender keyId: "+ CmpMessageHelper.getStringFromOctets(os) );
                     // Verify the PasswordBased protection of the message
                     final PBMParameter pp;
                     {
@@ -567,15 +566,18 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("Not possbile to create certificate.");
                     return null;
                 }
-                // Remove this test to be able to test unid-fnr
-                if (cert.getSubjectDN().hashCode() != new X500Name(sessionData.getUserDN()).hashCode()) {
-                    StressTest.this.performanceTest.getLog().error(
-                            "Subject is '" + cert.getSubjectDN() + "' but should be '" + sessionData.getUserDN() + '\'');
-                    return null;
+                {// Remove this test to be able to test unid-fnr
+                    final X500Name certDN = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
+                    if ( certDN.hashCode()!=sessionData.getUserDN().hashCode() ) {
+                        StressTest.this.performanceTest.getLog().error(
+                                "Subject is '" + certDN +
+                                "' but should be '" + sessionData.getUserDN() + '\'');
+                        return null;
+                    }
                 }
                 if (cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode()) {
                     StressTest.this.performanceTest.getLog().error(
-                            "Issuer is '" + cert.getIssuerDN() + "' but should be '" + this.cacert.getSubjectDN() + '\'');
+                            "Issuer is '" + cert.getIssuerX500Principal() + "' but should be '" + this.cacert.getSubjectX500Principal() + '\'');
                     return null;
                 }
                 try {
@@ -590,6 +592,7 @@ class CMPTest extends ClientToolBox {
             }
         }
 
+        @SuppressWarnings("synthetic-access")
         private boolean checkCmpPKIConfirmMessage(final SessionData sessionData, final byte retMsg[]) throws IOException {
             //
             // Parse response message
@@ -608,16 +611,17 @@ class CMPTest extends ClientToolBox {
                     return false;
                 }
                 {
-                    final X500Name name = X500Name.getInstance(header.getSender().getName());
-                    if (name.hashCode() != this.cacert.getSubjectDN().hashCode()) {
+                    final X500Name senderName = X500Name.getInstance(header.getSender().getName());
+                    final X500Name caName = X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded());
+                    if (senderName.hashCode() != caName.hashCode()) {
                         StressTest.this.performanceTest.getLog().error(
-                                "Wrong CA DN. Is '" + name + "' should be '" + this.cacert.getSubjectDN() + "'.");
+                                "Wrong CA DN. Is '" + senderName + "' should be '" + caName + "'.");
                         return false;
                     }
                 }
                 {
                     final X500Name name = X500Name.getInstance(header.getRecipient().getName());
-                    if (name.hashCode() != new X500Name(sessionData.userDN).hashCode()) {
+                    if (name.hashCode() != sessionData.userDN.hashCode()) {
                         StressTest.this.performanceTest.getLog().error(
                                 "Wrong recipient DN. Is '" + name + "' should be '" + sessionData.userDN + "'.");
                         return false;
@@ -652,9 +656,9 @@ class CMPTest extends ClientToolBox {
             PKIHeaderBuilder myPKIHeader =
                 new PKIHeaderBuilder(
                         2,
-                        new GeneralName(new X500Name(sessionData.getUserDN())),
-                        new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
-            myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+                        new GeneralName(sessionData.getUserDN()),
+                        new GeneralName(X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded())));
+            myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
             // senderNonce
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
             // TransactionId
@@ -675,6 +679,8 @@ class CMPTest extends ClientToolBox {
             GetCertificate(final SessionData sd) {
                 this.sessionData = sd;
             }
+            @SuppressWarnings("synthetic-access")
+            @Override
             public boolean doIt() throws Exception {
                 this.sessionData.newSession();
                 final PKIMessage one = genPKIMessage(this.sessionData, true, genCertReq(this.sessionData.getUserDN(), null));
@@ -722,6 +728,7 @@ class CMPTest extends ClientToolBox {
 
                 return true;
             }
+            @Override
             public String getJobTimeDescription() {
                 return "Get certificate";
             }
@@ -731,6 +738,8 @@ class CMPTest extends ClientToolBox {
             SendConfirmMessageToCA(final SessionData sd) {
                 this.sessionData = sd;
             }
+            @SuppressWarnings("synthetic-access")
+            @Override
             public boolean doIt() throws Exception {
                 final String hash = "foo123";
                 final PKIMessage con = genCertConfirm(this.sessionData, hash);
@@ -760,6 +769,7 @@ class CMPTest extends ClientToolBox {
                 //StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
                 return true;
             }
+            @Override
             public String getJobTimeDescription() {
                 return "Send confirmation to CA";
             }
@@ -788,13 +798,14 @@ class CMPTest extends ClientToolBox {
             final private byte[] nonce = new byte[16];
             final private byte[] transid = new byte[16];
             private int lastNextInt = 0;
-            private String userDN;
+            private X500Name userDN;
             private int reqId;
             Socket socket;
             final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc.. 
             SessionData() {
                 super();
             }
+            @SuppressWarnings("synthetic-access")
             Socket getSocket() throws UnknownHostException, IOException {
                 if ( StressTest.this.isHttp ) {
                     return null;
@@ -821,8 +832,23 @@ class CMPTest extends ClientToolBox {
                 }
                 return this.lastNextInt;
             }
+            @SuppressWarnings("unused")
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",O=CMP Test,C=SE,E=email.address@my.com,SN="+getFnrLra();
+                final X500NameBuilder x500nb = new X500NameBuilder();
+                if ( true ) { // flip to test the other order
+                    x500nb.addRDN( BCStyle.CN, "CMP Test User Nr "+getRandomAndRepeated() );
+                    x500nb.addRDN(BCStyle.O, " CMP Test ");
+                    x500nb.addRDN(BCStyle.C, "SE");
+                    x500nb.addRDN(BCStyle.EmailAddress, "email.address@my.com");
+                    x500nb.addRDN(BCStyle.SN, getFnrLra());
+                } else {
+                    x500nb.addRDN(BCStyle.SN, getFnrLra());
+                    x500nb.addRDN(BCStyle.EmailAddress, "email.address@my.com");
+                    x500nb.addRDN(BCStyle.C, "SE");
+                    x500nb.addRDN(BCStyle.O, "CMP Test");
+                    x500nb.addRDN( BCStyle.CN, "CMP Test User Nr "+getRandomAndRepeated() );
+                }
+                this.userDN=x500nb.build();
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
                 StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
             }
@@ -832,7 +858,7 @@ class CMPTest extends ClientToolBox {
             void setReqId(int i) {
                 this.reqId = i;
             }
-            String getUserDN() {
+            X500Name getUserDN() {
                 return this.userDN;
             }
             byte[] getTransId() {
@@ -843,6 +869,7 @@ class CMPTest extends ClientToolBox {
             }
         }
         private class MyCommandFactory implements CommandFactory {
+            @Override
             public Command[] getCommands() throws Exception {
                 final SessionData sessionData = new SessionData();
                 return new Command[]{new GetCertificate(sessionData), new SendConfirmMessageToCA(sessionData)};//, new Revoke(sessionData)};
@@ -853,6 +880,7 @@ class CMPTest extends ClientToolBox {
     /* (non-Javadoc)
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
+    @SuppressWarnings("unused")
     @Override
 	protected void execute(String[] args) {
         final String hostName;
@@ -860,13 +888,13 @@ class CMPTest extends ClientToolBox {
         final int waitTime;
         final String certFileName;
         final File certFile;
-        final String keyId;
+        final String alias;
         final int port;
         final boolean isHttp;
         final String urlPath;
         final String resultFilePrefix;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time (ms) between each thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time (ms) between each thread is started>] [<alias>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
             System.out.println("EJBCA build configuration requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
             System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             System.out.println("EJBCA CA configuration requires 'Enforce unique public keys' to be unchecked, i.e. to not enforce unique public keys. The same key pair is used for all users in order to gain maximum speed in the test client.");
@@ -877,10 +905,10 @@ class CMPTest extends ClientToolBox {
         certFile = new File(certFileName);
         numberOfThreads = args.length>3 ? Integer.parseInt(args[3].trim()):1;
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
-        keyId = args.length>5 ? args[5].trim():"EMPTY";
+        alias = args.length>5 ? args[5].trim():null;
         port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
         isHttp = args.length>7 ? args[7].toLowerCase().indexOf("tcp")<0 : true;
-        urlPath = args.length>8 && args[8].toLowerCase().indexOf("null")<0 ? args[8].trim():null;
+        urlPath = args.length>8 && args[8].toLowerCase().indexOf("null")<0 ? args[8].trim():"/ejbca/publicweb/cmp";
         resultFilePrefix = args.length>9 ? args[9].trim() : null;
 
         try {
@@ -889,7 +917,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, keyId, urlPath, resultFilePrefix);
+            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, alias, urlPath, resultFilePrefix);
         } catch (Exception e) {
             e.printStackTrace();
         }
