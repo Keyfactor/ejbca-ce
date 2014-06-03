@@ -3601,8 +3601,14 @@ public abstract class CertTools {
                     validator.checkPermitted(dngn);
                     validator.checkExcluded(dngn);
                 } catch (PKIXNameConstraintValidatorException e) {
-                    final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectdn", subjectDNName);
-                    throw new IllegalNameException(msg, e);
+                    final boolean isLdapOrder = !isDNReversed(subjectDNName.toString());
+                    if (isLdapOrder) {
+                        final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
+                        throw new IllegalNameException(msg);
+                    } else {
+                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectdn", subjectDNName);
+                        throw new IllegalNameException(msg, e);
+                    }
                 }
             }
             
