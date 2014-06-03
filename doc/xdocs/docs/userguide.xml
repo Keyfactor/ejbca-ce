@@ -488,7 +488,7 @@ and 'Policy Id' will become gray and are no longer editable.</li>
 <li>Select a file containing the CA certificate chain of the signing CA. This file should be in PEM encoding. If there is more than one top CA certificate then all their certificates should be 
 appended into one single file. It should be in plain PEM format without blank lines before or after. An example is below.</li>
 <li>Append the chain to the signed certificate file in the same way when receiving the request (see below).</li>
-<li>Import the complete certificate chain as external CAs.</li>
+<li>Import the complete certificate chain beforehand as External CAs (Certificate Authorities->Import CA Certificate).</li>
 </ol>
 <li>Click on the 'Make Certificate Request' button in the bottom of the page.</li>
 </ol>
