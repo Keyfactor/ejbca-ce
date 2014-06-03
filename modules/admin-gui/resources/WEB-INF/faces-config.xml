@@ -60,11 +60,25 @@
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
+    	<managed-bean-name>certProfilesBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.certprof.CertProfilesBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>certProfileBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.certprof.CertProfileBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+    	<managed-property>
+    	    <property-name>certProfilesBean</property-name>
+    	    <value>#{certProfilesBean}</value>
+    	</managed-property>
+  </managed-bean>
+  <managed-bean>
     	<managed-bean-name>internalKeyBindingMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keybind.InternalKeyBindingMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
-    <managed-bean>
+  <managed-bean>
     	<managed-bean-name>scepConfigMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.configuration.ScepConfigMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -108,6 +122,21 @@
     <navigation-case>
       <from-outcome>apply</from-outcome>
       <to-view-id>/ca/caactivation.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  	
+  <navigation-rule>
+    <from-view-id>/ca/editcertificateprofiles/editcertificateprofiles.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>edit</from-outcome>
+      <to-view-id>/ca/editcertificateprofiles/editcertificateprofile.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+    <from-view-id>/ca/editcertificateprofiles/editcertificateprofile.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>done</from-outcome>
+      <to-view-id>/ca/editcertificateprofiles/editcertificateprofiles.jsp</to-view-id>
     </navigation-case>
   </navigation-rule>
   	
