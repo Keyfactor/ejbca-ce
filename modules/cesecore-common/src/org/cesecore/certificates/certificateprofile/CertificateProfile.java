@@ -1121,6 +1121,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public ArrayList<String> getExtendedKeyUsageOids() {
         return getExtendedKeyUsageAsOIDStrings(false);
     }
+    public void setExtendedKeyUsageOids(final ArrayList<String> extendedKeyUsageOids) {
+        setExtendedKeyUsage(extendedKeyUsageOids);
+    }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private ArrayList<String> getExtendedKeyUsageAsOIDStrings(boolean fromupgrade) {

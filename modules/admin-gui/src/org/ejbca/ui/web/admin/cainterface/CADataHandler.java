@@ -92,7 +92,7 @@ public class CADataHandler implements Serializable {
 
     private EjbcaWebBean ejbcawebbean;
     
-    /** Creates a new instance of CertificateProfileDataHandler */
+    /** Creates a new instance of CADataHandler */
     public CADataHandler(final AuthenticationToken authenticationToken, final EjbLocalHelper ejb, final EjbcaWebBean ejbcawebbean) {
        this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
        this.accessUserAspectManagerSession = ejb.getAccessUserAspectSession();

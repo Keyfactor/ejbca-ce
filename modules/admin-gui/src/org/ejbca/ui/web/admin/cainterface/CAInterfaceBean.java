@@ -46,7 +46,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
@@ -87,7 +86,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.NameConstra
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.CRLInfo;
@@ -116,10 +114,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -131,7 +125,6 @@ import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
-import org.ejbca.ui.web.admin.cainterface.exception.ExcessiveResultsException;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
@@ -174,16 +167,11 @@ public class CAInterfaceBean implements Serializable {
     private CertReqHistorySessionLocal certreqhistorysession;
     private CrlStoreSession crlStoreSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    private EndEntityManagementSessionLocal endEntityManagementSession;
-    private EndEntityProfileSession endEntityProfileSession;
-    private HardTokenSession hardtokensession;
     private PublishingCrlSessionLocal publishingCrlSession;
     private PublisherQueueSessionLocal publisherqueuesession;
     private PublisherSessionLocal publishersession;
-    private ServiceSessionLocal serviceSession;
     private SignSession signsession; 
    
-    private CertificateProfileDataHandler certificateprofiles;
     private CADataHandler cadatahandler;
     private PublisherDataHandler publisherdatahandler;
 
@@ -195,7 +183,6 @@ public class CAInterfaceBean implements Serializable {
     /** The certification request in binary format */
     transient private byte[] request;
     private Certificate processedcert;
-    private CertificateProfile tempCertProfile = null;
     private boolean isUniqueIndex;
     private String importedProfileName = "";
 	
@@ -212,21 +199,16 @@ public class CAInterfaceBean implements Serializable {
           cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
           accessControlSession = ejbLocalHelper.getAccessControlSession();
-          endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
           signsession = ejbLocalHelper.getSignSession();
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
-          hardtokensession = ejbLocalHelper.getHardTokenSession();               
           publishersession = ejbLocalHelper.getPublisherSession();               
           publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-          endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession(); 
           publishingCrlSession = ejbLocalHelper.getPublishingCrlSession();
-          serviceSession = ejbLocalHelper.getServiceSession();
-          this.informationmemory = ejbcawebbean.getInformationMemory();
-          this.authenticationToken = ejbcawebbean.getAdminObject();
+          informationmemory = ejbcawebbean.getInformationMemory();
+          authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
-            
-          certificateprofiles = new CertificateProfileDataHandler(authenticationToken, accessControlSession, caSession, certificateProfileSession, informationmemory);
+
           cadatahandler = new CADataHandler(authenticationToken, ejbLocalHelper, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(authenticationToken, publishersession, accessControlSession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
@@ -315,210 +297,36 @@ public class CAInterfaceBean implements Serializable {
         return ret;
     }
 
-    public TreeMap<String, Integer> getEditCertificateProfileNames() {
-      return informationmemory.getEditCertificateProfileNames();
-    }
-    
-    public List<Integer> getEditCertificateProfilesWithMissingCAs() {
-      return informationmemory.getEditCertificateProfilesWithMissingCAs();
-    }
-
     /** Returns the profile name from id proxied */
     public String getCertificateProfileName(int profileid) {
     	return this.informationmemory.getCertificateProfileNameProxy().getCertificateProfileName(profileid);
     }
     
     public int getCertificateProfileId(String profilename) {
-    	return certificateprofiles.getCertificateProfileId(profilename);
+        return certificateProfileSession.getCertificateProfileId(profilename);
     }
 
     public CertificateProfile getCertificateProfile(String name) throws AuthorizationDeniedException {
-    	return certificateprofiles.getCertificateProfile(name);
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(name);
+        if (!authorizedToViewProfile(profile, getCertificateProfileId(name))) {
+            throw new AuthorizationDeniedException("Not authorized to certificate profile");
+        }
+        return certificateProfileSession.getCertificateProfile(name);
     }
 
     public CertificateProfile getCertificateProfile(int id) throws AuthorizationDeniedException {
-    	return certificateprofiles.getCertificateProfile(id);
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(id);
+        if (!authorizedToViewProfile(profile, id)) {
+            throw new AuthorizationDeniedException("Not authorized to certificate profile");
+        }
+        return certificateProfileSession.getCertificateProfile(id);
     }
 
-    public void addCertificateProfile(String name) throws CertificateProfileExistsException, AuthorizationDeniedException {
-       CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-       profile.setAvailableCAs(informationmemory.getAuthorizedCAIds());
-       certificateprofiles.addCertificateProfile(name, profile);
+    /** Help function that checks if administrator is authorized to view profile. */
+    private boolean authorizedToViewProfile(CertificateProfile profile, final int id) {
+        return certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, profile.getType()).contains(Integer.valueOf(id));
     }
 
-    public void changeCertificateProfile(String name, CertificateProfile profile) throws Exception {
-       certificateprofiles.changeCertificateProfile(name, profile);
-    }
-    
-    /**
-     * Returns a {@link List} of service names using the given certificate profile
-     * 
-     * @param certificateProfileName the name of the profile to look for.
-     * @return a {@link List} of service names using the given certificate profile
-     * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
-     */
-    public List<String> getServicesUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException {
-        if(cpNameEmpty(certificateProfileName) || cpFixed(certificateProfileName)) {
-            return new ArrayList<String>();
-        }
-        
-        Integer certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        if (certificateProfileId == 0) {
-            throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
-        } else {
-        return serviceSession.getServicesUsingCertificateProfile(certificateProfileId);
-        }
-    }
-    
-    /**
-     * Returns a count of all end entities using a certain certificate profile of the 
-     * SecConst.CERTTYPE_ENDENTITY type. 
-     * 
-     * @param certificateProfileName the name of the certificate profile
-     * @return the number of end entities found
-     */
-    public long countEndEntitiesUsingCertificateProfile(final String certificateProfileName) {
-        if(cpNameEmpty(certificateProfileName) || cpFixed(certificateProfileName)) {
-            return 0;
-        }
-        int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName);
-        if (certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
-            return countEndEntitiesUsingCertificateProfile(certificateprofileid);
-        } else {
-            return 0;
-        }       
-    }
-    
-    /**
-     * Returns a count of all end entities using a certain certificate profile 
-     * 
-     * @param certificateprofileid the ID of the certificate profile
-     * @return the number of end entities found
-     */
-    private long countEndEntitiesUsingCertificateProfile(final int certificateprofileid) {
-        return endEntityManagementSession.countEndEntitiesUsingCertificateProfile(certificateprofileid);
-    }
-  
-    
-    /**
-     * Check if certificate profile is in use by any end entity
-     * 
-     * @param certificateProfileName the name of the sought profile
-     * @return a list of end entity names using the sought profile
-     * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
-     * @throws ExcessiveResultsException on a query returning +100 results
-     */
-    public List<String> getEndEntitiesUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException, ExcessiveResultsException {
-        if(cpNameEmpty(certificateProfileName) || cpFixed(certificateProfileName)) {
-            return new ArrayList<String>();
-        }
-        
-        int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName);
-        if (certprofile == null) {
-            throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
-        } else {
-            if ((certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) || (certprofile.getType() == CertificateConstants.CERTTYPE_SUBCA)) {
-                if(countEndEntitiesUsingCertificateProfile(certificateprofileid) < 100) {
-                    return endEntityManagementSession.findByCertificateProfileId(certificateprofileid);
-                } else {
-                    throw new ExcessiveResultsException("Excessive amount of end entities (+100) encountered.");
-                }
-            } else {
-                return new ArrayList<String>();
-            }
-        }
-    }
-    
-    /**
-     * Check if certificate profile is in use by any end entity profile
-     * 
-     * @param certificateProfileName the name of the sought profile
-     * @return a list of end entity profile names using the sought profile
-     * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
-     */
-    public List<String> getEndEntityProfilesUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException {
-        if(cpNameEmpty(certificateProfileName) || cpFixed(certificateProfileName)) {
-            return new ArrayList<String>();
-        }
-        
-        int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName); 
-        if (certprofile == null) {
-            throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
-        } else {
-            if ((certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) || (certprofile.getType() == CertificateConstants.CERTTYPE_SUBCA)) {
-                return endEntityProfileSession.getEndEntityProfilesUsingCertificateProfile(certificateprofileid);
-            } else {
-                return new ArrayList<String>();
-            }
-        }
-    }
-    
-    /**
-     * Check if certificate profile is in use by any hard token profile
-     * 
-     * @param certificateProfileName the name of the sought profile
-     * @return a list of hard token profile names using the sought profile
-     * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
-     */
-    public List<String> getHardTokenTokensUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException {
-        if(cpNameEmpty(certificateProfileName) || cpFixed(certificateProfileName)) {
-            return new ArrayList<String>();
-        }
-        
-        int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName); 
-        if (certprofile == null) {
-            throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
-        } else {
-        
-        if(certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY){
-            return hardtokensession.getHardTokenProfileUsingCertificateProfile(certificateprofileid);
-        } else {
-            return new ArrayList<String>();
-        }   
-        }
-    }
-    
-    /**
-     * Check if certificate profile is in use by any CA
-     * 
-     * @param certificateProfileName the name of the sought profile
-     * @return a list of CA names using the sought profile
-     * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
-     */
-    public List<String> getCaUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException {
-        if(cpNameEmpty(certificateProfileName) || cpFixed(certificateProfileName)) {
-            return new ArrayList<String>();
-        }
-        
-        int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);  
-        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName); 
-        if (certprofile == null) {
-            throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
-        } else {
-        if(certprofile.getType() != CertificateConstants.CERTTYPE_ENDENTITY){
-             return caadminsession.getCAsUsingCertificateProfile(certificateprofileid);
-        } else {
-            return new ArrayList<String>();
-        }
-        }
-    }
-    
-    public void removeCertificateProfile(String certificateProfileName) throws Exception {
-        certificateprofiles.removeCertificateProfile(certificateProfileName);
-    }
-
-    public void renameCertificateProfile(String oldname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException {
-    	certificateprofiles.renameCertificateProfile(oldname, newname);
-    }
-
-    public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException {
-    	certificateprofiles.cloneCertificateProfile(originalname, newname);
-    }    
-      
     public void createCRL(int caid) throws CryptoTokenOfflineException, CAOfflineException  {      
         try {
             publishingCrlSession.forceCRL(authenticationToken, caid);
@@ -558,11 +366,6 @@ public class CAInterfaceBean implements Serializable {
 		return crlStoreSession.getLastCRLInfo(issuerdn, deltaCRL);          
 	}
 
-    /* Returns certificate profiles as a CertificateProfiles object */
-    public CertificateProfileDataHandler getCertificateProfileDataHandler(){
-      return certificateprofiles;
-    }
-    
     public HashMap<Integer, String> getAvailablePublishers() {
       return publishersession.getPublisherIdToNameMap();
     }
@@ -715,18 +518,6 @@ public class CAInterfaceBean implements Serializable {
 		// Sort it by timestamp, newest first;
 		Collections.sort(history, new CertReqUserCreateComparator());
 		return history;
-	}
-
-	/**
-	 *  Help functions used by edit certificate profile pages used to temporary
-	 *  save a profile so things can be canceled later.
-	 */
-	public CertificateProfile getTempCertificateProfile(){
-		return this.tempCertProfile;
-	}
-
-	public void setTempCertificateProfile(CertificateProfile profile){
-		this.tempCertProfile = profile;
 	}
 
 	/** @return true if serial number unique indexing is supported by DB. */
@@ -1532,69 +1323,7 @@ public class CAInterfaceBean implements Serializable {
     public boolean isUniqueIssuerDNSerialNoIndexPresent() {
         return certificatesession.isUniqueCertificateSerialNumberIndex();
     }
-    
-    public boolean canDeleteCertProfile(String certprofile, long numberOfEndEntitiesContainingCertificateProfile) throws CertificateProfileDoesNotExistException, ExcessiveResultsException {
-        List<String> servicesContainCP = getServicesUsingCertificateProfile(certprofile); 
-        List<String> endEntityProfilesContainingCertificateProfile = getEndEntityProfilesUsingCertificateProfile(certprofile);
-        List<String> hardTokenProfilesContainingCertificateProfile = getHardTokenTokensUsingCertificateProfile(certprofile);
-        List<String> casUsingCertificateProfile = getCaUsingCertificateProfile(certprofile);
-        if( !servicesContainCP.isEmpty() || numberOfEndEntitiesContainingCertificateProfile > 0 || 
-            !endEntityProfilesContainingCertificateProfile.isEmpty() || !hardTokenProfilesContainingCertificateProfile.isEmpty() ||
-            !casUsingCertificateProfile.isEmpty()) {
-                return false;
-        }
-        return true;
-    }
-    
-    /**
-     * Takes a list of items as a String separated by "," and returns and ArrayList<String> containing the items.
-     *  
-     * @param str
-     * @return
-     */
-    public ArrayList<String> getListFromString(String str) {
-        String[] list = str.split(",");
-        ArrayList<String> ret = new ArrayList<String>();
-        for(String l : list) {
-            ret.add(l);
-        }
-        return ret;
-    }
-    
-    public String getDocumentTypeListStr(CertificateProfile cp) {
-        ArrayList<String> list = cp.getDocumentTypeList();
-        String ret = "";
-        Iterator<String> itr = list.iterator();
-        while (itr.hasNext()) {
-            String type = itr.next();
-            ret += type + ",";
-        }
-        ret = ret.substring(0, ret.length()-1);
-        return ret;
-    }
-    
-    public boolean cpNameEmpty(String certprofname) {
-        return certprofname == null || certprofname.trim().equals("");
-    }
-    
-    public boolean cpFixed(String certprofname) {
-        return certprofname.endsWith("(FIXED)");
-    }
-    
-    public CertificateProfile getEditableCP(String cpname) throws AuthorizationDeniedException, CloneNotSupportedException {
-        CertificateProfile certprofiledata = getTempCertificateProfile();
-        if(certprofiledata == null) {
-          certprofiledata = getCertificateProfile(cpname.trim());
-        }
-        return (CertificateProfile) certprofiledata.clone();
-    }
 
-    public int[] getSuperAdminTypeIDs() {
-            int[] ids = {CertificateConstants.CERTTYPE_ENDENTITY, CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA};
-            return ids;
-    }
-    
-    
     //-------------------------------------------------------
     //         Import/Export  profiles related code
     //-------------------------------------------------------
@@ -1708,8 +1437,10 @@ public class CAInterfaceBean implements Serializable {
                 filebytes[i++] = (byte) zis.read();
             }
                     
-            CertificateProfile cprofile = getCertProfileFromByteArray(profilename, filebytes);
-            certificateprofiles.addCertificateProfile(profilename, cprofile);
+            final CertificateProfile certificateProfile = getCertProfileFromByteArray(profilename, filebytes);
+            certificateProfile.setAvailableCAs(informationmemory.getAuthorizedCAIds());
+            certificateProfileSession.addCertificateProfile(authenticationToken, profilename, certificateProfile);
+            informationmemory.certificateProfilesEdited();
             importedFiles++;
             log.info("Added Certificate profile: " + profilename);
         }
