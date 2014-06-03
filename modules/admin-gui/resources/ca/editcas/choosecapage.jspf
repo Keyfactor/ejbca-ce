@@ -32,7 +32,7 @@
   <% } %>
   <% if(caactivated){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></td>
+      <td width="40%" class="info"><%= ejbcawebbean.getText("CAACTIVATED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
