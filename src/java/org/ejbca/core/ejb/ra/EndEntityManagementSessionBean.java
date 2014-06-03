@@ -354,7 +354,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check name constraints
         if (caInfo instanceof X509CAInfo) {
             X509Certificate cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next(); 
-            X500Name subjectDNName = new X500Name(dn);
+            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, false);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
                 CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
