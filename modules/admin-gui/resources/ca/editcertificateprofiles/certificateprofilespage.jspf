@@ -150,7 +150,7 @@
 		<form name="recievefile" action="<%=THIS_FILENAME%>" method="post" enctype='multipart/form-data' >
 		<input type="hidden" name='<%=ACTION%>' value='<%=ACTION_IMPORT_EXPORT%>'>
 		<tr id="Row<%=row++%2%>">
-			<td width="30%" valign="top" align="right"><%=ejbcawebbean.getText("IMPORTPROFILESFROM")%>:</td>
+			<td width="30%" valign="top" align="right"><%=ejbcawebbean.getText("IMPORTPROFILESFROM")%>&nbsp;<%=ejbcawebbean.getHelpReference("/userguide.html#Import/Export%20Certificate%20Profiles")%></td>
 			<td width="55%" valign="top">
 				<input TYPE="FILE" NAME="<%=FILE_IMPORTFILE%>">
 			</td>
@@ -159,7 +159,7 @@
 			</td>
 		</tr>
 		<tr id="Row<%=row++%2%>">
-		    <td width="30%" valign="top" align="right"><%=ejbcawebbean.getText("EXPORTROFILESTO")%>:</td>
+		    <td width="30%" valign="top" align="right"><%=ejbcawebbean.getText("EXPORTROFILESTO")%>&nbsp;<%=ejbcawebbean.getHelpReference("/userguide.html#Import/Export%20Certificate%20Profiles")%></td>
 			<td width="55%" valign="top">
 				<input type="text" name="<%=TEXTFIELD_EXPORT_DESTINATION%>" size="40" maxlength="255" title="<%=ejbcawebbean.getText("FORMAT_ID_STR")%>">
 			</td>

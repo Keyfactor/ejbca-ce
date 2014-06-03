@@ -691,8 +691,24 @@ regards to DN-contents, extensions etc.
 <li>Enter a name for your end entity certificate profile e.g. "SSLServerCertificateProfile", and press "Use selected as template".</li>
 <li>Press "Save"</li>
 </ul> 
-
 </subsection>
+
+<subsection name="Import/Export Certificate Profiles">
+<p>It is possible to import and export certificate profiles in the AdminGUI.</p>
+<subsubsection name="Export Certificate Profiles">
+<p>
+Every non-fixed certificate profile is exported to the specified local directory as an xml file. The name of the xml file has the 
+format certprofile_PROFILENAME-PROFILEID.xml.
+</p>
+</subsubsection>
+<subsubsection name="Import Certificate Profiles">
+<p>
+All profiles to be imported should be included in a zip file. The file containing a single profile should be an xml file and its name 
+is in the format certprofile_PROFILENAME-PROFILEID.xml. Any file with a name that is not in this format will be ignored.
+</p>
+</subsubsection>
+</subsection>
+
 <subsection name="Certificate Profile fields">
 <subsubsection name="Validity">
 <p>
@@ -1052,6 +1068,22 @@ You should previously have created the certificate profile for SSL servers in th
 <li>Under "Available Tokens", choose "User Generated", "P12", "JKS" and "PEM" (ctrl-click to select multiple).</li>
 <li>Press "Save".</li> 
 </ul>
+</subsection>
+
+<subsection name="Import/Export End Entity Profiles">
+<p>It is possible to import and export end entity profiles in the AdminGUI.</p>
+<subsubsection name="Export End Entity Profiles">
+<p>
+Every non-fixed end entity profile is exported to the specified local directory as an xml file. The name of the xml file has the 
+format entityprofile_PROFILENAME-PROFILEID.xml.
+</p>
+</subsubsection>
+<subsubsection name="Import End Entity Profiles">
+<p>
+All profiles to be imported should be included in a zip file. The file containing a single profile should be an xml file and its name 
+is in the format entityprofile_PROFILENAME-PROFILEID.xml. Any file with a name that is not in this format will be ignored.
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="End Entity Profile fields">
