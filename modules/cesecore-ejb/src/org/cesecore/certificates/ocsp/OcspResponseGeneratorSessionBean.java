@@ -279,7 +279,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             continue;
                         }
                         final String signatureProviderName = cryptoToken.getSignProviderName();
-                        OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, privateKey, signatureProviderName, null));
+                        if (caCertificateChain.size() > 0) {
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, privateKey,
+                                    signatureProviderName, null));
+                        } else {
+                            log.warn("CA with ID " + caId + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
+                        }
                     } catch (CADoesntExistsException e) {
                         // Should only happen if the CA was deleted between the getAvailableCAs and the last one
                         log.warn("CA with Id " + caId + " disappeared during reload operation.");
