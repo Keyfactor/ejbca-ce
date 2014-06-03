@@ -223,7 +223,7 @@ public class RegisterReqBean {
     private String getTokenTypeName(String idString) {
         int id = Integer.parseInt(idString);
         switch (id) {
-        case SecConst.TOKEN_SOFT_BROWSERGEN: return "Browser generated";
+        case SecConst.TOKEN_SOFT_BROWSERGEN: return "User generated";
         case SecConst.TOKEN_SOFT_P12: return "PKCS12 file";
         case SecConst.TOKEN_SOFT_PEM: return "PEM file";
         case SecConst.TOKEN_SOFT_JKS: return "JKS file";

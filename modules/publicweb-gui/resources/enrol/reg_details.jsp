@@ -84,6 +84,7 @@
         <br />
         
         <!-- Subject alt name fields -->
+        <c:if test="${!empty reg.altNameFields}">Subject alternative names<br /></c:if>
         <c:forEach var="field" items="${reg.altNameFields}">
             <c:set var="id" value="altnamefield_${field.id}" />
             
@@ -158,7 +159,7 @@
         
         <!-- Username -->
         <br />
-        <b>Certificate retrieval</b><br />
+        <b>Certificate enrollment</b><br />
         <c:if test="${reg.usernameVisible}">
             <label for="username">Username *</label>
             <input name="username" id="username" type="text" size="20" accesskey="u" />
@@ -183,7 +184,7 @@
             </c:when>
         </c:choose>
         <br />
-        <small style="width: 50%">An auto-generated password will be sent to this e-mail adress once the request has been approved.</small>
+        <small style="width: 50%">An auto-generated password will be sent to this e-mail address once the request has been approved.</small>
         <br />
         
         <!-- Token type -->
