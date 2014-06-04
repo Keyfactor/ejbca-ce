@@ -50,6 +50,7 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -58,13 +59,13 @@ import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
 import org.bouncycastle.asn1.x509.NameConstraints;
-import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -888,9 +889,9 @@ public class CertToolsTest {
         String revdn3 = CertTools.reverseDN(dn3);
         assertEquals("dc=tld,dc=domain,cn=titi,cn=toto", revdn3);
         
-        X500Name dn4 = CertTools.stringToBcX500Name(dn3, new X509DefaultEntryConverter(), true);
+        X500Name dn4 = CertTools.stringToBcX500Name(dn3, new CeSecoreNameStyle(), true);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
-        X500Name dn5 = CertTools.stringToBcX500Name(dn3, new X509DefaultEntryConverter(), false);
+        X500Name dn5 = CertTools.stringToBcX500Name(dn3, new CeSecoreNameStyle(), false);
         assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", dn5.toString());
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
@@ -899,9 +900,9 @@ public class CertToolsTest {
         assertEquals("cn=toto,cn=titi,dc=domain,dc=tld", revdn6);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
-        X500Name dn7 = CertTools.stringToBcX500Name(dn6, new X509DefaultEntryConverter(), true);
+        X500Name dn7 = CertTools.stringToBcX500Name(dn6, new CeSecoreNameStyle(), true);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn7.toString());
-        X500Name revdn7 = CertTools.stringToBcX500Name(dn6, new X509DefaultEntryConverter(), false);
+        X500Name revdn7 = CertTools.stringToBcX500Name(dn6, new CeSecoreNameStyle(), false);
         assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", revdn7.toString());
 
         // Test the test strings from ECA-1699, to prove that we fixed this issue
@@ -911,12 +912,12 @@ public class CertToolsTest {
         assertEquals("cn=FOO Root CA,o=FOO,dc=foo,dc=org", revdn8);
         String revdn9 = CertTools.reverseDN(dn9);
         assertEquals("dc=org,dc=foo,o=FOO,cn=FOO Root CA", revdn9);
-        X500Name xdn8ldap = CertTools.stringToBcX500Name(dn8, new X509DefaultEntryConverter(), true);
-        X500Name xdn8x500 = CertTools.stringToBcX500Name(dn8, new X509DefaultEntryConverter(), false);
+        X500Name xdn8ldap = CertTools.stringToBcX500Name(dn8, new CeSecoreNameStyle(), true);
+        X500Name xdn8x500 = CertTools.stringToBcX500Name(dn8, new CeSecoreNameStyle(), false);
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn8ldap.toString());
         assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn8x500.toString());
-        X500Name xdn9ldap = CertTools.stringToBcX500Name(dn9, new X509DefaultEntryConverter(), true);
-        X500Name xdn9x500 = CertTools.stringToBcX500Name(dn9, new X509DefaultEntryConverter(), false);
+        X500Name xdn9ldap = CertTools.stringToBcX500Name(dn9, new CeSecoreNameStyle(), true);
+        X500Name xdn9x500 = CertTools.stringToBcX500Name(dn9, new CeSecoreNameStyle(), false);
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn9ldap.toString());
         assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn9x500.toString());
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", CertTools.stringToBCDNString(dn8));
@@ -924,17 +925,17 @@ public class CertToolsTest {
 
         // Test reversing DNs with multiple OU
         String dn10 = "CN=something,OU=A,OU=B,O=someO,C=SE";
-        X500Name x500dn10 = CertTools.stringToBcX500Name(dn10, new X509DefaultEntryConverter(), true);
+        X500Name x500dn10 = CertTools.stringToBcX500Name(dn10, new CeSecoreNameStyle(), true);
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", x500dn10.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn10));
 
         // When we order forwards (LdapOrder) from the beginning, and request !LdapOrder, everything should be reversed
-        X500Name ldapdn11 = CertTools.stringToBcX500Name(dn10, new X509DefaultEntryConverter(), false);
+        X500Name ldapdn11 = CertTools.stringToBcX500Name(dn10, new CeSecoreNameStyle(), false);
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", ldapdn11.toString());
 
         // When we order backwards (X.509, !LdapOrder) from the beginning, we should not reorder anything
         String dn11 = "C=SE,O=someO,OU=B,OU=A,CN=something";
-        X500Name x500dn11 = CertTools.stringToBcX500Name(dn11, new X509DefaultEntryConverter(), false);
+        X500Name x500dn11 = CertTools.stringToBcX500Name(dn11, new CeSecoreNameStyle(), false);
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", x500dn11.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn11));
 
@@ -983,30 +984,31 @@ public class CertToolsTest {
 
         // Test the regular case with one CN beging replaced with " (VPN)"
         // postfix
+        final X500NameStyle nameStyle = new CeSecoreNameStyle();
         String dn1 = "CN=Tomas G,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
         String cnpostfix1 = " (VPN)";
-        String newdn1 = CertTools.insertCNPostfix(dn1, cnpostfix1);
+        String newdn1 = CertTools.insertCNPostfix(dn1, cnpostfix1, nameStyle);
         assertEquals("CN=Tomas G (VPN),OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn1);
 
         // Test case when CN doesn't exist
         String dn2 = "OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
-        String newdn2 = CertTools.insertCNPostfix(dn2, cnpostfix1);
+        String newdn2 = CertTools.insertCNPostfix(dn2, cnpostfix1, nameStyle);
         assertEquals("OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn2);
 
         // Test case with two CNs in DN only first one should be replaced.
         String dn3 = "CN=Tomas G,CN=Bagare,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
-        String newdn3 = CertTools.insertCNPostfix(dn3, cnpostfix1);
+        String newdn3 = CertTools.insertCNPostfix(dn3, cnpostfix1, nameStyle);
         assertEquals("CN=Tomas G (VPN),CN=Bagare,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn3);
 
         // Test case with two CNs in reversed DN
         String dn4 = "dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G,CN=Bagare";
-        String newdn4 = CertTools.insertCNPostfix(dn4, cnpostfix1);
+        String newdn4 = CertTools.insertCNPostfix(dn4, cnpostfix1, nameStyle);
         assertEquals("DC=com,DC=bigcorp,DC=se,OU=orgunit,OU=users,CN=Tomas G (VPN),CN=Bagare", newdn4);
 
         // Test case with two CNs in reversed DN
         String dn5 = "UID=tomas,CN=tomas,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
         String cnpostfix5 = " (VPN)";
-        String newdn5 = CertTools.insertCNPostfix(dn5, cnpostfix5);
+        String newdn5 = CertTools.insertCNPostfix(dn5, cnpostfix5, nameStyle);
         assertEquals("UID=tomas,CN=tomas (VPN),OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn5);
 
         log.trace("<test11TestInsertCNPostfix()");
@@ -1735,6 +1737,28 @@ public class CertToolsTest {
         } catch (IllegalArgumentException e) {
             fail("Exception " + e.getClass() + " should not been thrown.");
         }
+    }
+    
+    /**
+     * Tests encoding DN attributes as UTF-8 or printable string
+     */
+    @Test
+    public void testPrintableStringDN() throws Exception {
+        log.trace(">testPrintableStringDN()");
+        
+        final String dnstr = "C=SE,O=Test,CN=Test";
+        
+        final X500Name xn1 = CertTools.stringToBcX500Name(dnstr, new CeSecoreNameStyle(), false);
+        assertTrue("When using CeSecoreNameStyle, C was not of PrintableString type", xn1.getRDNs()[0].getFirst().getValue() instanceof DERPrintableString);
+        assertTrue("When using CeSecoreNameStyle, O was not of UTF8String type", xn1.getRDNs()[1].getFirst().getValue() instanceof DERUTF8String);
+        assertTrue("When using CeSecoreNameStyle, CN was not of UTF8String type", xn1.getRDNs()[2].getFirst().getValue() instanceof DERUTF8String);
+        
+        final X500Name xn2 = CertTools.stringToBcX500Name(dnstr, new PrintableStringNameStyle(), false);
+        assertTrue("When using PrintableStringNameStyle, C was not of PrintableString type", xn2.getRDNs()[0].getFirst().getValue() instanceof DERPrintableString);
+        assertTrue("When using PrintableStringNameStyle, O was not of PrintableString type", xn2.getRDNs()[1].getFirst().getValue() instanceof DERPrintableString);
+        assertTrue("When using PrintableStringNameStyle, CN was not of PrintableString type", xn2.getRDNs()[2].getFirst().getValue() instanceof DERPrintableString);
+        
+        log.trace("<testPrintableStringDN()");
     }
     
     /**
