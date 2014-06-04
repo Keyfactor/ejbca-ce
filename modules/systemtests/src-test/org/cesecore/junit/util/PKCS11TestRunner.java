@@ -103,7 +103,8 @@ public class PKCS11TestRunner extends CryptoTokenTestRunner {
     protected void afterClass() {
         try {
             try {
-                cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS);
+                final String signKeyAlias = x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
             } catch (InvalidKeyException e) {
                 throw new IllegalStateException(e);
             } catch (CryptoTokenOfflineException e) {
