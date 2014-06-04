@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -9,70 +9,58 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
-package org.cesecore.certificates.util.dn;
+ *************************************************************************/
+package org.cesecore.util;
 
 import java.io.IOException;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERBMPString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.x509.X509NameEntryConverter;
-import org.cesecore.util.CeSecoreNameStyle;
+import org.bouncycastle.asn1.x500.X500NameStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
 
 /**
- * A converter for X509 DN entries that uses PrintableString where possible.
- * Default encoding is UTF-8, so this one is used when the default encoding is not desired.
+ * Like CeSecoreNameStyle, but uses PrintableStrings to encode most attributes
+ * (the default encoding is UTF-8)
  * 
  * @version $Id$
  */
-public class PrintableStringEntryConverter
-    extends X509NameEntryConverter
-{
-	
-	/**
-     * return true if the passed in String can be represented without
-     * loss as a UTF8String, false otherwise.
-     */
-    private boolean canBeUTF8(
-        String  str)
-    {
-        for (int i = str.length() - 1; i >= 0; i--)
-        {
-            if (str.charAt(i) > 0x00ff)
-            {
-                return false;
-            }
-        }
+public class PrintableStringNameStyle extends CeSecoreNameStyle {
 
-        return true;
-    }
+    public static final X500NameStyle INSTANCE = new PrintableStringNameStyle();
+    
+    protected PrintableStringNameStyle() { }
     
     /**
-     * Apply default coversion for the given value depending on the oid
-     * and the character range of the value.
-     * 
-     * @param oid the object identifier for the DN entry
-     * @param value the value associated with it
-     * @return the ASN.1 equivalent for the string value.
+     * return true if the passed in String can be represented without
+     * loss as a PrintableString, false otherwise.
      */
-    public ASN1Primitive getConvertedValue(
-        ASN1ObjectIdentifier  oid,
-        String               value)
+    private boolean canBePrintable(
+        String  str)
+    {
+        return DERPrintableString.isPrintableString(str);
+    }
+
+    @Override
+    public ASN1Encodable stringToValue(ASN1ObjectIdentifier oid, String value)
     {
         if (value.length() != 0 && value.charAt(0) == '#')
         {
             try
             {
-                return convertHexEncoded(value, 1);
+                return IETFUtils.valueFromHexString(value, 1);
             }
             catch (IOException e)
             {
                 throw new RuntimeException("can't recode value for oid " + oid.getId());
             }
+        }
+        else if (value.length() != 0 && value.charAt(0) == '\\')
+        {
+            value = value.substring(1);
         }
         else if (oid.equals(CeSecoreNameStyle.EmailAddress) || oid.equals(CeSecoreNameStyle.DC))
         {
@@ -82,11 +70,8 @@ public class PrintableStringEntryConverter
         {
             return new DERPrintableString(value);
         }
-        else if (canBeUTF8(value))
-        {
-            return new DERUTF8String(value);
-        }
 
-        return new DERBMPString(value);
+        return new DERUTF8String(value);
     }
+    
 }

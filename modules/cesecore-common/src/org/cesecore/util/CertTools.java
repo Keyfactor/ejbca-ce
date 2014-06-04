@@ -97,6 +97,7 @@ import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
@@ -113,14 +114,11 @@ import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
-import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
@@ -243,33 +241,33 @@ public abstract class CertTools {
     public static final String END_X509_CRL_KEY = "-----END X509 CRL-----";
 
     /**
-     * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
+     * See stringToBcX500Name(String, X500NameStyle, boolean), this method uses the default name style (CeSecoreNameStyle) and ldap
      * order
      * 
-     * @see #stringToBcX500Name(String, X509NameEntryConverter, boolean)
+     * @see #stringToBcX500Name(String, X500NameStyle, boolean)
      * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
      * 
      * @return X500Name or null if input is null
      */
     public static X500Name stringToBcX500Name(final String dn) {
-        final X509NameEntryConverter converter = new X509DefaultEntryConverter();
-        return stringToBcX500Name(dn, converter, true);
+        final X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
+        return stringToBcX500Name(dn, nameStyle, true);
     }
 
     /**
-     * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
+     * See stringToBcX500Name(String, X500NameStyle, boolean), this method uses the default name style (CeSecoreNameStyle) and ldap
      * order
      * 
-     * @see #stringToBcX500Name(String, X509NameEntryConverter, boolean)
+     * @see #stringToBcX500Name(String, X500NameStyle, boolean)
      * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
      * @param ldapOrder true if X500Name should be in Ldap Order
      * @return X500Name or null if input is null
      */
     public static X500Name stringToBcX500Name(final String dn, boolean ldapOrder) {
-        final X509NameEntryConverter converter = new X509DefaultEntryConverter();
-        return stringToBcX500Name(dn, converter, ldapOrder);
+        final X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
+        return stringToBcX500Name(dn, nameStyle, ldapOrder);
     }
 
     /**
@@ -280,13 +278,13 @@ public abstract class CertTools {
      * 
      * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
-     * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
+     * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
      * @return X500Name or null if input is null
      * @throws IllegalArgumentException if DN is not valid
      */
-    public static X500Name stringToBcX500Name(String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
+    public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder) {
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: " + dn);
         }
@@ -297,7 +295,7 @@ public abstract class CertTools {
         if (dn.length() > 2 && dn.charAt(0) == '"' && dn.charAt(dn.length() - 1) == '"') {
             dn = dn.substring(1, dn.length() - 1);
         }
-        final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
+        final X500NameBuilder nameBuilder = new X500NameBuilder(nameStyle);
         boolean quoted = false;
         boolean escapeNext = false;
         int currentStartPosition = -1;
@@ -370,7 +368,7 @@ public abstract class CertTools {
         }
         final X500Name x500Name = nameBuilder.build();
         // -- Reorder fields
-        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, converter);
+        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, nameStyle);
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
         }     
@@ -2980,17 +2978,18 @@ public abstract class CertTools {
      * 
      * @param dn the DN to manipulate, cannot be null
      * @param cnpostfix the postfix to insert, cannot be null
+     * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @return the new DN
      */
-    public static String insertCNPostfix(String dn, String cnpostfix) {
+    public static String insertCNPostfix(String dn, String cnpostfix, X500NameStyle nameStyle) {
         if (log.isTraceEnabled()) {
             log.trace(">insertCNPostfix: dn=" + dn + ", cnpostfix=" + cnpostfix);
         }
         if (dn == null) {
             return null;
         }
-        final RDN[] rdns = IETFUtils.rDNsFromString(dn, CeSecoreNameStyle.INSTANCE);
-        final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
+        final RDN[] rdns = IETFUtils.rDNsFromString(dn, nameStyle);
+        final X500NameBuilder nameBuilder = new X500NameBuilder(nameStyle);
         boolean replaced = false;
         for (final RDN rdn : rdns) {
             final AttributeTypeAndValue[] attributeTypeAndValues = rdn.getTypesAndValues();
@@ -3204,15 +3203,16 @@ public abstract class CertTools {
      * @param x500Name the X500Name that is unordered
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
+     * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @return X500Name with ordered conmponents according to the orcering vector
      */
-    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, final X509NameEntryConverter converter) {
+    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, final X500NameStyle nameStyle) {
         // -- Null prevent
         // Guess order of the input name
         final boolean isLdapOrder = !isDNReversed(x500Name.toString());
         // -- New order for the X509 Fields
         final List<ASN1ObjectIdentifier> newOrdering = new ArrayList<ASN1ObjectIdentifier>();
-        final List<Object> newValues = new ArrayList<Object>();
+        final List<ASN1Encodable> newValues = new ArrayList<ASN1Encodable>();
         // -- Add ordered fields
         final ASN1ObjectIdentifier[] allOids = x500Name.getAttributeTypes();
         // If we think the DN is in LDAP order, first order it as a LDAP DN, if we don't think it's LDAP order
@@ -3255,9 +3255,9 @@ public abstract class CertTools {
             Collections.reverse(newValues);
         }
 
-        X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
+        X500NameBuilder nameBuilder = new X500NameBuilder(nameStyle);
         for (int i = 0; i < newOrdering.size(); i++) {
-            nameBuilder.addRDN(newOrdering.get(i), (ASN1Encodable) newValues.get(i));
+            nameBuilder.addRDN(newOrdering.get(i), newValues.get(i));
         }
         // -- Return X500Name with the ordered fields
         return nameBuilder.build();

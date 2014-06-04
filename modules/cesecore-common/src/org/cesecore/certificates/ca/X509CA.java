@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -71,8 +72,6 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
-import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -122,7 +121,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
-import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
@@ -130,7 +128,9 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
@@ -542,13 +542,13 @@ public class X509CA extends CA implements Serializable {
             }
             attrset = new DERSet(vec);
         }
-        X509NameEntryConverter converter = null;
+        final X500NameStyle nameStyle;
         if (getUsePrintableStringSubjectDN()) {
-            converter = new PrintableStringEntryConverter();
+            nameStyle = PrintableStringNameStyle.INSTANCE;
         } else {
-            converter = new X509DefaultEntryConverter();
+            nameStyle = CeSecoreNameStyle.INSTANCE;
         }
-        X500Name x509dn = CertTools.stringToBcX500Name(getSubjectDN(), converter, getUseLdapDNOrder());
+        X500Name x509dn = CertTools.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
         PKCS10CertificationRequest req;
         try {
             final CAToken catoken = getCAToken();
@@ -702,17 +702,18 @@ public class X509CA extends CA implements Serializable {
         if (certProfile.getUseSubjectDNSubSet()) {
             dn = certProfile.createSubjectDNSubSet(dn);
         }
+        
+        final X500NameStyle nameStyle;
+        if (getUsePrintableStringSubjectDN()) {
+            nameStyle = PrintableStringNameStyle.INSTANCE;
+        } else {
+            nameStyle = CeSecoreNameStyle.INSTANCE;
+        }
 
         if (certProfile.getUseCNPostfix()) {
-            dn = CertTools.insertCNPostfix(dn, certProfile.getCNPostfix());
+            dn = CertTools.insertCNPostfix(dn, certProfile.getCNPostfix(), nameStyle);
         }
-
-        final X509NameEntryConverter converter;
-        if (getUsePrintableStringSubjectDN()) {
-            converter = new PrintableStringEntryConverter();
-        } else {
-            converter = new X509DefaultEntryConverter();
-        }
+        
         // Will we use LDAP DN order (CN first) or X500 DN order (CN last) for the subject DN
         final boolean ldapdnorder;
         if ((getUseLdapDNOrder() == false) || (certProfile.getUseLdapDnOrder() == false)) {
@@ -727,7 +728,7 @@ public class X509CA extends CA implements Serializable {
                 log.debug("Using X509Name from request instead of user's registered.");
             }
         } else {
-            subjectDNName = CertTools.stringToBcX500Name(dn, converter, ldapdnorder);
+            subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder);
         }
         // Make sure the DN does not contain dangerous characters
         if (StringTools.hasStripChars(subjectDNName.toString())) {
@@ -1112,14 +1113,13 @@ public class X509CA extends CA implements Serializable {
         if (cacert == null) {
             // This is an initial root CA, since no CA-certificate exists
             // (I don't think we can ever get here!!!)
-            final X509NameEntryConverter converter;
+            final X500NameStyle nameStyle;
             if (getUsePrintableStringSubjectDN()) {
-                converter = new PrintableStringEntryConverter();
+                nameStyle = PrintableStringNameStyle.INSTANCE;
             } else {
-                converter = new X509DefaultEntryConverter();
+                nameStyle = CeSecoreNameStyle.INSTANCE;
             }
-
-            issuer = CertTools.stringToBcX500Name(getSubjectDN(), converter, getUseLdapDNOrder());
+            issuer = CertTools.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
         } else {
             issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
