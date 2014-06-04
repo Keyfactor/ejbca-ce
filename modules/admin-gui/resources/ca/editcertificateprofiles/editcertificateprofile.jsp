@@ -339,7 +339,7 @@
 		<h:outputLabel for="cbusedefaultcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CDP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
 		<h:panelGroup id="cbusedefaultcrldistributionpointgroup" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
 			<h:selectBooleanCheckbox id="cbusedefaultcrldistributionpointDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}"/>
-			<h:commandButton id="cbusedefaultcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCRLDistributionPoint}"/>
+			<h:commandButton id="cbusedefaultcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCRLDistributionPoint}" value=" "/>
 			<h:outputLabel for="cbusedefaultcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
@@ -465,7 +465,7 @@
 				</f:facet>
 			</h:column>
 			<h:column>
-				<h:commandButton id="buttondeletecaissueruri" value="#{web.text.DELETE}" action="#{certProfileBean.deleteCaIssuer}"/>
+				<h:commandButton id="buttondeletecaissueruri" value="#{web.text.DELETE}" action="#{certProfileBean.deleteCaIssuer}" />
 				<f:facet name="footer">
 					<h:commandButton id="buttonaddcaissueruri" value="#{web.text.ADD}" action="#{certProfileBean.addCaIssuer}"/>
 				</f:facet>
