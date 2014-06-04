@@ -127,7 +127,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public boolean isOperationInProgress() { return isRenameInProgress() || isDeleteInProgress() || isAddFromTemplateInProgress(); }
     
     public void actionAdd() {
-        selectCurrentRowData();
         final String certProfileName = getCertProfileName();
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
