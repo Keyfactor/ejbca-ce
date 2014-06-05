@@ -281,7 +281,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseCertificatePolicies() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCertificatePolicies(!getCertificateProfile().getUseCertificatePolicies());
-        redirectToComponent("certificatepoliciesgroup");
+        redirectToComponent("certificatePolicies");
     }
     
     private ListDataModel certificatePoliciesModel = null;
@@ -313,7 +313,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().addCertificatePolicy(newCertificatePolicy);
         setNewCertificatePolicy(null);
         certificatePoliciesModel = null;
-        redirectToComponent("certificatepoliciesgroup");
+        redirectToComponent("certificatePolicies");
         return "";
     }
 
@@ -322,7 +322,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCertificatePolicy(certificatePolicy);
         newCertificatePolicy = certificatePolicy;
         certificatePoliciesModel = null;
-        redirectToComponent("certificatepoliciesgroup");
+        redirectToComponent("certificatePolicies");
         return "";
     }
 

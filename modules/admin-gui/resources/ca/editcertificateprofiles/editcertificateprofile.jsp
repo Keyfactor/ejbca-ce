@@ -27,19 +27,18 @@
   		-moz-user-focus: ignore;
   	}
   	input[type='submit'].checkBoxOverlay {
-  		position:relative;
-  		z-index: 1;
-  		left: -20px;
+  		vertical-align: text-bottom;
+  		${web.legacyInternetExplorer ? '' : 'position:relative; z-index: 1; left: -20px;'}
+  		${web.legacyInternetExplorer ? 'color: #000;' : 'color: transparent; background-color: transparent; border: 0px;'}
   		width: 20px;
-  		height: 100%;
-  		background-color: transparent;
-  		border: 0px;
+  		height: 20px;
+  		font-size: 8px;
   		padding: 0px;
   		margin: 0px;
+  		
   	}
   	label.checkBoxOverlay {
-  		position:relative;
-  		left: -20px;
+  		${web.legacyInternetExplorer ? '' : 'position:relative; z-index: 0; left: -20px;'}
   	}
   	label.subItem {
   		padding-left: 10px;
@@ -165,8 +164,9 @@
 
 		<h:outputLabel for="cbbasicconstraintsgroup" value="#{web.text.EXT_PKIX_BASICCONSTRAINTS}"/>
 		<h:panelGroup id="cbbasicconstraintsgroup">
-			<h:selectBooleanCheckbox id="cbbasicconstraintsDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useBasicConstraints}"/>
-			<h:commandButton id="cbbasicconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseBasicConstraints}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useBasicConstraints}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbbasicconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseBasicConstraints}"
+				value="#{certProfileBean.certificateProfile.useBasicConstraints?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbbasicconstraints" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			<h:selectBooleanCheckbox id="cbbasicconstraintscritical" value="#{certProfileBean.certificateProfile.basicConstraintsCritical}"
 				disabled="#{!certProfileBean.certificateProfile.useBasicConstraints}"/>
@@ -178,9 +178,10 @@
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkusepathlengthconstraintgroup" rendered="#{certProfileBean.typeCA}">
-			<h:selectBooleanCheckbox id="checkusepathlengthconstraintDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePathLengthConstraint}"
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePathLengthConstraint}" rendered="#{!web.legacyInternetExplorer}"
 				disabled="#{!certProfileBean.certificateProfile.useBasicConstraints}"/>
-			<h:commandButton id="checkusepathlengthconstraint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUsePathLengthConstraint}" value="#{certProfileBean.certificateProfile.usePathLengthConstraint ? '✓' : ' '}"
+			<h:commandButton id="checkusepathlengthconstraint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUsePathLengthConstraint}"
+				value="#{certProfileBean.certificateProfile.usePathLengthConstraint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
 				disabled="#{!certProfileBean.certificateProfile.useBasicConstraints}"/>
 			<h:outputLabel for="checkusepathlengthconstraint" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
 			<h:outputLabel for="textfieldpathlengthconstraint" value="#{web.text.VALUE}"/>
@@ -213,14 +214,15 @@
 		<h:outputLabel for="cbkeyusagegroup" value="#{web.text.EXT_PKIX_KEYUSAGE}" style="font-weight: bold;"/>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="cbkeyusagegroup">
-				<h:selectBooleanCheckbox id="cbkeyusageDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useKeyUsage}"/>
-				<h:commandButton id="cbkeyusage" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseKeyUsage}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useKeyUsage}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="cbkeyusage" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseKeyUsage}"
+					value="#{certProfileBean.certificateProfile.useKeyUsage?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="cbkeyusage" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 				<h:selectBooleanCheckbox id="cbkeyusagecritical" value="#{certProfileBean.certificateProfile.keyUsageCritical}"
 					disabled="#{!certProfileBean.certificateProfile.useKeyUsage}"/>
 				<h:outputLabel for="cbkeyusagecritical" value="#{web.text.EXT_CRITICAL}"/>
 			</h:panelGroup>
-			<h:outputLabel for="keyUsageSelection" value="#{web.text.EXT_PKIX_KEYUSAGE}:"/>
+			<h:outputLabel for="keyUsageSelection" value="#{web.text.EXT_PKIX_KEYUSAGE}:" rendered="#{certProfileBean.certificateProfile.useKeyUsage}"/>
 			<h:panelGrid id="keyUsageSelection" columns="6" rendered="#{certProfileBean.certificateProfile.useKeyUsage}">
 				<h:selectBooleanCheckbox id="keyUsageDigitalSignature" value="#{certProfileBean.keyUsageDigitalSignature}"/>
 				<h:outputLabel for="keyUsageDigitalSignature" value="#{web.text.KU_DIGITALSIGNATURE}"/>
@@ -243,11 +245,6 @@
 				<h:selectBooleanCheckbox id="keyUsageDecipherOnly" value="#{certProfileBean.keyUsageDecipherOnly}"/>
 				<h:outputLabel for="keyUsageDecipherOnly" value="#{web.text.KU_DECIPHERONLY}"/>
 			</h:panelGrid>
-			<%--
-			<h:selectManyListbox id="selectkeyusage" value="#{certProfileBean.keyUsage}" size="9" rendered="#{certProfileBean.certificateProfile.useKeyUsage}">
-				<f:selectItems value="#{certProfileBean.keyUsageAvailable}"/>
-			</h:selectManyListbox>
-			 --%>
 		</h:panelGrid>
 
 		<%-- PKIX Extended Key Usage (EKU) extension --%>
@@ -258,8 +255,9 @@
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkuseextendedkeyusagegroup">
-				<h:selectBooleanCheckbox id="checkuseextendedkeyusageDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useExtendedKeyUsage}"/>
-				<h:commandButton id="checkuseextendedkeyusage" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseExtendedKeyUsage}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useExtendedKeyUsage}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="checkuseextendedkeyusage" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseExtendedKeyUsage}"
+					value="#{certProfileBean.certificateProfile.useExtendedKeyUsage?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="checkuseextendedkeyusage" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 				<h:selectBooleanCheckbox id="cbextendedkeyusagecritical" value="#{certProfileBean.certificateProfile.extendedKeyUsageCritical}"
 					disabled="#{!certProfileBean.certificateProfile.useExtendedKeyUsage}"/>
@@ -275,8 +273,9 @@
 
 		<h:outputLabel for="cbsubjectalternativenamegroup" value="#{web.text.EXT_PKIX_SUBJECTALTNAME}"/>
 		<h:panelGroup id="cbsubjectalternativenamegroup">
-			<h:selectBooleanCheckbox id="cbsubjectalternativenameDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectAlternativeName}"/>
-			<h:commandButton id="cbsubjectalternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectAlternativeName}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectAlternativeName}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbsubjectalternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectAlternativeName}"
+				value="#{certProfileBean.certificateProfile.useSubjectAlternativeName?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbsubjectalternativename" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			<h:selectBooleanCheckbox id="cbsubjectalternativenamecritical" value="#{certProfileBean.certificateProfile.subjectAlternativeNameCritical}"
 				disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName}"/>
@@ -290,8 +289,9 @@
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Issuer%20Alternative%20Name") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbissueralternativenamegroup">
-			<h:selectBooleanCheckbox id="cbissueralternativenameDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useIssuerAlternativeName}"/>
-			<h:commandButton id="cbissueralternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseIssuerAlternativeName}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useIssuerAlternativeName}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbissueralternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseIssuerAlternativeName}"
+				value="#{certProfileBean.certificateProfile.useIssuerAlternativeName?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbissueralternativename" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			<h:selectBooleanCheckbox id="cbissueralternativenamecritical" value="#{certProfileBean.certificateProfile.issuerAlternativeNameCritical}"
 				disabled="#{!certProfileBean.certificateProfile.useIssuerAlternativeName}"/>
@@ -310,8 +310,9 @@
 
 		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
 		<h:panelGroup id="checknameconstraintsgroup">
-			<h:selectBooleanCheckbox id="checknameconstraintsDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}"/>
-			<h:commandButton id="checknameconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseNameConstraints}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checknameconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseNameConstraints}"
+				value="#{certProfileBean.certificateProfile.useNameConstraints?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checknameconstraints" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			<h:selectBooleanCheckbox id="checknameconstraintscritical" value="#{certProfileBean.certificateProfile.nameConstraintsCritical}"
 				disabled="#{!certProfileBean.certificateProfile.useNameConstraints}"/>
@@ -328,28 +329,30 @@
 			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbcrldistributionpointgroup">
-			<h:selectBooleanCheckbox id="cbcrldistributionpointDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
-			<h:commandButton id="cbcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCRLDistributionPoint}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCRLDistributionPoint}"
+				value="#{certProfileBean.certificateProfile.useCRLDistributionPoint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			<h:selectBooleanCheckbox id="cbcrldistributionpointcritical" value="#{certProfileBean.certificateProfile.CRLDistributionPointCritical}"
 				disabled="#{!certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
 			<h:outputLabel for="cbcrldistributionpointcritical" value="#{web.text.EXT_CRITICAL}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="cbusedefaultcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CDP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
+		<h:outputLabel for="cbusedefaultcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CDP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" styleClass="subItem"/>
 		<h:panelGroup id="cbusedefaultcrldistributionpointgroup" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
-			<h:selectBooleanCheckbox id="cbusedefaultcrldistributionpointDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}"/>
-			<h:commandButton id="cbusedefaultcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCRLDistributionPoint}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusedefaultcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCRLDistributionPoint}"
+				value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusedefaultcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="textfieldcrldisturi" value="#{web.text.EXT_PKIX_CDP_URI}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
+		<h:outputLabel for="textfieldcrldisturi" value="#{web.text.EXT_PKIX_CDP_URI}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" styleClass="subItem"/>
 		<h:inputText id="textfieldcrldisturi" value="#{certProfileBean.certificateProfile.CRLDistributionPointURI}" size="60" maxlength="4096"
 			rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
 			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" title="#{web.text.FORMAT_URI}"/>
 
 		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
-			<h:outputLabel for="textfieldcrlissuer" value="#{web.text.EXT_PKIX_CDP_CRLISSUER}"/>
+			<h:outputLabel for="textfieldcrlissuer" value="#{web.text.EXT_PKIX_CDP_CRLISSUER}" styleClass="subItem"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
 		</h:panelGroup>
 		<h:inputText id="textfieldcrlissuer" value="#{certProfileBean.certificateProfile.CRLIssuer}" size="60" maxlength="255" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
@@ -362,93 +365,98 @@
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbusefreshestcrlgroup">
-			<h:selectBooleanCheckbox id="cbusefreshestcrlDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useFreshestCRL}"/>
-			<h:commandButton id="cbusefreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseFreshestCRL}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusefreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseFreshestCRL}"
+				value="#{certProfileBean.certificateProfile.useFreshestCRL?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusefreshestcrl" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="cbusecadefinedfreshestcrlgroup" value="#{web.text.EXT_PKIX_FCRL_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}"/>
+		<h:outputLabel for="cbusecadefinedfreshestcrlgroup" value="#{web.text.EXT_PKIX_FCRL_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}" styleClass="subItem"/>
 		<h:panelGroup id="cbusecadefinedfreshestcrlgroup" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}">
-			<h:selectBooleanCheckbox id="cbusecadefinedfreshestcrlDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}"/>
-			<h:commandButton id="cbusecadefinedfreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCADefinedFreshestCRL}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusecadefinedfreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCADefinedFreshestCRL}"
+				value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusecadefinedfreshestcrl" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="textfieldfreshestcrluri" value="#{web.text.EXT_PKIX_FCRL_URI}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}"/>
+		<h:outputLabel for="textfieldfreshestcrluri" value="#{web.text.EXT_PKIX_FCRL_URI}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}" styleClass="subItem"/>
 		<h:inputText id="textfieldfreshestcrluri" value="#{certProfileBean.certificateProfile.freshestCRLURI}" size="45" maxlength="255" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}"
 			disabled="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}" title="#{web.text.FORMAT_URI}"/>
 
 		<%-- PKIX Certificate Policies extension --%>
 
-		<h:outputLabel for="certificatepoliciesgroup" value="#{web.text.EXT_PKIX_CERTIFICATEPOLICIES}" style="font-weight: bold;"/>
-		<h:panelGroup id="certificatepoliciesgroup">
-			<h:selectBooleanCheckbox id="checkusecertificatepoliciesDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificatePolicies}"/>
-			<h:commandButton id="checkusecertificatepolicies" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificatePolicies}" value=" "/>
-			<h:outputLabel for="checkusecertificatepolicies" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-			<h:selectBooleanCheckbox id="checkcertificatepoliciescritical" value="#{certProfileBean.certificateProfile.certificatePoliciesCritical}"
-				disabled="#{!certProfileBean.certificateProfile.useCertificatePolicies}"/>
-			<h:outputLabel for="checkcertificatepoliciescritical" value="#{web.text.EXT_CRITICAL}"/>
-		</h:panelGroup>
-
-		<%-- List of already defined policies. --%>
-		<h:outputLabel for="certificatePolicies" value="" rendered="#{certProfileBean.certificateProfile.useCertificatePolicies}"/>
-		<h:dataTable id="certificatePolicies" value="#{certProfileBean.certificatePolicies}" var="certificatePolicy" rendered="#{certProfileBean.certificateProfile.useCertificatePolicies}">
-			<h:column>
-				<h:panelGrid columns="1">
-					<h:outputLabel for="caissueruri" value="#{web.text.EXT_PKIX_CP_POLICYID}"/>
-					<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}"/>
-					<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}"/>
-				</h:panelGrid>
-				<f:facet name="footer">
+		<h:outputLabel for="certificatePolicies" value="#{web.text.EXT_PKIX_CERTIFICATEPOLICIES}" style="font-weight: bold;"/>
+		<h:panelGrid id="certificatePolicies" columns="1">
+			<h:panelGroup>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificatePolicies}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="checkusecertificatepolicies" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificatePolicies}"
+					value="#{certProfileBean.certificateProfile.useCertificatePolicies?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+				<h:outputLabel for="checkusecertificatepolicies" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+				<h:selectBooleanCheckbox id="checkcertificatepoliciescritical" value="#{certProfileBean.certificateProfile.certificatePoliciesCritical}"
+					disabled="#{!certProfileBean.certificateProfile.useCertificatePolicies}"/>
+				<h:outputLabel for="checkcertificatepoliciescritical" value="#{web.text.EXT_CRITICAL}"/>
+			</h:panelGroup>
+			<h:dataTable value="#{certProfileBean.certificatePolicies}" var="certificatePolicy" rendered="#{certProfileBean.certificateProfile.useCertificatePolicies}">
+				<h:column>
 					<h:panelGrid columns="1">
-						<h:outputLabel for="textfieldcertificatepolicyid" value="#{web.text.EXT_PKIX_CP_POLICYID}"/>
-						<h:outputLabel for="textareapolicynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}"/>
-						<h:outputLabel for="textfielpolicynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}"/>
+						<h:outputLabel for="caissueruri" value="#{web.text.EXT_PKIX_CP_POLICYID}"/>
+						<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}"/>
+						<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}"/>
 					</h:panelGrid>
-				</f:facet>
-			</h:column>
-			<h:column>
-				<h:panelGrid columns="1">
-					<h:outputText id="caissueruri" value="#{certificatePolicy.policyID}"/>
-					<h:outputText id="policynoticeunotice" value="#{certificatePolicy.qualifierId}"/>
-					<h:outputText id="policynoticedcpsurl" value="#{certificatePolicy.qualifier}"/>
-				</h:panelGrid>
-				<f:facet name="footer">
+					<f:facet name="footer">
+						<h:panelGrid columns="1">
+							<h:outputLabel for="textfieldcertificatepolicyid" value="#{web.text.EXT_PKIX_CP_POLICYID}"/>
+							<h:outputLabel for="textareapolicynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}"/>
+							<h:outputLabel for="textfielpolicynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}"/>
+						</h:panelGrid>
+					</f:facet>
+				</h:column>
+				<h:column>
 					<h:panelGrid columns="1">
-						<h:inputText id="textfieldcertificatepolicyid" value="#{certProfileBean.newCertificatePolicy.policyID}" size="20" maxlength="255" title="#{web.text.FORMAT_OID}"/>
-						<h:inputText id="textareapolicynoticeunotice" value="#{certProfileBean.newCertificatePolicy.qualifierId}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"/>
-						<h:inputText id="textfielpolicynoticedcpsurl" value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
+						<h:outputText id="caissueruri" value="#{certificatePolicy.policyID}"/>
+						<h:outputText id="policynoticeunotice" value="#{certificatePolicy.qualifierId}"/>
+						<h:outputText id="policynoticedcpsurl" value="#{certificatePolicy.qualifier}"/>
 					</h:panelGrid>
-				</f:facet>
-			</h:column>
-			<h:column>
-				<h:commandButton id="buttondeletepolicy" value="#{web.text.DELETE}" action="#{certProfileBean.deleteCertificatePolicy}"/>
-				<f:facet name="footer">
-					<h:commandButton id="buttonaddpolicy" value="#{web.text.ADD}" action="#{certProfileBean.addCertificatePolicy}"/>
-				</f:facet>
-			</h:column>
-		</h:dataTable>
+					<f:facet name="footer">
+						<h:panelGrid columns="1">
+							<h:inputText id="textfieldcertificatepolicyid" value="#{certProfileBean.newCertificatePolicy.policyID}" size="20" maxlength="255" title="#{web.text.FORMAT_OID}"/>
+							<h:inputText id="textareapolicynoticeunotice" value="#{certProfileBean.newCertificatePolicy.qualifierId}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"/>
+							<h:inputText id="textfielpolicynoticedcpsurl" value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
+						</h:panelGrid>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<h:commandButton id="buttondeletepolicy" value="#{web.text.DELETE}" action="#{certProfileBean.deleteCertificatePolicy}"/>
+					<f:facet name="footer">
+						<h:commandButton id="buttonaddpolicy" value="#{web.text.ADD}" action="#{certProfileBean.addCertificatePolicy}"/>
+					</f:facet>
+				</h:column>
+			</h:dataTable>
+		</h:panelGrid>
 
 		<%-- PKIX Authority Information Access (AIA) extension --%>
 
 		<h:outputLabel for="checkuseauthorityinformationaccessgroup" value="#{web.text.EXT_PKIX_AUTHORITYINFOACCESS}" style="font-weight: bold;"/>
 		<h:panelGroup id="checkuseauthorityinformationaccessgroup">
-			<h:selectBooleanCheckbox id="checkuseauthorityinformationaccessDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"/>
-			<h:commandButton id="checkuseauthorityinformationaccess" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseAuthorityInformationAccess}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkuseauthorityinformationaccess" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseAuthorityInformationAccess}"
+				value="#{certProfileBean.certificateProfile.useAuthorityInformationAccess?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkuseauthorityinformationaccess" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
 		<%-- OCSP service locator part of Authority Information Access (AIA) extension --%>
 
-		<h:outputLabel for="checkusedefaultocspservicelocatorgroup" value="#{web.text.EXT_PKIX_AIA_OCSP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"/>
+		<h:outputLabel for="checkusedefaultocspservicelocatorgroup" value="#{web.text.EXT_PKIX_AIA_OCSP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
+			 styleClass="subItem"/>
 		<h:panelGroup id="checkusedefaultocspservicelocatorgroup" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
-			<h:selectBooleanCheckbox id="checkusedefaultocspservicelocatorDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator}"/>
-			<h:commandButton id="checkusedefaultocspservicelocator" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultOCSPServiceLocator}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkusedefaultocspservicelocator" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultOCSPServiceLocator}"
+				value="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkusedefaultocspservicelocator" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
 		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
-			<h:outputLabel for="textfieldocspservicelocatoruri" value="#{web.text.EXT_PKIX_AIA_OCSP_URI}"/>
+			<h:outputLabel for="textfieldocspservicelocatoruri" value="#{web.text.EXT_PKIX_AIA_OCSP_URI}" styleClass="subItem"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
 		</h:panelGroup>
 		<h:inputText id="textfieldocspservicelocatoruri" value="#{certProfileBean.certificateProfile.OCSPServiceLocatorURI}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"
@@ -456,7 +464,8 @@
 
 		<%-- caIssuers part of Authority Information Access (AIA) extension --%>
 
-		<h:outputLabel for="caIssuers" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"/>
+		<h:outputLabel for="caIssuers" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
+			 styleClass="subItem"/>
 		<h:dataTable id="caIssuers" value="#{certProfileBean.caIssuers}" var="caIssuer" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
 			<h:column>
 				<h:outputText value="#{caIssuer}"/>
@@ -480,8 +489,9 @@
 		</h:panelGroup>
 		<h:panelGrid columns="3" id="privateKeyUsagePeriodGroup">
 			<h:panelGroup>
-				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore}"/>
-				<h:commandButton id="cbuseprivkeyusageperiodnotbefore" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUsePrivateKeyUsagePeriodNotBefore}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="cbuseprivkeyusageperiodnotbefore" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUsePrivateKeyUsagePeriodNotBefore}"
+					value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="cbuseprivkeyusageperiodnotbefore" value="#{web.text.EXT_PKIX_PKUP_STARTOFFSET}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 			<h:inputText id="textfieldprivkeyusageperiodstartoffset" value="#{certProfileBean.privateKeyUsagePeriodStartOffset}" size="20" maxlength="255"
@@ -489,8 +499,9 @@
 			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMD}"/>
 			
 			<h:panelGroup>
-				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter}"/>
-				<h:commandButton id="cbuseprivkeyusageperiodnotafter" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUsePrivateKeyUsagePeriodNotAfter}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="cbuseprivkeyusageperiodnotafter" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUsePrivateKeyUsagePeriodNotAfter}"
+					value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="cbuseprivkeyusageperiodnotafter" value="#{web.text.EXT_PKIX_PKUP_PERIODLENGTH}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 			<h:inputText id="textfieldprivkeyusageperiodlength" value="#{certProfileBean.privateKeyUsagePeriodLength}" size="20" maxlength="255"
@@ -505,8 +516,9 @@
 
 		<h:outputLabel for="checkuseqcstatementgroup" value="#{web.text.EXT_PKIX_QCSTATEMENTS}"/>
 		<h:panelGroup id="checkuseqcstatementgroup">
-			<h:selectBooleanCheckbox id="checkuseqcstatementDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCStatement}"/>
-			<h:commandButton id="checkuseqcstatement" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCStatement}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCStatement}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkuseqcstatement" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCStatement}"
+				value="#{certProfileBean.certificateProfile.useQCStatement?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkuseqcstatement" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			<h:selectBooleanCheckbox id="checkqcstatementcritical" value="#{certProfileBean.certificateProfile.QCStatementCritical}" disabled="#{!certProfileBean.certificateProfile.useQCStatement}"/>
 			<h:outputLabel for="checkqcstatementcritical" value="#{web.text.EXT_CRITICAL}"/>
@@ -540,8 +552,9 @@
 
 		<h:outputLabel for="qcetsivaluelimitgroup" value="#{web.text.EXT_ETSI_QCS_VALUELIMIT}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 		<h:panelGroup id="qcetsivaluelimitgroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
-			<h:selectBooleanCheckbox id="checkqcetsivaluelimitDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit}"/>
-			<h:commandButton id="checkqcetsivaluelimit" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCEtsiValueLimit}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkqcetsivaluelimit" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCEtsiValueLimit}"
+				value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkqcetsivaluelimit" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
 			<h:outputLabel for="textfieldqcetsivaluelimitcur" value="#{web.text.EXT_ETSI_QCS_VL_CURRENCY} "/>
 			<h:inputText id="textfieldqcetsivaluelimitcur" value="#{certProfileBean.certificateProfile.QCEtsiValueLimitCurrency}" size="3" maxlength="3" title="#{web.text.FORMAT_ISO4217}"
@@ -562,8 +575,9 @@
 
 		<h:outputLabel for="qcetsiretentionperiodgroup" value="#{web.text.EXT_ETSI_QCS_RETENTIONPERIOD}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 		<h:panelGroup id="qcetsiretentionperiodgroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
-			<h:selectBooleanCheckbox id="checkqcetsiretentionperiodDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod}"/>
-			<h:commandButton id="checkqcetsiretentionperiod" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCEtsiRetentionPeriod}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkqcetsiretentionperiod" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCEtsiRetentionPeriod}"
+				value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkqcetsiretentionperiod" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
 			<h:outputLabel for="textfieldqcetsiretentionperiod" value="#{web.text.VALUE} #{web.text.UNIT_YEARS} "/>
 			<h:inputText id="textfieldqcetsiretentionperiod" value="#{certProfileBean.certificateProfile.QCEtsiRetentionPeriod}" size="2" maxlength="3" title="#{web.text.FORMAT_INTEGER}"
@@ -575,8 +589,9 @@
 
 		<h:outputLabel for="checkqccustomstringgroup" value="#{web.text.EXT_PKIX_QCS_CUSTOMSTRING}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 		<h:panelGroup id="checkqccustomstringgroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
-			<h:selectBooleanCheckbox id="checkqccustomstringDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCCustomString}"/>
-			<h:commandButton id="checkqccustomstring" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCCustomString}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCCustomString}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkqccustomstring" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCCustomString}"
+				value="#{certProfileBean.certificateProfile.useQCCustomString?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkqccustomstring" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
 			<h:outputLabel for="textfieldqccustomstringoid" value="#{web.text.EXT_PKIX_QCS_CUSTOMSTR_OID}"/>
 			<h:inputText id="textfieldqccustomstringoid" value="#{certProfileBean.certificateProfile.QCCustomStringOid}" size="20" maxlength="255" title="#{web.text.FORMAT_OID}"
@@ -598,11 +613,13 @@
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
 		</h:panelGroup>
 		<h:panelGroup rendered="#{certProfileBean.ctAvailable}" id="cbusecertificatetransparencyingroup">
-			<h:selectBooleanCheckbox id="cbusecertificatetransparencyincertsDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts}"/>
-			<h:commandButton id="cbusecertificatetransparencyincerts" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInCerts}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusecertificatetransparencyincerts" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInCerts}"
+				value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusecertificatetransparencyincerts" value="#{web.text.EXT_CT_USE_IN_CERTS}…" styleClass="checkBoxOverlay"/>
-			<h:selectBooleanCheckbox id="cbusecertificatetransparencyinocspDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
-			<h:commandButton id="cbusecertificatetransparencyinocsp" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInOCSP}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusecertificatetransparencyinocsp" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInOCSP}"
+				value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusecertificatetransparencyinocsp" value="#{web.text.EXT_CT_USE_IN_OCSP}…" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
@@ -638,8 +655,9 @@
 		<%-- MS Template extension --%>
 		<h:outputLabel for="checkusemstemplategroup" value="#{web.text.EXT_MS_TEMPLATENAME}"/>
 		<h:panelGroup id="checkusemstemplategroup">
-			<h:selectBooleanCheckbox id="checkusemstemplateDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useMicrosoftTemplate}"/>
-			<h:commandButton id="checkusemstemplate" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseMicrosoftTemplate}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useMicrosoftTemplate}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkusemstemplate" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseMicrosoftTemplate}"
+				value="#{certProfileBean.certificateProfile.useMicrosoftTemplate?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkusemstemplate" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
 			<h:outputLabel for="selectmstemplate" value="#{web.text.VALUE}: "/>
 			<h:selectOneMenu id="selectmstemplate" value="#{certProfileBean.certificateProfile.microsoftTemplate}" disabled="#{!certProfileBean.certificateProfile.useMicrosoftTemplate}">
@@ -648,17 +666,31 @@
 			<h:outputText styleClass="help" value=" #{web.text.EXT_MS_TEMPLATENAME_HELP}"/>
 		</h:panelGroup>
 
+		<%-- SEIS Card Number extension --%>
+		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
+			<h:outputLabel for="checkusecardnumbergroup" value="#{web.text.EXT_SEIS_CARDNUMBER}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
+		</h:panelGroup>
+		<h:panelGroup id="checkusecardnumbergroup" rendered="#{!certProfileBean.typeCA}">
+			<h:selectBooleanCheckbox id="checkusecardnumber" value="#{certProfileBean.certificateProfile.useCardNumber}"/>
+			<h:outputLabel for="checkusecardnumber" value="#{web.text.USE}"/>
+		</h:panelGroup>
+
+		<%-- ePassport --%>
+
+		<h:outputLabel for="cvc_epassport" value="#{web.text.CVCEPASSPORT}" style="font-weight: bold;" rendered="#{certProfileBean.cvcAvailable}"/>
+		<h:panelGroup id="cvc_epassport" rendered="#{certProfileBean.cvcAvailable}"/>
 
 		<%-- ICAO Document Type List (DTL) extension --%>
-	
 		<h:panelGroup>
 			<h:outputLabel for="cbdocumenttypegroup" value="#{web.text.EXT_ICAO_DOCUMENTTYPELIST}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Document%20Type%20List") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="cbdocumenttypegroup">
-				<h:selectBooleanCheckbox id="cbusedocumenttypeDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDocumentTypeList}"/>
-				<h:commandButton id="cbusedocumenttype" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDocumentTypeList}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDocumentTypeList}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="cbusedocumenttype" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDocumentTypeList}"
+					value="#{certProfileBean.certificateProfile.useDocumentTypeList?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="cbusedocumenttype" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 				<h:selectBooleanCheckbox id="cbdocumenttypecritical" value="#{certProfileBean.certificateProfile.documentTypeListCritical}" disabled="#{!certProfileBean.certificateProfile.useDocumentTypeList}"/>
 				<h:outputLabel for="cbdocumenttypecritical" value="#{web.text.EXT_CRITICAL}"/>
@@ -679,20 +711,7 @@
 			</h:dataTable>
 		</h:panelGrid>
 
-		<%-- SEIS Card Number extension --%>
-		<h:panelGroup>
-			<h:outputLabel for="checkusecardnumbergroup" value="#{web.text.EXT_SEIS_CARDNUMBER}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
-		</h:panelGroup>
-		<h:panelGroup id="checkusecardnumbergroup">
-			<h:selectBooleanCheckbox id="checkusecardnumber" value="#{certProfileBean.certificateProfile.useCardNumber}"/>
-			<h:outputLabel for="checkusecardnumber" value="#{web.text.USE}"/>
-		</h:panelGroup>
-
 		<%-- CVC (ePassport) --%>
-		<h:outputLabel for="cvc_epassport" value="#{web.text.CVCEPASSPORT}" style="font-weight: bold;" rendered="#{certProfileBean.cvcAvailable}"/>
-		<h:panelGroup id="cvc_epassport" rendered="#{certProfileBean.cvcAvailable}"/>
-
 		<h:outputLabel for="selectcvctermtype" value="#{web.text.CVCTERMTYPE}" rendered="#{certProfileBean.cvcAvailable}"/>
 		<h:panelGroup id="selectcvctermtype" rendered="#{certProfileBean.cvcAvailable}">
 			<h:commandButton value="#{certProfileBean.cvcTerminalTypeIs?'✓':' '}#{web.text.CVCINSPECTIONSYSTEM}" disabled="#{certProfileBean.cvcTerminalTypeIs}" action="#{certProfileBean.setCvcTerminalTypeIs}"/>
@@ -722,7 +741,7 @@
 				 value="#{certProfileBean.cvcLongAccessRights}" size="8" converter="javax.faces.Integer">
 				<f:selectItems value="#{certProfileBean.cvcAccessRightsAtAvailable}"/>
 			</h:selectManyListbox>
-			<h:panelGrid columns="4" rendered="#{certProfileBean.cvcTerminalTypeSt}">
+			<h:panelGrid  id="selectcvcaccessrights_st" columns="4" rendered="#{certProfileBean.cvcTerminalTypeSt}">
 				<h:selectBooleanCheckbox id="cvcAccessRightSign" value="#{certProfileBean.cvcAccessRightSign}"/>
 				<h:outputLabel for="cvcAccessRightSign" value="#{web.text.CVCACCESSSIGN}"/>
 				<h:selectBooleanCheckbox id="cvcAccessRightQualSign" value="#{certProfileBean.cvcAccessRightQualSign}"/>
@@ -747,8 +766,9 @@
 
 		<h:outputLabel for="cnpostfixgroup" value="#{web.text.CERT_SUBJECTDN_CNPOSTFIX}"/>
 		<h:panelGroup id="cnpostfixgroup">
-			<h:selectBooleanCheckbox id="checkusecnpostfixDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCNPostfix}"/>
-			<h:commandButton id="checkusecnpostfix" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCNPostfix}" value=" "/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCNPostfix}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checkusecnpostfix" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCNPostfix}"
+				value="#{certProfileBean.certificateProfile.useCNPostfix?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkusecnpostfix" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
 			<h:outputText value="#{web.text.VALUE}: "/>
 			<h:inputText id="textfieldcnpostfix" size="20" maxlength="255" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.certificateProfile.CNPostfix}"
@@ -763,8 +783,9 @@
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkusesubjectdnsubsetgroup">
-				<h:selectBooleanCheckbox id="checkusesubjectdnsubsetDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectDNSubSet}"/>
-				<h:commandButton id="checkusesubjectdnsubset" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectDNSubSet}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectDNSubSet}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="checkusesubjectdnsubset" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectDNSubSet}"
+					value="#{certProfileBean.certificateProfile.useSubjectDNSubSet?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="checkusesubjectdnsubset" value="#{web.text.RESTRICT}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 			<h:selectManyListbox rendered="#{certProfileBean.certificateProfile.useSubjectDNSubSet}"
@@ -776,8 +797,9 @@
 		<h:outputLabel for="checkusesubjectaltnamesubsetgroup" value="#{web.text.EXT_PKIX_SAN_SUBSET}"/>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkusesubjectaltnamesubsetgroup">
-				<h:selectBooleanCheckbox id="checkusesubjectaltnamesubsetDummy" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}"/>
-				<h:commandButton id="checkusesubjectaltnamesubset" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectAltNameSubSet}" value=" "/>
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}" rendered="#{!web.legacyInternetExplorer}"/>
+				<h:commandButton id="checkusesubjectaltnamesubset" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectAltNameSubSet}"
+					value="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 				<h:outputLabel for="checkusesubjectaltnamesubset" value="#{web.text.RESTRICT}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 			<h:selectManyListbox rendered="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}"
