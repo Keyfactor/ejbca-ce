@@ -101,7 +101,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final TreeMap<String, Integer> profileNameToIdMap = getEjbcaWebBean().getInformationMemory().getEditCertificateProfileNames();
         for (final Entry<String,Integer> entry : profileNameToIdMap.entrySet()) {
             if (entry.getValue().intValue() == profileId) {
-                if (entry.getKey().endsWith("(FIXED)")) {
+                if (entry.getKey().endsWith(LEGACY_FIXED_MARKER)) {
                     return true;
                 }
                 break;
