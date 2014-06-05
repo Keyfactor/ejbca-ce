@@ -24,7 +24,8 @@ public class EjbcaJSFHelper {
 	private EjbcaJSFLanguageResource text = null;
 	private EjbcaJSFImageResource image = null;
 	private EjbcaWebBean ejbcawebbean;
-	
+    private Boolean legacyInternetExplorer = null;
+
 	private boolean initialized = false;
 	
 	public EjbcaJSFHelper(){}
@@ -123,5 +124,20 @@ public class EjbcaJSFHelper {
     	 Application app = context.getApplication();   
     	 EjbcaJSFHelper value = (EjbcaJSFHelper) app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
     	 return value;
+     }
+
+     /** @return true if the client browser has identified itself as a legacy Internet Explorer 10 (or earlier) */
+     public boolean isLegacyInternetExplorer() {
+         if (legacyInternetExplorer==null) {
+             final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+             final String userAgent = httpServletRequest.getHeader("User-Agent");
+             if (log.isDebugEnabled()) {
+                 log.info("User-Agent: " + userAgent);
+             }
+             // Check stolen from org.ejbca.ui.web.pub.ApplyBean.detectBrowser(HttpServletRequest)
+             // "Gecko"==Firefox, "MSIE"==Internet Exploder 10-, "Trident"==IE11
+             legacyInternetExplorer = Boolean.valueOf(userAgent != null && userAgent.contains("MSIE") && !userAgent.contains("Gecko"));
+         }
+         return legacyInternetExplorer.booleanValue();
      }
 }
