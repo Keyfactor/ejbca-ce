@@ -43,6 +43,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
@@ -75,7 +76,9 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
@@ -353,8 +356,23 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check name constraints
         if (caInfo instanceof X509CAInfo) {
-            X509Certificate cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next(); 
-            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, false);
+            final X509CAInfo x509cainfo = (X509CAInfo) caInfo;
+            final X509Certificate cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
+            
+            final X500NameStyle nameStyle;
+            if (x509cainfo.getUsePrintableStringSubjectDN()) {
+                nameStyle = PrintableStringNameStyle.INSTANCE;
+            } else {
+                nameStyle = CeSecoreNameStyle.INSTANCE;
+            }
+            
+            if (x509cainfo.getUseLdapDnOrder() && certProfile.getUseLdapDnOrder()) {
+                final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
+                throw new EjbcaException(ErrorCode.NAMECONSTRAINT_VIOLATION, msg);
+            }
+            
+            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, false);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
                 CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
@@ -608,8 +626,23 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             !userData.getSubjectDN().equals(CertTools.stringToBCDNString(dn)) ||
             (userData.getSubjectAltName() != null && !userData.getSubjectAltName().equals(altName));
         if (nameChanged && cainfo instanceof X509CAInfo) {
-            X509Certificate cacert = (X509Certificate)cainfo.getCertificateChain().iterator().next(); 
-            X500Name subjectDNName = new X500Name(dn);
+            final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            final X509Certificate cacert = (X509Certificate)cainfo.getCertificateChain().iterator().next();
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
+            
+            final X500NameStyle nameStyle;
+            if (x509cainfo.getUsePrintableStringSubjectDN()) {
+                nameStyle = PrintableStringNameStyle.INSTANCE;
+            } else {
+                nameStyle = CeSecoreNameStyle.INSTANCE;
+            }
+            
+            if (x509cainfo.getUseLdapDnOrder() && certProfile.getUseLdapDnOrder()) {
+                final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
+                throw new EjbcaException(ErrorCode.NAMECONSTRAINT_VIOLATION, msg);
+            }
+            
+            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, false);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
                 CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
