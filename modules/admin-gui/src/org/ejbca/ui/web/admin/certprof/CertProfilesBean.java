@@ -78,6 +78,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         return null;
     }
     
+    // Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
+    public String getResetCertificateProfilesTrigger() {
+        certificateProfileItems = null;
+        return "";
+    }
+    
     private ListDataModel certificateProfileItems = null;
     public ListDataModel/*<CertificateProfileItem>*/ getCertificateProfiles() {
         if (certificateProfileItems==null) {
