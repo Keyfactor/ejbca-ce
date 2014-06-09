@@ -308,7 +308,10 @@
 
 		<%-- PKIX Name Constraints extension --%>
 
-		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
+        <h:panelGroup>
+    		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
+    		<%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+		</h:panelGroup>
 		<h:panelGroup id="checknameconstraintsgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}" rendered="#{!web.legacyInternetExplorer}"/>
 			<h:commandButton id="checknameconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseNameConstraints}"
