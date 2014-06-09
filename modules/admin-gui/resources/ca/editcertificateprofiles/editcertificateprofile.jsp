@@ -729,7 +729,7 @@
 
 		<h:panelGroup rendered="#{certProfileBean.cvcAvailable}">
 			<h:outputLabel for="selectcvcaccessrights" value="#{web.text.CVCACCESSRIGHTS} " styleClass="subItem"/>
-			<h:outputLabel for="selectcvcaccessrights_is" rendered="#{certProfileBean.cvcTerminalTypeIs}" value="(#{web.text.CVCINSPECTIONSYSTEM})"/>
+			<h:outputLabel rendered="#{certProfileBean.cvcTerminalTypeIs}" value="(#{web.text.CVCINSPECTIONSYSTEM})"/>
 			<h:outputLabel for="selectcvcaccessrights_at" rendered="#{certProfileBean.cvcTerminalTypeAt}" value="(#{web.text.CVCAUTHENTICATIONTERMINAL})"/>
 			<h:outputLabel for="selectcvcaccessrights_st" rendered="#{certProfileBean.cvcTerminalTypeSt}" value="(#{web.text.CVCSIGNATURETERMINAL})"/>
 		</h:panelGroup>
