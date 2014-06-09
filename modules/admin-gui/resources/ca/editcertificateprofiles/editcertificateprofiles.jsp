@@ -29,6 +29,7 @@
 	<h:form id="editcertificateprofiles">
 		<h:panelGroup rendered="#{!certProfilesBean.operationInProgress}">
 		<h3><h:outputText value="#{web.text.LISTOFCERTIFICATEPROFILES}"/></h3>
+		<h:outputText value="#{certProfilesBean.resetCertificateProfilesTrigger}"/>
 		<h:dataTable value="#{certProfilesBean.certificateProfiles}" var="certificateProfile" styleClass="grid">
 			<h:column>
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILENAME}" title="#{certificateProfile.id}"/></f:facet>
