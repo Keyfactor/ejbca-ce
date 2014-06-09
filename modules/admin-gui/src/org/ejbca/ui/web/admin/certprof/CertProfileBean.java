@@ -169,12 +169,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem/*<String,String*/> getSignatureAlgorithmAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        //ret.add(new SelectItem("inheritfromca", getEjbcaWebBean().getText("INHERITFROMCA")));
+        // null becomes ""-value.
         ret.add(new SelectItem(null, getEjbcaWebBean().getText("INHERITFROMCA")));
         for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
             ret.add(new SelectItem(current, current));
         }
         return ret;
+    }
+    public String getSignatureAlgorithm() throws AuthorizationDeniedException {
+        return getCertificateProfile().getSignatureAlgorithm();
+    }
+    public void setSignatureAlgorithm(String signatureAlgorithm) throws AuthorizationDeniedException {
+        // Inherit signature algorithm from issuing CA is signaled by null, but is rendered as "".
+        if ("".equals(signatureAlgorithm)) {
+            signatureAlgorithm = null;
+        }
+        getCertificateProfile().setSignatureAlgorithm(signatureAlgorithm);
     }
     
     public String getValidity() throws AuthorizationDeniedException {
