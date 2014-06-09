@@ -639,12 +639,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 nameStyle = CeSecoreNameStyle.INSTANCE;
             }
             
+            final boolean ldaporder;
             if (x509cainfo.getUseLdapDnOrder() && certProfile.getUseLdapDnOrder()) {
-                final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
-                throw new EjbcaException(ErrorCode.NAMECONSTRAINT_VIOLATION, msg);
+                ldaporder = true; // will cause an error to be thrown later if name constraints are used
+            } else {
+                ldaporder = false;
             }
             
-            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, false);
+            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldaporder);
             GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
             try {
                 CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName);
