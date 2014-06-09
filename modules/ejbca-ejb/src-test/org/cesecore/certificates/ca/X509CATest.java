@@ -42,6 +42,8 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
+
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -50,11 +52,14 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.DistributionPoint;
@@ -64,6 +69,8 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -650,6 +657,38 @@ public class X509CATest {
         } catch (CAOfflineException e) {
             // NOPMD: this is what we expect
         }
+    }
+    
+    /**
+     * Tests default value of "use printable string" option (should be disabled by default)
+     * and tests that the option works.
+     */
+    @Test
+    public void testPrintableString() throws Exception {
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA testCa = createTestCA(cryptoToken, "CN=foo");
+        assertFalse("\"Use Printable String\" should be turned off by default", testCa.getUsePrintableStringSubjectDN());
+        
+        Certificate cert = testCa.getCACertificate();
+        assertTrue("Certificate DN was not UTF-8 encoded by default.", getValueFromDN(cert) instanceof DERUTF8String);
+        
+        // Test generation by calling generateCertificate directly
+        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", "CN=foo", testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null);
+        assertTrue("Certificate DN was not UTF-8 encoded by default.", getValueFromDN(cert) instanceof DERUTF8String);
+        
+        // Now generate a new certificate with a PrintableString-encoded DN
+        testCa.setUsePrintableStringSubjectDN(true);
+        cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null);
+        assertTrue("Certificate DN was not encoded as PrintableString.", getValueFromDN(cert) instanceof DERPrintableString);
+    }
+    
+    private static ASN1Encodable getValueFromDN(Certificate cert) {
+        final X500Principal principal = ((X509Certificate)cert).getSubjectX500Principal();
+        final X500Name xname = X500Name.getInstance(principal.getEncoded());
+        final RDN rdn = xname.getRDNs(X509ObjectIdentifiers.commonName)[0];
+        return rdn.getTypesAndValues()[0].getValue();
     }
 
 	private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws Exception {
