@@ -16,8 +16,7 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,8 +46,8 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
@@ -1327,20 +1326,18 @@ public class CAInterfaceBean implements Serializable {
     //-------------------------------------------------------
     //         Import/Export  profiles related code
     //-------------------------------------------------------
-    public void exportProfiles(String directoryPath) throws FileNotFoundException {
+    public void exportProfiles(String directoryPath) throws IOException {
         if(log.isDebugEnabled()) {
             log.debug("Exporting End Entity Profiles to: " + directoryPath);
         }
-
-        if (!new File(directoryPath).isDirectory()) {
-            String msg = "Error: '" + directoryPath + "' is not a directory.";
-            log.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
+        
+        int exportedProfiles = 0;
+        String zipfile = directoryPath + (StringUtils.endsWith(directoryPath, "/")?"":"/") + "certprofiles.zip";
+        FileOutputStream fos = new FileOutputStream(zipfile);
+        ZipOutputStream zos = new ZipOutputStream(fos);
         
         Collection<Integer> certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0);
-        log.info("Exporting non-fixed certificate profiles: ");
-        try {
+        log.info("Exporting non-fixed certificate profiles");
             for (int profileid : certprofids) {
                 if (profileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { // Certificate profile not found i database.
                     log.error("Couldn't find certificate profile '" + profileid + "' in database.");
@@ -1360,18 +1357,27 @@ public class CAInterfaceBean implements Serializable {
                         } catch (UnsupportedEncodingException e) {
                             throw new IllegalStateException("UTF-8 was not a known encoding", e);
                         }
-                        final String outfile = directoryPath + "/certprofile_" + profilenameEncoded + "-" + profileid + ".xml";
-                        log.info(outfile + ".");
-                        XMLEncoder encoder = new XMLEncoder(new FileOutputStream(outfile));
+                        
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        XMLEncoder encoder = new XMLEncoder(baos);
                         encoder.writeObject(profile.saveData());
                         encoder.close();
+                        byte[] ba = baos.toByteArray();
+                        baos.close();
+                        
+                        String filename = "certprofile_" + profilenameEncoded + "-" + profileid + ".xml";
+                        ZipEntry ze = new ZipEntry(filename);
+                        zos.putNextEntry(ze);
+                        zos.write(ba);
+                        zos.closeEntry();
+                        exportedProfiles++;
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
-            log.error(e);
-            throw e;
-        }
+            zos.close();
+            fos.close();
+            
+            log.info("Found " + certprofids.size() + " certificate profiles. " + exportedProfiles + " certificate profiles were exported to " + zipfile);
     }
     
     public void importProfilesFromZip(byte[] filebuffer) throws CertificateProfileExistsException, AuthorizationDeniedException, NumberFormatException, IOException {
@@ -1381,19 +1387,14 @@ public class CAInterfaceBean implements Serializable {
         if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
             throw new IllegalArgumentException("No input file");
         }
-        
-        if(importedProfileName.lastIndexOf(".zip") != (importedProfileName.length() - 4 )) {
-            throw new ZipException("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
-        }
-        
-        
+
         int importedFiles = 0;
         int ignoredFiles = 0;
         int nrOfFiles = 0;
         
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
-        ZipEntry ze = null;
-        while((ze=zis.getNextEntry()) != null) {
+        ZipEntry ze = zis.getNextEntry();
+        do {
             nrOfFiles++;
             String filename = ze.getName();
             if(log.isDebugEnabled()) {
@@ -1443,7 +1444,7 @@ public class CAInterfaceBean implements Serializable {
             informationmemory.certificateProfilesEdited();
             importedFiles++;
             log.info("Added Certificate profile: " + profilename);
-        }
+        } while((ze=zis.getNextEntry()) != null);
         zis.closeEntry();
         zis.close();
         

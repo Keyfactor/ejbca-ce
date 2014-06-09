@@ -697,8 +697,8 @@ regards to DN-contents, extensions etc.
 <p>It is possible to import and export certificate profiles in the AdminGUI.</p>
 <subsubsection name="Export Certificate Profiles">
 <p>
-Every non-fixed certificate profile is exported to the specified local directory as an xml file. The name of the xml file has the 
-format certprofile_PROFILENAME-PROFILEID.xml.
+Every non-fixed certificate profile is exported to the specified local directory as an xml file inside a zip file named "certprofiles.zip". 
+The name of the xml file has the format certprofile_PROFILENAME-PROFILEID.xml.
 </p>
 </subsubsection>
 <subsubsection name="Import Certificate Profiles">
@@ -1074,8 +1074,8 @@ You should previously have created the certificate profile for SSL servers in th
 <p>It is possible to import and export end entity profiles in the AdminGUI.</p>
 <subsubsection name="Export End Entity Profiles">
 <p>
-Every non-fixed end entity profile is exported to the specified local directory as an xml file. The name of the xml file has the 
-format entityprofile_PROFILENAME-PROFILEID.xml.
+Every non-fixed end entity profile is exported to the specified local directory as an xml file inside a zip file named "entityprofiles.zip". 
+The name of the xml file has the format entityprofile_PROFILENAME-PROFILEID.xml.
 </p>
 </subsubsection>
 <subsubsection name="Import End Entity Profiles">
