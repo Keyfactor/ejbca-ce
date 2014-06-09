@@ -16,8 +16,7 @@ package org.ejbca.ui.web.admin.rainterface;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +39,7 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
@@ -951,51 +951,59 @@ public class RAInterfaceBean implements Serializable {
         return fileBuffer;
     }
     
-    public void exportProfiles(String directoryPath) throws FileNotFoundException {
+    public void exportProfiles(String directoryPath) throws IOException {
         if(log.isDebugEnabled()) {
             log.debug("Exporting End Entity Profiles to: " + directoryPath);
         }
-
-        if (!new File(directoryPath).isDirectory()) {
-            String msg = "Error: '" + directoryPath + "' is not a directory.";
-            log.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-        Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator);
         
-        log.info("Exporting non-fixed end entity profiles: ");
-        try {
-            for (int profileid : endentityprofids) {
-                if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
-                    log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
-                } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
-                    if(log.isDebugEnabled()) {
-                        log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
-                    }
+        int exportedprofiles = 0;
+        String zipfile = directoryPath + (StringUtils.endsWith(directoryPath, "/")?"":"/") + "entityprofiles.zip";
+        FileOutputStream fos = new FileOutputStream(zipfile);
+        ZipOutputStream zos = new ZipOutputStream(fos);
+        
+        Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator);
+        log.info("Exporting non-fixed end entity profiles");
+        for (int profileid : endentityprofids) {
+            if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
+                log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
+            } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
+                }
+            } else {
+                String profilename = endEntityProfileSession.getEndEntityProfileName(profileid);
+                EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profileid);
+                if (profile == null) {
+                    log.error("Error : Couldn't find entity profile '" + profilename + "'-" + profileid + " in database.");
                 } else {
-                    String profilename = endEntityProfileSession.getEndEntityProfileName(profileid);
-                    EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profileid);
-                    if (profile == null) {
-                        log.error("Error : Couldn't find entity profile '" + profilename + "'-" + profileid + " in database.");
-                    } else {
-                        String profilenameEncoded;
-                        try {
-                            profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
-                        } catch (UnsupportedEncodingException e) {
-                            throw new IllegalStateException("UTF-8 was not a known encoding", e);
-                        }
-                        final String outfile = directoryPath + "/entityprofile_" + profilenameEncoded + "-" + profileid + ".xml";
-                        log.info(outfile + ".");
-                        XMLEncoder encoder = new XMLEncoder(new FileOutputStream(outfile));
-                        encoder.writeObject(profile.saveData());
-                        encoder.close();
+                    String profilenameEncoded;
+                    try {
+                        profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        throw new IllegalStateException("UTF-8 was not a known encoding", e);
                     }
+                    
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    XMLEncoder encoder = new XMLEncoder(baos);
+                    encoder.writeObject(profile.saveData());
+                    encoder.close();
+                    byte[] ba = baos.toByteArray();
+                    baos.close();
+                    
+                    String filename = "entityprofile_" + profilenameEncoded + "-" + profileid + ".xml";
+                    ZipEntry ze = new ZipEntry(filename);
+                    zos.putNextEntry(ze);
+                    zos.write(ba);
+                    zos.closeEntry();
+                    
+                    exportedprofiles++;
                 }
             }
-        } catch (FileNotFoundException e) {
-            log.error(e);
-            throw e;
         }
+        zos.close();
+        fos.close();
+        
+        log.info("Found " + endentityprofids.size() + " End Entity profiles. " + exportedprofiles + " End Entity profiles were exported to " + zipfile);
     }
     
     public void importProfilesFromZip(byte[] filebuffer) throws NumberFormatException, IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
@@ -1006,17 +1014,17 @@ public class RAInterfaceBean implements Serializable {
             throw new IllegalArgumentException("No input file");
         }
         
-        if(importedProfileName.lastIndexOf(".zip") != (importedProfileName.length() - 4 )) {
-            throw new ZipException("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
-        }
-        
         int importedFiles = 0;
         int ignoredFiles = 0;
         int nrOfFiles = 0;
         
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
-        ZipEntry ze = null;
-        while((ze=zis.getNextEntry()) != null) {
+        ZipEntry ze=zis.getNextEntry();
+        if(ze == null) {
+            throw new ZipException("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
+        }
+        
+        do {
             nrOfFiles++;
             String filename = ze.getName();
             if(log.isDebugEnabled()) {
@@ -1069,7 +1077,7 @@ public class RAInterfaceBean implements Serializable {
             importedFiles++;
             log.info("Added EndEntity profile: " + profilename);
 
-        }
+        } while((ze=zis.getNextEntry()) != null);
         zis.closeEntry();
         zis.close();
         
