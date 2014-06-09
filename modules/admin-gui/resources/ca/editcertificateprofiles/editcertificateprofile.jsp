@@ -80,7 +80,7 @@
 		</h:selectManyListbox>
 
 		<h:outputLabel for="selectsignaturealgorithm" value="#{web.text.SIGNATUREALGORITHM}"/>
-		<h:selectOneMenu id="selectsignaturealgorithm" value="#{certProfileBean.certificateProfile.signatureAlgorithm}">
+		<h:selectOneMenu id="selectsignaturealgorithm" value="#{certProfileBean.signatureAlgorithm}">
 			<f:selectItems value="#{certProfileBean.signatureAlgorithmAvailable}"/>
 		</h:selectOneMenu>
 
