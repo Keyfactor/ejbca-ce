@@ -640,7 +640,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             
             final boolean ldaporder;
-            if (x509cainfo.getUseLdapDnOrder() && certProfile.getUseLdapDnOrder()) {
+            if (x509cainfo.getUseLdapDnOrder() && (certProfile != null && certProfile.getUseLdapDnOrder())) {
                 ldaporder = true; // will cause an error to be thrown later if name constraints are used
             } else {
                 ldaporder = false;
