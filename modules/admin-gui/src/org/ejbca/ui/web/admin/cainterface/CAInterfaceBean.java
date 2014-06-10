@@ -13,17 +13,10 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.KeyStoreException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
@@ -45,9 +38,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
@@ -56,7 +46,6 @@ import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -68,7 +57,6 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
-import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.CvcPlugin;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -85,7 +73,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.NameConstra
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSession;
@@ -117,7 +104,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -159,7 +145,6 @@ public class CAInterfaceBean implements Serializable {
 	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private AccessControlSessionLocal accessControlSession;
     private CAAdminSessionLocal caadminsession;
-    private CaSession caSession;
     private CertificateCreateSessionLocal certcreatesession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSessionLocal certificatesession;
@@ -183,7 +168,6 @@ public class CAInterfaceBean implements Serializable {
     transient private byte[] request;
     private Certificate processedcert;
     private boolean isUniqueIndex;
-    private String importedProfileName = "";
 	
 	/** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
@@ -191,7 +175,6 @@ public class CAInterfaceBean implements Serializable {
     // Public methods
     public void initialize(EjbcaWebBean ejbcawebbean) {
         if (!initialized) {
-          caSession = ejbLocalHelper.getCaSession();
           certificatesession = ejbLocalHelper.getCertificateStoreSession();
           certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
           crlStoreSession = ejbLocalHelper.getCrlStoreSession();
@@ -305,20 +288,20 @@ public class CAInterfaceBean implements Serializable {
         return certificateProfileSession.getCertificateProfileId(profilename);
     }
 
-    public CertificateProfile getCertificateProfile(String name) throws AuthorizationDeniedException {
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(name);
-        if (!authorizedToViewProfile(profile, getCertificateProfileId(name))) {
+    public CertificateProfile getCertificateProfile(final String name) throws AuthorizationDeniedException {
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(name);
+        if (!authorizedToViewProfile(certificateProfile, getCertificateProfileId(name))) {
             throw new AuthorizationDeniedException("Not authorized to certificate profile");
         }
-        return certificateProfileSession.getCertificateProfile(name);
+        return certificateProfile;
     }
 
-    public CertificateProfile getCertificateProfile(int id) throws AuthorizationDeniedException {
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(id);
-        if (!authorizedToViewProfile(profile, id)) {
+    public CertificateProfile getCertificateProfile(final int id) throws AuthorizationDeniedException {
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(id);
+        if (!authorizedToViewProfile(certificateProfile, id)) {
             throw new AuthorizationDeniedException("Not authorized to certificate profile");
         }
-        return certificateProfileSession.getCertificateProfile(id);
+        return certificateProfile;
     }
 
     /** Help function that checks if administrator is authorized to view profile. */
@@ -1282,7 +1265,7 @@ public class CAInterfaceBean implements Serializable {
                             requestMap.put(fieldName, item.getString("UTF8"));
                         }
                     } else {
-                        importedProfileName = item.getName();
+                        //final String itemName = item.getName();
                         final InputStream file = item.getInputStream();
                         byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
                         if (fileBuffer == null && fileBufferTmp.length > 0) {
