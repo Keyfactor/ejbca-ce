@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -56,6 +57,8 @@ import org.junit.Test;
  */
 public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
 
+    private static final Logger log = Logger.getLogger(RoleManagementSessionBeanTest.class);
+    
     private AccessRuleManagementTestSessionRemote accessRuleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessRuleManagementTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private AccessUserAspectManagerTestSessionRemote accessUserAspectManagerSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessUserAspectManagerTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -223,72 +226,152 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
 
     @Test
     public void testAddAndRemoveAccessRulesToRole() throws RoleExistsException, AccessRuleNotFoundException, AccessRuleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-        RoleData role = roleManagementSession.create(authenticationToken, "ProfessorFarnsworth");
-        int futureRamaPrimaryKey = AccessRuleData.generatePrimaryKey(role.getRoleName(), "/future/rama");
-        int futureWorldPrimaryKey = AccessRuleData.generatePrimaryKey(role.getRoleName(), "/future/world");
-        AccessRuleData futureRama = null;
-        AccessRuleData futureWorld = null;
+        final String ROLE_NAME = "ProfessorFarnsworth";
+        final String RULE1 = "/future/rama";
+        final String RULE2 = "/future/world";
+        int accessRule1PrimaryKey = AccessRuleData.generatePrimaryKey(ROLE_NAME, RULE1);
+        int accessRule2PrimaryKey = AccessRuleData.generatePrimaryKey(ROLE_NAME, RULE2);
+        AccessRuleData accessRule1 = null;
+        AccessRuleData accessRule2 = null;
         try {
+            RoleData role = roleManagementSession.create(authenticationToken, ROLE_NAME);
+            assertTrue(ROLE_NAME.equals(role.getRoleName()));
             Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            futureRama = accessRuleManagementSession.createRule("/future/rama", role.getRoleName(), AccessRuleState.RULE_ACCEPT, true);
+            accessRule1 = accessRuleManagementSession.createRule(RULE1, role.getRoleName(), AccessRuleState.RULE_ACCEPT, true);
 
-            accessRules.add(futureRama);
+            accessRules.add(accessRule1);
             role = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
 
             // Check the returned role
             assertTrue(role.getAccessRules().size() == 1);
-            assertTrue(role.getAccessRules().get(futureRamaPrimaryKey).equals(futureRama));
+            assertTrue(role.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
 
             RoleData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
             // Do the same check for a role retrieved from the database,
-            assertTrue(foundRole.getAccessRules().size() == 1 && foundRole.getAccessRules().get(futureRamaPrimaryKey).equals(futureRama));
+            assertTrue(foundRole.getAccessRules().size() == 1 && foundRole.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
 
             // Now modify futureRama
             accessRules = new ArrayList<AccessRuleData>();
-            futureRama.setInternalState(AccessRuleState.RULE_DECLINE);
-            accessRules.add(futureRama);
+            accessRule1.setInternalState(AccessRuleState.RULE_DECLINE);
+            accessRules.add(accessRule1);
 
             // Add another rule, unpersisted, make sure that it's created
-            futureWorld = new AccessRuleData(role.getRoleName(), "/future/world", AccessRuleState.RULE_ACCEPT, true);
-            accessRules.add(futureWorld);
+            accessRule2 = new AccessRuleData(role.getRoleName(), RULE2, AccessRuleState.RULE_ACCEPT, true);
+            accessRules.add(accessRule2);
             role = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
 
             // Check that both rules (and only those two) are there.
             Map<Integer, AccessRuleData> retrievedRules = roleAccessSession.findRole(role.getPrimaryKey()).getAccessRules();
             assertTrue(retrievedRules.size() == 2);
-            assertEquals(futureRama, retrievedRules.get(futureRamaPrimaryKey));
-            assertEquals(futureWorld, retrievedRules.get(futureWorldPrimaryKey));
+            assertEquals(accessRule1, retrievedRules.get(accessRule1PrimaryKey));
+            assertEquals(accessRule2, retrievedRules.get(accessRule2PrimaryKey));
 
             // Remove one of rules
             Collection<AccessRuleData> deleteRules = new ArrayList<AccessRuleData>();
-            deleteRules.add(futureRama);
+            deleteRules.add(accessRule1);
             role = roleManagementSession.removeAccessRulesFromRole(authenticationToken, role, deleteRules);
             retrievedRules = role.getAccessRules();
             assertTrue(retrievedRules.size() == 1);
-            assertEquals(retrievedRules.get(futureWorldPrimaryKey), futureWorld);
+            assertEquals(retrievedRules.get(accessRule2PrimaryKey), accessRule2);
             // Verify that futureRama has been removed entirely
-            assertNull(accessRuleManagementSession.find(futureRamaPrimaryKey));
+            assertNull(accessRuleManagementSession.find(accessRule1PrimaryKey));
 
         } finally {
-            Map<Integer, AccessRuleData> rules = role.getAccessRules();
-            roleManagementSession.remove(authenticationToken, role);
-            if (accessRuleManagementSession.find(futureRama.getPrimaryKey()) != null) {
+            roleManagementSession.remove(authenticationToken, ROLE_NAME);
+            boolean accessRule1RemovedByRoleRemoval = true;
+            if ((accessRule1=accessRuleManagementSession.find(accessRule1PrimaryKey)) != null) {
                 // If the test failed adding the access rule to the role, it will not be removed when removing the role above
-                if (!rules.containsKey(futureRama.getPrimaryKey())) {
-                    accessRuleManagementSession.remove(futureRama);
-                }
+                accessRuleManagementSession.remove(accessRule1);
+                accessRule1RemovedByRoleRemoval = false;
             }
-            if (accessRuleManagementSession.find(futureWorld.getPrimaryKey()) != null) {
+            boolean accessRule2RemovedByRoleRemoval = true;
+            if ((accessRule2=accessRuleManagementSession.find(accessRule2PrimaryKey)) != null) {
                 // If the test failed adding the access rule to the role, it will not be removed when removing the role above
-                if (!rules.containsKey(futureWorld.getPrimaryKey())) {
-                    accessRuleManagementSession.remove(futureWorld);
-                }
+                accessRuleManagementSession.remove(accessRule2);
+                accessRule2RemovedByRoleRemoval = false;
             }
-           
-            assertNull("All rules where not removed when their attendant roles were.", accessRuleManagementSession.find(futureWorldPrimaryKey));
+            log.info("accessRule1RemovedByRoleRemoval: " + accessRule1RemovedByRoleRemoval);
+            log.info("accessRule2RemovedByRoleRemoval: " + accessRule2RemovedByRoleRemoval);
+            assertTrue("All rules where not removed when their attendant roles were.", accessRule1RemovedByRoleRemoval && accessRule2RemovedByRoleRemoval);
         }
     }
-    
+
+    @Test
+    public void testAddAndRemoveTwoAccessRulesToRole() throws RoleExistsException, AccessRuleNotFoundException, AccessRuleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+        final String ROLE_NAME = "ProfessorFarnsworth2";
+        final String RULE1 = "/future/rama2";
+        final String RULE2 = "/future/world2";
+        int accessRule1PrimaryKey = AccessRuleData.generatePrimaryKey(ROLE_NAME, RULE1);
+        int accessRule2PrimaryKey = AccessRuleData.generatePrimaryKey(ROLE_NAME, RULE2);
+        AccessRuleData accessRule1 = null;
+        AccessRuleData accessRule2 = null;
+        try {
+            RoleData role = roleManagementSession.create(authenticationToken, ROLE_NAME);
+            assertTrue(ROLE_NAME.equals(role.getRoleName()));
+            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRule1 = new AccessRuleData(role.getRoleName(), RULE1, AccessRuleState.RULE_ACCEPT, true);
+            accessRule2 = new AccessRuleData(role.getRoleName(), RULE2, AccessRuleState.RULE_ACCEPT, true);
+
+            accessRules.add(accessRule1);
+            accessRules.add(accessRule2);
+            role = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
+
+            // Check the returned role
+            assertTrue(role.getAccessRules().size() == 2);
+            assertTrue(role.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
+            assertTrue(role.getAccessRules().get(accessRule2PrimaryKey).equals(accessRule2));
+
+            RoleData foundRole = roleAccessSession.findRole(role.getPrimaryKey());
+            // Do the same check for a role retrieved from the database,
+            assertTrue(foundRole.getAccessRules().size() == 2);
+            assertTrue(foundRole.getAccessRules().get(accessRule1PrimaryKey).equals(accessRule1));
+            assertTrue(foundRole.getAccessRules().get(accessRule2PrimaryKey).equals(accessRule2));
+
+            // Now modify futureRama and futureWorld
+            accessRules = new ArrayList<AccessRuleData>();
+            accessRule1.setInternalState(AccessRuleState.RULE_DECLINE);
+            accessRules.add(accessRule1);
+            accessRule2.setInternalState(AccessRuleState.RULE_DECLINE);
+            accessRules.add(accessRule2);
+            role = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
+
+            // Check that both rules (and only those two) are there.
+            Map<Integer, AccessRuleData> retrievedRules = roleAccessSession.findRole(role.getPrimaryKey()).getAccessRules();
+            assertTrue(retrievedRules.size() == 2);
+            assertEquals(accessRule1, retrievedRules.get(accessRule1PrimaryKey));
+            assertEquals(accessRule2, retrievedRules.get(accessRule2PrimaryKey));
+
+            // Remove both of rules
+            Collection<AccessRuleData> deleteRules = new ArrayList<AccessRuleData>();
+            deleteRules.add(accessRule1);
+            deleteRules.add(accessRule2);
+            role = roleManagementSession.removeAccessRulesFromRole(authenticationToken, role, deleteRules);
+            retrievedRules = role.getAccessRules();
+            assertTrue(retrievedRules.size() == 0);
+            // Verify that futureRama and futureWorld has been removed entirely
+            assertNull(accessRuleManagementSession.find(accessRule1PrimaryKey));
+            assertNull(accessRuleManagementSession.find(accessRule2PrimaryKey));
+
+        } finally {
+            roleManagementSession.remove(authenticationToken, ROLE_NAME);
+            boolean accessRule1RemovedByRoleRemoval = true;
+            if ((accessRule1=accessRuleManagementSession.find(accessRule1PrimaryKey)) != null) {
+                // If the test failed adding the access rule to the role, it will not be removed when removing the role above
+                accessRuleManagementSession.remove(accessRule1);
+                accessRule1RemovedByRoleRemoval = false;
+            }
+            boolean accessRule2RemovedByRoleRemoval = true;
+            if ((accessRule2=accessRuleManagementSession.find(accessRule2PrimaryKey)) != null) {
+                // If the test failed adding the access rule to the role, it will not be removed when removing the role above
+                accessRuleManagementSession.remove(accessRule2);
+                accessRule2RemovedByRoleRemoval = false;
+            }
+            log.info("accessRule1RemovedByRoleRemoval: " + accessRule1RemovedByRoleRemoval);
+            log.info("accessRule2RemovedByRoleRemoval: " + accessRule2RemovedByRoleRemoval);
+            assertTrue("All rules where not removed when their attendant roles were.", accessRule1RemovedByRoleRemoval && accessRule2RemovedByRoleRemoval);
+        }
+    }
+
     @Test
     public void testRemoveRulesByName() throws Exception {
         String roleName = "Skippy";

@@ -51,9 +51,11 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void remove(AccessRuleData accessRule) {
-        accessRule = entityManager.merge(accessRule);
+        if (!entityManager.contains(accessRule)) {
+            accessRule = find(accessRule.getPrimaryKey());
+        }
         entityManager.remove(accessRule);
     }
 
