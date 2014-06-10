@@ -104,6 +104,13 @@
       <servlet-class>org.ejbca.ui.web.admin.cryptotoken.CryptoTokenDownloadServlet</servlet-class>
       <load-on-startup>99</load-on-startup>
    </servlet>
+      <servlet>
+      <description><![CDATA[Returns a zip file containing certificate and/or end entity profiles]]></description>
+      <display-name>ProfilesExportServlet</display-name>
+      <servlet-name>ProfilesExportServlet</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.certprof.ProfilesExportServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
    <servlet>
       <description><![CDATA[Returns the specified CA certificate]]></description>
       <display-name>CACertServlet</display-name>
@@ -173,6 +180,11 @@
       <servlet-name>CryptoTokenDownloadServlet</servlet-name>
       <url-pattern>/cryptoTokenDownloads</url-pattern>
    </servlet-mapping>
+   <servlet-mapping>
+   	  <servlet-name>ProfilesExportServlet</servlet-name>
+   	  <url-pattern>/profilesexport</url-pattern>
+   </servlet-mapping>
+   
    <servlet-mapping>
       <servlet-name>CACert</servlet-name>
       <url-pattern>/ca/cacert</url-pattern>

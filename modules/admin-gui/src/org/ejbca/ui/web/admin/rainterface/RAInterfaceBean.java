@@ -950,62 +950,7 @@ public class RAInterfaceBean implements Serializable {
         
         return fileBuffer;
     }
-    
-    public void exportProfiles(String directoryPath) throws IOException {
-        if(log.isDebugEnabled()) {
-            log.debug("Exporting End Entity Profiles to: " + directoryPath);
-        }
-        
-        int exportedprofiles = 0;
-        String zipfile = directoryPath + (StringUtils.endsWith(directoryPath, "/")?"":"/") + "entityprofiles.zip";
-        FileOutputStream fos = new FileOutputStream(zipfile);
-        ZipOutputStream zos = new ZipOutputStream(fos);
-        
-        Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator);
-        log.info("Exporting non-fixed end entity profiles");
-        for (int profileid : endentityprofids) {
-            if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
-                log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
-            } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
-                }
-            } else {
-                String profilename = endEntityProfileSession.getEndEntityProfileName(profileid);
-                EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profileid);
-                if (profile == null) {
-                    log.error("Error : Couldn't find entity profile '" + profilename + "'-" + profileid + " in database.");
-                } else {
-                    String profilenameEncoded;
-                    try {
-                        profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
-                        throw new IllegalStateException("UTF-8 was not a known encoding", e);
-                    }
-                    
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    XMLEncoder encoder = new XMLEncoder(baos);
-                    encoder.writeObject(profile.saveData());
-                    encoder.close();
-                    byte[] ba = baos.toByteArray();
-                    baos.close();
-                    
-                    String filename = "entityprofile_" + profilenameEncoded + "-" + profileid + ".xml";
-                    ZipEntry ze = new ZipEntry(filename);
-                    zos.putNextEntry(ze);
-                    zos.write(ba);
-                    zos.closeEntry();
-                    
-                    exportedprofiles++;
-                }
-            }
-        }
-        zos.close();
-        fos.close();
-        
-        log.info("Found " + endentityprofids.size() + " End Entity profiles. " + exportedprofiles + " End Entity profiles were exported to " + zipfile);
-    }
-    
+   
     public void importProfilesFromZip(byte[] filebuffer) throws NumberFormatException, IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
         if(log.isTraceEnabled()) {
             log.trace(">importProfiles(): " + importedProfileName + " - " + filebuffer.length + " bytes");

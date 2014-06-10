@@ -12,22 +12,35 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import java.beans.XMLDecoder;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 
+import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -40,7 +53,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 //@javax.faces.bean.ManagedBean(name="certProfilesBean")
 public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(CertProfilesBean.class);
+    private static final Logger log = Logger.getLogger(CertProfilesBean.class);
     
     private static final String LEGACY_FIXED_MARKER = "(FIXED)";
 
@@ -340,5 +353,204 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private boolean checkFieldForLegalChars(final String fieldValue) {
         final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
         return Pattern.matches(blackList, fieldValue);
+    }
+    
+    //----------------------------------------------
+    //                Import profiles
+    //----------------------------------------------
+    private UploadedFile uploadFile;
+    public UploadedFile getUploadFile() { return uploadFile; }
+    public void setUploadFile(UploadedFile uploadFile) { this.uploadFile = uploadFile; }
+
+    public void actionImportProfiles() {
+
+        if (uploadFile == null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "File upload failed.", null));
+            return;
+        }
+        try {
+            importProfilesFromZip(getUploadFile().getBytes());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
+            certificateProfileItems = null;
+        } catch (IOException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (NumberFormatException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CertificateProfileExistsException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+        
+    }
+    
+    
+    public void importProfilesFromZip(byte[] filebuffer) throws CertificateProfileExistsException, AuthorizationDeniedException, 
+                    NumberFormatException, IOException {
+
+        if(filebuffer.length == 0) {
+            throw new IllegalArgumentException("No input file");
+        }
+
+        int importedFiles = 0;
+        int ignoredFiles = 0;
+        int nrOfFiles = 0;
+        
+        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
+        ZipEntry ze = zis.getNextEntry();
+        do {
+            nrOfFiles++;
+            String filename = ze.getName();
+            if(log.isDebugEnabled()) {
+                log.debug("Importing file: " + filename);
+            }
+            
+            if(ignoreFile(filename)) {
+                ignoredFiles++;
+                continue;
+            }
+            
+            try {
+                filename = URLDecoder.decode(filename, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
+            }
+            int index1 = filename.indexOf("_");
+            int index2 = filename.lastIndexOf("-");
+            int index3 = filename.lastIndexOf(".xml");
+            String profilename = filename.substring(index1 + 1, index2);
+            int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
+            if(log.isDebugEnabled()) {
+                log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
+            }
+
+            if(ignoreProfile(filename, profilename, profileid)) {
+                ignoredFiles++;
+                continue;
+            }
+            
+            if (getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(profileid) != null) {
+                log.warn("Certificate profile id '" + profileid
+                        + "' already exist in database. Adding with a new profile id instead.");
+                profileid = -1; // means we should create a new id when adding the cert profile
+            }
+                
+            byte[] filebytes = new byte[102400];
+            int i = 0;
+            while(zis.available() == 1) {
+                filebytes[i++] = (byte) zis.read();
+            }
+                    
+            final CertificateProfile certificateProfile = getCertProfileFromByteArray(profilename, filebytes);
+            certificateProfile.setAvailableCAs(getEjbcaWebBean().getInformationMemory().getAuthorizedCAIds());
+            getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
+            getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
+            importedFiles++;
+            log.info("Added Certificate profile: " + profilename);
+        } while((ze=zis.getNextEntry()) != null);
+        zis.closeEntry();
+        zis.close();
+        
+        log.info(uploadFile.getName() + " contained " + nrOfFiles + " files. " +
+                importedFiles + " Certificate Profiles were imported and " + ignoredFiles + " files  were ignored.");
+    }
+    
+
+    private CertificateProfile getCertProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
+        ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
+        XMLDecoder decoder = new XMLDecoder(is);
+        
+        // Add certificate profile
+        CertificateProfile cprofile = new CertificateProfile();
+        cprofile.loadData(decoder.readObject());
+        // Make sure CAs in profile exist
+        List<Integer> cas = cprofile.getAvailableCAs();
+        ArrayList<Integer> casToRemove = new ArrayList<Integer>();
+        for (Integer currentCA : cas) {
+            // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
+            if (currentCA != CertificateProfile.ANYCA) {
+                try {
+                    getEjbcaWebBean().getEjb().getCaSession().getCAInfo(getAdmin(), currentCA);
+                } catch (CADoesntExistsException e) {
+                    casToRemove.add(currentCA);
+                }
+            }
+        }
+        for (Integer toRemove : casToRemove) {
+            log.warn("Warning: CA with id " + toRemove
+                    + " was not found and will not be used in certificate profile '" + profilename + "'.");
+            cas.remove(toRemove);
+        }
+        if (cas.size() == 0) {
+            log.error("Error: No CAs left in certificate profile '" + profilename
+                    + "' and no CA specified on command line. Using ANYCA.");
+            cas.add(Integer.valueOf(CertificateProfile.ANYCA));
+            
+        }
+        cprofile.setAvailableCAs(cas);
+        // Remove and warn about unknown publishers
+        List<Integer> publishers = cprofile.getPublisherList();
+        ArrayList<Integer> allToRemove = new ArrayList<Integer>();
+        for (Integer publisher : publishers) {
+            BasePublisher pub = null;
+            try {
+                pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(publisher);
+            } catch (Exception e) {
+                log.warn("Warning: There was an error loading publisher with id " + publisher
+                        + ". Use debug logging to see stack trace: " + e.getMessage());
+                log.debug("Full stack trace: ", e);
+            }
+            if (pub == null) {
+                allToRemove.add(publisher);
+            }
+        }
+        for (Integer toRemove : allToRemove) {
+            log.warn("Warning: Publisher with id " + toRemove
+                    + " was not found and will not be used in certificate profile '" + profilename + "'.");
+            publishers.remove(toRemove);
+        }
+        cprofile.setPublisherList(publishers);
+        
+        decoder.close();
+        try {
+            is.close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
+        }
+        
+        return cprofile;
+    }
+
+    private boolean ignoreFile(String filename) {
+        if(filename.lastIndexOf(".xml") != (filename.length() - 4)) {
+            if(log.isDebugEnabled()) {
+                log.debug(filename + " is not an XML file. IGNORED");
+            }
+            return true;
+        }
+            
+        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("certprofile_") < 0) ) {
+            if(log.isDebugEnabled()) {
+                log.debug(filename + " is not in the expected format. " +
+                        "The file name should look like: certprofile_<profile name>-<profile id>.xml. IGNORED");
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean ignoreProfile(String filename, String profilename, int profileid) {
+        // We don't add the fixed profiles, EJBCA handles those automagically
+        if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
+            log.info(filename + " contains a fixed profile. IGNORED");
+            return true;
+        }
+        // Check if the profiles already exist
+        if (getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+            log.info("Certificate profile '" + profilename + "' already exist in database. IGNORED");
+            return true;
+        }
+        return false;
     }
 }

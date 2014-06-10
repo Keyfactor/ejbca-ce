@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://myfaces.apache.org/tomahawk" prefix="t" %>
 <%@ page pageEncoding="UTF-8"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" %>
@@ -96,10 +97,22 @@
 		</h:panelGroup>
 	</h:form>
 
-	<h:panelGroup rendered="#{!certProfilesBean.operationInProgress}">
-		<br/>
-		<a href="<%=globalconfiguration.getAdminWebPath()%>ca/editcertificateprofiles/importexport.jsp"><%=ejbcawebbean.getText("IMPORT")%>/<%=ejbcawebbean.getText("EXPORT")%></a>
+	<h:panelGroup rendered="#{not certProfilesBean.deleteInProgress}" >
+	<h3><h:outputText value="#{web.text.IMPORT}/#{web.text.EXPORT}"/></h3>
+	<h:form id="uploadCertificate" enctype="multipart/form-data">
+		<h:panelGrid columns="3">
+			<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}:"/>
+			<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20"/>
+			<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORT}"/>
+		</h:panelGrid>
+		<h:panelGrid columns="1">
+			<h:outputLink value="adminweb/profilesexport?profileType=cp">
+				<h:outputText value="#{web.text.EXPORTROFILES}..."/>
+			</h:outputLink>
+		</h:panelGrid>
+	</h:form>
 	</h:panelGroup>
+
 
 	<jsp:include page="<%=globalconfiguration.getFootBanner()%>"/>
 </body>

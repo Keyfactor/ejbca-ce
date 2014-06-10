@@ -331,17 +331,6 @@
 			       </div> <%
 		  	}
     	}
-    	
-    	if(requestMap.get(BUTTON_EXPORT_PROFILES) != null) {
-    		try {
-    			String directoryname = requestMap.get(TEXTFIELD_EXPORT_DESTINATION);
-    			ejbcarabean.exportProfiles(directoryname);
-    		} catch (Exception e) {
-			    %> <div style="color: #FF0000;">
-				    	<c:out value="<%= e.getMessage() %>"/>
-			       </div> <%
-		  	}
-    	}
     }
     
     
