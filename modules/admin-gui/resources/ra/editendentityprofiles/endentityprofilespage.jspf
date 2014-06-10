@@ -119,16 +119,20 @@
 		</tr>
 		<tr id="Row<%=row++%2%>"> 
 		    <td width="30%" valign="top" align="right">
-		    	<%= ejbcawebbean.getText("EXPORTROFILESTO") %>&nbsp;
-		    	<%= ejbcawebbean.getHelpReference("/userguide.html#Import/Export%20End%20Entity%20Profiles") %>
+				<c:url var="pem" value="adminweb/profilesexport" >
+					<c:param name="profileType" value="eep" />
+				</c:url>
+				<a href="${pem}"><%= ejbcawebbean.getText("EXPORTROFILES") %>...</a>
 		    </td>
 			<td width="55%" valign="top">
-				<input type="text" name="<%=TEXTFIELD_EXPORT_DESTINATION%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
+				&nbsp;
 			</td>
 			<td width="15%" valign="top">
-				<input type="submit" name="<%= BUTTON_EXPORT_PROFILES %>" onClick='return check()' value="<%= ejbcawebbean.getText("EXPORT") %>" >
+				&nbsp;
 			</td>
 		</tr>
+
 	</table>
 </form>
+
 
