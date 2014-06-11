@@ -134,7 +134,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     }
 
     @Override
-    public int createCryptoToken() throws Exception {
+    public Integer createCryptoToken() throws Exception {
         cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
         return cryptoTokenId;
     };

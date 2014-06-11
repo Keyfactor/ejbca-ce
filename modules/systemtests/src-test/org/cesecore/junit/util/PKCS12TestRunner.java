@@ -93,7 +93,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     }
 
     @Override
-    public int createCryptoToken() throws Exception {
+    public Integer createCryptoToken() throws Exception {
         cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, super.getName());
         return cryptoTokenId;
     }
