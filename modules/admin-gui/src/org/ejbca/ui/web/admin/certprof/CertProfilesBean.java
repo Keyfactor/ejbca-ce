@@ -20,8 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -40,6 +39,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -55,6 +55,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
     
+    // This restriction in certificate profile naming can be removed when the current running version no longer has
+    // to be able to run side by side (share the db) with an EJBCA 6.1.x or earlier
+    @Deprecated
     private static final String LEGACY_FIXED_MARKER = "(FIXED)";
 
     public class CertificateProfileItem {
@@ -101,13 +104,23 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public ListDataModel/*<CertificateProfileItem>*/ getCertificateProfiles() {
         if (certificateProfileItems==null) {
             final List<CertificateProfileItem> items = new ArrayList<CertificateProfileItem>();
-            final TreeMap<String, Integer> profileNameToIdMap = getEjbcaWebBean().getInformationMemory().getEditCertificateProfileNames();
-            final List<Integer> profileIdsWithMissingCA = getEjbcaWebBean().getInformationMemory().getEditCertificateProfilesWithMissingCAs();
-            for (final Entry<String,Integer> entry : profileNameToIdMap.entrySet()) {
-                final Integer profileId = entry.getValue();
+            final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
+            final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
+            if (!isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_ENDENTITY));
+            } else if (getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens()) {
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), 0)); // 0 = All
+            } else {
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_ENDENTITY));
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_ROOTCA));
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_SUBCA));
+            }
+            final List<Integer> profileIdsWithMissingCA = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(getAdmin());
+            final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
+            for (final Integer profileId : authorizedProfileIds) {
                 final boolean missingCa = profileIdsWithMissingCA.contains(profileId);
                 final boolean fixed = isCertProfileFixed(profileId);
-                final String name = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(profileId);
+                final String name = idToNameMap.get(profileId);
                 items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
             }
             certificateProfileItems = new ListDataModel(items);
@@ -117,22 +130,23 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the specified certificate profile id is fixed */
     private boolean isCertProfileFixed(final int profileId) {
-        final TreeMap<String, Integer> profileNameToIdMap = getEjbcaWebBean().getInformationMemory().getEditCertificateProfileNames();
-        for (final Entry<String,Integer> entry : profileNameToIdMap.entrySet()) {
-            if (entry.getValue().intValue() == profileId) {
-                if (entry.getKey().endsWith(LEGACY_FIXED_MARKER)) {
-                    return true;
-                }
-                break;
-            }
+        if (profileId <= CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
+            return true;
+        } else if (!isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
+            final CertificateProfile certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(profileId);
+            return certificateProfile.isApplicableToAnyCA();
         }
         return false;
     }
 
     public boolean isAuthorizedToEdit() {
-        return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), StandardRules.EDITCERTIFICATEPROFILE.resource());
+        return isAuthorizedTo(StandardRules.EDITCERTIFICATEPROFILE.resource());
     }
     
+    private boolean isAuthorizedTo(final String...resources) {
+        return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), resources);
+    }
+
     public String actionEdit() {
         selectCurrentRowData();
         return "edit";   // Outcome is defined in faces-config.xml

@@ -132,7 +132,7 @@ public class EjbcaJSFHelper {
              final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
              final String userAgent = httpServletRequest.getHeader("User-Agent");
              if (log.isDebugEnabled()) {
-                 log.info("User-Agent: " + userAgent);
+                 log.debug("User-Agent: " + userAgent);
              }
              // Check stolen from org.ejbca.ui.web.pub.ApplyBean.detectBrowser(HttpServletRequest)
              // "Gecko"==Firefox, "MSIE"==Internet Exploder 10-, "Trident"==IE11

@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,12 +21,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 
 /**
@@ -45,20 +40,14 @@ public class CAAuthorization implements Serializable {
     private TreeMap<String, Integer> profilenamesrootca = null;
     private TreeMap<String, Integer> canames = null;
     private TreeMap<String, Integer> allcanames = null;
-    private TreeMap<String, Integer> allprofilenames = null;
-    private List<Integer> profileswithmissingca = null;
     private AuthenticationToken admin;
     private CaSessionLocal caSession;
-    private AccessControlSessionLocal authorizationsession;
     private CertificateProfileSession certificateProfileSession;
     
     /** Creates a new instance of CAAuthorization. */
-    public CAAuthorization(AuthenticationToken admin,  
-                           CaSessionLocal caSession,
-                           AccessControlSessionLocal authorizationsession, CertificateProfileSession certificateProfileSession) {
-      this.admin=admin;
-      this.caSession=caSession;      
-      this.authorizationsession=authorizationsession;
+    public CAAuthorization(AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession) {
+        this.admin=admin;
+        this.caSession=caSession;      
         this.certificateProfileSession = certificateProfileSession;
     }
 
@@ -119,54 +108,7 @@ public class CAAuthorization implements Serializable {
       }
       return profilenamesrootca;  
     }
-    
-    public TreeMap<String, Integer> getEditCertificateProfileNames(boolean includefixedhardtokenprofiles){
-        if (allprofilenames == null) {
-            // check if administrator
-            boolean superadministrator = false;
 
-            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-
-            allprofilenames = new TreeMap<String, Integer>();
-        Iterator<Integer> iter= null;  
-        if(includefixedhardtokenprofiles){
-          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, 0).iterator();
-        }else{
-          ArrayList<Integer> certprofiles = new ArrayList<Integer>();
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ENDENTITY));
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ROOTCA));
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_SUBCA));
-		  iter = certprofiles.iterator();
-        }
-        Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
-        while(iter.hasNext()){
-        
-          Integer id = iter.next();
-          CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(id.intValue());
- 
-          // If not superadministrator, then should only end entity profiles be added.
-          if(superadministrator || certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY){                      
-            // if default profiles, add fixed to name.
-            if(id.intValue() <= CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY || (!superadministrator && certprofile.isApplicableToAnyCA())) {
-			  allprofilenames.put(idtonamemap.get(id) + " (FIXED)",id);   
-            } else {
-		      allprofilenames.put(idtonamemap.get(id),id);
-            }
-          }
-        }  
-      }
-      return allprofilenames;  
-    }
-    
-    public List<Integer> getEditCertificateProfilesWithMissingCAs() {
-        if (profileswithmissingca == null) {
-            profileswithmissingca = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(admin);
-        }
-        return profileswithmissingca;
-    }
-        
-    
-    
     public TreeMap<String, Integer> getCANames(){        
       if(canames==null){        
         canames = new TreeMap<String, Integer>();        
@@ -196,8 +138,6 @@ public class CAAuthorization implements Serializable {
       profilenamesendentity = null;
       profilenamessubca = null;
       profilenamesrootca = null;
-      profileswithmissingca = null;
-      allprofilenames = null;
       canames=null;
       allcanames=null;
     }
