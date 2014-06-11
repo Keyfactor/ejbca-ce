@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -123,6 +125,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 final String name = idToNameMap.get(profileId);
                 items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
             }
+            // Sort list by name
+            Collections.sort(items, new Comparator<CertificateProfileItem>() {
+                @Override
+                public int compare(final CertificateProfileItem a, final CertificateProfileItem b) {
+                    return a.getName().compareTo(b.getName());
+                }
+            });
             certificateProfileItems = new ListDataModel(items);
         }
         return certificateProfileItems;
