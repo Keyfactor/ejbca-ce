@@ -51,7 +51,7 @@ public class CryptoTokenRule extends ExternalResource {
             throw new IllegalStateException("Can't create CryptoToken without an injected method.");
         }
         try {
-            return (int) cryptoTokenCreationMethod.invoke(callback);
+            return (Integer) cryptoTokenCreationMethod.invoke(callback);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         } catch (IllegalArgumentException e) {
