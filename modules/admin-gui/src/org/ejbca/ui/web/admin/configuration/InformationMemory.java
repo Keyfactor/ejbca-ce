@@ -119,7 +119,7 @@ public class InformationMemory implements Serializable {
         this.certificateProfileSession = certificateProfileSession;
         this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
                 caSession, endEntityProfileSession);
-        this.caauthorization = new CAAuthorization(administrator, caSession, authorizationsession, certificateProfileSession);
+        this.caauthorization = new CAAuthorization(administrator, caSession, certificateProfileSession);
         this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, roleManagementSession);
         this.complexAccessControlSession = complexAccessControlSession;
         this.roleManagementSession = roleManagementSession;
@@ -200,20 +200,6 @@ public class InformationMemory implements Serializable {
      */
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames() {
         return this.caauthorization.getAuthorizedRootCACertificateProfileNames();
-    }
-
-    /**
-     * Returns all authorized certificate profile names as a treemap of name (String) -> id (Integer)
-     */
-    public TreeMap<String, Integer> getEditCertificateProfileNames() {
-        return this.caauthorization.getEditCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());
-    }
-    
-    /**
-     * Returns a list of authorized certificate profiles ids of profiles with missing CA Ids.
-     */
-    public List<Integer> getEditCertificateProfilesWithMissingCAs() {
-        return this.caauthorization.getEditCertificateProfilesWithMissingCAs();
     }
 
     /**
