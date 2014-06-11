@@ -46,7 +46,7 @@ public class CryptoTokenRule extends ExternalResource {
         }
     }
 
-    public int createCryptoToken() {
+    public Integer createCryptoToken() {
         if (cryptoTokenCreationMethod == null) {
             throw new IllegalStateException("Can't create CryptoToken without an injected method.");
         }
