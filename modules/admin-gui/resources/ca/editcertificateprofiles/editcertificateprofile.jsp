@@ -125,9 +125,12 @@
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20certificate%20serial%20number%20override") %>
 		</h:panelGroup>
 		<h:panelGroup id="allowcertserialnumberoverridegroup">
-			<h:selectBooleanCheckbox disabled="#{!certProfileBean.uniqueCertificateSerialNumberIndex}" id="allowcertserialnumberoverride"
-				value="#{certProfileBean.certificateProfile.allowCertSerialNumberOverride && certProfileBean.uniqueCertificateSerialNumberIndex}"/>
-			<h:outputLabel for="allowcertserialnumberoverride" value="#{web.text.ALLOW} "/>
+			<h:selectBooleanCheckbox rendered="#{!certProfileBean.uniqueCertificateSerialNumberIndex}" id="allowcertserialnumberoverridefalse"
+				value="false" disabled="true"/>
+			<h:outputLabel rendered="#{!certProfileBean.uniqueCertificateSerialNumberIndex}" for="allowcertserialnumberoverridefalse" value="#{web.text.ALLOW} "/>
+			<h:selectBooleanCheckbox rendered="#{certProfileBean.uniqueCertificateSerialNumberIndex}" id="allowcertserialnumberoverride"
+				value="#{certProfileBean.certificateProfile.allowCertSerialNumberOverride}"/>
+			<h:outputLabel rendered="#{certProfileBean.uniqueCertificateSerialNumberIndex}" for="allowcertserialnumberoverride" value="#{web.text.ALLOW} "/>
 			<h:outputText styleClass="help" rendered="#{!certProfileBean.uniqueCertificateSerialNumberIndex}" value="#{web.text.CERTSERIALNOUNIQUEIX}"/>
 		</h:panelGroup>
 
