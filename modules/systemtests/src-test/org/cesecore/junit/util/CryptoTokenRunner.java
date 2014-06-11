@@ -64,7 +64,7 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
     public abstract void tearDownX509Ca() throws Exception;
 
-    public abstract int createCryptoToken() throws Exception;
+    public abstract Integer createCryptoToken() throws Exception;
 
     public void teardownCryptoToken() throws AuthorizationDeniedException {
         cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
