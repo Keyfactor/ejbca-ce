@@ -103,7 +103,9 @@ public class OcspTestUtils {
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         // First create a new CryptoToken
-        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, keyspec);
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, testName)) {
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, keyspec);
+        }
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
         final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
         dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);

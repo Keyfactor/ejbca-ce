@@ -12,75 +12,50 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
-import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
+import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
+import org.junit.runners.Suite;
 import org.junit.runners.model.Statement;
 
 /**
- * Base class for crypto token variations of the test runner. 
+ * This test runner will make sure that any system test marked to use it will run twice: once with a soft crypto token and once with a PKCS11-token if available. 
  * 
  * @version $Id$
  *
  */
-public abstract class CryptoTokenTestRunner extends BlockJUnit4ClassRunner {
-
-    protected X509CA x509ca;
-    protected int cryptoTokenId;
+public class CryptoTokenTestRunner extends Suite {
     
-    public CryptoTokenTestRunner(Class<?> klass) throws InitializationError {
-        super(klass);
-    }
-    
-    /**
-     * Series of instructions to perform before a test class.
-     */
-    protected abstract void beforeClass() throws Exception;
-
-    /**
-     * Series of instructions to perform after a test class
-     */
-    protected abstract void afterClass();
-    
-    
-    @Override
-    protected void validateConstructor(List<Throwable> errors) {
-        validateOnlyOneConstructor(errors);
-        //Validate parameters of class
-        Constructor<?>[] constructors = getTestClass().getJavaClass().getConstructors();
-        Class<?>[] parameters = constructors[0].getParameterTypes();
-        if (parameters.length != 2) {
-            errors.add(new Exception("Incorrect number of parameters in constructor"));
-        }
-        if (!parameters[0].equals(X509CA.class) && !parameters[1].equals(int.class)) {
-            errors.add(new Exception("Constructor arguments were not X509CA,int"));
-        }
+    public CryptoTokenTestRunner(Class<?> klass) throws Exception {
+        super(klass, getRunners(klass));
     }
 
     /**
-     * Returns a new fixture for running a test. 
+     * 
+     * @return a list of test runners. By default will only return a runner that returns soft tokens, but will include a runner for PKCS#11 tokens as well, if available. 
+     * @throws Exception 
      */
-    @Override
-    protected Object createTest() throws Exception {
-        return getTestClass().getOnlyConstructor().newInstance(x509ca, cryptoTokenId);
+    private static List<Runner> getRunners(Class<?> klass) throws Exception {
+        List<Runner> runners = new ArrayList<Runner>();
+        if (CryptoTokenTestUtils.getHSMLibrary() != null) {
+            runners.add(new PKCS11TestRunner(klass));
+        }
+        runners.add(new PKCS12TestRunner(klass));
+        return runners;
     }
 
     @Override
     public void run(final RunNotifier notifier) {
         EachTestNotifier testNotifier = new EachTestNotifier(notifier, getDescription());
         try {
-            beforeClass();
             Statement statement = classBlock(notifier);
             statement.evaluate();
-            afterClass();
         } catch (AssumptionViolatedException e) {
             testNotifier.fireTestIgnored();
         } catch (StoppedByUserException e) {
@@ -89,19 +64,16 @@ public abstract class CryptoTokenTestRunner extends BlockJUnit4ClassRunner {
             testNotifier.addFailure(e);
         }
     }
-    
-    @Override
-    // The name of the test class  
-    protected String getName() {
-        return String.format("%s [%s]", super.getName(), getSubtype());
-    }
 
+    /*
+     * Special version of the classBlock method that avoids @BeforeClass and @AfterClass annotations and class rules on tests that are treated as suites.
+     */
     @Override
-    // The name of the test method  
-    protected String testName(final FrameworkMethod method) {
-        return String.format("%s [%s]", method.getName(), getSubtype());
+    protected Statement classBlock(final RunNotifier notifier) {
+        Statement statement = childrenInvoker(notifier);
+        return statement;
     }
     
-    public abstract String getSubtype();
+    
 
 }

@@ -26,11 +26,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -54,11 +51,8 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -80,27 +74,26 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.junit.util.CryptoTokenRule;
+import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
 
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean
@@ -108,11 +101,9 @@ import org.junit.rules.TestRule;
  * @version $Id$
  * 
  */
+@RunWith(CryptoTokenTestRunner.class)
 public class StandaloneOcspResponseGeneratorSessionTest {
-
-    //private static final String PASSWORD = "foo123";
-    private static final String CA_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
-    
+   
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName();
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionTest.class);
  
@@ -122,11 +113,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             .getRemoteSession(CertificateCreateSessionRemote.class);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertificateStoreSessionRemote.class);
-    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
@@ -137,53 +124,43 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     
     private X509CA x509ca;
-    private int cryptoTokenId;
     private int internalKeyBindingId;
+    private int cryptoTokenId;
     private X509Certificate ocspSigningCertificate;
     private X509Certificate caCertificate;
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-    }
-
+    @ClassRule
+    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    
     @Before
     public void setUp() throws Exception {
-        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, CA_DN);
-        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, TESTCLASSNAME);
+        x509ca = cryptoTokenRule.createX509Ca(); 
         originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
         //Make sure timers don't run while we debug
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
+        //Create an independent cryptotoken
+        cryptoTokenId = cryptoTokenRule.createCryptoToken();
         internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
                 TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         String signerDN = "CN=ocspTestSigner";
-        caCertificate = createCaCertificate();
+        caCertificate = (X509Certificate) x509ca.getCACertificate();
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
+        
     }
 
     @After
     public void tearDown() throws Exception {
+        CryptoTokenRule.cleanUp();
         try {
             internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
         } catch (Exception e) {
             //Ignore any failures.
         }
-        try {
-            internalCertificateStoreSession.removeCertificate(caCertificate);
-        } catch (Exception e) {
-            //Ignore any failures.
-        }
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
-        cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
-        OcspTestUtils.deleteCa(authenticationToken, x509ca);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
     }
 
@@ -696,11 +673,4 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
     }
     
-    private X509Certificate createCaCertificate() throws CreateException, AuthorizationDeniedException {
-        X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
-        //Store the CA Certificate.
-        certificateStoreSession.storeCertificate(authenticationToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
-        return caCertificate;
-    }
 }
