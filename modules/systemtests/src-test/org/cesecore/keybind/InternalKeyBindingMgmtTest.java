@@ -40,7 +40,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.junit.util.VariableCryptoTokenTestRunner;
+import org.cesecore.junit.util.CryptoTokenRule;
+import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -49,6 +50,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -58,7 +62,7 @@ import org.junit.runner.RunWith;
  * @see InternalKeyBindingMgmtSession
  * @version $Id$
  */
-@RunWith(VariableCryptoTokenTestRunner.class)
+@RunWith(CryptoTokenTestRunner.class)
 public class InternalKeyBindingMgmtTest {
 
     private static final Logger log = Logger.getLogger(InternalKeyBindingMgmtTest.class);
@@ -74,16 +78,26 @@ public class InternalKeyBindingMgmtTest {
     private static final String KEYBINDING_TYPE_ALIAS = OcspKeyBinding.IMPLEMENTATION_ALIAS;
     private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
 
-    private final X509CA x509ca;
-    private final int cryptoTokenId;
-
-    public InternalKeyBindingMgmtTest(X509CA x509ca, int cryptotokenId) {
-        this.x509ca = x509ca;
-        this.cryptoTokenId = cryptotokenId;
-    }
-    
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
+    @ClassRule
+    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    
+    private static X509CA x509ca;
+    private static int cryptoTokenId;
+    
+    @BeforeClass
+    public static void beforeClass() throws Throwable {
+        x509ca = cryptoTokenRule.createX509Ca();
+        cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        CryptoTokenRule.cleanUp();
+    }
+   
         
     @Test
     public void assertTestPreRequisites() throws Exception {
