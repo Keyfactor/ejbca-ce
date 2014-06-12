@@ -17,10 +17,12 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -70,7 +72,8 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     }
 
     public X509CA createX509Ca() throws Exception {
-        x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(SUBJECT_DN, TOKEN_PIN.toCharArray(), false, true);
+        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(SUBJECT_DN, TOKEN_PIN.toCharArray(), false, true, "1024", X509KeyUsage.digitalSignature
+                + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         CAToken caToken = x509ca.getCAToken();
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, ALIAS);
@@ -92,16 +95,17 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         certs.add(response.getCertificate());
         info.setCertificateChain(certs);
         caSession.editCA(alwaysAllowToken, info);
+        casToRemove.put(x509ca.getCAId(), x509ca);
         return x509ca;
     }
 
     @Override
-    public void tearDownX509Ca() throws Exception {
-        int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
+    public void tearDownCa(CA ca) {
+        int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
 
         try {
             try {
-                final String signKeyAlias = x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 if (cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, signKeyAlias)) {
                     cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
                 }
@@ -111,13 +115,13 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
                 throw new IllegalStateException(e);
             }
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
-            if (x509ca != null) {
+            if (ca != null) {
                 CAInfo caInfo;
                 try {
-                    caInfo = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId());
+                    caInfo = caSession.getCAInfo(alwaysAllowToken, ca.getCAId());
                     final int caCryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
                     cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
-                    caSession.removeCA(alwaysAllowToken, x509ca.getCAId());
+                    caSession.removeCA(alwaysAllowToken, ca.getCAId());
                 } catch (CADoesntExistsException e) {
                     // NOPMD Ignore
                 }
@@ -126,6 +130,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
+        casToRemove.remove(ca.getCAId());
     }
 
     @Override

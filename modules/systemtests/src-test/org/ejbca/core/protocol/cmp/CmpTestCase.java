@@ -145,7 +145,6 @@ import org.hibernate.ObjectNotFoundException;
 /**
  * Helper class for CMP Junit tests
  * 
- * @author tomas
  * @version $Id$
  */
 public abstract class CmpTestCase extends CaTestCase {

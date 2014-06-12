@@ -72,7 +72,6 @@ public class CmpAliasTest extends CmpTestCase {
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
     }
 
     /**

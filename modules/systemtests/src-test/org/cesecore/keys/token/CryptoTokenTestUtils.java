@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.util.Properties;
 
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,7 +49,7 @@ public class CryptoTokenTestUtils {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         
-        X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false);
+        X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         // Remove any lingering test CA before starting the tests
         try {
             final int oldCaCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
