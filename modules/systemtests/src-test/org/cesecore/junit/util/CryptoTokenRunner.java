@@ -43,6 +43,9 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
+    protected final String SUBJECT_DN = "CN=" + getSimpleName();
+
+    
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
@@ -94,6 +97,10 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
         }
     }
 
+    protected String getSimpleName() {
+        return getTestClass().getJavaClass().getSimpleName();
+    }
+    
     @Override
     // The name of the test class  
     protected String getName() {

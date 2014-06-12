@@ -39,7 +39,6 @@ import org.junit.runners.model.InitializationError;
 public class PKCS12TestRunner extends CryptoTokenRunner {
 
     private static final String ALIAS = "signKeyAlias";
-    private final String SUBJECT_DN = "CN=" + super.getName();
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -58,7 +57,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
 
     @Override
     public X509CA createX509Ca() throws Exception {
-        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN+"X509");
+        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN);
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();

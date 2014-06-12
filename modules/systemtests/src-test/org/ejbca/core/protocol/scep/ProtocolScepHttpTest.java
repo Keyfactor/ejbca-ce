@@ -77,6 +77,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -84,19 +85,21 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.junit.util.CryptoTokenRule;
+import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -104,10 +107,15 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
@@ -120,7 +128,8 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  * Tests http pages of scep
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ProtocolScepHttpTest extends CaTestCase {
+@RunWith(CryptoTokenTestRunner.class)
+public class ProtocolScepHttpTest {
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
     private static final String scepAlias = "ProtocolHttpTestScepAlias";
@@ -146,12 +155,11 @@ public class ProtocolScepHttpTest extends CaTestCase {
             + "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" + "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI"
             + "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
-    private int caid = getTestCAId();
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolScepHttpTest"));
+    private static X509CA x509ca;
     private static X509Certificate cacert;
     private static KeyPair key1;
     private static KeyPair key2;
-    private String caname = getTestCAName();
     private static final String userName1 = "sceptest1";
     private static final String userName2 = "sceptest2";
     private static final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
@@ -163,32 +171,37 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private String httpReqPath;
     private ScepConfiguration scepConfiguration;
 
-    private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
 
+    @ClassRule
+    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    
+    @Rule
+    public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    
     @BeforeClass
-    public static void beforeClass() {
-        // Install BouncyCastle provider
-        CryptoProviderTools.installBCProvider();
-
+    public static void beforeClass() throws Exception {
         // Pre-generate key for all requests to speed things up a bit
         try {
             key1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new RuntimeException(e);
         }
+        
+        x509ca = cryptoTokenRule.createX509Ca();
+        cacert = (X509Certificate) x509ca.getCACertificate();
     }
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
         httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
-        cacert = (X509Certificate) getTestCACert();
-        
+             
         scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
         scepConfiguration.addAlias(scepAlias);
         globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
@@ -197,7 +210,6 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
         // remove user
         try {
         	endEntityManagementSession.deleteUser(admin, userName1);
@@ -216,6 +228,11 @@ public class ProtocolScepHttpTest extends CaTestCase {
         globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
     }
 
+    @AfterClass
+    public static void afterClass() {
+        cryptoTokenRule.cleanUp();
+    }
+    
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -243,7 +260,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
             remove = true;
         }
         
-        String resourceName = "/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=" + caname;
+        String resourceName = "/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=" + x509ca.getName();
         String httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
         String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
         String httpBaseUrl = "http://" + httpHost + ":" + httpPort;
@@ -407,7 +424,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     public void test08ScepGetCACert() throws Exception {
         log.debug(">test07ScepGetCACert()");
         {
-            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(caname, "UTF-8");
+            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(x509ca.getName(), "UTF-8");
             URL url = new URL(reqUrl);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -448,7 +465,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
             con.connect();
             assertEquals("Response code is not 404 (not found)", 404, con.getResponseCode());
             // Try with the good CA            
-            updatePropertyOnServer("scep.defaultca", caname);
+            updatePropertyOnServer("scep.defaultca", x509ca.getName());
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.getDoOutput();
@@ -479,24 +496,22 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     @Test
     public void test09ScepGetCrl() throws Exception {
-        log.debug(">test08ScepGetCrl()");
         
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
-        
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
         
-        log.debug(">test08ScepGetCrl()");
     }
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
         log.debug(">test09ScepGetCACaps()");
-        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
+        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(x509ca.getName(), "UTF-8");
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
@@ -620,7 +635,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
     
     private EndEntityInformation getEndEntityInformation(String userName, String userDN) {
-        final EndEntityInformation data = new EndEntityInformation(userName, userDN, caid, null, "sceptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
+        final EndEntityInformation data = new EndEntityInformation(userName, userDN, x509ca.getCAId(), null, "sceptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         data.setPassword("foo123");
         data.setStatus(EndEntityConstants.STATUS_NEW);
