@@ -118,6 +118,8 @@ public class CrmfRARequestTest extends CmpTestCase {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
+    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CrmfRARequestTest.class.getSimpleName()); 
+    
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -369,7 +371,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(Configuration.GlobalConfigID);
         gc.setEnableEndEntityProfileLimitations(true);
-        globalConfSession.saveConfiguration(roleMgmgToken, gc, Configuration.GlobalConfigID);
+        globalConfSession.saveConfiguration(authenticationToken, gc, Configuration.GlobalConfigID);
         
         cmpConfiguration.setRAEEProfile(cmpAlias, "KeyId");
         cmpConfiguration.setRACertProfile(cmpAlias, "KeyId");

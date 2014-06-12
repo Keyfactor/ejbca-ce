@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.rules.ExternalResource;
@@ -25,67 +22,29 @@ import org.junit.rules.ExternalResource;
  */
 public class CryptoTokenRule extends ExternalResource {
 
-    private static Method caCreationMethod = null;
-    private static Method caTearDownMethod = null;
-    private static Method cryptoTokenCreationMethod = null;
-    private static Method cryptoTokenTearDownMethod = null;
     private static CryptoTokenRunner callback = null;
 
-    public X509CA createX509Ca() {
-        if (caCreationMethod == null) {
-            throw new IllegalStateException("Can't create CA without an injected method.");
+    public X509CA createX509Ca() throws Exception {
+        if (callback == null) {
+            throw new IllegalStateException("Can't create CA without an injected callback.");
         }
-        try {
-            return (X509CA) caCreationMethod.invoke(callback);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        }
+        return callback.createX509Ca();
     }
 
-    public Integer createCryptoToken() {
-        if (cryptoTokenCreationMethod == null) {
-            throw new IllegalStateException("Can't create CryptoToken without an injected method.");
+    public Integer createCryptoToken() throws Exception {
+        if (callback == null) {
+            throw new IllegalStateException("Can't create Crypto Token without an injected callback.");
         }
-        try {
-            return (Integer) cryptoTokenCreationMethod.invoke(callback);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        }
+        return callback.createCryptoToken();
     }
 
     public static void cleanUp() {
-        if (caTearDownMethod == null) {
-            throw new IllegalStateException("Can't create CA without an injected method.");
+        if (callback == null) {
+            throw new IllegalStateException("Can't tear down without an injected callback.");
         }
-        try {
-            caTearDownMethod.invoke(callback);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        }
-        if (cryptoTokenTearDownMethod == null) {
-            throw new IllegalStateException("Can't create CA without an injected method.");
-        }
-        try {
-            cryptoTokenTearDownMethod.invoke(callback);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        }
+        callback.teardownCryptoToken();
+        callback.tearDownAllCas();
+
     }
 
     @Override
@@ -93,12 +52,7 @@ public class CryptoTokenRule extends ExternalResource {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
-    public static void setCreationMethod(final CryptoTokenRunner callback, final Method caCreationMethod, final Method caTearDownMethod,
-            final Method cryptoTokenCreationMethod, final Method cryptoTokenTearDownMethod) {
+    public static void setCallback(final CryptoTokenRunner callback) {
         CryptoTokenRule.callback = callback;
-        CryptoTokenRule.caCreationMethod = caCreationMethod;
-        CryptoTokenRule.caTearDownMethod = caTearDownMethod;
-        CryptoTokenRule.cryptoTokenCreationMethod = cryptoTokenCreationMethod;
-        CryptoTokenRule.cryptoTokenTearDownMethod = cryptoTokenTearDownMethod;
     }
 }

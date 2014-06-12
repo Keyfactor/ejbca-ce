@@ -18,6 +18,7 @@ import java.util.Date;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -57,32 +58,41 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
 
     @Override
     public X509CA createX509Ca() throws Exception {
-        x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN);
+        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN);
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
         //Store the CA Certificate.
         certificateStoreSession.storeCertificate(alwaysAllowToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
+        casToRemove.put(x509ca.getCAId(), x509ca);
         return x509ca;
     }
 
     @Override
-    public void tearDownX509Ca() throws Exception {
-        int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
-        try {
-            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
-            if (x509ca != null) {
-                final int caCryptoTokenId = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
-                cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
-                caSession.removeCA(alwaysAllowToken, x509ca.getCAId());
+    public void tearDownCa(CA ca) {
+        if (ca != null) {
+            int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+            try {
+                cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
+                if (ca != null) {
+                    final int caCryptoTokenId = caSession.getCAInfo(alwaysAllowToken, ca.getCAId()).getCAToken().getCryptoTokenId();
+                    cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
+                    caSession.removeCA(alwaysAllowToken, ca.getCAId());
+                }
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException(e);
+            } catch (CADoesntExistsException e) {
+                //NOPMD Ignore
             }
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException(e);
-        } catch (CADoesntExistsException e) {
-           //NOPMD Ignore
-        }      
+        }
         internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN);
+        casToRemove.remove(ca.getCAId());
+    }
+    
+    @Override
+    public void tearDownAllCas() {
+        
     }
     
     
