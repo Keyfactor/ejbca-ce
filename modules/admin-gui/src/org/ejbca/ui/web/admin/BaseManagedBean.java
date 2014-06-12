@@ -47,6 +47,11 @@ public abstract class BaseManagedBean implements Serializable{
 		getEjbcaWebBean().isAuthorizedNoLog(resource);
 	}
 
+	/** @return true if the current admin is authorized to the resources or false otherwise */
+    protected boolean isAuthorizedTo(final String...resources) {
+        return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), resources);
+    }
+
 	protected void addErrorMessage(String messageResource){
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true),getEjbcaWebBean().getText(messageResource, true)));
