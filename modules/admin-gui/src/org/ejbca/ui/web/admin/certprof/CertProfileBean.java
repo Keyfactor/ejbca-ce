@@ -132,7 +132,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return isTypeRootCa() || isTypeSubCa();
     }
     
-    public boolean isTypeHardTokenAvailable() { return getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens(); }
+    public boolean isTypeEndEntityAvailable() { return true; }
+    public boolean isTypeSubCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
+    public boolean isTypeRootCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
+    public boolean isTypeHardTokenAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens(); }
 
     public boolean isTypeEndEntity() throws AuthorizationDeniedException { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ENDENTITY; }
     public boolean isTypeSubCa() throws AuthorizationDeniedException { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_SUBCA; }
@@ -147,18 +150,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isUniqueCertificateSerialNumberIndex() {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();
     }
-
-    @Deprecated
-    public List<SelectItem/*<Integer,String*/> getTypeAvailable() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem(CertificateConstants.CERTTYPE_ENDENTITY, getEjbcaWebBean().getText("ENDENTITY")));
-        if (getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
-            ret.add(new SelectItem(CertificateConstants.CERTTYPE_SUBCA, getEjbcaWebBean().getText("SUBCA")));
-            ret.add(new SelectItem(CertificateConstants.CERTTYPE_ROOTCA, getEjbcaWebBean().getText("ROOTCA")));
-        }
-        return ret;
-    }
-
+    
     public List<SelectItem/*<Integer,String*/> getAvailableBitLengthsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final int current : CertificateProfile.DEFAULTBITLENGTHS) {

@@ -67,11 +67,14 @@
 
 		<h:outputLabel for="selecttype" value="#{web.text.TYPE}"/>
 		<h:panelGroup id="selecttype">
-			<h:commandButton value="#{certProfileBean.typeEndEntity?'✓':' '}#{web.text.ENDENTITY}" disabled="#{certProfileBean.typeEndEntity}" action="#{certProfileBean.setTypeEndEntity}"/>
-			<h:commandButton value="#{certProfileBean.typeSubCa?'✓':' '}#{web.text.SUBCA}" disabled="#{certProfileBean.typeSubCa}" action="#{certProfileBean.setTypeSubCa}"/>
-			<h:commandButton value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}" disabled="#{certProfileBean.typeRootCa}" action="#{certProfileBean.setTypeRootCa}"/>
-			<h:commandButton value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.ROOTCA}" disabled="#{certProfileBean.typeHardToken}" action="#{certProfileBean.setTypeHardToken}"
-				rendered="#{certProfileBean.typeHardTokenAvailable}"/>
+			<h:commandButton rendered="#{certProfileBean.typeEndEntityAvailable}" disabled="#{certProfileBean.typeEndEntity}"
+				action="#{certProfileBean.setTypeEndEntity}" value="#{certProfileBean.typeEndEntity?'✓':' '}#{web.text.ENDENTITY}"/>
+			<h:commandButton rendered="#{certProfileBean.typeSubCaAvailable}" disabled="#{certProfileBean.typeSubCa}"
+				action="#{certProfileBean.setTypeSubCa}" value="#{certProfileBean.typeSubCa?'✓':' '}#{web.text.SUBCA}"/>
+			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable}" disabled="#{certProfileBean.typeRootCa}"
+				action="#{certProfileBean.setTypeRootCa}" value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}"/>
+			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable}" disabled="#{certProfileBean.typeHardToken}"
+				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.ROOTCA}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>

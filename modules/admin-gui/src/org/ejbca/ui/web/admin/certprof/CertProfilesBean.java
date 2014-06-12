@@ -152,10 +152,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         return isAuthorizedTo(StandardRules.EDITCERTIFICATEPROFILE.resource());
     }
     
-    private boolean isAuthorizedTo(final String...resources) {
-        return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), resources);
-    }
-
     public String actionEdit() {
         selectCurrentRowData();
         return "edit";   // Outcome is defined in faces-config.xml
