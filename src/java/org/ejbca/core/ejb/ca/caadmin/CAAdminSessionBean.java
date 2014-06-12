@@ -147,7 +147,6 @@ import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
@@ -781,16 +780,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     private Collection<Certificate> createCertificateChain(AuthenticationToken authenticationToken, CA ca, CryptoToken cryptoToken, CertificateProfile certprofile) throws CryptoTokenOfflineException {
-        CAInfo cainfo = ca.getCAInfo();
-        CAToken caToken = cainfo.getCAToken();
+        final CAInfo cainfo = ca.getCAInfo();
+        final CAToken caToken = cainfo.getCAToken();
         Collection<Certificate> certificatechain = null;
-        String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
+        final String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
         final String aliasCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         int caid = cainfo.getCAId();
-        String caAltName = null;
-        if (cainfo instanceof X509CAInfo) {
-            caAltName = ((X509CAInfo) cainfo).getSubjectAltName();
-        }
         if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
             try {
                 // create selfsigned certificate
@@ -798,9 +793,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
-                // AltName is not implemented for all CA types              
-                EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
-                        null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+                EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
                         cainfo.getValidity(), certprofile, sequence);
                 if (log.isDebugEnabled()) {
@@ -836,9 +829,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // Check that the signer is valid
                 assertSignerValidity(authenticationToken, signca);
                 // Create CA certificate
-                EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(),
-                        caAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0,
-                        null);
+                EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
                         null, cainfo.getValidity(), certprofile, sequence);
@@ -869,6 +860,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     }
     
+    private EndEntityInformation makeEndEntityInformation(final CAInfo cainfo) {
+        String caAltName = null;
+        ExtendedInformation extendedinfo = null;
+        if (cainfo instanceof X509CAInfo) {
+            final X509CAInfo x509cainfo = (X509CAInfo)cainfo;
+            caAltName = x509cainfo.getSubjectAltName();
+            extendedinfo = new ExtendedInformation();
+            extendedinfo.setNameConstraintsPermitted(x509cainfo.getNameConstraintsPermitted());
+            extendedinfo.setNameConstraintsExcluded(x509cainfo.getNameConstraintsExcluded());
+        }
+        
+        return new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
+                null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, extendedinfo);
+    }
+
     @Override
     public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException {
         boolean xkmsrenewcert = false;
@@ -1404,13 +1410,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
                     // Create cacertificate
                     Certificate cacertificate = null;
-                    String subjectAltName = null;
-                    if (cainfo instanceof X509CAInfo) {
-                        subjectAltName = ((X509CAInfo) cainfo).getSubjectAltName();
-                    }
-                    EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(),
-                            subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0,
-                            0, null);
+                    EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                     // We can pass the PKCS10 request message as extra
                     // parameters
                     if (requestmessage instanceof PKCS10RequestMessage) {
@@ -1697,14 +1697,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 // create selfsigned certificate
-                String subjectAltName = null;
-                if (ca instanceof X509CA) {
-                    X509CA x509ca = (X509CA) ca;
-                    subjectAltName = x509ca.getSubjectAltName();
-                }
-                EndEntityInformation cainfodata = new EndEntityInformation("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName,
-                        null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
-
+                EndEntityInformation cainfodata = makeEndEntityInformation(ca.getCAInfo());
                 // get from CAtoken to make sure it is fresh
                 String sequence = caToken.getKeySequence();
                 cacertificate = ca.generateCertificate(cryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getValidity(), certprofile,
@@ -1721,15 +1714,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     // Check that the signer is valid
                     assertSignerValidity(authenticationToken, signca);
                     // Create cacertificate
-                    String subjectAltName = null;
-                    if (ca instanceof X509CA) {
-                        X509CA x509ca = (X509CA) ca;
-                        subjectAltName = x509ca.getSubjectAltName();
-                    }
-                    EndEntityInformation cainfodata = new EndEntityInformation("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(),
-                            subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, ca.getCertificateProfileId(), null, null, 0, 0,
-                            null);
-
+                    EndEntityInformation cainfodata = makeEndEntityInformation(ca.getCAInfo());
                     String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
                     CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                     cacertificate = signca.generateCertificate(signCryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getValidity(),
