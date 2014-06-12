@@ -29,9 +29,7 @@ import org.bouncycastle.asn1.x509.GeneralSubtree;
 import org.bouncycastle.asn1.x509.NameConstraints;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -61,33 +59,23 @@ public class NameConstraint extends StandardCertificateExtension {
             PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         NameConstraints nc = null;
         
-        List<String> permittedNames = null;
-        List<String> excludedNames = null;
-        
         if (!(ca instanceof X509CA)) {
             throw new CertificateExtensionException("Can't issue non-X509 certificate with Name Constraint");
         }
         
-        if (certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
-            certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) {
-            // Issuing a CA
-            X509CAInfo x509ca = (X509CAInfo)ca.getCAInfo();
-            permittedNames = x509ca.getNameConstraintsPermitted();
-            excludedNames = x509ca.getNameConstraintsExcluded();
-        } else if (certProfile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
-            // Issuing a end-entity certificate
-            ExtendedInformation ei = userData.getExtendedinformation();
-            permittedNames = ei.getNameConstraintsPermitted();
-            excludedNames = ei.getNameConstraintsExcluded();
-        }
-        
-        if (permittedNames != null || excludedNames != null) {
-            GeneralSubtree[] permitted = toGeneralSubtrees(permittedNames);
-            GeneralSubtree[] excluded = toGeneralSubtrees(excludedNames);
+        final ExtendedInformation ei = userData.getExtendedinformation();
+        if (ei != null) {
+            final List<String> permittedNames = ei.getNameConstraintsPermitted();
+            final List<String> excludedNames = ei.getNameConstraintsExcluded();
             
-            // Do not include an empty name constraints extension
-            if (permitted.length != 0 || excluded.length != 0) {
-                nc = new NameConstraints(permitted, excluded);
+            if (permittedNames != null || excludedNames != null) {
+                final GeneralSubtree[] permitted = toGeneralSubtrees(permittedNames);
+                final GeneralSubtree[] excluded = toGeneralSubtrees(excludedNames);
+                
+                // Do not include an empty name constraints extension
+                if (permitted.length != 0 || excluded.length != 0) {
+                    nc = new NameConstraints(permitted, excluded);
+                }
             }
         }
         
