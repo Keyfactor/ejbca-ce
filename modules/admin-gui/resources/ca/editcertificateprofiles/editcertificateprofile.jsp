@@ -55,7 +55,7 @@
 </div>
 
 <h:form id="cpf">
-	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1">
+	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<h:panelGroup/>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.caPath}/editcertificateprofiles/editcertificateprofiles.jsf">
