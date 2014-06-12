@@ -210,7 +210,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseKeyUsage() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseKeyUsage(!getCertificateProfile().getUseKeyUsage());
-        redirectToComponent("cbkeyusagegroup");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public boolean isKeyUsageDigitalSignature() throws AuthorizationDeniedException { return getCertificateProfile().getKeyUsage(CertificateConstants.DIGITALSIGNATURE); }
@@ -234,7 +234,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUseExtendedKeyUsage() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseExtendedKeyUsage(!getCertificateProfile().getUseExtendedKeyUsage());
-        redirectToComponent("checkuseextendedkeyusagegroup");
+        redirectToComponent("header_x509v3extensions");
     }
 
     public List<SelectItem/*<String,String*/> getExtendedKeyUsageOidsAvailable() {
@@ -248,17 +248,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseSubjectAlternativeName() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseSubjectAlternativeName(!getCertificateProfile().getUseSubjectAlternativeName());
-        redirectToComponent("cbsubjectalternativenamegroup");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseIssuerAlternativeName() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseIssuerAlternativeName(!getCertificateProfile().getUseIssuerAlternativeName());
-        redirectToComponent("cbissueralternativenamegroup");
+        redirectToComponent("header_x509v3extensions");
     }
 
     public void toggleUseNameConstraints() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseNameConstraints(!getCertificateProfile().getUseNameConstraints());
-        redirectToComponent("checknameconstraintsgroup");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
@@ -283,7 +283,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseCertificatePolicies() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCertificatePolicies(!getCertificateProfile().getUseCertificatePolicies());
-        redirectToComponent("certificatePolicies");
+        redirectToComponent("header_crls");
     }
     
     private ListDataModel certificatePoliciesModel = null;
@@ -315,7 +315,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().addCertificatePolicy(newCertificatePolicy);
         setNewCertificatePolicy(null);
         certificatePoliciesModel = null;
-        redirectToComponent("certificatePolicies");
+        redirectToComponent("header_crls");
         return "";
     }
 
@@ -324,7 +324,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCertificatePolicy(certificatePolicy);
         newCertificatePolicy = certificatePolicy;
         certificatePoliciesModel = null;
-        redirectToComponent("certificatePolicies");
+        redirectToComponent("header_crls");
         return "";
     }
 
@@ -345,12 +345,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUseAuthorityInformationAccess() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseAuthorityInformationAccess(!getCertificateProfile().getUseAuthorityInformationAccess());
-        redirectToComponent("checkuseauthorityinformationaccessgroup");
+        redirectToComponent("header_crls");
     }
     
     public void toggleUseDefaultOCSPServiceLocator() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultOCSPServiceLocator(!getCertificateProfile().getUseDefaultOCSPServiceLocator());
-        redirectToComponent("checkuseauthorityinformationaccessgroup");
+        redirectToComponent("header_crls");
     }
     
     public String getNewCaIssuer() { return newCaIssuer; }
@@ -360,7 +360,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().addCaIssuer(newCaIssuer);
         newCaIssuer = "";
         caIssuersModel = null;
-        redirectToComponent("checkuseauthorityinformationaccessgroup");
+        redirectToComponent("header_crls");
         return "";
     }
 
@@ -369,13 +369,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCaIssuer(caIssuer);
         newCaIssuer = caIssuer;
         caIssuersModel = null;
-        redirectToComponent("checkuseauthorityinformationaccessgroup");
+        redirectToComponent("header_crls");
         return "";
     }
     
     public void toggleUsePrivateKeyUsagePeriodNotBefore() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotBefore(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotBefore());
-        redirectToComponent("privateKeyUsagePeriodGroup");
+        redirectToComponent("header_crls");
     }
 
     public String getPrivateKeyUsagePeriodStartOffset() throws AuthorizationDeniedException {
@@ -399,7 +399,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUsePrivateKeyUsagePeriodNotAfter() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotAfter(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotAfter());
-        redirectToComponent("privateKeyUsagePeriodGroup");
+        redirectToComponent("header_crls");
     }
     
     public String getPrivateKeyUsagePeriodLength() throws AuthorizationDeniedException {
@@ -492,7 +492,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUseDocumentTypeList() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDocumentTypeList(!getCertificateProfile().getUseDocumentTypeList());
-        redirectToComponent("otherextensions");
+        redirectToComponent("cvc_epassport");
     }
     
     private ListDataModel documentTypeList = null;
@@ -508,7 +508,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setDocumentTypeList(documentTypeListValue);
         documentTypeListNew = current;
         documentTypeList = null;    // Trigger reload of model
-        redirectToComponent("otherextensions");
+        redirectToComponent("cvc_epassport");
     }
     public void documentTypeListAdd() throws AuthorizationDeniedException, IOException {
         if (documentTypeListNew.length()>0) {
@@ -518,7 +518,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             documentTypeListNew = "";
             documentTypeList = null;    // Trigger reload of model
         }
-        redirectToComponent("otherextensions");
+        redirectToComponent("cvc_epassport");
     }
     public ListDataModel/*<String>*/ getDocumentTypeList() throws AuthorizationDeniedException {
         if (documentTypeList==null) {

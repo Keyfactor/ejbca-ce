@@ -55,7 +55,7 @@
 </div>
 
 <h:form id="cpf">
-	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<h:panelGroup/>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.caPath}/editcertificateprofiles/editcertificateprofiles.jsf">
@@ -99,6 +99,9 @@
 				<h:outputText value="#{web.ejbcaWebBean.dateExample}"/>
 			</h:panelGroup>
 		</h:panelGroup>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Authorizations --%>
 
@@ -160,6 +163,9 @@
 			<h:selectBooleanCheckbox id="checkallowbackdatedrevokation" value="#{certProfileBean.certificateProfile.allowBackdatedRevocation}"/>
 			<h:outputLabel for="checkallowbackdatedrevokation" value="#{web.text.ALLOW} "/>
 		</h:panelGroup>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- X.509v3 extensions (PKIX) --%>
 
@@ -327,6 +333,9 @@
 				disabled="#{!certProfileBean.certificateProfile.useNameConstraints}"/>
 			<h:outputLabel for="checknameconstraintscritical" value="#{web.text.EXT_CRITICAL}"/>
 		</h:panelGroup>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- PKIX CRL Distribution Points (CRL-DP) extension --%>
 
@@ -518,6 +527,9 @@
 			<h:outputText styleClass="help" value="#{web.text.FORMAT_TIME_YMD}"/>
 		</h:panelGrid>
 
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
 		<%-- Qualified Certificates Statements (qcStatements) extension --%>
 
 		<h:outputLabel for="header_qcStatements" value="#{web.text.EXT_HEADER_QCSTATEMENTS}" style="font-weight: bold;"/>
@@ -612,6 +624,9 @@
 			size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"
 			disabled="#{!certProfileBean.certificateProfile.useQCCustomString}"/>
 
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
 		<%-- Certificate Transparency --%>
 
 		<h:outputLabel for="header_certificatetransparency" value="#{web.text.EXT_HEADER_CERTIFICATETRANSPARENCY}" style="font-weight: bold;"/>
@@ -650,6 +665,9 @@
 		<h:inputText rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts && !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
 
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
 		<%-- Other extensions --%>
 		<h:outputLabel for="otherextensions" value="#{web.text.OTHEREXTENSIONS}" style="font-weight: bold;"/>
 		<h:panelGroup id="otherextensions"/>
@@ -684,6 +702,9 @@
 			<h:selectBooleanCheckbox id="checkusecardnumber" value="#{certProfileBean.certificateProfile.useCardNumber}"/>
 			<h:outputLabel for="checkusecardnumber" value="#{web.text.USE}"/>
 		</h:panelGroup>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- ePassport --%>
 
@@ -757,6 +778,9 @@
 				<h:outputLabel for="cvcAccessRightQualSign" value="#{web.text.CVCACCESSQUALSIGN}"/>
 			</h:panelGrid>
 		</h:panelGroup>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Other data --%>
 
