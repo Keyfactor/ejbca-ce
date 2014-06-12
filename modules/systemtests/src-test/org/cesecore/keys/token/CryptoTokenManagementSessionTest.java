@@ -18,22 +18,17 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -53,7 +48,6 @@ import org.junit.Test;
 public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private static final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
@@ -87,10 +81,10 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithImpliedRSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "1024");
             subTest(cryptoTokenId, "1024");
         } finally {
-            removeCryptoToken(roleMgmgToken, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
     
@@ -98,10 +92,10 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithExplicitRSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "RSA1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaRsa", "RSA1024");
             subTest(cryptoTokenId, "RSA1024");
         } finally {
-            removeCryptoToken(roleMgmgToken, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
 
@@ -109,10 +103,10 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = createCryptoTokenForCA(roleMgmgToken, "testCaDsa", "DSA1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDsa", "DSA1024");
             subTest(cryptoTokenId, "DSA1024");
         } finally {
-            removeCryptoToken(roleMgmgToken, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
 
@@ -120,10 +114,10 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     public void basicCryptoTokenForCAWithECDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = createCryptoTokenForCA(roleMgmgToken, "testCaEcdsa", "secp256r1");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaEcdsa", "secp256r1");
             subTest(cryptoTokenId, "secp256r1");
         } finally {
-            removeCryptoToken(roleMgmgToken, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
 
@@ -189,7 +183,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Test
     public void testIllegalCAKeyLengthRsa() throws Exception {
         try {
-            createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthRsa", "512");
+            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthRsa", "512");
             fail("Shouldn't be able to generate CA keystore keys with 512 bit RSA");
         } catch (RuntimeException e) {
             assertEquals(InvalidKeyException.class.getName(), e.getCause().getClass().getName());
@@ -199,7 +193,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Test
     public void testIllegalCAKeyLengthDsa() throws Exception {
         try {
-            createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthDsa", "DSA512");
+            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthDsa", "DSA512");
             fail("Shouldn't be able to generate CA keystore keys with 512 bit DSA");
         } catch (RuntimeException e) {
             assertEquals(InvalidKeyException.class.getName(), e.getCause().getClass().getName());
@@ -209,7 +203,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Test
     public void testIllegalCAKeyLengthEcdsa() throws Exception {
         try {
-            createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthEcdsa", "prime192v1");
+            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthEcdsa", "prime192v1");
             fail("Shouldn't be able to generate CA keystore keys with 'prime192v1' ECDSA");
         } catch (RuntimeException e) {
             log.debug("", e);
@@ -226,7 +220,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         final char[] PIN_WRONG = "wrong".toCharArray();
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = createCryptoTokenForCA(roleMgmgToken, "modifyPin", "RSA1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "modifyPin", "RSA1024");
             // Note the secondary testing of pin changes is the calls below
             final boolean usesAutoActivation1 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_ORG, PIN_SECOND, UPDATE_ONLY);
             assertTrue("Updating soft keystore pin should not remove auto activation", usesAutoActivation1);
@@ -275,101 +269,14 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
                 // Expected
             }
         } finally {
-            removeCryptoToken(roleMgmgToken, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
     
-    /** Create CryptoToken and generate CA's keys */
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec);
-    }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11, String tokenName, String signKeySpec) {
-        return createCryptoTokenForCAInternal(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec);
-    }
+    
 
-    private static int createCryptoTokenForCAInternal(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11, String tokenName, String signKeySpec) {
-        if (authenticationToken == null) {
-            authenticationToken = alwaysAllowToken;
-        }
-        
-        // Generate full name of cryptotoken including class/method name etc.
-        final String callingClassName = Thread.currentThread().getStackTrace()[4].getClassName();
-        final String callingClassSimpleName = callingClassName.substring(callingClassName.lastIndexOf('.')+1);
-        final String callingMethodName = Thread.currentThread().getStackTrace()[4].getMethodName();
-        final String fullTokenName = callingClassSimpleName + "." + callingMethodName + "."+ tokenName;
-        
-        // Delete cryptotokens with the same name
-        while (true) {
-            final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(fullTokenName);
-            if (oldCryptoTokenId == null) break;
-            removeCryptoToken(authenticationToken, oldCryptoTokenId);
-        }
-        
-        // Set up properties
-        final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
-        if (pin==null) {
-            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
-        }
-        String cryptoTokenClassName = SoftCryptoToken.class.getName();
-        if (pkcs11) {
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, getHSMLibrary());
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
-            cryptoTokenClassName = PKCS11CryptoToken.class.getName();
-        }
-        
-        // Create the cryptotoken
-        int cryptoTokenId = 0;
-        try {
-            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName, cryptoTokenProperties, null, pin);
-            if (genenrateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
-            }
-        } catch (Exception e) {
-            // Cleanup token if we failed during the key creation stage
-            try {
-                removeCryptoToken(null, cryptoTokenId);
-            } catch (Exception e2) {
-                log.error("", e2);
-            }
-            throw new RuntimeException(e);
-        }
-        return cryptoTokenId;
-    }
+   
 
-    /** @return HSM detected library location */
-    private static String getHSMLibrary() {
-        final File utimacoCSLinux = new File("/etc/utimaco/libcs2_pkcs11.so");
-        final File utimacoCSWindows = new File("C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll");
-        final File lunaSALinux64 = new File("/usr/lunasa/lib/libCryptoki2_64.so");
-        final File protectServerLinux64 = new File("/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so");
-        String ret = null;
-        if (utimacoCSLinux.exists()) {
-            ret = utimacoCSLinux.getAbsolutePath();
-        } else if (utimacoCSWindows.exists()) {
-            ret = utimacoCSWindows.getAbsolutePath();
-        } else if (lunaSALinux64.exists()) {
-            ret = lunaSALinux64.getAbsolutePath();
-        } else if (protectServerLinux64.exists()) {
-            ret = protectServerLinux64.getAbsolutePath();
-        } else {
-            fail("No supported HSM libarary found.");
-        }
-        return ret;
-    }
-
-    /** Remove the cryptoToken, if the crypto token with the given ID does not exist, nothing happens */
-    public static void removeCryptoToken(AuthenticationToken authenticationToken, final int cryptoTokenId) {
-        if (authenticationToken == null) {
-            authenticationToken = alwaysAllowToken;
-        }
-        try {
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
-        } catch (AuthorizationDeniedException e) {
-            throw new RuntimeException(e);  // Expect that calling method knows what it's doing
-        }
-    }    
+   
 }

@@ -95,7 +95,7 @@ public class InternalKeyBindingMgmtTest {
     
     @AfterClass
     public static void afterClass() {
-        CryptoTokenRule.cleanUp();
+        cryptoTokenRule.cleanUp();
     }
    
         

@@ -92,7 +92,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
     @After
     public void tearDown() throws Exception {    
-        CryptoTokenRule.cleanUp();
+        cryptoTokenRule.cleanUp();
         cmpConfiguration.removeAlias(cmpAlias);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }

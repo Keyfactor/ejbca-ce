@@ -165,7 +165,6 @@ public abstract class CmpTestCase extends CaTestCase {
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(this.getClass().getSimpleName()));
 
     protected void setUp() throws Exception { // NOPMD: this is a test base class
-        super.setUp();
         String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
         CMP_HOST = SystemTestsConfiguration.getRemoteHost(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";

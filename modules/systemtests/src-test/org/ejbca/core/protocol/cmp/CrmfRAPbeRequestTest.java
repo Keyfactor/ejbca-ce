@@ -59,6 +59,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -198,7 +199,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
         
         endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
@@ -458,7 +459,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         int cryptoTokenId = 0;
         try {
             // Generate CA with approvals for revocation enabled
-            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, caname, "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             int caID = RevocationApprovalTest.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession, catoken);
             // Get CA cert
@@ -540,7 +541,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             } finally {
                 caSession.removeCA(admin, cainfo.getCAId());
             }
-            CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
         }
     } // test04RevocationApprovals
 

@@ -58,7 +58,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -341,7 +341,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
     		caSession.removeCA(roleMgmgToken, ca.getCAId());
     		internalCertStoreSession.removeCertificate(cert);
     	}    	
@@ -524,7 +524,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             cryptoTokenManagementSession.removeKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
             caSession.removeCA(authenticationToken, ca.getCAId());
             internalCertStoreSession.removeCertificate(cert);
         }

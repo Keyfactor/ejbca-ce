@@ -77,7 +77,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -1026,7 +1026,7 @@ public class CAsTest extends CaTestCase {
         } catch (CAExistsException e) {
             // Expected
         }
-        CryptoTokenManagementSessionTest.removeCryptoToken(admin, caToken.getCryptoTokenId());
+        CryptoTokenTestUtils.removeCryptoToken(admin, caToken.getCryptoTokenId());
         log.trace("<test16InvalidCreateCaActions()");
     }
 

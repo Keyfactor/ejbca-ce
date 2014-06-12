@@ -130,6 +130,7 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -465,7 +466,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
         } finally {
             endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
+            CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
         }
     } // test08OcspEcdsaGood
 
@@ -489,7 +490,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
         } finally {
             endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
+            CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
         }
     } // test09OcspEcdsaImplicitlyCAGood
 
@@ -1334,10 +1335,10 @@ Content-Type: text/html; charset=iso-8859-1
             
             try {
                 int cryptoTokenId = caSession.getCAInfo(admin, subSubCaDN.hashCode()).getCAToken().getCryptoTokenId();
-                CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
                 
                 cryptoTokenId = caSession.getCAInfo(admin, subcaDN.hashCode()).getCAToken().getCryptoTokenId();
-                CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
             } catch (Exception e) {
                 log.error("",e);
             }
@@ -1368,7 +1369,7 @@ Content-Type: text/html; charset=iso-8859-1
                 .getResponseCode() == 200);
         try {
             final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
-            CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
         } catch (Exception e) {
             log.error("",e);
         }
@@ -1535,7 +1536,7 @@ Content-Type: text/html; charset=iso-8859-1
         int cryptoTokenId = 0;
         CAInfo info = null;
         try {
-            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec);
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
@@ -1604,7 +1605,7 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate cacert = null;
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec);
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
@@ -1643,7 +1644,7 @@ Content-Type: text/html; charset=iso-8859-1
                     CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, 
                     CADoesntExistsException, CAExistsException {
         try {
-            int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, subcaDN, "1024");
+            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, subcaDN, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();

@@ -57,7 +57,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -1130,7 +1130,7 @@ public class XKMSKRSSTest {
         int caID = -1;
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(administrator, caname, "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(administrator, caname, "1024");
             final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             caID = RevocationApprovalTest.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession, caToken);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator()
@@ -1208,7 +1208,7 @@ public class XKMSKRSSTest {
                 endEntityManagementSession.deleteUser(administrator, username);
             }
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(administrator, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(administrator, cryptoTokenId);
             // Nuke CA
             try {
                 caAdminSession.revokeCA(administrator, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

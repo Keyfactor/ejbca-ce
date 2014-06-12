@@ -27,13 +27,12 @@ import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.roles.RemoveAdminCommand;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +87,7 @@ public class RemoveAdminCommandTest {
         assertNull("User aspect was not removed via CLI command", accessUserAspectManagerTestSession.find(AccessUserAspectData.generatePrimaryKey(
                 ROLENAME, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, matchValue)));
         
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(internalAdmin, caId);
         
     }

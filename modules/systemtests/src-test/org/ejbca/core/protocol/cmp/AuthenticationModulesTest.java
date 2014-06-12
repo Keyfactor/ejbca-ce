@@ -104,6 +104,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -220,7 +221,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         cmpConfiguration.removeAlias(configAlias);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
         
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(ADMIN, caid);
     }
 
@@ -1389,7 +1390,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         try{
             CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             int cryptoTokenId = cryptoTokenManagementSession.getIdFromName("CmpECDSATestCA");
-            CryptoTokenManagementSessionTest.removeCryptoToken(ADMIN, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(ADMIN, cryptoTokenId);
         } catch(Exception e) {}
         
         
@@ -1399,7 +1400,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String ecdsaCADN = "CN=CmpECDSATestCA";
         String keyspec = "prime256v1";
         
-        int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ecdsaCADN, keyspec);
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ecdsaCADN, keyspec);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));

@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -103,12 +104,12 @@ public class CAImportExportTest  {
     @Test
 	public void test01ImportExportSHA1withRSA() throws Exception {
 	    log.trace("<test01ImportExport..()");
-	    final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test01", "1024");
+	    final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test01", "1024");
 	    try {
 	        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 	        subTest(catoken);
 	    } finally {
-	        CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+	        CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
 	    }
 	    log.trace("<test01ImportExport()");
 	}
@@ -117,12 +118,12 @@ public class CAImportExportTest  {
     @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test02", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test02", "prime256v1");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catoken);
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
 	    log.trace("<test02ImportExport()");
 	}
@@ -131,12 +132,12 @@ public class CAImportExportTest  {
     @Test
 	public void test03ImportExportSHA256withRSA() throws Exception {
 	    log.trace("<test03ImportExport..()");
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test03", "2048");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test03", "2048");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catoken);
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
 	    log.trace("<test03ImportExport()");
 	}
@@ -145,12 +146,12 @@ public class CAImportExportTest  {
     @Test
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test04", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test04", "prime256v1");
         try {
             final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catokeninfo);
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
 	    log.trace("<test04ImportExport()");
 	}
@@ -163,12 +164,12 @@ public class CAImportExportTest  {
     @Test
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test05", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test05", "prime256v1");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTestPublicAccess(catoken, adminTokenNoAuth);
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
 	    log.trace("<test05ImportExport()");
 	}
@@ -181,12 +182,12 @@ public class CAImportExportTest  {
     @Test
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test06", "DSA1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test06", "DSA1024");
         try {
             final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catokeninfo);
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
 	    log.trace("<test06ImportExport()");
 	}
@@ -195,7 +196,7 @@ public class CAImportExportTest  {
     @Test
     public void test07ImportWithNewSession() throws Exception {
         log.trace("<test07Import...()");
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, "test07", "1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test07", "1024");
         try {
             CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             byte[] keystorebytes = null;
@@ -216,12 +217,12 @@ public class CAImportExportTest  {
                 ret = true;
             } finally {
                 final CAInfo caInfo = caSession.getCAInfo(internalAdmin, caname);
-                CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, caInfo.getCAToken().getCryptoTokenId());
+                CryptoTokenTestUtils.removeCryptoToken(internalAdmin, caInfo.getCAToken().getCryptoTokenId());
                 caSession.removeCA(internalAdmin, caInfo.getCAId());
             }
             assertEquals("Could not import CA.", ret, defaultRetValue);
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
     }
     
@@ -315,7 +316,7 @@ public class CAImportExportTest  {
 	        ret = false;
 	        try {
 	            final int cryptoTokenId = caSession.getCAInfo(internalAdmin, cainfo.getCAId()).getCAToken().getCryptoTokenId();
-	            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+	            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
 	            caSession.removeCA(internalAdmin, cainfo.getCAId());
 	            ret = true;
 	        } catch (Exception e) { 
@@ -428,7 +429,7 @@ public class CAImportExportTest  {
 		ret = false;
 		try {
             final int cryptoTokenId = caSession.getCAInfo(internalAdmin, caname).getCAToken().getCryptoTokenId();
-            CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 			ret = true;
 		} catch (Exception e) { 

@@ -65,7 +65,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.util.Base64;
@@ -341,7 +341,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         int cryptoTokenId = 0;
         int caID = -1;
         try {
-            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, caname, "1024");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
@@ -437,7 +437,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } finally {
                 caSession.removeCA(intAdmin, caID);
-                CryptoTokenManagementSessionTest.removeCryptoToken(intAdmin, cryptoTokenId);
+                CryptoTokenTestUtils.removeCryptoToken(intAdmin, cryptoTokenId);
             }
         }
         log.trace("<test19RevocationApprovals");

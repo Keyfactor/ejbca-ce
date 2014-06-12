@@ -58,7 +58,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
 
     @Override
     public X509CA createX509Ca() throws Exception {
-        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN);
+        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN+"X509");
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
@@ -68,7 +68,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         casToRemove.put(x509ca.getCAId(), x509ca);
         return x509ca;
     }
-
+    
     @Override
     public void tearDownCa(CA ca) {
         if (ca != null) {
@@ -89,12 +89,6 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN);
         casToRemove.remove(ca.getCAId());
     }
-    
-    @Override
-    public void tearDownAllCas() {
-        
-    }
-    
     
 
     @Override
