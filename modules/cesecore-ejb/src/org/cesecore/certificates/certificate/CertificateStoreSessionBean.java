@@ -1225,8 +1225,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         certificateData.setFingerprint(limitedFingerprint);
         certificateData.setSerialNumber(serialNumber.toString());
         certificateData.setIssuer(issuerDn);
-        // Below does not work on all databases since subjectDN is "not null"
-        certificateData.setSubjectDN("");
+        // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL, 
+        // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to 
+        // "CN=limited" instead of an empty string
+        certificateData.setSubjectDN("CN=limited");
         certificateData.setCertificateProfileId(new Integer(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
         certificateData.setStatus(CertificateConstants.CERT_REVOKED);
         certificateData.setRevocationReason(reasonCode);
