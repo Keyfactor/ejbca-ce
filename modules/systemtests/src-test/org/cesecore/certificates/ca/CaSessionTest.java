@@ -17,7 +17,7 @@ package org.cesecore.certificates.ca;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
@@ -50,7 +50,7 @@ public class CaSessionTest extends RoleUsingTestCase {
     @AfterClass
     public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
         try {
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();
@@ -84,7 +84,7 @@ public class CaSessionTest extends RoleUsingTestCase {
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpwd.toCharArray(), false, false);
         final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
         testBase.addCAGenerateKeysLater(ca, cadn, tokenpwd);
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+        CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class CaSessionTest extends RoleUsingTestCase {
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpwd.toCharArray(), false, false);
         final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
         testBase.addCAUseSessionBeanToGenerateKeys(ca, cadn, tokenpwd);
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+        CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class CaSessionTest extends RoleUsingTestCase {
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys("CN=Test Extended CA service", "foo123".toCharArray(), false, false);
         final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
         testBase.extendedCAServices(ca);
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+        CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
     }
 
     @Test

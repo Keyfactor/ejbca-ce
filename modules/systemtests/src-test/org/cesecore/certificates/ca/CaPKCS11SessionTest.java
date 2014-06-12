@@ -14,7 +14,7 @@ package org.cesecore.certificates.ca;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -51,7 +51,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     @AfterClass
     public static void afterClass() throws Exception {
         try {
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, authenticationx509ca.getCAToken().getCryptoTokenId());
+            CryptoTokenTestUtils.removeCryptoToken(null, authenticationx509ca.getCAToken().getCryptoTokenId());
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();

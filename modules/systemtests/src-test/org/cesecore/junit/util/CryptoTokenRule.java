@@ -38,7 +38,7 @@ public class CryptoTokenRule extends ExternalResource {
         return callback.createCryptoToken();
     }
 
-    public static void cleanUp() {
+    public void cleanUp() {
         if (callback == null) {
             throw new IllegalStateException("Can't tear down without an injected callback.");
         }

@@ -55,7 +55,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -170,14 +170,12 @@ public class CmpRAUnidTest extends CmpTestCase {
         
     }
 
-    @Override
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
         this.endEntityProfileSession.removeEndEntityProfile(this.admin, EEPNAME);
         this.certificateProfileSession.removeCertificateProfile(this.admin, CPNAME);
         
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
         
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());

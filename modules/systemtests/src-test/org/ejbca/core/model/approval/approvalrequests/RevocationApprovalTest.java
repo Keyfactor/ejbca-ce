@@ -50,7 +50,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -159,7 +159,7 @@ public class RevocationApprovalTest extends CaTestCase {
         String caname = RevocationApprovalTest.class.getSimpleName();
 
         // Create new CA
-        cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, caname, "1024");
+        cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caname, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession, catoken);
@@ -192,7 +192,7 @@ public class RevocationApprovalTest extends CaTestCase {
             // NOPMD:
         }
         caSession.removeCA(internalAdmin, approvalCAID);
-        CryptoTokenManagementSessionTest.removeCryptoToken(internalAdmin, cryptoTokenId);
+        CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
     }
 
     private String genRandomUserName(String usernameBase) {

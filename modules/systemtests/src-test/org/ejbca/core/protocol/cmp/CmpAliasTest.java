@@ -33,7 +33,6 @@ import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
@@ -42,7 +41,6 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class CmpAliasTest extends CmpTestCase {
@@ -57,10 +55,6 @@ public class CmpAliasTest extends CmpTestCase {
     private String baseResource = "publicweb/cmp";
     private String httpReqPath;
     
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-    }
     
     @Before
     public void setUp() throws Exception {

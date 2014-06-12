@@ -50,6 +50,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -148,11 +149,11 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 
         // Create new CA
-        cryptoTokenId1 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin1, "ca1", "1024");
+        cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(admin1, "ca1", "1024");
         final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        cryptoTokenId2 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin1, "ca2", "1024");
+        cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(admin1, "ca2", "1024");
         final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        cryptoTokenId3 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin1, "ca3", "1024");
+        cryptoTokenId3 = CryptoTokenTestUtils.createCryptoTokenForCA(admin1, "ca3", "1024");
         final CAToken catoken3 = CaTestUtils.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 
         approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {},
@@ -388,9 +389,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         removeCertificateProfile(CERTPROFILE4);
         removeCertificateProfile(CERTPROFILE5);
         // Remove the CA's CryptoTokens
-        CryptoTokenManagementSessionTest.removeCryptoToken(admin1, cryptoTokenId1);
-        CryptoTokenManagementSessionTest.removeCryptoToken(admin1, cryptoTokenId2);
-        CryptoTokenManagementSessionTest.removeCryptoToken(admin1, cryptoTokenId3);
+        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId1);
+        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId2);
+        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId3);
     }
     
     public String getRoleName() {

@@ -17,15 +17,19 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 
 /**
@@ -34,6 +38,11 @@ import org.cesecore.util.EjbRemoteHelper;
  */
 public class CryptoTokenTestUtils {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenTestUtils.class);
+    
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(CryptoTokenTestUtils.class.getSimpleName()));
+
+    
     private static final String TOKEN_PIN = "userpin1";
 
     private static final String UTIMACO_PKCS11_LINUX_LIB = "/etc/utimaco/libcs2_pkcs11.so";
@@ -44,6 +53,9 @@ public class CryptoTokenTestUtils {
     private static final String PROTECTSERVER_PKCS11_LINUX64_LIB = "/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so";
     private static final String PROTECTSERVER_PKCS11_LINUX32_LIB = "/opt/ETcpsdk/lib/linux-i386/libcryptoki.so";
     private static final String PROTECTSERVER_PKCS11_WINDOWS_LIB = "C:/Program Files/SafeNet/ProtectToolkit C SDK/bin/sw/cryptoki.dll";
+
+    private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+
     
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -61,6 +73,67 @@ public class CryptoTokenTestUtils {
         // Now add the test CA so it is available in the tests
         caSession.addCA(authenticationToken, x509ca);
         return x509ca;
+    }
+    
+    /** Create CryptoToken and generate CA's keys */
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, String tokenName, String signKeySpec) {
+        return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec);
+    }
+    
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11, String tokenName, String signKeySpec) {
+        return createCryptoTokenForCAInternal(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec);
+    }
+    
+    private static int createCryptoTokenForCAInternal(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11, String tokenName, String signKeySpec) {
+        if (authenticationToken == null) {
+            authenticationToken = alwaysAllowToken;
+        }
+        
+        // Generate full name of cryptotoken including class/method name etc.
+        final String callingClassName = Thread.currentThread().getStackTrace()[4].getClassName();
+        final String callingClassSimpleName = callingClassName.substring(callingClassName.lastIndexOf('.')+1);
+        final String callingMethodName = Thread.currentThread().getStackTrace()[4].getMethodName();
+        final String fullTokenName = callingClassSimpleName + "." + callingMethodName + "."+ tokenName;
+        
+        // Delete cryptotokens with the same name
+        while (true) {
+            final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(fullTokenName);
+            if (oldCryptoTokenId == null) break;
+            removeCryptoToken(authenticationToken, oldCryptoTokenId);
+        }
+        
+        // Set up properties
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
+        if (pin==null) {
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
+        }
+        String cryptoTokenClassName = SoftCryptoToken.class.getName();
+        if (pkcs11) {
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, getHSMLibrary());
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
+            cryptoTokenClassName = PKCS11CryptoToken.class.getName();
+        }
+        
+        // Create the cryptotoken
+        int cryptoTokenId = 0;
+        try {
+            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName, cryptoTokenProperties, null, pin);
+            if (genenrateKeys) {
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+            }
+        } catch (Exception e) {
+            // Cleanup token if we failed during the key creation stage
+            try {
+                removeCryptoToken(null, cryptoTokenId);
+            } catch (Exception e2) {
+                log.error("", e2);
+            }
+            throw new RuntimeException(e);
+        }
+        return cryptoTokenId;
     }
     
     public static int createSoftCryptoToken(AuthenticationToken authenticationToken, String cryptoTokenName) throws AuthorizationDeniedException,
@@ -132,4 +205,16 @@ public class CryptoTokenTestUtils {
         }
         return ret;
     }
+    
+    /** Remove the cryptoToken, if the crypto token with the given ID does not exist, nothing happens */
+    public static void removeCryptoToken(AuthenticationToken authenticationToken, final int cryptoTokenId) {
+        if (authenticationToken == null) {
+            authenticationToken = alwaysAllowToken;
+        }
+        try {
+            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
+        } catch (AuthorizationDeniedException e) {
+            throw new RuntimeException(e);  // Expect that calling method knows what it's doing
+        }
+    } 
 }
