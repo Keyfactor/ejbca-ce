@@ -53,7 +53,6 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
 
     private static final String TOKEN_PIN = "userpin1";
     private static final String ALIAS = "signKeyAlias";
-    private final String SUBJECT_DN = "CN=" + super.getName();
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
