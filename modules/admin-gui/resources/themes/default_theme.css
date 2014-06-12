@@ -345,6 +345,14 @@ table.edit tr td {
 	padding: .25em .5em;
 	line-height: 1.60em;
 }
+/* Columns */
+.editColumn1 {
+	width: 35%;
+	text-align: right;
+}
+.editColumn2 {
+	width: 65%;
+}
 /* Titles (and Sections) */
 table tr.section td,
 table tr.title td {
