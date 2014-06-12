@@ -13,7 +13,6 @@
 package org.cesecore.junit.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +63,7 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
     public abstract void tearDownCa(CA ca);
     
     public void tearDownAllCas() {
-        List<CA> defensiveCopy = new ArrayList<CA>();
-        Collections.copy(defensiveCopy, new ArrayList<>(casToRemove.values()));
+        List<CA> defensiveCopy = new ArrayList<CA>(casToRemove.values());
         for(CA ca : defensiveCopy) {
             tearDownCa(ca);
         }
