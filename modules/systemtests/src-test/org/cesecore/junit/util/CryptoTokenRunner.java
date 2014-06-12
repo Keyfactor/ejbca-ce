@@ -12,9 +12,16 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -37,37 +44,41 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
-    protected final static String CA_CREATION_METHOD_NAME = "createX509Ca";
-    protected final static String CA_TEARDOWN_METHOD_NAME = "tearDownX509Ca";
-    protected final static String CRYPTOTOKEN_CREATION_METHOD_NAME = "createCryptoToken";
-    protected final static String CRYPTOTOKEN_TEARDOWN_METHOD_NAME = "teardownCryptoToken";
-
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    
-    protected X509CA x509ca;
+
+    protected Map<Integer, CA> casToRemove = new HashMap<Integer, CA>();
     protected int cryptoTokenId;
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenRunner.class.getSimpleName()));
 
-    
     public CryptoTokenRunner(Class<?> klass) throws InitializationError, NoSuchMethodException, SecurityException {
         super(klass);
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        CryptoTokenRule.setCreationMethod(this, this.getClass().getMethod(CA_CREATION_METHOD_NAME), this.getClass()
-                .getMethod(CA_TEARDOWN_METHOD_NAME), this.getClass().getMethod(CRYPTOTOKEN_CREATION_METHOD_NAME),
-                this.getClass().getMethod(CRYPTOTOKEN_TEARDOWN_METHOD_NAME));
+        CryptoTokenRule.setCallback(this);
     }
 
     public abstract X509CA createX509Ca() throws Exception;
 
-    public abstract void tearDownX509Ca() throws Exception;
+    public abstract void tearDownCa(CA ca);
+    
+    public void tearDownAllCas() {
+        List<CA> defensiveCopy = new ArrayList<CA>();
+        Collections.copy(defensiveCopy, new ArrayList<>(casToRemove.values()));
+        for(CA ca : defensiveCopy) {
+            tearDownCa(ca);
+        }
+    }
 
     public abstract Integer createCryptoToken() throws Exception;
 
-    public void teardownCryptoToken() throws AuthorizationDeniedException {
-        cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
+    public void teardownCryptoToken() {
+        try {
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override

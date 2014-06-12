@@ -24,15 +24,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.jce.X509KeyUsage;
-import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.junit.util.CryptoTokenRule;
+import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -42,8 +40,10 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -53,24 +53,25 @@ import org.junit.runners.MethodSorters;
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@RunWith(CryptoTokenTestRunner.class)
 public class CmpConfirmMessageTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CrmfRequestTest.class);
 
     private static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRequestTest"));
 
-    private static String user = "TestUser";
-    private static String userDN = "CN=" + user + ", O=PrimeKey Solutions AB, C=SE";
-    private static String issuerDN = "CN=TestCA";
-    private static int caid = 0;
-    private static X509Certificate cacert = null;
+    private static final String user = "TestUser";
+    private static final String userDN = "CN=" + user + ", O=PrimeKey Solutions AB, C=SE";
+    private  X509Certificate cacert = null;
     private CA testx509ca;
     private CmpConfiguration cmpConfiguration;
     private String cmpAlias = "CmpConfirmMessageTestConfAlias";
 
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
+    @ClassRule
+    public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    
     @BeforeClass
     public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
         CryptoProviderTools.installBCProvider();
@@ -79,28 +80,19 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
-        caid = testx509ca.getCAId();
+        testx509ca = cryptoTokenRule.createX509Ca(); 
         cacert = (X509Certificate) testx509ca.getCACertificate();
-        caSession.addCA(admin, testx509ca);
-        
-        log.debug("issuerDN: " + issuerDN);
-        log.debug("caid: " + caid);
-        
+        //caSession.addCA(admin, testx509ca);
+        log.debug("issuerDN: " + testx509ca.getSubjectDN());
+        log.debug("caid: " + testx509ca.getCAId());      
         cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
         cmpConfiguration.addAlias(cmpAlias);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
 
     @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, caid);
-
+    public void tearDown() throws Exception {    
+        CryptoTokenRule.cleanUp();
         cmpConfiguration.removeAlias(cmpAlias);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
@@ -138,7 +130,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         log.trace("<test01ConfRespSignedByRecepient");
@@ -154,7 +146,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         log.trace(">test02ConfRespSignedByDefaultCA");
 
         cmpConfiguration.setResponseProtection(cmpAlias, "signature");
-        cmpConfiguration.setCMPDefaultCA(cmpAlias, issuerDN);
+        cmpConfiguration.setCMPDefaultCA(cmpAlias, testx509ca.getSubjectDN());
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -171,7 +163,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         log.trace("<test02ConfRespSignedByDefaultCA");
@@ -209,7 +201,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, "password", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, false, "password", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
@@ -227,7 +219,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         cmpConfiguration.setRAMode(cmpAlias, true);
         cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
-        cmpConfiguration.setCMPDefaultCA(cmpAlias, issuerDN);
+        cmpConfiguration.setCMPDefaultCA(cmpAlias, testx509ca.getSubjectDN());
         cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
         cmpConfiguration.setAuthenticationParameters(cmpAlias, "-");
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
@@ -246,7 +238,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, "foo123", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, false, "foo123", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
