@@ -154,7 +154,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
     @After
     public void tearDown() throws Exception {
-        CryptoTokenRule.cleanUp();
+        cryptoTokenRule.cleanUp();
         try {
             internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
         } catch (Exception e) {

@@ -69,6 +69,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -163,7 +164,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
         
         try {
@@ -586,7 +587,7 @@ public class CrmfRequestTest extends CmpTestCase {
         //---------- Create SubCA signed by testx509ca (rootCA) ------------- //
         String subcaDN = "CN=SubTestCA";
         int subcaID = subcaDN.hashCode();
-        int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, null, true, false, subcaDN, "1024");
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, null, true, false, subcaDN, "1024");
         final String username = "cmptest";
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
@@ -674,7 +675,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 // A test probably failed before creating the entity
                 log.debug("Failed to delete user: " + username);
             }
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+            CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
             // Remove CA certificate of CA that we will remove
             Collection<Certificate> certs = caSession.getCAInfo(admin, subcaID).getCertificateChain();
             internalCertStoreSession.removeCertificate(certs.iterator().next());
