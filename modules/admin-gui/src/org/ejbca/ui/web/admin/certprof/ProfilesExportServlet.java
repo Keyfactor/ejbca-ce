@@ -60,7 +60,7 @@ public class ProfilesExportServlet extends HttpServlet {
 
     private static final long serialVersionUID = -8091852234056712787L;
     private static final Logger log = Logger.getLogger(ProfilesExportServlet.class);
-    private static final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CryptoTokenDownloadServlet"));
+    private static final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProfilesExportServlet"));
 
 
     @EJB
