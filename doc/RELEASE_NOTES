@@ -1,23 +1,41 @@
 EJBCA 6.2.0
 -----------
-This is a maintenance release with new features, bug fixes and improvements. In all xy issues have been fixed.
+This is a major release with new features, bug fixes and improvements. All in all, 76 issues have been fixed.
 
 The biggest news in this release is a rework of the local CLI (command line interface), bringing the CLI up to the most 
 modern standard with option handling and manual pages. 
 
 * Noteworthy changes:
-- Completely reworked command handling of local command line interface (CLI).
--- The getrootcert command has changed name to getcacert, though the old one still works for legacy support
+- Completely reworked command handling of local command line interface (CLI) (See note 2)
+- It's now possible to import and export Certificate and End Entity Profiles from the GUI
+- VA machines can be created using a CRL
+- Certificate and End Entity Profiles can now be imported and exported form the Web GUI
+- SCEP configuration has been implemented from the Web GUI
 
-Note 1: If you are customizing the EJBCA public web to be embedded in a frame, note that EJBCA now uses the X-FRAME-OPTIONS HTTP header, 
+Note 1: 
+If you are customizing the EJBCA public web to be embedded in a frame, note that EJBCA now uses the X-FRAME-OPTIONS HTTP header, 
 preventing web GUIs from being framed in modern browsers. 
+
+Note 2: 
+Some CLI commands have changed names, though legacy support for the old names still remains. Some commands have had to undergo syntax changes, and they are as follows: 
+ * General 									- Explicit password flag for CLI user password has been changed to "--clipassword" 
+ * CaImportCACommand 						- Command performs two different tasks depending on the number of arguments, which are mostly mutually exclusive and unswitched, hence impossible to identify. 
+ * CaImportCertCommand 						- The optional values e-mail, cert profile and ee profile must be used with a switch. 
+ * CaInitCommand 							- The catokenproperties is now optional (no need to substitute with null if unused) 
+ * CaRenewCACommand 						- The <regenerate keys> argument has been turned into a flag (-R), and a switch was added for the Custom Not Before value. 
+ * InternalKeyBindingCreateCommand 			- The "--property" switch is no longer needed. Instead optional properties are loaded dynamically, but must be entered with a "-" preceding the property name. 
+ * InternalKeyBindingModifyCommand 			- Multiple "--addtrust" and "--removetrust" are no longer allowed, instead a separator "," may be used. Also, the --property switch is no longer used, 
+ 											  instead properties are loaded dynamically and used like with InternalKeyBindingCreateCommand 
+ * AddEndEntityCommand 						- Password parameter now input with --password flag, leaving blank will prompt. subjectAltName and email have been made optional and equipped with flags. 
+ 											  certificateprofile, endentityprofile and hardtokenissuer have been given flags. hardtokenissuer options won't appear at all unless hard tokens been turned on. 
+ * Services 								- The -listFields|-listProperties switched have been turned into commands instead 
+ * ServiceCreateCommand/ServiceEditCommand 	- properties are sent in as a single command instead, at least until Services can be properly refactored and made more dynamic 
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
-	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
 
 EJBCA 6.1.3
 -----------
@@ -50,7 +68,7 @@ See the notes, and known issues, for 6.1.0 below.
 
 EJBCA 6.1.0
 -----------
-This is a maintenance release with new features, bug fixes and improvements. In all 32 issues have been fixed.
+This is a major release with new features, bug fixes and improvements. In all 32 issues have been fixed.
 The biggest news in this release are support for EAC 2.10 access control templates, more OCSP improvements as 
 well as improvements for Key Recovery. 
 
