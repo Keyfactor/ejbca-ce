@@ -2388,9 +2388,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new AuthorizationDeniedException(msg);
             }
             // Fetch keys
-            // This is a way of verifying the password. If activate fails, we
-            // will get an exception and the export will not proceed
-            cryptoToken.activate(keystorepass.toCharArray());
+            final char[] password = keystorepass.toCharArray(); 
+            cryptoToken.activate(password);
+            ((SoftCryptoToken)cryptoToken).checkPasswordBeforeExport(password);
 
             PrivateKey p12PrivateEncryptionKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
             PublicKey p12PublicEncryptionKey = cryptoToken.getPublicKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));

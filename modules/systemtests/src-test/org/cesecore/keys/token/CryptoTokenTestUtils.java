@@ -80,6 +80,10 @@ public class CryptoTokenTestUtils {
         return createCryptoTokenForCA(authenticationToken, null, true, false, tokenName, signKeySpec);
     }
     
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, String tokenName, String signKeySpec) {
+        return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec);
+    }
+    
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11, String tokenName, String signKeySpec) {
         return createCryptoTokenForCAInternal(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec);
     }
