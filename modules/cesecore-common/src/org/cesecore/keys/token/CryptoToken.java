@@ -76,7 +76,7 @@ public interface CryptoToken extends Serializable {
     /**
      * Method used to activate Crypto Tokens when connected after being offline.
      *
-     * @param authenticationcode used to unlock  crypto token, i.e PIN for smartcard HSMs
+     * @param authenticationcode used to unlock crypto token, i.e PIN for smartcard HSMs. This parameter might be ignored, e.g. for auto-activated soft tokens.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected.
      * @throws CryptoTokenAuthenticationFailedException with error message if authentication to tokens fail.
      */
@@ -96,6 +96,7 @@ public interface CryptoToken extends Serializable {
     boolean isAliasUsed(String alias);
 
     /** Returns the private key (if possible) of token.
+    * Note that this method does NOT check if the key is permitted to be extracted.
     *
     * @param alias the key alias to retrieve from the token
     * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.

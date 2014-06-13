@@ -166,6 +166,36 @@ public class SoftCryptoToken extends BaseCryptoToken {
             }
         }
     }
+    
+    /**
+     * Throws an exception if the export of this crypto token should be denied.
+     * 
+     * @param authCode
+     * @throws CryptoTokenAuthenticationFailedException if the authentication code is incorrect.
+     * @throws CryptoTokenOfflineException if the crypto token is offline or an unknown error occurs.
+     * @throws PrivateKeyNotExtractableException if the crypto tokens does not allow it's keys to be extracted.
+     */
+    public void checkPasswordBeforeExport(char[] authCode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, PrivateKeyNotExtractableException {
+        /*if (doPermitExtractablePrivateKey()) {
+            final String msg = intres.getLocalizedMessage("token.errornotextractable_allkeys", getId());
+            throw new PrivateKeyNotExtractableException(msg);
+        }*/
+        try {
+            loadKeyStore(keystoreData, authCode);
+        } catch (IOException e) {
+            String msg = intres.getLocalizedMessage("token.wrongauthcode", getId(), e.getMessage());
+            log.info(msg, e);
+            CryptoTokenAuthenticationFailedException oe = new CryptoTokenAuthenticationFailedException(e.getMessage());
+            oe.initCause(e);
+            throw oe;
+        } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("token.erroractivate", getId(), e.getMessage());
+            log.info(msg, e);
+            CryptoTokenOfflineException oe = new CryptoTokenOfflineException(e.getMessage());
+            oe.initCause(e);
+            throw oe;
+        }
+    }
 
     private KeyStore loadKeyStore(final byte[] ksdata, final char[] keystorepass) throws NoSuchAlgorithmException, CertificateException, IOException,
             KeyStoreException, NoSuchProviderException {
