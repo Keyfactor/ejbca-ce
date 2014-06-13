@@ -181,7 +181,12 @@ public class SoftCryptoToken extends BaseCryptoToken {
             throw new PrivateKeyNotExtractableException(msg);
         }*/
         try {
-            loadKeyStore(keystoreData, authCode);
+            try {
+                final String defaultpass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");
+                loadKeyStore(keystoreData, defaultpass.toCharArray()); // try without password first
+            } catch (IOException e) {
+                loadKeyStore(keystoreData, authCode);
+            }
         } catch (IOException e) {
             String msg = intres.getLocalizedMessage("token.wrongauthcode", getId(), e.getMessage());
             log.info(msg, e);

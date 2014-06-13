@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -52,6 +53,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -232,12 +234,13 @@ public class CAImportExportTest  {
         }
     }
     
-    /** Tries to export of a CA  with an incorrect password */
+    /** Tries to export of a CA with an incorrect password */
     @Test
     public void test08ExportWithWrongPassword() throws Exception {
+        final String caname = "test08";
         log.trace("<test08ExportWithPassword..()");
         final char[] correctpwd = "correctpwd".toCharArray();
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, correctpwd, true, false, "test08", "1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, correctpwd, true, false, caname, "1024");
         try {
             // Make exportable
             CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(internalAdmin, cryptoTokenId);
@@ -247,32 +250,32 @@ public class CAImportExportTest  {
             
             // Create CA
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            cainfo = getNewCAInfo("test08", catoken);
+            cainfo = getNewCAInfo(caname, catoken);
             try {
                 caSession.removeCA(internalAdmin, cainfo.getCAId());
             } catch (Exception e) { 
-                // NOPMD           
+                // NOPMD
             }
             caadminsession.createCA(internalAdmin, cainfo);
             
             // Try exporting with the wrong password
             // The return values are ignored. The calls should throw exceptions
             try {
-                caadminsession.exportCAKeyStore(internalAdmin, "test08", "wrongpwd", "wrongpwd", "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.exportCAKeyStore(internalAdmin, caname, "wrongpwd", "wrongpwd", "SignatureKeyAlias", "EncryptionKeyAlias");
                 fail("Was able to export CA keystore with the wrong password!");
             } catch (Exception e) {
                 // NOPMD
             }
             
             try {
-                caadminsession.exportCAKeyStore(internalAdmin, "test08", null, null, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.exportCAKeyStore(internalAdmin, caname, null, null, "SignatureKeyAlias", "EncryptionKeyAlias");
                 fail("Was able to export CA keystore with null password!");
             } catch (Exception e) {
                 // NOPMD it's ok to throw e.g. NPE
             }
             
             try {
-                caadminsession.exportCAKeyStore(internalAdmin, "test08", "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.exportCAKeyStore(internalAdmin, caname, "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
                 fail("Was able to export CA keystore with empty password!");
             } catch (Exception e) {
                 // NOPMD
@@ -281,6 +284,38 @@ public class CAImportExportTest  {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
         log.trace("<test08ExportWithPassword()");
+    }
+    
+    /** Tests export of a CA with a CryptoToken without a password (strictly speaking, with a default password) */
+    @Test
+    public void test09ExportWithNoPassword() throws Exception {
+        final String caname = "test09";
+        log.trace("<test09ExportWithNoPassword..()");
+        
+        // Create a crypto token with no password (i.e. a default one is used)
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(internalAdmin, caname, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
+        cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+        cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+        try {
+            // Create CA
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cainfo = getNewCAInfo(caname, catoken);
+            try {
+                caSession.removeCA(internalAdmin, cainfo.getCAId());
+            } catch (Exception e) { 
+                // NOPMD
+            }
+            caadminsession.createCA(internalAdmin, cainfo);
+            
+            // Export it. This should work since the crypto token has the default password
+            byte[] keystoredata = caadminsession.exportCAKeyStore(internalAdmin, caname, "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
+            assertNotNull("Keystore was null", keystoredata);
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
+        }
+        log.trace("<test09ExportWithNoPassword()");
     }
     
     /**
