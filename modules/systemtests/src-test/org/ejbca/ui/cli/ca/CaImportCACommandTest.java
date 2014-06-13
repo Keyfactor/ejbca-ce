@@ -57,7 +57,7 @@ public class CaImportCACommandTest {
     @Before
     public void setup() throws Exception {
         keyStoreFile = File.createTempFile("test", null);
-        ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
+        ca = CaTestUtils.createTestX509CA(CA_DN, KEYSTORE_PASSWORD.toCharArray(), false);
         caSession.addCA(authenticationToken, ca);
         byte[] p12 = caAdminSession.exportCAKeyStore(authenticationToken, CA_NAME, KEYSTORE_PASSWORD, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_ALIAS);
         FileOutputStream outputStream = new FileOutputStream(keyStoreFile);
