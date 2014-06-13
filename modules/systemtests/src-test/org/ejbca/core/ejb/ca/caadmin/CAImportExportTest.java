@@ -14,8 +14,8 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -28,6 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
@@ -47,7 +48,9 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -73,10 +76,13 @@ public class CAImportExportTest  {
     private CAAdminTestSessionRemote catestsession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CrlStoreSessionRemote crlStore = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static AuthenticationToken adminTokenNoAuth;
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAImportExportTest"));
+
+    private static String TEST_PASSWORD = "foo123";
 
     @BeforeClass
     public static void beforeTest() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
@@ -104,7 +110,7 @@ public class CAImportExportTest  {
     @Test
 	public void test01ImportExportSHA1withRSA() throws Exception {
 	    log.trace("<test01ImportExport..()");
-	    final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test01", "1024");
+	    final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test01", "1024");
 	    try {
 	        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 	        subTest(catoken);
@@ -118,7 +124,7 @@ public class CAImportExportTest  {
     @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test02", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test02", "prime256v1");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catoken);
@@ -132,7 +138,7 @@ public class CAImportExportTest  {
     @Test
 	public void test03ImportExportSHA256withRSA() throws Exception {
 	    log.trace("<test03ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test03", "2048");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test03", "2048");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catoken);
@@ -146,7 +152,7 @@ public class CAImportExportTest  {
     @Test
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test04", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test04", "prime256v1");
         try {
             final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catokeninfo);
@@ -164,7 +170,7 @@ public class CAImportExportTest  {
     @Test
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test05", "prime256v1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test05", "prime256v1");
         try {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTestPublicAccess(catoken, adminTokenNoAuth);
@@ -182,7 +188,7 @@ public class CAImportExportTest  {
     @Test
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test06", "DSA1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test06", "DSA1024");
         try {
             final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             subTest(catokeninfo);
@@ -196,12 +202,12 @@ public class CAImportExportTest  {
     @Test
     public void test07ImportWithNewSession() throws Exception {
         log.trace("<test07Import...()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "test07", "1024");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), "test07", "1024");
         try {
             CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             byte[] keystorebytes = null;
             String caname = "DummyTestCA";
-            String capassword = "foo123";
+            String capassword = TEST_PASSWORD;
             cainfo = getNewCAInfo(caname, catoken);
             CAAdminSessionRemote caAdminSessionNew = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
             boolean defaultRetValue = true;
@@ -224,6 +230,57 @@ public class CAImportExportTest  {
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
+    }
+    
+    /** Tries to export of a CA  with an incorrect password */
+    @Test
+    public void test08ExportWithWrongPassword() throws Exception {
+        log.trace("<test08ExportWithPassword..()");
+        final char[] correctpwd = "correctpwd".toCharArray();
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, correctpwd, true, false, "test08", "1024");
+        try {
+            // Make exportable
+            CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(internalAdmin, cryptoTokenId);
+            Properties properties = cryptoTokenInfo.getCryptoTokenProperties();
+            properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+            cryptoTokenManagementSession.saveCryptoToken(internalAdmin, cryptoTokenId, cryptoTokenInfo.getName(), properties, correctpwd);
+            
+            // Create CA
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            cainfo = getNewCAInfo("test08", catoken);
+            try {
+                caSession.removeCA(internalAdmin, cainfo.getCAId());
+            } catch (Exception e) { 
+                // NOPMD           
+            }
+            caadminsession.createCA(internalAdmin, cainfo);
+            
+            // Try exporting with the wrong password
+            // The return values are ignored. The calls should throw exceptions
+            try {
+                caadminsession.exportCAKeyStore(internalAdmin, "test08", "wrongpwd", "wrongpwd", "SignatureKeyAlias", "EncryptionKeyAlias");
+                fail("Was able to export CA keystore with the wrong password!");
+            } catch (Exception e) {
+                // NOPMD
+            }
+            
+            try {
+                caadminsession.exportCAKeyStore(internalAdmin, "test08", null, null, "SignatureKeyAlias", "EncryptionKeyAlias");
+                fail("Was able to export CA keystore with null password!");
+            } catch (Exception e) {
+                // NOPMD it's ok to throw e.g. NPE
+            }
+            
+            try {
+                caadminsession.exportCAKeyStore(internalAdmin, "test08", "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
+                fail("Was able to export CA keystore with empty password!");
+            } catch (Exception e) {
+                // NOPMD
+            }
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
+        }
+        log.trace("<test08ExportWithPassword()");
     }
     
     /**
@@ -250,79 +307,57 @@ public class CAImportExportTest  {
 	private void subTest(CAToken catoken) throws Exception {
 	    byte[] keystorebytes = null;
 	    String caname = "DummyTestCA";
-	    String capassword = "foo123";
 	    String keyFingerPrint = null;
 	    cainfo = getNewCAInfo(caname, catoken);
-	    boolean defaultRetValue = true;
 	    try  {
 	        try {
 	            caSession.removeCA(internalAdmin, cainfo.getCAId());
 	        } catch (Exception e) { 
 	            // NOPMD:			
 	        }
-	        boolean ret = false;
 	        try {
 	            caadminsession.createCA(internalAdmin, cainfo);
-	            ret = true;
-	        } catch (Exception e) { 
+	        } catch (Exception e) {
 	            log.info("Error: ", e);
+	            fail("Could not create CA \"" + caname + "\" for testing." + e);
 	        }
-	        assertEquals("Could not create CA \"" + caname + "\" for testing.", ret, defaultRetValue);
-	        ret = false;
 	        try {
 	            keyFingerPrint = catestsession.getKeyFingerPrint(caname);
-	            ret = true;
 	        } catch (Exception e) { 
 	            log.info("Error: ", e);
+	            fail("Could not get key fingerprint for \"" + caname + "\"." + e);
 	        }
-	        assertEquals("Could not get key fingerprint for \"" + caname + "\".", ret, defaultRetValue);
-	        ret = false;
 	        try {
-	            keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-	            ret = true;
+	            keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
 	        } catch (Exception e) { 
 	            log.info("Error: ", e);
+	            fail("Could not export CA. " + e);
 	        }
-	        assertEquals("Could not export CA.", ret, defaultRetValue);
-	        ret = false;
 	        try {
 	            caSession.removeCA(internalAdmin, cainfo.getCAId());
-	            ret = true;
-	        } catch (Exception e) { 
-	            // NOPMD:			
-	        }
-	        assertEquals("Could not remove CA.", ret, defaultRetValue);
-	        ret = false;
-	        int crlNumberBefore = crlStore.getLastCRLNumber(cainfo.getSubjectDN(), false);
-	        try {
-	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-	            ret = true;
 	        } catch (Exception e) { 
 	            log.info("Error: ", e);
+	            fail("Could not remove CA. " + e);
 	        }
-	        assertEquals("Could not import CA.", ret, defaultRetValue);
-	        ret = false;
+	        int crlNumberBefore = crlStore.getLastCRLNumber(cainfo.getSubjectDN(), false);
 	        try {
-	            if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
-	                ret = true;
-	            }
+	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
 	        } catch (Exception e) { 
-	            // NOPMD:			
+	            log.info("Error: ", e);
+	            fail("Could not import CA. " + e);
 	        }
+            assertTrue("Fingerprint does not match for \"" + caname + "\".", keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)));
 	        int crlNumberAfter= crlStore.getLastCRLNumber(cainfo.getSubjectDN(), false);
 	        assertEquals("CRL number of CRL generated on import should be 1 higher than any pre-existing CRLs.", crlNumberBefore+1, crlNumberAfter);
 
-	        assertEquals("Fingerprint does not match for \"" + caname + "\".", ret, defaultRetValue);
-	        ret = false;
 	        try {
 	            final int cryptoTokenId = caSession.getCAInfo(internalAdmin, cainfo.getCAId()).getCAToken().getCryptoTokenId();
 	            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
 	            caSession.removeCA(internalAdmin, cainfo.getCAId());
-	            ret = true;
 	        } catch (Exception e) { 
-	            // NOPMD:			
+	            log.info(e);
+	            fail("Could not remove CA." + e);
 	        }
-	        assertEquals("Could not remove CA.", ret, defaultRetValue);
 	    } finally {
 	        // remove all certificate and CRLs generated...  
 	        internalCertificateStoreSession.removeCertificatesBySubject(cainfo.getSubjectDN());
@@ -345,7 +380,6 @@ public class CAImportExportTest  {
 	private void subTestPublicAccess(CAToken catoken, AuthenticationToken admin) throws Exception {
 		byte[] keystorebytes = null;
         String caname = "DummyTestCA";
-        String capassword = "foo123";
         String keyFingerPrint = null;
         cainfo = getNewCAInfo(caname, catoken);
 		try {
@@ -353,88 +387,62 @@ public class CAImportExportTest  {
 		} catch (Exception e) { 
 			// NOPMD:			
 		}
-		boolean ret = false;
 		try {
 			caadminsession.createCA(admin, cainfo);
-			ret = true;
-		} catch (Exception e) { 
-			// NOPMD
+			fail("Could create CA \"" + caname + "\".");
+		} catch (Exception e) {
+		    // NOPMD expected
 		}
-		assertFalse("Could create CA \"" + caname + "\".", ret);
-		ret = false;
 		try {
 			caadminsession.createCA(internalAdmin, cainfo);
-			ret = true;
 		} catch (Exception e) { 
 			log.info("Error: ", e);
+			fail("Could not create CA \"" + caname + "\" for testing. " + e);
 		}
-		assertTrue("Could not create CA \"" + caname + "\" for testing.", ret);
-		ret = false;
 		try {
 			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
-			ret = true;
-		} catch (Exception e) { 
-			// NOPMD:			
+		} catch (Exception e) {
+		    log.info("Error: ", e);
+		    fail("Could not get key fingerprint for \"" + caname + "\". " + e);
 		}
-		assertTrue("Could not get key fingerprint for \"" + caname + "\".", ret);
-		ret = false;
 		try {
-			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-			ret = true;
-		} catch (Exception e) { 
-			// NOPMD
+			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+			fail("Could export CA.");
+		} catch (Exception e) {
+		    // NOPMD expected
 		}
-		assertFalse("Could export CA.", ret);
-		ret = false;
 		try {
-			keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-			ret = true;
+			keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
 		} catch (Exception e) { 
 			log.info("Error: ", e);
+			fail("Could not export CA. " + e);
 		}
-		assertTrue("Could not export CA.", ret);
-		ret = false;
 		try {
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
-			ret = true;
-		} catch (Exception e) { 
-			// NOPMD:			
-		}
-		assertTrue("Could not remove CA.", ret);
-		ret = false;
-		try {
-			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-			ret = true;
-		} catch (Exception e) { 
-			// NOPMD
-		}
-		assertFalse("Could import CA.", ret);
-		ret = false;
-		try {
-			caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-			ret = true;
 		} catch (Exception e) { 
 			log.info("Error: ", e);
+		    fail("Could not remove CA." + e);
 		}
-		assertTrue("Could not import CA.", ret);
-		ret = false;
 		try {
-			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
-				ret = true;
-			}
-		} catch (Exception e) { 
-			// NOPMD:			
+			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+			fail("Could import CA.");
+		} catch (Exception e) {
+		    // NOPMD expected
 		}
-		assertTrue("Fingerprint does not match for \"" + caname + "\".", ret);
-		ret = false;
+		try {
+			caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+			fail("Could not import CA. " + e);
+		}
+		assertTrue("Fingerprint does not match for \"" + caname + "\".", keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)));
 		try {
             final int cryptoTokenId = caSession.getCAInfo(internalAdmin, caname).getCAToken().getCryptoTokenId();
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
-			ret = true;
 		} catch (Exception e) { 
-			// NOPMD:			
+			log.info("Error: ", e);
+		    fail("Could not remove CA. " + e);
 		}
-		assertTrue("Could not remove CA.", ret);
 	}
 }
