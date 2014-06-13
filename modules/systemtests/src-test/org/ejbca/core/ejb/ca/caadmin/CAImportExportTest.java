@@ -281,6 +281,7 @@ public class CAImportExportTest  {
                 // NOPMD
             }
         } finally {
+            caSession.removeCA(internalAdmin, cainfo.getCAId());
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
         log.trace("<test08ExportWithPassword()");
@@ -313,6 +314,7 @@ public class CAImportExportTest  {
             byte[] keystoredata = caadminsession.exportCAKeyStore(internalAdmin, caname, "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
             assertNotNull("Keystore was null", keystoredata);
         } finally {
+            caSession.removeCA(internalAdmin, cainfo.getCAId());
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
         log.trace("<test09ExportWithNoPassword()");
