@@ -45,9 +45,9 @@ public class CaRemoveKeystoreCommandTest {
     private static final String tempDir = System.getProperty("java.io.tmpdir");
     private static final String KEYSTOREFILE = tempDir + "/1327removekeystore.p12";
 
-    private static final String[] EXPORT_HAPPY_PATH_ARGS = { "-kspassword", "foo123", CA_NAME, KEYSTOREFILE };
+    private static final String[] EXPORT_HAPPY_PATH_ARGS = { "-kspassword", "foo1234", CA_NAME, KEYSTOREFILE };
     private static final String[] REMOVE_HAPPY_PATH_ARGS = { CA_NAME };
-    private static final String[] RESTORE_HAPPY_PATH_ARGS = { "-kspassword", "foo123", CA_NAME, KEYSTOREFILE, "-s", "SignatureKeyAlias", "-e",
+    private static final String[] RESTORE_HAPPY_PATH_ARGS = { "-kspassword", "foo1234", CA_NAME, KEYSTOREFILE, "-s", "SignatureKeyAlias", "-e",
             "EncryptionKeyAlias" };
 
     private CaExportCACommand caExportCaCommand;
