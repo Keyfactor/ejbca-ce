@@ -176,10 +176,10 @@ public class SoftCryptoToken extends BaseCryptoToken {
      * @throws PrivateKeyNotExtractableException if the crypto tokens does not allow it's keys to be extracted.
      */
     public void checkPasswordBeforeExport(char[] authCode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, PrivateKeyNotExtractableException {
-        /*if (doPermitExtractablePrivateKey()) {
+        if (!doPermitExtractablePrivateKey()) {
             final String msg = intres.getLocalizedMessage("token.errornotextractable_allkeys", getId());
             throw new PrivateKeyNotExtractableException(msg);
-        }*/
+        }
         try {
             try {
                 final String defaultpass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");

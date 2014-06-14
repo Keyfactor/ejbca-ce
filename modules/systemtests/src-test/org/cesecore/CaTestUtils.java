@@ -105,6 +105,7 @@ public abstract class CaTestUtils {
 
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
+        cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
         int cryptoTokenId;
         if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
             try {
