@@ -118,6 +118,9 @@ public class CryptoTokenTestUtils {
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
             cryptoTokenClassName = PKCS11CryptoToken.class.getName();
+        } else {
+            // For CA export tests
+            cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
         }
         
         // Create the cryptotoken
@@ -149,7 +152,9 @@ public class CryptoTokenTestUtils {
         if (oldCryptoTokenId != null) {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, oldCryptoTokenId.intValue());
         }
-        return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), null, null,
+        Properties props = new Properties();
+        props.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), props, null,
                 "foo123".toCharArray());
     }
     
