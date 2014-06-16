@@ -259,7 +259,7 @@ public class CertificateExpireTest extends CaTestCase {
         // be guaranteed to executed at the exact interval.
         Thread.sleep(10000);
         int tries = 0;
-        while (info.getStatus() != CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION && tries < 5) {
+        while (info.getStatus() != CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION && tries < 8) {
             Thread.sleep(1000);
             info = certificateStoreSession.getCertificateInfo(fingerprint);
             tries++;
