@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
@@ -28,17 +29,14 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -46,8 +44,8 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -62,18 +60,18 @@ import org.junit.Test;
 public class CmpRaThrowAwayTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationTest.class);
-    private static final AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpRaThrowAwayTest"));
     private static final Random RND = new SecureRandom();
 
     private static final String TESTCA_NAME = "CmpRaThrowAwayTestCA";
     private static final String PBE_SECRET = "password";
 
-    private static X509Certificate caCertificate;
+    private final  X509Certificate caCertificate;
     
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final GlobalConfigurationSession globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final CertReqHistoryProxySessionRemote csrHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
-    private CmpConfiguration cmpConfiguration;
-    private String configAlias = "CmpRaThrowAwayTestCmpConfigAlias";
+    private final CmpConfiguration cmpConfiguration;
+    private final static String configAlias = "CmpRaThrowAwayTestCmpConfigAlias";
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -81,40 +79,45 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         createTestCA(TESTCA_NAME); // Create test CA
     }
 
+    public CmpRaThrowAwayTest() throws Exception, Exception {
+        this.caCertificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(
+                CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
+                .next();
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+    }
     /** Create CA and change configuration for the following tests. */
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         LOG.trace(">test000Setup");
        
-        caCertificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
-                .next();
         assertCAConfig(false, true, true);
         
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
-        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
-        cmpConfiguration.addAlias(configAlias);
-        cmpConfiguration.setRAMode(configAlias, true);
-        cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
-        cmpConfiguration.setResponseProtection(configAlias, "pbe");
-        cmpConfiguration.setRANameGenScheme(configAlias, "DN");
-        cmpConfiguration.setRANameGenParams(configAlias, "CN");
-        cmpConfiguration.setRAEEProfile(configAlias, "EMPTY");
-        cmpConfiguration.setRACertProfile(configAlias, "ENDUSER");
-        cmpConfiguration.setRACAName(configAlias, TESTCA_NAME);
-        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBE_SECRET);
-        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.addAlias(configAlias);
+        this.cmpConfiguration.setRAMode(configAlias, true);
+        this.cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
+        this.cmpConfiguration.setResponseProtection(configAlias, "pbe");
+        this.cmpConfiguration.setRANameGenScheme(configAlias, "DN");
+        this.cmpConfiguration.setRANameGenParams(configAlias, "CN");
+        this.cmpConfiguration.setRAEEProfile(configAlias, "EMPTY");
+        this.cmpConfiguration.setRACertProfile(configAlias, "ENDUSER");
+        this.cmpConfiguration.setRACAName(configAlias, TESTCA_NAME);
+        this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBE_SECRET);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
         LOG.trace("<test000Setup");
     }
     
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
         LOG.trace(">testZZZTearDown");
         removeTestCA(TESTCA_NAME);
-        cmpConfiguration.removeAlias(configAlias);
-        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.removeAlias(configAlias);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
         LOG.trace("<testZZZTearDown");
     }
 
@@ -133,6 +136,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     }
 
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -151,8 +155,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         Date notAfter = new Date(new Date().getTime() + 24 * 3600 * 1000);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String username = "cmpRaThrowAwayTestUser" + RND.nextLong(); // This is what we expect from the CMP configuration
-        String subjectDN = "CN=" + username;
-        PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
+        final X500Name subjectDN = new X500Name("CN=" + username);
+        PKIMessage one = genCertReq(CertTools.getSubjectDN(this.caCertificate), subjectDN, keys, this.caCertificate, nonce, transid, true, null, notBefore,
                 notAfter, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBE_SECRET, "unusedKeyId", 567);
         assertNotNull("Request was not created properly.", req);
@@ -161,46 +165,50 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         new DEROutputStream(bao).writeObject(req);
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
-        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST)
-                .retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
-        assertEquals("User data was or wasn't stored: ", useUserStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser(username));
-        assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                .findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null);
+        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(subjectDN, this.caCertificate, resp, reqId);
+        assertTrue(
+                "Certificate history data was or wasn't stored: ",
+                useCertReqHistory ==
+                (this.csrHistorySession.retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null)
+                );
+        assertTrue("User data was or wasn't stored: ", useUserStorage == this.endEntityManagementSession.existsUser(username));
+        assertTrue(
+                "Certificate data was or wasn't stored: ",
+                useCertificateStorage == (this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null));
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(subjectDN, caCertificate, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(subjectDN, this.caCertificate, nonce, transid, hash, reqId);
         assertNotNull("Could not create confirmation message.", confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBE_SECRET, "unusedKeyId", 567);
         bao = new ByteArrayOutputStream();
         new DEROutputStream(bao).writeObject(req1);
         resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
+        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(subjectDN, this.caCertificate, resp);
 
         // We only expect revocation to work if we store certificate data and user data
         // TODO: ECA-1916 should remove dependency on useUserStorage
         if (useCertificateStorage && useUserStorage) {
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false, null, null);
+            PKIMessage rev = genRevReq(CertTools.getSubjectDN(this.caCertificate), subjectDN, cert.getSerialNumber(), this.caCertificate, nonce, transid, false, null, null);
             PKIMessage revReq = protectPKIMessage(rev, false, PBE_SECRET, "unusedKeyId", 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();
             new DEROutputStream(bao).writeObject(revReq);
             resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
-            int reason = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(this.caCertificate), subjectDN, cert.getSerialNumber(), this.caCertificate, resp, true);
+            int reason = this.certificateStoreSession.getStatus(CertTools.getSubjectDN(this.caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
         }
         // Clean up what we can
         if (useUserStorage) {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(ADMIN, username);
+            this.endEntityManagementSession.deleteUser(ADMIN, username);
         }
         if (useCertReqHistory) {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST).removeCertReqHistoryData(CertTools.getFingerprintAsString(cert));
+            this.csrHistorySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(cert));
         }
         LOG.trace("<testIssueConfirmRevoke");
     }
@@ -208,16 +216,16 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     /** Assert that the CA is configured to store things as expected. 
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException */
-    private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws CADoesntExistsException, AuthorizationDeniedException {
+    private static void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws CADoesntExistsException, AuthorizationDeniedException {
         CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
-        assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
-        assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
-        assertEquals("CA has wrong useCertificateStorage setting: ", useCertificateStorage, caInfo.isUseCertificateStorage());
+        assertTrue("CA has wrong useCertReqHistory setting: ", useCertReqHistory == caInfo.isUseCertReqHistory());
+        assertTrue("CA has wrong useUserStorage setting: ", useUserStorage == caInfo.isUseUserStorage());
+        assertTrue("CA has wrong useCertificateStorage setting: ", useCertificateStorage == caInfo.isUseCertificateStorage());
     }
 
     /** Change CA configuration for what to store and assert that the changes were made. 
      * @throws CADoesntExistsException */
-    private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException {
+    private static void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException {
         CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);
@@ -226,9 +234,9 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         caInfo.setDoEnforceUniqueDistinguishedName(false);
         // We can not enforce unique subject public keys for issued certificates when we do not store certificates        
         caInfo.setDoEnforceUniquePublicKeys(false);
-        assertEquals("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory, caInfo.isUseCertReqHistory());
-        assertEquals("CAInfo did not store useUserStorage setting correctly: ", useUserStorage, caInfo.isUseUserStorage());
-        assertEquals("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage, caInfo.isUseCertificateStorage());
+        assertTrue("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory == caInfo.isUseCertReqHistory());
+        assertTrue("CAInfo did not store useUserStorage setting correctly: ", useUserStorage == caInfo.isUseUserStorage());
+        assertTrue("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage == caInfo.isUseCertificateStorage());
         EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(ADMIN, caInfo);
         assertCAConfig(useCertReqHistory, useUserStorage, useCertificateStorage);
     }

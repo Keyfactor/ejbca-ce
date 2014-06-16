@@ -56,6 +56,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -77,8 +78,8 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
-import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSession;
+import org.ejbca.core.ejb.approval.ApprovalSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
@@ -121,7 +122,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
+    protected static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
     protected TestX509CertificateAuthenticationToken caAdmin;
 
@@ -452,8 +453,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * Find all certificates for a user and approve any outstanding revocation.
      */
     protected int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
-            int approvalType, CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession,
-            ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
+            int approvalType, CertificateStoreSession certificateStoreSession, ApprovalSession approvalSession,
+            ApprovalExecutionSession approvalExecutionSession, int approvalCAID) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
         Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);

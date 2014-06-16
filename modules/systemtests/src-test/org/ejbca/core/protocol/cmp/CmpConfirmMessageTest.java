@@ -16,22 +16,16 @@ package org.ejbca.core.protocol.cmp;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayOutputStream;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
@@ -58,45 +52,51 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CrmfRequestTest.class);
 
-    private static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRequestTest"));
-
     private static final String user = "TestUser";
-    private static final String userDN = "CN=" + user + ", O=PrimeKey Solutions AB, C=SE";
-    private  X509Certificate cacert = null;
-    private CA testx509ca;
-    private CmpConfiguration cmpConfiguration;
-    private String cmpAlias = "CmpConfirmMessageTestConfAlias";
+    private static final X500Name userDN = new X500Name("CN=" + user + ", O=PrimeKey Solutions AB, C=SE");
+    private final X509Certificate cacert;
+    private final CA testx509ca;
+    private final CmpConfiguration cmpConfiguration;
+    private static final String cmpAlias = "CmpConfirmMessageTestConfAlias";
 
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
-    
+     
     @BeforeClass
-    public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
+    public CmpConfirmMessageTest() throws Exception {
+        this.testx509ca = cryptoTokenRule.createX509Ca();
+        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+    }
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        testx509ca = cryptoTokenRule.createX509Ca(); 
-        cacert = (X509Certificate) testx509ca.getCACertificate();
-        //caSession.addCA(admin, testx509ca);
-        log.debug("issuerDN: " + testx509ca.getSubjectDN());
-        log.debug("caid: " + testx509ca.getCAId());      
-        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
-        cmpConfiguration.addAlias(cmpAlias);
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+
+        //this.caSession.addCA(ADMIN, this.testx509ca);
+        log.debug("this.testx509ca.getSubjectDN(): " + this.testx509ca.getSubjectDN());
+        log.debug("caid: " + this.testx509ca.getCAId());
+        
+        this.cmpConfiguration.addAlias(cmpAlias);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
     }
 
+    @Override
     @After
-    public void tearDown() throws Exception {    
+    public void tearDown() throws Exception {
+        super.tearDown();
         cryptoTokenRule.cleanUp();
-        cmpConfiguration.removeAlias(cmpAlias);
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.removeAlias(cmpAlias);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -113,16 +113,16 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test01ConfRespSignedByRecepient() throws Exception {
         log.trace(">test01ConfRespSignedByRecepient");
 
-        cmpConfiguration.setResponseProtection(cmpAlias, "signature");
-        cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.setResponseProtection(cmpAlias, "signature");
+        this.cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -130,8 +130,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test01ConfRespSignedByRecepient");
     }
@@ -145,9 +145,9 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test02ConfRespSignedByDefaultCA() throws Exception {
         log.trace(">test02ConfRespSignedByDefaultCA");
 
-        cmpConfiguration.setResponseProtection(cmpAlias, "signature");
-        cmpConfiguration.setCMPDefaultCA(cmpAlias, testx509ca.getSubjectDN());
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.setResponseProtection(cmpAlias, "signature");
+        this.cmpConfiguration.setCMPDefaultCA(cmpAlias, this.testx509ca.getSubjectDN());
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -163,8 +163,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test02ConfRespSignedByDefaultCA");
     }
@@ -180,19 +180,19 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test03ConfRespPbeProtectedByGlobalSharedSecret() throws Exception {
         log.trace(">test03ConfRespPbeProtected");
 
-        cmpConfiguration.setRAMode(cmpAlias, true);
-        cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
-        cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
-        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(cmpAlias, "password");
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.setRAMode(cmpAlias, true);
+        this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
+        this.cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
+        this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "password");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0);
         confirm = protectPKIMessage(confirm, false, "password", 567);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -201,8 +201,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, false, "password", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
     }
@@ -217,19 +217,19 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public void test04ConfRespPbeProtectedByCACmpSecret() throws Exception {
         log.trace(">test03ConfRespPbeProtected");
 
-        cmpConfiguration.setRAMode(cmpAlias, true);
-        cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
-        cmpConfiguration.setCMPDefaultCA(cmpAlias, testx509ca.getSubjectDN());
-        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-");
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.setRAMode(cmpAlias, true);
+        this.cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
+        this.cmpConfiguration.setCMPDefaultCA(cmpAlias, this.testx509ca.getSubjectDN());
+        this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-");
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0);
         confirm = protectPKIMessage(confirm, false, "foo123", 567);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -238,8 +238,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, testx509ca.getSubjectDN(), userDN, cacert, nonce, transid, false, "foo123", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
     }

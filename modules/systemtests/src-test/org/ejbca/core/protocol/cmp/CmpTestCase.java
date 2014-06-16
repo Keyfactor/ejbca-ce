@@ -13,9 +13,11 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -41,6 +43,7 @@ import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -55,6 +58,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -110,16 +114,19 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509Principal;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -128,19 +135,25 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.hibernate.ObjectNotFoundException;
+import org.junit.internal.ArrayComparisonFailure;
 
 /**
  * Helper class for CMP Junit tests
@@ -153,24 +166,64 @@ public abstract class CmpTestCase extends CaTestCase {
 
     private static final String resourceCmp = "publicweb/cmp";
     private static final int PORT_NUMBER = 5587;
-    private String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
-    private String CMP_HOST; // = "127.0.0.1";
+    protected static final String CP_DN_OVERRIDE_NAME = "CP_DN_OVERRIDE_NAME";
+    protected static final String EEP_DN_OVERRIDE_NAME = "EEP_DN_OVERRIDE_NAME";
+    protected int eepDnOverrideId;
+    protected int cpDnOverrideId;
 
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    protected EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    protected SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    protected CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    final private String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
+    final private String CMP_HOST; // = "127.0.0.1";
 
-    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(this.getClass().getSimpleName()));
+    final protected CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    final protected ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    final protected EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    final protected SignSession signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    final protected CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    final protected EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
-    protected void setUp() throws Exception { // NOPMD: this is a test base class
-        String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
-        CMP_HOST = SystemTestsConfiguration.getRemoteHost(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
-        httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
+    static AuthenticationToken ADMIN = internalAdmin;
+    public CmpTestCase() {
+        final String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        this.CMP_HOST = SystemTestsConfiguration.getRemoteHost(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
+        this.httpReqPath = "http://" + this.CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
     }
-    
-    protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+    @Override
+    protected void setUp() throws Exception { // NOPMD: this is a test base class
+        super.setUp();
+        // Configure a Certificate profile (CmpRA) using ENDUSER as template and
+        // check "Allow validity override".
+        if (this.certProfileSession.getCertificateProfile(CP_DN_OVERRIDE_NAME) == null) {
+            final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            cp.setAllowDNOverride(true);
+            try {
+                this.certProfileSession.addCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
+            } catch (CertificateProfileExistsException e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }
+        this.cpDnOverrideId = this.certProfileSession.getCertificateProfileId(CP_DN_OVERRIDE_NAME);
+        if (this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME) == null) {
+            // Create profile that is just using CP_DN_OVERRIDE_NAME
+            final EndEntityProfile eep = new EndEntityProfile(true);
+            eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + this.cpDnOverrideId);
+            try {
+                this.endEntityProfileSession.addEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
+            } catch (EndEntityProfileExistsException e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }
+        this.eepDnOverrideId = this.endEntityProfileSession.getEndEntityProfileId(EEP_DN_OVERRIDE_NAME);
+    }
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        this.endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME);
+        this.certProfileSession.removeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME);
+    }
+
+    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
@@ -178,7 +231,7 @@ public abstract class CmpTestCase extends CaTestCase {
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID);
     }
 
-    protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
@@ -200,7 +253,7 @@ public abstract class CmpTestCase extends CaTestCase {
         if(issuerDN != null) {
             myCertTemplate.setIssuer(new X500Name(issuerDN));
         }
-        myCertTemplate.setSubject(new X500Name(userDN));
+        myCertTemplate.setSubject(userDN);
         byte[] bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream dIn = new ASN1InputStream(bIn);
@@ -281,10 +334,10 @@ public abstract class CmpTestCase extends CaTestCase {
         
         CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), new GeneralName(new X500Name(
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(userDN), new GeneralName(new X500Name(
                 issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
         
-        myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
         // TransactionId
@@ -298,11 +351,11 @@ public abstract class CmpTestCase extends CaTestCase {
         return myPKIMessage;
     }
 
-    protected PKIMessage genRevReq(String issuerDN, String userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
-            boolean crlEntryExtension, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+    protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean crlEntryExtension, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
         CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
         myCertTemplate.setIssuer(new X500Name(issuerDN));
-        myCertTemplate.setSubject(new X500Name(userDN));
+        myCertTemplate.setSubject(userDN);
         myCertTemplate.setSerialNumber(new ASN1Integer(serNo));
 
         ExtensionsGenerator extgen = new ExtensionsGenerator();
@@ -325,9 +378,9 @@ public abstract class CmpTestCase extends CaTestCase {
         
         RevReqContent myRevReqContent = new RevReqContent(myRevDetails);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), new GeneralName(new X500Name(
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(userDN), new GeneralName(new X500Name(
                 ((X509Certificate) cacert).getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
         // TransactionId
@@ -341,16 +394,15 @@ public abstract class CmpTestCase extends CaTestCase {
         return myPKIMessage;
     }
 
-    protected PKIMessage genCertConfirm(String userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId)
-            throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    protected static PKIMessage genCertConfirm(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId) {
 
         String issuerDN = "CN=foobarNoCA";
         if(cacert != null) {
             issuerDN = ((X509Certificate) cacert).getSubjectDN().getName();
         }
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), 
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(userDN), 
                                                                new GeneralName(new X500Name(issuerDN)));
-        myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
         // TransactionId
@@ -367,9 +419,8 @@ public abstract class CmpTestCase extends CaTestCase {
         return myPKIMessage;
     }
 
-    protected PKIMessage genRenewalReq(String userDN, Certificate cacert, byte[] nonce, byte[] transid, KeyPair keys, boolean raVerifiedPopo, String reqSubjectDN, String reqIssuerDN, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, 
-            InvalidKeyException, SignatureException {
+    protected static PKIMessage genRenewalReq(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, KeyPair keys, boolean raVerifiedPopo, X500Name reqSubjectDN, String reqIssuerDN, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CertificateEncodingException {
      
      CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
 
@@ -383,7 +434,7 @@ public abstract class CmpTestCase extends CaTestCase {
      myCertTemplate.setValidity(myOptionalValidity);
      
      if(reqSubjectDN != null) {
-         myCertTemplate.setSubject(new X500Name(reqSubjectDN));
+         myCertTemplate.setSubject(reqSubjectDN);
      }
      if(reqIssuerDN != null) {
          myCertTemplate.setIssuer(new X500Name(reqIssuerDN));
@@ -447,9 +498,10 @@ public abstract class CmpTestCase extends CaTestCase {
      
      CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 
-     PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), new GeneralName(new X500Name(
-             ((X509Certificate) cacert).getSubjectDN().getName())));
-     myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+     PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(
+             2, new GeneralName(userDN),
+             new GeneralName(new JcaX509CertificateHolder((X509Certificate)cacert).getSubject()));
+     myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
      // senderNonce
      myPKIHeader.setSenderNonce(new DEROctetString(nonce));
      // TransactionId
@@ -464,25 +516,25 @@ public abstract class CmpTestCase extends CaTestCase {
 
  }
     
-    protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException, IOException {
+    protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException,
+            NoSuchProviderException, InvalidKeyException {
         return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
 
-    protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
-            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
+    protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         // Create the PasswordBased protection of the message
         PKIHeaderBuilder head = CmpMessageHelper.getHeaderBuilder(msg.getHeader());
         if(keyId != null) {
             head.setSenderKID(new DEROctetString(keyId.getBytes()));
         }
         // SHA1
-        AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
+        AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26"));
         // 567 iterations
         int iterationCount = iterations;
         ASN1Integer iteration = new ASN1Integer(iterationCount);
         // HMAC/SHA1
-        AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");
+        AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.2.7"));
         byte[] salt = "foo123".getBytes();
         DEROctetString derSalt = new DEROctetString(salt);
 
@@ -524,15 +576,15 @@ public abstract class CmpTestCase extends CaTestCase {
         return new PKIMessage(header, body, bs);
     }
     
-    protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException, NoSuchProviderException {
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException {
         return sendCmpHttp(message, httpRespCode, null);
     }
 
-    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException, NoSuchProviderException {
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException {
         // POST the CMP request
         // we are going to do a POST
         final String resource = resourceCmp + "/" + cmpAlias;
-        final String urlString = getProperty("httpCmpProxyURL", httpReqPath + '/' + resource);
+        final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resource);
         log.info("http URL: " + urlString);
         URL url = new URL(urlString);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -547,7 +599,9 @@ public abstract class CmpTestCase extends CaTestCase {
 
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
-        if (httpRespCode == 200) {
+        if (httpRespCode != 200) {
+            return null;
+        }
             // Some appserver (Weblogic) responds with
             // "application/pkixcmp; charset=UTF-8"
             assertNotNull("No content type in response.", con.getContentType());
@@ -575,12 +629,9 @@ public abstract class CmpTestCase extends CaTestCase {
             assertNotNull(respBytes);
             assertTrue(respBytes.length > 0);
             return respBytes;
-        } else {
-            return null;
-        }
     }
 
-    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
+    protected static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, String pbeSecret, String expectedSignAlg) throws Exception {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
@@ -676,7 +727,7 @@ public abstract class CmpTestCase extends CaTestCase {
             log.debug("Mac type is: " + macAlg.getAlgorithm().getId());
             byte[] salt = pp.getSalt().getOctets();
             // log.info("Salt is: "+new String(salt));
-            byte[] raSecret = pbeSecret.getBytes();
+            byte[] raSecret = pbeSecret!=null ? pbeSecret.getBytes() : new byte[0];
             byte[] basekey = new byte[raSecret.length + salt.length];
             System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
             for (int i = 0; i < salt.length; i++) {
@@ -720,7 +771,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     }
 
-    protected String getProperty(String key, String defaultValue) {
+    protected static String getProperty(String key, String defaultValue) {
         final String result = System.getProperty(key);
         if (result == null || result.length() < 1 || result.startsWith("$")) {
             return defaultValue;
@@ -728,7 +779,7 @@ public abstract class CmpTestCase extends CaTestCase {
         return result;
     }
 
-    private int getProperty(String key, int defaultValue) {
+    private static int getProperty(String key, int defaultValue) {
         final String sResult = getProperty(key, (String) null);
         if (sResult == null) {
             return defaultValue;
@@ -745,7 +796,7 @@ public abstract class CmpTestCase extends CaTestCase {
      * @throws NoSuchProviderException
      */
     protected byte[] sendCmpTcp(byte[] message, int type) throws IOException, NoSuchProviderException {
-        final String host = getProperty("tcpCmpProxyIP", CMP_HOST);
+        final String host = getProperty("tcpCmpProxyIP", this.CMP_HOST);
         final int port = getProperty("tcpCmpProxyPort", PORT_NUMBER);
         try {
             final Socket socket = new Socket(host, port);
@@ -809,16 +860,20 @@ public abstract class CmpTestCase extends CaTestCase {
      * 
      * @param expected
      * @param actual
+     * @throws IOException 
+     * @throws ArrayComparisonFailure 
      */
-    protected void checkDN(String expected, X500Name actual) {
-        assertEquals(CertTools.stringToBCDNString(expected), CertTools.stringToBCDNString(actual.toString()));
+    @SuppressWarnings("static-method")
+    protected void checkDN(X500Name expected, X500Name actual) throws ArrayComparisonFailure, IOException {
+        assertArrayEquals("Was '"+actual+"' expected '"+expected+"'.", expected.getEncoded(), actual.getEncoded() );
     }
 
-    protected X509Certificate checkCmpCertRepMessage(String userDN, Certificate cacert, byte[] retMsg, int requestId) throws IOException,
+    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, Certificate cacert, byte[] retMsg, int requestId) throws IOException,
             CertificateException {
         //
         // Parse response message
         //
+        assertTrue(cacert instanceof X509Certificate);
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
         try {
@@ -843,16 +898,15 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(kp);
         CertOrEncCert cc = kp.getCertOrEncCert();
         assertNotNull(cc);
-        CMPCertificate cmpcert = cc.getCertificate();
+        final CMPCertificate cmpcert = cc.getCertificate();
         assertNotNull(cmpcert);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
-        X500Name name = new X500Name(CertTools.getSubjectDN(cert));
-        checkDN(userDN, name);
-        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(cacert));
+        final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
+        checkDN(userDN, new JcaX509CertificateHolder(cert).getSubject());
+        assertArrayEquals(cert.getIssuerX500Principal().getEncoded(), ((X509Certificate)cacert).getSubjectX500Principal().getEncoded());
         return cert;
     }
 
-    protected void checkCmpPKIConfirmMessage(String userDN, Certificate cacert, byte[] retMsg) throws IOException {
+    protected static void checkCmpPKIConfirmMessage(X500Name userDN, Certificate cacert, byte[] retMsg) throws IOException {
         //
         // Parse response message
         //
@@ -883,7 +937,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(DERNull.INSTANCE, n.toASN1Primitive());
     }
 
-    protected void checkCmpRevokeConfirmMessage(String issuerDN, String userDN, BigInteger serno, Certificate cacert, byte[] retMsg, boolean success)
+    protected static void checkCmpRevokeConfirmMessage(String issuerDN, X500Name userDN, BigInteger serno, Certificate cacert, byte[] retMsg, boolean success)
             throws IOException {
         //
         // Parse response message
@@ -929,7 +983,7 @@ public abstract class CmpTestCase extends CaTestCase {
      * @param err a number from FailInfo
      * @throws IOException
      */
-    protected void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err, int expectedPKIFailInfo) throws IOException {
+    protected static void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err, int expectedPKIFailInfo) throws IOException {
         //
         // Parse response message
         //
@@ -981,7 +1035,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(failMsg, info.getStatusString().getStringAt(0).getString());
     }
 
-    protected void checkCmpPKIErrorMessage(byte[] retMsg, String sender, String recipient, int errorCode, String errorMsg) throws IOException {
+    protected static void checkCmpPKIErrorMessage(byte[] retMsg, String sender, X500Name recipient, int errorCode, String errorMsg) throws IOException {
         //
         // Parse response message
         //
@@ -995,10 +1049,14 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
-        X500Name name = X500Name.getInstance(header.getSender().getName());
-        assertEquals(name.toString(), sender);
-        name = X500Name.getInstance(header.getRecipient().getName());
-        assertEquals(name.toString(), recipient);
+        {
+            final X500Name name = X500Name.getInstance(header.getSender().getName());
+            assertEquals(name.toString(), sender);
+        }
+        {
+            final X500Name name = X500Name.getInstance(header.getRecipient().getName());
+            assertArrayEquals(name.getEncoded(), recipient.getEncoded());
+        }
 
         PKIBody body = respObject.getBody();
         int tag = body.getType();
@@ -1020,12 +1078,12 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected int checkRevokeStatus(String issuerDN, BigInteger serno) {
         int ret = RevokedCertInfo.NOT_REVOKED;
-        CertificateStatus info = certificateStoreSession.getStatus(issuerDN, serno);
+        CertificateStatus info = this.certificateStoreSession.getStatus(issuerDN, serno);
         ret = info.revocationReason;
         return ret;
     }
 
-    protected void updatePropertyOnServer(String property, String value) {
+    protected static void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);
         assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
                 EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
@@ -1038,13 +1096,13 @@ public abstract class CmpTestCase extends CaTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
-            endEntityManagementSession.addUser(admin, user, false);
-            // usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,EndEntityTypes.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            this.endEntityManagementSession.addUser(ADMIN, user, false);
+            // usersession.addUser(ADMIN,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,EndEntityTypes.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
-            endEntityManagementSession.changeUser(admin, user, false);
-            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            this.endEntityManagementSession.changeUser(ADMIN, user, false);
+            this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         return user;
@@ -1055,7 +1113,7 @@ public abstract class CmpTestCase extends CaTestCase {
             IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
                 
         createUser(username, "CN="+username, password, caid);
-        Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId(certProfile), caid);
+        Certificate racert = this.signSession.createCertificate(ADMIN, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, this.certProfileSession.getCertificateProfileId(certProfile), caid);
 
         
         List<Certificate> certCollection = new ArrayList<Certificate>();
@@ -1068,7 +1126,7 @@ public abstract class CmpTestCase extends CaTestCase {
         fout.flush();
         fout.close();        
         
-        endEntityManagementSession.deleteUser(admin, username);
+        this.endEntityManagementSession.deleteUser(ADMIN, username);
         
         return racert;
     }
