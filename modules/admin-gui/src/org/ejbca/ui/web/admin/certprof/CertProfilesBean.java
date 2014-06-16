@@ -197,8 +197,15 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
         } else if (certProfileName.length()>0) {
             try {
-                // Use null as authorizedCaIds, so we will copy the profile exactly as the template, including available CAs
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, null);
+                final List<Integer> authorizedCaIds;
+                if (isCertProfileFixed(getSelectedCertProfileId()) && !isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
+                    // Expand ANYCA to the current admin's list of authorized CA Ids
+                    authorizedCaIds = getEjbcaWebBean().getEjb().getCaSession().getAvailableCAs();
+                } else {
+                    // Use null as authorizedCaIds, so we will copy the profile exactly as the template(, including ANY CA for SuperAdmin)
+                    authorizedCaIds = null;
+                }
+                getEjbcaWebBean().getEjb().getCertificateProfileSession().cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, authorizedCaIds);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 setCertProfileName("");
             } catch(CertificateProfileExistsException e) {
