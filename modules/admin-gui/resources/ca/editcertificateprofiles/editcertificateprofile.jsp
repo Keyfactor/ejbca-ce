@@ -650,7 +650,8 @@
 
 		<%-- Enabled CT logs selection --%>
 		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="selectctlogs" value="#{web.text.EXT_CT_ENABLEDLOGS}" styleClass="subItem"/>
-		<h:selectManyListbox rendered="#{certProfileBean.ctEnabled}" id="selectctlogs" value="#{certProfileBean.enabledCTLogs}" size="#{certProfileBean.enabledCTLogsAvailableSize}">
+		<h:selectManyListbox rendered="#{certProfileBean.ctEnabled}" id="selectctlogs" value="#{certProfileBean.enabledCTLogs}"
+			size="#{certProfileBean.enabledCTLogsAvailableSize}" style="min-width: 280px;">
 			<f:selectItems value="#{certProfileBean.enabledCTLogsAvailable}"/>
 		</h:selectManyListbox>
 
@@ -850,12 +851,14 @@
 		</h:selectManyListbox>
 
 		<h:outputLabel for="selectavailablecas" value="#{web.text.AVAILABLECAS}"/>
-		<h:selectManyListbox id="selectavailablecas" value="#{certProfileBean.certificateProfile.availableCAs}" size="#{certProfileBean.availableCAsAvailableSize}" converter="javax.faces.Integer" >
+		<h:selectManyListbox id="selectavailablecas" value="#{certProfileBean.certificateProfile.availableCAs}" size="#{certProfileBean.availableCAsAvailableSize}"
+			converter="javax.faces.Integer" style="min-width: 280px;">
 			<f:selectItems value="#{certProfileBean.availableCAsAvailable}"/>
 		</h:selectManyListbox>
 		
 		<h:outputLabel rendered="#{certProfileBean.typeEndEntity}" for="selectavailablepublishers" value="#{web.text.PUBLISHERS}"/>
-		<h:selectManyListbox rendered="#{certProfileBean.typeEndEntity}" id="selectavailablepublishers" value="#{certProfileBean.certificateProfile.publisherList}" size="#{certProfileBean.publisherListAvailableSize}" converter="javax.faces.Integer">
+		<h:selectManyListbox rendered="#{certProfileBean.typeEndEntity}" id="selectavailablepublishers" value="#{certProfileBean.certificateProfile.publisherList}"
+			size="#{certProfileBean.publisherListAvailableSize}" converter="javax.faces.Integer" style="min-width: 280px;">
 			<f:selectItems value="#{certProfileBean.publisherListAvailable}"/>
 		</h:selectManyListbox>
 		
