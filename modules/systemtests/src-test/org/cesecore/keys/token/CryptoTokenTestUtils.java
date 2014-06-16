@@ -43,8 +43,7 @@ public class CryptoTokenTestUtils {
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(CryptoTokenTestUtils.class.getSimpleName()));
 
     
-    private static final String TOKEN_PIN = "userpin1";
-
+    private static final String TOKEN_PIN = "userpin1";    
     private static final String UTIMACO_PKCS11_LINUX_LIB = "/etc/utimaco/libcs2_pkcs11.so";
     private static final String UTIMACO_PKCS11_WINDOWS_LIB = "C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll";
     private static final String LUNASA_PKCS11_LINUX_LIB = "/usr/lunasa/lib/libCryptoki2_64.so";
@@ -114,6 +113,9 @@ public class CryptoTokenTestUtils {
         }
         String cryptoTokenClassName = SoftCryptoToken.class.getName();
         if (pkcs11) {
+            if(getHSMLibrary() == null) {
+                throw new IllegalStateException("No crypto library found.");
+            }
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, getHSMLibrary());
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
