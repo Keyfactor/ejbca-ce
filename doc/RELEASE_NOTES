@@ -18,7 +18,8 @@ preventing web GUIs from being framed in modern browsers.
 
 Note 2: 
 Some CLI commands have changed names, though legacy support for the old names still remains. Some commands have had to undergo syntax changes, and they are as follows: 
- * General 									- Explicit password flag for CLI user password has been changed to "--clipassword" 
+ * General 									- Explicit password flag for CLI user password has been changed to '--clipassword' 
+ 											- All CLI commands' help pages can be summoned with the '--help' switch
  * CaImportCACommand 						- Command performs two different tasks depending on the number of arguments, which are mostly mutually exclusive and unswitched, hence impossible to identify. 
  * CaImportCertCommand 						- The optional values e-mail, cert profile and ee profile must be used with a switch. 
  * CaInitCommand 							- The catokenproperties is now optional (no need to substitute with null if unused) 
