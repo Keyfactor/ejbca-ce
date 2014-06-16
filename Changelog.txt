@@ -1,3 +1,87 @@
+EJBCA 6.2.0, 2014-06-
+---
+Bug
+	[ECA-3216] - Return unsigned response "unauthorized" when no default responder configured, or wrongly configured
+	[ECA-3299] - OCSP request signer verification does an additional database lookup
+	[ECA-3454] - Inconsistent skip options for state dump import
+	[ECA-3481] - Minor security hardening
+	[ECA-3489] - Fail fast creating CVCCAs when unique certificatedata_idx12 is enabled
+	[ECA-3492] - renameRole() tries to change primary key and triggers a HibernateException
+	[ECA-3495] - The public part of a key is still on the P11 token after the private part is removed.
+	[ECA-3496] - java.lang.IndexOutOfBoundsException when selecting empty crypto token for internal key binding
+	[ECA-3499] - Overwriting a CA with StateDump can leave cert/ee profiles in an invisible state
+	[ECA-3506] - ejbca-ws-generate target missing dependencies
+	[ECA-3517] - "Lock wait timeout exceeded" when disabling multiple access rules with MariaDB Galera
+	[ECA-3518] - NPE if only period length is provided for private key usage period
+	[ECA-3521] - Certificate & End-Entity Profiles with missing CAs become invisible, even for superadmin
+	[ECA-3534] - NullPointerException when adding a user without password
+	[ECA-3535] - State dump unselects "Any CA" from profiles during import
+	[ECA-3536] - ejbca-db-cli does not work since change to use ServiceLocator
+	[ECA-3537] - Clean up exception handling in CertificateCreateSession
+	[ECA-3551] - Certificates are not submitted to CT when generated from CLI, etc.
+	[ECA-3582] - CMP can not handle some valid CSRs.
+	[ECA-3587] - Update default Modifiable Fields in User Data Sources
+	[ECA-3588] - Regression: PrintableString encoding for DNs does not work
+	[ECA-3594] - Security related
+	[ECA-3596] - Creating limited CertificateData fails with certain databases
+
+Improvement
+	[ECA-631] - Enforce naming constraints present in CA-certificates
+	[ECA-2126] - Certificates that are issued in revoked state should never be active
+	[ECA-2690] - Create a CLI parameter handler
+	[ECA-3320] - Simpler format for specifying CA validity dates
+	[ECA-3468] - Implement statedump Subject DN renaming properly inside EJBCA
+	[ECA-3477] - Give focus to incorrectly marked fields in edit CA page
+	[ECA-3482] - Minor security hardening
+	[ECA-3483] - Minor security hardening
+	[ECA-3484] - Minor security hardening
+	[ECA-3490] - ICAO Master List Signer extended key usage
+	[ECA-3491] - Allow system tests to target non-localhost interface
+	[ECA-3494] - Suppress repeated OcspSigningCache warnings
+	[ECA-3502] - Allow system tests to use HSM when available
+	[ECA-3503] - SSB cached in CertificateCache
+	[ECA-3509] - ExternalRA: Oracle Database Support in database mapping setup
+	[ECA-3510] - Replace references to java.util.Vector
+	[ECA-3513] - Audit log when a CT pre-certificate is generated and sent to a log
+	[ECA-3515] - SCEP: Rewrite the configuration process to use one URL and multiple aliases
+	[ECA-3516] - SCEP: Implement configuring SCEP in the AdminGUI
+	[ECA-3519] - Minor security hardening
+	[ECA-3524] - Improve memory usage during CRL generation
+	[ECA-3525] - Do not use the HSM for hashing when signing data
+	[ECA-3531] - SCEP: Remove DefaultCA configuration
+	[ECA-3532] - Fix documentation of the command "ejbca.sh config cmp uploadfile"
+	[ECA-3538] - clientToolBox p11 test multiple times in same jvm, to test if objects on a p11 token can be updated from another application.
+	[ECA-3540] - External RA: Oracle Database mapping support in RA GUI
+	[ECA-3544] - Make error messages and success messages easier to distinguish
+	[ECA-3547] - GUI: Better item order for the System Functions menu
+	[ECA-3555] - CLI: able to list key bindings with non existing cryptotokens
+	[ECA-3557] - Add simplified CAInfo constructors
+	[ECA-3561] - Request subCA certificate from external CA without uploading the chain
+	[ECA-3565] - Rewrite Certificate Profile page in JSF
+	[ECA-3566] - Encapsulate HashID properly
+	[ECA-3569] - Effectivize the reloading of CaCertificateCache
+	[ECA-3572] - Use JavaScript for certificate installation redirect in public web
+	[ECA-3579] - Remove CERT_TEMP_REVOKED since it's not used
+
+New Feature
+	[ECA-688] - Import / Export profiles from WebUI
+	[ECA-2114] - Rename EJB CLI for fetching CA certificates from getrootcert to getcacert
+	[ECA-3109] - Add native support for Name Constraints
+	[ECA-3123] - ICAO DocumentType List certificate extension
+	[ECA-3124] - Add the Issuer Alternative Name certificate extension to the GUI
+	[ECA-3530] - Ant targets for creating source and binary releases of CESeCore
+	[ECA-3542] - Support for IE11 in Public Web
+	[ECA-3543] - Support IE11 in External RA GUI
+	[ECA-3559] - Service for populating database with revocation status of certificates from CRL
+	[ECA-3584] - Choice of token type in Public Web self-registration page
+
+Task
+	[ECA-3394] - French language files updated for the new functionalities
+	[ECA-3419] - CAAdminSessionBean.exportCAKeyStore throws Exception
+	[ECA-3478] - Have all system tests write results to the same directory
+	[ECA-3546] - French language files updated for SCEP Configuration
+	[ECA-3420] - Convert all EJB CLI commands to the new standard
+
 EJBCA 6.1.3, 2014-04-28
 ---
 Bug
