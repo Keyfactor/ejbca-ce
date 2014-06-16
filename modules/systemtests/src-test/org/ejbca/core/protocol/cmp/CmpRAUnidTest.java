@@ -42,9 +42,9 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.style.BCStrictStyle;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.X509Principal;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -53,7 +53,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
@@ -63,9 +62,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.TestAssertionFailedException;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.unid.UnidFnrHandler;
@@ -96,20 +93,17 @@ public class CmpRAUnidTest extends CmpTestCase {
     private static final String FNR = "90123456789";
     private static final String LRA = "01234";
     private static final String SUBJECT_SN = FNR + '-' + LRA;
-    private static final String SUBJECT_DN = "C=SE,SN=" + SUBJECT_SN + ",CN=unid-frn";
+    private static final X500Name SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-frn");
 
-    private String issuerDN;
-    private KeyPair keys;
-    private int caid;
-    private X509Certificate cacert;
-    private CA testx509ca;
-    private CmpConfiguration cmpConfiguration;
-    private String configAlias = "CmpRAUnidTestCmpConfAlias";
+    private static final String issuerDN = "CN=TestCA";
+    private final KeyPair keys;
+    private final int caid;
+    private final X509Certificate cacert;
+    private final CA testx509ca;
+    private final CmpConfiguration cmpConfiguration;
+    private static final String configAlias = "CmpRAUnidTestCmpConfAlias";
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
 
@@ -118,45 +112,47 @@ public class CmpRAUnidTest extends CmpTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
+    public CmpRAUnidTest() throws Exception {
+        this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
+        this.caid = this.testx509ca.getCAId();
+        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+    }
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         
-        issuerDN = "CN=TestCA";
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
-        caid = testx509ca.getCAId();
-        cacert = (X509Certificate) testx509ca.getCACertificate();
-        caSession.addCA(admin, testx509ca);
+        this.caSession.addCA(this.admin, this.testx509ca);
         
-        configurationSession.backupConfiguration();
-        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.configurationSession.backupConfiguration();
         
         // Configure CMP for this test
-        cmpConfiguration.addAlias(configAlias);
-        cmpConfiguration.setRAMode(configAlias, true);
-        cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
-        cmpConfiguration.setResponseProtection(configAlias, "pbe");
-        cmpConfiguration.setRACertProfile(configAlias, "KeyId");
-        cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
-        cmpConfiguration.setRACAName(configAlias, testx509ca.getName());
-        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
-        cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
-        cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.addAlias(configAlias);
+        this.cmpConfiguration.setRAMode(configAlias, true);
+        this.cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
+        this.cmpConfiguration.setResponseProtection(configAlias, "pbe");
+        this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
+        this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
+        this.cmpConfiguration.setRACAName(configAlias, this.testx509ca.getName());
+        this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
+        this.cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
+        this.cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
         
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
-        if (this.certificateProfileSession.getCertificateProfile(CPNAME) == null) {
+        if (this.certProfileSession.getCertificateProfile(CPNAME) == null) {
             final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             try { // TODO: Fix this better
-                this.certificateProfileSession.addCertificateProfile(this.admin, CPNAME, cp);
+                this.certProfileSession.addCertificateProfile(this.admin, CPNAME, cp);
             } catch (CertificateProfileExistsException e) {
                 log.error("Certificate profile exists: ", e);
             }
         }
-        final int cpId = this.certificateProfileSession.getCertificateProfileId(CPNAME);
+        final int cpId = this.certProfileSession.getCertificateProfileId(CPNAME);
         if (this.endEntityProfileSession.getEndEntityProfile(EEPNAME) == null) {
             final EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);
@@ -166,30 +162,31 @@ public class CmpRAUnidTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
-        this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         this.endEntityProfileSession.removeEndEntityProfile(this.admin, EEPNAME);
-        this.certificateProfileSession.removeCertificateProfile(this.admin, CPNAME);
+        this.certProfileSession.removeCertificateProfile(this.admin, CPNAME);
         
-        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, caid);
+        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
+        this.caSession.removeCA(this.admin, this.caid);
         
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());
-        cmpConfiguration.removeAlias(configAlias);
-        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.cmpConfiguration.removeAlias(configAlias);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
 
     @Override
-    protected void checkDN(String sExpected, X500Name actual) {
-        final X500Name expected = new X500Name(sExpected);
+    protected void checkDN(X500Name expected, X500Name actual) {
         final ASN1ObjectIdentifier[] expectedOIDs = expected.getAttributeTypes();
         final ASN1ObjectIdentifier[] actualOIDs = actual.getAttributeTypes();
         assertEquals("Not the expected number of elements in the created certificate.", expectedOIDs.length, actualOIDs.length);
@@ -198,7 +195,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             final ASN1ObjectIdentifier oid = expectedOIDs[i];
             expectedValue = expected.getRDNs(oid)[0].getFirst().getValue().toString();
             actualValue = actual.getRDNs(oid)[0].getFirst().getValue().toString();
-            if (!oid.equals(BCStrictStyle.SN)) {
+            if (!oid.equals(BCStyle.SN)) {
                 log.debug("Check that " + oid.getId() + " is OK. Expected '" + expectedValue + "'. Actual '" + actualValue + "'.");
                 assertEquals("Not expected " + oid, expectedValue, actualValue);
                 continue;
@@ -252,11 +249,11 @@ public class CmpRAUnidTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
-        String unid = null;
+        final String unid;
         {
             // In this test SUBJECT_DN contains special, escaped characters to verify
             // that that works with CMP RA as well
-            final PKIMessage one = genCertReq(this.issuerDN, SUBJECT_DN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
+            final PKIMessage one = genCertReq(CmpRAUnidTest.issuerDN, SUBJECT_DN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, CPNAME, 567);
             assertNotNull(req);
 
@@ -278,11 +275,13 @@ public class CmpRAUnidTest extends CmpTestCase {
                     String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
                     log.error(errMsg);
                     fail("CMP ErrorMsg received: " + errMsg);
+                    unid = null;
                 } else {
-                    checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD,
+                    checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD,
                             PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                     final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
-                    unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
+                    final X500Name name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
+                    unid = IETFUtils.valueToString(name.getRDNs(BCStyle.SN)[0].getFirst().getValue());
                     log.debug("Unid received in certificate response: " + unid);
                 }
             } finally {
@@ -295,6 +294,8 @@ public class CmpRAUnidTest extends CmpTestCase {
             final ResultSet result = ps.executeQuery();
             assertTrue("Unid '" + unid + "' not found in DB.", result.next());
             final String fnr = result.getString(1);
+            result.close();
+            ps.close();
             log.debug("FNR read from DB: " + fnr);
             assertEquals("Right FNR not found in DB.", FNR, fnr);
         }
@@ -310,7 +311,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, configAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpPKIConfirmMessage(SUBJECT_DN, this.cacert, resp);
         }
     }

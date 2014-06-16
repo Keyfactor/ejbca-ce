@@ -31,9 +31,9 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -41,28 +41,26 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.misc.NetscapeCertType;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -81,6 +79,7 @@ import org.junit.Test;
  *          
  * There must be four end entity profiles and four certificate profiles.
  * 
+ * All certificate profiles must have "AllowDNOverride" set.
  * Cert Profile with name KeyId1 must have key usage "digital signature", non-overridable
  * Cert Profile with name KeyId2 must have key usage "non repudiation", non-overridable
  * Cert Profile with name KeyId3 must have key usage "key encipherment", overridable
@@ -107,45 +106,38 @@ import org.junit.Test;
  */
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
-    private static Logger log = Logger.getLogger(CrmfRAPbeMultipleKeyIdRequestTest.class);
+    private static final Logger log = Logger.getLogger(CrmfRAPbeMultipleKeyIdRequestTest.class);
 
     private static final String PBEPASSWORD = "password";
     
-    private static String userDN1 = "C=SE,O=PrimeKey,CN=cmptestKeyId1";
-    private static String userDN2 = "C=NO,O=PrimeKey,CN=cmptestKeyId2";
-    private static String issuerDN1 = null;
-    private static String issuerDN2 = null;
-    private KeyPair keys = null;
-    private CmpConfiguration cmpConfiguration = null;
-    private String configAlias = "tcp";
+    final private static X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=cmptestKeyId1");
+    final private static X500Name userDN2 = new X500Name("C=NO,O=PrimeKey,CN=cmptestKeyId2");
+    final private String issuerDN1;
+    final private String issuerDN2;
+    final private KeyPair keys;
+    final private CmpConfiguration cmpConfiguration;
+    final private static String configAlias = "tcp";
 
-    private static int caid1 = 0;
-    private static int caid2 = 0;
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRAPbeMultipleKeyIdRequestTest"));
-    private static Certificate cacert1 = null;
-    private static Certificate cacert2 = null;
+    final private int caid1;
+    final private int caid2;
+    final private Certificate cacert1;
+    final private Certificate cacert2;
     
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    final private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-     // Try to get caIds
-        CAInfo adminca1 = caSession.getCAInfo(admin, "CmpCA1");
-        caid1 = adminca1.getCAId();
-        CAInfo adminca2 = caSession.getCAInfo(admin, "CmpCA2");
-        caid2 = adminca2.getCAId();
-        if ((caid1 == 0) || (caid2 == 0)) {
-            assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
-        }
-        CAInfo cainfo = caSession.getCAInfo(admin, caid1);
+    public CrmfRAPbeMultipleKeyIdRequestTest() throws Exception {
+        CAInfo adminca1 = this.caSession.getCAInfo(ADMIN, "CmpCA1");
+        this.caid1 = adminca1.getCAId();
+        CAInfo adminca2 = this.caSession.getCAInfo(ADMIN, "CmpCA2");
+        this.caid2 = adminca2.getCAId();
+
+        CAInfo cainfo = this.caSession.getCAInfo(ADMIN, this.caid1);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -153,12 +145,15 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert1 = CertTools.getCertfromByteArray(cert.getEncoded());
+                this.cacert1 = CertTools.getCertfromByteArray(cert.getEncoded());
+            } else {
+                this.cacert1 = null;
             }
         } else {
-            log.error("NO CACERT for CmpCA1: " + caid1);
+            log.error("NO CACERT for CmpCA1: " + this.caid1);
+            this.cacert1 = null;
         }
-        cainfo = caSession.getCAInfo(admin, caid2);
+        cainfo = this.caSession.getCAInfo(ADMIN, this.caid2);
         certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -166,54 +161,74 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert2 = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
+                this.cacert2 = CertTools.getCertfromByteArray(cert.getEncoded());
+            } else {
+                this.cacert2 = null;
             }
         } else {
-            log.error("NO CACERT for CmpCA2: " + caid2);
+            log.error("NO CACERT for CmpCA2: " + this.caid2);
+            this.cacert2 = null;
         }
-        issuerDN1 = CertTools.getSubjectDN(cacert1);
-        issuerDN2 = CertTools.getSubjectDN(cacert2);
-        if (keys == null) {
-            keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        if ( this.cacert1==null || this.cacert2==null ) {
+            throw new Exception("CAs not set up properly.");
         }
-        
-        cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
-        if(cmpConfiguration.aliasExists(configAlias)) {
-            cmpConfiguration.renameAlias(configAlias, "backupTcpAlias");
-        }
-        cmpConfiguration.addAlias(configAlias);
-        cmpConfiguration.setRAMode(configAlias, true);
-        cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
-        cmpConfiguration.setResponseProtection(configAlias, "pbe");
-        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(configAlias, "password");
-        cmpConfiguration.setRANameGenScheme(configAlias, "DN");
-        cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
-        cmpConfiguration.setRACertProfile(configAlias, "KeyId");
-        cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
-        updatePropertyOnServer("cmp.tcp.portno", "5587");
-        globalConfigSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.issuerDN1 = CertTools.getSubjectDN(this.cacert1);
+        this.issuerDN2 = CertTools.getSubjectDN(this.cacert2);
+            this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
     }
 
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+     // Try to get caIds
+        if ((this.caid1 == 0) || (this.caid2 == 0)) {
+            assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
+        }
+
+        if(this.cmpConfiguration.aliasExists(configAlias)) {
+            this.cmpConfiguration.renameAlias(configAlias, "backupTcpAlias");
+        }
+        this.cmpConfiguration.addAlias(configAlias);
+        this.cmpConfiguration.setRAMode(configAlias, true);
+        this.cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
+        this.cmpConfiguration.setResponseProtection(configAlias, "pbe");
+        this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(configAlias, "password");
+        this.cmpConfiguration.setRANameGenScheme(configAlias, "DN");
+        this.cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
+        this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
+        this.cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
+        updatePropertyOnServer("cmp.tcp.portno", "5587");
+        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+    }
+
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        String user1 = CertTools.getPartFromDN(userDN1, "CN");
-        String user2 = CertTools.getPartFromDN(userDN2, "CN");
+        final String user1 = userDN1.getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
+        //String user1 = CertTools.getPartFromDN(userDN1, "CN");
+        final String user2 = userDN2.getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
+        //String user2 = CertTools.getPartFromDN(userDN2, "CN");
         try {
-            endEntityManagementSession.deleteUser(admin, user1);
-            endEntityManagementSession.deleteUser(admin, user2);
+            this.endEntityManagementSession.deleteUser(ADMIN, user1);
+            this.endEntityManagementSession.deleteUser(ADMIN, user2);
         } catch (Exception e) {
             // Ignore errors
         }
         
-        cmpConfiguration.removeAlias(configAlias);
-        if(cmpConfiguration.aliasExists("backupTcpAlias")) {
-            cmpConfiguration.renameAlias("backupTcpAlias", configAlias);
+        this.cmpConfiguration.removeAlias(configAlias);
+        if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
+            this.cmpConfiguration.renameAlias("backupTcpAlias", configAlias);
         }
-        globalConfigSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -225,7 +240,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // A message with the KeyId "foobarfoobar" should not be known by this
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN1, userDN1, this.keys, this.cacert1, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "foobarfoobar", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -250,7 +265,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN1, userDN1, this.keys, this.cacert1, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -262,8 +277,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN1, cacert1, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert1, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -285,7 +300,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN1, cacert1, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN1, this.cacert1, nonce, transid, hash, reqId);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -294,11 +309,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN1, cacert1, resp);
+        checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN1, this.cacert1, resp);
 
         // Now revoke the bastard!
-        PKIMessage rev = genRevReq(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, nonce, transid, true, null, null);
+        PKIMessage rev = genRevReq(this.issuerDN1, userDN1, cert.getSerialNumber(), this.cacert1, nonce, transid, true, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -307,13 +322,13 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpRevokeConfirmMessage(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, resp, true);
-        int reason = checkRevokeStatus(issuerDN1, cert.getSerialNumber());
+        checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpRevokeConfirmMessage(this.issuerDN1, userDN1, cert.getSerialNumber(), this.cacert1, resp, true);
+        int reason = checkRevokeStatus(this.issuerDN1, cert.getSerialNumber());
         assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
 
         // Create a revocation request for a non existing cert, chould fail!
-        rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid, true, null, null);
+        rev = genRevReq(this.issuerDN1, userDN1, new BigInteger("1"), this.cacert1, nonce, transid, true, null, null);
         revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -322,8 +337,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpRevokeConfirmMessage(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, resp, false);
+        checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpRevokeConfirmMessage(this.issuerDN1, userDN1, cert.getSerialNumber(), this.cacert1, resp, false);
 
     }
 
@@ -333,7 +348,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN1, userDN1, this.keys, this.cacert1, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -345,8 +360,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN1, cacert1, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert1, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -368,7 +383,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN1, cacert1, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN1, this.cacert1, nonce, transid, hash, reqId);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -377,8 +392,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN1, cacert1, resp);
+        checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN1, this.cacert1, resp);
     }
 
     @Test
@@ -387,7 +402,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN2, userDN2, this.keys, this.cacert2, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -399,8 +414,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -422,7 +437,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -431,8 +446,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN2, this.cacert2, resp);
     }
 
     @Test
@@ -441,7 +456,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN2, userDN2, this.keys, this.cacert2, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -453,8 +468,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -476,7 +491,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -485,11 +500,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN2, this.cacert2, resp);
 
         // Now revoke the bastard!
-        PKIMessage rev = genRevReq(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, nonce, transid, true, null, null);
+        PKIMessage rev = genRevReq(this.issuerDN2, userDN2, cert.getSerialNumber(), this.cacert2, nonce, transid, true, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -498,9 +513,9 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, configAlias);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpRevokeConfirmMessage(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, resp, true);
-        int reason = checkRevokeStatus(issuerDN2, cert.getSerialNumber());
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpRevokeConfirmMessage(this.issuerDN2, userDN2, cert.getSerialNumber(), this.cacert2, resp, true);
+        int reason = checkRevokeStatus(this.issuerDN2, cert.getSerialNumber());
         assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
     }
 
@@ -510,7 +525,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN2, userDN2, this.keys, this.cacert2, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -522,8 +537,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
         // FileOutputStream fos = new FileOutputStream("/home/tomas/foo.crt");
         // fos.write(cert.getEncoded());
         // fos.close();
@@ -550,7 +565,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -559,8 +574,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN2, this.cacert2, resp);
     } // test06CrmfTcpOkUserKeyId3
 
     @Test
@@ -597,7 +612,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         Extensions exts = extgen.generate();
 
         // First test without extension override
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null, null, null);
+        PKIMessage one = genCertReq(this.issuerDN2, userDN2, this.keys, this.cacert2, nonce, transid, true, exts, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -609,8 +624,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
 
@@ -634,7 +649,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         //
         // Do the same with keyId4, that has full extension override
-        one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null, null, null);
+        one = genCertReq(this.issuerDN2, userDN2, this.keys, this.cacert2, nonce, transid, true, exts, null, null, null, null, null);
         req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId4", 567);
 
         ir = (CertReqMessages) req.getBody().getContent();
@@ -646,8 +661,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+        checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
         altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
 
