@@ -30,14 +30,11 @@ import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
@@ -46,26 +43,29 @@ import org.junit.Test;
 public class CmpAliasTest extends CmpTestCase {
     
     private static final Logger log = Logger.getLogger(CmpAliasTest.class);
-    private static final AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpAliasTest"));
 
-    private ConfigurationSessionRemote confSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final GlobalConfigurationSession globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     
-    private String baseResource = "publicweb/cmp";
-    private String httpReqPath;
-    
-    
+    private final String baseResource = "publicweb/cmp";
+    private final String httpReqPath;
+
+    public CmpAliasTest() {
+        final String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        final String httpServerHost = SystemTestsConfiguration.getRemoteHost(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
+        this.httpReqPath = "http://" + httpServerHost + ":" + httpServerPubHttp + "/ejbca";
+    }
+
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(confSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
-        String httpServerHost = SystemTestsConfiguration.getRemoteHost(confSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
-        httpReqPath = "http://" + httpServerHost + ":" + httpServerPubHttp + "/ejbca";
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
@@ -80,11 +80,11 @@ public class CmpAliasTest extends CmpTestCase {
         
         if(cmpconfig.aliasExists(extractedAlias)) {
             cmpconfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
-            globalConfSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
         }
         
         try {
-            String urlString = httpReqPath + '/' + baseResource;
+            String urlString = this.httpReqPath + '/' + this.baseResource;
             if(requestAlias != null) {
                 urlString += "/" + requestAlias; 
             }
@@ -125,7 +125,7 @@ public class CmpAliasTest extends CmpTestCase {
         } finally {
             if(cmpconfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
                 cmpconfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
-                globalConfSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
+                this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
             }
         }
     }
@@ -142,7 +142,7 @@ public class CmpAliasTest extends CmpTestCase {
     public void test01Access() throws Exception {
         log.trace(">test01Access()");
         
-        CmpConfiguration cmpConfig = (CmpConfiguration) globalConfSession.getCachedConfiguration(Configuration.CMPConfigID);
+        CmpConfiguration cmpConfig = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
         
         sendCmpRequest(cmpConfig, "alias123", "alias123"); // "alias123" in the request causes Ejbca to use "alias123" as CMP alias
         sendCmpRequest(cmpConfig, "123", "123"); // "123" in the request causes Ejbca to use "123" as CMP alias
@@ -160,7 +160,7 @@ public class CmpAliasTest extends CmpTestCase {
 
     @Test
     public void test02CmpAliasTest() {
-        CmpConfiguration cmpConfig = (CmpConfiguration) globalConfSession.getCachedConfiguration(Configuration.CMPConfigID);
+        CmpConfiguration cmpConfig = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
 
         // Test adding an alias
         String alias = "CmpURLTestCmpConfigAlias";
@@ -216,7 +216,7 @@ public class CmpAliasTest extends CmpTestCase {
     public void test03AliasTooLongTest() throws Exception {
         
         String longAlias = "abcdefghijklmnopqrstuvwxyz0123456789"; 
-        String urlString = httpReqPath + '/' + baseResource + '/' + longAlias; 
+        String urlString = this.httpReqPath + '/' + this.baseResource + '/' + longAlias; 
         log.info("http URL: " + urlString);
         URL url = new URL(urlString);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
