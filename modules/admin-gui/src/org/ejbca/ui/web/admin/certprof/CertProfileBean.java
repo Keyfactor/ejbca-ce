@@ -65,6 +65,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     //@javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
     private CertProfilesBean certProfilesBean;
 
+    private int currentCertProfileId = -1;
     private CertificateProfile certificateProfile = null;
 
     public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
@@ -79,8 +80,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
 
     public CertificateProfile getCertificateProfile() throws AuthorizationDeniedException {
+        if (currentCertProfileId!=-1 && certificateProfile!=null && getSelectedCertProfileId().intValue() != currentCertProfileId) {
+            currentCertProfileId = -1;
+            certificateProfile = null;
+        }
         if (certificateProfile==null) {
-            CertificateProfile certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(getSelectedCertProfileId().intValue());
+            currentCertProfileId = getSelectedCertProfileId().intValue();
+            final CertificateProfile certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(currentCertProfileId);
             if (!getEjbcaWebBean().getEjb().getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(getSelectedCertProfileId())) {
                 throw new AuthorizationDeniedException("Not authorized to certificate profile");
             }
@@ -104,6 +110,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     //public void setCertificateProfile(CertificateProfile certificateProfile) { this.certificateProfile = certificateProfile; }
 
     public String cancel() {
+        currentCertProfileId = -1;
         certificateProfile = null;
         return "done";  // Outcome defined in faces-config.xml
     }
@@ -120,6 +127,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), getCertificateProfile());
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 addInfoMessage("CERTIFICATEPROFILESAVED");
+                currentCertProfileId = -1;
+                certificateProfile = null;
                 return "done";  // Outcome defined in faces-config.xml
             }
         } catch (AuthorizationDeniedException e) {
