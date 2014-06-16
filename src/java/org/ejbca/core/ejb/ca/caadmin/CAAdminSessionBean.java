@@ -2389,8 +2389,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             // Fetch keys
             final char[] password = keystorepass.toCharArray(); 
-            cryptoToken.activate(password);
             ((SoftCryptoToken)cryptoToken).checkPasswordBeforeExport(password);
+            cryptoToken.activate(password);
 
             PrivateKey p12PrivateEncryptionKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
             PublicKey p12PublicEncryptionKey = cryptoToken.getPublicKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
