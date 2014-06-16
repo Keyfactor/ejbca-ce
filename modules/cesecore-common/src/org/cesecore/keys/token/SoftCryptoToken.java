@@ -80,8 +80,8 @@ public class SoftCryptoToken extends BaseCryptoToken {
     @Override
     public void init(Properties properties, final byte[] data, final int cryptoTokenId) {
         super.setJCAProviderName(PROVIDER);
-        // by default, this implementation should allow to extract keys
-        this.allowsExtractablePrivateKey = true;
+        // this implementation allows extraction of keys
+        this.supportsExtractionOfPrivateKey = true;
         this.keystoreData = data;
         if (properties == null) {
             properties = new Properties();
@@ -181,10 +181,10 @@ public class SoftCryptoToken extends BaseCryptoToken {
             throw new PrivateKeyNotExtractableException(msg);
         }
         try {
-            try {
+            if (authCode == null || authCode.length == 0) {
                 final String defaultpass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");
-                loadKeyStore(keystoreData, defaultpass.toCharArray()); // try without password first
-            } catch (IOException e) {
+                loadKeyStore(keystoreData, defaultpass.toCharArray());
+            } else {
                 loadKeyStore(keystoreData, authCode);
             }
         } catch (IOException e) {
