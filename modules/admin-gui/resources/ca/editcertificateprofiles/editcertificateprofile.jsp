@@ -623,20 +623,21 @@
 		<h:inputText id="textfieldqccustomstringtext" value="#{certProfileBean.certificateProfile.QCCustomStringText}" rendered="#{certProfileBean.certificateProfile.useQCStatement}"
 			size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"
 			disabled="#{!certProfileBean.certificateProfile.useQCCustomString}"/>
-
 	</h:panelGrid>
-	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
+		 rendered="#{certProfileBean.ctAvailable}">
 
 		<%-- Certificate Transparency --%>
 
 		<h:outputLabel for="header_certificatetransparency" value="#{web.text.EXT_HEADER_CERTIFICATETRANSPARENCY}" style="font-weight: bold;"/>
 		<h:panelGroup id="header_certificatetransparency"/>
 
-		<h:panelGroup rendered="#{certProfileBean.ctAvailable}">
+		<h:panelGroup>
 			<h:outputLabel for="cbusecertificatetransparencyingroup" value="#{web.text.EXT_CERTIFICATE_TRANSPARENCY}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
 		</h:panelGroup>
-		<h:panelGroup rendered="#{certProfileBean.ctAvailable}" id="cbusecertificatetransparencyingroup">
+		<h:panelGroup id="cbusecertificatetransparencyingroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts}" rendered="#{!web.legacyInternetExplorer}"/>
 			<h:commandButton id="cbusecertificatetransparencyincerts" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInCerts}"
 				value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
@@ -648,24 +649,24 @@
 		</h:panelGroup>
 
 		<%-- Enabled CT logs selection --%>
-		<h:outputLabel rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" for="selectctlogs" value="#{web.text.EXT_CT_ENABLEDLOGS}" styleClass="subItem"/>
-		<h:selectManyListbox rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" id="selectctlogs" value="#{certProfileBean.enabledCTLogs}" size="#{certProfileBean.enabledCTLogsAvailableSize}">
+		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="selectctlogs" value="#{web.text.EXT_CT_ENABLEDLOGS}" styleClass="subItem"/>
+		<h:selectManyListbox rendered="#{certProfileBean.ctEnabled}" id="selectctlogs" value="#{certProfileBean.enabledCTLogs}" size="#{certProfileBean.enabledCTLogsAvailableSize}">
 			<f:selectItems value="#{certProfileBean.enabledCTLogsAvailable}"/>
 		</h:selectManyListbox>
 
-		<h:outputLabel rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" for="textfieldctminscts" value="#{web.text.EXT_CT_MINSCTS}" styleClass="subItem"/>
-		<h:inputText rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" id="textfieldctminscts" value="#{certProfileBean.certificateProfile.CTMinSCTs}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="textfieldctminscts" value="#{web.text.EXT_CT_MINSCTS}" styleClass="subItem"/>
+		<h:inputText rendered="#{certProfileBean.ctEnabled}" id="textfieldctminscts" value="#{certProfileBean.certificateProfile.CTMinSCTs}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts && !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
 
-		<h:outputLabel rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" for="textfieldctmaxscts" value="#{web.text.EXT_CT_MAXSCTS}" styleClass="subItem"/>
-		<h:inputText rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" id="textfieldctmaxscts" value="#{certProfileBean.certificateProfile.CTMaxSCTs}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="textfieldctmaxscts" value="#{web.text.EXT_CT_MAXSCTS}" styleClass="subItem"/>
+		<h:inputText rendered="#{certProfileBean.ctEnabled}" id="textfieldctmaxscts" value="#{certProfileBean.certificateProfile.CTMaxSCTs}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts && !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
 
-		<h:outputLabel rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" for="textfieldctmaxretries" value="#{web.text.EXT_CT_MAXRETRIES}" styleClass="subItem"/>
-		<h:inputText rendered="#{certProfileBean.ctAvailable && certProfileBean.ctEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="textfieldctmaxretries" value="#{web.text.EXT_CT_MAXRETRIES}" styleClass="subItem"/>
+		<h:inputText rendered="#{certProfileBean.ctEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="8" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts && !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
-
 	</h:panelGrid>
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Other extensions --%>
@@ -708,8 +709,8 @@
 
 		<%-- ePassport --%>
 
-		<h:outputLabel for="cvc_epassport" value="#{web.text.CVCEPASSPORT}" style="font-weight: bold;" rendered="#{certProfileBean.cvcAvailable}"/>
-		<h:panelGroup id="cvc_epassport" rendered="#{certProfileBean.cvcAvailable}"/>
+		<h:outputLabel for="cvc_epassport" value="#{web.text.CVCEPASSPORT}" style="font-weight: bold;"/>
+		<h:panelGroup id="cvc_epassport"/>
 
 		<%-- ICAO Document Type List (DTL) extension --%>
 		<h:panelGroup>
