@@ -80,7 +80,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     protected transient KeyStore keyStore;
 
     /** Identifies if crypto token is allowed to create extractable private keys */
-    protected boolean allowsExtractablePrivateKey = false;
+    protected boolean supportsExtractionOfPrivateKey = false;
 
     /** public constructor */
     public BaseCryptoToken() {
@@ -130,7 +130,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @return false if the key must not be extractable
      */
     public boolean doPermitExtractablePrivateKey() {
-        return allowsExtractablePrivateKey;
+        return supportsExtractionOfPrivateKey &&
+               getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY) &&
+               Boolean.parseBoolean(getProperties().getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
     }
     
     /** Similar to the method above, but only applies for internal testing of keys. This method is called during testKeyPair to verify that a key
@@ -269,13 +271,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
             this.properties = properties;
             String authCode = BaseCryptoToken.getAutoActivatePin(properties);
             this.mAuthCode = authCode == null ? null : authCode.toCharArray();
-
-            // check properties if ti should allow to extract private keys
-            if (properties.containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)) {
-                this.allowsExtractablePrivateKey = Boolean.parseBoolean(properties.getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
-            }
         }
-    } // updateProperties
+    } // setProperties
 
     /**
      * Retrieves the auto activation PIN code, if it has been set for this crypto token. With an auto activation PIN the token does not have to be
