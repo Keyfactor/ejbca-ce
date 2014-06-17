@@ -24,6 +24,7 @@ Bug
 	[ECA-3588] - Regression: PrintableString encoding for DNs does not work
 	[ECA-3594] - Security related
 	[ECA-3596] - Creating limited CertificateData fails with certain databases
+	[ECA-3605] - Error when trying to create authenticated CVC CSR
 
 Improvement
 	[ECA-631] - Enforce naming constraints present in CA-certificates
