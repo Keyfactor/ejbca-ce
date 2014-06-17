@@ -79,9 +79,6 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /** The java KeyStore backing the Crypto Token */
     protected transient KeyStore keyStore;
 
-    /** Identifies if crypto token is allowed to create extractable private keys */
-    protected boolean supportsExtractionOfPrivateKey = false;
-
     /** public constructor */
     public BaseCryptoToken() {
         super();
@@ -130,8 +127,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @return false if the key must not be extractable
      */
     public boolean doPermitExtractablePrivateKey() {
-        return supportsExtractionOfPrivateKey &&
-               getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY) &&
+        return getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY) &&
                Boolean.parseBoolean(getProperties().getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
     }
     

@@ -80,8 +80,6 @@ public class SoftCryptoToken extends BaseCryptoToken {
     @Override
     public void init(Properties properties, final byte[] data, final int cryptoTokenId) {
         super.setJCAProviderName(PROVIDER);
-        // this implementation allows extraction of keys
-        this.supportsExtractionOfPrivateKey = true;
         this.keystoreData = data;
         if (properties == null) {
             properties = new Properties();
