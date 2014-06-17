@@ -154,20 +154,19 @@ public class CACertReqServlet extends HttpServlet {
                     	filename = chrf.getConcatenated();
                     }
                 } catch (ParseException ex) {
-                     // Apparently it wasn't a CVC request, ignore
-                }
-                // Apparently it wasn't a CVC certificate, was it a certificate request?
-                try {
-                    PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
-                    filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
-                } catch (Exception e) { // NOPMD
-                    // Nope, not a certificate request either, see if it was an X.509 certificate
-                    Certificate cert = CertTools.getCertfromByteArray(request);
-                    filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                    if (filename == null) {
-                        filename = "cert";
+                    // Apparently it wasn't a CVC certificate, was it a certificate request?
+                    try {
+                        PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
+                        filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
+                    } catch (Exception e) { // NOPMD
+                        // Nope, not a certificate request either, see if it was an X.509 certificate
+                        Certificate cert = CertTools.getCertfromByteArray(request);
+                        filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                        if (filename == null) {
+                            filename = "cert";
+                        }
+                        isx509cert = true;
                     }
-                    isx509cert = true;
                 }
 
                 int length = request.length;
