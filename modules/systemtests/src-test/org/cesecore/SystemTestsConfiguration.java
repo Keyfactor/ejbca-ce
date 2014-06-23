@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
 /**
  * Helper class for running the system tests on a system where the default
@@ -26,6 +27,13 @@ import org.apache.log4j.Logger;
  */
 public abstract class SystemTestsConfiguration {
 
+    public static final String PKCS11_LIBRARY = "pkcs11.library";
+    public static final String PKCS11_SLOT_PIN = "pkcs11.slotpin";
+    public static final String PKCS11_SECURITY_PROVIDER = "pkcs11.provider";
+    public static final String PKCS11_SLOT_TYPE = "pkcs11.slottype"; 
+    public static final String PKCS11_SLOT_VALUE = "pkcs11.slottypevalue"; 
+
+    
     private static final Logger log = Logger.getLogger(SystemTestsConfiguration.class);
     private static final String PROPERTYFILE = "/systemtests.properties";
     private static Properties properties = null;
@@ -64,5 +72,25 @@ public abstract class SystemTestsConfiguration {
     /** @return the HTTPS port of the host that the test should access for protocols (e.g. the HTTPS port of an http proxy in front of EJBCA)*/
     public static String getRemotePortHttps(final String defaultValue) {
         return getProperties().getProperty("target.port.https", defaultValue);
+    }
+    
+    public static String getPkcs11Library(String defaultValue) {
+        return getProperties().getProperty(PKCS11_LIBRARY, defaultValue);
+    }
+    
+    public static char[] getPkcs11SlotPin(String defaultValue) {
+        return getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue).toCharArray();
+    }
+    
+    public static String getPkcs11SecurityProvider(String defaultValue) {
+        return getProperties().getProperty(PKCS11_SECURITY_PROVIDER, defaultValue);
+    }    
+    
+    public static Pkcs11SlotLabelType getPkcs11SlotType(String defaultValue) {
+        return Pkcs11SlotLabelType.getFromKey(getProperties().getProperty(PKCS11_SLOT_TYPE, defaultValue));
+    }
+    
+    public static String getPkcs11SlotValue(String defaultValue) {
+        return getProperties().getProperty(PKCS11_SLOT_VALUE, defaultValue);
     }
 }
