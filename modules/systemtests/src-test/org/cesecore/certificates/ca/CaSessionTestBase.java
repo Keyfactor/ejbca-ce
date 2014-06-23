@@ -299,14 +299,14 @@ public class CaSessionTestBase extends RoleUsingTestCase {
      * Add CA object first with just key references and let these references sign the initial CA certificate.
      * This probably works due to the lack of sanity checks (like that a CA probably should have a CA certificate).
      */
-    public void addCAGenerateKeysLater(CA ca, String cadn, String tokenpwd) throws Exception {
+    public void addCAGenerateKeysLater(CA ca, String cadn, char[] tokenpwd) throws Exception {
     	X509Certificate cert = null;
     	try {
         	// Store CA
         	caSession.addCA(roleMgmgToken, ca);
         	// Generate keys, will audit log
         	int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-        	cryptoTokenManagementSession.activate(roleMgmgToken, cryptoTokenId, tokenpwd.toCharArray());
+        	cryptoTokenManagementSession.activate(roleMgmgToken, cryptoTokenId, tokenpwd);
         	final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         	cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, signKeyAlias, "1024");
         	// Now create a CA certificate
@@ -477,7 +477,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         }
     } 
     
-    public void addCAUseSessionBeanToGenerateKeys(CA ca, String cadn, String tokenpwd) throws Exception {
+    public void addCAUseSessionBeanToGenerateKeys(CA ca, String cadn, char[] tokenpwd) throws Exception {
         
         AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken("addCAUseSessionBeanToGenerateKeys");
         // Generate CA keys

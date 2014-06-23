@@ -116,7 +116,7 @@ public class CryptoTokenTestUtils {
                 throw new IllegalStateException("No crypto library found.");
             }
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, getHSMLibrary());
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
             cryptoTokenClassName = PKCS11CryptoToken.class.getName();
         } else {

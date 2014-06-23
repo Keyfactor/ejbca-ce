@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import org.apache.commons.configuration.SystemConfiguration;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
@@ -34,7 +36,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
 
     private static final String X509CADN = "CN=TESTP11";
     private static CA authenticationx509ca = null;
-    private static final String tokenpin = "userpin1";
+    private static final char[] tokenpin = SystemTestsConfiguration.getPkcs11SlotPin("userpin1");
     
     private static CaSessionTestBase testBase;
 
@@ -44,7 +46,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
         // Initialize role system
         setUpAuthTokenAndRole("CaPKCS11SessionTestRoleInitialization");
         // Don't use PKCS11 for the authentication CA, it's not part of the P11 test
-        authenticationx509ca = CaTestUtils.createTestX509CA(X509CADN, tokenpin.toCharArray(), false);
+        authenticationx509ca = CaTestUtils.createTestX509CA(X509CADN, tokenpin, false);
         testBase = new CaSessionTestBase(authenticationx509ca, null);
     }
 
@@ -71,14 +73,14 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     @Test
     public void addCAGenerateKeysLater() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
-        final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
+        final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, false, true);
         testBase.addCAGenerateKeysLater(ca, cadn, tokenpin);
     }
     
     @Test
     public void addCAUseSessionBeanToGenerateKeys2() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
-        final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
+        final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, false, true);
         testBase.addCAUseSessionBeanToGenerateKeys(ca, cadn, tokenpin);
     }
 
