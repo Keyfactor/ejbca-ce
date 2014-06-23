@@ -889,6 +889,29 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     String.valueOf(caid), null, null, details);
             throw new AuthorizationDeniedException(msg);
         }
+        
+        // In uninitialized CAs, the Subject DN might change, and then
+        // we need to update the CA ID as well.
+        if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+            int calculatedCAId = CertTools.stringToBCDNString(cainfo.getSubjectDN()).hashCode();
+            int currentCAId = cainfo.getCAId();
+            if (calculatedCAId != currentCAId) {
+                caSession.removeCA(admin, currentCAId);
+                cainfo.setCAId(calculatedCAId);
+                // Changing the SubjectDN will break cert chains in extended CA services
+                cainfo.getExtendedCAServiceInfos().clear();
+                try {
+                    createCA(admin, cainfo);
+                } catch (CAExistsException e) {
+                    throw new IllegalStateException(e);
+                } catch (CryptoTokenOfflineException e) {
+                    throw new IllegalStateException(e);
+                } catch (InvalidAlgorithmException e) {
+                    throw new IllegalStateException(e);
+                }
+                updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
+            }
+        }
 
         // Check if extended service certificates are about to be renewed.
         final Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = cainfo.getExtendedCAServiceInfos();

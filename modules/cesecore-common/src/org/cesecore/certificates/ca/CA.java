@@ -690,9 +690,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * Called when an uninitialized CA is updated, either from updateCA
      * or from other places in the code.
+     * 
+     * A few more values are also set in the overridden method in X509CA.
      */
     public void updateUninitializedCA(CAInfo cainfo) {
-        // Currently does nothing in the base class. Overridden by X509CA
+        setSignedBy(cainfo.getSignedBy());
     }
 
     /**
