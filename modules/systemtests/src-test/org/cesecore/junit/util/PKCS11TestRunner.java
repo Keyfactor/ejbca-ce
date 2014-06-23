@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -51,7 +52,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
  */
 public class PKCS11TestRunner extends CryptoTokenRunner {
 
-    private static final String TOKEN_PIN = "userpin1";
+    private static final String DEFAULT_TOKEN_PIN = "userpin1";
     private static final String ALIAS = "signKeyAlias";
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -71,8 +72,8 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     }
 
     public X509CA createX509Ca() throws Exception {
-        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(SUBJECT_DN, TOKEN_PIN.toCharArray(), false, true, "1024", X509KeyUsage.digitalSignature
-                + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(SUBJECT_DN, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
+                true, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         CAToken caToken = x509ca.getCAToken();
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, ALIAS);
