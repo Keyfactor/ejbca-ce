@@ -15,25 +15,32 @@ package org.ejbca.core.ejb.ca.sign;
 import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.ObjectNotFoundException;
 
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -52,7 +59,7 @@ public interface SignSession {
      * @return Collection of Certificate, the certificate chain, never null.
      * @throws AuthorizationDeniedException 
      */
-    public java.util.Collection<Certificate> getCertificateChain(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    Collection<Certificate> getCertificateChain(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the
@@ -66,7 +73,7 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @throws AuthorizationDeniedException 
      */
-    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+    byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException,
             SignRequestSignatureException, AuthorizationDeniedException;
 
     /**
@@ -78,7 +85,7 @@ public interface SignSession {
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      * @throws AuthorizationDeniedException 
      */
-    public byte[] createPKCS7(AuthenticationToken admin, int caId, boolean includeChain) throws CADoesntExistsException, AuthorizationDeniedException;
+    byte[] createPKCS7(AuthenticationToken admin, int caId, boolean includeChain) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Requests for a certificate to be created for the passed public key with default key usage
@@ -89,17 +96,28 @@ public interface SignSession {
      * @param password password for the user.
      * @param pk       the public key to be put in the created certificate.
      * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
+     * 
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     * @throws CesecoreException 
+     * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
+     * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException,
-            ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
+    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws ObjectNotFoundException,
+            CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -118,17 +136,30 @@ public interface SignSession {
      *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
+     * 
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     * @throws CesecoreException 
+     * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
+     * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
+     *             
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
-            Date notAfter) throws EjbcaException, ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
+    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
+            Date notAfter) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException,
+            AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a self-signed
@@ -144,16 +175,28 @@ public interface SignSession {
      *                 Validity, KeyUsage etc. Currently only KeyUsage is considered!
      * @return The newly created certificate or null.
      * @throws ObjectNotFoundException       if the user does not exist.
-     * @throws CesecoreException                if EJBCA did not accept any of all input parameters
-     * @throws EjbcaException 
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
-     * @throws IllegalKeyException           if the public key is of wrong type.
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed 
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
+     * 
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert)
-            throws ObjectNotFoundException, CesecoreException, AuthorizationDeniedException, EjbcaException;
+    Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert) throws ObjectNotFoundException,
+            AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -179,22 +222,32 @@ public interface SignSession {
      * 
      * @throws CertificateExtensionException if there was an error with the extensions specified in the request message
      * @throws NoSuchEndEntityException       if the user does not exist.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
+     * @throws CryptoTokenOfflineException 
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
      * @throws IllegalKeyException           if the public key is of wrong type.
      * @throws CADoesntExistsException       if the targeted CA does not exist
      * @throws SignRequestException          if the provided request is invalid.
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *                                       the CA.
-     * @see org.cesecore.certificates.certificate.CertificateData
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     * @see org.cesecore.certificates.certificate.request.ResponseMessage
-     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by the CA.
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined in the request was invalid 
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
+     *
      */
-    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
-            EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException;
+    ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
+            EndEntityInformation suppliedUserData) throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException,
+            CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException,
+            SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException;
 
-    /**
+ /**
      * Requests for a certificate to be created for the passed public key with the passed key
      * usage and using the given certificate profile. This method is primarily intended to be used when
      * issuing hardtokens having multiple certificates per user.
@@ -220,21 +273,30 @@ public interface SignSession {
      * 
      * 
      * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
+     * 
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     * @throws EjbcaException 
-     * @throws CesecoreException 
+     * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
+     * @throws CADoesntExistsException if the CA defined by caId doesn't exist.
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
      * 
-     * @see org.bouncycastle.jce.X509KeyUsage
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
+     Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
             Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
-            EjbcaException, CesecoreException;
+            AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException;
 
     /**
      * Method that generates a request failed response message. The request
@@ -247,21 +309,19 @@ public interface SignSession {
      * @param failInfo the failure info in the failure response, for example FailInfo.BAD_REQUEST
      * @param failText free text failure message
      * 
-     * @return A decrypted and verified IReqeust message
+     * @return A decrypted and verified ResponseMessage message
+     * 
+     * @throws CryptoTokenOfflineException if the cryptotoken use by the CA defined in the request is unavailable
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
      * @throws CADoesntExistsException       if the targeted CA does not exist
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
-     * @throws IllegalKeyException 
-     * @throws AuthorizationDeniedException 
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     * @see org.cesecore.certificates.certificate.request.ResponseMessage
-     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
+     * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
+     * 
      */
-    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
-            FailInfo failInfo, String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
-            SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException;
+    ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
+            FailInfo failInfo, String failText) throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      * Method that just decrypts and verifies a request and should be used in those cases
@@ -284,7 +344,7 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
+    RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
             AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
             CryptoTokenOfflineException, AuthorizationDeniedException;
 
@@ -302,7 +362,7 @@ public interface SignSession {
      * @throws CryptoTokenOfflineException 
      * @throws AuthorizationDeniedException 
      */
-    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass)
+    ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass)
             throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException,
             SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
 

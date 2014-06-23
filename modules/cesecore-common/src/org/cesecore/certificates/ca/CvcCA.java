@@ -120,7 +120,7 @@ public abstract class CvcCA extends CA implements Serializable {
 	public abstract String getCvcType();
 	
 	@Override
-	public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+	public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) {
         log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}    

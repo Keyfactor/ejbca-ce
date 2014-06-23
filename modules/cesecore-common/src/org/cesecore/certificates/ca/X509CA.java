@@ -474,17 +474,30 @@ public class X509CA extends CA implements Serializable {
         try {
             if (cert != null) {
                 final PublicKey verifyKey;
-                final X509Certificate cacert = (X509Certificate)getCACertificate();
+                final X509Certificate cacert = (X509Certificate) getCACertificate();
                 if (cacert != null) {
                     verifyKey = cacert.getPublicKey();
                 } else {
+
                     verifyKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+
                 }
-               cert.verify(verifyKey);
+                cert.verify(verifyKey);
             }
-        } catch (Exception e) {
+        } catch (CryptoTokenOfflineException e) {
+            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
+        } catch (InvalidKeyException e) {
+            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
+        } catch (CertificateException e) {
+            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
+        } catch (NoSuchAlgorithmException e) {
+            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
+        } catch (NoSuchProviderException e) {
+            throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
+        } catch (SignatureException e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
         }
+       
         Collection<Certificate> chain = getCertificateChain();
         ArrayList<Certificate> certList = new ArrayList<Certificate>();
         if (cert != null) {

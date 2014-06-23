@@ -18,8 +18,12 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -36,16 +40,18 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -53,9 +59,11 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -77,14 +85,13 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -114,6 +121,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CertReqHistorySessionLocal certreqHistorySession;
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB
@@ -185,7 +194,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      *              certificate chain, or null
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid certificate
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA
+     * @throws SignRequestSignatureException if the certificate wasn't issued by the CA defined by caid
      */
     private byte[] createPKCS7(AuthenticationToken admin, int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException,
             SignRequestSignatureException, AuthorizationDeniedException {
@@ -203,8 +213,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk)
-            throws EjbcaException, ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
-        // Default key usage is defined in certificate profiles
+            throws ObjectNotFoundException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException {
+      // Default key usage is defined in certificate profiles
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
@@ -212,33 +225,68 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException,
-            EjbcaException, CesecoreException {
+            CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException {
         return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
-            throws CesecoreException, ObjectNotFoundException, AuthorizationDeniedException, EjbcaException {
-        try {
-            // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
-            final Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
-            bccert.verify(incert.getPublicKey());
-        } catch (Exception e) {
-            log.debug("Exception verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg);
-        }
+            throws ObjectNotFoundException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
+            AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException {
+
+        // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
+            Certificate bccert;
+            try {
+                bccert = CertTools.getCertfromByteArray(incert.getEncoded());
+                bccert.verify(incert.getPublicKey());
+            } catch (CertificateParsingException e) {
+                log.debug("CertificateParsingException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg, e);
+            } catch (CertificateEncodingException e) {
+                log.debug("CertificateEncodingException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg);
+            } catch (InvalidKeyException e) {
+                log.debug("InvalidKeyException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg, e);
+            } catch (CertificateException e) {
+                log.debug("CertificateException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg, e);
+            } catch (NoSuchAlgorithmException e) {
+                log.debug("NoSuchAlgorithmException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg, e);
+            } catch (NoSuchProviderException e) {
+                log.debug("NoSuchProviderException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg, e);
+            } catch (SignatureException e) {
+                log.debug("SignatureException verify POPO: ", e);
+                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg, e);
+            }
+           
         return createCertificate(admin, username, password, incert.getPublicKey(),
                 CertTools.sunKeyUsageToBC(((X509Certificate) incert).getKeyUsage()), null, null);
     }
 
     @Override
     public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req,
-            Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException,
-            AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException {
+            Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws AuthorizationDeniedException,
+            CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException,
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, AuthStatusException,
+            AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(IRequestMessage)");
+            log.trace(">createCertificate(RequestMessage)");
         }
         // Get CA that will receive request
         EndEntityInformation data = null;
@@ -324,8 +372,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
-            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, EjbcaException, CesecoreException {
-        if (log.isTraceEnabled()) {
+            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException {
+       if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, date)");
         }
         // Authorize user and get DN
@@ -376,9 +426,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public CertificateResponseMessage createRequestFailedResponse(final AuthenticationToken admin, final RequestMessage req,
-            final Class<? extends ResponseMessage> responseClass, final FailInfo failInfo, final String failText) throws AuthLoginException,
-            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException,
-            CryptoTokenOfflineException, AuthorizationDeniedException {
+            final Class<? extends ResponseMessage> responseClass, final FailInfo failInfo, final String failText) throws CADoesntExistsException,
+            SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createRequestFailedResponse(IRequestMessage)");
         }
@@ -444,6 +493,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return req;
     }
 
+    /**
+     * 
+     * @param cryptoToken
+     * @param req
+     * @param ca
+     * 
+     * @throws CryptoTokenOfflineException if the cryptotoken was unavailable.
+     * @throws InvalidKeyException If the key from the request used for verification is invalid.
+     * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled algorithm
+     * @throws NoSuchProviderException if there is an error with the Provider defined in the request
+     * @throws SignRequestSignatureException the the request couldn't be verified
+     */
     private void decryptAndVerify(final CryptoToken cryptoToken, final RequestMessage req, final CA ca) throws CryptoTokenOfflineException,
             InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestSignatureException {
         final CAToken catoken = ca.getCAToken();
@@ -564,19 +625,28 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return ca;
     }
 
+    /**
+     * 
+     * @param admin
+     * @param req
+     * @param doLog
+     * @return
+     * @throws CADoesntExistsException if no end entity could be found, and hence no CA which could have created that end entity
+     * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA in question
+     */
     private CA getCAFromUsername(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws CADoesntExistsException,
             AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
-        final UserData data = UserData.findByUsername(entityManager, username);
+        final EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         if (data == null) {
             throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username + "'.");
         }
         final CA ca;
         if (doLog) {
-            ca = caSession.getCA(admin, data.getCaId());
+            ca = caSession.getCA(admin, data.getCAId());
         } else {
-            ca = caSession.getCANoLog(admin, data.getCaId());
+            ca = caSession.getCANoLog(admin, data.getCAId());
         }
         if (log.isDebugEnabled()) {
             log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
@@ -626,16 +696,25 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     /**
      * Creates the certificate, uses the cesecore method with the same signature but in addition to that calls certreqsession and publishers, and fetches the CT configuration
-     * @throws CesecoreException 
-     * @throws AuthorizationDeniedException 
-     * @throws CertificateCreateException 
-     * @throws IllegalKeyException 
+     * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
      * @throws CertificateExtensionException if any of the extensions were invalid
-     * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, Extensions, String)
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
+     * @throws IllegalNameException if the certificate request contained an illegal name 
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
-            throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CesecoreException, CertificateExtensionException {
+            throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CertificateExtensionException,
+            IllegalNameException, CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }

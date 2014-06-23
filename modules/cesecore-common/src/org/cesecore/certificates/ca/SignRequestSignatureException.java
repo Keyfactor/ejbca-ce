@@ -32,4 +32,8 @@ public class SignRequestSignatureException extends CesecoreException {
     public SignRequestSignatureException(final String message) {
         super(message);
     }
+    
+    public SignRequestSignatureException(final String message, Throwable cause) {
+        super(message, cause);
+    }
 }
