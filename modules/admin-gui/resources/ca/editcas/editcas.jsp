@@ -567,6 +567,8 @@ java.security.InvalidAlgorithmParameterException
                     final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
                     final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
                     final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
+                    final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
+                    final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                     
                     // TODO should we allow changing the CA Name also?
                     //cainfo.setName(caname);
@@ -588,6 +590,12 @@ java.security.InvalidAlgorithmParameterException
                     if (keyAliasKeyTestKey.length()>0) {
                         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, keyAliasKeyTestKey);
                     }
+                    
+                    int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
+                    int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
+                    if (signedby == caid) { signedby = CAInfo.SELFSIGNED; }
+                    cainfo.setCertificateProfileId(certprofileid);
+                    cainfo.setSignedBy(signedby);
                     
                     final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
                     if (!cabean.checkSubjectAltName(subjectaltname)) {
