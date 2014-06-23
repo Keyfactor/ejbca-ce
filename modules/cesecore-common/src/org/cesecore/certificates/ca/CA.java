@@ -769,6 +769,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     public abstract X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws Exception;
 
+    /**
+     * 
+     * @param cryptoToken
+     * @param cert
+     * @param includeChain
+     * @return
+     * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
+     */
     public abstract byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException;
 
     /**

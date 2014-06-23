@@ -192,9 +192,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         ResponseMessage retval = null;
         try {
             retval = signSession.createCertificate(admin, req, responseClass, userdata);
-        } catch (NotFoundException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
         } catch (EjbcaException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
