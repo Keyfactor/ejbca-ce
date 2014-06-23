@@ -400,6 +400,8 @@ public interface CAAdminSession {
      * 
      * Not all of the CAs data can be edited after the creation, therefore will
      * only the values from CAInfo that is possible be updated.
+     * But if the CA is in uninitialized state then the Subject DN (and CA ID)
+     * may in fact be changed, which is not possible otherwise. 
      * 
      * @param cainfo CAInfo object containing values that will be updated
      * 
