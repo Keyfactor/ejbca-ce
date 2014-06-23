@@ -186,7 +186,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testAdminWebSecurityHeaders() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-        HttpURLConnection con = super.getHttpsURLConnection("https://localhost:8443"+"/ejbca/adminweb/index.jsp");
+        HttpURLConnection con = super.getHttpsURLConnection("https://" + hostname + ":" + httpsPort + "/ejbca/adminweb/index.jsp");
         String xframe = con.getHeaderField("X-FRAME-OPTIONS");
         String csp = con.getHeaderField("content-security-policy");
         String xcsp = con.getHeaderField("x-content-security-policy");
