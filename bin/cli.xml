@@ -76,18 +76,18 @@ appserver.home         : ${appserver.home}
 		<!-- prompt for ca name, but only if it has not been set in install.properties or prompted for already during install -->
 	    <input message="Enter name of CA to add to truststore" addproperty="ca.name"/>
         <echo message="Getting root certificate in DER format..."/>
-		<ejbca:cli arg="ca getcacert '${ca.name}' ${java.io.tmpdir}/rootca.der -der"/>
+		<ejbca:cli arg="ca getcacert &quot;'${ca.name}'&quot; ${java.io.tmpdir}/rootca.der -der"/>
 		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
 		<available file="${trust.keystore}" property="javatruststore.file.present"/>
         <antcall target="ejbca:javatruststore-removeold"/>
-	    <ejbca:keytool arg="-v -alias '${ca.name}' -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${trust.keystore}' -storepass ${trust.password} -noprompt"/>
+	    <ejbca:keytool arg="-v -alias &quot;${ca.name}&quot; -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${trust.keystore}' -storepass ${trust.password} -noprompt"/>
 	    <delete file="${java.io.tmpdir}/rootca.der"/>
 	</target>
 
     <target name="ejbca:javatruststore-removeold" if="javatruststore.file.present">
-	    <ejbca:keytool arg="-v -alias '${ca.name}' -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
+	    <ejbca:keytool arg="-v -alias &quot;${ca.name}&quot; -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
     </target>
 	
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
@@ -105,7 +105,7 @@ appserver.home         : ${appserver.home}
 
     <target name="ejbca:initCA" >
        <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' &lt;ca.tokenpassword hidden&gt; '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${ca.tokenproperties} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
-        <ejbca:cli-hideargs arg="ca init ${ca.name} &quot;'${ca.dn}'&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
+        <ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;'${ca.dn}'&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
      </target>
 
 	<target name="ejbca:adminweb">
@@ -113,13 +113,13 @@ appserver.home         : ${appserver.home}
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>		
-		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;'${httpsserver.dn}'&quot; --altname &quot;'${httpsserver.an}'&quot; ${ca.name} 1 JKS --certprofile SERVER"/>
+		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;'${httpsserver.dn}'&quot; --altname &quot;'${httpsserver.an}'&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
 		<ejbca:cli arg="batch tomcat"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;'${superadmin.dn}'&quot; ${ca.name} 1 ${superadmin.keystoretype}"/>
+		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;'${superadmin.dn}'&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype}"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
