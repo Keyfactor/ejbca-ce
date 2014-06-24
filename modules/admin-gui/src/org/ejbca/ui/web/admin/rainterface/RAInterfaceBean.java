@@ -951,83 +951,103 @@ public class RAInterfaceBean implements Serializable {
         return fileBuffer;
     }
    
-    public void importProfilesFromZip(byte[] filebuffer) throws NumberFormatException, IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
+    public String importProfilesFromZip(byte[] filebuffer) {
         if(log.isTraceEnabled()) {
             log.trace(">importProfiles(): " + importedProfileName + " - " + filebuffer.length + " bytes");
         }
+        
+        String retmsg = "";
+        
         if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
-            throw new IllegalArgumentException("No input file");
+            retmsg = "No input file";
+            log.error(retmsg);
+            return retmsg;
         }
         
         int importedFiles = 0;
         int ignoredFiles = 0;
         int nrOfFiles = 0;
-        
-        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
-        ZipEntry ze=zis.getNextEntry();
-        if(ze == null) {
-            throw new ZipException("Expected a zip file. '" + importedProfileName + "' is not a  zip file.");
-        }
-        
-        do {
-            nrOfFiles++;
-            String filename = ze.getName();
-            if(log.isDebugEnabled()) {
-                log.debug("Importing file: " + filename);
+        try {
+            ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
+            ZipEntry ze=zis.getNextEntry();
+            if(ze == null) {
+                retmsg = "Expected a zip file. '" + importedProfileName + "' is not a  zip file.";
+                log.error(retmsg);
+                return retmsg;
             }
+        
+            do {
+                nrOfFiles++;
+                String filename = ze.getName();
+                if(log.isDebugEnabled()) {
+                    log.debug("Importing file: " + filename);
+                }
 
+                if(ignoreFile(filename)) {
+                    ignoredFiles++;
+                    continue;
+                }
             
-            if(ignoreFile(filename)) {
-                ignoredFiles++;
-                continue;
-            }
-            
-            String profilename;
-            try {
+                String profilename;
                 filename = URLDecoder.decode(filename, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-            }
-            int index1 = filename.indexOf("_");
-            int index2 = filename.lastIndexOf("-");
-            int index3 = filename.lastIndexOf(".xml");
-            profilename = filename.substring(index1 + 1, index2);
-            int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
-            if(log.isDebugEnabled()) {
-                log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
-            }
             
-            if(ignoreProfile(filename, profilename, profileid)) {
-                ignoredFiles++;
-                continue;
-            }
+                int index1 = filename.indexOf("_");
+                int index2 = filename.lastIndexOf("-");
+                int index3 = filename.lastIndexOf(".xml");
+                profilename = filename.substring(index1 + 1, index2);
+                int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
+                if(log.isDebugEnabled()) {
+                    log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
+                }
             
+                if(ignoreProfile(filename, profilename, profileid)) {
+                    ignoredFiles++;
+                    continue;
+                }
             
-            if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
-                int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
-                log.warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
+                if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
+                    int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
+                    log.warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
                             + " instead.");
-                profileid = newprofileid;
-            }
+                    profileid = newprofileid;
+                }
             
+                byte[] filebytes = new byte[102400];
+                int i = 0;
+                while(zis.available() == 1) {
+                    filebytes[i++] = (byte) zis.read();
+                }
             
-            byte[] filebytes = new byte[102400];
-            int i = 0;
-            while(zis.available() == 1) {
-                filebytes[i++] = (byte) zis.read();
-            }
-            
-            EndEntityProfile eprofile = getEEProfileFromByteArray(profilename, filebytes);
-            profiles.addEndEntityProfile(profilename, eprofile);
-            importedFiles++;
-            log.info("Added EndEntity profile: " + profilename);
+                EndEntityProfile eprofile = getEEProfileFromByteArray(profilename, filebytes);
+                profiles.addEndEntityProfile(profilename, eprofile);
+                importedFiles++;
+                log.info("Added EndEntity profile: " + profilename);
 
-        } while((ze=zis.getNextEntry()) != null);
-        zis.closeEntry();
-        zis.close();
+            } while((ze=zis.getNextEntry()) != null);
+            zis.closeEntry();
+            zis.close();
+        } catch (UnsupportedEncodingException e) {
+            retmsg = "UTF-8 was not a known character encoding.";
+            log.error(retmsg, e);
+            return retmsg;
+        } catch (IOException e) {
+            log.error(e);
+            retmsg = e.getLocalizedMessage();
+            return retmsg;
+        } catch (AuthorizationDeniedException e) {
+            log.error(e);
+            retmsg = e.getLocalizedMessage();
+            return retmsg;
+        } catch (EndEntityProfileExistsException e) {
+            log.error(e);
+            retmsg = e.getLocalizedMessage();
+            return retmsg;
+        }
+        retmsg = importedProfileName + " contained " + nrOfFiles + " files. " + 
+                            importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.";
+        log.info(retmsg);
         
-        log.info(importedProfileName + " contained " + nrOfFiles + " files. " +
-        		importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.");
+        return retmsg;
     }
     
     private EndEntityProfile getEEProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {

@@ -322,14 +322,11 @@
     if(action.equals(ACTION_IMPORT_EXPORT)) {
     	
     	if (requestMap.get(BUTTON_IMPORT_PROFILES) != null) {
-        	try {
-            	// Upload XML file
-      	    	ejbcarabean.importProfilesFromZip(filebuffer);
-          	} catch (Exception e) {
-			    %> <div style="color: #FF0000;">
-				    	<c:out value="<%= e.getMessage() %>"/>
-			       </div> <%
-		  	}
+            // Upload XML file
+      	    String msg = ejbcarabean.importProfilesFromZip(filebuffer);
+			%> <div style="color: #FF0000;">
+		    	<c:out value="<%= msg %>"/>
+	       	</div> <%
     	}
     }
     
