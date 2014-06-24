@@ -46,6 +46,14 @@ public class CryptoTokenTestUtils {
 
     private static final String TOKEN_PIN = "userpin1";
     private static final String UTIMACO_PKCS11_LINUX_LIB = "/etc/utimaco/libcs2_pkcs11.so";
+    private static final String UTIMACO_PKCS11_WINDOWS_LIB = "C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll";
+    private static final String LUNASA_PKCS11_LINUX_LIB = "/usr/lunasa/lib/libCryptoki2_64.so";
+    private static final String LUNASA_PKCS11_LINUX32_LIB = "/usr/lunasa/lib/libCryptoki2.so";
+    private static final String PROTECTSERVER_PKCS11_LINUX_LIB = "/opt/PTK/lib/libcryptoki.so"; // this symlink is set by safeNet-install.sh->"5 Set the default cryptoki and/or hsm link". Use it instead of symlinking manually.
+    private static final String PROTECTSERVER_PKCS11_LINUX64_LIB = "/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so";
+    private static final String PROTECTSERVER_PKCS11_LINUX32_LIB = "/opt/ETcpsdk/lib/linux-i386/libcryptoki.so";
+    private static final String PROTECTSERVER_PKCS11_WINDOWS_LIB = "C:/Program Files/SafeNet/ProtectToolkit C SDK/bin/sw/cryptoki.dll";
+
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -189,7 +197,7 @@ public class CryptoTokenTestUtils {
     }
 
     public static String getHSMLibrary() {
-        String hsmlib = SystemTestsConfiguration.getPkcs11Library(UTIMACO_PKCS11_LINUX_LIB);
+        String hsmlib = SystemTestsConfiguration.getPkcs11Library(guessHSMLibrary());
         if (hsmlib == null) {
             throw new RuntimeException("No HSM library defined.");
         }
@@ -199,6 +207,37 @@ public class CryptoTokenTestUtils {
 
         return hsmlib;
     }
+    
+    private static String guessHSMLibrary() {
+        final File utimacoCSLinux = new File(UTIMACO_PKCS11_LINUX_LIB);
+        final File utimacoCSWindows = new File(UTIMACO_PKCS11_WINDOWS_LIB);
+        final File lunaSALinux64 = new File(LUNASA_PKCS11_LINUX_LIB);
+        final File lunaSALinux32 = new File(LUNASA_PKCS11_LINUX32_LIB);
+        final File protectServerLinux = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
+        final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX64_LIB);
+        final File protectServerLinux32 = new File(PROTECTSERVER_PKCS11_LINUX32_LIB);
+        final File protectServerWindows = new File(PROTECTSERVER_PKCS11_WINDOWS_LIB);
+        String ret = null;
+        if (utimacoCSLinux.exists()) {
+            ret = utimacoCSLinux.getAbsolutePath();
+        } else if (utimacoCSWindows.exists()) {
+            ret = utimacoCSWindows.getAbsolutePath();
+        } else if (lunaSALinux64.exists()) {
+            ret = lunaSALinux64.getAbsolutePath();
+        } else if (lunaSALinux32.exists()) {
+            ret = lunaSALinux32.getAbsolutePath();
+        } else if (protectServerLinux64.exists()) {
+            ret = protectServerLinux64.getAbsolutePath();
+        } else if (protectServerLinux32.exists()) {
+            ret = protectServerLinux32.getAbsolutePath();
+        } else if (protectServerLinux.exists()) {
+            ret = protectServerLinux.getAbsolutePath();
+        } else if (protectServerWindows.exists()) {
+            ret = protectServerWindows.getAbsolutePath();
+        }
+        return ret;
+    }
+    
 
     /** Remove the cryptoToken, if the crypto token with the given ID does not exist, nothing happens */
     public static void removeCryptoToken(AuthenticationToken authenticationToken, final int cryptoTokenId) {
