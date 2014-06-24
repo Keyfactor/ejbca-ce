@@ -1097,7 +1097,6 @@ function checkallfields(){
              <label for="<%=CHECKBOX_USELDAPDNORDER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
-    <% } %>
     
     <%
     String nameConstraintsPermittedString = !editca ? "" : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsPermitted());
@@ -1124,6 +1123,7 @@ function checkallfields(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
       </td>
     </tr>
+    <% } %>
 
     <%-- ---------- CRL Specific Data -------------------- --%>
 
