@@ -79,6 +79,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -97,6 +99,7 @@ public class WebAuthenticationProviderSessionBeanTest {
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
     private final WebAuthenticationProviderProxySessionRemote authenticationProviderProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(WebAuthenticationProviderProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static KeyPair keys;
 
@@ -175,22 +178,29 @@ public class WebAuthenticationProviderSessionBeanTest {
 
     @Test
     public void testAuthenticationWithMissingCertificate() throws Exception {
-        X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-        AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
-        assertNull("Authentication was returned for missing cert", authenticationToken);
-        final String expectedRegexp = intres.getLocalizedMessage("authentication.revokedormissing", ".*");
-        //Examine the last log entry
-        for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
-            final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
-                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())).add(Criteria.orderAsc("sequenceNumber")), logDeviceId);
-            Map<String, Object> details = list.get(list.size() - 1).getMapAdditionalDetails();
-            String msg = (String) details.get("msg");
-            assertTrue("Incorrect log message was produced. (Was: <" + msg + ">. Expected to match: <" + expectedRegexp + ">",
-                    msg.matches(expectedRegexp));
+        String requireAdminCertificateInDatabase = null;
+        try {
+            requireAdminCertificateInDatabase = configurationSession.getProperty(WebConfiguration.CONFIG_REQCERTINDB);
+            configurationSession.updateProperty(WebConfiguration.CONFIG_REQCERTINDB, Boolean.TRUE.toString());
+            X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(certificate);
+            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
+            assertNull("Authentication was returned for missing cert", authenticationToken);
+            final String expectedRegexp = intres.getLocalizedMessage("authentication.revokedormissing", ".*");
+            //Examine the last log entry
+            for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
+                final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
+                        QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())).add(Criteria.orderAsc("sequenceNumber")), logDeviceId);
+                Map<String, Object> details = list.get(list.size() - 1).getMapAdditionalDetails();
+                String msg = (String) details.get("msg");
+                assertTrue("Incorrect log message was produced. (Was: <" + msg + ">. Expected to match: <" + expectedRegexp + ">",
+                        msg.matches(expectedRegexp));
+            }
+        } finally {
+            configurationSession.updateProperty(WebConfiguration.CONFIG_REQCERTINDB, requireAdminCertificateInDatabase);
         }
     }
 
