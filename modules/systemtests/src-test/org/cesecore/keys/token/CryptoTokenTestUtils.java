@@ -199,10 +199,11 @@ public class CryptoTokenTestUtils {
     public static String getHSMLibrary() {
         String hsmlib = SystemTestsConfiguration.getPkcs11Library(guessHSMLibrary());
         if (hsmlib == null) {
-            throw new RuntimeException("No HSM library defined.");
+            return null;
         }
-        if (new File(hsmlib).exists()) {
-            throw new RuntimeException("HSM library " + hsmlib + " was not found.");
+        if (!(new File(hsmlib).exists())) {
+            log.error("HSM library " + hsmlib + " defined, but does not exist.");
+            return null;
         }
 
         return hsmlib;
