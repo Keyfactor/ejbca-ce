@@ -1093,22 +1093,22 @@ public abstract class CertTools {
     }
 
     /**
-     * Reads certificates in PEM-format from a file.
+     * Reads certificates in PEM-format from a filename.
      * The stream may contain other things between the different certificates.
      * 
-     * @param certFile the file containing the certificates in PEM-format
+     * @param certFilename filename of the file containing the certificates in PEM-format
      * @return Ordered List of Certificates, first certificate first, or empty List
      * @throws FileNotFoundException if certFile was not found
      * @throws CertificateParsingException if the file contains an incorrect certificate.
      */
-    public static List<Certificate> getCertsFromPEM(String certFile) throws FileNotFoundException, CertificateParsingException {
+    public static List<Certificate> getCertsFromPEM(String certFilename) throws FileNotFoundException, CertificateParsingException {
         if (log.isTraceEnabled()) {
-            log.trace(">getCertfromPEM: certFile=" + certFile);
+            log.trace(">getCertfromPEM: certFilename=" + certFilename);
         }
         InputStream inStrm = null;
         final List<Certificate> certs;
         try {
-            inStrm = new FileInputStream(certFile);
+            inStrm = new FileInputStream(certFilename);
             certs = getCertsFromPEM(inStrm);
         } finally {
             if (inStrm != null) {
@@ -1120,7 +1120,7 @@ public abstract class CertTools {
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<getCertfromPEM: certFile=" + certFile);
+            log.trace("<getCertfromPEM: certFile=" + certFilename);
         }
         return certs;
     }
