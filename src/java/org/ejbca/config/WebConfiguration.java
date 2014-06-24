@@ -31,6 +31,7 @@ public class WebConfiguration {
 	public static final String CONFIG_HTTPSERVERPUBHTTP    = "httpserver.pubhttp";
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
 	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
+	public static final String CONFIG_REQCERTINDB = "web.reqcertindb";
 	
 	/**
 	 * The configured server host name
@@ -106,7 +107,7 @@ public class WebConfiguration {
 	 * Require administrator certificates to be available in database for revocation checks.
 	 */
 	public static boolean getRequireAdminCertificateInDatabase() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.reqcertindb"));
+		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERTINDB));
 	}
 
 	/**
