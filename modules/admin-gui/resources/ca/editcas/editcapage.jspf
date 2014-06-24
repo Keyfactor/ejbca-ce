@@ -894,10 +894,14 @@ function checkallfields(){
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
         <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
         <% } %>
+        
+        <% if (editca) { %>
+            <input type="hidden" name="<%=HIDDEN_INCLUDEINHEALTHCHECK %>" value="<%= Boolean.valueOf(cainfo!=null && cainfo.getIncludeInHealthCheck()).toString() %>"/>
+        <% } %>
       </td>
     </tr>
 
-    <% if(editca){ 
+    <% if(editca && !isUninitialized){
         String issuerDN = "unknown";
         try {
             Collection cachain = cainfo.getCertificateChain();
@@ -917,7 +921,6 @@ function checkallfields(){
           </td>
           <td width="50%">
               <span class="dn"><c:out value="<%= issuerDN %>"/></span>
-              <input type="hidden" name="<%=HIDDEN_INCLUDEINHEALTHCHECK %>" value="<%= Boolean.valueOf(cainfo!=null && cainfo.getIncludeInHealthCheck()).toString() %>"/>
           </td>
         </tr>
     <% } %>
