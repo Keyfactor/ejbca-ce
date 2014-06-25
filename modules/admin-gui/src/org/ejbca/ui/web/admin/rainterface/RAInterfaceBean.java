@@ -13,18 +13,15 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,9 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
@@ -957,6 +952,7 @@ public class RAInterfaceBean implements Serializable {
         }
         
         String retmsg = "";
+        String faultXMLmsg = "";
         
         if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
             retmsg = "No input file";
@@ -1019,6 +1015,14 @@ public class RAInterfaceBean implements Serializable {
                 }
             
                 EndEntityProfile eprofile = getEEProfileFromByteArray(profilename, filebytes);
+                if(eprofile == null) {
+                    String msg = "Faulty XML file '" + filename + "'. Failed to read End Entity Profile.";
+                    log.info(msg + " Ignoring file.");
+                    ignoredFiles++;
+                    faultXMLmsg += filename + ", ";
+                    continue;
+                }
+                
                 profiles.addEndEntityProfile(profilename, eprofile);
                 importedFiles++;
                 log.info("Added EndEntity profile: " + profilename);
@@ -1043,19 +1047,34 @@ public class RAInterfaceBean implements Serializable {
             retmsg = e.getLocalizedMessage();
             return retmsg;
         }
-        retmsg = importedProfileName + " contained " + nrOfFiles + " files. " + 
+        
+        if(StringUtils.isNotEmpty(faultXMLmsg)) {
+            faultXMLmsg = faultXMLmsg.substring(0, faultXMLmsg.length()-2);
+            retmsg = "Faulty XML files: " + faultXMLmsg + ". " + importedFiles + " profiles were imported.";
+        } else {
+            retmsg = importedProfileName + " contained " + nrOfFiles + " files. " +
                             importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.";
+        }
         log.info(retmsg);
         
         return retmsg;
     }
     
     private EndEntityProfile getEEProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
+        
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
-        XMLDecoder decoder = new XMLDecoder(is);
+        XMLDecoder decoder = getXMLDecoder(is);
+        
         // Add end entity profile
         EndEntityProfile eprofile = new EndEntityProfile();
-        eprofile.loadData(decoder.readObject());
+        Object data = null;
+        try {
+            data = decoder.readObject();
+        } catch(IllegalArgumentException e) {
+            return null;
+        }
+        eprofile.loadData(data);
+        
         // Translate cert profile ids that have changed after import
         String availableCertProfiles = "";
         String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
@@ -1155,6 +1174,28 @@ public class RAInterfaceBean implements Serializable {
         }
         
         return false;
+    }
+    
+    private XMLDecoder getXMLDecoder(ByteArrayInputStream is) {
+        // Without the exception listener, when a faulty xml file is read, the XMLDecoder catches the exception,
+        // writes an error message to stderr and continues reading. Ejbca wouldn't notice that the profile created 
+        // based on this XML file is faulty until it is used.
+        ExceptionListener elistener = new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                // This probably means that an extra byte is found or something. The certprofile that raises this exception 
+                // does not seem to be faulty at all as far as I can test.
+                if(StringUtils.equals("org.apache.xerces.impl.io.MalformedByteSequenceException", e.getClass().getName())) {
+                    log.error("org.apache.xerces.impl.io.MalformedByteSequenceException: " + e.getMessage());
+                    log.error("Continuing ...");
+                } else {
+                    log.error(e.getClass().getName() + ": " + e.getMessage());
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        
+        return new XMLDecoder(is, null, elistener);
     }
     
 }
