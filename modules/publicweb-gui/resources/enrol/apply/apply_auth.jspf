@@ -13,7 +13,7 @@ Then click OK to generate your token.</p>
     <legend>Authentication</legend>
 
 	<c:if test="${forcedBrowser != null}">
-        <input type="hidden" name="${FORCE_BROWSER}" value="${forcedBrowser}" />
+        <input type="hidden" name="${FORCE_BROWSER}" value="<c:out value="${forcedBrowser}" />" />
 	</c:if>
 
 	<input type="hidden" name="${ACTION}" value="${ACTION_GENERATETOKEN}" />
