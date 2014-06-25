@@ -177,19 +177,19 @@ function isExternalX509(){
 }
 
 function isExternalGeneric(){
-   var makebutton      =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
-   var createbutton    =  document.ca.<%= BUTTON_CREATE %>; 
-   var validityfield   =  document.ca.<%=TEXTFIELD_VALIDITY%>;
-   var certproffield   =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
+   var makebutton         =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
+   var createorinitbutton =  document.ca.<%= isUninitialized ? BUTTON_INITIALIZE : BUTTON_CREATE %>; 
+   var validityfield      =  document.ca.<%=TEXTFIELD_VALIDITY%>;
+   var certproffield      =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
 
    makebutton.disabled = true;
-   <% if (!isUninitialized) { %>createbutton.disabled = false;<% } %>
+   createorinitbutton.disabled = false;
    validityfield.disabled = false; 
    certproffield.disabled = false; 
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;
-      <% if (!isUninitialized) { %>createbutton.disabled = true;<% } %>   
+      createorinitbutton.disabled = true; 
       validityfield.disabled = true; 
       certproffield.disabled = true; 
    } 
@@ -861,7 +861,7 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
       </td>
       <td width="50%"> 
-        <% if(isexternal || (editca && signbyexternal)){
+        <% if(isexternal || (editca && !isUninitialized && signbyexternal)){
               if (cainfo.getValidity() != 0) {
                 out.write("" + cainfo.getValidity() + YearMonthDayTime.TYPE_DAYS);
               } else {
