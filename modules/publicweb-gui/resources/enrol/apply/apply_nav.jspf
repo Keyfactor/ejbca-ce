@@ -43,9 +43,9 @@
     <br/>
   </c:if>
     
-	<input name="user" type="hidden" value="${username}" />
-	<input name="password" type="hidden" value="${password}" />
-	<input type="hidden" name="hidemenu" value="${hidemenu}" />
+	<input name="user" type="hidden" value="<c:out value="${username}" />" />
+	<input name="password" type="hidden" value="<c:out value="${password}" />" />
+	<input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
 	<input type="hidden" name="showResultPage" value="true" />
 	
 	<c:if test="${minKeyLength > 1024}"><div style="display: none"></c:if>

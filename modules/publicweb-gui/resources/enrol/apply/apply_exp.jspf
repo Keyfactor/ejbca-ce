@@ -372,12 +372,12 @@
   <fieldset>
     <legend>Options</legend>
 
-	<input name="user" type="hidden" value="${username}" />
-	<input name="password" type="hidden" value="${password}" />
+	<input name="user" type="hidden" value="<c:out value="${username}" />" />
+	<input name="password" type="hidden" value="<c:out value="${password}" />" />
 	<input name="classid" type="hidden" value="" />
     <input name="pkcs10" type="hidden" value="" />
     <input name="containername" type="hidden" value="" />
-    <input type="hidden" name="hidemenu" value="${hidemenu}" />
+    <input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
 
 	<label for="CspProvider">Provider</label>
     <select name="CspProvider" id="CspProvider" accesskey="p">
