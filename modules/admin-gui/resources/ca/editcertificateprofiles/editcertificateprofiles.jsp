@@ -97,7 +97,7 @@
 		</h:panelGroup>
 	</h:form>
 
-	<h:panelGroup rendered="#{not certProfilesBean.deleteInProgress}" >
+	<h:panelGroup rendered="#{not certProfilesBean.operationInProgress}" >
 	<h3><h:outputText value="#{web.text.IMPORT}/#{web.text.EXPORT}"/></h3>
 	<h:form id="uploadCertificate" enctype="multipart/form-data">
 		<h:panelGrid columns="3">
