@@ -271,16 +271,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException,
+    public void initializeCa(final AuthenticationToken authenticationToken, final CAInfo caInfo) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, CADoesntExistsException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmException, CAExistsException, IllegalCryptoTokenException {
 
         if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new IllegalArgumentException("CA Status was not CA_UNINITIALIZED (" + CAConstants.CA_UNINITIALIZED+")");
-        } else {
-            //Find the intended status
-            caInfo.setStatus(getCaStatus(caInfo));
         }
+        //Find the intended status
+        caInfo.setStatus(getCaStatus(caInfo));
+        
         // Since it's acceptable that SubjectDN (and CAId) changes, in initializing we'll simply kill the old uninitialized CA and then recreate it if anything has changed.
         int calculatedCAId = CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode();
         int currentCAId = caInfo.getCAId();
@@ -289,9 +289,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caInfo.setCAId(calculatedCAId);
             // Changing the SubjectDN will break cert chains in extended CA services
             caInfo.getExtendedCAServiceInfos().clear();
-            createCA(authenticationToken, caInfo);
             updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
+            createCA(authenticationToken, caInfo);
         } else {
+            // No Subject DN change
             CAToken caToken = caInfo.getCAToken();
             CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
             CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
@@ -304,11 +305,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.updateUninitializedCA(caInfo);
             ca.setCAToken(caToken);
             ca.setCAInfo(caInfo);
-            Collection<Certificate> certificatechain = createCertificateChain(authenticationToken, ca, cryptoToken, certprofile);
-            ca.setCertificateChain(certificatechain);
             //Store the chain and new status.
-            // We need to save all this, audit logging that the CA is changed
-            caSession.editCA(authenticationToken, ca, true);
+            caSession.editCA(authenticationToken, ca, false);
+            
+            // Finish up and create certificate chain, CRL, etc.
+            finalizeInitializedCA(authenticationToken, ca, caInfo, cryptoToken, certprofile);
         }
 
     }
@@ -630,7 +631,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void createCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CAExistsException,
+    public void createCA(final AuthenticationToken admin, final CAInfo cainfo) throws AuthorizationDeniedException, CAExistsException,
             CryptoTokenOfflineException, InvalidAlgorithmException {
       if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
@@ -695,19 +696,54 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, null, details);
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
-        } 
-        // Create certificate chain if CA is meant to be initialized
+        }
+        
+        // Finish up and create certifiate chain etc.
+        // Both code paths will audit log.
         if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-            Collection<Certificate> certificatechain = createCertificateChain(admin, ca, cryptoToken, certprofile);
-            castatus = getCaStatus(cainfo);
-            // Set Certificate Chain
-            ca.setCertificateChain(certificatechain);
-            if (log.isDebugEnabled()) {
-                log.debug("Setting CA status to: " + castatus);
-            }
+            finalizeInitializedCA(admin, ca, cainfo, cryptoToken, certprofile);
         } else {
-            castatus = CAConstants.CA_UNINITIALIZED;
+            // Special handling for uninitialized CAs
             ca.setCertificateChain(new ArrayList<Certificate>());
+            ca.setStatus(CAConstants.CA_UNINITIALIZED);
+            if (log.isDebugEnabled()) {
+                log.debug("Setting CA status to: " + CAConstants.CA_UNINITIALIZED);
+            }
+            try {
+                caSession.editCA(admin, ca, true);
+            } catch (CADoesntExistsException e) {
+                final String detailsMsg = intres.getLocalizedMessage("caadmin.canotexistsid", Integer.valueOf(caid));
+                auditSession.log(EventTypes.CA_EDITING, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
+                        null, null, detailsMsg);
+                throw new EJBException(e);
+            }
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("<createCA: " + cainfo.getName());
+        }
+    }
+
+    /**
+     * The final steps of creating a CA, which are not performed for uninitialized CAs until
+     * they are initialized.
+     * 
+     * It creates a certificate chain and publishes certificate, services, CRLs, etc.
+     * This method also performs audit logging.
+     */
+    private void finalizeInitializedCA(final AuthenticationToken admin, final CA ca, final CAInfo cainfo, final CryptoToken cryptoToken,
+            final CertificateProfile certprofile) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        
+        if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+            throw new IllegalStateException("This method should never be called on uninitialized CAs");
+        }
+        
+        final int caid = cainfo.getCAId();
+        Collection<Certificate> certificatechain = createCertificateChain(admin, ca, cryptoToken, certprofile);
+        int castatus = getCaStatus(cainfo);
+        ca.setCertificateChain(certificatechain);
+        if (log.isDebugEnabled()) {
+            log.debug("Setting CA status to: " + castatus);
         }
         ca.setStatus(castatus);
         try {
@@ -719,9 +755,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new EJBException(e);
         } 
         // Publish CA certificates if CA is initialized
-        if (castatus != CAConstants.CA_UNINITIALIZED) {
-            publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
-        }
+        publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
         switch (castatus) {
         case CAConstants.CA_ACTIVE:
             // activate External CA Services
@@ -749,8 +783,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new EJBException(e);
             } 
             break;
-        case CAConstants.CA_UNINITIALIZED:
-            break;
         default:
             log.error("CA status not active when creating CA, extended services not created. CA status: " + castatus);
             break;
@@ -758,12 +790,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Update local OCSP's CA certificate cache
         certificateStoreSession.reloadCaCertificateCache();
-
-        // caSession already audit logged that the CA was added
-
-        if (log.isTraceEnabled()) {
-            log.trace("<createCA: " + cainfo.getName());
-        }
     }
     
     private int getCaStatus(CAInfo cainfo) {
@@ -900,6 +926,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 cainfo.setCAId(calculatedCAId);
                 // Changing the SubjectDN will break cert chains in extended CA services
                 cainfo.getExtendedCAServiceInfos().clear();
+                updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
                 try {
                     createCA(admin, cainfo);
                 } catch (CAExistsException e) {
@@ -909,7 +936,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 } catch (InvalidAlgorithmException e) {
                     throw new IllegalStateException(e);
                 }
-                updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
             }
         }
 
