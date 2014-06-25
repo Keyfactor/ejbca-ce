@@ -529,14 +529,17 @@ java.security.InvalidAlgorithmParameterException
                 final String nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
                 final String nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
                 final String subjectdn;
+                final String signedByString;
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                     subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
+                    signedByString = requestMap.get(SELECT_SIGNEDBY);
                 } else {
                     CAInfo cainfo = cadatahandler.getCAInfo(caid).getCAInfo();
                     subjectdn = cainfo.getSubjectDN();
+                    signedByString = String.valueOf(cainfo.getSignedBy());
                 }
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
-            		keySequenceFormatParam, keySequence, description, validityString,
+            		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
             		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, numofReqApprovalsParam,
@@ -568,7 +571,6 @@ java.security.InvalidAlgorithmParameterException
                     final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
                     final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
                     final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
-                    final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                     
                     // TODO should we allow changing the CA Name also?
                     //cainfo.setName(caname);
@@ -631,7 +633,6 @@ java.security.InvalidAlgorithmParameterException
                 if (requestMap.get(BUTTON_INITIALIZE) != null) {
                     final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
                     int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
-                    final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                     int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
                     cainfo.setSignedBy(signedby);
                     cainfo.setCertificateProfileId(certprofileid);

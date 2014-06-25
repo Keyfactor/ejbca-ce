@@ -943,7 +943,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CAInfo createCaInfo(int caid, String caname, String subjectDn, int catype,
-	        String keySequenceFormat, String keySequence, String description, String validityString,
+	        String keySequenceFormat, String keySequence, String signedByString, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues, String numofReqApprovalsParam,
@@ -972,8 +972,9 @@ public class CAInterfaceBean implements Serializable {
         if (description == null) {
             description = "";
         }
+        final int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
         final long validity;
-        if ((validityString == null) && (infoView.getCAInfo().getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)) {
+        if (validityString == null && signedby == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
             validity = 0;
         } else {
