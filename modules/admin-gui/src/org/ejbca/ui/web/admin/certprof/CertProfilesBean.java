@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -396,8 +398,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         }
         try {
             importProfilesFromZip(getUploadFile().getBytes());
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
             certificateProfileItems = null;
         } catch (IOException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
@@ -419,12 +419,19 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             throw new IllegalArgumentException("No input file");
         }
 
-        int importedFiles = 0;
-        int ignoredFiles = 0;
+        String importedFiles = "";
+        String ignoredFiles = "";
         int nrOfFiles = 0;
         
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
         ZipEntry ze = zis.getNextEntry();
+        if(ze==null) {
+            String msg = uploadFile.getName() + " is not a zip file.";
+            log.info(msg);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            return;
+        }
+            
         do {
             nrOfFiles++;
             String filename = ze.getName();
@@ -433,7 +440,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             }
             
             if(ignoreFile(filename)) {
-                ignoredFiles++;
+                ignoredFiles += filename + ", ";
                 continue;
             }
             
@@ -452,7 +459,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             }
 
             if(ignoreProfile(filename, profilename, profileid)) {
-                ignoredFiles++;
+                ignoredFiles += filename + ", ";
                 continue;
             }
             
@@ -469,27 +476,60 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             }
                     
             final CertificateProfile certificateProfile = getCertProfileFromByteArray(profilename, filebytes);
+            if(certificateProfile == null) {
+                String msg = "Faulty XML file '" + filename + "'. Failed to read Certificate Profile.";
+                log.info(msg + " Ignoring file.");
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+                continue;
+            }
+            
             certificateProfile.setAvailableCAs(getEjbcaWebBean().getInformationMemory().getAuthorizedCAIds());
             getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
             getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
-            importedFiles++;
+            importedFiles += filename + ", ";
             log.info("Added Certificate profile: " + profilename);
         } while((ze=zis.getNextEntry()) != null);
         zis.closeEntry();
         zis.close();
         
-        log.info(uploadFile.getName() + " contained " + nrOfFiles + " files. " +
-                importedFiles + " Certificate Profiles were imported and " + ignoredFiles + " files  were ignored.");
+        String msg = uploadFile.getName() + " contained " + nrOfFiles + " files. ";
+        log.info(msg);
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
+        
+        if(StringUtils.isNotEmpty(importedFiles)) {
+            importedFiles = importedFiles.substring(0, importedFiles.length()-2);
+        }
+        msg = "Imported Certificate Profiles from files: " + importedFiles;
+        if(log.isDebugEnabled()) {
+            log.debug(msg);
+        }
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
+        
+        if(StringUtils.isNotEmpty(ignoredFiles)) {
+            ignoredFiles = ignoredFiles.substring(0, ignoredFiles.length()-2);
+        }
+        msg = "Ignored files: " + ignoredFiles;
+        if(log.isDebugEnabled()) {
+            log.debug(msg);
+        }
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
     }
     
 
     private CertificateProfile getCertProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
-        XMLDecoder decoder = new XMLDecoder(is);
+        XMLDecoder decoder = getXMLDecoder(is);
         
         // Add certificate profile
         CertificateProfile cprofile = new CertificateProfile();
-        cprofile.loadData(decoder.readObject());
+        Object data = null;
+        try {
+            data = decoder.readObject();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        cprofile.loadData(data);
+        
         // Make sure CAs in profile exist
         List<Integer> cas = cprofile.getAvailableCAs();
         ArrayList<Integer> casToRemove = new ArrayList<Integer>();
@@ -578,5 +618,26 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             return true;
         }
         return false;
+    }
+    
+    private XMLDecoder getXMLDecoder(ByteArrayInputStream is) {
+        // Without the exception listener, when a faulty xml file is read, the XMLDecoder catches the exception,
+        // writes an error message to stderr and continues reading. Ejbca wouldn't notice that the profile created 
+        // based on this XML file is faulty until it is used.
+        ExceptionListener elistener = new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                // This probably means that an extra byte is found or something. The certprofile that raises this exception 
+                // does not seem to be faulty at all as far as I can test.
+                if(StringUtils.equals("org.apache.xerces.impl.io.MalformedByteSequenceException", e.getClass().getName())) {
+                    log.error("org.apache.xerces.impl.io.MalformedByteSequenceException: " + e.getMessage());
+                    log.error("Continuing ...");
+                } else {
+                    log.error(e.getClass().getName() + ": " + e.getMessage());
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        return new XMLDecoder(is, null, elistener);
     }
 }
