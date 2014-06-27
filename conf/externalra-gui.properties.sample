@@ -74,6 +74,8 @@
 #externalra-database.driver=com.mysql.jdbc.Driver
 #externalra-database.driver=org.postgresql.Driver
 #externalra-database.driver=org.hsqldb.jdbcDriver
+#externalra-database.driver=oracle.jdbc.driver.OracleDriver
+#externalra-database.driver=com.ibm.db2.jcc.DB2Driver
 
 # Username for database connection.
 # Default: ejbca
