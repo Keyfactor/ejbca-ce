@@ -80,6 +80,7 @@ public interface InternalKeyBindingMgmtSession {
      * @param certificateId is the certificate fingerprint matching the mapped key pair or null
      * @param cryptoTokenId is the CryptoToken id of the container where the mapped key pair is stored
      * @param keyPairAlias is the alias of the mapped key pair in the specified CryptoToken (may not be null)
+     * @param allowMissingKeyPair if a missing key pair (but not a missing crypto token) should be allowed
      * @param signatureAlgorithm is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable)
      * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
      * @return the created InternalKeyBinding's unique identifier
@@ -88,6 +89,15 @@ public interface InternalKeyBindingMgmtSession {
      * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
      * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
      * @throws InvalidAlgorithmException if the requested signature algorithm is not available
+     */
+    int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
+            int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
+                    throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException;
+    
+    /**
+     * A createInternalKeyBinding() with allowMissingKeyPair=false
+     * @see createInternalKeyBinding
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
             int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
