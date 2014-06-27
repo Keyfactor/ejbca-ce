@@ -236,10 +236,20 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         return internalKeyBindingId;
     }
-
+    
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+        return createInternalKeyBinding(authenticationToken, type, id, name, status,
+            certificateId, cryptoTokenId, keyPairAlias, false, signatureAlgorithm, dataMap,
+            trustedCertificateReferences);
+    }
+
+    @Override
+    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
+            String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
@@ -266,7 +276,10 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Check that CryptoToken and alias exists (and that the user is authorized to see it)
         final KeyPairInfo keyPairInfo = cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, keyPairAlias);
         if (keyPairInfo == null) {
-            throw new CryptoTokenOfflineException("Unable to access keyPair with alias " + keyPairAlias + " in CryptoToken with id " + cryptoTokenId);
+            // Missing key alias. Perhaps that's allowed?
+            if (!allowMissingKeyPair || cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId) == null) {
+                throw new CryptoTokenOfflineException("Unable to access keyPair with alias " + keyPairAlias + " in CryptoToken with id " + cryptoTokenId);
+            }
         }
         if (certificateId != null) {
             certificateId = certificateId.toLowerCase(Locale.ENGLISH);
