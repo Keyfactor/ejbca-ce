@@ -299,7 +299,7 @@
             <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=ocspds" failonerror="false" />
-  		    <jboss:adm arg='data-source add --name=ocspds --driver-name="${ocsp-database.driver}" --connection-url="${ocsp-database.url}" --jndi-name="java:/${ocsp-datasource.jndi-name}" ${jbosseap6enabledflag} --use-ccm=true --user-name="${ocsp-database.username}" --password="${ocsp-database.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=20 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+  		    <jboss:adm arg='data-source add --name=ocspds --driver-name="${ocsp-database.driver}" --connection-url="${ocsp-database.url}" --jndi-name="java:/${ocsp-datasource.jndi-name}" ${jbosseap6enabledflag} --use-ccm=true --user-name="${ocsp-database.username}" --password="${ocsp-database.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=20 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${ocsp-database.valid.connection.sql}"' />
 
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
@@ -312,7 +312,7 @@
             <!-- We have to undeploy the war file before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy externalra-gui.war --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=extraguids" failonerror="false" />
-            <jboss:adm arg='data-source add --name=extraguids --driver-name="${externalra-database.driver}" --connection-url="${externalra-gui.datasource.jdbc-url}" --jndi-name="java:/ExternalRAGUIMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${externalra-gui.datasource.username}" --password="${externalra-gui.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+            <jboss:adm arg='data-source add --name=extraguids --driver-name="${externalra-database.driver}" --connection-url="${externalra-gui.datasource.jdbc-url}" --jndi-name="java:/ExternalRAGUIMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${externalra-gui.datasource.username}" --password="${externalra-gui.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${externalra-database.valid.connection.sql}"' />
 
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
@@ -323,7 +323,7 @@
             <!-- We have to undeploy the war file before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy scepraserver.war --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=extrascepds" failonerror="false" />
-		    <jboss:adm arg='data-source add --name=extrascepds --driver-name="${externalra-database.driver}" --connection-url="${scep.ra.datasource.jdbc-url}" --jndi-name="java:/ScepRAMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${scep.ra.datasource.username}" --password="${scep.ra.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+		    <jboss:adm arg='data-source add --name=extrascepds --driver-name="${externalra-database.driver}" --connection-url="${scep.ra.datasource.jdbc-url}" --jndi-name="java:/ScepRAMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${scep.ra.datasource.username}" --password="${scep.ra.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${externalra-database.valid.connection.sql}"' />
 
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
@@ -597,7 +597,7 @@
                     </tokenfilter>
                 </filterchain>
             </loadresource>
-                <echo message="@{arg}"/>
+                <echo message="@{arg_escaped}"/>
                 <exec executable="${appserver.home}/bin/${jbosscliexe}" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
                     <arg value="-c" />
                     <arg value="--command=${arg_escaped}" />

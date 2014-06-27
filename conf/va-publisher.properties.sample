@@ -28,6 +28,7 @@
 #ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
 #ocsp-database.driver=oracle.jdbc.driver.OracleDriver
 #ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
+#ocsp-database.driver=com.ibm.db2.jcc.DB2Driver
 
 # Database username.
 #ocsp-database.username=ocsp
