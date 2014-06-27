@@ -1240,7 +1240,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (ocspSigningCacheEntry != null) {
                 // Add responseExtensions
                 Extensions exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
-                //X509Extensions exts = new X509Extensions(responseExtensions);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOcspResponse(req, responseList, exts, ocspSigningCacheEntry, producedAt);
                 ocspResponse = responseGenerator.build(OCSPRespBuilder.SUCCESSFUL, basicresp);
@@ -1252,6 +1251,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.debug(intres.getLocalizedMessage("ocsp.errornocacreateresp"));
                 }
                 ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
+                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
+                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
             }
         } catch (SignRequestException e) {
             transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
