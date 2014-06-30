@@ -417,29 +417,42 @@
 			<h:dataTable value="#{certProfileBean.certificatePolicies}" var="certificatePolicy" rendered="#{certProfileBean.certificateProfile.useCertificatePolicies}">
 				<h:column>
 					<h:panelGrid columns="1">
-						<h:outputLabel for="caissueruri" value="#{web.text.EXT_PKIX_CP_POLICYID}"/>
-						<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}"/>
-						<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}"/>
+						<h:outputLabel for="caissueruri" value="#{web.text.EXT_PKIX_CP_POLICYID}:"/>
+						<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE} (#{certificatePolicy.qualifierId}):" styleClass="subItem"
+							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdUserNotice}"/>
+						<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI} (#{certificatePolicy.qualifierId}):" styleClass="subItem"
+							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdCpsUri}"/>
 					</h:panelGrid>
 					<f:facet name="footer">
 						<h:panelGrid columns="1">
-							<h:outputLabel for="textfieldcertificatepolicyid" value="#{web.text.EXT_PKIX_CP_POLICYID}"/>
-							<h:outputLabel for="textareapolicynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}"/>
-							<h:outputLabel for="textfielpolicynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}"/>
+							<h:outputLabel for="textfieldcertificatepolicyid" value="#{web.text.EXT_PKIX_CP_POLICYID}:"/>
 						</h:panelGrid>
 					</f:facet>
 				</h:column>
 				<h:column>
 					<h:panelGrid columns="1">
 						<h:outputText id="caissueruri" value="#{certificatePolicy.policyID}"/>
-						<h:outputText id="policynoticeunotice" value="#{certificatePolicy.qualifierId}"/>
-						<h:outputText id="policynoticedcpsurl" value="#{certificatePolicy.qualifier}"/>
+						<h:outputText id="policynoticeunotice" value="#{certificatePolicy.qualifier}" rendered="#{certProfileBean.currentCertificatePolicyQualifierIdUserNotice}"/>
+						<h:outputText id="policynoticedcpsurl" value="#{certificatePolicy.qualifier}" rendered="#{certProfileBean.currentCertificatePolicyQualifierIdCpsUri}"/>
 					</h:panelGrid>
 					<f:facet name="footer">
 						<h:panelGrid columns="1">
 							<h:inputText id="textfieldcertificatepolicyid" value="#{certProfileBean.newCertificatePolicy.policyID}" size="20" maxlength="255" title="#{web.text.FORMAT_OID}"/>
-							<h:inputText id="textareapolicynoticeunotice" value="#{certProfileBean.newCertificatePolicy.qualifierId}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"/>
-							<h:inputText id="textfielpolicynoticedcpsurl" value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
+							<h:panelGrid id="policyqualidinput" columns="3">
+								<h:commandButton value="#{certProfileBean.newCertificatePolicyQualifierIdNone?'✓':' '}#{web.text.EXT_PKIX_CP_NOQUAL}"
+									action="#{certProfileBean.actionNewCertificatePolicyQualifierIdNone}" disabled="#{certProfileBean.newCertificatePolicyQualifierIdNone}"
+									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
+								<h:commandButton value="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice?'✓':' '}#{web.text.EXT_PKIX_CP_USERNOTICE}"
+									action="#{certProfileBean.actionNewCertificatePolicyQualifierIdUserNotice}" disabled="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice}"
+									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
+								<h:commandButton value="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri?'✓':' '}#{web.text.EXT_PKIX_CP_CPSURI}"
+									action="#{certProfileBean.actionNewCertificatePolicyQualifierIdCpsUri}" disabled="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri}"
+									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
+							</h:panelGrid>
+							<h:inputText id="textareapolicynoticeunotice" rendered="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice}"
+								value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"/>
+							<h:inputText id="textfielpolicynoticedcpsurl" rendered="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri}"
+								value="#{certProfileBean.newCertificatePolicy.qualifier}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"/>
 						</h:panelGrid>
 					</f:facet>
 				</h:column>

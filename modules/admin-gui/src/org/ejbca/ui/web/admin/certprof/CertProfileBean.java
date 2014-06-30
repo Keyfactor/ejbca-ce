@@ -309,6 +309,16 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return certificatePoliciesModel;
     }
+    
+    public boolean isCurrentCertificatePolicyQualifierIdNone() throws AuthorizationDeniedException {
+        return "".equals(((CertificatePolicy)getCertificatePolicies().getRowData()).getQualifierId());
+    }
+    public boolean isCurrentCertificatePolicyQualifierIdCpsUri() throws AuthorizationDeniedException {
+        return CertificatePolicy.id_qt_cps.equals(((CertificatePolicy)getCertificatePolicies().getRowData()).getQualifierId());
+    }
+    public boolean isCurrentCertificatePolicyQualifierIdUserNotice() throws AuthorizationDeniedException {
+        return CertificatePolicy.id_qt_unotice.equals(((CertificatePolicy)getCertificatePolicies().getRowData()).getQualifierId());
+    }
 
     public CertificatePolicy getNewCertificatePolicy() {
         if (newCertificatePolicy==null) {
@@ -318,10 +328,32 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
     public void setNewCertificatePolicy(final CertificatePolicy newCertificatePolicy) { this.newCertificatePolicy = newCertificatePolicy; }
 
+    public void actionNewCertificatePolicyQualifierIdNone() throws IOException {
+        getNewCertificatePolicy().setQualifierId("");
+        getNewCertificatePolicy().setQualifier("");
+        redirectToComponent("header_crls");
+    }
+    public void actionNewCertificatePolicyQualifierIdCpsUri() throws IOException {
+        getNewCertificatePolicy().setQualifierId(CertificatePolicy.id_qt_cps);
+        getNewCertificatePolicy().setQualifier("");
+        redirectToComponent("header_crls");
+    }
+    public void actionNewCertificatePolicyQualifierIdUserNotice() throws IOException {
+        getNewCertificatePolicy().setQualifierId(CertificatePolicy.id_qt_unotice);
+        getNewCertificatePolicy().setQualifier("");
+        redirectToComponent("header_crls");
+    }
+    public boolean isNewCertificatePolicyQualifierIdNone() { return "".equals(getNewCertificatePolicy().getQualifierId()); }
+    public boolean isNewCertificatePolicyQualifierIdCpsUri() { return CertificatePolicy.id_qt_cps.equals(getNewCertificatePolicy().getQualifierId()); }
+    public boolean isNewCertificatePolicyQualifierIdUserNotice() { return CertificatePolicy.id_qt_unotice.equals(getNewCertificatePolicy().getQualifierId()); }
+
     public String addCertificatePolicy() throws AuthorizationDeniedException, IOException {
         CertificatePolicy newCertificatePolicy = getNewCertificatePolicy();
-        newCertificatePolicy = new CertificatePolicy(newCertificatePolicy.getPolicyID().trim(), newCertificatePolicy.getQualifierId(), newCertificatePolicy.getQualifier());
-        getCertificateProfile().addCertificatePolicy(newCertificatePolicy);
+        if (newCertificatePolicy.getPolicyID().trim().length()>0) {
+            // Only add the policy if something is specified in the PolicyID field
+            newCertificatePolicy = new CertificatePolicy(newCertificatePolicy.getPolicyID().trim(), newCertificatePolicy.getQualifierId(), newCertificatePolicy.getQualifier().trim());
+            getCertificateProfile().addCertificatePolicy(newCertificatePolicy);
+        }
         setNewCertificatePolicy(null);
         certificatePoliciesModel = null;
         redirectToComponent("header_crls");
