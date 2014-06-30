@@ -272,8 +272,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initializeCa(final AuthenticationToken authenticationToken, final CAInfo caInfo) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, InvalidKeyException, CADoesntExistsException, CryptoTokenAuthenticationFailedException,
-            InvalidAlgorithmException, CAExistsException, IllegalCryptoTokenException {
+            CryptoTokenOfflineException, InvalidAlgorithmException {
 
         if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new IllegalArgumentException("CA Status was not CA_UNINITIALIZED (" + CAConstants.CA_UNINITIALIZED+")");
@@ -290,26 +289,39 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Changing the SubjectDN will break cert chains in extended CA services
             caInfo.getExtendedCAServiceInfos().clear();
             updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
-            createCA(authenticationToken, caInfo);
+            try {
+                createCA(authenticationToken, caInfo);
+            } catch (CAExistsException e) {
+                throw new IllegalStateException(e);
+            }
         } else {
             // No Subject DN change
             CAToken caToken = caInfo.getCAToken();
             CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
             CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
             // See if CA token is OK before generating keys
-            cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            try {
+                cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            } catch (InvalidKeyException e1) {
+                throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
+            }
             
-            mergeCertificatePoliciesFromCAAndProfile(caInfo, certprofile);
-            caSession.editCA(authenticationToken, caInfo);
-            CA ca = caSession.getCA(authenticationToken, caInfo.getCAId());
-            ca.updateUninitializedCA(caInfo);
-            ca.setCAToken(caToken);
-            ca.setCAInfo(caInfo);
-            //Store the chain and new status.
-            caSession.editCA(authenticationToken, ca, false);
-            
-            // Finish up and create certificate chain, CRL, etc.
-            finalizeInitializedCA(authenticationToken, ca, caInfo, cryptoToken, certprofile);
+            try {
+                mergeCertificatePoliciesFromCAAndProfile(caInfo, certprofile);
+                caSession.editCA(authenticationToken, caInfo);
+                CA ca = caSession.getCA(authenticationToken, caInfo.getCAId());
+                ca.updateUninitializedCA(caInfo);
+                ca.setCAToken(caToken);
+                ca.setCAInfo(caInfo);
+                //Store the chain and new status.
+                caSession.editCA(authenticationToken, ca, false);
+                
+                // Finish up and create certificate chain, CRL, etc.
+                finalizeInitializedCA(authenticationToken, ca, caInfo, cryptoToken, certprofile);
+            } catch (CADoesntExistsException e) {
+                // getCAInfo should have thrown this exception already
+                throw new IllegalStateException(e);
+            }
         }
 
     }
