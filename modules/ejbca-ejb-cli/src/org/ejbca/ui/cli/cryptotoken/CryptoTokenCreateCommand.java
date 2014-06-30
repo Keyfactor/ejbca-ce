@@ -45,7 +45,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
 
     private static final String CRYPTOTOKEN_NAME_KEY = "--token";
     private static final String PIN_KEY = "--pin";
-    private static final String AUTOACTIVATE_KEY = "-A";
+    private static final String AUTOACTIVATE_KEY = "--autoactivate";
     private static final String TYPE_KEY = "--type";
     private static final String PRIVATE_KEY_EXPORT_KEY = "--exportkey";
     private static final String PKCS11_LIB_KEY = "--lib";
@@ -61,7 +61,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "Pin code for the crypto token. Set to 'null' to prompt."));
         // TODO: Make this a flag when legacy support isn't necessary
         registerParameter(new Parameter(AUTOACTIVATE_KEY, "true|false", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Set to 'true' or 'false'."));
+                "Set to true|false to allow|disallow whether crypto token should be autoactivated or not."));
         registerParameter(new Parameter(TYPE_KEY, "Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Available types: "
                 + SoftCryptoToken.class.getSimpleName() + ", " + PKCS11CryptoToken.class.getSimpleName()));
         //Soft params
