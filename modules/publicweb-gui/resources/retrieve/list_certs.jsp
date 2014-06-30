@@ -1,7 +1,7 @@
 <%@ include file="header.jsp" %>
   <h1 class="title">List certificates</h1>
   <p>Enter the subject DN (e.g., &quot<code>c=SE, O=AnaTom, CN=foo</code>&quot;) to list a user's certificates.</p>
-  <form action="list_certs_result.jsp" enctype="x-www-form-encoded" method="GET">
+  <form action="list_certs_result.jsp" enctype="x-www-form-encoded" method="post">
     <fieldset>
       <legend>Distinguished name</legend>
 
