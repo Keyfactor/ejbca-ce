@@ -139,24 +139,18 @@ public interface CAAdminSession {
             AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException;
 
     /**
-     * Unlike the similarily named method initializeAndUpgradeCAs(), this method initializes a
+     * Unlike the similarly named method initializeAndUpgradeCAs(), this method initializes a
      * previously uninitialized CA by setting its status to active and generating certificate chains
      * for it. 
      * 
      * @param authenticationToken an authentication token
      * @param caInfo representing the CA
-     * @throws AuthorizationDeniedException if user was denied authorization to edit CAs 
-     * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys 
-     * @throws InvalidKeyException if the cryptotoken owned by this CA lacks keystores
-     * @throws CADoesntExistsException if the CA defined by caInfo doesn't exist.
-     * @throws InvalidAlgorithmException 
-     * @throws CryptoTokenAuthenticationFailedException 
-     * @throws CAExistsException 
-     * @throws IllegalCryptoTokenException 
+     * @throws AuthorizationDeniedException if user was denied authorization to edit CAs
+     * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys
+     * @throws InvalidAlgorithmException if the CA signature algorithm is invalid
      */
-    void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException, CryptoTokenOfflineException,
-            InvalidKeyException, CADoesntExistsException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException,
-            IllegalCryptoTokenException;
+    void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException, InvalidAlgorithmException;
 
     /**
      * Renews a existing CA certificate using the requested keys or by
