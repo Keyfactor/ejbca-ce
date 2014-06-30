@@ -66,9 +66,14 @@ public class ListAdminsCommand extends BaseRolesCommand {
             try {
                 CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                         userAspect.getCaId());
-                caName = info.getName();
+                caName = "\"" + info.getName() +  "\" ";
             } catch (CADoesntExistsException e) {
-                caName = "Unknown CA with id " + userAspect.getCaId();
+                if (userAspect.getCaId() == 0) {
+                    //0 is reserved for internal use
+                    caName = "[Admin unbound to CA] ";
+                } else {
+                    caName = "[Nonexistent CA with ID " + userAspect.getCaId() + "] ";
+                }
             } catch (AuthorizationDeniedException e) {
                 log.error("CLI user not authorized to CA with ID: " + userAspect.getCaId());
                 return CommandResult.FUNCTIONAL_FAILURE;
@@ -77,7 +82,7 @@ public class ListAdminsCommand extends BaseRolesCommand {
                     userAspect.getMatchWith());
             AccessMatchType matchType = userAspect.getMatchTypeAsType();
             String matchValue = userAspect.getMatchValue();
-            getLogger().info("\"" + caName + "\" " + matchWith + " " + matchType + " \"" + matchValue + "\"");
+            getLogger().info( caName + matchWith + " " + matchType + " \"" + matchValue + "\"");
         }
         return CommandResult.SUCCESS;
 
