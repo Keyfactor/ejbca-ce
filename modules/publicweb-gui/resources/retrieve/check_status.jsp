@@ -3,7 +3,7 @@
 <p>Enter the serial number of a certificate (in hexadecimal form) and click 'Check revocation'
    to see if the certificate is revoked.
 </p>
-<form action="check_status_result.jsp" enctype="x-www-form-encoded" method="get">
+<form action="check_status_result.jsp" enctype="x-www-form-encoded" method="post">
   <fieldset>
     <legend>Certificate data</legend>
 
