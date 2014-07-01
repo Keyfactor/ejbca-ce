@@ -542,8 +542,10 @@ function checkallfields(){
                 }
             %>
 	            </select>
-	            <% if (cryptoTokenIdParam == null) { %>
-                    <p><strong><%=ejbcawebbean.getText("CRYPTOTOKEN_NEED_EXISTING_OR_GEN")%></strong></p> 
+	            <% if (cryptoTokenIdParam == null && !isUninitialized) { %>
+                    <p><strong><%=ejbcawebbean.getText("CRYPTOTOKEN_NEED_EXISTING_OR_GEN")%></strong></p>
+                <% } else if (cryptoTokenIdParam == null) { %>
+                    <p><strong>You need to select a Crypto Token that exists, or generate keys if it exists, before you can initialize!</strong></p> 
                 <% } %>
             <%  } %>
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
@@ -1552,7 +1554,10 @@ function checkallfields(){
         <%  } else if (editca && isUninitialized) {
                 if (cryptoTokenIdParam != null) { %>
                     <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>">
+                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>"> 
+                <% } else if (isUninitialized) { %>
+                    <p><strong>You need to select a cryptotoken that exists before you can initialize!</strong></p>
+                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
                 <% } else { %>
                     <p><strong>You need to select a cryptotoken that exists before you can save!</strong></p> 
                 <% } %>

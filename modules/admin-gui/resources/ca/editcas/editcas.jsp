@@ -560,43 +560,51 @@ java.security.InvalidAlgorithmParameterException
                         cainfo.setValidity(validity);
                     }
                     
-                    signatureAlgorithmParam = requestMap.get(HIDDEN_CASIGNALGO);
-                    final String cryptoTokenIdString = requestMap.get(HIDDEN_CACRYPTOTOKEN);
-                    final int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
-                    final String keyAliasCertSignKey = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY);
-                    final String keyAliasCrlSignKey = keyAliasCertSignKey; // see comment about crlSignKey in editcapage.jspf
-                    final String keyAliasDefaultKey = requestMap.get(SELECT_CRYPTOTOKEN_DEFAULTKEY);
-                    final String keyAliasHardTokenEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY);
-                    final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
-                    final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
-                    final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
-                    final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
                     
                     // TODO should we allow changing the CA Name also?
                     //cainfo.setName(caname);
                     cainfo.setSubjectDN(subjectdn);
-                    final Properties caTokenProperties = new Properties();
-                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, keyAliasDefaultKey);
-                    if (keyAliasCertSignKey.length()>0) {
-                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, keyAliasCertSignKey);
-                    }
-                    if (keyAliasCrlSignKey.length()>0) {
-                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, keyAliasCrlSignKey);
-                    }
-                    if (keyAliasHardTokenEncryptKey.length()>0) {
-                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, keyAliasHardTokenEncryptKey);
-                    }
-                    if (keyAliasKeyEncryptKey.length()>0) {
-                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyAliasKeyEncryptKey);
-                    }
-                    if (keyAliasKeyTestKey.length()>0) {
-                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, keyAliasKeyTestKey);
+                    
+                    // We can only update the CAToken properties if we have selected a valid cryptotoken
+                    final String cryptoTokenIdString = requestMap.get(HIDDEN_CACRYPTOTOKEN);
+                    if (!StringUtils.isEmpty(cryptoTokenIdString)) {
+                        signatureAlgorithmParam = requestMap.get(HIDDEN_CASIGNALGO);
+                        final int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
+                        final String keyAliasCertSignKey = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY);
+                        final String keyAliasCrlSignKey = keyAliasCertSignKey; // see comment about crlSignKey in editcapage.jspf
+                        final String keyAliasDefaultKey = requestMap.get(SELECT_CRYPTOTOKEN_DEFAULTKEY);
+                        final String keyAliasHardTokenEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY);
+                        final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
+                        final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
+                        final Properties caTokenProperties = new Properties();
+                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, keyAliasDefaultKey);
+                        if (keyAliasCertSignKey.length()>0) {
+                            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, keyAliasCertSignKey);
+                        }
+                        if (keyAliasCrlSignKey.length()>0) {
+                            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, keyAliasCrlSignKey);
+                        }
+                        if (keyAliasHardTokenEncryptKey.length()>0) {
+                            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, keyAliasHardTokenEncryptKey);
+                        }
+                        if (keyAliasKeyEncryptKey.length()>0) {
+                            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyAliasKeyEncryptKey);
+                        }
+                        if (keyAliasKeyTestKey.length()>0) {
+                            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, keyAliasKeyTestKey);
+                        }
+                        
+                        final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
+                        newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
+                        cainfo.setCAToken(newCAToken);
                     }
                     
+                    final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
                     int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
                     int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
                     if (signedby == caid) { signedby = CAInfo.SELFSIGNED; }
                     cainfo.setCertificateProfileId(certprofileid);
+                    final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
                     cainfo.setSignedBy(signedby);
                     
                     final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
@@ -614,9 +622,6 @@ java.security.InvalidAlgorithmParameterException
                         extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
                     }
                     
-                    final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
-                    newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
-                    cainfo.setCAToken(newCAToken);
                     if (cainfo instanceof X509CAInfo) {
                         X509CAInfo x509cainfo = (X509CAInfo)cainfo;
                         x509cainfo.setSubjectAltName(subjectaltname);
