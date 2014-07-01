@@ -76,7 +76,7 @@ appserver.home         : ${appserver.home}
 		<!-- prompt for ca name, but only if it has not been set in install.properties or prompted for already during install -->
 	    <input message="Enter name of CA to add to truststore" addproperty="ca.name"/>
         <echo message="Getting root certificate in DER format..."/>
-		<ejbca:cli arg="ca getcacert &quot;'${ca.name}'&quot; ${java.io.tmpdir}/rootca.der -der"/>
+		<ejbca:cli arg="ca getcacert &quot;${ca.name}&quot; ${java.io.tmpdir}/rootca.der -der"/>
 		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
