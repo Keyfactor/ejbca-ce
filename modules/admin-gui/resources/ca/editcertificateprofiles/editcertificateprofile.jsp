@@ -417,7 +417,7 @@
 			<h:dataTable value="#{certProfileBean.certificatePolicies}" var="certificatePolicy" rendered="#{certProfileBean.certificateProfile.useCertificatePolicies}">
 				<h:column>
 					<h:panelGrid columns="1">
-						<h:outputLabel for="caissueruri" value="#{web.text.EXT_PKIX_CP_POLICYID}:"/>
+						<h:outputLabel for="policyid" value="#{web.text.EXT_PKIX_CP_POLICYID}:"/>
 						<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE} (#{certificatePolicy.qualifierId}):" styleClass="subItem"
 							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdUserNotice}"/>
 						<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI} (#{certificatePolicy.qualifierId}):" styleClass="subItem"
@@ -431,7 +431,7 @@
 				</h:column>
 				<h:column>
 					<h:panelGrid columns="1">
-						<h:outputText id="caissueruri" value="#{certificatePolicy.policyID}"/>
+						<h:outputText id="policyid" value="#{certificatePolicy.policyID}"/>
 						<h:outputText id="policynoticeunotice" value="#{certificatePolicy.qualifier}" rendered="#{certProfileBean.currentCertificatePolicyQualifierIdUserNotice}"/>
 						<h:outputText id="policynoticedcpsurl" value="#{certificatePolicy.qualifier}" rendered="#{certProfileBean.currentCertificatePolicyQualifierIdCpsUri}"/>
 					</h:panelGrid>
