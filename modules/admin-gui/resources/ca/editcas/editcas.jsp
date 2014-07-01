@@ -619,14 +619,13 @@ java.security.InvalidAlgorithmParameterException
                     
                     List<ExtendedCAServiceInfo> extendedcaservices = null;
                     if (cainfo instanceof X509CAInfo) {
-                        extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
-                    }
-                    
-                    if (cainfo instanceof X509CAInfo) {
                         X509CAInfo x509cainfo = (X509CAInfo)cainfo;
+                        if (signkeyspec != null) { // null when saving when no cryptotoken has been created yet
+                            extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
+                            x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
+                        }
                         x509cainfo.setSubjectAltName(subjectaltname);
                         x509cainfo.setPolicies(policies);
-                        x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
                     }
                 }
                 
