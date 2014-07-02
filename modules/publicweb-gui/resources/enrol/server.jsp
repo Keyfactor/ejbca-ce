@@ -16,7 +16,7 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
   <fieldset >
     <legend>Enroll</legend>
     
-    <input type="hidden" name="hidemenu" value="${hidemenu}" />
+    <input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
     <input type="hidden" name="showResultPage" value="true" />
     
 	<label for="user">Username</label>

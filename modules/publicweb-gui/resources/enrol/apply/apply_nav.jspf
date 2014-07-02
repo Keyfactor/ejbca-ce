@@ -60,15 +60,15 @@
         <label for="certprofile">Certificate profile:</label>
         <select name="certprofile" id="certprofile" size="1">
 			<c:forEach var="profile" items="${availableCertProfiles}">
-				<option value="${profile}" 
-				<c:if test="${userCertProfile==profile}">selected</c:if>>${profile}
+				<option value="<c:out value="${profile}" />" 
+				<c:if test="${userCertProfile==profile}">selected</c:if>><c:out value="${profile}"/>
 				</option>
 			</c:forEach>
         </select>
         <br />
     </c:if>
     <c:if test="${!applybean.certificateProfileListShown}">
-        <input type="hidden" name="certprofile" id="certprofile" value="${availableCertProfiles[0]}">
+        <input type="hidden" name="certprofile" id="certprofile" value="<c:out value="${availableCertProfiles[0]}" /> ">
     </c:if>
     
 	<label for="ok"></label>
