@@ -105,6 +105,7 @@ java.security.InvalidAlgorithmParameterException
   static final String HIDDEN_CATYPE                        = "hiddencatype";
   static final String HIDDEN_CASIGNALGO                    = "hiddencasignalgo";
   static final String HIDDEN_CACRYPTOTOKEN                 = "hiddencacryptotoken";
+  static final String HIDDEN_KEYSIZE                       = "hiddenkeysize";
   static final String HIDDEN_RENEWKEYS                     = "hiddenrenewkeys";
  
   // Buttons used in editcapage.jsp
@@ -604,7 +605,6 @@ java.security.InvalidAlgorithmParameterException
                     int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
                     if (signedby == caid) { signedby = CAInfo.SELFSIGNED; }
                     cainfo.setCertificateProfileId(certprofileid);
-                    final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
                     cainfo.setSignedBy(signedby);
                     
                     final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
@@ -620,10 +620,10 @@ java.security.InvalidAlgorithmParameterException
                     List<ExtendedCAServiceInfo> extendedcaservices = null;
                     if (cainfo instanceof X509CAInfo) {
                         X509CAInfo x509cainfo = (X509CAInfo)cainfo;
-                        if (signkeyspec != null) { // null when saving when no cryptotoken has been created yet
-                            extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
-                            x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
-                        }
+                        final String signkeyspec = requestMap.containsKey(SELECT_KEYSIZE) ?
+                                requestMap.get(SELECT_KEYSIZE) : requestMap.get(HIDDEN_KEYSIZE);
+                        extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
+                        x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
                         x509cainfo.setSubjectAltName(subjectaltname);
                         x509cainfo.setPolicies(policies);
                     }

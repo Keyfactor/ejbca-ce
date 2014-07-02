@@ -580,6 +580,7 @@ function checkallfields(){
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CAID %>' value='<c:out value="<%= caid %>"/>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'>
+    <% if (extendedServicesKeySpecParam != null) { %><input type="hidden" name='<%= HIDDEN_KEYSIZE %>' value='<c:out value="<%= extendedServicesKeySpecParam %>"/>'><% } %>
   <%   } else { %>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CREATE_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
