@@ -39,13 +39,13 @@
                             <c:param name="cmd" value="eecert" />
                             <c:param name="issuer" value="${certificate.issuerDN}" />
                             <c:param name="serno" value="${certificate.serialNumber}" />
-                            <c:param name="hidemenu" value="${hidemenu}" />
+                            <c:param name="hidemenu" value="<c:out value="${hidemenu}" />" />
                         </c:url>
                         <p><a href="${download}">Download certificate</a></p>
                         <c:url var="check_status" value="check_status_result.jsp" >
                             <c:param name="issuer" value="${certificate.issuerDN}" />
                             <c:param name="serno" value="${certificate.serialNumber}" />
-                            <c:param name="hidemenu" value="${hidemenu}" />
+                            <c:param name="hidemenu" value="<c:out value="${hidemenu}" />" />
                         </c:url>
                         <p><a href="${check_status}">Check if certificate is revoked</a></p>
                     </c:forEach>

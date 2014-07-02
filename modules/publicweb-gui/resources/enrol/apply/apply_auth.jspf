@@ -17,7 +17,7 @@ Then click OK to generate your token.</p>
 	</c:if>
 
 	<input type="hidden" name="${ACTION}" value="${ACTION_GENERATETOKEN}" />
-	<input type="hidden" name="hidemenu" value="${hidemenu}" />
+	<input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
 
 	<label for="${TEXTFIELD_USERNAME}">Username</label>
 	<input type="text" size="40" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
