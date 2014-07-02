@@ -400,8 +400,8 @@
         <label for="certprofile">Certificate profile:</label>
             <select name="certprofile" id="certprofile" size="1">
     			<c:forEach var="profile" items="${availableCertProfiles}">
-    				<option value="${profile}" 
-    				<c:if test="${userCertProfile==profile}">selected</c:if>>${profile}
+    				<option value="<c:out value="${profile}" />" 
+    				<c:if test="${userCertProfile==profile}">selected</c:if>><c:out value="${profile}" />
     				</option>
     			</c:forEach>
             </select>

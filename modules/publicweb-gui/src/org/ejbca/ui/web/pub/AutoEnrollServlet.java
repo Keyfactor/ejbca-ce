@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -258,8 +259,8 @@ public class AutoEnrollServlet extends HttpServlet {
 	            response.getOutputStream().println("An error has occurred.");
 	            return;
 	        }
-	        if (debugRequest) {
-	            response.getOutputStream().println(debugInfo);
+	        if (debugRequest) {            
+                response.getOutputStream().println(StringEscapeUtils.escapeJavaScript(debugInfo));
 	        } else {
 	            // Output the certificate
 	            ServletOutputStream os = response.getOutputStream();
