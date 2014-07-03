@@ -408,7 +408,7 @@
         <br />
     </c:if>
     <c:if test="${!applybean.certificateProfileListShown}">
-        <input type="hidden" name="certprofile" id="certprofile" value="${availableCertProfiles[0]}">
+        <input type="hidden" name="certprofile" id="certprofile" value="<c:out value="${availableCertProfiles[0]}" />">
     </c:if>
 
     <label for="enchancedeid" style="white-space:normal;">Add to enhanced eID card</label>

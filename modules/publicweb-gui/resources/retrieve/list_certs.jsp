@@ -5,7 +5,7 @@
     <fieldset>
       <legend>Distinguished name</legend>
 
-      <input type="hidden" name="hidemenu" value="${hidemenu}" />
+      <input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
       <input type="hidden" name="cmd" value="listcerts" />
 
       <label for="subject">Subject DN</label>

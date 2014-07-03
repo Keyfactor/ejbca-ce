@@ -91,7 +91,7 @@
 			
 			<form name="form1" action="cardcertreq" method="post" id="form1">
 				<p>
-				  <input type="hidden" name="hidemenu" value="${hidemenu}">
+				  <input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" >
 				  <input type="HIDDEN" name="authpkcs10">
 				  <input type="HIDDEN" name="signpkcs10">
 				  <input type="BUTTON" value="Fetch Certificate" 

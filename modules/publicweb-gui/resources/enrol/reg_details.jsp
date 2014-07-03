@@ -29,7 +29,7 @@
       <fieldset>
         <legend>Registration request - Step 2 of 2</legend>
         
-        <input type="hidden" name="hidemenu" value="${hidemenu}" />
+        <input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
         
         <b>Certificate type: <c:out value="${reg.certTypeDescription}" /></b>
         <input type="hidden" name="certType" value="<c:out value="${reg.certType}" />"  />
@@ -94,11 +94,11 @@
                 <c:when test='${field.name == "rfc822name" && field.use}'>
                     <!-- rfc822name (e-mail) with "use email field" checkbox -->
                     <c:if test="${!field.required}">
-                        <input type="checkbox" name="emailinaltname" value="${field.id}" />
+                        <input type="checkbox" name="emailinaltname" value="<c:out value="${field.id}" />" />
                     </c:if>
                     <c:if test="${field.required}">
                         <input type="checkbox" checked="checked" disabled="disabled" />
-                        <input type="hidden" name="emailinaltname" value="${field.id}" />
+                        <input type="hidden" name="emailinaltname" value="<c:out value="${field.id}" />" />
                     </c:if>
                     Include e-mail in certificate altname
                 </c:when>
