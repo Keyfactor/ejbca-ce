@@ -560,10 +560,6 @@ java.security.InvalidAlgorithmParameterException
                         }
                         cainfo.setValidity(validity);
                     }
-                    
-                    
-                    // TODO should we allow changing the CA Name also?
-                    //cainfo.setName(caname);
                     cainfo.setSubjectDN(subjectdn);
                     
                     // We can only update the CAToken properties if we have selected a valid cryptotoken
