@@ -64,6 +64,11 @@
     <property name="mod.ejbca-xkms.path" location="${mod.path}/ejbca-xkms" />
     <property name="mod.ejbca-xkms-ejb.jar" location="${mod.dist.path}/ejbca-xkms-ejb.jar" />
     <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
+    <property name="mod.peerconnector.path" location="${mod.path}/peerconnector"/>
+    <property name="mod.peerconnector-common.lib" location="${mod.dist.path}/peerconnector-common.jar" />
+    <property name="mod.peerconnector-rar.lib" location="${mod.dist.path}/peerconnector.rar" />
+    <property name="mod.peerconnector-war.lib" location="${mod.dist.path}/peerconnector.war" />
+    <property name="mod.peerconnector-publ.lib" location="${mod.dist.path}/peerconnector-publ.jar" />
     <property name="mod.admin-gui.path" location="${mod.path}/admin-gui" />
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
     <property name="mod.cmp-war.path" location="${mod.path}/ejbca-cmp-war" />
@@ -173,6 +178,7 @@
 	<path id="lib.commons-el.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-el-*.jar"/></path>
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.commons-httpclient.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="commons-httpclient-*.jar"/></path>
+	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="httpcore-*.jar httpclient-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
 	<path id="lib.mail.classpath">
@@ -258,6 +264,8 @@
 			<include name="bin/client/jboss-client*.jar"/>
 			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
 			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
+			<!-- JBoss 7.1.0 and EAP 6.0 for javax.resource ...-->
+			<include name="modules/javax/resource/api/main/jboss-connector-api_1.6_spec-*.jar"/>
 			
 			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 for javax.peristence, transaction, remote EJB, ...-->
 			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.?-api-*.jar"/>
