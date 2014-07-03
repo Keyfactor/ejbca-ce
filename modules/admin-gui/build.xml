@@ -29,6 +29,8 @@
                 <path location="${mod.cesecore-entity.lib}"/>
                 <path location="${mod.cesecore-common.lib}"/>
                 <path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.peerconnector-rar.lib}"/>
+		<path location="${mod.peerconnector-common.lib}"/>
 	</path>
 	
     <path id="jasper.classpath">

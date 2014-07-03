@@ -473,6 +473,8 @@
                 <include name="renew.war" />
                 <include name="ejbca-cmp-tcp.war" />
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
+                <include name="peerconnector.rar" />
+                <include name="peerconnector.war" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -488,7 +490,11 @@
                 <include name="jbosslog4jsafer.jar" if="jbosseap6-specials"/>
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	    <include name="ct.jar" />
+                <include name="peerconnector-common.jar" />
+                <include name="peerconnector-publ.jar" />
         	</zipfileset>
+        	<!-- Include HttpClient for the use from the peerconnector.rar -->
+        	<zipfileset prefix="lib" dir="${lib}/ext" includes="commons-httpclient-*.jar"/>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
         		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
         		     There are classpath issues using the ejbca-ws-cli.jar though, since this jar contain class-patch in META-INF/MANIFEST 
