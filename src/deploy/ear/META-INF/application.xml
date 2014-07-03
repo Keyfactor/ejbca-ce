@@ -66,5 +66,12 @@
        <!--@doc.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->
+    <module><connector>peerconnector.rar</connector></module>
+    <module>
+        <web>
+            <web-uri>peerconnector.war</web-uri>
+            <context-root>/ejbca/peerconnector</context-root>
+        </web>
+    </module>
 </application>
 

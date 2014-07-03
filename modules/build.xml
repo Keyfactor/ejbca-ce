@@ -89,6 +89,7 @@
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
 		<antcall target="ctclean"/>
+		<ant antfile="${mod.peerconnector.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<delete failonerror="false">
 			<fileset dir="${modules.basedir}/dist" includes="*" />
 		</delete>
@@ -316,6 +317,10 @@
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
+	<target name="peerconnector" description="Build enabled PeerConnector modules">
+		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
+
 	<target name="externalra-service" depends="ejbca-common-web" if="externalra.enabled.true" description="Build the EJBCA External RA Service">
 		<ant antfile="${mod.externalra.path}/build.xml" target="build-service" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
@@ -397,7 +402,7 @@
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct"/>
+	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, peerconnector, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct"/>
 
 	<target name="buildservicemanifestbuilder">
 		<ant antfile="${mod.buildtools.path}/build.xml" target="compile-servicemanifestbuilder" />
