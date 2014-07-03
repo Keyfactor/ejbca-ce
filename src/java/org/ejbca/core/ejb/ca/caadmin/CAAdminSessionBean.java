@@ -286,8 +286,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (calculatedCAId != currentCAId) {
             caSession.removeCA(authenticationToken, currentCAId);
             caInfo.setCAId(calculatedCAId);
-            // Changing the SubjectDN will break cert chains in extended CA services
-            caInfo.getExtendedCAServiceInfos().clear();
             updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
             try {
                 createCA(authenticationToken, caInfo);
@@ -936,8 +934,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (calculatedCAId != currentCAId) {
                 caSession.removeCA(admin, currentCAId);
                 cainfo.setCAId(calculatedCAId);
-                // Changing the SubjectDN will break cert chains in extended CA services
-                cainfo.getExtendedCAServiceInfos().clear();
                 updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
                 try {
                     createCA(admin, cainfo);
