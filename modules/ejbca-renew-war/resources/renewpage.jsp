@@ -21,7 +21,7 @@
 		<form action="index.jsp" method="post">
 		<fieldset>
 			<legend>Request</legend>
-			<input type="hidden" name="hidemenu" value="${hidemenu}" />
+			<input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
 			You are authenticated as: <strong>${certificate.subjectDN}</strong><br />
 			<br />
 			Press the button below to request renewal:<br />
