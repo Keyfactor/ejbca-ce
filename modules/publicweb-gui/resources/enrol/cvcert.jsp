@@ -12,7 +12,7 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
   <code>-----END CERTIFICATE REQUEST-----</code>
 </p>
 
-<form name="EJBCA" action="../certreq?hidemenu=${hidemenu}" method="post" enctype="multipart/form-data">
+<form name="EJBCA" action="<c:url value="../certreq?hidemenu=${hidemenu}" />" method="post" enctype="multipart/form-data">
   <fieldset >
     <legend>Enroll</legend>
 	<label for="user">Username</label>
