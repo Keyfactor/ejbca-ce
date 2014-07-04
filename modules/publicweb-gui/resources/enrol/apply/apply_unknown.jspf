@@ -10,6 +10,6 @@
   of the links below if you are sure your browser is correct.
 </p>
 <ul>
-  <li><a href="browser.jsp?forcebrowser=netscape&hidemenu=${hidemenu}">Mozilla or Netscape</a></li>
-  <li><a href="browser.jsp?forcebrowser=explorer&hidemenu=${hidemenu}">Internet Explorer</a></li>
+  <li><a href="<c:url value="browser.jsp?forcebrowser=netscape&hidemenu=${hidemenu}" />">Mozilla or Netscape</a></li>
+  <li><a href="<c:url value="browser.jsp?forcebrowser=explorer&hidemenu=${hidemenu}" />">Internet Explorer</a></li>
 </ul>
