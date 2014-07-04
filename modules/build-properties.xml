@@ -212,7 +212,7 @@
 			<include name="client/jboss-ejb-api_3.1_spec.jar"/>
 			<include name="client/jboss-metadata-ejb.jar"/>
 
-			<!-- JBoss 7.1.0 and EAP 6.0 -->
+			<!-- JBoss 7.1.1 and EAP 6.0 -->
 			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0*.jar"/>
 			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.*.jar"/>
 			<include name="modules/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec-*.jar"/>
@@ -260,17 +260,18 @@
 			<include name="client/jboss-logging*.jar"/>
 			<include name="client/jboss-metadata-ejb.jar"/>
 
-			<!-- JBoss 7.1.0 and EAP 6.0 for javax.peristence, transaction, remote EJB, ...-->
+			<!-- JBoss 7.1.1 and EAP 6.0 for javax.peristence, transaction, remote EJB, ...-->
 			<include name="bin/client/jboss-client*.jar"/>
 			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
 			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
-			<!-- JBoss 7.1.0 and EAP 6.0 for javax.resource ...-->
+			<!-- JBoss 7.1.1 and EAP 6.0 for javax.resource ...-->
 			<include name="modules/javax/resource/api/main/jboss-connector-api_1.6_spec-*.jar"/>
 			
 			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 for javax.peristence, transaction, remote EJB, ...-->
 			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.?-api-*.jar"/>
 			<include name="modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.?_spec-*.jar"/>
 			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.2_spec-*.jar"/> <!-- WildFly 8 -->
+			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.6_spec-*.jar"/>
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
