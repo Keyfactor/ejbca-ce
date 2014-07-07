@@ -28,6 +28,7 @@ public final class CAConstants {
     public static final int CA_EXTERNAL = 6;
     public static final int CA_UNINITIALIZED = 7;
 
+    private static final String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA", "UNINITIALIZED"};
 
     /**
      * Prevents creation of new CAConstants
@@ -42,5 +43,9 @@ public final class CAConstants {
 
     /** Used in profiles and service workers to make the catch all every CA instead of listing individual CAs when operating on them */
     public static final int ALLCAS = 1;
+
+    public static String getStatusText(int status) {
+        return statustexts[status];
+    }
 
 }
