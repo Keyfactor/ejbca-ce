@@ -1,7 +1,7 @@
  <%@ include file="header.jsp" %>
   <h1 class="title">Inspect certificate/CSR</h1>
   <p>Upload request to dump contents.</p>
-  <form action="<c:url value="request_result.jsp"> <c:param id="hidemenu" value="${hidemenu}"/> </c:url>" enctype="multipart/form-data" method="post">
+  <form action="<c:url value="request_result.jsp"> <c:param name="hidemenu" value="${hidemenu}"/> </c:url>" enctype="multipart/form-data" method="post">
     <fieldset>
       <legend>Inspect</legend>
 	
