@@ -1,8 +1,6 @@
 <%
   TreeMap<String,Integer> canames     = info.getAllCANames(); 
 
-  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA", "UNINITIALIZED"};
-
 %>
 
 
@@ -105,7 +103,7 @@
         <select name="<%=SELECT_CAS%>" style="width: 50em" size="15"  >
           <% for (final String nameofca : canames.keySet()) {
                  CAInfo cainfo2 = cabean.getCAInfo(canames.get(nameofca).intValue()).getCAInfo();
-                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo2.getStatus()]) + ")"; %>
+                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(CAConstants.getStatusText(cainfo2.getStatus())) + ")"; %>
             <option value="<c:out value="<%= canames.get(nameofca) %>"/>"> 
                 <c:out value="<%= nameandstatus %>"/>
              </option>
