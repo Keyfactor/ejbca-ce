@@ -48,6 +48,7 @@
         <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
+        <class>org.ejbca.core.ejb.peerconnector.PeerData</class>
         <class>org.ejbca.core.ejb.ra.UserData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
