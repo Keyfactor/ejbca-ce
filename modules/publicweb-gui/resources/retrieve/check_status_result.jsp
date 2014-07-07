@@ -10,11 +10,11 @@
     <c:choose> 
         <c:when test="${issuer == null || issuer == ''}"> 
             <h1 class="title">No issuer</h1> 
-            <p>Please enter a valid issuer in the <a href="<c:url value="check_status.jsp?hidemenu=${hidemenu}" />" >search form</a>!</p>
+            <p>Please enter a valid issuer in the <a href="<c:url value="check_status.jsp"> <c:param id="hidemenu" value="${hidemenu}"/> </c:url>" >search form</a>!</p>
         </c:when>
         <c:when test="${serno == null || serno == ''}"> 
             <h1 class="title">No serial number</h1> 
-            <p>Please enter a valid serial number in the <a href="<c:url value="check_status.jsp?hidemenu=${hidemenu}" />" >search form</a>!</p>
+            <p>Please enter a valid serial number in the <a href="<c:url value="check_status.jsp"> <c:param id="hidemenu" value="${hidemenu}"/> </c:url>" >search form</a>!</p>
         </c:when>
         <c:otherwise> 
 		    <jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
