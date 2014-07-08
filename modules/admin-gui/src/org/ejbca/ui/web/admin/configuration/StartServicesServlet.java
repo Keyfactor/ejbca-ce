@@ -405,7 +405,7 @@ public class StartServicesServlet extends HttpServlet {
             }
         }
         // TODO: Make these configurable properties of the AuthenticationKeyBinding
-        final String[] supportedProtocols = {"TLSv1"};
+        final String[] supportedProtocols = {"TLSv1", "TLSv1.1", "TLSv1.2"};
         final String[] supportedCipherTextSuites = {
                 "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
                 "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
