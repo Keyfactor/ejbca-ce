@@ -22,7 +22,6 @@ import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -189,19 +188,11 @@ public class CADataHandler implements Serializable {
      * @throws CertificateRevokeException 
      * @throws UnsupportedEncodingException 
      */
-    public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
-            CADoesntExistsException, IllegalCryptoTokenException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, UnsupportedEncodingException, CertificateRevokeException, CAOfflineException {
+    public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException, InvalidAlgorithmException {
         CAInfo oldinfo = caSession.getCAInfo(administrator, caInfo.getCAId());
         caInfo.setName(oldinfo.getName());
         
         caadminsession.initializeCa(administrator, caInfo);
-        
-        if (caInfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA) {
-            // Always generate certificates for extended services, so they can be enabled in one step
-            renewAndRevokeXKMSCertificate(caInfo.getCAId());
-            renewAndRevokeCmsCertificate(caInfo.getCAId());
-        }
-        
         info.cAsEdited();
     }
   
@@ -395,37 +386,13 @@ public class CADataHandler implements Serializable {
     caadminsession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
  }
  
- public void renewAndRevokeXKMSCertificate(int caid) throws CryptoTokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, AuthorizationDeniedException, CertificateRevokeException, IllegalCryptoTokenException, CAOfflineException{
-	 	CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-		Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-		while(iter.hasNext()){
-		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
-		  if(next instanceof XKMSCAServiceInfo){
-		  	List<Certificate> xkmscerts = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
-		  	if (xkmscerts != null) {
-			  	X509Certificate xkmscert = (X509Certificate)xkmscerts.get(0);
-			  	revocationSession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
-		  	}
-		  	caadminsession.initExternalCAService(administrator, caid, next);
-		  }
-		}  
-	 }
+ public void renewAndRevokeXKMSCertificate(int caid) throws CADoesntExistsException, CAOfflineException, CertificateRevokeException, AuthorizationDeniedException {
+    caadminsession.renewAndRevokeXKMSCertificate(administrator, caid);
+ } 
  
- public void renewAndRevokeCmsCertificate(int caid) throws CryptoTokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, AuthorizationDeniedException, CertificateRevokeException, IllegalCryptoTokenException, CAOfflineException{
-	 	CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-		Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-		while(iter.hasNext()){
-		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
-		  if(next instanceof CmsCAServiceInfo){
-			  List<Certificate> cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
-			  if (cmscerts != null) {
-				  	X509Certificate cmscert = (X509Certificate)cmscerts.get(0);
-					revocationSession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
-			  }
-			  caadminsession.initExternalCAService(administrator, caid, next);
-		  }
-		}  
-	 }
+ public void renewAndRevokeCmsCertificate(int caid) throws CADoesntExistsException, CAOfflineException, CertificateRevokeException, AuthorizationDeniedException {
+    caadminsession.renewAndRevokeCmsCertificate(administrator, caid);
+ }
  
  public void activateCAToken(int caid) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
    caadminsession.activateCAService(administrator, caid);
