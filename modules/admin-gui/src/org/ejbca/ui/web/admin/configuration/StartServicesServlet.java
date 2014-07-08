@@ -403,8 +403,16 @@ public class StartServicesServlet extends HttpServlet {
                 }
             }
         }
+        // TODO: Make these configurable properties of the AuthenticationKeyBinding
+        final String[] supportedProtocols = {"TLSv1"};
+        final String[] supportedCipherTextSuites = {
+                "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+                "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+                "TLS_RSA_WITH_AES_128_CBC_SHA",
+                "TLS_RSA_WITH_AES_256_CBC_SHA"
+        };
         // should always be called from StartServiceServlet.init()
-        PeerConnectorPool.INSTANCE.updateStagedClientSslSettings(clientCertificate, clientPrivateKey, trustAnchors);
+        PeerConnectorPool.INSTANCE.updateStagedClientSslSettings(clientCertificate, clientPrivateKey, trustAnchors, supportedProtocols, supportedCipherTextSuites);
     }
     
     /** Method that checks if we have an integrity protected security audit device configured, and in that case logs the configuration startup 
