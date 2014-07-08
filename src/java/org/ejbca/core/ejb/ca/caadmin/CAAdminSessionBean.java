@@ -103,6 +103,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -301,7 +302,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             try {
                 cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
             } catch (InvalidKeyException e1) {
-                throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
+                throw new IllegalStateException("The CA's test key alias points to an invalid key.", e1);
             }
             
             try {
@@ -321,7 +322,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new IllegalStateException(e);
             }
         }
-
+        
+        
+        if (caInfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA) {
+            try {
+                // FIXME this doesn't take subject DN changes into account!
+                renewAndRevokeXKMSCertificate(authenticationToken, caInfo.getCAId());
+                renewAndRevokeCmsCertificate(authenticationToken, caInfo.getCAId());
+            } catch (CADoesntExistsException e) {
+                // getCAInfo should have thrown this exception already
+                throw new IllegalStateException(e);
+            } catch (CAOfflineException e) {
+                // This should not happen.
+                // The user can ignore these errors if he/she does not use CMS or XKMS 
+                log.error("Failed to renew extended service (CMS and XKMS) certificates for ca '"+caInfo.getName()+"'.", e);
+            } catch (CertificateRevokeException e) {
+                // ditto
+                log.error("Failed to renew extended service (CMS and XKMS) certificates for ca '"+caInfo.getName()+"'.", e);
+            }
+        }
     }
 
     @Override
@@ -559,6 +578,40 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String detailsMsg = intres.getLocalizedMessage("caadmin.updatedcaid", fromId, toId, toDN);
         auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(toId),
                     null, null, detailsMsg);
+    }
+    
+    @Override
+    public void renewAndRevokeXKMSCertificate(final AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException, CAOfflineException, CertificateRevokeException {
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
+        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
+        while (iter.hasNext()) {
+            ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next(); 
+            if (next instanceof XKMSCAServiceInfo) {
+                List<Certificate> xkmscerts = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
+                if (xkmscerts != null) {
+                    X509Certificate xkmscert = (X509Certificate)xkmscerts.get(0);
+                    revocationSession.revokeCertificate(admin, xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());        
+                }
+                initExternalCAService(admin, caid, next);
+            }
+        }  
+    }
+    
+    @Override
+    public void renewAndRevokeCmsCertificate(final AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException, CAOfflineException, CertificateRevokeException {
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
+        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
+        while (iter.hasNext()) {
+            ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next(); 
+            if (next instanceof CmsCAServiceInfo) {
+                List<Certificate> cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
+                if (cmscerts != null) {
+                    X509Certificate cmscert = (X509Certificate)cmscerts.get(0);
+                    revocationSession.revokeCertificate(admin, cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());         
+                }
+                initExternalCAService(admin, caid, next);
+            }
+        }
     }
     
     /**
@@ -1637,7 +1690,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
-            AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException {
+            AuthorizationDeniedException, CAOfflineException {
         // check authorization
         if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", Integer.valueOf(caid));

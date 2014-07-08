@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
-import java.security.InvalidKeyException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -136,7 +135,7 @@ public interface CAAdminSession {
      * exist before it will be created.
      */
     void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
-            AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException;
+            AuthorizationDeniedException, CAOfflineException;
 
     /**
      * Unlike the similarly named method initializeAndUpgradeCAs(), this method initializes a
