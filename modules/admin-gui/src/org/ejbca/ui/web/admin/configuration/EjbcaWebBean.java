@@ -1027,5 +1027,17 @@ public class EjbcaWebBean implements Serializable {
         return cps;
     }
     
-        
+    private Boolean peerConnectorPresent = null;
+    /** @return true if the PeerConnectors GUI implementation is present. */
+    public boolean isPeerConnectorPresent() {
+        if (peerConnectorPresent==null) {
+            try {
+                Class.forName("org.ejbca.ui.web.admin.peerconnector.PeerConnectorsMBean");
+                peerConnectorPresent = Boolean.TRUE;
+            } catch(ClassNotFoundException e) {
+                peerConnectorPresent = Boolean.FALSE;
+            }
+        }
+        return peerConnectorPresent.booleanValue();
+    }
 }
