@@ -88,7 +88,10 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_VIEWHARDTOKENS                     = "/ra_functionality" + HARDTOKEN_RIGHTS;
     public static final String REGULAR_VIEWPUKS                           = "/ra_functionality" + HARDTOKEN_PUKDATA_RIGHTS;
     public static final String REGULAR_KEYRECOVERY                        = "/ra_functionality" + KEYRECOVERY_RIGHTS;
-    	
+
+    /** EE version only, reference by String value */
+    public static final String REGULAR_PEERCONNECTOR_MGMT                 = "/peer/mgmt"; // org.ejbca.peerconnector.PeerAccessRules.MANAGE
+    
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY           = "/hardtoken_functionality";
     public static final String HARDTOKEN_EDITHARDTOKENISSUERS             = "/hardtoken_functionality/edit_hardtoken_issuers";
     public static final String HARDTOKEN_EDITHARDTOKENPROFILES            = "/hardtoken_functionality/edit_hardtoken_profiles";

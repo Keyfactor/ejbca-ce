@@ -79,6 +79,20 @@
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
+    	<managed-bean-name>peerConnectorsMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.peerconnector.PeerConnectorsMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>peerConnectorMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.peerconnector.PeerConnectorMBean</managed-bean-class>
+    	<managed-bean-scope>request</managed-bean-scope>
+    	<managed-property>
+    	    <property-name>peerConnectorsMBean</property-name>
+    	    <value>#{peerConnectorsMBean}</value>
+    	</managed-property>
+  </managed-bean>
+  <managed-bean>
     	<managed-bean-name>scepConfigMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.configuration.ScepConfigMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -160,6 +174,21 @@
   	<navigation-case>
   		<from-outcome>editservice</from-outcome>
   		<to-view-id>/services/editservice.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+
+  <navigation-rule>
+  	<from-view-id>/peerconnector/peerconnectors.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>edit</from-outcome>
+  		<to-view-id>/peerconnector/peerconnector.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+  	<from-view-id>/peerconnector/peerconnector.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>done</from-outcome>
+  		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
   	</navigation-case>
   </navigation-rule>
 </faces-config>

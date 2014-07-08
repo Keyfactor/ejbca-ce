@@ -54,8 +54,9 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String CMPCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()
            											+ "/cmpconfiguration.jsp";
     
-    final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
     final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf";
+    final String SERVICES_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
+    final String PEERCONNECTOR_LINK       = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.jsf";
     
     final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
                                                     + "/administratorprivileges.jsf";
@@ -87,9 +88,10 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
     final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
-    final String SERVICES_RESOURCE                      = "/super_administrator";
-    final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
+    final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
+    final String SERVICES_RESOURCE                      = "/super_administrator";
+    final String PEERCONNECTOR_RESOURCE                 = AccessRulesConstants.REGULAR_PEERCONNECTOR_MGMT;
  %>
 <%  
   boolean caheaderprinted     =false;
@@ -378,6 +380,18 @@ org.cesecore.keybind.InternalKeyBindingRules
          systemheaderprinted=true;
          }  %>
 				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){} 
+%>
+<%
+   // If authorized to edit peerconnectors then display related links.
+   try{
+     if(ejbcawebbean.isPeerConnectorPresent() && ejbcawebbean.isAuthorizedNoLog(PEERCONNECTOR_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= PEERCONNECTOR_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_PEERCONNECTOR") %></a></li>
 <%   }
   }catch(AuthorizationDeniedException e){} 
 %>
