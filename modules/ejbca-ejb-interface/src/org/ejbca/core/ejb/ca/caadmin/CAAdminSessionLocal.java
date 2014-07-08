@@ -15,7 +15,11 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 
 @Local
 public interface CAAdminSessionLocal extends CAAdminSession {
@@ -53,5 +57,17 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @return an error message or an empty String if all are ok.
      */
     String healthCheck();
+
+    /**
+     * Regenerates the XKMS certificate for a CA.
+     */
+    void renewAndRevokeXKMSCertificate(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,
+            CAOfflineException, CertificateRevokeException;
+
+    /**
+     * Regenerates the CMS certificate for a CA.
+     */
+    void renewAndRevokeCmsCertificate(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,
+            CAOfflineException, CertificateRevokeException;
 
 }
