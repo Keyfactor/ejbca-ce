@@ -18,14 +18,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,24 +45,12 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.keybind.InternalKeyBindingInfo;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingStatus;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenFactory;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
@@ -80,7 +64,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.peerconnector.client.PeerConnectorPool;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
@@ -99,8 +82,6 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -114,12 +95,6 @@ public class StartServicesServlet extends HttpServlet {
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
-    @EJB
-    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private CaSessionLocal caSession;
     
     @Resource
     private UserTransaction tx;
@@ -324,98 +299,8 @@ public class StartServicesServlet extends HttpServlet {
         ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
-
-        initPeerConnectionPool(admin);
-        /* Development code used under ECA-3144 */
-        /*
-        // Emulate how a publisher could get this resource:
-        org.ejbca.peerconnector.PeerConnectorResource peerConnectorResource = org.ejbca.peerconnector.PeerConnectorLookup.INSTANCE.getResource();
-        log.info("TMPDEBUG: (looked-up) subSystemProxyResource="+peerConnectorResource);
-        if (peerConnectorResource!=null) {
-            org.ejbca.peerconnector.PeerOutgoingInformation peer = new org.ejbca.peerconnector.PeerOutgoingInformation(1, "TestOut", true, java.util.Arrays.asList("TEST"), java.util.Arrays.asList("TEST"), "http://127.0.0.1:8080/ejbca/peerconnector/v1");
-            org.ejbca.peerconnector.PeerMessage ret = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
-            org.ejbca.peerconnector.PeerMessage ret2 = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
-            // We expect a default "UnknownMessageTypeResponse" here
-            log.info("TMPDEBUG: ret="+ret + " ret2="+ret2 + "\n\n");
-            final org.ejbca.peerconnector.PeerMessageListener pml = new org.ejbca.peerconnector.PeerMessageListener() {
-                @Override
-                public List<String> getSupportedMessageTypes() {
-                    return java.util.Arrays.asList("TEST");
-                }
-                @Override
-                public org.ejbca.peerconnector.PeerMessage receiveAndRespond(org.ejbca.peerconnector.PeerMessage peerMessage, org.ejbca.core.ejb.EjbBridgeSessionLocal ejbBridgeSessionLocal) {
-                    log.info("TMPDEBUG: receiveAndRespond="+peerMessage);
-                    return new org.ejbca.peerconnector.PeerMessage("TEST_RESPONSE", null);
-                }
-            };
-            org.ejbca.peerconnector.PeerMessageRegistry.INSTANCE.register(pml);
-            org.ejbca.peerconnector.PeerMessage ret3 = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
-            org.ejbca.peerconnector.PeerMessage ret4 = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
-            // We should now see the registered TEST_RESPONSE response here
-            log.info("TMPDEBUG: ret3="+ret3 + " ret4="+ret4 + "\n\n");
-            // Request one more than what is kept in the pool
-            org.ejbca.peerconnector.PeerMessage ret5 = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
-            log.info("TMPDEBUG: ret5="+ret5);
-            org.ejbca.peerconnector.PeerMessageRegistry.INSTANCE.deregister(pml);
-        }
-        */
     }
 
-    // TODO: Move this to API SSB (same things needs to be done from AdminGUI when a AKB is updated)
-    private void initPeerConnectionPool(final AuthenticationToken authenticationToken) {
-        // Initiate the outgoing connection pool if an authenticationKeyBinding is available
-        PrivateKey clientPrivateKey = null;
-        X509Certificate clientCertificate = null;
-        List<X509Certificate> trustAnchors = new ArrayList<X509Certificate>();
-        AuthenticationKeyBinding akb = null;
-        final List<InternalKeyBindingInfo> akbs = internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
-        for (final InternalKeyBindingInfo current : akbs) {
-            if (current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
-                try {
-                    akb = (AuthenticationKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, current.getId());
-                    break;
-                } catch (AuthorizationDeniedException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }
-        if (akb!=null) {
-            clientCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(akb.getCertificateId());
-            try {
-                clientPrivateKey = cryptoTokenManagementSession.getCryptoToken(akb.getCryptoTokenId()).getPrivateKey(akb.getKeyPairAlias());
-            } catch (CryptoTokenOfflineException e) {
-                log.error(e.getMessage(), e);
-            }
-            final List<InternalKeyBindingTrustEntry> trustedReferences = akb.getTrustedCertificateReferences();
-            for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
-                try {
-                    final CAInfo caInfo = caSession.getCAInfo(authenticationToken, trustedReference.getCaId());
-                    if (trustedReference.getCertificateSerialNumberDecimal()==null) {
-                        // The CA's certificate is the trust anchor
-                        trustAnchors.add((X509Certificate) caInfo.getCertificateChain().iterator().next());
-                    } else {
-                        // The leaf certificate is the trust anchor
-                        trustAnchors.add((X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(caInfo.getSubjectDN(), trustedReference.fetchCertificateSerialNumber()));
-                    }
-                } catch (CADoesntExistsException e) {
-                    log.error(e.getMessage(), e);
-                } catch (AuthorizationDeniedException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }
-        // TODO: Make these configurable properties of the AuthenticationKeyBinding
-        final String[] supportedProtocols = {"TLSv1", "TLSv1.1", "TLSv1.2"};
-        final String[] supportedCipherTextSuites = {
-                "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-                "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-                "TLS_RSA_WITH_AES_128_CBC_SHA",
-                "TLS_RSA_WITH_AES_256_CBC_SHA"
-        };
-        // should always be called from StartServiceServlet.init()
-        PeerConnectorPool.INSTANCE.updateStagedClientSslSettings(clientCertificate, clientPrivateKey, trustAnchors, supportedProtocols, supportedCipherTextSuites);
-    }
-    
     /** Method that checks if we have an integrity protected security audit device configured, and in that case logs the configuration startup 
      * 
      * @param admin an authentication token used to log the configuration management startup (logged as a change as audit is configured during startup from properties file) 
