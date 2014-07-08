@@ -361,6 +361,7 @@ public class StartServicesServlet extends HttpServlet {
         */
     }
 
+    // TODO: Move this to API SSB (same things needs to be done from AdminGUI when a AKB is updated)
     private void initPeerConnectionPool(final AuthenticationToken authenticationToken) {
         // Initiate the outgoing connection pool if an authenticationKeyBinding is available
         PrivateKey clientPrivateKey = null;
