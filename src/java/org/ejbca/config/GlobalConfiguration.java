@@ -507,6 +507,19 @@ public class GlobalConfiguration extends Configuration implements Serializable {
         setCTLogs(logs);
     }
 
+    public boolean isPeerConnectorIncomingEnabled() { return getBoolean(PEERCONNECTORIN, false); }
+    public void setPeerConnectorIncomingEnabled(final boolean enabledIncoming) { putBoolean(PEERCONNECTORIN, enabledIncoming); }
+    public boolean isPeerConnectorOutgoingEnabled() { return getBoolean(PEERCONNECTOROUT, true); }
+    public void setPeerConnectorOutgoingEnabled(boolean enabledOutgoing) { putBoolean(PEERCONNECTOROUT, enabledOutgoing); }
+    
+    private boolean getBoolean(final String key, final boolean defaultValue) {
+        final Boolean ret = (Boolean) data.get(key);
+        return (ret==null ? defaultValue : ret);
+    }
+    private void putBoolean(final String key, final boolean value) {
+        data.put(key, Boolean.valueOf(value));
+    }
+
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
@@ -590,6 +603,8 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
     
     private static final   String CTLOGS              = "ctlogs";
+    private static final   String PEERCONNECTORIN     = "peerconnectorin";
+    private static final   String PEERCONNECTOROUT    = "peerconnectorout";
 
     private static final   String LANGUAGEFILENAME      =  "languagefilename";
     private static final   String MAINFILENAME          =  "mainfilename";

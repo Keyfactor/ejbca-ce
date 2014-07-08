@@ -332,7 +332,7 @@ public class StartServicesServlet extends HttpServlet {
         org.ejbca.peerconnector.PeerConnectorResource peerConnectorResource = org.ejbca.peerconnector.PeerConnectorLookup.INSTANCE.getResource();
         log.info("TMPDEBUG: (looked-up) subSystemProxyResource="+peerConnectorResource);
         if (peerConnectorResource!=null) {
-            org.ejbca.peerconnector.PeerOutgoingInformation peer = new org.ejbca.peerconnector.PeerOutgoingInformation("http://127.0.0.1:8080/ejbca/peerconnector/v1");
+            org.ejbca.peerconnector.PeerOutgoingInformation peer = new org.ejbca.peerconnector.PeerOutgoingInformation(1, "TestOut", true, java.util.Arrays.asList("TEST"), java.util.Arrays.asList("TEST"), "http://127.0.0.1:8080/ejbca/peerconnector/v1");
             org.ejbca.peerconnector.PeerMessage ret = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
             org.ejbca.peerconnector.PeerMessage ret2 = peerConnectorResource.send(peer, new org.ejbca.peerconnector.PeerMessage("TEST", null));
             // We expect a default "UnknownMessageTypeResponse" here
