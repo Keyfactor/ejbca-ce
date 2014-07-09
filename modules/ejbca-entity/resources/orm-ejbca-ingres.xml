@@ -399,9 +399,9 @@
         <attributes>
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="state"><column name="state" column-definition="INT4" nullable="false"/></basic>
-            <basic fetch="EAGER" name="direction"><column name="direction" column-definition="INT4" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="LONG VARCHAR" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="connectorstate"><column name="connectorstate" column-definition="INT4" nullable="false"/></basic>
+     	    <basic fetch="EAGER" name="url"><column name="url" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="LONG VARCHAR" /><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
