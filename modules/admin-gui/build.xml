@@ -31,6 +31,7 @@
                 <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.peerconnector-rar.lib}"/>
 		<path location="${mod.peerconnector-common.lib}"/>
+		<path location="${mod.peerconnector-interface.lib}"/>
 	</path>
 	
     <path id="jasper.classpath">

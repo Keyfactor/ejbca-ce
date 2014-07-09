@@ -491,7 +491,9 @@
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	    <include name="ct.jar" />
                 <include name="peerconnector-common.jar" />
-                <include name="peerconnector-publ.jar" />
+                <include name="peerconnector-publ.jar" />               
+                <include name="peerconnector-interface.jar" />
+        		<include name="peerconnector-entity.jar" />
         	</zipfileset>
         	<!-- Include HttpClient for the use from the peerconnector.rar -->
         	<zipfileset prefix="lib" dir="${lib}/ext" includes="commons-httpclient-*.jar"/>

@@ -395,9 +395,9 @@
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="state"><column name="state" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="direction"><column name="direction" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="connectorstate"><column name="connectorstate" column-definition="NUMBER(10)" nullable="false"/></basic>
+     	    <basic fetch="EAGER" name="url"><column name="url" column-definition="VARCHAR(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
