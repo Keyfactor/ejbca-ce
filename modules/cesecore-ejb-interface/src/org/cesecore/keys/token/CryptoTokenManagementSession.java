@@ -145,11 +145,22 @@ public interface CryptoTokenManagementSession {
     void createKeyPairWithSameKeySpec(final AuthenticationToken authenticationToken, final int cryptoTokenId, String currentSignKeyAlias, String nextSignKeyAlias)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 
+    /**
+     * Generates a new key pair and deletes the placeholder.
+     * 
+     * @see #createKeyPair(AuthenticationToken, int, String, String)
+     */
+    void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
+
     /** @throws InvalidKeyException if the CryptoToken is available, but the key test failed */
     void testKeyPair(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException;
 
     /** @throws InvalidKeyException if the CryptoToken was active, but the key pair removal failed. */
     void removeKeyPair(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException;
+
+    /** @throws InvalidKeyException if the key alias placeholder didn't exist. */
+    void removeKeyPairPlaceholder(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, InvalidKeyException;
 
     /** @return list of information about all key pairs in the specified CryptoToken, but no references to the actual keys. */
     List<KeyPairInfo> getKeyPairInfos(AuthenticationToken admin, int cryptoTokenId) throws CryptoTokenOfflineException, AuthorizationDeniedException;

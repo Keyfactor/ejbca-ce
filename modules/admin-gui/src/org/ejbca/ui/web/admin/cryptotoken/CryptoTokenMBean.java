@@ -134,6 +134,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String p11AttributeFile = "default";
         private boolean active = false;
         private boolean referenced = false;
+        private String keyPlaceholders;
         
         private CurrentCryptoTokenGuiInfo() {}
         
@@ -166,6 +167,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setActive(boolean active) { this.active = active; }
         public boolean isReferenced() { return referenced; }
         public void setReferenced(boolean referenced) { this.referenced = referenced; }
+        public String getKeyPlaceholders() { return keyPlaceholders; }
+        public void setKeyPlaceholders(String keyTemplates) { this.keyPlaceholders = keyTemplates; }
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
         public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }
@@ -184,23 +187,52 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     /** Selectable key pair GUI representation */
     public class KeyPairGuiInfo {
-        private final KeyPairInfo keyPairInfo;
+        private final String alias;
+        private final String keyAlgorithm;
+        private final String keySpecification; // to be displayed in GUI
+        private final String rawKeySpec; // to be used for key generation
+        private final String subjectKeyID;
+        private final boolean placeholder;
         private boolean selected = false;
         
         private KeyPairGuiInfo(KeyPairInfo keyPairInfo) {
-            this.keyPairInfo = keyPairInfo;
+            alias = keyPairInfo.getAlias();
+            keyAlgorithm = keyPairInfo.getKeyAlgorithm();
+            rawKeySpec = keyPairInfo.getKeySpecification();
+            if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyPairInfo.getKeyAlgorithm())) {
+                keySpecification = getEcKeySpecAliases(rawKeySpec);
+            } else {
+                keySpecification = rawKeySpec;
+            }
+            subjectKeyID = keyPairInfo.getSubjectKeyID();
+            placeholder = false;
         }
         
-        public String getAlias() { return keyPairInfo.getAlias(); }
-        public String getKeyAlgorithm() { return keyPairInfo.getKeyAlgorithm(); }
-        public String getKeySpecification() {
-            if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyPairInfo.getKeyAlgorithm())) {
-                return getEcKeySpecAliases(keyPairInfo.getKeySpecification());
+        /**
+         * Creates a placeholder with a template string, in the form of "alias;keyspec".
+         * Placeholders are created in CryptoTokens that are imported from Statedump. 
+         */
+        private KeyPairGuiInfo(String templateString) {
+            String[] pieces = templateString.split("["+CryptoToken.KEYPLACEHOLDERS_INNER_SEPARATOR+"]");
+            alias = pieces[0];
+            keyAlgorithm = KeyTools.keyspecToKeyalg(pieces[1]);
+            rawKeySpec = KeyTools.shortenKeySpec(pieces[1]);
+            if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlgorithm)) {
+                keySpecification = getEcKeySpecAliases(rawKeySpec);
             } else {
-                return keyPairInfo.getKeySpecification();
+                keySpecification = rawKeySpec;
             }
+            subjectKeyID = "";
+            placeholder = true;
         }
-        public String getSubjectKeyID() { return keyPairInfo.getSubjectKeyID(); }
+        
+        public String getAlias() { return alias; }
+        public String getKeyAlgorithm() { return keyAlgorithm; }
+        public String getKeySpecification() { return keySpecification; }
+        public String getRawKeySpec() { return rawKeySpec; }
+        public String getSubjectKeyID() { return subjectKeyID; }
+        public boolean isPlaceholder() { return placeholder; }
+        
         public boolean isSelected() { return selected; }
         public void setSelected(boolean selected) { this.selected = selected; }
     }
@@ -377,6 +409,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                     properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
                 }
+                properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, getCurrentCryptoToken().getKeyPlaceholders());
+                
                 final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
                 final String name = getCurrentCryptoToken().getName();
                 if (getCurrentCryptoTokenId() == 0) {
@@ -605,6 +639,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setSecret2("");
                     currentCryptoToken.setName(cryptoTokenInfo.getName());
                     currentCryptoToken.setType(cryptoTokenInfo.getType());
+                    currentCryptoToken.setKeyPlaceholders(cryptoTokenInfo.getCryptoTokenProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY));
                     if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
                         currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
                         currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
@@ -760,12 +795,22 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (keyPairGuiList==null) {
             final List<KeyPairGuiInfo> ret = new ArrayList<KeyPairGuiInfo>();
             if (getCurrentCryptoToken().isActive()) {
+                // Add existing key pairs
                 try {
                     for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())) {
                         ret.add(new KeyPairGuiInfo(keyPairInfo));
                     }
                 } catch (CryptoTokenOfflineException ctoe) {
                     keyPairGuiListError = "Failed to load key pairs from CryptoToken: "+ctoe.getMessage();
+                }
+                // Add placeholders for key pairs
+                String keyTemplates = getCurrentCryptoToken().getKeyPlaceholders();
+                if (keyTemplates != null) {
+                    for (String template : keyTemplates.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")) {
+                        if (!template.trim().isEmpty()) {
+                            ret.add(new KeyPairGuiInfo(template));
+                        }
+                    }
                 }
             }
             Collections.sort(ret, new Comparator<KeyPairGuiInfo>() {
@@ -806,6 +851,29 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         log.info("<generateNewKeyPair");
     }
     
+    /** Invoked when admin requests key pair generation from a template placeholder */
+    public void generateFromTemplate() {
+        log.info(">generateFromTemplate");
+        final KeyPairGuiInfo keyPairGuiInfo = (KeyPairGuiInfo) keyPairGuiList.getRowData();
+        final String alias = keyPairGuiInfo.getAlias();
+        final String keyspec = KeyTools.keyalgspecToKeyspec(keyPairGuiInfo.getKeyAlgorithm(), keyPairGuiInfo.getRawKeySpec());
+        try {
+            cryptoTokenManagementSession.createKeyPairFromTemplate(getAdmin(), getCurrentCryptoTokenId(), alias, keyspec);
+        } catch (CryptoTokenOfflineException e) {
+            super.addNonTranslatedErrorMessage("Token is off-line. KeyPair cannot be generated.");
+        } catch (Exception e) {
+            super.addNonTranslatedErrorMessage(e.getMessage());
+            final String logMsg = getAdmin().toString() + " failed to generate a keypair:";
+            if (log.isDebugEnabled()) {
+                log.debug(logMsg, e);
+            } else {
+                log.info(logMsg + e.getMessage());
+            }
+        }
+        flushCaches();
+        log.info("<generateFromTemplate");
+    }
+    
     /** Invoked when admin requests a test of a key pair. */
     public void testKeyPair() {
         final KeyPairGuiInfo keyPairGuiInfo = (KeyPairGuiInfo) keyPairGuiList.getRowData();
@@ -823,7 +891,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final KeyPairGuiInfo keyPairGuiInfo = (KeyPairGuiInfo) keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
         try {
-            cryptoTokenManagementSession.removeKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
+            if (!keyPairGuiInfo.isPlaceholder()) {
+                cryptoTokenManagementSession.removeKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
+            } else {
+                cryptoTokenManagementSession.removeKeyPairPlaceholder(getAdmin(), getCurrentCryptoTokenId(), alias);
+            }
             flushCaches();
         } catch (Exception e) {
             super.addNonTranslatedErrorMessage(e.getMessage());

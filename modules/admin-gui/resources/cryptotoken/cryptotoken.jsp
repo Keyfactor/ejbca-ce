@@ -161,14 +161,16 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_KPM_SKID}"/></f:facet>
-			<h:outputText style="font-family: monospace;" value="#{keyPairGuiInfo.subjectKeyID}"/>
+			<h:outputText style="font-family: monospace;" value="#{keyPairGuiInfo.subjectKeyID}" rendered="#{!keyPairGuiInfo.placeholder}"/>
+			<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}" rendered="#{keyPairGuiInfo.placeholder}"/>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ACTION}"/></f:facet>
-			<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}" action="#{cryptoTokenMBean.testKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyTest}"/>
+			<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}" action="#{cryptoTokenMBean.testKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyTest}" disabled="#{keyPairGuiInfo.placeholder}"/>
 			<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}" action="#{cryptoTokenMBean.removeKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyRemoval}"
 				onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REM}')"/>
-			<h:outputLink value="adminweb/cryptoTokenDownloads?cryptoTokenId=#{cryptoTokenMBean.currentCryptoTokenId}&alias=#{keyPairGuiInfo.alias}">
+            <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_GENFROMTEMPLATE}" action="#{cryptoTokenMBean.generateFromTemplate}" rendered="#{keyPairGuiInfo.placeholder && cryptoTokenMBean.allowedToKeyGeneration}"/>
+			<h:outputLink value="adminweb/cryptoTokenDownloads?cryptoTokenId=#{cryptoTokenMBean.currentCryptoTokenId}&alias=#{keyPairGuiInfo.alias}" rendered="#{!keyPairGuiInfo.placeholder}">
 				<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}"/>
 			</h:outputLink>
 		</h:column>
