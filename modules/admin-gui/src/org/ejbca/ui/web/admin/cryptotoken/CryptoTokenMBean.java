@@ -409,7 +409,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                     properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
                 }
-                properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, getCurrentCryptoToken().getKeyPlaceholders());
+                if (getCurrentCryptoToken().getKeyPlaceholders() != null) {
+                    properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, getCurrentCryptoToken().getKeyPlaceholders());
+                }
                 
                 final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
                 final String name = getCurrentCryptoToken().getName();
