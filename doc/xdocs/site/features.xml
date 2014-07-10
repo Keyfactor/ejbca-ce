@@ -116,10 +116,10 @@
 <li>Full database integrity protection of all tables, to detect database manipulation.</li>
 <li>Command line tool for verification of audit and database integrity protection.</li>
 <li>Validation tool for conformance checking of certificates and OCSP responders.</li>
-<li>EAC PKI for ePassports and eIDs, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
+<li>EAC PKI (EAC 1.11 and 2.10) for ePassports and eIDs, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
 <li>Penetration tested with improved security.</li>
-<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a> with multiple Vendor CAs.</li>
+<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
 <li>Certificate Transparency, RFC6962.</li>
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 </ul>
