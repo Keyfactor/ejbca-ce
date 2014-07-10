@@ -838,6 +838,13 @@ By default the subject DN from the certTemplate in the request is used to look u
 You can also configure EJBCA to use the CN or the UID from the subject DN as the username in EJBCA.
 </p>
 </subsubsection>
+<subsubsection name="Vendor CA authentication (EJBCA Enterprise only)">
+<p>
+If the end entity has a Vendor certificate with which it should identify itself for initial enrollment, as specified in 3GPP for example, it can also do that. 
+In this case the CA issuing the end entity certificate is not the same as the Vendor CA. The vendor CA must be imported in EJBCA as an External CA ('Import CA certificate' in the admin GUI).
+This is described in detail in the integration guide for 3GPP available with EJBCA Enterprise.
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="RA mode for CMP">
