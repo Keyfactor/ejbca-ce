@@ -1147,6 +1147,29 @@ public final class KeyTools {
             return AlgorithmConstants.KEYALGORITHM_ECDSA;
         }
     }
+    
+    /**
+     * Converts a standalone specspec that starts with the keyalg to a short keyspec which
+     * is to be used together with a separate "keyalg" value.
+     */
+    public static String shortenKeySpec(String keyspec) {
+        if (keyspec.startsWith("DSA")) {
+            return keyspec.substring(3);
+        } else {
+            return keyspec;
+        }
+    }
+    
+    /**
+     * Converts a keyalg/keyspec pair into a standalone specspec.
+     */
+    public static String keyalgspecToKeyspec(String keyalg, String keyspec) {
+        if ("DSA".equals(keyalg)) {
+            return "DSA" + keyspec;
+        } else {
+            return keyspec;
+        }
+    }
 
     /** 
      * Get the ASN.1 encoded PublicKey as a Java PublicKey Object.
