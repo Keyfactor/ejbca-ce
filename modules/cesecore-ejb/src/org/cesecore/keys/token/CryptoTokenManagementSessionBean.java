@@ -618,24 +618,23 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         
         boolean removed = false;
         final Properties props = new Properties(cryptoToken.getProperties());
-        final String placeholdersString = props.getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY);
-        if (placeholdersString != null) {
-            final List<String> entries = new ArrayList<String>(Arrays.asList(placeholdersString.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")));
-            final Iterator<String> iter = entries.iterator();
-            while (iter.hasNext()) {
-                final String entry = iter.next();
-                if (entry.startsWith(alias + CryptoToken.KEYPLACEHOLDERS_INNER_SEPARATOR)) {
-                    iter.remove();
-                    removed = true;
-                }
-            }
-            
-            if (removed) {
-                final String newValue = StringUtils.join(entries, CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR);
-                props.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newValue);
-                cryptoToken.setProperties(props);
+        final String placeholdersString = props.getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, "");
+        final List<String> entries = new ArrayList<String>(Arrays.asList(placeholdersString.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")));
+        final Iterator<String> iter = entries.iterator();
+        while (iter.hasNext()) {
+            final String entry = iter.next();
+            if (entry.startsWith(alias + CryptoToken.KEYPLACEHOLDERS_INNER_SEPARATOR)) {
+                iter.remove();
+                removed = true;
             }
         }
+        
+        if (removed) {
+            final String newValue = StringUtils.join(entries, CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR);
+            props.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newValue);
+            cryptoToken.setProperties(props);
+        }
+        
         // Check if alias is in use
         if (!removed) {
             throw new InvalidKeyException("Alias " + alias + " is not in use");

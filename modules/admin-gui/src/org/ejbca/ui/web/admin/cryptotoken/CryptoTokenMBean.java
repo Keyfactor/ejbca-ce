@@ -641,7 +641,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setSecret2("");
                     currentCryptoToken.setName(cryptoTokenInfo.getName());
                     currentCryptoToken.setType(cryptoTokenInfo.getType());
-                    currentCryptoToken.setKeyPlaceholders(cryptoTokenInfo.getCryptoTokenProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY));
+                    currentCryptoToken.setKeyPlaceholders(cryptoTokenInfo.getCryptoTokenProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, ""));
                     if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
                         currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
                         currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
@@ -806,12 +806,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     keyPairGuiListError = "Failed to load key pairs from CryptoToken: "+ctoe.getMessage();
                 }
                 // Add placeholders for key pairs
-                String keyTemplates = getCurrentCryptoToken().getKeyPlaceholders();
-                if (keyTemplates != null) {
-                    for (String template : keyTemplates.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")) {
-                        if (!template.trim().isEmpty()) {
-                            ret.add(new KeyPairGuiInfo(template));
-                        }
+                String keyPlaceholders = getCurrentCryptoToken().getKeyPlaceholders();
+                for (String template : keyPlaceholders.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")) {
+                    if (!template.trim().isEmpty()) {
+                        ret.add(new KeyPairGuiInfo(template));
                     }
                 }
             }
