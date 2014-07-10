@@ -25,6 +25,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
@@ -484,6 +486,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
             final String keySpecificationParam) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
@@ -519,6 +522,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createKeyPairWithSameKeySpec(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String currentAlias,
             final String newAlias) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
@@ -548,6 +552,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
+        createKeyPair(authenticationToken, cryptoTokenId, alias, keySpecification);
+        removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
 
     @Override
@@ -591,8 +603,53 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         try {
             cryptoTokenSession.mergeCryptoToken(cryptoToken);
         } catch (CryptoTokenNameInUseException e) {
-            throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
+            throw new IllegalStateException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void removeKeyPairPlaceholder(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
+            throws AuthorizationDeniedException, InvalidKeyException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.REMOVE_KEYS.resource() + "/" + cryptoTokenId);
+        final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+        
+        boolean removed = false;
+        final Properties props = new Properties(cryptoToken.getProperties());
+        final String placeholdersString = props.getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY);
+        if (placeholdersString != null) {
+            final List<String> entries = new ArrayList<String>(Arrays.asList(placeholdersString.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")));
+            final Iterator<String> iter = entries.iterator();
+            while (iter.hasNext()) {
+                final String entry = iter.next();
+                if (entry.startsWith(alias + CryptoToken.KEYPLACEHOLDERS_INNER_SEPARATOR)) {
+                    iter.remove();
+                    removed = true;
+                }
+            }
+            
+            if (removed) {
+                final String newValue = StringUtils.join(entries, CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR);
+                props.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newValue);
+                cryptoToken.setProperties(props);
+            }
+        }
+        // Check if alias is in use
+        if (!removed) {
+            throw new InvalidKeyException("Alias " + alias + " is not in use");
+        }
+        
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            throw new IllegalStateException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
+        }
+        
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Deleted key pair placeholder from CryptoToken " + cryptoTokenId);
+        details.put("keyAlias", alias);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
