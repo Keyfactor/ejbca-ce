@@ -475,6 +475,7 @@
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
                 <include name="peerconnector.rar" />
                 <include name="peerconnector.war" />
+                <include name="peerconnector-common.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
