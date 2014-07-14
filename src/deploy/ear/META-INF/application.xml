@@ -16,6 +16,9 @@
         <ejb>ejbca-ejb.jar</ejb>
     </module>
     <module>
+        <ejb>peerconnector-common.jar</ejb>
+    </module>
+    <module>
         <web>
             <web-uri>publicweb.war</web-uri>
             <context-root>/ejbca</context-root>
