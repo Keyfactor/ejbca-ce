@@ -355,7 +355,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Check name constraints
-        if (caInfo instanceof X509CAInfo) {
+        if (caInfo instanceof X509CAInfo && !caInfo.getCertificateChain().isEmpty()) {
             final X509CAInfo x509cainfo = (X509CAInfo) caInfo;
             final X509Certificate cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
@@ -627,7 +627,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final boolean nameChanged = // only check when name is changed so existing end-entities can be changed even if they violate NCs
             !userData.getSubjectDN().equals(CertTools.stringToBCDNString(dn)) ||
             (userData.getSubjectAltName() != null && !userData.getSubjectAltName().equals(altName));
-        if (nameChanged && cainfo instanceof X509CAInfo) {
+        if (nameChanged && cainfo instanceof X509CAInfo && !cainfo.getCertificateChain().isEmpty()) {
             final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
             final X509Certificate cacert = (X509Certificate)cainfo.getCertificateChain().iterator().next();
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
