@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import org.apache.commons.configuration.SystemConfiguration;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.SystemTestsConfiguration;

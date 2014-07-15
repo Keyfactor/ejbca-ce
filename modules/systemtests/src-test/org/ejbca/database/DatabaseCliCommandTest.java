@@ -30,7 +30,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -69,7 +68,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.easymock.EasyMock;
 import org.ejbca.core.ejb.approval.ApprovalData;
