@@ -49,7 +49,6 @@
 	<classpathentry kind="src" path="modules/ct/src"/>
 	<classpathentry kind="src" path="modules/ct/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
-	<classpathentry kind="src" path="modules/peerconnector/src-entity"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-interface"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-publ"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-rar"/>
