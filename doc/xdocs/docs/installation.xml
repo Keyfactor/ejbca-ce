@@ -744,6 +744,8 @@ If you run services very often this can under some circumstances fill up the mem
 </li>
 </ul>
 </p>
+<p>Note that this only seems to work with JBoss EAP 5. Using JBoss 5.1.0.GA memory will continue to be consumed and you will have to implement some workaround (like restarting the appserver deleting the hypersonic database every few days).
+</p>
 <p>
 <u>JBoss 7/EAP6 configuration</u>:
 </p><p>
