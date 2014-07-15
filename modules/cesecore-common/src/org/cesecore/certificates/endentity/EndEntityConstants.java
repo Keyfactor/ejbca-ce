@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.endentity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /** Constants for End Entity types 
  * 
@@ -91,6 +95,12 @@ public final class EndEntityConstants {
             ret = (String)o;
         }
         return ret;
+    }
+    
+    public static Collection<Integer> getAllStatusCodes() {
+        List<Integer> statuses = new ArrayList<Integer>(STATUS_TEXT.keySet());
+        Collections.sort(statuses);
+        return statuses;
     }
 
 }
