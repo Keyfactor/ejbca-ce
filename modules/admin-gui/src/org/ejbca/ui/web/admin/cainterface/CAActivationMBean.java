@@ -43,7 +43,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 /**
  * JSF Managed Bean or the CA Activation page of the Admin GUI.
  *
- * @author Tham Wickenberg
  * @version $Id$
  */
 public class CAActivationMBean extends BaseManagedBean implements Serializable {

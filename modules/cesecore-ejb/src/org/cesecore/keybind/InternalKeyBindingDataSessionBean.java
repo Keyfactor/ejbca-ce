@@ -224,6 +224,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     public boolean isNameUsedByIdOnly(final String name, final int id) {
         final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE a.name=:name");
         query.setParameter("name", name);
+        @SuppressWarnings("unchecked")
         final List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
         for (final InternalKeyBindingData internalKeyBindingData: internalKeyBindingDatas) {
             if (internalKeyBindingData.getId() != id) {
