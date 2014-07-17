@@ -105,13 +105,14 @@ See <a href="https://docs.jboss.org/author/display/AS7/Securing+the+Management+I
 <subsubsection name="Content Security Policy">
 <p>CSP is something implemented in browsers to mitigate cross site scripting attacks. See the description over at <a href="https://developer.mozilla.org/en-US/docs/Security/CSP/Introducing_Content_Security_Policy">Mozilla Developer Network</a>, 
 or <a href="http://content-security-policy.com/">Content Security Policy Reference</a>.</p>
-<p>You can implement if globally if you use an Apache front end with mod_headers:</p>
+<p>CSP has been added to EJBCA web interfaces as of <a href="https://jira.primekey.se/browse/ECA-3519">ECA-3519</a>.</p>
+<p>You can also implement if globally if you use an Apache front end with mod_headers):</p>
 <source>
 &lt;IfModule mod_headers.c&gt;
 Header set Content-Security-Policy "default-src 'self'"
 &lt;/IfModule&gt;
 </source>
-<p>This is not thoroughly tested, so if something does not work you may have to alter the above statement.</p>
+<p>The above apache configuration is just an example and will probably not work well. See the headers returned by EJBCA for a working config.</p>
 </subsubsection>
 <subsubsection name="Write protect deploy">
 <p>After deploying EJBCA you can write protect the standalone/deployments directory. In runtime files are only read from this directory, and write protecting it (owned by root, JBoss runs as jboss user) can prevent malicious code to be deployed.</p>
