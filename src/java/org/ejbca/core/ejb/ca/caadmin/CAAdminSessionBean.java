@@ -288,6 +288,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caSession.removeCA(authenticationToken, currentCAId);
             caInfo.setCAId(calculatedCAId);
             updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
+            rebuildExtendedServices(authenticationToken, caInfo);
             try {
                 createCA(authenticationToken, caInfo);
             } catch (CAExistsException e) {
@@ -326,7 +327,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         
         if (caInfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA) {
             try {
-                // FIXME this doesn't take subject DN changes into account!
                 renewAndRevokeXKMSCertificate(authenticationToken, caInfo.getCAId());
                 renewAndRevokeCmsCertificate(authenticationToken, caInfo.getCAId());
             } catch (CADoesntExistsException e) {
@@ -578,6 +578,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String detailsMsg = intres.getLocalizedMessage("caadmin.updatedcaid", fromId, toId, toDN);
         auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(toId),
                     null, null, detailsMsg);
+    }
+    
+    /**
+     * Rebuilds extended services so the Subject DN gets updated.
+     */
+    private void rebuildExtendedServices(final AuthenticationToken admin, CAInfo cainfo) {
+        final List<ExtendedCAServiceInfo> extsvcs = new ArrayList<ExtendedCAServiceInfo>();
+        final String casubjdn = cainfo.getSubjectDN();
+        for (ExtendedCAServiceInfo extsvc : cainfo.getExtendedCAServiceInfos()) {
+            if (extsvc instanceof XKMSCAServiceInfo) {
+                final XKMSCAServiceInfo xkmssvc = (XKMSCAServiceInfo) extsvc;
+                extsvc = new XKMSCAServiceInfo(extsvc.getStatus(), "CN=XKMSCertificate, " + casubjdn, xkmssvc.getSubjectAltName(), xkmssvc.getKeySpec(), xkmssvc.getKeyAlgorithm());
+            } else if (extsvc instanceof CmsCAServiceInfo) {
+                final CmsCAServiceInfo cmssvc = (CmsCAServiceInfo) extsvc;
+                extsvc = new CmsCAServiceInfo(extsvc.getStatus(), "CN=CMSCertificate, " + casubjdn, cmssvc.getSubjectAltName(), cmssvc.getKeySpec(), cmssvc.getKeyAlgorithm());
+            }
+            extsvcs.add(extsvc);
+        }
+        cainfo.setExtendedCAServiceInfos(extsvcs);
     }
     
     @Override
@@ -988,6 +1007,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 caSession.removeCA(admin, currentCAId);
                 cainfo.setCAId(calculatedCAId);
                 updateCAIds(admin, currentCAId, calculatedCAId, cainfo.getSubjectDN());
+                rebuildExtendedServices(admin, cainfo);
                 try {
                     createCA(admin, cainfo);
                 } catch (CAExistsException e) {

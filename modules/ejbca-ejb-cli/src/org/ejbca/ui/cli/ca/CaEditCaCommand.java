@@ -20,6 +20,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.FieldEditor;
 import org.ejbca.ui.cli.FieldNotFoundException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -77,8 +78,10 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
             try {
                 if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, cainfo)) {
                     log.info("Storing modified CA info for CA '" + name + "'...");
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).editCA(getAuthenticationToken(), cainfo);
-                    // Verify our new value
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(), cainfo);
+                    // Verify our new value.
+                    // If the CA Subject DN was changed, then the CA Id might have changed at this point,
+                    // so we have to do the lookup by name!
                     log.info("Reading modified value for verification...");
                     final CAInfo cainfomod = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                             name);
