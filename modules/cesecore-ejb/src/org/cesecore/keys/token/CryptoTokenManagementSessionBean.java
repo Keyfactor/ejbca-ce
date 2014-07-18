@@ -150,6 +150,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (authenticationCode != null) {
             cryptoToken.activate(authenticationCode);
         }
+        
+        // This property is used only once during crypto token creation 
+        properties.remove(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY);
+        
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
         details.put("name", cryptoToken.getTokenName());
