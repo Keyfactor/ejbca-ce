@@ -57,6 +57,8 @@ public interface CryptoToken extends Serializable {
     static final String EXPLICIT_ECC_PUBLICKEY_PARAMETERS = "explicit.ecc.publickey.parameters";
     /** */
     static final String TOKENNAME_PROPERTY = "tokenName";
+    /** Whether non-existent slots should be allowed or throw an NoSuchSlotException */
+    static final String ALLOW_NONEXISTING_SLOT_PROPERTY = "allow.nonexisting.slot";
 
     /**
      * Method called after creation of instance. Gives the object it's properties.
