@@ -171,7 +171,9 @@ public class CryptoTokenFactory {
         try {
             token.init(properties, data, id);
         } catch (NoSuchSlotException e) {
-            throw e;
+            if (!Boolean.valueOf(properties.getProperty(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY, "false"))) {
+                throw e;
+            }
         } catch (Exception e) {
             log.error("Error initializing Crypto Token. Classpath=" + classname, e);
         }
