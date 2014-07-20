@@ -36,19 +36,21 @@
   <br />
   <span class="date"> Date: 2014-06-19</span>  
   </p>  
-  <p><strong>EJBCAv6 Demo VM</strong><br />
+  <p><strong>EJBCAv6 Virtual Machine (VM)</strong><br />
   Download a fully installed Virtual Machine image to just run and test.
   <br />Visit the <a href="download.html">download</a> section.
   </p>
   <p><strong>Turn-Key PKI with EJBCA Enterprise</strong><br />
   Deploying EJBCA Enterprise obtained as a full package together with services, you can comfortably sit back and enjoy the safe and quiet ride.
   <br/>
-  EJBCA Enterprise is Common Criteria EAL4+, and CWA/ETSI certified and is available exclusively from <a href="http://www.primekey.se/">PrimeKey</a>.
+  EJBCA Enterprise is Common Criteria EAL4+ certificate, CWA/ETSI compliant and is available exclusively from <a href="http://www.primekey.se/">PrimeKey</a>.
   <br />
   </p>
    <p>
+   <!-- 
   <a href="http://blog.ejbca.org/2013/11/whats-new-in-ejbca-6-part-4-enterprise.html" target="ejbcablog">EJBCA Enterprise and Community, value and difference.</a>
-  <br /><a href="http://blog.ejbca.org" target="ejbcablog">Read more News from the EJBCA Blog.</a>
+  <br />  -->
+  <a href="http://blog.ejbca.org" target="ejbcablog">Read more News from the EJBCA Blog.</a>
   </p>
   <p>
   </p>
@@ -63,12 +65,12 @@
 
 <section name="EJBCA PKI CA">
 <p>
-EJBCA<sup>&#174;</sup> is an enterprise class PKI Certificate Authority software, built using Java (JEE) technology. 
-It is a robust, high performance, platform independent, flexible, and component based CA to be used 
-stand-alone or integrated in other JEE applications.
+EJBCA<sup>&#174;</sup> is a PKI Certificate Authority software, built using Java (JEE) technology. 
+EJBCA is a robust, flexible, high performance, scalable, platform independent, and component based CA to be used 
+stand-alone or integrated with other applications.
 </p>
 <p>
-An enterprise class PKI CA, EJBCA can be used to build a complete PKI infrastructure for your organization.
+Being an extremely scalable and flexible PKI CA, EJBCA is suitable to build a complete PKI infrastructure for large enterprises and organizations.
 If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
 but if you want a serious PKI CA we recommend EJBCA. EJBCA is:
 </p>

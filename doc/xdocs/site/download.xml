@@ -24,12 +24,12 @@
     </note>
   </section>
 
-  <section name="Virtual Machine Demo">
+  <section name="Virtual Machine for Testing">
     <p>
     Get a feeling for, and start testing, EJBCA easily by downloading and running our 
     <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>.
     The VM features a full EJBCA Community v6 install, running on JBoss 7.1.1.GA and Java 7, using a <a href="http://www.mariadb.org/" target="_mariadb">MariaDB</a> database backend. 
-    It also comes with a readme file with instructions and some usage hints. The VM runs on KVM, VirtualBox and VWware<sup>&#174;</sup>. 
+    It comes with a readme file with instructions and some usage hints. The VM runs on KVM, VirtualBox and VWware<sup>&#174;</sup>. The VM should not be used in production as admin keys are pre-generated, i.e. identical on all VMs.
     <br/>Have fun! 
     </p>
   </section>
