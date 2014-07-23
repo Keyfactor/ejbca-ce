@@ -195,7 +195,9 @@ public class InternalResources implements Serializable {
             } else {
                 sb.append(key);
                 for(Object param : params) {
-                    sb.append(", ").append(param.toString());
+                    if (param != null) {
+                        sb.append(", ").append(param.toString());
+                    }
                 }
             }
         }
