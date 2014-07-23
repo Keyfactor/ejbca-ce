@@ -95,9 +95,8 @@ public class CertificateValidity {
         		}
     			if ( startTimeDate != null && startTimeDate.before(now)) {
     			    if ((log.isDebugEnabled())) {
-    			        log.debug("Using custom start time, but it is before current date, ignoring custom date and setting to 'now'");
+    			        log.debug("Using custom start time, but it is before current date, will only be allowed if allowValidityOverride is true.");
     			    }
-                	startTimeDate = now;
     			}
                 if ((log.isDebugEnabled())) {
                     log.debug("Custom notBefore: "+startTimeDate);
