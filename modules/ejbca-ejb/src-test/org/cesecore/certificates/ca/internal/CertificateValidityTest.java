@@ -41,6 +41,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ValidityDate;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -181,7 +182,7 @@ public class CertificateValidityTest {
     	cp.setValidity(encodedValidity);
     	cp.setAllowValidityOverride(false);
     
-    	// First see that when we don't have a specified time requested and validity override is not allowed, the end time shouldbe ruled by the certificate profile.
+    	// First see that when we don't have a specified time requested and validity override is not allowed, the end time should be ruled by the certificate profile.
     	
     	CertificateValidity cv = new CertificateValidity(subject, cp, null, null, cacert, false);
     	Date notBefore = cv.getNotBefore();
@@ -209,7 +210,7 @@ public class CertificateValidityTest {
     	
     	// Add extended information for the user and see that it does not affect it either
     	ExtendedInformation ei = new ExtendedInformation();
-    	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "10:0:0");
+    	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "10:0:0"); // days:hours:minutes
     	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "30:0:0");
     	subject.setExtendedinformation(ei);
         cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false);
@@ -302,7 +303,7 @@ public class CertificateValidityTest {
     	assertTrue(notAfter.after(cal1.getTime()));
     	assertTrue(notAfter.before(cal2.getTime()));
     	
-    	// Check that we can request a validity time before "now"
+    	// Check that we can request a validity time before "now" using requested notBefore (in the CSR)
         requestNotBefore = Calendar.getInstance();
         requestNotBefore.add(Calendar.DAY_OF_MONTH, -10);
         cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false);
@@ -321,7 +322,44 @@ public class CertificateValidityTest {
         cal2.add(Calendar.DAY_OF_MONTH, 101);
     	assertTrue(notAfter.after(cal1.getTime()));
     	assertTrue(notAfter.before(cal2.getTime()));
-    	
+
+        // Check that we can request a validity time before "now" using ExtendedInformation as well (set to 10 days before)
+        ei = new ExtendedInformation();
+        cal1 = Calendar.getInstance();
+        cal1.add(Calendar.DAY_OF_MONTH, -10);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(cal1.getTime()));
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "200:0:0");
+        subject.setExtendedinformation(ei);
+        cv = new CertificateValidity(subject, cp, null, null, cacert, false);
+        notBefore = cv.getNotBefore();
+        notAfter = cv.getNotAfter();
+        cal1 = Calendar.getInstance();
+        cal1.add(Calendar.DAY_OF_MONTH, -9);
+        cal2 = Calendar.getInstance();
+        cal2.add(Calendar.DAY_OF_MONTH, -11);
+        assertTrue(notBefore.before(cal1.getTime()));
+        assertTrue(notBefore.after(cal2.getTime()));
+        // This will be the CA certificate's notAfter
+        cal1 = Calendar.getInstance();
+        cal1.add(Calendar.DAY_OF_MONTH, 99);
+        cal2 = Calendar.getInstance();
+        cal2.add(Calendar.DAY_OF_MONTH, 101);
+        assertTrue(notAfter.after(cal1.getTime()));
+        assertTrue(notAfter.before(cal2.getTime()));
+        // See that it is not allowed when allowValidityOverride is set to false
+        cp.setAllowValidityOverride(false);
+        cv = new CertificateValidity(subject, cp, null, null, cacert, false);
+        notBefore = cv.getNotBefore();
+        notAfter = cv.getNotAfter();
+        cal1 = Calendar.getInstance();
+        cal1.add(Calendar.DAY_OF_MONTH, 1);
+        cal2 = Calendar.getInstance();
+        cal2.add(Calendar.DAY_OF_MONTH, -1);
+        assertTrue(notBefore.before(cal1.getTime()));
+        assertTrue(notBefore.after(cal2.getTime()));
+        subject.setExtendedinformation(null); // Reset after test
+        cp.setAllowValidityOverride(true);
+        
     	// Check that ca.toolateexpiredate setting in ejbca.properties is in effect
     	Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 5);
