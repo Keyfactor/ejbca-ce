@@ -144,46 +144,21 @@ can be used together with PKI to even further improve your PKI experience.
 
 </section>
 
-<section name="Proprietary software">
+<section name="Token Management">
     <p>
-    EJBCA can also be used with numerous products from the non-free world. To be listed here, the software
-    should work flawlessly with EJBCA and the vendor should:
+    EJBCA can also be used with numerous products (free or non-free) for token management. Some software supported by the respective vendors, and used in production with EJBCA, are listed below.
     </p>
-    <ul>
-    <li>provide free and open documentation on how to use the product with EJBCA</li>
-    <li>continuously update the documentation</li>
-    <li>promote EJBCA</li>
-    </ul>
-    <p>
-    </p>
-    
-<subsection name="GemSAFE Toolbox">
-    <p>
-    GemSAFE toolbox and tokens are developed by Gemalto. Using this product an
-    organization can setup a secure platform for online banking, transaction,
-    identity verification and data exchange. It has been adapted by lots of
-    well known companies and organizations for instant, Cisco, Airbus, BMW,
-    China Construction Bank, Industrial Commercial bank of China (ICBC) and etc.
-    </p>
-    <p>
-    Some of the GemSAFE features:
-    <ul>
-    <li>Email signature and encryption</li>
-    <li>Smartcard logon</li>
-    <li>Strong authentication with SSL</li>
-    <li>Document signature and encryption</li>
-    <li>VB macro signature</li>
-    <li>Support 16 languages</li>
-    <li>Works with MS Outlook, Thunderbird, Lotus Notes, IE, Netscape, FireFox and more</li>
-    </ul>
-    </p>
-    <p>
-	GemSAFE was successfully used together with EJBCA for the ZhuHai Local
-	Taxation Bureau project, listed in the <a href="installations.html">reference installations</a> section.
-    </p>
-    <p>
-    There is a howto for using GemSAFE with EJBCA in the <a href="howto.html">Howto</a> section.
-    </p>
+
+<subsection name="SecureMetric">
+	<p>
+	<a href="http://www.securemetric.com">SecureMetric</a> has over 13 years experience in serving clients across the world and the market leader in the Smart Card and Cryptographic Token industry for the Southeast Asian region. Our flagship SecureToken ST3 is a lightweight PKI token that is cost effective and has been proven to work better than other well known international brands.
+	</p>
+	<p>
+	When deployed together with our Token Management and Registration Authority (TMS-RA) system, we are able to unify the separated Certificate and Token life cycles into a single management system which allows operators to better manage their clients and reduce support complexity. Besides that, our TMS-RA readily fits into most CA's business models. This feature empowers our partners and customers. The business model and branding strategy technically streamlines a value-adding, outstanding solution provider.
+	</p>
+	<p>
+	Visit <a href="http://www.securemetric.com">www.securemetric.com</a> for more information.
+	</p>
 </subsection>
 
 <subsection name="AET SafeSign IC bundle">
@@ -218,6 +193,35 @@ Aventra Ltd is a company specialized in plastic cards, smart cards, and data sec
 <br/>
 Contact <a href="http://aventra.fi/English/index_E.php">Aventra</a> for more information.
 </p>
+</subsection>
+
+<subsection name="GemSAFE Toolbox">
+    <p>
+    GemSAFE toolbox and tokens are developed by Gemalto. Using this product an
+    organization can setup a secure platform for online banking, transaction,
+    identity verification and data exchange. It has been adapted by lots of
+    well known companies and organizations for instant, Cisco, Airbus, BMW,
+    China Construction Bank, Industrial Commercial bank of China (ICBC) and etc.
+    </p>
+    <p>
+    Some of the GemSAFE features:
+    <ul>
+    <li>Email signature and encryption</li>
+    <li>Smartcard logon</li>
+    <li>Strong authentication with SSL</li>
+    <li>Document signature and encryption</li>
+    <li>VB macro signature</li>
+    <li>Support 16 languages</li>
+    <li>Works with MS Outlook, Thunderbird, Lotus Notes, IE, Netscape, FireFox and more</li>
+    </ul>
+    </p>
+    <p>
+	GemSAFE was successfully used together with EJBCA for the ZhuHai Local
+	Taxation Bureau project, listed in the <a href="installations.html">reference installations</a> section.
+    </p>
+    <p>
+    There is a howto for using GemSAFE with EJBCA in the <a href="howto.html">Howto</a> section.
+    </p>
 </subsection>
 
 </section>
