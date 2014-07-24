@@ -2508,6 +2508,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (!(cryptoToken instanceof SoftCryptoToken)) {
                 throw new IllegalCryptoTokenException("Cannot export anything but a soft token.");
             }
+            // Do not allow export without password protection
+            if (StringUtils.isEmpty(keystorepass) || StringUtils.isEmpty(privkeypass)) {
+                throw new IllegalArgumentException("Cannot export a token without password protection.");
+            }
             // Check authorization
             if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoexportcatoken", caname);

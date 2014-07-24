@@ -310,9 +310,11 @@ public class CAImportExportTest  {
             }
             caadminsession.createCA(internalAdmin, cainfo);
             
-            // Export it. This should work since the crypto token has the default password
-            byte[] keystoredata = caadminsession.exportCAKeyStore(internalAdmin, caname, "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
-            assertNotNull("Keystore was null", keystoredata);
+            // Export it. This should not work since we don't allow to export an unprotected crypto token (even if it has the default password).
+            try {
+                caadminsession.exportCAKeyStore(internalAdmin, caname, "", "", "SignatureKeyAlias", "EncryptionKeyAlias");
+                fail("exporting CA keystore with no password should not be allowed.");
+            } catch (Exception e) {} // NOPMD: we just want to make sure it fails
         } finally {
             caSession.removeCA(internalAdmin, cainfo.getCAId());
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
