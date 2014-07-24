@@ -718,7 +718,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
       if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
         }
-        int castatus = CAConstants.CA_OFFLINE;
         final int caid = cainfo.getCAId();
         // Check that administrator has superadminstrator rights.
         if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
