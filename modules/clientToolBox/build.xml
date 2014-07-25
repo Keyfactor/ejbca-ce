@@ -79,7 +79,6 @@
             </classpath>
         	<src path="${src.dir}"/>
             <src path="${ejbca.home}/src/java" />
-            <src path="${mod.cmpProxy.path}/src" />
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${mod.ejbca-ws-cli.path}/src" />
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
