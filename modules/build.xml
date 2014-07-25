@@ -65,8 +65,6 @@
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.batchenrollment-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -86,6 +84,7 @@
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
 		<antcall target="ctclean"/>
@@ -100,6 +99,15 @@
 	<target name="statedumpclean" if="${statedump.exists}">
 		<echo message="Cleaning statedump"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
+    <condition property="cmpproxy.exists">
+    	<available file="${mod.cmpProxy.path}/build-http.xml" />
+    </condition>
+	<target name="cmpproxyclean" if="${cmpproxy.exists}">
+		<echo message="Cleaning cmpProxy"/>
+		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
     <condition property="validationtool.exists">
     	<available file="${mod.validationtool.path}/build.xml" />
@@ -263,10 +271,26 @@
 	</target>
 
 	<target name="cmpTcpProxy" description="Build CMP TCP proxy">
+		<echo  message="${mod.cmpProxy.path}/build-tcp.xml" />
+		<fail message="CMP TCP Proxy tool is not distributed with this version of EJBCA">
+		    <condition>
+		    	<not>
+		    		<available file="${mod.cmpProxy.path}/build-tcp.xml" />
+		    	</not>
+		    </condition>
+		</fail>	
 		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
-	<target name="cmpHttpProxy" description="Build CMP HTTP proxy">
+	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home">
+		<echo  message="${mod.cmpProxy.path}/build-http.xml" />
+		<fail message="CMP HTTP Proxy tool is not distributed with this version of EJBCA">
+		    <condition>
+		    	<not>
+		    		<available file="${mod.cmpProxy.path}/build-http.xml" />
+		    	</not>
+		    </condition>
+		</fail>	
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="dist" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 

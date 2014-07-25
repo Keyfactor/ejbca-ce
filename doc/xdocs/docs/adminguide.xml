@@ -1217,7 +1217,7 @@ Certificate Request Handler Class : org.ejbca.core.protocol.unid.UnidFnrHandler
 Unid Data Source : java:/UnidDS
 </source>
 </subsection>
-<subsection name="CMP Proxy">
+<subsection name="CMP Proxy (EJBCA Enterprise only)">
 <p>
 In some installations it may be desirable to terminate the client connection in a DMZ before connecting further to the CA. In this case the client never has a direct 
 network connection to the CA machine. In such a scenario you can use the CMP proxy module. Clients use the CMP proxy, as it would otherwise use EJBCA. 

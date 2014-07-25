@@ -626,8 +626,6 @@
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	
            	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
-            <sourcepath location="${ejbca.home}/modules/validationtool/src"/>
-           	<sourcepath location="${ejbca.home}/modules/cmpProxy/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
                 <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
                 <sourcepath location="${ejbca.home}/modules/cesecore-ejb/src"/>
