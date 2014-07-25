@@ -27,9 +27,9 @@
         <import file="./removed.xml" />
         <!-- Include the build file which takes care of deprecation detection (for options etc). -->
         <import file="./deprecated.xml" />
-	<!-- this import is only used by the plugin scheme-->
+	<!-- this import is used by the modules scheme-->
     <import file="${ejbca.home}/modules/build-properties.xml"/>
-	
+
     <!-- =================================================================== -->
     <!-- Clean ALL                                                           -->
     <!-- =================================================================== -->
@@ -147,6 +147,22 @@
                 <istrue value="@{replacement-enabled}"/>
             </condition>
 		    <echo message="${didwhat-@{replacement-ejb}} module @{replacement-ejb}"/>
+		</sequential>
+	</macrodef>
+	<macrodef name="connector-replacement-in-module" description="Optionally enable and configure a EJB connector in the EAR">
+		<attribute name="replacement-tag"/>
+		<attribute name="replacement-file"/>
+		<attribute name="replacement-enabled"/>
+		<attribute name="replacement-connector"/>
+		<sequential>
+			<condition property="replacement-string-@{replacement-connector}" else="@{replacement-tag}" value="module>&lt;connector>@{replacement-connector}&lt;/connector>&lt;/module>">
+				<istrue value="@{replacement-enabled}"/>
+			</condition>
+			<replace file="@{replacement-file}" token="@{replacement-tag}" value="${replacement-string-@{replacement-connector}}"/>
+            <condition property="didwhat-@{replacement-connector}" else="Disabled" value="Enabled">
+                <istrue value="@{replacement-enabled}"/>
+            </condition>
+		    <echo message="${didwhat-@{replacement-connector}} module @{replacement-connector}"/>
 		</sequential>
 	</macrodef>
 	<macrodef name="war-replacement-in-module" description="Optionally enable and configure a WAR module in the EAR">
@@ -392,6 +408,25 @@
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${in-test-mode}"
 			replacement-ejb="systemtests-ejb.jar"
+		/>
+		<jar-replacement-in-module
+			replacement-tag="!--@peerconnector-common.jar@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${mod.peerconnector.exists}"
+			replacement-ejb="peerconnector-common.jar"
+		/>
+		<connector-replacement-in-module
+			replacement-tag="!--@peerconnector.rar@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${mod.peerconnector.exists}"
+			replacement-connector="peerconnector.rar"
+		/>
+		<war-replacement-in-module
+			replacement-tag="!--@peerconnector.war@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${mod.peerconnector.exists}"
+			replacement-web-uri="peerconnector.war"
+			replacement-context-root="/ejbca/peerconnector"
 		/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>

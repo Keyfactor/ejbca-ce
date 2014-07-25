@@ -114,9 +114,6 @@
     <target name="ctclean" if="${mod.ct.exists}">
         <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
-	<condition property="mod.peerconnector.exists">
-		<available file="${mod.peerconnector.path}/build.xml" />
-    </condition>
     <target name="peerconnectorclean" if="${mod.peerconnector.exists}">
         <ant antfile="${mod.peerconnector.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	

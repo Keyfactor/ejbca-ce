@@ -16,9 +16,6 @@
         <ejb>ejbca-ejb.jar</ejb>
     </module>
     <module>
-        <ejb>peerconnector-common.jar</ejb>
-    </module>
-    <module>
         <web>
             <web-uri>publicweb.war</web-uri>
             <context-root>/ejbca</context-root>
@@ -69,12 +66,8 @@
        <!--@doc.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->
-    <module><connector>peerconnector.rar</connector></module>
-    <module>
-        <web>
-            <web-uri>peerconnector.war</web-uri>
-            <context-root>/ejbca/peerconnector</context-root>
-        </web>
-    </module>
+       <!--@peerconnector-common.jar@-->
+       <!--@peerconnector.rar@-->
+       <!--@peerconnector.war@-->
 </application>
 

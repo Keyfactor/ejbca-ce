@@ -476,4 +476,13 @@
     <!-- jboss-ejb-client.properties is only used in JBoss 7 (or higher?), but it does not hurt to simply copy it for earlier versions either -->
     <property name="jboss-ejb-client.properties" location="${ejbca.home}/src/appserver/jboss/jboss7/jboss-ejb-client.properties" />
 	<echo message="jndi.properties.file: ${jndi.properties.file}"/>
+	
+	<!-- Is peerconnector available -->
+	<condition property="mod.peerconnector.exists">
+		<available file="${mod.peerconnector.path}/build.xml" />
+    </condition>
+	<!--
+	<echo message="peerconnector available: ${mod.peerconnector.exists}"/>
+	-->
+
 </project>
