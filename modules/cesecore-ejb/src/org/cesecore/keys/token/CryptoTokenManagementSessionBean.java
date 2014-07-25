@@ -148,6 +148,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Note: if data is null, a new empty keystore will be created
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName);
         if (authenticationCode != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Activating new crypto token using supplied authentication code.");
+            }
             cryptoToken.activate(authenticationCode);
         }
         

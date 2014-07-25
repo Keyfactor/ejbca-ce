@@ -79,12 +79,10 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * CLI command for initializing initializing CAs.
+ * CLI command for creating a CA and its first CRL. Publishes the CRL and CA certificate if it should.
  * 
  * @version $Id$
- *
  */
-
 enum CaType {
     X509("x509"), CVC("cvc");
 
@@ -121,11 +119,6 @@ enum CaType {
     }
 }
 
-/**
- * Create a CA and its first CRL. Publishes the CRL and CA certificate
- *
- * @version $Id$
- */
 public class CaInitCommand extends BaseCaAdminCommand {
 
     private static final Logger log = Logger.getLogger(CaInitCommand.class);
@@ -448,8 +441,27 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
                 cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
             }
-            final char[] authenticationCode = "null".equalsIgnoreCase(catokenpassword) ? null : catokenpassword.toCharArray();
-            final String className = "soft".equals(catokentype) ? SoftCryptoToken.class.getName() : PKCS11CryptoToken.class.getName();
+            // If authentication code is provided as "null", use the default token password for soft tokens (from cesecore.properties), and auto activation
+            // If a user defined authentication code is provided, use this and do not enable auto activation for soft tokens
+            final char[] authenticationCode;
+            if (StringUtils.equalsIgnoreCase(catokenpassword, "null")) {
+                authenticationCode = null;
+                // auto activation is enabled by default when using the default soft token pwd, which is used by default
+            } else {
+                authenticationCode = catokenpassword.toCharArray();
+            }
+            // We must do this in order to not set the default password when creating a new soft CA token
+            // A bit tricky, but thats how it is as of EJBCA 5.0.x, 2012-05.
+            final String className;
+            if (StringUtils.equalsIgnoreCase(catokentype, "soft")) {
+                className = SoftCryptoToken.class.getName();
+                if (authenticationCode != null) {
+                    getLogger().info("Non default password used for soft CA token, auto activation disabled.");
+                    cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
+                }
+            } else {
+                className = PKCS11CryptoToken.class.getName();
+            }
             // Create the CryptoToken
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
