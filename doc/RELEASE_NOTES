@@ -1,3 +1,15 @@
+EJBCA 6.2.1
+-----------
+This is a maintenance release with only bug fixes and minor improvement. In all xy issues have been fixed.
+
+* Noteworthy changes:
+- abc
+
+See the notes, and known issues, for 6.2.0 below.
+
+* Noteworthy changes:
+- The autoactivate parameter in for the CLI command 'cryptotoken create' has been changed from "-A" to the more explicit "--autoactivate". 
+
 EJBCA 6.2.0
 -----------
 This is a major release with new features, bug fixes and improvements. All in all, 76 issues have been fixed.
