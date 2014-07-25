@@ -111,10 +111,19 @@ public class CaImportCertCommandTest {
     }
 
     @Test
-    public void testCommand() throws CADoesntExistsException, AuthorizationDeniedException {
+    public void testCommand1() throws CADoesntExistsException, AuthorizationDeniedException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", "--email", "foo@foo.com", certificateFile.getAbsolutePath(),
                 "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
         assertEquals(CommandResult.SUCCESS, command.execute(args));
         assertNotNull("Certificate was not imported.", endEntityAccessSession.findUser(authenticationToken, USERNAME));
     }
+    
+    @Test
+    public void testCommand2() throws CADoesntExistsException, AuthorizationDeniedException {
+        String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", certificateFile.getAbsolutePath(),
+                "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
+        assertNotNull("Certificate was not imported.", endEntityAccessSession.findUser(authenticationToken, USERNAME));
+    }
+
 }
