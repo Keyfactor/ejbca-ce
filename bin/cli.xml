@@ -99,13 +99,13 @@ appserver.home         : ${appserver.home}
 
 	<!-- Property used to specify certificate profile different from the defautl ROOTCA or SUBCA profile 
 	     Specify in install.properties (ca.certificateprofile) for initial installation CA -->
-    <condition property="install.certprofile.command" value="-certprofile ${ca.certificateprofile}" else="">
+    <condition property="install.certprofile.command" value="-certprofile &quot;${ca.certificateprofile}&quot;" else="">
     	<isset property="ca.certificateprofile" />
     </condition>
 
     <target name="ejbca:initCA" >
        <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' &lt;ca.tokenpassword hidden&gt; '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${ca.tokenproperties} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
-        <ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;'${ca.dn}'&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
+        <ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
      </target>
 
 	<target name="ejbca:adminweb">
@@ -113,13 +113,13 @@ appserver.home         : ${appserver.home}
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>		
-		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;'${httpsserver.dn}'&quot; --altname &quot;'${httpsserver.an}'&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
+		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;${httpsserver.dn}&quot; --altname &quot;${httpsserver.an}&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
 		<ejbca:cli arg="batch tomcat"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;'${superadmin.dn}'&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype}"/>
+		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;${superadmin.dn}&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype}"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
