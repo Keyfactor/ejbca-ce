@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -92,6 +93,11 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             kspwd = String.valueOf(System.console().readPassword());
         } else {
             log.info("Keystore password was supplied on the command line.");
+        }
+        if (StringUtils.isEmpty(kspwd)) {
+            // Can not export CA keystore with empty password. 
+            log.error("Export a token without password protection is not allowed.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
         byte[] keyStoreBytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).exportCAKeyStore(getAuthenticationToken(),
                 caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
