@@ -160,7 +160,7 @@
     	<antcall target="createreport"/>
     </target>
    
-    <target name="test:pc" description="run JUnit Certificate Transparency test." depends="deleteDirectories">
+    <target name="test:pc" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/peerconnector" target="test" />
     	<antcall target="createreport"/>
     </target>
