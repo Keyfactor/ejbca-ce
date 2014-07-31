@@ -1557,10 +1557,10 @@ function checkallfields(){
                     <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
                     <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>"> 
                 <% } else if (isUninitialized) { %>
-                    <p><strong>You need to select a cryptotoken that exists before you can initialize!</strong></p>
+                    <p><strong><%= ejbcawebbean.getText("CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE") %></strong></p>
                     <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
                 <% } else { %>
-                    <p><strong>You need to select a cryptotoken that exists before you can save!</strong></p> 
+                    <p><strong><%= ejbcawebbean.getText("CRYPTOTOKEN_DOESNT_EXIST_CANT_SAVE") %></strong></p> 
                 <% } %>
         <%  } else { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
