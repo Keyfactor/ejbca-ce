@@ -6,6 +6,7 @@
 	<classpathentry kind="src" path="modules/cesecore-ejb/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
+	<classpathentry kind="src" path="modules/certsafe/src"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
