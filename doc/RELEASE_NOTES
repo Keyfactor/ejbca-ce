@@ -1,14 +1,17 @@
 EJBCA 6.2.1
 -----------
-This is a maintenance release with only bug fixes and minor improvement. In all xy issues have been fixed.
-
-* Noteworthy changes:
-- abc
-
-See the notes, and known issues, for 6.2.0 below.
+This is a maintenance release with only bug fixes and minor improvement. All in all, 40 issues have been fixed.
 
 * Noteworthy changes:
 - The autoactivate parameter in for the CLI command 'cryptotoken create' has been changed from "-A" to the more explicit "--autoactivate". 
+- An XSS issue in the Public Web was patched
+- Regression: CPS and User Notice defined in Certificate Policy Extensions weren't being written to the relevant certificates 
+- Regression: Soft keystores for CAs created using the CLI were always created with the default password
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+No critical issues are known at the time of release.
 
 EJBCA 6.2.0
 -----------
