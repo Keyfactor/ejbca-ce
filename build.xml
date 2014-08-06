@@ -526,7 +526,6 @@
                 <include name="jbosslog4jsafer.jar" if="jbosseap6-specials"/>
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	    <include name="ct.jar" />
-                <include name="peerconnector-common.jar" />
                 <include name="peerconnector-publ.jar" />               
                 <include name="peerconnector-interface.jar" />
         		<include name="peerconnector-entity.jar" />
