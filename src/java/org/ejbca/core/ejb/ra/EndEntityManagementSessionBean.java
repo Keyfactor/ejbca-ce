@@ -357,6 +357,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check name constraints
         if (caInfo instanceof X509CAInfo && !caInfo.getCertificateChain().isEmpty()) {
             final X509CAInfo x509cainfo = (X509CAInfo) caInfo;
+            if (!caInfo.getCertificateChain().iterator().hasNext()) {
+                throw new IllegalStateException("No certificates in chain for CA with name: " + x509cainfo.getName() + " and subject DN "
+                        + caInfo.getSubjectDN() + " when creating end entity with username" + endEntity.getUsername());
+            }
             final X509Certificate cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
             
