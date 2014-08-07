@@ -386,7 +386,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		@Override
 		public String getJobTimeDescription() {
 			if ( this.doCreateNewUser ) {
-				return "Relative time spent registring new users";
+				return "Relative time spent registering new users";
 			}
 			return "Relative time spent setting status of user to NEW";
 		}
@@ -445,7 +445,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		@Override
 		public String getJobTimeDescription() {
 			if ( this.doCreateNewUser ) {
-				return "Relative time spent registring new users";
+				return "Relative time spent registering new users";
 			}
 			return "Relative time spent setting status of user to NEW";
 		}
