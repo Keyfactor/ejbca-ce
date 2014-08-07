@@ -40,6 +40,7 @@ Improvement
 	[ECA-3668] - Improve options format of statedump tool
 	[ECA-3669] - Better warning/error output in statedump utility
 	[ECA-3677] - Do not allow export of CA keystores not protected by password
+	[ECA-3689] - Improve parameter naming per internal suggestions
 
 
 New Feature
