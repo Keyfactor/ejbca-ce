@@ -58,6 +58,7 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+	    checkCacheExpired();
 		returnCrl( this.crlCache.findLatestByIssuerDN(HashID.getFromB64(iHash), isDelta(req)), resp, iHash, isDelta(req) );		
 	}
 
@@ -68,6 +69,7 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
+        checkCacheExpired();
 		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req)), resp, name, isDelta(req) );
 	}
 
