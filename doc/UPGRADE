@@ -50,6 +50,10 @@ from EJBCA home directory:
 NOTE: If you are using External RA, please note that the name of the scep.properties file has been changed to 
 scepra.properties 
 
+From EJBCA 6.2.x to EJBCA 6.2.x
+-------------------------------
+See the procedure, and notes, for upgrading from 6.0.x to 6.0.x.
+
 From EJBCA 6.1.x to EJBCA 6.2.x
 -------------------------------
 There are no database upgrades to perform to 6.2.x
