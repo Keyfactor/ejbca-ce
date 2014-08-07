@@ -58,9 +58,7 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		if(certCache.isCacheExpired()) {
-		    certificateStoreSession.reloadCaCertificateCache();
-		}
+        checkCacheExpired();
 	    returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
 		return;
 	}
@@ -68,9 +66,7 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
-	    if(certCache.isCacheExpired()) {
-	        certificateStoreSession.reloadCaCertificateCache();
-        }
+        checkCacheExpired();
 	    returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
 	}
 
@@ -81,9 +77,7 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-	    if(certCache.isCacheExpired()) {
-	        certificateStoreSession.reloadCaCertificateCache();
-        }
+        checkCacheExpired();
 	    final X509Certificate cert = this.certCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
 		returnCert( cert, resp, sHash);
 	}
