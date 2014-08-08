@@ -955,7 +955,7 @@ public class RAInterfaceBean implements Serializable {
         String faultXMLmsg = "";
         
         if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
-            retmsg = "No input file";
+            retmsg = "Error: No input file";
             log.error(retmsg);
             return retmsg;
         }
@@ -967,7 +967,7 @@ public class RAInterfaceBean implements Serializable {
             ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
             ZipEntry ze=zis.getNextEntry();
             if(ze == null) {
-                retmsg = "Expected a zip file. '" + importedProfileName + "' is not a  zip file.";
+                retmsg = "Error: Expected a zip file. '" + importedProfileName + "' is not a  zip file.";
                 log.error(retmsg);
                 return retmsg;
             }
@@ -1031,20 +1031,20 @@ public class RAInterfaceBean implements Serializable {
             zis.closeEntry();
             zis.close();
         } catch (UnsupportedEncodingException e) {
-            retmsg = "UTF-8 was not a known character encoding.";
+            retmsg = "Error: UTF-8 was not a known character encoding.";
             log.error(retmsg, e);
             return retmsg;
         } catch (IOException e) {
             log.error(e);
-            retmsg = e.getLocalizedMessage();
+            retmsg = "Error: " + e.getLocalizedMessage();
             return retmsg;
         } catch (AuthorizationDeniedException e) {
             log.error(e);
-            retmsg = e.getLocalizedMessage();
+            retmsg = "Error: " + e.getLocalizedMessage();
             return retmsg;
         } catch (EndEntityProfileExistsException e) {
             log.error(e);
-            retmsg = e.getLocalizedMessage();
+            retmsg = "Error: " + e.getLocalizedMessage();
             return retmsg;
         }
         
