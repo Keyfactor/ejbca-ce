@@ -324,7 +324,11 @@
     	if (requestMap.get(BUTTON_IMPORT_PROFILES) != null) {
             // Upload XML file
       	    String msg = ejbcarabean.importProfilesFromZip(filebuffer);
-			%> <div style="color: #FF0000;">
+            if (msg.startsWith("Error:")) {
+				%> <div style="color: #FF0000;"> <%
+            } else {
+            	%> <div style="color: #000000;"> <%
+            } %>
 		    	<c:out value="<%= msg %>"/>
 	       	</div> <%
     	}
