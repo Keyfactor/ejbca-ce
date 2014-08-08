@@ -3577,7 +3577,22 @@ The shared library is called C:\windows\system32\sadaptor.dll
 </p>
 </subsection>
 
-<subsection name="Bull Trustway">
+<subsection name="Bull Trustway Proteccio">
+<p>
+The "Installation and User's Guide" describes how the HSM is installed and how how PKCS#11 tokens are created and how a backup of a token is done. But it might be helpful to mention some additional things:
+</p>
+<ol>
+<li>A virtual HSM correspond to a PKCS#11 token.</li>
+<li>The number of the virtual HSM corresponds to the PKCS#11 slot ID of the token.</li>
+<li>The PKCS#11 user PIN is the "PKCS#11 application authentication" in the "Personalizing a virtual HSM" step.</li>
+<li>If "CIK startup mode" is selected for the virtual HSM personalization you must start the HSM manually before EJBCA can use it.</li>
+<li>Make sure that backup-restore work before taken the HSM in production since the first versions did not backup the certificate of a key which is needed by the java wrapper.</li>
+</ol>
+</subsection>
+<subsection name="Bull Trustway PCI Crypto Card">
+<p>
+This is an old HSM. New installations will probably use <a href="#Bull Trustway Proteccio">Proteccio</a>.
+</p>
 <p>
 Do the installation of the card according to Install_and_Use_cc2000.pdf. When the card is "installed" it is ready to use with EJBCA. Only one slot (slot index 0) is available. The slot is not protected by any PIN so an undefined 'pin' (empty) property may be used in the configuration.
 </p><p>
