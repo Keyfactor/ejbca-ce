@@ -22,8 +22,10 @@ import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -75,16 +77,50 @@ public final class StringTools {
     private StringTools() {
     } // Not for instantiation
 
+    /**
+     * Class that will be used to see if a character belong to a specific category.
+     *
+     */
+    private static class CharSet {
+        private final Set<Character> charSet;
+        /**
+         * Create a set of characters from a char array.
+         * @param array
+         */
+        CharSet(char[] array) {
+            final Set<Character> set = new HashSet<Character>();
+            for (final char c : array) {
+                set.add(Character.valueOf(c));
+            }
+            this.charSet = set;
+        }
+        /**
+         * Check if a character is belonging to the set.
+         * @param c the character to test
+         * @return true if belonging
+         */
+        boolean contains(char c) {
+            return this.charSet.contains(Character.valueOf(c));
+        }
+        /**
+         * Construct a set with the forbidden characters.
+         * @return the set
+         */
+        static CharSet getForbidden() {
+            return new CharSet(CesecoreConfiguration.getForbiddenCharacters());
+        }
+    }
+
     // Characters that are not allowed in XSS compatible strings
-    private static final char[] stripXSS = {'<', '>'};
+    private static final CharSet stripXSS = new CharSet(new char[]{'<', '>'});
     // Characters that are not allowed in strings that may be used in db queries
-    private static final char[] stripSqlChars = { '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' };
+    private static final CharSet stripSqlChars = new CharSet(new char[]{ '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in filenames
-    private static final char[] stripFilenameChars = { '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', ';', '|', '\"', '<', '>' };
+    private static final CharSet stripFilenameChars = new CharSet(new char[]{ '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', ';', '|', '\"', '<', '>' });
     // Characters that are allowed to escape in strings.
     // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
     // Also allow '=' to be escaped.
-    private static final char[] allowedEscapeChars = { ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' };
+    private static final CharSet allowedEscapeChars = new CharSet(new char[]{ ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' });
 
     private static final Pattern WS = Pattern.compile("\\s+");
 
@@ -101,7 +137,7 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String strip(final String str) {
-    	return strip(str, CesecoreConfiguration.getForbiddenCharacters());
+    	return strip(str, CharSet.getForbidden());
     }
 
     /**
@@ -123,7 +159,7 @@ public final class StringTools {
         return strip(str, stripFilenameChars);
     }
 
-    private static String strip(final String str, final char[] stripThis) {
+    private static String strip(final String str, final CharSet stripThis) {
         if (str == null) {
             return null;
         }
@@ -144,7 +180,7 @@ public final class StringTools {
                 } else {
                     index++;
                 }
-            } else if ( isCharInArray(buf.charAt(index), stripThis) ) {
+            } else if ( stripThis.contains( buf.charAt(index)) ) {
                 // Illegal character. Replace it with a '/'.
                 buf.setCharAt(index, '/');
             }
@@ -176,10 +212,10 @@ public final class StringTools {
      * @see #strip
      */
     public static boolean hasStripChars(final String str) {
-    	return hasStripChars(str, CesecoreConfiguration.getForbiddenCharacters());
+    	return hasStripChars(str, CharSet.getForbidden());
     }
     
-    private static boolean hasStripChars(final String str, char[] checkThese) {
+    private static boolean hasStripChars(final String str, final CharSet checkThese) {
         if (str == null) {
             return false;
         }
@@ -197,7 +233,7 @@ public final class StringTools {
                     return true;
                 }
                 index++; // Skip one extra..
-            } else if ( isCharInArray(str.charAt(index), checkThese) ) {
+            } else if ( checkThese.contains(str.charAt(index)) ) {
                 // Found an illegal character.
                 return true;
             }
@@ -213,11 +249,7 @@ public final class StringTools {
      * @return true if char is an allowed escape character, false if now
      */
     private static boolean isAllowedEscape(final char ch) {
-        return isCharInArray(ch, allowedEscapeChars);
-    }
-
-    private static boolean isCharInArray(final char ch, final char stripThis[]) {
-        return new String(stripThis).indexOf(ch) > -1;
+        return allowedEscapeChars.contains(ch) && !CharSet.getForbidden().contains(ch);
     }
 
     /**

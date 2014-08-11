@@ -634,11 +634,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp4 = CertTools.getFingerprintAsString(cert);
-                assertEquals("Escaped semicolon should have worked", "CN=anothersemicolon\\;guy", cert.getSubjectDN().toString());
-                CertificateInfo info = certificateStoreSession.getCertificateInfo(fp4);
-                assertEquals("Escaped semicolon should have worked", "CN=anothersemicolon\\;guy", info.getSubjectDN());
+                fail("We should not have been allowed to create certificate with that DN.");
             } catch (IllegalNameException e) {
-                fail("We should have been allowed to create certificate with that DN.");
+                // NOPMD: This is correct and we ignore it 
             }
             try {
                 // Test with an escaped semicolon, this is allowed
@@ -648,11 +646,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp5 = CertTools.getFingerprintAsString(cert);
-                assertEquals("Escaped semicolon should have worked", "CN=anothersemicolon\\;guy", cert.getSubjectDN().toString());
-                CertificateInfo info = certificateStoreSession.getCertificateInfo(fp5);
-                assertEquals("Escaped semicolon should have worked", "CN=anothersemicolon\\;guy", info.getSubjectDN());
+                fail("We should not have been allowed to create certificate with that DN.");
             } catch (IllegalNameException e) {
-                fail("We should have been allowed to create certificate with that DN.");
+                // NOPMD: This is correct and we ignore it 
             }
 
         } finally {
