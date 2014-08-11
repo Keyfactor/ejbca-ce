@@ -113,12 +113,15 @@ public class StringToolsTest {
         log.trace(">test05Strip()");
         final Object originalValue = ConfigurationHolder.instance().getProperty(FORBIDDEN_CHARS_KEY);
         try {
-            final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|";
-            final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|";
+            final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\";
+            final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|\\<|\\>|\\\"|\\\\";
             forbiddenTest(null, input, defaultOutput);
             forbiddenTest("\n\r;!\u0000%`?$~", input, defaultOutput);
             forbiddenTest("", input, input);
-            forbiddenTest("rab| oof", input, "/\n/\r/;/////////!/\u0000/`/?/$/~/");
+            forbiddenTest("ABCDEF", input, input);
+            forbiddenTest("rab| oof<>\"\\", input, "/\n/\r/;/////////!/\u0000/`/?/$/~////////");
+            forbiddenTest("\"", input, "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|/|\\\\");
+            forbiddenTest("f", input, "|\n|\r|;|/oo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\");
         } finally {
             ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, originalValue);
         }
@@ -219,7 +222,7 @@ public class StringToolsTest {
 
         str = "foo\\;";
         ret = StringTools.hasSqlStripChars(str);
-        assertFalse(ret);
+        assertTrue(ret);
 
         // Check that escaping does not work for other characters
         str = "foo\\?";
