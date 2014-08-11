@@ -159,6 +159,16 @@ public final class StringTools {
         return strip(str, stripFilenameChars);
     }
 
+    /**
+     * Characters from 'str' will be stripped like this:
+     * any character that is in the 'stripThis' set will be replaced with '/'.
+     * any character that is escaped (preceded with '\') and not in the {@value #allowedEscapeChars} set will be replaced with '/'.
+     * when a character is replaced with '/' and also escaped then the preceding escape character '\' will be removed.
+     * 
+     * @param str the original string
+     * @param stripThis set of characters that should be stripped.
+     * @return the stripped string
+     */
     private static String strip(final String str, final CharSet stripThis) {
         if (str == null) {
             return null;
@@ -215,6 +225,12 @@ public final class StringTools {
     	return hasStripChars(str, CharSet.getForbidden());
     }
     
+    /**
+     * Check if 'str' has any chars that should be stripped by a call to {@link #strip(String, CharSet)}.
+     * @param str the string to be tested.
+     * @param checkThese characters that must be stripped.
+     * @return true if a call to {@link #strip(String, CharSet) will change 'str'.
+     */
     private static boolean hasStripChars(final String str, final CharSet checkThese) {
         if (str == null) {
             return false;
