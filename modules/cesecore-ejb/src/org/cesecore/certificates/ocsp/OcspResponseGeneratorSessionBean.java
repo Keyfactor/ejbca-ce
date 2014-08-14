@@ -1377,20 +1377,34 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (ocspKeyBinding.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
                 X509Certificate ocspCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(ocspKeyBinding
                         .getCertificateId());
-                X509Certificate issuingCertificate = certificateStoreSession.findLatestX509CertificateBySubject(CertTools
-                        .getIssuerDN(ocspCertificate));
-                try {
-                    if (certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
-                        //We found it! Unless it's not active, or something else was wrong with it. 
-                        ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspCertificate, ocspKeyBinding);
-                        //If it was all right, add it to the cache for future use.
-                        if (ocspSigningCacheEntry != null) {
-                            OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
-                            break;
-                        }
+                if (ocspCertificate == null) {
+                    // There may be key binding with missing certificates normally (waiting for certificate response?), so don't spam the log
+                    if (log.isDebugEnabled()) {
+                        log.debug("Could not find certificate for OCSP Key Binding '"+ocspKeyBinding.getName()+"'. Certificate fingerprint: "+ocspKeyBinding.getCertificateId());
                     }
-                } catch (OCSPException e) {
-                    throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
+                } else {
+                    X509Certificate issuingCertificate = certificateStoreSession.findLatestX509CertificateBySubject(CertTools
+                            .getIssuerDN(ocspCertificate));
+                    if (issuingCertificate == null) {
+                        // There may be key binding with missing certificates normally (waiting for certificate response?), so don't spam the log
+                        if (log.isDebugEnabled()) {
+                            log.info("Could not find issuer certificate for OCSP Key Binding '"+ocspKeyBinding.getName()+"'. Issuer DN: "+ocspKeyBinding.getCertificateId());
+                        }
+                    } else {
+                        try {
+                            if (certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
+                                //We found it! Unless it's not active, or something else was wrong with it. 
+                                ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspCertificate, ocspKeyBinding);
+                                //If it was all right, add it to the cache for future use.
+                                if (ocspSigningCacheEntry != null) {
+                                    OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
+                                    break;
+                                }
+                            }
+                        } catch (OCSPException e) {
+                            throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
+                        }                        
+                    }
                 }
             }
         }
