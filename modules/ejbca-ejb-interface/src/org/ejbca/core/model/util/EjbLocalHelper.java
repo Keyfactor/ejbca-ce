@@ -19,6 +19,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -67,6 +68,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
  */
 public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	
+    private static final Logger log = Logger.getLogger(EjbLocalHelper.class);
 	private static Context initialContext = null;
 	private static ReentrantLock initialContextLock = new ReentrantLock(true);
 	private static boolean useEjb31GlobalJndiName = false;
@@ -108,6 +110,33 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 		}
 		return ret;
 	}
+
+	/**
+     * Requires a "ejb-local-ref" definition in web.xml and ejb-jar.xml from all accessing components
+     * or an application server that support global JNDI names (introduced in EJB 3.1).
+     * 
+     * Requires the naming convention that SSBNameLocal is the local interface of SSBNameBean.
+     * 
+	 * @param c is the Local interface class
+	 * @param modulename is the ejb sub-module where this bean is present
+	 * @return the interface or silently null, if the bean is not available
+	 */
+    @SuppressWarnings("unchecked")
+    public <T> T getEjbLocal(final Class<T> c, final String modulename) {
+        T ret = null;
+        try {
+            ret = (T) getInitialContext().lookup("java:comp/env/" + c.getName().replaceAll("Local", ""));
+        } catch (NamingException e) {
+            // Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
+            // java:global[/<app-name>]/<module-name>/<bean-name>[!<fully-qualified-interface-name>]
+            try {
+                ret = (T) getInitialContext().lookup("java:global/ejbca/"+modulename+"/"+c.getSimpleName().replaceAll("Local", "Bean") + "!"+c.getName());
+            } catch (NamingException e2) {
+                log.debug(e2.getMessage());
+            }
+        }
+        return ret;
+    }
 
 	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return getEjbLocal().getAccessRuleManagementSession(); }
 	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return getEjbLocal().getAccessUserAspectSession(); }
