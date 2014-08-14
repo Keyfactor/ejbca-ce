@@ -54,7 +54,14 @@
     </target>
 	
     <target name="build" description="Build this module" depends="validate">
-        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
+    	<!-- Declare a reference to PeerConnectionSessionLocal if it is available -->
+		<condition property="replacement-string-peer-connector-reference" else="!--@peer-connector-reference@-->"
+			value="ejb-local-ref> &lt;ejb-ref-name>PeerConnectionSession&lt;/ejb-ref-name> &lt;local>org.ejbca.peerconnector.PeerConnectionSessionLocal&lt;/local> &lt;/ejb-local-ref>">
+			<available classpathref="compile.classpath" classname="org.ejbca.peerconnector.PeerConnectionSessionLocal" ignoresystemclasses="true"/>
+		</condition>
+    	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
+		<replace file="${build.dir}/WEB-INF/web.xml" token="!--@peer-connector-reference@-->" value="${replacement-string-peer-connector-reference}" />
+        <war destfile="${mod.admin-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.6.jar"/>
         	<fileset dir="${resources.dir}" excludes="languages/*"/>
         </war>
