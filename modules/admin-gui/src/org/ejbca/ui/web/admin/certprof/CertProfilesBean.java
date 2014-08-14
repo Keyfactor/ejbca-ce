@@ -415,7 +415,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public void importProfilesFromZip(byte[] filebuffer) throws CertificateProfileExistsException, AuthorizationDeniedException, 
                     NumberFormatException, IOException {
 
-        if(filebuffer.length == 0) {
+        if (filebuffer.length == 0) {
             throw new IllegalArgumentException("No input file");
         }
 
@@ -425,7 +425,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
         ZipEntry ze = zis.getNextEntry();
-        if(ze==null) {
+        if (ze==null) {
             String msg = uploadFile.getName() + " is not a zip file.";
             log.info(msg);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
@@ -439,7 +439,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 log.debug("Importing file: " + filename);
             }
             
-            if(ignoreFile(filename)) {
+            if (ignoreFile(filename)) {
                 ignoredFiles += filename + ", ";
                 continue;
             }
@@ -453,12 +453,21 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             int index2 = filename.lastIndexOf("-");
             int index3 = filename.lastIndexOf(".xml");
             String profilename = filename.substring(index1 + 1, index2);
-            int profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
-            if(log.isDebugEnabled()) {
+            int profileid= 0 ;
+            try {
+                profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
+            } catch (NumberFormatException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("NumberFormatException parsing certificate profile id: "+e.getMessage());
+                }
+                ignoredFiles += filename + ", ";
+                continue;
+            }
+            if (log.isDebugEnabled()) {
                 log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
             }
 
-            if(ignoreProfile(filename, profilename, profileid)) {
+            if (ignoreProfile(filename, profilename, profileid)) {
                 ignoredFiles += filename + ", ";
                 continue;
             }
@@ -471,12 +480,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 
             byte[] filebytes = new byte[102400];
             int i = 0;
-            while(zis.available() == 1) {
+            while ((zis.available() == 1) && (i < filebytes.length)) {
                 filebytes[i++] = (byte) zis.read();
             }
                     
             final CertificateProfile certificateProfile = getCertProfileFromByteArray(profilename, filebytes);
-            if(certificateProfile == null) {
+            if (certificateProfile == null) {
                 String msg = "Faulty XML file '" + filename + "'. Failed to read Certificate Profile.";
                 log.info(msg + " Ignoring file.");
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
@@ -496,7 +505,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         log.info(msg);
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
         
-        if(StringUtils.isNotEmpty(importedFiles)) {
+        if (StringUtils.isNotEmpty(importedFiles)) {
             importedFiles = importedFiles.substring(0, importedFiles.length()-2);
         }
         msg = "Imported Certificate Profiles from files: " + importedFiles;
@@ -505,11 +514,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         }
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
         
-        if(StringUtils.isNotEmpty(ignoredFiles)) {
+        if (StringUtils.isNotEmpty(ignoredFiles)) {
             ignoredFiles = ignoredFiles.substring(0, ignoredFiles.length()-2);
         }
         msg = "Ignored files: " + ignoredFiles;
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug(msg);
         }
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
@@ -518,73 +527,77 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     private CertificateProfile getCertProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
-        XMLDecoder decoder = getXMLDecoder(is);
-        
-        // Add certificate profile
         CertificateProfile cprofile = new CertificateProfile();
-        Object data = null;
         try {
-            data = decoder.readObject();
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-        cprofile.loadData(data);
-        
-        // Make sure CAs in profile exist
-        List<Integer> cas = cprofile.getAvailableCAs();
-        ArrayList<Integer> casToRemove = new ArrayList<Integer>();
-        for (Integer currentCA : cas) {
-            // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
-            if (currentCA != CertificateProfile.ANYCA) {
-                try {
-                    getEjbcaWebBean().getEjb().getCaSession().getCAInfo(getAdmin(), currentCA);
-                } catch (CADoesntExistsException e) {
-                    casToRemove.add(currentCA);
+            XMLDecoder decoder = getXMLDecoder(is);        
+            // Add certificate profile
+            Object data = null;
+            try {
+                data = decoder.readObject();
+            } catch (IllegalArgumentException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("IllegalArgumentException parsing certificate profile data: "+e.getMessage());
+                }
+                return null;
+            }
+            decoder.close();
+            cprofile.loadData(data);
+
+            // Make sure CAs in profile exist
+            List<Integer> cas = cprofile.getAvailableCAs();
+            ArrayList<Integer> casToRemove = new ArrayList<Integer>();
+            for (Integer currentCA : cas) {
+                // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
+                if (currentCA != CertificateProfile.ANYCA) {
+                    try {
+                        getEjbcaWebBean().getEjb().getCaSession().getCAInfo(getAdmin(), currentCA);
+                    } catch (CADoesntExistsException e) {
+                        casToRemove.add(currentCA);
+                    }
                 }
             }
-        }
-        for (Integer toRemove : casToRemove) {
-            log.warn("Warning: CA with id " + toRemove
-                    + " was not found and will not be used in certificate profile '" + profilename + "'.");
-            cas.remove(toRemove);
-        }
-        if (cas.size() == 0) {
-            log.error("Error: No CAs left in certificate profile '" + profilename
-                    + "' and no CA specified on command line. Using ANYCA.");
-            cas.add(Integer.valueOf(CertificateProfile.ANYCA));
-            
-        }
-        cprofile.setAvailableCAs(cas);
-        // Remove and warn about unknown publishers
-        List<Integer> publishers = cprofile.getPublisherList();
-        ArrayList<Integer> allToRemove = new ArrayList<Integer>();
-        for (Integer publisher : publishers) {
-            BasePublisher pub = null;
+            for (Integer toRemove : casToRemove) {
+                log.warn("Warning: CA with id " + toRemove
+                        + " was not found and will not be used in certificate profile '" + profilename + "'.");
+                cas.remove(toRemove);
+            }
+            if (cas.size() == 0) {
+                log.error("Error: No CAs left in certificate profile '" + profilename
+                        + "' and no CA specified on command line. Using ANYCA.");
+                cas.add(Integer.valueOf(CertificateProfile.ANYCA));
+
+            }
+            cprofile.setAvailableCAs(cas);
+            // Remove and warn about unknown publishers
+            List<Integer> publishers = cprofile.getPublisherList();
+            ArrayList<Integer> allToRemove = new ArrayList<Integer>();
+            for (Integer publisher : publishers) {
+                BasePublisher pub = null;
+                try {
+                    pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(publisher);
+                } catch (Exception e) {
+                    log.warn("Warning: There was an error loading publisher with id " + publisher
+                            + ". Use debug logging to see stack trace: " + e.getMessage());
+                    log.debug("Full stack trace: ", e);
+                }
+                if (pub == null) {
+                    allToRemove.add(publisher);
+                }
+            }
+            for (Integer toRemove : allToRemove) {
+                log.warn("Warning: Publisher with id " + toRemove
+                        + " was not found and will not be used in certificate profile '" + profilename + "'.");
+                publishers.remove(toRemove);
+            }
+            cprofile.setPublisherList(publishers);
+
+        } finally {
             try {
-                pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(publisher);
-            } catch (Exception e) {
-                log.warn("Warning: There was an error loading publisher with id " + publisher
-                        + ". Use debug logging to see stack trace: " + e.getMessage());
-                log.debug("Full stack trace: ", e);
-            }
-            if (pub == null) {
-                allToRemove.add(publisher);
+                is.close();
+            } catch (IOException e) {
+                throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
             }
         }
-        for (Integer toRemove : allToRemove) {
-            log.warn("Warning: Publisher with id " + toRemove
-                    + " was not found and will not be used in certificate profile '" + profilename + "'.");
-            publishers.remove(toRemove);
-        }
-        cprofile.setPublisherList(publishers);
-        
-        decoder.close();
-        try {
-            is.close();
-        } catch (IOException e) {
-            throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
-        }
-        
         return cprofile;
     }
 
