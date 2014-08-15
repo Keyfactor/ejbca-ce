@@ -63,6 +63,7 @@
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
 					<include name="modules/ct/src-test/**/${test.runone}.java" />
+					<include name="modules/peerconnector/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -85,6 +86,9 @@
     	</condition>
     	<condition property="module" value="modules/systemtests">
     		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/peerconnector">
+    		<matches string="${test-fullname}" pattern="^modules/peerconnector/.*$"/>
     	</condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="build.xml" dir="${module}" target="runone" />
