@@ -397,7 +397,7 @@
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-            <basic fetch="EAGER" name="connectorstate"><column name="connectorstate" column-definition="INT(11)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="connectorState"><column name="connectorState" column-definition="INT(11)" nullable="false"/></basic>
      	    <basic fetch="EAGER" name="url"><column name="url" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="data"><column name="data" column-definition="LONGTEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
