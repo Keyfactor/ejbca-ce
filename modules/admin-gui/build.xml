@@ -32,7 +32,6 @@
 		<path location="${mod.peerconnector-rar.lib}"/>
 		<path location="${mod.peerconnector-common.lib}"/>
 		<path location="${mod.peerconnector-interface.lib}"/>
-		<path location="${mod.peerconnector-entity.lib}"/>
 	</path>
 	
     <path id="jasper.classpath">

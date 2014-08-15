@@ -410,10 +410,10 @@
 			replacement-ejb="systemtests-ejb.jar"
 		/>
 		<jar-replacement-in-module
-			replacement-tag="!--@peerconnector-common.jar@-->"
+			replacement-tag="!--@peerconnector-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${mod.peerconnector.exists}"
-			replacement-ejb="peerconnector-common.jar"
+			replacement-ejb="peerconnector-ejb.jar"
 		/>
 		<connector-replacement-in-module
 			replacement-tag="!--@peerconnector.rar@-->"
@@ -510,7 +510,7 @@
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
                 <include name="peerconnector.rar" />
                 <include name="peerconnector.war" />
-                <include name="peerconnector-common.jar" />
+                <include name="peerconnector-ejb.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -526,8 +526,9 @@
                 <include name="jbosslog4jsafer.jar" if="jbosseap6-specials"/>
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	    <include name="ct.jar" />
-                <include name="peerconnector-publ.jar" />               
+                <include name="peerconnector-publ.jar" />
                 <include name="peerconnector-interface.jar" />
+                <include name="peerconnector-common.jar" />
         		<include name="peerconnector-entity.jar" />
         	</zipfileset>
         	<!-- Include HttpClient for the use from the peerconnector.rar -->
