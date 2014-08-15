@@ -590,5 +590,44 @@ public class CertificateProfileTest {
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
     } 
 
+    @Test
+    public void test11CertificatePolicyClassUpgrade() throws Exception {
+        CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        List<CertificatePolicy> l = ep.getCertificatePolicies();
+        assertEquals(0, l.size());
+        ep.addCertificatePolicy(new CertificatePolicy(CertificatePolicy.ANY_POLICY_OID, null, null));
+        l = ep.getCertificatePolicies();
+        assertEquals(1, l.size());
+        CertificatePolicy pol = l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID() );
+        assertNull(pol.getQualifier());
+        assertNull(pol.getQualifierId());
+        
+        // Add policy as if we had run an old EJBCA 4 installation, now running in this version.
+        // The class name of CertificatePolicy changed from EJBCA 4 to EJBCA 5.
+        List list = new ArrayList();
+        list.add(new org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy("1.1.1.2", null, "abc"));
+        ep.setCertificatePolicies((List<CertificatePolicy>)list);
+        l = ep.getCertificatePolicies();
+        assertEquals(1, l.size());
+        pol = l.get(0);
+        assertEquals("1.1.1.2", pol.getPolicyID() );
+        assertEquals("abc", pol.getQualifier());
+        assertNull(pol.getQualifierId());
+
+        list.add(new CertificatePolicy("1.1.1.3", "foo", null));
+        ep.setCertificatePolicies((List<CertificatePolicy>)list);
+        l = ep.getCertificatePolicies();
+        assertEquals(2, l.size());
+        pol = l.get(0);
+        assertEquals("1.1.1.2", pol.getPolicyID() );
+        assertEquals("abc", pol.getQualifier());
+        assertNull(pol.getQualifierId());
+        pol = l.get(1);
+        assertEquals("1.1.1.3", pol.getPolicyID() );
+        assertNull(pol.getQualifier());
+        assertEquals("foo", pol.getQualifierId());
+    } 
+
 
 }
