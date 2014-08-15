@@ -861,6 +861,40 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         List<CertificatePolicy> l = (List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES);
         if (l == null) {
             l = new ArrayList<CertificatePolicy>();
+        } else {
+            // Check class name, because we changed this in EJBCA 5 and need to support older versions in the database for 100% upgrade
+            if (l.size() > 0) {
+                try {
+                    // Don't remove the unused test object
+                    CertificatePolicy test = l.get(0); // NOPMD: we need to actually get the text object, otherwise the cast will not be tried
+                    test.getPolicyID();
+                } catch (ClassCastException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CertificatePolicy in profile is old class name (< EJBCA 5), post-upgrade has not been run. Converting in code to return new class type.");
+                    }
+                    @SuppressWarnings("unchecked")
+                    List<Object> oldl = (List<Object>) data.get(CERTIFICATE_POLICIES);
+                    // In worst case they can have mixed old and new classes, therefore we use a "normal" iterator so we can verify the cast
+                    l = new ArrayList<CertificatePolicy>();
+                    for (int i = 0; i < oldl.size(); i++) {
+                        try {
+                            org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy oldPol = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)oldl.get(i);                            
+                            CertificatePolicy newPol = new CertificatePolicy(oldPol.getPolicyID(), oldPol.getQualifierId(), oldPol.getQualifier());
+                            if (log.isTraceEnabled()) {
+                                log.trace("Adding converted policy");
+                            }
+                            l.add(newPol);
+                        } catch (ClassCastException e2) {
+                            // This was already a new class, there are mixed policies here...
+                            CertificatePolicy newPol = (CertificatePolicy)oldl.get(i);                            
+                            if (log.isTraceEnabled()) {
+                                log.trace("Adding non-converted policy");
+                            }
+                            l.add(newPol);
+                        }                        
+                    }
+                }
+            }
         }
         return l;
     }
