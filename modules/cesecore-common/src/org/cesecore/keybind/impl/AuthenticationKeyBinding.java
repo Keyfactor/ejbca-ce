@@ -22,6 +22,7 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.config.ExtendedKeyUsageConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
+import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.util.CertTools;
 
 /**
@@ -35,6 +36,50 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
     private static final Logger log = Logger.getLogger(AuthenticationKeyBinding.class);
 
     public static final String IMPLEMENTATION_ALIAS = "AuthenticationKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
+    
+    /*
+     * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+     *  TLS versions: SSLv3, TLSv1, SSLv2Hello
+     * Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+     *  TLS versions: SSLv3, TLSv1, SSLv2Hello, TLSv1.1, TLSv1.2
+     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
+     */
+    private final String TLS_VERSION_10 = "TLSv1";
+    private final String TLS_VERSION_12 = "TLSv1.2";
+    private final String SPLIT_CHAR = " ";
+    private final String[] CIPHER_SUITES_SUBSET = {
+            // Java 7
+            TLS_VERSION_12 + SPLIT_CHAR + "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
+            TLS_VERSION_12 + SPLIT_CHAR + "TLS_RSA_WITH_AES_256_CBC_SHA256",
+            // Java 6
+            TLS_VERSION_10 + SPLIT_CHAR + "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+            TLS_VERSION_10 + SPLIT_CHAR + "TLS_RSA_WITH_AES_256_CBC_SHA"
+    };
+
+    public static final String PROPERTY_PROTOCOL_AND_CIPHER_SUITE = "protocolAndCipherSuite";
+
+    {
+        addProperty(new InternalKeyBindingProperty<String>(PROPERTY_PROTOCOL_AND_CIPHER_SUITE, CIPHER_SUITES_SUBSET[0], CIPHER_SUITES_SUBSET));
+    }
+
+    /** @return an array of supported protocols named according to JSSE */
+    public String[] getSupportedProtocols() {
+        return getSelectedProtocolOrSuite(0);
+    }
+
+    /** @return an array of supported cipher suites named according to JSSE */
+    public String[] getSupportedCipherTextSuites() {
+        return getSelectedProtocolOrSuite(1);
+    }
+
+    private String[] getSelectedProtocolOrSuite(final int pos) {
+        final String value = (String) getProperty(PROPERTY_PROTOCOL_AND_CIPHER_SUITE).getValue();
+        final String[] values = value.split(SPLIT_CHAR);
+        if (values.length==2) {
+            return new String[] { values[pos] };
+        }
+        return new String[0];
+    }
 
     @Override
     public String getImplementationAlias() {
