@@ -66,7 +66,7 @@
        <!--@doc.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->
-       <!--@peerconnector-common.jar@-->
+       <!--@peerconnector-ejb.jar@-->
        <!--@peerconnector.rar@-->
        <!--@peerconnector.war@-->
 </application>

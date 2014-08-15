@@ -66,6 +66,7 @@
     <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
     <property name="mod.peerconnector.path" location="${mod.path}/peerconnector"/>
     <property name="mod.peerconnector-common.lib" location="${mod.dist.path}/peerconnector-common.jar" />
+    <property name="mod.peerconnector-ejb.lib" location="${mod.dist.path}/peerconnector-ejb.jar" />
 	<property name="mod.peerconnector-entity.lib" location="${mod.dist.path}/peerconnector-entity.jar" />
 	<property name="mod.peerconnector-interface.lib" location="${mod.dist.path}/peerconnector-interface.jar" />
     <property name="mod.peerconnector-rar.lib" location="${mod.dist.path}/peerconnector.rar" />
