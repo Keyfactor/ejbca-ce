@@ -110,8 +110,9 @@
   </subsection>
   <subsection name="Enterprise Edition features">
 <ul>
-<li>Common Criteria EAL4+ and CWA 14167 certified.</li>
 <li>Support and maintenance from PrimeKey, world renowned PKI experts.</li>
+<li>Maintenance and security releases.</li>
+<li>Common Criteria EAL4+ and CWA 14167 certified.</li>
 <li>Integrity protected <a href="docs/adminguide.html#Logging">audit log</a> (log signing), with digital signature or HMAC protection.</li>
 <li>Full database integrity protection of all tables, to detect database manipulation.</li>
 <li>Command line tool for verification of audit and database integrity protection.</li>
