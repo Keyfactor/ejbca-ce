@@ -61,7 +61,7 @@
     	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
 		<replace file="${build.dir}/WEB-INF/web.xml" token="!--@peer-connector-reference@-->" value="${replacement-string-peer-connector-reference}" />
         <war destfile="${mod.admin-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.6.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
         	<fileset dir="${resources.dir}" excludes="languages/*"/>
         </war>
     </target>
