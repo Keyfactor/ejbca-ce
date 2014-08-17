@@ -570,7 +570,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (!multipleCheckOk && enforceUniqueDistinguishedName) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(issuerDN, subjectDN);
             if (users.size() > 0 && !users.contains(username)) {
-                final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + username + "'",
+                final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
                         listUsers(users));
                 throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
@@ -578,8 +578,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (!multipleCheckOk && enforceUniquePublicKeys) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(issuerDN, subjectKeyId);
             if (users.size() > 0 && !users.contains(username)) {
-                final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", "'" + username + "'",
-                        listUsers(users));
+                final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", username);
+                log.info(msg+listUsers(users));
                 throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }

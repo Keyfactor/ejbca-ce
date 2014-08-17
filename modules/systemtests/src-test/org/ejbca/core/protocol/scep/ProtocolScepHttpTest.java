@@ -552,8 +552,7 @@ public class ProtocolScepHttpTest {
         final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
     
         String returnMessageString = new String(retMsg);      
-        String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user",
-                "'" + userName2 + "'", "'" + userName1 + "'");
+        String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user", userName2);
         if("createcert.key_exists_for_another_user".equals(localizedMessage)) {
             String currentDirectory = System.getProperty("user.dir");
             throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
