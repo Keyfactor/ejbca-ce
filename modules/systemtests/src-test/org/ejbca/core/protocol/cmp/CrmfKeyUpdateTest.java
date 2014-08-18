@@ -1316,7 +1316,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "User 'cmpTestAdmin' is not allowed to use same key as as another user is using.";
+            final String expectedErrMsg = "User 'cmpTestAdmin' is not allowed to use same key as another user is using.";
             assertEquals(expectedErrMsg, errMsg);
         } else {
             PKIBody body = respObject.getBody();
