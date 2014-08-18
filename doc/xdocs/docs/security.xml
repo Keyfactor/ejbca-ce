@@ -87,6 +87,19 @@ curl -v -XDELETE http://hostname:port/appContex
 <p>
 See <a href="https://docs.jboss.org/author/display/AS7/Securing+the+Management+Interfaces">Securing JBoss 7 Management Interfaces</a>.
 </p>
+<p>You can remove the JMX console completely by removing the following part from standalone.xml (JBoss EAP 6.2):</p>
+<source>
+&lt;subsystem xmlns="urn:jboss:domain:jmx:1.3">
+  &lt;expose-resolved-model/>
+  &lt;expose-expression-model/>
+  &lt;remoting-connector/>
+&lt;/subsystem>
+</source>
+<p>You can remove the welcome pages by setting <i>enable-welcome-root</i> to false (JBoss EAP 6.2):</p>
+<source>
+&lt;virtual-server name="default-host" enable-welcome-root="false"
+</source>
+<p>By default the management web console is only accessible if you configure user access to it, and it is not configured by default.</p>
 </subsubsection>
 <subsubsection name="Disable specific HTTP methods">
 <p>EJBCA by default limits the use of PUT|DELETE|TRACE|OPTIONS in it's web applications, but if you are unsure you can further enfoce it.</p>
