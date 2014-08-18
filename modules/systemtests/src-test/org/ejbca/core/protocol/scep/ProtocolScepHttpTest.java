@@ -578,7 +578,7 @@ public class ProtocolScepHttpTest {
         final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
         String returnMessageString = new String(retMsg);      
         String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage(
-                "createcert.subjectdn_exists_for_another_user", "'" + userName2 + "'", "'" + userName1 + "'");
+                "createcert.subjectdn_exists_for_another_user", userName2, "'" + userName1 + "'");
         
         if("createcert.subjectdn_exists_for_another_user".equals(localizedMessage)) {
             String currentDirectory = System.getProperty("user.dir");
