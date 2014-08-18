@@ -5037,8 +5037,83 @@ the "Save and test connection" button will cause an log entry to be added to the
 catalog. Notice that in this case if health check checks the publishers an log 
 entry will also be inserted for every health check run.
 </p>
-    
 </subsubsection>
+
+<subsubsection name="Cert Safe publisher for a HTTPS server">
+<p>
+The CertSafePublisher publishes certificate issuance and life cycle events 
+(revoke and unrevoke) to a HTTPS server. The HTTPS request body is a JSON 
+object with the fields: "status", "revocationReason" and "pem".
+</p>
+<p>Example of the JSON object:</p>
+<source>
+{                                                                       
+	"status": "revoked",                                              
+	"revocationReason": "keyComprimise",                             
+	"pem": "-----BEGIN CERTIFICATE-----\n                             
+	MIIDWTCCAkGgAwIBAgIIAZmQ+6dVVfgwDQYJKoZIhvcNAQEFBQAwOzEVMBMGA1UE\n
+	AwwMTWFuYWdlbWVudENBMRUwEwYDVQQKDAxFSkJDQSBTYW1wbGUxCzAJBgNVBAYT\n
+    	AlNFMB4XDTE0MDMwNDEwNTEyM1oXDTE2MDMwMzEwNTEyM1owETEPMA0GA1UEAwwG\n
+	c3NsZm9vMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2nqbOm3ocTTm\n
+    	jU49UgP7ugnhg427zHaPdJjWuMt1ZopVzF/46EEsHIfxyGL59J3otgMEXXBJgJwC\n
+    	QuZgtqfByAgKIWvrgcxBhvkCe6NRjNAJv0DPaxsEJRqpQEFxV3Eo24eOpN+mxWIm\n
+    	6h3N3vTgaaDBQTQMvcb3MndJDWte4+HoBwMtuJdfRapIjcCIkyfiNJKkS4NMvYGw\n
+    	G+lrReq4Za0Qhyqejjf4BB+QdE7xetZAtck9HAUlM28/zUuilPNeyftK7lR1Qcyp\n
+    	MxIYo6YI2mDbSDre7pr21srZB5lBdOP3dAb5B5MFZ7d4qqljygEb0HuUXedqu4pj\n
+    	8e4VNtv7EwIDAQABo4GKMIGHMB0GA1UdDgQWBBR3QlV5l7AvnfNN7D6sILhjMNHs\n
+    	LTAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFMIAelgt0T0LdOBNNFKBKb5rcu4V\n
+    	MA4GA1UdDwEB/wQEAwIF4DAnBgNVHSUEIDAeBggrBgEFBQcDAQYIKwYBBQUHAwIG\n
+    	CCsGAQUFBwMEMA0GCSqGSIb3DQEBBQUAA4IBAQADfEI0DgJVBHe63YCC8AhLo+VX\n
+    	Fudi97WmCJGfHMx42HaaQvHtIvvpCw8TUZ08k49gUv+qtRlznaKFQb02DjbWgyeY\n
+    	TKuCwueiXhMIb7i4Af1+cMFrajBGOYrjYkbGGOwfyN8KcOrQxQk30vBf47DGRtX8\n
+    	80fV12f1NWng1KD3ye7VcTnFQTkbwvZAT2aDQorqND8c7Pn8dEpPNnpP67EsLIvH\n
+    	biLb4qeaMa0pr21cE2LMV7ZhdyNbziiITB2oNsrdLIcKeTGKqmGSLDec6N0DPnmb\n
+    	NlJNaBcs77G2JSJfh908HEtaVqH+u5cKElV3pRSBbS9Z6DcAlwaC64G6tKs0\n    
+    	-----END CERTIFICATE-----"                                        
+}
+</source>
+<p>
+The "revocationReason" is optional.
+</p>
+<p>
+To use the Cert Safe Publisher, select "Edit Publishers" in the Administration GUI, create a new publisher and edit it.
+</p>
+<ul>
+<li>Publisher type: Custom Publisher</li>
+<li>Class Path: <br/>
+org.ejbca.core.model.ca.publisher.CertSafePublisher</li>
+<li>Properties of Custom Publisher: 
+</li>
+</ul>
+<source>
+certsafe.url=https://HOST:PORT/RELATIVE_PATH
+certsafe.authkeybindingname=INTERNAL_KEYBINDING_NAME
+
+# Optional properties:
+certsafe.connectiontimeout=CONNECTION_TIMEOUT.
+</source>
+<p>
+An Authentication Key Binding token should be created to specify the parameters used to establish connection 
+with the HTTPS server. For instructions on how to create an Authentication Key Binding, see 
+<a href="userguide.html#Managing Internal Key Bindings">Managing Internal Key Bindings</a>
+</p>
+<p>
+Click "Save and Test Connection" to save the entered information and validate
+that the entered configuration is correct. Select the publisher in the 
+certificate profiles.
+</p>
+<p>
+If an error occures in the server, EJBCA can expect an error message sent inside a JSON object with the 
+keyword "error". The error message will be visible in the log file. 
+</p>
+<p>Example of the error JSON object:</p>
+<source>
+{                                                                       
+	"error": "An error message from the server.",                                              
+}
+</source>
+</subsubsection>
+
 </subsection>
 
 <subsection name="Publisher Queue and failures">
