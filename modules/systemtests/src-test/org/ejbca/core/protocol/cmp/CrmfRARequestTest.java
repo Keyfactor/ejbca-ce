@@ -227,12 +227,12 @@ public class CrmfRARequestTest extends CmpTestCase {
             crmfHttpUserTest(
                     userDN2,
                     key1,
-                    "User 'cmptest2' is not allowed to use same key as as another user is using.",
+                    "User 'cmptest2' is not allowed to use same key as another user is using.",
                     null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
             crmfHttpUserTest(
                     userDN1,
                     key2,
-                    "User 'cmptest1' is not allowed to use same key as as another user is using.",
+                    "User 'cmptest1' is not allowed to use same key as another user is using.",
                     null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
             
             // check that you can not issue a certificate with same DN as another user.            
