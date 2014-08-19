@@ -15,12 +15,16 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -145,6 +149,8 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String PAGE_PUBLISHER                  = "publisherpage.jspf";
     public static final String PAGE_PUBLISHERS                 = "publisherspage.jspf";
 
+    private EjbcaWebBean ejbcawebbean;
+
     /** Creates new LogInterfaceBean */
     public EditPublisherJSPHelper(){
     }
@@ -159,6 +165,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
 
         if(!initialized){
             this.cabean = cabean;
+            this.ejbcawebbean = ejbcawebbean;
             initialized = true;
             issuperadministrator = false;
             try{
@@ -622,26 +629,77 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
         return includefile;
     }
     
-    public Integer[] getAvailablePublisherTypes() {
-        List<Integer> ret = new ArrayList<Integer>();
-        ret.add(PublisherConst.TYPE_LDAPPUBLISHER);
-        ret.add(PublisherConst.TYPE_LDAPSEARCHPUBLISHER);
-        ret.add(PublisherConst.TYPE_ADPUBLISHER);
-        ret.add(PublisherConst.TYPE_VAPUBLISHER);
-        ret.add(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER);
-        return ret.toArray(new Integer[0]);
-    }
+    private static final int[] AVAILABLEPUBLISHER_TYPES = new int[] {
+        PublisherConst.TYPE_LDAPPUBLISHER, PublisherConst.TYPE_LDAPSEARCHPUBLISHER, PublisherConst.TYPE_ADPUBLISHER,
+        PublisherConst.TYPE_VAPUBLISHER, PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER
+    };
+    private static final String[] AVAILABLEPUBLISHER_TYPETEXTS = new String[] {
+        "LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER",
+        "VAPUBLISHER", "CUSTOMPUBLISHER"
+    };
 
-    public String[] getAvailablePublisherTypeTexts() {
-        List<String> ret = new ArrayList<String>();
-        ret.add("LDAPPUBLISHER");
-        ret.add("LDAPSEARCHPUBLISHER");
-        ret.add("ACTIVEDIRECTORYPUBLISHER");
-        ret.add("VAPUBLISHER");
-        ret.add("CUSTOMPUBLISHER");
-        return ret.toArray(new String[0]);
+    /** @return the available publishers as list that can be used by JSF h:datatable in the future. */
+    public List<SelectItem> getSelectablePublishers() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        // List all built in publisher types and all the dynamic ones
+        for (int i=0; i<AVAILABLEPUBLISHER_TYPES.length; i++) {
+            final int type = AVAILABLEPUBLISHER_TYPES[i];
+            if (type==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+                for (final String klass : getCustomClasses()) {
+                    final String klassSimpleName = klass.substring(klass.lastIndexOf('.')+1);
+                    final String text = ejbcawebbean.getText(klassSimpleName.toUpperCase());
+                    if (!text.equals(klassSimpleName.toUpperCase())) {
+                        // Present the publisher with a nice name if a language key is present
+                        ret.add(new SelectItem(Integer.valueOf(type).toString()+"-"+klass, text));
+                    } else {
+                        // Present the publisher with the class name when no language key is present
+                        ret.add(new SelectItem(Integer.valueOf(type).toString()+"-"+klass, klassSimpleName + " ("+ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[i])+")"));
+                    }
+                }
+            } else {
+                // Add built in publisher types
+                ret.add(new SelectItem(Integer.valueOf(type).toString(), ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[i])));
+            }
+        }
+        // Allow selection of any class path
+        if (WebConfiguration.isManualClassPathsEnabled()) {
+            ret.add(new SelectItem(Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString(), ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[4])));
+        }
+        // If an publisher was configure before the plugin mechanism we still want to show it
+        boolean customNoLongerAvailable = true;
+        final String selectedPublisherValue = getSelectedPublisherValue();
+        for (final SelectItem current : ret) {
+            if (current.getValue().equals(selectedPublisherValue)) {
+                customNoLongerAvailable = false;
+                break;
+            }
+        }
+        if (customNoLongerAvailable) {
+            ret.add(new SelectItem(selectedPublisherValue, selectedPublisherValue.split("-")[1]));
+        }
+        // Sort by label
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(final SelectItem selectItem0, final SelectItem selectItem1) {
+                return String.valueOf(selectItem0.getLabel()).compareTo(String.valueOf(selectItem1.getLabel()));
+            }
+        });
+        return ret;
     }
-
+    
+    public String getSelectedPublisherValue() {
+        if (getPublisherType()==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+            final CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisherdata;
+            final String currentClass = custompublisher.getClassPath();
+            if (currentClass==null || currentClass.isEmpty()) {
+                return Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString();
+            } else {
+                return Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString() + "-" + currentClass;
+            }
+        }
+        return Integer.valueOf(getPublisherType()).toString();
+    }
+    
     public int getPublisherType(){
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
         if(publisherdata instanceof CustomPublisherContainer) {
