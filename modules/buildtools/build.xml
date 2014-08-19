@@ -4,12 +4,12 @@
 		Various build tools for ant
     </description>
 
-	<dirname property="this.dir" file="${ant.file.buildtools}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="buildtools.dir" file="${ant.file.buildtools}"/>
+	<import file="${buildtools.dir}/../build.xml"/>
 	<property name="build.dir" location="${mod.buildtools.build}"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-test.dir" location="${this.dir}/src-test"/>
+	<property name="build-test.dir" location="${buildtools.dir}/build-test"/>
+	<property name="src.dir" location="${buildtools.dir}/src"/>
+	<property name="src-test.dir" location="${buildtools.dir}/src-test"/>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
@@ -42,7 +42,7 @@
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
     	<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" dir="${buildtools.dir}">
 			<classpath>
                 <path refid="lib.junit.classpath"/>
                 <path location="${build.dir}" />
