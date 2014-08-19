@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -328,6 +329,17 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
             }
         }
+        
+        //Insert plugin rules 
+        ServiceLoader<? extends AccessRulePlugin> serviceLoader = ServiceLoader.load(AccessRulePlugin.class);
+        for (AccessRulePlugin accessRulePlugin : serviceLoader) {
+            for (String rule : accessRulePlugin.getRules()) {
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
+                    accessrules.add(rule);
+                }
+            }
+        }
+        
         if (log.isTraceEnabled()) {
             log.trace("<getAuthorizedAvailableAccessRules");
         }

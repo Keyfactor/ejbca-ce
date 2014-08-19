@@ -29,7 +29,7 @@
 		<attribute name="interface" />
 		<element name="buildservicemanifest" implicit="yes" />
 		<sequential>
-			<antcall target="buildservicemanifestbuilder" /> 
+			<antcall target="buildservicemanifestbuilder" inheritall="false" inheritrefs="false"/> 
 			<java classname="org.primekey.anttools.ServiceManifestBuilder" fork="true" failonerror="true" >
 				<classpath>
 					<path refid="@{classpath}" />
