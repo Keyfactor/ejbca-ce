@@ -168,8 +168,6 @@
 		<include name="org/cesecore/util/**/*.java"/>
 		<include name="org/cesecore/certificates/util/**/*.java"/>
 		<exclude name="org/cesecore/**/*SessionBean.java"/>
-		
-
 		<!-- From EJBCA entity lib -->
 		<include name="org/cesecore/certificates/ca/internal/CACacheManager.java"/>
 		<include name="org/cesecore/certificates/ca/CADoesntExistsException.java"/>
@@ -237,6 +235,8 @@
 		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileNotFoundException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
 		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
+		<!-- General Plugin Dependency -->
+		<include name="org/ejbca/core/ejb/authorization/AccessRulePlugin.java"/>
 		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->
 		<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
 		<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
