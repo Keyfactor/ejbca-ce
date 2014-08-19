@@ -16,8 +16,10 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -32,7 +34,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
  *
  * @version $Id$
  */
-public class CustomPublisherContainer extends BasePublisher{
+public class CustomPublisherContainer extends BasePublisher {
 	private static final long serialVersionUID = -7060678968358301488L;
 
     private ICustomPublisher custompublisher = null; 
@@ -82,6 +84,16 @@ public class CustomPublisherContainer extends BasePublisher{
 		data.put(PROPERTYDATA, propertydata);	
 	}
 	
+	public boolean isCustomUiRenderingSupported() {
+	    return getCustomPublisher() instanceof CustomPublisherUiSupport;
+	}
+    public List<CustomPublisherProperty> getCustomUiPropertyList() {
+        if (getCustomPublisher() instanceof CustomPublisherUiSupport) {
+            return ((CustomPublisherUiSupport)getCustomPublisher()).getCustomUiPropertyList();
+        }
+        return new ArrayList<CustomPublisherProperty>();
+    }
+	
 	public Properties getProperties() throws IOException{
 		Properties prop = new Properties();
 		prop.load(new ByteArrayInputStream(getPropertyData().getBytes()));
@@ -117,9 +129,13 @@ public class CustomPublisherContainer extends BasePublisher{
     // Private methods
 	private ICustomPublisher getCustomPublisher() {
 		if(custompublisher == null){
+		    final String classPath = getClassPath();
+		    if (classPath==null || classPath.isEmpty()) {
+		        return null;
+		    }
 			try{
 				@SuppressWarnings("unchecked")
-                Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( getClassPath() );
+                Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( classPath );
 				this.custompublisher =  implClass.newInstance();
 				this.custompublisher.init(getProperties());				
 			}catch(ClassNotFoundException e){

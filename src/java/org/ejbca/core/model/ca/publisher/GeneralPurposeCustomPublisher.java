@@ -40,7 +40,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @version $Id$
  */
-public class GeneralPurposeCustomPublisher implements ICustomPublisher {
+public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPublisherUiSupport {
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -96,6 +96,22 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
         revokeExternalCommandFileName = properties.getProperty(revokeExternalCommandPropertyName);
         calclulateDeltaCrlLocally = properties.getProperty(calclulateDeltaCrlLocallyPropertyName, "false").equalsIgnoreCase("true");
     } // init
+
+    @Override
+    public List<CustomPublisherProperty> getCustomUiPropertyList() {
+        final List<CustomPublisherProperty> ret = new ArrayList<CustomPublisherProperty>();
+        ret.add(new CustomPublisherProperty(crlFailOnErrorCodePropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(crlFailOnErrorCode).toString()));
+        ret.add(new CustomPublisherProperty(crlFailOnStandardErrorPropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(crlFailOnStandardError).toString()));
+        ret.add(new CustomPublisherProperty(crlExternalCommandPropertyName, CustomPublisherProperty.UI_TEXTINPUT, crlExternalCommandFileName));
+        ret.add(new CustomPublisherProperty(certFailOnErrorCodePropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(certFailOnErrorCode).toString()));
+        ret.add(new CustomPublisherProperty(certFailOnStandardErrorPropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(certFailOnStandardError).toString()));
+        ret.add(new CustomPublisherProperty(certExternalCommandPropertyName, CustomPublisherProperty.UI_TEXTINPUT, certExternalCommandFileName));
+        ret.add(new CustomPublisherProperty(revokeFailOnErrorCodePropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(revokeFailOnErrorCode).toString()));
+        ret.add(new CustomPublisherProperty(revokeFailOnStandardErrorPropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(revokeFailOnStandardError).toString()));
+        ret.add(new CustomPublisherProperty(revokeExternalCommandPropertyName, CustomPublisherProperty.UI_TEXTINPUT, revokeExternalCommandFileName));
+        ret.add(new CustomPublisherProperty(calclulateDeltaCrlLocallyPropertyName, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(calclulateDeltaCrlLocally).toString()));
+        return ret;
+    }
 
     /**
      * Writes certificate to temporary file and executes an external command with
