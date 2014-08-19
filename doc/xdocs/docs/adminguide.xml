@@ -4891,6 +4891,10 @@ in a Jar with a special meta-data file. For example:
 com.example.ejbca.MyCustomPublisher
 com.example.ejbca.AnotherCustomPublisher
 </source>
+<p>
+Additionally you can have your publisher implement org.ejbca.core.model.ca.publisher.CustomPublisherUiSupport
+to make the configuration more user-friendly in the AdminGUI.
+</p>
 </subsubsection>
 <subsubsection name="Publishing with an external application">
 <p>
@@ -4908,23 +4912,15 @@ To start using the GPCP, select "Edit Publishers" in the Administration GUI. Add
 publisher "GPCP" and then "Edit" the same. Choose 
 </p>
 <ul>
-<li>Publisher type: Custom Publisher</li>
-<li>Class Path: org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher</li>
-<li>Properties of Custom Publisher: 
-</li>
+<li>Publisher type: General Purpose Custom Publisher</li>
+<li>Properties: </li>
+<ul>
+<li>Full pathname of X publishing script: For example "/fullpathname/exportscript.sh"</li>
+<li>Fail X publishing on script error code: Will treat the publishing as unsuccessful if the script returns with a non-zero error code.</li>
+<li>Fail X publishing on output to stderr: Will treat the publishing as unsuccessful if the script writes anything to standard error.</li>
+<li>Calculate Delta CRL locally: Described below.</li>
 </ul>
-<source>
-crl.application /fullpathname/exportscript.sh
-crl.failOnStandardError &lt;true | false&gt;
-crl.failOnErrorCode &lt;true | false&gt;
-crl.calclulateDeltaCrlLocally &lt;true | false&gt;
-cert.application /fullpathname/exportscript.sh
-cert.failOnStandardError &lt;true | false&gt;
-cert.failOnErrorCode &lt;true | false&gt;
-revoke.application /fullpathname/exportscript.sh
-revoke.failOnStandardError &lt;true | false&gt;
-revoke.failOnErrorCode &lt;true | false&gt;
-</source>
+</ul>
 <p>
 and click "Save and Test Connection" to save the entered information and validate
 that the specified applications exist. Select "Edit Certificate Authorities" in

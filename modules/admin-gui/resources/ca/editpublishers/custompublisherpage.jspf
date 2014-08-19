@@ -10,6 +10,10 @@
     }
   }
   final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.')+1);
+  String currentClassText = ejbcawebbean.getText(currentClassSimple.toUpperCase());
+  if (currentClassText.equals(currentClassSimple.toUpperCase())) {
+	  currentClassText = currentClassSimple;
+  }
 %>
 
    <%-- Custom publisher settings --%>
@@ -19,7 +23,7 @@
       	<% if (customClassChoice) { %>
          <strong><%= ejbcawebbean.getText("CUSTOMPUBLISHERSETTINGS") %></strong>
       	<% } else { %>
-         <strong><%= currentClassSimple + " " + ejbcawebbean.getText("PUBLISHERSETTINGS") %></strong>
+         <strong><%= currentClassText + " " + ejbcawebbean.getText("PUBLISHERSETTINGS") %></strong>
       	<% } %>
       </td>
       <td width="55%" valign="top"> 
