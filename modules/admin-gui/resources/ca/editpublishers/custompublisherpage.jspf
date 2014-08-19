@@ -1,80 +1,95 @@
 <%               
   CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisherhelper.publisherdata;
+
+  final String currentClass = custompublisher.getClassPath();
+  boolean customClassChoice = true;
+  for (String klass : publisherhelper.getCustomClasses()) {
+    if (klass.equals(currentClass)) {
+      customClassChoice = false;
+      break;
+    }
+  }
+  final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.')+1);
 %>
 
    <%-- Custom publisher settings --%>
 
    <tr id="Row<%=row++%2%>" class="section"> 
-      <td width="45%" valign="top" align="right"> 
+      <td width="45%" valign="top" align="right">
+      	<% if (customClassChoice) { %>
          <strong><%= ejbcawebbean.getText("CUSTOMPUBLISHERSETTINGS") %></strong>
+      	<% } else { %>
+         <strong><%= currentClassSimple + " " + ejbcawebbean.getText("PUBLISHERSETTINGS") %></strong>
+      	<% } %>
       </td>
       <td width="55%" valign="top"> 
+        <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled() || customClassChoice) { %>
          &nbsp;
+        <% } else { %>
+            <input type="hidden" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>"
+                   value='<c:out value="<%= currentClass %>"/>'>
+        <% } %>
       </td>
     </tr>
+    
+        <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled() || customClassChoice) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="45%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CLASSPATH") %>
       </td>
       <td width="55%" valign="top"> 
-
-        <select name="<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>" id="<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>" size="1"
-            <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) { %>
-                onchange="document.getElementById('<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>').disabled = (this.value != &quot;&quot;); return true"
-            <% } %>
-            >
-            
-           <% 
-           
-              if (!org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) {
-                  %><option value=""><%= ejbcawebbean.getText("PLEASE_SELECT") %></option><%
-              }
-              
-              String currentClass = custompublisher.getClassPath();
-              boolean customClassChoice = true;
-              boolean hasOldManualClass = false;
-              for (String klass : publisherhelper.getCustomClasses()) { %>
-                  <option value="<c:out value="<%=klass%>"/>"
-                     <% if(klass.equals(currentClass) || currentClass == null || currentClass.isEmpty()) {
-                           out.write(" selected ");
-                           customClassChoice = false;
-                           currentClass = klass;
-                        } %> >
-                     <c:out value="<%=klass%>"/>
-                  </option>
-              <% }
-              
-              if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) {
-                  %><option value="" <% if (customClassChoice) { %>selected="selected"<% } %>><%= ejbcawebbean.getText("MANUALCLASSPATH") %></option><%
-              } else if (customClassChoice && currentClass != null && !currentClass.isEmpty()) {
-                  %><option value="<c:out value="<%=currentClass%>"/>" selected="selected"><c:out value="<%=currentClass%>"/>*</option><%
-                  hasOldManualClass = true;
-              }
-              %>
-        </select>
-        
-        <% if (hasOldManualClass) { %>
-            <p><small><%= ejbcawebbean.getText("OLDMANUALCLASSPATHELP") %></small></p>
+        <%
+        	if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled() && customClassChoice) { %>
+            <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="60" maxlength="255"
+                   value='<c:out value="<%= currentClass %>"/>'>
+        <% } else { %>
+            <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="60" maxlength="255"
+                   value='<c:out value="<%= currentClass %>"/>' readonly="readonly">
+	        <% if (customClassChoice) { %>
+	            <p><small><%= ejbcawebbean.getText("OLDMANUALCLASSPATHELP") %></small></p>
+	        <% } %>
         <% } %>
-        
-        <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) { %>
-            <br>
-            <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="45" maxlength="255"
-                   value='<c:out value="<%= customClassChoice ? currentClass : &quot;&quot; %>"/>'>
-            
-            <% if (!customClassChoice) { %>
-                <script type="text/javascript">
-                <!--
-                var textCustomClass = document.getElementById('<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>');
-                var selectClass = document.getElementById('<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>');
-                textCustomClass.disabled = (selectClass.value != "");
-                //-->
-                </script>
-            <% } %>
-        <% } %> 
-        
       </td>
     </tr>
+        <% } %>
+        
+    <% if (custompublisher.isCustomUiRenderingSupported()) {
+    	for (org.ejbca.core.model.ca.publisher.CustomPublisherProperty current : custompublisher.getCustomUiPropertyList()) { %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="45%" valign="top" align="right">
+         <%= ejbcawebbean.getText(currentClassSimple.toUpperCase()+"_" + current.getName().replaceAll("\\.", "_").toUpperCase()) %>
+      </td>
+      <td width="55%" valign="top">          
+    	<%	if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_SELECTONE) {
+    		%>
+    			<select name="<%=current.getName()%>" id="<%=current.getName()%>" size="1">
+    			<% for (int i=0; i<current.getOptions().size(); i++) {
+    				final String option = current.getOptions().get(i);
+    				final String optionText = current.getOptionTexts().get(i);
+    				if (option.equals(current.getValue())) { %>
+    					<option value="<c:out value="<%=option%>"/>" selected="selected"><c:out value="<%=optionText%>"/></option>
+    				<% } else { %>
+    					<option value="<c:out value="<%=option%>"/>"><c:out value="<%=optionText%>"/></option>
+    				<% } %>
+    			<% } %>
+    			</select>
+    		<%
+    		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_TEXTINPUT) { %>
+                <input type="text" name="<%=current.getName()%>" id="<%=current.getName()%>" size="80" maxlength="255"
+                        value='<c:out value="<%= current.getValue() %>"/>'>
+    		<%
+    		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_BOOLEAN) { %>
+	            <input type="checkbox" name="<%=current.getName()%>" id="<%=current.getName()%>" value="true"
+	           <%  if("true".equals(current.getValue())) { out.write(" CHECKED "); } %>/>
+          		<label for="<%=current.getName()%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+    		<%
+    		} else {
+    			// Not yet implemented..
+    		}
+    	} %>
+      </td>
+    </tr>
+    <% } else { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="45%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("PROPERTIESOFCUSTOM") %>
@@ -83,4 +98,5 @@
          <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols="45" rows="8"><c:out value="<%= custompublisher.getPropertyData() %>"/></textarea>
       </td>
     </tr>
+    <% } %>
     

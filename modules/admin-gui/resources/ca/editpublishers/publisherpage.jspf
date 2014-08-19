@@ -5,12 +5,8 @@
   TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
   Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
-  int[] publishertypes = {PublisherConst.TYPE_LDAPPUBLISHER, 
-                          PublisherConst.TYPE_LDAPSEARCHPUBLISHER,
-                          PublisherConst.TYPE_ADPUBLISHER,
-                          PublisherConst.TYPE_VAPUBLISHER,
-                          PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER};
-  String[] publishertypetexts = {"LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER", "VAPUBLISHER", "CUSTOMPUBLISHER"};
+  Integer[] publishertypes = publisherhelper.getAvailablePublisherTypes();
+  String[] publishertypetexts = publisherhelper.getAvailablePublisherTypeTexts();
 
   int row = 0;
 %>
@@ -193,12 +189,38 @@ function checkallfields(){
       <td width="55%">
         <select name="<%=EditPublisherJSPHelper.SELECT_PUBLISHERTYPE%>" size="1" onchange='document.publishertype.submit()'>
            <%  int currenttype = publisherhelper.getPublisherType(); 
-               for(int i=0; i<publishertypes.length;i++){ %>
-           <option  value="<%= publishertypes[i] %>" 
-              <% if(publishertypes[i] == currenttype) out.write(" selected "); %>> 
-              <%= ejbcawebbean.getText(publishertypetexts[i]) %>
-           </option>
-           <%   } %> 
+               for (int i=0; i<publishertypes.length;i++) {
+            	   if (publishertypes[i]==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+            		   boolean selectGeneric = currenttype==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
+                       for (String klass : publisherhelper.getCustomClasses()) {
+                    	   boolean selectThis = false;
+                    	   if (currenttype==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+                        	   CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisherhelper.publisherdata;
+                               String currentClass = custompublisher.getClassPath();
+                               if (klass.equals(currentClass)) {
+                            	   selectThis = true;
+                            	   selectGeneric = false;
+                               }
+                    	   }
+                       %>
+			           <option value="<%= PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER + "-" + klass %>" 
+		            	  <% if(selectThis) { out.write(" selected "); } %>>
+    		        	  <%= ejbcawebbean.getText(publishertypetexts[i]) + " - " + klass.substring(klass.lastIndexOf('.')+1) %>
+        			   </option>
+           <%          }
+                       if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) { %>
+			           <option value="<%= PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER %>" 
+		            	  <% if(selectGeneric) { out.write(" selected "); } %>> 
+    		        	  <%= ejbcawebbean.getText(publishertypetexts[i])%>
+        			   </option>
+           <%          }
+                   } else { %>
+			           <option  value="<%= publishertypes[i] %>" 
+			              <% if(publishertypes[i] == currenttype) out.write(" selected "); %>> 
+			              <%= ejbcawebbean.getText(publishertypetexts[i]) %>
+			           </option>
+           <%	   }
+              } %> 
         </select>
       </td>
     </tr>

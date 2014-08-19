@@ -24,6 +24,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
@@ -289,22 +290,43 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                         	publisherdata.setUseQueueForCertificates(value != null && value.equals(CHECKBOX_VALUE));
 
                             if(publisherdata instanceof CustomPublisherContainer){
+                                final CustomPublisherContainer custompublisherdata = ((CustomPublisherContainer) publisherdata);
                                 String customClass = request.getParameter(TEXTFIELD_CUSTOMCLASSPATH);
                                 String selectClass = request.getParameter(SELECT_CUSTOMCLASS);
                                 if(selectClass != null && !selectClass.isEmpty()) {
                                     value = selectClass.trim();
-                                    ((CustomPublisherContainer) publisherdata).setClassPath(value);
+                                    custompublisherdata.setClassPath(value);
                                 } else if (customClass != null && !customClass.isEmpty()) {
                                     value = customClass.trim();
-                                    ((CustomPublisherContainer) publisherdata).setClassPath(value);
+                                    custompublisherdata.setClassPath(value);
                                 } else {
                                     // can happen if the user has Javascript turned off
                                     throw new IllegalArgumentException("No class path selected");
                                 }
-                                value = request.getParameter(TEXTAREA_CUSTOMPROPERTIES);
-                                if(value != null){
-                                    value = value.trim();
-                                    ((CustomPublisherContainer) publisherdata).setPropertyData(value);
+                                if (custompublisherdata.isCustomUiRenderingSupported()) {
+                                    final StringBuilder sb = new StringBuilder();
+                                    for (final CustomPublisherProperty customPublisherProperty : custompublisherdata.getCustomUiPropertyList()) {
+                                        final String customValue = request.getParameter(customPublisherProperty.getName());
+                                        if (customPublisherProperty.getType()==CustomPublisherProperty.UI_BOOLEAN) {
+                                            if (customValue==null) {
+                                                sb.append(customPublisherProperty.getName()).append('=').append("false").append('\n');
+                                            } else {
+                                                sb.append(customPublisherProperty.getName()).append('=').append("true").append('\n');
+                                            }
+                                            sb.append(customPublisherProperty.getName()).append('=').append(customValue).append('\n');
+                                        } else {
+                                            if (customValue!=null) {
+                                                sb.append(customPublisherProperty.getName()).append('=').append(customValue).append('\n');
+                                            }
+                                        }
+                                    }
+                                    custompublisherdata.setPropertyData(sb.toString());
+                                } else {
+                                    value = request.getParameter(TEXTAREA_CUSTOMPROPERTIES);
+                                    if(value != null){
+                                        value = value.trim();
+                                        custompublisherdata.setPropertyData(value);
+                                    }
                                 }
                             }
 
@@ -564,23 +586,32 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                 this.publishername = request.getParameter(HIDDEN_PUBLISHERNAME);
                 String value = request.getParameter(SELECT_PUBLISHERTYPE);
                 if(value!=null){
-                    int profiletype = Integer.parseInt(value);
-                    switch(profiletype){
-                    case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER :
+                    int dashPos = value.indexOf('-');
+                    if (dashPos==-1) {
+                        int profiletype = Integer.parseInt(value);
+                        switch(profiletype){
+                        case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER :
+                            publisherdata = new CustomPublisherContainer();
+                            break;
+                        case PublisherConst.TYPE_LDAPPUBLISHER :
+                            publisherdata =  new LdapPublisher();
+                            break;
+                        case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
+                            publisherdata = new LdapSearchPublisher();
+                            break;
+                        case PublisherConst.TYPE_ADPUBLISHER :
+                            publisherdata =  new ActiveDirectoryPublisher();
+                            break;
+                        case PublisherConst.TYPE_VAPUBLISHER:
+                            publisherdata =  new ValidationAuthorityPublisher();
+                            break;
+                        }
+                    } else {
                         publisherdata = new CustomPublisherContainer();
-                        break;
-                    case PublisherConst.TYPE_LDAPPUBLISHER :
-                        publisherdata =  new LdapPublisher();
-                        break;
-                    case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
-                        publisherdata = new LdapSearchPublisher();
-                        break;
-                    case PublisherConst.TYPE_ADPUBLISHER :
-                        publisherdata =  new ActiveDirectoryPublisher();
-                        break;
-                    case PublisherConst.TYPE_VAPUBLISHER:
-                        publisherdata =  new ValidationAuthorityPublisher();
-                        break;
+                        final String customClassName = value.substring(dashPos+1);
+                        if (getCustomClasses().contains(customClassName)) {
+                            ((CustomPublisherContainer)publisherdata).setClassPath(customClassName);
+                        }
                     }
                 }
 
@@ -590,10 +621,29 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
 
         return includefile;
     }
+    
+    public Integer[] getAvailablePublisherTypes() {
+        List<Integer> ret = new ArrayList<Integer>();
+        ret.add(PublisherConst.TYPE_LDAPPUBLISHER);
+        ret.add(PublisherConst.TYPE_LDAPSEARCHPUBLISHER);
+        ret.add(PublisherConst.TYPE_ADPUBLISHER);
+        ret.add(PublisherConst.TYPE_VAPUBLISHER);
+        ret.add(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER);
+        return ret.toArray(new Integer[0]);
+    }
+
+    public String[] getAvailablePublisherTypeTexts() {
+        List<String> ret = new ArrayList<String>();
+        ret.add("LDAPPUBLISHER");
+        ret.add("LDAPSEARCHPUBLISHER");
+        ret.add("ACTIVEDIRECTORYPUBLISHER");
+        ret.add("VAPUBLISHER");
+        ret.add("CUSTOMPUBLISHER");
+        return ret.toArray(new String[0]);
+    }
 
     public int getPublisherType(){
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
-
         if(publisherdata instanceof CustomPublisherContainer) {
             retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
         }
