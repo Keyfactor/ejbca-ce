@@ -21,6 +21,12 @@
       <td width="60%"></td>
     </tr>
   <% } %>
+  <% if(triedtoeditnonexistingprofile){ %> 
+    <tr> 
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("EEPROFILEDOESNOTEXIST") %></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
   <% if(triedtodeleteemptyprofile){ %> 
     <tr> 
       <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTDELETEEMPTYPROFILE") %></td>
