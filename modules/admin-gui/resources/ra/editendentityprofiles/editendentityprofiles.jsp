@@ -4,6 +4,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
                 org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.cesecore.certificates.endentity.EndEntityConstants, org.cesecore.certificates.crl.RevokedCertInfo,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
+                org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, java.util.Map.Entry,
                 org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
@@ -178,6 +179,7 @@
   // Initialize environment
   String includefile = "endentityprofilespage.jspf";
   boolean  triedtoeditemptyprofile   = false;
+  boolean  triedtoeditnonexistingprofile   = false;
   boolean  triedtodeleteemptyprofile = false;
   boolean  profileexists             = false;
   boolean  profiledeletefailed       = false;
@@ -234,7 +236,14 @@
          profile = request.getParameter(SELECT_PROFILE);
          if(profile != null){
            if(!profile.trim().equals("")){
-             if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
+             if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){
+               try {
+                  // Check if this profile exists
+                  ejbcarabean.getEndEntityProfileId(profile);
+               } catch (EndEntityProfileNotFoundException e) {
+                  triedtoeditnonexistingprofile=true;
+                  profile= null;                 
+               } 
                ejbcarabean.setTemporaryEndEntityProfile(null);
                includefile="endentityprofilepage.jspf"; 
              }else{
