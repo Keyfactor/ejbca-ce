@@ -950,8 +950,11 @@ function checkallfields(){
                 <option value="<%= CAInfo.SIGNEDBYEXTERNALCA%>" <% if(cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) { %>selected <% } %> >
                   <%= ejbcawebbean.getText("EXTERNALCA") %>
                 </option>  
-                <% for (final Object nameOfCa : casigners.keySet()) { %>
-                     <option value="<%= casigners.get(nameOfCa.toString())%>" <% if(cainfo.getSignedBy() == casigners.get(nameOfCa.toString())) { %>selected <% } %> > 
+                <% for (final Object nameOfCa : casigners.keySet()) {
+                     int entryId = casigners.get(nameOfCa.toString());
+                     if (entryId == cainfo.getCAId()) { continue; }
+                     %>
+                     <option value="<%= casigners.get(nameOfCa.toString())%>" <% if(cainfo.getSignedBy() == entryId) { %>selected <% } %> > 
                          <%= nameOfCa.toString() %>
                      </option>  
                 <% } %> 
