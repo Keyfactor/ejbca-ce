@@ -954,7 +954,7 @@ function checkallfields(){
                      int entryId = casigners.get(nameOfCa.toString());
                      if (entryId == cainfo.getCAId()) { continue; }
                      %>
-                     <option value="<%= casigners.get(nameOfCa.toString())%>" <% if(cainfo.getSignedBy() == entryId) { %>selected <% } %> > 
+                     <option value="<%= entryId %>" <% if(cainfo.getSignedBy() == entryId) { %>selected <% } %> > 
                          <%= nameOfCa.toString() %>
                      </option>  
                 <% } %> 
