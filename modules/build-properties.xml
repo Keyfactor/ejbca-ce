@@ -390,6 +390,8 @@
 	<path id="lib.jboss-log4j.classpath"><fileset dir="${appserver.home}/client" includes="jboss-logging-log4j.jar log4j.jar"/></path>
 	
 	<path id="lib.log4j.classpath"><pathelement location="${ejbca.home}/lib/log4j-1.2.16.jar"/></path>
+	
+	<path id="lib.json.classpath"><pathelement location="${ejbca.home}/lib/ct/json-simple-*.jar"/></path>
 
 	<path id="lib.ejbca-util.classpath">
     	<pathelement location="${ejbca.home}/lib/cert-cvc.jar"/>
@@ -458,11 +460,11 @@
 	<!-- Certificate Transparency -->
 	<path id="lib.ctlog.classpath">
 	    <path refid="lib.commons-codec.classpath"/>
+		<path refid="lib.json.classpath"/>
 	    <fileset dir="${ejbca.home}/lib/ct">
 	        <include name="ctlog-jdk6-*.jar"/>
 	        <include name="protobuf-*.jar"/>
             <include name="guava-*.jar" />
-            <include name="json-simple-*.jar" />
 	        
 	        <!-- TODO should update the files in lib/ and use them instead -->
             <include name="httpclient-*.jar" />
