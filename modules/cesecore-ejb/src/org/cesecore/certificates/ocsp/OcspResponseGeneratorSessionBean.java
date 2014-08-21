@@ -73,8 +73,10 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
@@ -1018,6 +1020,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             Date producedAt = null;
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
+                ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
+                if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash)) {
+                    throw new InvalidAlgorithmException("CertID with SHA1 and SHA256 are supported, not: "+certIdhash.getId());
+                }
                 transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                 transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID().toString());
                 transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
@@ -1274,6 +1280,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
             transactionLogger.writeln();
             auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
+        } catch (InvalidAlgorithmException e) {
+            transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+            auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+            String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+            log.info(errMsg); // No need to log the full exception here
+            // RFC 2560: responseBytes are not set on error.
+            ocspResponse = responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null);
+            transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+            transactionLogger.writeln();
+            auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
         } catch (NoSuchAlgorithmException e) {
             ocspResponse = processDefaultError(responseGenerator, transactionLogger, auditLogger, e);
         } catch (CertificateException e) {
@@ -1845,12 +1861,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 Certificate ocspCertificate = certificateStoreSession.findCertificateByFingerprint(internalKeyBindingInfo.getCertificateId());
                 X509Certificate issuingCertificate = certificateStoreSession.findLatestX509CertificateBySubject(CertTools
                         .getIssuerDN(ocspCertificate));
-                CertificateID certId = OcspSigningCache.getCertificateIDFromCertificate(issuingCertificate);
-                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
+                List<CertificateID> certIds = OcspSigningCache.getCertificateIDFromCertificate(issuingCertificate);
+                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certIds.get(0));
                 if(ocspSigningCacheEntry == null) {
                     //Could be a cache issue?
                     try {
-                        ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
+                        ocspSigningCacheEntry = findAndAddMissingCacheEntry(certIds.get(0));
                     } catch (CertificateEncodingException e) {
                        throw new IllegalStateException("Could not process certificate", e);
                     }

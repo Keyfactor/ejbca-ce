@@ -27,7 +27,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
  */
 public class OcspSigningCacheEntry {
 
-    private final CertificateID certificateID;
+    private final List<CertificateID> certificateID;
     private final List<X509Certificate> caCertificateChain;
     private final X509Certificate ocspSigningCertificate;
     private final List<X509Certificate> fullCertificateChain;
@@ -53,7 +53,7 @@ public class OcspSigningCacheEntry {
         this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(lowestLevelCaCertificate);
     }
 
-    public CertificateID getCertificateID() { return certificateID; }
+    public List<CertificateID> getCertificateID() { return certificateID; }
     public List<X509Certificate> getCaCertificateChain() { return caCertificateChain; }
     public X509Certificate getOcspSigningCertificate() { return ocspSigningCertificate; }
     public List<X509Certificate> getFullCertificateChain() { return fullCertificateChain; }
