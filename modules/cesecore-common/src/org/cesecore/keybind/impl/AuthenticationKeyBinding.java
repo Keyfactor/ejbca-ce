@@ -51,9 +51,11 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
             // Java 7
             TLS_VERSION_12 + SPLIT_CHAR + "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
             TLS_VERSION_12 + SPLIT_CHAR + "TLS_RSA_WITH_AES_256_CBC_SHA256",
+            TLS_VERSION_12 + SPLIT_CHAR + "TLS_RSA_WITH_AES_128_CBC_SHA",
             // Java 6
             TLS_VERSION_10 + SPLIT_CHAR + "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-            TLS_VERSION_10 + SPLIT_CHAR + "TLS_RSA_WITH_AES_256_CBC_SHA"
+            TLS_VERSION_10 + SPLIT_CHAR + "TLS_RSA_WITH_AES_256_CBC_SHA",
+            TLS_VERSION_10 + SPLIT_CHAR + "TLS_RSA_WITH_AES_128_CBC_SHA"
     };
 
     public static final String PROPERTY_PROTOCOL_AND_CIPHER_SUITE = "protocolAndCipherSuite";
