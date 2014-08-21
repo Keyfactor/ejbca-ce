@@ -391,8 +391,8 @@
 	
 	<path id="lib.log4j.classpath"><pathelement location="${ejbca.home}/lib/log4j-1.2.16.jar"/></path>
 	
-	<path id="lib.json.classpath"><pathelement location="${ejbca.home}/lib/ct/json-simple-*.jar"/></path>
-
+	<path id="lib.json.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="json-simple-*.jar"/></path>
+	
 	<path id="lib.ejbca-util.classpath">
     	<pathelement location="${ejbca.home}/lib/cert-cvc.jar"/>
     	<pathelement location="${mod.ejbca-util.lib}"/>

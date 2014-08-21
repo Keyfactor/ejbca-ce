@@ -25,15 +25,6 @@
 		<path refid="lib.json.classpath"/>
 	</path>
 	
-	<path id="test.classpath">
-		<path refid="compile.classpath"/>
-		<path refid="lib.junit.classpath"/>
-		<path location="${build.dir}/classes"/>
-		<path refid="lib.commons-io.classpath"/>
-		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
-		<fileset dir="${ejbca.home}/lib" includes="json-simple-*.jar"/>
-	</path>
-	
 	<target name="build" depends="">
         <mkdir dir="${build.dir}/classes"/>
         <javac srcdir="${src.dir}" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
