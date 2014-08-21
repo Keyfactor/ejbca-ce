@@ -123,46 +123,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
         }
-        // We need special handling here of CVC certificate with EC keys, because they lack EC parameters in all certs except the Root certificate
-        // (CVCA)
-        PublicKey pubk = incert.getPublicKey();
-        if ((pubk instanceof PublicKeyEC)) {
-            PublicKeyEC pkec = (PublicKeyEC) pubk;
-            // The public key of IS and DV certificate (CVC) do not have any parameters so we have to do some magic to get a complete EC public key
-            ECParameterSpec spec = pkec.getParams();
-            if (spec == null) {
-                // We need to enrich this public key with parameters
-                try {
-                    if (cafp != null) {
-                        String cafingerp = cafp;
-                        CertificateData cacert = CertificateData.findByFingerprint(entityManager, cafp);
-                        if(cacert != null) {
-                        String nextcafp = cacert.getCaFingerprint();
-                        int bar = 0; // never go more than 5 rounds, who knows what strange things can exist in the CAFingerprint column, make sure we
-                                     // never get stuck here
-                        while ((!StringUtils.equals(cafingerp, nextcafp)) && (bar++ < 5)) {
-                            cacert = CertificateData.findByFingerprint(entityManager, cafp);
-                            if (cacert == null) {
-                                break;
-                            }
-                            cafingerp = nextcafp;
-                            nextcafp = cacert.getCaFingerprint();
-                        }
-                            if (cacert != null) {
-                                // We found a root CA certificate, hopefully ?
-                                PublicKey pkwithparams = cacert.getCertificate(this.entityManager).getPublicKey();
-                                pubk = KeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
-                            }
-                        }
-                    }
-                }  catch (InvalidKeySpecException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Can not enrich EC public key with missing parameters: ", e);
-                    }
-                }
-            }
-        } // finished with ECC key special handling
-
+        final PublicKey pubk = enrichEcPublicKey(incert.getPublicKey(), cafp);
         // Create the certificate in one go with all parameters at once. This used to be important in EJB2.1 so the persistence layer only creates
         // *one* single
         // insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
@@ -188,7 +149,226 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace("<storeCertificateNoAuth()");
         }
     }
-    
+
+    /** 
+     * We need special handling here of CVC certificate with EC keys, because they lack EC parameters in all certs
+     * except the Root certificate (CVCA)
+     */
+    private PublicKey enrichEcPublicKey(final PublicKey pubk, final String cafp) {
+        PublicKey ret = pubk;
+        if ((pubk instanceof PublicKeyEC)) {
+            PublicKeyEC pkec = (PublicKeyEC) pubk;
+            // The public key of IS and DV certificate (CVC) do not have any parameters so we have to do some magic to get a complete EC public key
+            ECParameterSpec spec = pkec.getParams();
+            if (spec == null) {
+                // We need to enrich this public key with parameters
+                try {
+                    if (cafp != null) {
+                        String cafingerp = cafp;
+                        CertificateData cacert = CertificateData.findByFingerprint(entityManager, cafp);
+                        if(cacert != null) {
+                        String nextcafp = cacert.getCaFingerprint();
+                        int bar = 0; // never go more than 5 rounds, who knows what strange things can exist in the CAFingerprint column, make sure we
+                                     // never get stuck here
+                        while ((!StringUtils.equals(cafingerp, nextcafp)) && (bar++ < 5)) {
+                            cacert = CertificateData.findByFingerprint(entityManager, cafp);
+                            if (cacert == null) {
+                                break;
+                            }
+                            cafingerp = nextcafp;
+                            nextcafp = cacert.getCaFingerprint();
+                        }
+                            if (cacert != null) {
+                                // We found a root CA certificate, hopefully ?
+                                PublicKey pkwithparams = cacert.getCertificate(this.entityManager).getPublicKey();
+                                ret = KeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
+                            }
+                        }
+                    }
+                }  catch (InvalidKeySpecException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Can not enrich EC public key with missing parameters: ", e);
+                    }
+                }
+            }
+        } // finished with ECC key special handling
+        return ret;
+    }
+
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean rawCertificateDataPersist(
+            final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
+            final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
+            final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
+            final String subjectKeyId, final int rowVersion, final String rowProtection,
+            final String base64CertDataBase64Cert, final int base64CertDataRowVersion, final String base64CertDataRowProtection,
+            final boolean alreadyExistsHint) {
+        boolean insertOk = false;
+        boolean updateOk = false;
+        if (alreadyExistsHint) {
+            try {
+                updateOk = certificateStoreSession.rawCertificateDataUpdate(fingerprint, issuerDN, subjectDN, cAFingerprint,
+                        status, type, serialNumber, expireDate, revocationDate, revocationReason,
+                        base64Cert, username, tag, certificateProfileId, updateTime,
+                        subjectKeyId, rowVersion, rowProtection
+                        );
+            } catch (Exception e) {
+                log.error("DEVELOPMENT_ONLY: When seen, extend the list of exceptions.", e);
+            }
+        }
+        if (!updateOk) {
+            try {
+                insertOk = certificateStoreSession.rawCertificateDataInsert(fingerprint, issuerDN, subjectDN, cAFingerprint,
+                        status, type, serialNumber, expireDate, revocationDate, revocationReason,
+                        base64Cert, username, tag, certificateProfileId, updateTime,
+                        subjectKeyId, rowVersion, rowProtection,
+                        base64CertDataBase64Cert, base64CertDataRowVersion, base64CertDataRowProtection);
+            } catch (Exception e) {
+                log.error("DEVELOPMENT_ONLY: When seen, extend the list of exceptions.", e);
+            }
+            if (!insertOk) {
+                try {
+                    updateOk = certificateStoreSession.rawCertificateDataUpdate(fingerprint, issuerDN, subjectDN, cAFingerprint,
+                            status, type, serialNumber, expireDate, revocationDate, revocationReason,
+                            base64Cert, username, tag, certificateProfileId, updateTime,
+                            subjectKeyId, rowVersion, rowProtection
+                            );
+                } catch (Exception e) {
+                    log.error("DEVELOPMENT_ONLY: When seen, extend the list of exceptions.", e);
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.info("DEVELOPMENT_ONLY: fingerprint: " + fingerprint + " insertOk: " + insertOk + " updateOk=" +updateOk);
+        }
+        return insertOk || updateOk;
+    }
+
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public CertificateData rawGetCertificateData(final String fingerprint) {
+        return CertificateData.findByFingerprint(entityManager, fingerprint);
+    }
+
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Base64CertData rawGetBase64CertData(String fingerprint) {
+        return Base64CertData.findByFingerprint(entityManager, fingerprint);
+    }
+
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean rawCertificateDataInsert(
+            final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
+            final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
+            final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
+            final String subjectKeyId, final int rowVersion, final String rowProtection,
+            final String base64CertDataBase64Cert, final int base64CertDataRowVersion, final String base64CertDataRowProtection) {
+        // We must do this as a native query to avoid triggering database protection methods during @PrePersist
+        final Query query = entityManager.createNativeQuery("INSERT INTO CertificateData ("
+                + "fingerprint, issuerDN, subjectDN, cAFingerprint, status, type, serialNumber,"
+                + "expireDate, revocationDate, revocationReason, base64Cert, username, tag,"
+                + "certificateProfileId, updateTime, subjectKeyId, rowVersion, rowProtection"
+                + ") VALUES ("
+                + ":fingerprint, :issuerDN, :subjectDN, :cAFingerprint, :status, :type, :serialNumber,"
+                + ":expireDate, :revocationDate, :revocationReason, :base64Cert, :username, :tag,"
+                + ":certificateProfileId, :updateTime, :subjectKeyId, :rowVersion, :rowProtection"
+                + ")");
+        query.setParameter("fingerprint", fingerprint);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("subjectDN", subjectDN);
+        query.setParameter("cAFingerprint", cAFingerprint);
+        query.setParameter("status", status);
+        query.setParameter("type", type);
+        query.setParameter("serialNumber", serialNumber);
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("revocationDate", revocationDate);
+        query.setParameter("revocationReason", revocationReason);
+        query.setParameter("base64Cert", base64Cert);
+        query.setParameter("username", username);
+        query.setParameter("tag", tag);
+        query.setParameter("certificateProfileId", certificateProfileId);
+        query.setParameter("updateTime", updateTime);
+        query.setParameter("subjectKeyId", subjectKeyId);
+        query.setParameter("rowVersion", rowVersion);
+        query.setParameter("rowProtection", rowProtection);
+        query.setParameter("beforeUpdateTime", updateTime);
+        if (query.executeUpdate()!=1) {
+            return false;
+        }
+        if (base64CertDataBase64Cert!=null) {
+            final Query query2 = entityManager.createNativeQuery("INSERT INTO Base64CertData ("
+                    + "fingerprint, base64Cert, rowVersion, rowProtection"
+                    + ") VALUES ("
+                    + ":fingerprint, :base64Cert, :rowVersion, :rowProtection"
+                    + ")");
+            query2.setParameter("fingerprint", fingerprint);
+            query2.setParameter("base64Cert", base64CertDataBase64Cert);
+            query2.setParameter("rowVersion", base64CertDataRowVersion);
+            query2.setParameter("rowProtection", base64CertDataRowProtection);
+            if (query2.executeUpdate()!=1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean rawCertificateDataUpdate(
+            final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
+            final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
+            final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
+            final String subjectKeyId, final int rowVersion, final String rowProtection) {
+        // TODO: Most things here should never change
+        final Query query = entityManager.createNativeQuery("UPDATE CertificateData SET "
+                + "issuerDN=:issuerDN,"
+                + "subjectDN=:subjectDN,"
+                + "cAFingerprint=:cAFingerprint,"
+                + "status=:status,"
+                + "type=:type,"
+                + "serialNumber=:serialNumber,"
+                + "expireDate=:expireDate,"
+                + "revocationDate=:revocationDate,"
+                + "revocationReason=:revocationReason,"
+                + "base64Cert=:base64Cert,"
+                + "username=:username,"
+                + "tag=:tag,"
+                + "certificateProfileId=:certificateProfileId,"
+                + "updateTime=:updateTime,"
+                + "subjectKeyId=:subjectKeyId,"
+                + "rowVersion=:rowVersion,"
+                + "rowProtection=:rowProtection"
+                + " WHERE "
+                + "fingerprint=:fingerprint AND updateTime<:beforeUpdateTime");
+        query.setParameter("fingerprint", fingerprint);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("subjectDN", subjectDN);
+        query.setParameter("cAFingerprint", cAFingerprint);
+        query.setParameter("status", status);
+        query.setParameter("type", type);
+        query.setParameter("serialNumber", serialNumber);
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("revocationDate", revocationDate);
+        query.setParameter("revocationReason", revocationReason);
+        query.setParameter("base64Cert", base64Cert);
+        query.setParameter("username", username);
+        query.setParameter("tag", tag);
+        query.setParameter("certificateProfileId", certificateProfileId);
+        query.setParameter("updateTime", updateTime);
+        query.setParameter("subjectKeyId", subjectKeyId);
+        query.setParameter("rowVersion", rowVersion);
+        query.setParameter("rowProtection", rowProtection);
+        query.setParameter("beforeUpdateTime", updateTime);
+        return query.executeUpdate()==1;
+    }
+
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean updateCertificateOnly(AuthenticationToken authenticationToken, Certificate certificate) {
