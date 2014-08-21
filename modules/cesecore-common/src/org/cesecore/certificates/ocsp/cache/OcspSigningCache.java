@@ -15,16 +15,22 @@ package org.cesecore.certificates.ocsp.cache;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.CertTools;
@@ -70,7 +76,10 @@ public enum OcspSigningCache {
     }
 
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
-        staging.put(getCacheIdFromCertificateID(ocspSigningCacheEntry.getCertificateID()), ocspSigningCacheEntry);
+        List<CertificateID> certIDs = ocspSigningCacheEntry.getCertificateID();
+        for (CertificateID certID : certIDs) {
+            staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);            
+        }
     }
 
     public void stagingCommit() {
@@ -137,15 +146,18 @@ public enum OcspSigningCache {
      * @param ocspSigningCacheEntry the entry to add
      */
     public void addSingleEntry(OcspSigningCacheEntry ocspSigningCacheEntry) {
-        int cacheId = getCacheIdFromCertificateID(ocspSigningCacheEntry.getCertificateID());
-        lock.lock();
-        try {
-            //Make sure that another thread didn't add the same entry while this one was waiting.
-            if (!cache.containsKey(cacheId)) {
-                cache.put(cacheId, ocspSigningCacheEntry);
+        List<CertificateID> certIDs = ocspSigningCacheEntry.getCertificateID();
+        for (CertificateID certID : certIDs) {
+            int cacheId = getCacheIdFromCertificateID(certID);
+            lock.lock();
+            try {
+                //Make sure that another thread didn't add the same entry while this one was waiting.
+                if (!cache.containsKey(cacheId)) {
+                    cache.put(cacheId, ocspSigningCacheEntry);
+                }
+            } finally {
+                lock.unlock();
             }
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -160,16 +172,21 @@ public enum OcspSigningCache {
         return result;
     }
 
-    /** @return the CertificateID based on the provided certificate */
-    public static CertificateID getCertificateIDFromCertificate(final X509Certificate certificate) {
+    /** @return the CertificateID's based on the provided certificate */
+    public static List<CertificateID> getCertificateIDFromCertificate(final X509Certificate certificate) {
         try {
             if (log.isTraceEnabled()) {
-                log.trace("Building CertificateId from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
+                log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
             }
-            return new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), certificate, certificate.getSerialNumber());
+            List<CertificateID> ret = new ArrayList<CertificateID>();
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
+            return ret;
         } catch (OCSPException e) {
             throw new OcspFailureException(e);
         } catch (CertificateEncodingException e) {
+            throw new OcspFailureException(e);
+        } catch (OperatorCreationException e) {
             throw new OcspFailureException(e);
         }
     }

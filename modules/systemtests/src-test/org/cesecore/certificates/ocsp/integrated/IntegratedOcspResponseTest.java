@@ -25,7 +25,9 @@ import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
@@ -39,6 +41,7 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -153,6 +156,7 @@ public class IntegratedOcspResponseTest {
 
     /**
      * Tests creating an OCSP response using the root CA cert.
+     * Tests using both SHA1, SHA256 and SHA224 CertID. SHA1 and SHA256 should work, while SHA224 should give an error.
      */
     @Test
     public void testGetOcspResponseSanity() throws Exception {
@@ -175,7 +179,7 @@ public class IntegratedOcspResponseTest {
         assertNotNull("OCSP responder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(responseBytes);
-        assertEquals("Response status not zero.", response.getStatus(), 0);
+        assertEquals("Response status not zero.", 0, response.getStatus());
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
         assertTrue("OCSP response was not signed correctly.",
                 basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
@@ -184,6 +188,44 @@ public class IntegratedOcspResponseTest {
         assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(), singleResponses[0].getCertID()
                 .getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+        
+        // Do the same test but using SHA256 as hash algorithm for CertID
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), caCertificate, caCertificate.getSerialNumber()));
+        extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+                .getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+        response = new OCSPResp(responseBytes);
+        assertEquals("Response status not zero.", 0, response.getStatus());
+        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertTrue("OCSP response was not signed correctly.",
+                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+        singleResponses = basicOcspResponse.getResponses();
+        assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+        assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(), singleResponses[0].getCertID()
+                .getSerialNumber());
+        assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+
+        // Do the same test but using SHA224 as hash algorithm for CertID to see that we get an error back
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224)), caCertificate, caCertificate.getSerialNumber()));
+        extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+                .getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+        response = new OCSPResp(responseBytes);
+        // Response status 1 means malformed request
+        assertEquals("Response status not zero.", 1, response.getStatus());
+        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertNull("No response object for this unsigned error response.", basicOcspResponse);
+
     }
 
     @Test
@@ -219,6 +261,10 @@ public class IntegratedOcspResponseTest {
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
     }
 
+    /**
+     * Tests creating an OCSP response using the ocspCertificate, revoking it.
+     * Tests using both SHA1 and SHA256 CertID.
+     */
     @Test
     public void testGetOcspResponseWithRevokedCertificate() throws Exception {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
@@ -258,6 +304,32 @@ public class IntegratedOcspResponseTest {
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
         assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        
+        // Do the same test but using SHA256 as hash algorithm for CertID
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), caCertificate, ocspCertificate.getSerialNumber()));
+        extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+                .getOcspResponse();
+        response = new OCSPResp(responseBytes);
+        assertEquals("Response status not zero.", response.getStatus(), 0);
+        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        assertTrue("OCSP response was not signed correctly.",
+                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+        singleResponses = basicOcspResponse.getResponses();
+        assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+                .getSerialNumber());
+        status = singleResponses[0].getCertStatus();
+        assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
+        rev = (RevokedStatus) status;
+        assertTrue("Status does not have reason", rev.hasRevocationReason());
+        reason = rev.getRevocationReason();
+        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+
     }
 
     @Test
