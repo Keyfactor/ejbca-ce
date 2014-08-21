@@ -61,8 +61,8 @@
 	    for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
 	        if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
 	            xkmscainfo = (XKMSCAServiceInfo) extendedCAServiceInfo;
-	            if (xkmscainfo.getXKMSSignerCertificatePath() != null) {
-		            xkmscert = (java.security.cert.X509Certificate) xkmscainfo.getXKMSSignerCertificatePath().get(0);
+	            if (xkmscainfo.getCertificatePath() != null) {
+		            xkmscert = (java.security.cert.X509Certificate) xkmscainfo.getCertificatePath().get(0);
 	            }
 	        }
 	        if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
@@ -1429,7 +1429,7 @@ function checkallfields(){
       </td>
       <td width="50%">
         <input type="checkbox" name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && !isUninitialized && xkmscert == null)) out.write(" disabled ");%>
+           <% if(waitingresponse || (editca && !isUninitialized && xkmscainfo == null)) out.write(" disabled ");%>
             <% if((editca && (xkmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
                  out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>">
                  <label for="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
@@ -1452,7 +1452,7 @@ function checkallfields(){
       </td>
       <td width="50%">
         <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && !isUninitialized && cmscert == null)) out.write(" disabled ");%>
+           <% if(waitingresponse || (editca && !isUninitialized && cmscainfo == null)) out.write(" disabled ");%>
             <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
                  out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>">
                  <label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>

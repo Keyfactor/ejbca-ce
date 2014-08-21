@@ -160,52 +160,58 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 
 	@Override
 	public void init(final CryptoToken cryptoToken, final CA ca) throws Exception {
-		m_log.debug("CmsCAService : init");
-		// lookup keystore passwords      
-	    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
-		// Currently only RSA keys are supported
-	    final CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();
-		// Create KeyStore	    
-	    final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-		keystore.load(null, null);                              
-		final KeyPair cmskeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
-		// A simple hard coded certificate profile that works for the CMS CA service
-		CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-		certProfile.setUseKeyUsage(true);
-		certProfile.setKeyUsage(new boolean[9]);
-		certProfile.setKeyUsage(CertificateConstants.DIGITALSIGNATURE,true);
-		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
-		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
-		certProfile.setKeyUsageCritical(true);
-
-		final Certificate certificate =
-			ca.generateCertificate(cryptoToken, new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null),
-					cmskeys.getPublic(),
-					-1, // KeyUsage
-                    null, // Custom not before date
-					ca.getValidity(),
-					certProfile, 
-					null // sequence
-			);
-		certificatechain = new ArrayList<Certificate>();
-		certificatechain.add(certificate);
-		certificatechain.addAll(ca.getCertificateChain());
-		this.privKey = cmskeys.getPrivate(); 
-		keystore.setKeyEntry(PRIVATESIGNKEYALIAS,cmskeys.getPrivate(),null,(Certificate[]) certificatechain.toArray(new Certificate[certificatechain.size()]));              
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		keystore.store(baos, keystorepass.toCharArray());
-		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));      
-		// Store KeyStore
+		m_log.trace(">init");
+		
+		if (getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
+           m_log.debug("Not generating certificates for inactive service");
+        } else {
+    		// lookup keystore passwords      
+    	    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
+    		// Currently only RSA keys are supported
+    	    final CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();
+    		// Create KeyStore	    
+    	    final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+    		keystore.load(null, null);                              
+    		final KeyPair cmskeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
+    		// A simple hard coded certificate profile that works for the CMS CA service
+    		CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    		certProfile.setUseKeyUsage(true);
+    		certProfile.setKeyUsage(new boolean[9]);
+    		certProfile.setKeyUsage(CertificateConstants.DIGITALSIGNATURE,true);
+    		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
+    		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
+    		certProfile.setKeyUsageCritical(true);
+    
+    		final Certificate certificate =
+    			ca.generateCertificate(cryptoToken, new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null),
+    					cmskeys.getPublic(),
+    					-1, // KeyUsage
+                        null, // Custom not before date
+    					ca.getValidity(),
+    					certProfile, 
+    					null // sequence
+    			);
+    		certificatechain = new ArrayList<Certificate>();
+    		certificatechain.add(certificate);
+    		certificatechain.addAll(ca.getCertificateChain());
+    		this.privKey = cmskeys.getPrivate(); 
+    		keystore.setKeyEntry(PRIVATESIGNKEYALIAS,cmskeys.getPrivate(),null,(Certificate[]) certificatechain.toArray(new Certificate[certificatechain.size()]));              
+    		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    		keystore.store(baos, keystorepass.toCharArray());
+    		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));      
+	    }
 		setStatus(info.getStatus());
 		this.info = new CmsCAServiceInfo(info.getStatus(), getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), (String) data.get(KEYALGORITHM), certificatechain);
+		m_log.trace("<init");
 	}
 
 	@Override
 	public void update(final CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {
+	    final boolean missingCert = (!data.containsKey(KEYSTORE) && serviceinfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
 		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo; 
 		m_log.debug("CmsCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
-		if (info.getRenewFlag()) {
+		if (info.getRenewFlag() || missingCert) {
 			// Renew The Signers certificate.
 			try {
 				this.init(cryptoToken, ca);
