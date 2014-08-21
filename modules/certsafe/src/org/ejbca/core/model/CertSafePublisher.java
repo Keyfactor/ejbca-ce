@@ -1,0 +1,453 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
+package org.ejbca.core.model;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingStatus;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
+import org.cesecore.keybind.impl.ClientX509KeyManager;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.provider.X509TrustManagerAcceptAll;
+import org.ejbca.core.model.ca.publisher.ICustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.util.EjbLocalHelper;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+/**
+ * A publisher that sends certificate issuance and life cycle events (revoke and unrevoke)
+ * to a HTTPS server. The HTTPS request content (aka. the certificate and other related 
+ * data) is sent inside a JSON object.
+ * 
+ * @version $Id: CertSafePublisher.java 19535 2014-08-20 07:45:56Z aveen4711 $
+ */
+public class CertSafePublisher implements ICustomPublisher {
+
+    private static Logger log = Logger.getLogger(CertSafePublisher.class);    
+    
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    private CertificateStoreSessionLocal certificateStoreSession;
+    
+    private final int DEFAULT_CONNECTIONTIMEOUT = 10000; // 10 000 milliseconds = 10 seconds
+    
+    /** The URL to the HTTPS server. Should be in the format https://HOST:PORT/RELATIVEURL */
+    public static final String certSafeUrlPropertyName = "certsafe.url";
+    /** The name of the Authentication Key Binding that will be used for authentication with the HTTPS server */
+    public static final String certSafeAuthKeyBindingPropertyName = "certsafe.authkeybindingname";
+    /** Timeout on connection to the HTTPS server  */
+    public static final String certSafeConnectionTimeOutPropertyName = "certsafe.connectiontimeout";
+
+
+    private String urlstr = "";
+    private String authKeyBindingName = "";
+    private int timeout = DEFAULT_CONNECTIONTIMEOUT;
+
+
+    private HashMap<String, String> revocationReasons = new HashMap<String, String>();
+
+    
+    public CertSafePublisher(){}
+    
+    /**
+     * Load used properties.
+     * 
+     * @param properties
+     *            The properties to load.
+     * 
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
+     */
+    @Override
+    public void init(Properties properties) {
+        if (log.isTraceEnabled()) {
+            log.trace(">init");
+        }
+        
+        EjbLocalHelper localHelper = new EjbLocalHelper();
+        internalKeyBindingMgmtSession = localHelper.getInternalKeyBindingMgmtSession();
+        cryptoTokenManagementSession = localHelper.getCryptoTokenManagementSession();
+        certificateStoreSession = localHelper.getCertificateStoreSession();
+
+        // Extract system properties
+        urlstr = properties.getProperty(certSafeUrlPropertyName);
+        authKeyBindingName = properties.getProperty(certSafeAuthKeyBindingPropertyName);
+        timeout = properties.containsKey(certSafeConnectionTimeOutPropertyName)? 
+                        Integer.parseInt(properties.getProperty(certSafeConnectionTimeOutPropertyName)) : 
+                        DEFAULT_CONNECTIONTIMEOUT;
+
+        // This map translates the revocation reasons in CertificateConstants.reasontext to more readable 
+        // text strings (according to CertSafe REST API specifications)
+        revocationReasons.put("REV_UNSPECIFIED", "unspecified");
+        revocationReasons.put("REV_KEYCOMPROMISE", "keyComprimise");
+        revocationReasons.put("REV_CACOMPROMISE", "caComprimise");
+        revocationReasons.put("REV_AFFILIATIONCHANGED", "affiliationChanged");
+        revocationReasons.put("REV_SUPERSEDED", "superseded");
+        revocationReasons.put("REV_CESSATIONOFOPERATION", "cessationOfOperation");
+        revocationReasons.put("REV_CERTIFICATEHOLD", "certificateHold");
+        revocationReasons.put("REV_UNUSED", "REV_UNUSED");
+        revocationReasons.put("REV_REMOVEFROMCRL", "removeFromCrl");
+        revocationReasons.put("REV_PRIVILEGEWITHDRAWN", "privilegeWithdrawn");
+        revocationReasons.put("REV_AACOMPROMISE", "aaComprimise");
+        
+    } // init  
+    
+
+
+    // Public Methods
+
+
+    /**
+     * Sends the certificate in a JSON object to Cert Safe server through HTTPS.
+     * 
+     * @param incert
+     *            The certificate
+     * @param status
+     *            The certificate status
+     * @param revocationReason
+     *            The certificate revocation reason if it was revoked
+     * 
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin,
+     *      java.security.cert.Certificate, java.lang.String, java.lang.String,
+     *      int, int)
+     */
+    @Override
+    public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, 
+            String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, 
+            long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
+        if (log.isTraceEnabled()) {
+            log.trace(">storeCertificate, Storing Certificate for user: " + username);
+        }
+        
+        if(!isPropertiesSet()) {
+            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
+                            certSafeAuthKeyBindingPropertyName + "' is not set.";
+            log.info(msg);
+            throw new PublisherException(msg);
+        }
+
+        String jsonObject = getJSONString(incert, status, revocationReason);
+        
+        // Construct the SSL context for the HTTPS exchange
+        SSLSocketFactory sslSocketFactory;
+        try {
+            sslSocketFactory = getSSLSocketFactory(admin);
+        } catch (PublisherConnectionException e1) {
+            String msg = e1.getLocalizedMessage();
+            log.error(msg, e1);
+            throw new PublisherException(msg);
+        }
+        
+        // Make the HTTPS connection and send the request
+        HttpsURLConnection con = null;
+        try {
+            URL url = new URL(urlstr);
+            con = (HttpsURLConnection)url.openConnection();
+            con.setSSLSocketFactory(sslSocketFactory);
+            
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestMethod("POST");
+            con.setDoOutput(true);
+            con.setConnectTimeout(timeout);
+        
+            // POST it
+            OutputStream os = con.getOutputStream();
+            os.write(jsonObject.getBytes());
+            os.close();
+            int responseCode = con.getResponseCode();
+            if(responseCode == 200) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Publish successful");
+                }
+            } else if( (responseCode >= 400) && (responseCode < 600) ){
+                String errMsg = getJSONErrorMessage(con.getErrorStream());
+                log.info("Publish failed. HTTPS response code: " + responseCode + ". Error message: " + errMsg);
+                throw new PublisherException(errMsg);
+            }
+        } catch (MalformedURLException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherException(msg);
+        } catch (IOException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherException(msg);
+        } finally {
+            if(con != null) {
+                con.disconnect();
+            }
+        }
+        
+        if (log.isTraceEnabled()) {
+            log.trace("<storeCertificate()");
+        }
+        return true;
+    }
+    
+    
+    /**
+     * Writes the CRL to a temporary file and executes an external command with
+     * the temporary file as argument. By default, a PublisherException is
+     * thrown if the external command returns with an errorlevel or outputs to
+     * stderr.
+     * 
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
+     *      byte[], java.lang.String, int)
+     */
+    @Override
+    public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
+        if (log.isTraceEnabled()) {
+            log.trace(">storeCRL() - does nothing!");
+        }
+        return true;
+    }
+
+    /**
+     * Check if the HTTP connection works.
+     * 
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection()
+     */
+    @Override
+    public void testConnection() throws PublisherConnectionException {
+        if (log.isTraceEnabled()) {
+            log.trace("testConnection, Testing connection");
+        }
+        
+        if(!isPropertiesSet()) {
+            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
+                            certSafeAuthKeyBindingPropertyName + "' is not set.";
+            log.info(msg);
+            throw new PublisherConnectionException(msg);
+        }
+        
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Test SSL Connection"));
+        
+        SSLSocketFactory sslSocketFactory = getSSLSocketFactory(admin);
+        try {
+            log.info("https URL: " + urlstr);
+            URL url = new URL(urlstr);
+            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+            con.setSSLSocketFactory(sslSocketFactory);
+            
+            con.setDoOutput(true);
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(timeout);
+            con.connect();
+            if(con.getResponseCode() != 200) {
+                throw new PublisherConnectionException("Testing connection failed");
+            }
+        } catch (MalformedURLException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg); 
+        } catch (ProtocolException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        } catch (IOException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        }
+    }
+    
+    
+    private boolean isPropertiesSet() {
+        return (urlstr!=null && authKeyBindingName!=null);
+    }
+    
+    private SSLSocketFactory getSSLSocketFactory(AuthenticationToken authenticationToken) throws PublisherConnectionException {
+        Integer keyBindingID = internalKeyBindingMgmtSession.getIdFromName(authKeyBindingName);
+        final AuthenticationKeyBinding authenticationKeyBinding;
+        try {
+            authenticationKeyBinding = (AuthenticationKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBindingReference(authenticationToken, keyBindingID);
+        } catch (AuthorizationDeniedException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        }
+        
+        if (authenticationKeyBinding == null) {
+            String msg = "AuthenticationKeyBinding '" + authKeyBindingName + "' was not found";
+            log.info(msg);
+            throw new PublisherConnectionException(msg);
+        }
+        if(!authenticationKeyBinding.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
+            String msg = "AuthenticationKeyBinding '" + authKeyBindingName + "' is not active";
+            log.info(msg);
+            throw new PublisherConnectionException(msg);
+        }
+        
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(authenticationKeyBinding.getCryptoTokenId());
+        final X509Certificate sslCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(authenticationKeyBinding.getCertificateId());
+        final List<X509Certificate> chain = new ArrayList<X509Certificate>();
+        chain.add(sslCertificate);
+        chain.addAll(getCaCertificateChain(sslCertificate));
+        final List<X509Certificate> trustedCertificates = getListOfTrustedCertificates(authenticationKeyBinding.getTrustedCertificateReferences());
+        final String alias = authenticationKeyBinding.getKeyPairAlias();
+        try {
+            final TrustManager trustManagers[];
+            if (trustedCertificates == null || trustedCertificates.isEmpty()) {
+                trustManagers = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
+            } else {
+                throw new RuntimeException("Configurable trust not yet implemented.");
+            }
+            final KeyManager keyManagers[] = new X509KeyManager[] { new ClientX509KeyManager(alias, cryptoToken.getPrivateKey(alias), chain) };
+            // Now construct a SSLContext using these (possibly wrapped) KeyManagers, and the TrustManagers.
+            // We still use a null SecureRandom, indicating that the defaults should be used.
+            final SSLContext context = SSLContext.getInstance("TLS");
+            context.init(keyManagers, trustManagers, null);
+            // Finally, we get a SocketFactory, and pass it on.
+            return context.getSocketFactory();
+        } catch (KeyManagementException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        } catch (NoSuchAlgorithmException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        } catch (CryptoTokenOfflineException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        }
+    }
+    
+    // TODO: This method also exists in OcspResponseGenSSB.. merge! to method call in certificateStoreSession
+    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
+        final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
+        X509Certificate currentLevelCertificate = leafCertificate;
+        while (!CertTools.getIssuerDN(currentLevelCertificate).equals(CertTools.getSubjectDN(currentLevelCertificate))) {
+            final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
+            currentLevelCertificate = certificateStoreSession.findLatestX509CertificateBySubject(issuerDn);
+            if (currentLevelCertificate == null) {
+                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                        CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
+                return null;
+            }
+            caCertificateChain.add(currentLevelCertificate);
+        }
+        return caCertificateChain;
+    }
+    
+    private List<X509Certificate> getListOfTrustedCertificates(List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
+        if (trustedCertificateReferences == null || trustedCertificateReferences.isEmpty()) {
+            return null;
+        }
+        // TODO: Here we need to lookup all the trusted certificates from the provided references so a X509TrustManager can do verification later
+        log.warn("Trusted references was non-empty, but will be ignored. (Not yet implemented.)");
+        return null;
+    }
+    
+    private String getJSONString(Certificate incert, int status, int revocationReason) throws PublisherException {
+        
+        JSONObject json = new JSONObject();
+        String stat = "";
+        if (status == CertificateConstants.CERT_REVOKED) {
+            stat = "revoked";
+            json.put("revocationReason", revocationReasons.get(CertificateConstants.reasontexts[revocationReason]) );
+        //} else if (status == CertificateConstants.CERT_TEMP_REVOKED) {
+        //    stat = "suspended";
+        } else if ( (status == CertificateConstants.CERT_UNASSIGNED) ||
+                     (status == CertificateConstants.CERT_INACTIVE) ) {
+            stat = "hold";
+        } else if (status == CertificateConstants.CERT_ARCHIVED) {
+            stat = "expired";
+        } else {
+            stat = "active";
+        }
+        json.put("status", stat);
+        
+        //Add the certificate to the JSON object
+        ArrayList<Certificate> certs =  new ArrayList<Certificate>();
+        certs.add(incert);
+        String certStr;
+        try {
+            certStr = new String(CertTools.getPemFromCertificateChain(certs));
+        } catch (CertificateException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherException(msg);
+        }
+        int index = certStr.indexOf(CertTools.BEGIN_CERTIFICATE);
+        certStr = certStr.substring(index);
+        json.put("pem", certStr);
+        String ret = json.toString();
+        if(log.isDebugEnabled()) {
+            log.debug("Sending the JSON String: " + ret);
+        }
+        
+        return ret;
+    }
+    
+    private String getJSONErrorMessage(InputStream errins) throws IOException {
+        byte[] errB = new byte[1024];
+        errins.read(errB);
+        errins.close();
+        String response = new String(errB);
+        response = response.substring(0, response.lastIndexOf("}")+1);
+        if(log.isDebugEnabled()) {
+            log.debug("Recieved JSON response: " + response);
+        }
+        
+        JSONParser parser = new JSONParser();
+        JSONObject json=null;
+        try {
+            json = (JSONObject) parser.parse(response);
+        } catch (ParseException e) {
+            log.error("Error parsing JSON response", e);
+            return "";
+        }
+        return (String) json.get("error");
+    }
+    
+}
