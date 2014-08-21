@@ -60,8 +60,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
@@ -364,16 +363,10 @@ public class CADataHandler implements Serializable {
 		// Only publish certificates for active services
 		if (next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			// The OCSP certificate is the same as the CA signing certificate
-			if(next instanceof XKMSCAServiceInfo){
-				List<Certificate> xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
-				if (xkmscert != null) {
-					caadminsession.publishCACertificate(administrator, xkmscert, publishers, cainfo.getSubjectDN());
-				}
-			}
-			if(next instanceof CmsCAServiceInfo){
-				List<Certificate> cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
-				if (cmscert != null) {
-					caadminsession.publishCACertificate(administrator, cmscert, publishers, cainfo.getSubjectDN());
+			if (next instanceof BaseSigningCAServiceInfo){
+				List<Certificate> signingcert = ((BaseSigningCAServiceInfo) next).getCertificatePath();
+				if (signingcert != null) {
+					caadminsession.publishCACertificate(administrator, signingcert, publishers, cainfo.getSubjectDN());
 				}
 			}
 		}
