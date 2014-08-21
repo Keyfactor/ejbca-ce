@@ -177,4 +177,35 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * Reloads the cache containing CA certificates
      */
     void reloadCaCertificateCache();
+
+    /**
+     * Insert all the fields of a CertificateData row and optionally a Base64CertData row for the given fingerprint.
+     * @return true if a row was successfully inserted
+     */
+    boolean rawCertificateDataInsert(String fingerprint, String issuerDN, String subjectDN, String cAFingerprint, int status, int type,
+            String serialNumber, long expireDate, long revocationDate, int revocationReason, String base64Cert, String username, String tag,
+            int certificateProfileId, long updateTime, String subjectKeyId, int rowVersion, String rowProtection,
+            String base64CertDataBase64Cert, int base64CertDataRowVersion, String base64CertDataRowProtection);
+
+    /**
+     * Update all the fields of a CertificateData row for the given fingerprint as long as the supplied updateTime is newer then the one in the database.
+     * @return true if a row was successfully updated
+     */
+    boolean rawCertificateDataUpdate(String fingerprint, String issuerDN, String subjectDN, String cAFingerprint, int status, int type,
+            String serialNumber, long expireDate, long revocationDate, int revocationReason, String base64Cert, String username, String tag,
+            int certificateProfileId, long updateTime, String subjectKeyId, int rowVersion, String rowProtection);
+
+    /**
+     * Insert or update all the fields of a CertificateData row and optionally a Base64CertData row for the given fingerprint when
+     * the data in the database is older or nonexisting.
+     * @return true if a row was successfully inserted or updated
+     */
+    boolean rawCertificateDataPersist(String fingerprint, String issuerDN, String subjectDN, String cAFingerprint, int status, int type,
+            String serialNumber, long expireDate, long revocationDate, int revocationReason, String base64Cert, String username, String tag,
+            int certificateProfileId, long updateTime, String subjectKeyId, int rowVersion, String rowProtection,
+            String base64CertDataBase64Cert, int base64CertDataRowVersion, String base64CertDataRowProtection, boolean alreadyExistsHint);
+
+    CertificateData rawGetCertificateData(String fingerprint);
+
+    Base64CertData rawGetBase64CertData(String fingerprint);
 }
