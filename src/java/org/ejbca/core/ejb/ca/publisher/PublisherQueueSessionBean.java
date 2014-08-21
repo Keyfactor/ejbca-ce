@@ -369,8 +369,11 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
     public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, Certificate cert, String username, String password, String userDN,
     		String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
     		long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
-    	return publisher.storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
+        final long before = System.currentTimeMillis();
+    	final boolean ret = publisher.storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
                 tag, certificateProfileId, lastUpdate, extendedinformation);
+    	log.info("DEVELOPMENT: Publisher " + publisher.getName() + " took " + (System.currentTimeMillis()-before) + " ms to publish certificate with status " + status);
+    	return ret;
     }
 
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */

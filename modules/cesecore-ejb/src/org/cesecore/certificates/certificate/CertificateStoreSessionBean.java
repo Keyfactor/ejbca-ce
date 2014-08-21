@@ -197,7 +197,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     /** Local interface only */
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public boolean rawCertificateDataPersist(
             final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
             final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
@@ -207,6 +207,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final boolean alreadyExistsHint) {
         boolean insertOk = false;
         boolean updateOk = false;
+        final long before = System.currentTimeMillis();
         if (alreadyExistsHint) {
             try {
                 updateOk = certificateStoreSession.rawCertificateDataUpdate(fingerprint, issuerDN, subjectDN, cAFingerprint,
@@ -215,7 +216,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                         subjectKeyId, rowVersion, rowProtection
                         );
             } catch (Exception e) {
-                log.error("DEVELOPMENT_ONLY: When seen, extend the list of exceptions.", e);
+                log.error("DEVELOPMENT: When seen, extend the list of exceptions.", e);
             }
         }
         if (!updateOk) {
@@ -226,7 +227,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                         subjectKeyId, rowVersion, rowProtection,
                         base64CertDataBase64Cert, base64CertDataRowVersion, base64CertDataRowProtection);
             } catch (Exception e) {
-                log.error("DEVELOPMENT_ONLY: When seen, extend the list of exceptions.", e);
+                log.error("DEVELOPMENT: When seen, extend the list of exceptions.", e);
             }
             if (!insertOk) {
                 try {
@@ -236,12 +237,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                             subjectKeyId, rowVersion, rowProtection
                             );
                 } catch (Exception e) {
-                    log.error("DEVELOPMENT_ONLY: When seen, extend the list of exceptions.", e);
+                    log.error("DEVELOPMENT: When seen, extend the list of exceptions.", e);
                 }
             }
         }
         if (log.isDebugEnabled()) {
-            log.info("DEVELOPMENT_ONLY: fingerprint: " + fingerprint + " insertOk: " + insertOk + " updateOk=" +updateOk);
+            log.info("DEVELOPMENT: alreadyExistsHint="+alreadyExistsHint + " fingerprint: " + fingerprint + " insertOk=" + insertOk + " updateOk=" +updateOk
+                    + " took " + (System.currentTimeMillis()-before));
         }
         return insertOk || updateOk;
     }
@@ -263,13 +265,48 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     /** Local interface only */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    /*
     public boolean rawCertificateDataInsert(
             final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
             final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
             final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
             final String subjectKeyId, final int rowVersion, final String rowProtection,
             final String base64CertDataBase64Cert, final int base64CertDataRowVersion, final String base64CertDataRowProtection) {
-        // We must do this as a native query to avoid triggering database protection methods during @PrePersist
+        CertificateData certificateData = new CertificateData();
+        certificateData.setFingerprint(fingerprint);
+        certificateData.setIssuerDN(issuerDN);
+        certificateData.setSubjectDN(subjectDN);
+        certificateData.setCaFingerprint(cAFingerprint);
+        certificateData.setStatus(status);
+        certificateData.setType(type);
+        certificateData.setSerialNumber(serialNumber);
+        certificateData.setExpireDate(expireDate);
+        certificateData.setBase64Cert(base64Cert);
+        certificateData.setUsername(username);
+        certificateData.setTag(tag);
+        certificateData.setCertificateProfileId(certificateProfileId);
+        certificateData.setUpdateTime(updateTime);
+        certificateData.setSubjectKeyId(subjectKeyId);
+        certificateData.setRowVersion(0);
+        certificateData.setRowProtection(rowProtection);
+        entityManager.persist(certificateData);
+        if (base64CertDataBase64Cert!=null) {
+            Base64CertData base64CertData = new Base64CertData();
+            base64CertData.setFingerprint(fingerprint);
+            base64CertData.setBase64Cert(base64CertDataBase64Cert);
+            base64CertData.setRowVersion(0);
+            base64CertData.setRowProtection(base64CertDataRowProtection);
+        }
+        return true;
+    }
+    */
+    public boolean rawCertificateDataInsert(
+            final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
+            final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
+            final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
+            final String subjectKeyId, final int rowVersion, final String rowProtection,
+            final String base64CertDataBase64Cert, final int base64CertDataRowVersion, final String base64CertDataRowProtection) {
+        // We must do this as a query to avoid triggering database protection methods during @PrePersist (and there is no INSERT in JPQL)
         final Query query = entityManager.createNativeQuery("INSERT INTO CertificateData ("
                 + "fingerprint, issuerDN, subjectDN, cAFingerprint, status, type, serialNumber,"
                 + "expireDate, revocationDate, revocationReason, base64Cert, username, tag,"
@@ -295,9 +332,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         query.setParameter("certificateProfileId", certificateProfileId);
         query.setParameter("updateTime", updateTime);
         query.setParameter("subjectKeyId", subjectKeyId);
-        query.setParameter("rowVersion", rowVersion);
+        query.setParameter("rowVersion", 0);
         query.setParameter("rowProtection", rowProtection);
-        query.setParameter("beforeUpdateTime", updateTime);
         if (query.executeUpdate()!=1) {
             return false;
         }
@@ -309,7 +345,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     + ")");
             query2.setParameter("fingerprint", fingerprint);
             query2.setParameter("base64Cert", base64CertDataBase64Cert);
-            query2.setParameter("rowVersion", base64CertDataRowVersion);
+            query2.setParameter("rowVersion", 0);
             query2.setParameter("rowProtection", base64CertDataRowProtection);
             if (query2.executeUpdate()!=1) {
                 return false;
@@ -327,7 +363,33 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
             final String subjectKeyId, final int rowVersion, final String rowProtection) {
         // TODO: Most things here should never change
-        final Query query = entityManager.createNativeQuery("UPDATE CertificateData SET "
+        /*
+        String queryString = "UPDATE CertificateData a SET "
+                + "a.issuerDN=:issuerDN,"
+                + "a.subjectDN=:subjectDN,"
+                + "a.caFingerprint=:cAFingerprint,"
+                + "a.status=:status,"
+                + "a.type=:type,"
+                + "a.serialNumber=:serialNumber,"
+                + "a.expireDate=:expireDate,"
+                + "a.revocationDate=:revocationDate,"
+                + "a.revocationReason=:revocationReason,"
+                + "a.base64Cert=:base64Cert,"
+                + "a.username=:username,"
+                + "a.tag=:tag,"
+                + "a.certificateProfileId=:certificateProfileId,"
+                + "a.updateTime=:updateTime,"
+                + "a.subjectKeyId=:subjectKeyId,"
+                + "a.rowVersion=:rowVersion,"
+                + "a.rowProtection=:rowProtection"
+                + " WHERE "
+                + "a.fingerprint=:fingerprint AND a.updateTime<:beforeUpdateTime";
+        if (rowVersion==-1) {
+            queryString = queryString.replace(":rowVersion", "(a.rowVersion+1)");
+        }
+        final Query query = entityManager.createQuery(queryString);
+        */
+        String queryString = "UPDATE CertificateData SET "
                 + "issuerDN=:issuerDN,"
                 + "subjectDN=:subjectDN,"
                 + "cAFingerprint=:cAFingerprint,"
@@ -346,7 +408,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 + "rowVersion=:rowVersion,"
                 + "rowProtection=:rowProtection"
                 + " WHERE "
-                + "fingerprint=:fingerprint AND updateTime<:beforeUpdateTime");
+                + "fingerprint=:fingerprint AND updateTime<:beforeUpdateTime";
+        if (rowVersion==-1) {
+            queryString = queryString.replace(":rowVersion", "(rowVersion+1)");
+        }
+        final Query query = entityManager.createNativeQuery(queryString);
         query.setParameter("fingerprint", fingerprint);
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("subjectDN", subjectDN);
@@ -363,11 +429,68 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         query.setParameter("certificateProfileId", certificateProfileId);
         query.setParameter("updateTime", updateTime);
         query.setParameter("subjectKeyId", subjectKeyId);
-        query.setParameter("rowVersion", rowVersion);
+        if (rowVersion!=-1) {
+            query.setParameter("rowVersion", rowVersion);
+        }
         query.setParameter("rowProtection", rowProtection);
         query.setParameter("beforeUpdateTime", updateTime);
         return query.executeUpdate()==1;
     }
+    /*
+    public boolean rawCertificateDataUpdate(
+            final String fingerprint, final String issuerDN, final String subjectDN, final String cAFingerprint,
+            final int status, final int type, final String serialNumber, final long expireDate, final long revocationDate, final int revocationReason,
+            final String base64Cert, final String username, final String tag, final int certificateProfileId, final long updateTime,
+            final String subjectKeyId, final int rowVersion, final String rowProtection) {
+        // TODO: Most things here should never change
+        String queryString = "UPDATE CertificateData SET "
+                + "issuerDN=:issuerDN,"
+                + "subjectDN=:subjectDN,"
+                + "cAFingerprint=:cAFingerprint,"
+                + "status=:status,"
+                + "type=:type,"
+                + "serialNumber=:serialNumber,"
+                + "expireDate=:expireDate,"
+                + "revocationDate=:revocationDate,"
+                + "revocationReason=:revocationReason,"
+                + "base64Cert=:base64Cert,"
+                + "username=:username,"
+                + "tag=:tag,"
+                + "certificateProfileId=:certificateProfileId,"
+                + "updateTime=:updateTime,"
+                + "subjectKeyId=:subjectKeyId,"
+                + "rowVersion=:rowVersion,"
+                + "rowProtection=:rowProtection"
+                + " WHERE "
+                + "fingerprint=:fingerprint AND updateTime<:beforeUpdateTime";
+        if (rowVersion==-1) {
+            queryString = queryString.replace(":rowVersion", "(rowVersion+1)");
+        }
+        final Query query = entityManager.createNativeQuery(queryString);
+        query.setParameter("fingerprint", fingerprint);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("subjectDN", subjectDN);
+        query.setParameter("cAFingerprint", cAFingerprint);
+        query.setParameter("status", status);
+        query.setParameter("type", type);
+        query.setParameter("serialNumber", serialNumber);
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("revocationDate", revocationDate);
+        query.setParameter("revocationReason", revocationReason);
+        query.setParameter("base64Cert", base64Cert);
+        query.setParameter("username", username);
+        query.setParameter("tag", tag);
+        query.setParameter("certificateProfileId", certificateProfileId);
+        query.setParameter("updateTime", updateTime);
+        query.setParameter("subjectKeyId", subjectKeyId);
+        if (rowVersion!=-1) {
+            query.setParameter("rowVersion", rowVersion);
+        }
+        query.setParameter("rowProtection", rowProtection);
+        query.setParameter("beforeUpdateTime", updateTime);
+        return query.executeUpdate()==1;
+    }
+    */
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
