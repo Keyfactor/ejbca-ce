@@ -487,13 +487,13 @@ public class X509CA extends CA implements Serializable {
         } catch (CryptoTokenOfflineException e) {
             throw new SignRequestSignatureException("The cryptotoken was not available, could not create a PKCS7", e);
         } catch (InvalidKeyException e) {
-            throw new SignRequestSignatureException("The specified certificate containe the wrong public key.", e);
+            throw new SignRequestSignatureException("The specified certificate contains the wrong public key.", e);
         } catch (CertificateException e) {
             throw new SignRequestSignatureException("An encoding error was encountered.", e);
         } catch (NoSuchAlgorithmException e) {
             throw new SignRequestSignatureException("The certificate provided was signed with an invalid algorithm.", e);
         } catch (NoSuchProviderException e) {
-            throw new SignRequestSignatureException("The provider specified in the certificate was not found.", e);
+            throw new SignRequestSignatureException("The crypto provider was not found for verification of the certificate.", e);
         } catch (SignatureException e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?", e);
         }
