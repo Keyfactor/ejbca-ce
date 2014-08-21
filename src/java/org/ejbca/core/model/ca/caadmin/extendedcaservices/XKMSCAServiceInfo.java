@@ -43,9 +43,7 @@ public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Seria
     /* Used when updating existing services, only status is used. */
     public XKMSCAServiceInfo(int status, boolean renew){
       super(status, renew);	
-    }
-    
-    public List<Certificate> getXKMSSignerCertificatePath(){ return super.getCertificatePath();}   
+    }   
 
 	@Override
 	public String getImplClass() {
