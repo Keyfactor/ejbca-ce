@@ -89,7 +89,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                 try {
                     cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName);
                 } catch (NoSuchSlotException e) {
-                    throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+                    throw new RuntimeException("Attempted to find a slot for a PKCS#11 crypto token, but it did not exists. Perhaps the token was removed?");
                 }
                 CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, digest, tokenName, cryptoToken);
             }

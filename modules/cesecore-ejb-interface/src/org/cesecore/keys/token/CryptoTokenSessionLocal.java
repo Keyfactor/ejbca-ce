@@ -24,7 +24,8 @@ import javax.ejb.Local;
 @Local
 public interface CryptoTokenSessionLocal extends CryptoTokenSession {
 
-    /** @return the specified CryptoToken */
+    /** @return the specified CryptoToken or null if it does not exis.
+     * Throws RuntimeException if allow.nonexisting.slot=false (default) and a PKCS#11 slot does not exist. */
     CryptoToken getCryptoToken(int cryptoTokenId);
 
     /** Add the specified CryptoToken to the database and return the id used to store it */
