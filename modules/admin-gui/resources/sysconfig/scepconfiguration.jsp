@@ -52,6 +52,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 		<%= ejbcawebbean.getHelpReference("/adminguide.html#Scep") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
+	<h3><h:outputText value="#{web.text.SCEP_LISTOFALIASES}" /></h3>
 	<h:form id="aliases">
 	
 		<h:inputHidden id="newAlias" value="#{scepConfigMBean.newAlias}">
@@ -63,7 +64,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 		</h:inputHidden>
 	
 		<h:dataTable value="#{scepConfigMBean.aliasGuiList}" var="alias" styleClass="grid">
-	
+
 			<h:column headerClass="listColumn1">
    				<f:facet name="header">
    					<h:outputText value="#{web.text.SCEP_ALIAS}"/>
@@ -75,27 +76,27 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 			</h:column>
 		
 			<h:column>
-   				<f:facet name="header"><h:outputText value="Operational Mode"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.SCEP_MODE}"/></f:facet>
 				<h:outputText value="#{alias.mode}" title="#{alias.mode}"/>
 			</h:column>
 		
 			<h:column>
-				<f:facet name="header"><h:outputText value="Operation"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.SCEP_ACTION}"/></f:facet>
 				<h:commandLink action="#{scepConfigMBean.renameAlias}"
-					onclick="return getInputToField('aliases:newAlias','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
-					styleClass="commandLink" title="#{web.text.RENAMEROLE}">
+					onclick="return getInputToField('aliases:newAlias','#{web.text.SCEP_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
+					styleClass="commandLink" title="#{web.text.SCEP_RENAME_ALIAS}">
 					<h:outputText value="#{web.text.RENAME}"/>
 				</h:commandLink>
 				<h:commandLink action="#{scepConfigMBean.deleteAlias}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
-					styleClass="commandLink" title="#{web.text.DELETEROLE}">
+					styleClass="commandLink" title="#{web.text.SCEP_DELETE_ALIAS}">
 					<h:outputText value="#{web.text.DELETE}"/>
 				</h:commandLink>
 			</h:column>
 
 		</h:dataTable>
 		<br/>
-		<h:commandLink action="#{scepConfigMBean.addAlias}" styleClass="commandLink" title="#{web.text.ADDROLE}"
-			onclick="return getInputToField('aliases:newAlias','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}');" >
+		<h:commandLink action="#{scepConfigMBean.addAlias}" styleClass="commandLink" title="#{web.text.SCEP_ADD_ALIAS}"
+			onclick="return getInputToField('aliases:newAlias','#{web.text.SCEP_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}');" >
 			<h:outputText value="#{web.text.ADD}"/>
 		</h:commandLink>
  

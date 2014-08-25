@@ -133,11 +133,11 @@ org.cesecore.keybind.InternalKeyBindingRules
 	<h:form id="uploadCertificate" enctype="multipart/form-data" rendered="#{not empty internalKeyBindingMBean.uploadTargets}">
 		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_UPLOADHEADER}"/></h3>
 		<h:panelGrid columns="5">
-			<h:outputLabel for="certificateUploadTarget" value="Target #{internalKeyBindingMBean.selectedInternalKeyBindingType}:"/>
+			<h:outputLabel for="certificateUploadTarget" value="#{web.text.INTERNALKEYBINDING_UPLOAD_TARGET} #{internalKeyBindingMBean.selectedInternalKeyBindingType}:"/>
 			<h:selectOneMenu id="certificateUploadTarget" value="#{internalKeyBindingMBean.uploadTarget}">
 				<f:selectItems value="#{internalKeyBindingMBean.uploadTargets}"/>
 			</h:selectOneMenu>
-			<h:outputLabel for="certificateUploadInput" value="Certificate:"/>
+			<h:outputLabel for="certificateUploadInput" value="#{web.text.INTERNALKEYBINDING_UPLOAD_CERTIFICATE}:"/>
 				<t:inputFileUpload id="certificateUploadInput" value="#{internalKeyBindingMBean.uploadToTargetFile}" size="20"/>
 			<h:commandButton action="#{internalKeyBindingMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
 		</h:panelGrid>
