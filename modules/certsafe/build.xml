@@ -12,16 +12,10 @@
 
 	<path id="compile.classpath">
         <path refid="lib.ejbca-util.classpath"/>
-        <pathelement location="${mod.ejbca-entity.lib}" />
-        <pathelement location="${mod.ejbca-ws-cli.lib}"/>
-        <path refid="lib.log4j.classpath"/>
-        <path refid="lib.jee.classpath"/>
-        <path refid="lib.bouncycastle.classpath"/>
-        <path refid="lib.commons-fileupload.classpath"/> <!-- for the Streams.asString method -->
-        <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
-        <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path location="${mod.ejbca-ejb-interface.lib}"/>
+        <path location="${mod.cesecore-ejb-interface.lib}"/>
+        <path refid="lib.log4j.classpath"/>
 		<path refid="lib.json.classpath"/>
 	</path>
 	
