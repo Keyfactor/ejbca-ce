@@ -112,13 +112,13 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	    final int status = info.getStatus();
     	    final int type = info.getType();
     	    final String tag = info.getTag();
-    	    final long now = System.currentTimeMillis();
+    	    final long updateTime = info.getUpdateTime(); // Set the date to the same as in the database to ensure that publishing works as expected 
     	    final int certProfile = info.getCertificateProfileId();
     		// Only publish the revocation if it was actually performed
     		if ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) {
     			// unrevocation, -1L as revocationDate
     		    final boolean published = publisherSession.storeCertificate(admin, publishers, cert, username, password, userDataDN,
-        				cafp, status, type, -1L, reason, tag, certProfile, now, null);
+        				cafp, status, type, -1L, reason, tag, certProfile, updateTime, null);
         		if (published) {
                     final String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));
         			log.info(msg);
@@ -132,7 +132,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		}    			
     		} else {
     			// revocation
-        		publisherSession.revokeCertificate(admin, publishers, cert, username, userDataDN, cafp, type, reason, revocationDate.getTime(), tag, certProfile, now);    			
+        		publisherSession.revokeCertificate(admin, publishers, cert, username, userDataDN, cafp, type, reason, revocationDate.getTime(), tag, certProfile, updateTime);    			
     		}
     	}
     }
