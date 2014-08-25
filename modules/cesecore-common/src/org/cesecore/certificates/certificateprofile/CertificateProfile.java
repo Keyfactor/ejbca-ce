@@ -2196,7 +2196,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 } else {
                     setUseAuthorityInformationAccess(false); // v25
                 }
-            } else {
+            } else if (data.get(USEAUTHORITYINFORMATIONACCESS) == null) {
                 setUseAuthorityInformationAccess(false);
             }
 
