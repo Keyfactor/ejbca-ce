@@ -446,7 +446,7 @@ function checkallfields() {
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defcp)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
-          <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="ProfileDefault"/></option>
+          <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% java.util.Iterator cps = ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep).iterator(); //ejbcawebbean.getAuthorizedCertProfileNames().iterator();
              while(cps.hasNext()){
             	String cp = (String) cps.next(); 
@@ -472,7 +472,7 @@ function checkallfields() {
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defca)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
-          <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="ProfileDefault"/></option>
+          <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% java.util.Iterator cas = ejbcawebbean.getAvailableCAsOfEEProfile(ceep).iterator(); //canames.keySet().iterator();
              while(cas.hasNext()){
             	String caname = (String) cas.next();
@@ -561,7 +561,7 @@ function checkallfields() {
         <select name="<%=LIST_CMPDEFAULTCA%>" >
            <%  String currentCA = cmpConfigClone.getCMPDefaultCA(alias); %>
            <option <% if(currentCA.equals("")) { %> selected <% } %>
-                 	value='<c:out value=""/>'><c:out value="(disabled)"/></option>
+                 	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_DISABLED\") %>"/></option>
            <% java.util.Iterator iter = canames.keySet().iterator();
            	  while(iter.hasNext()) {
            		  String caname = (String) iter.next();
