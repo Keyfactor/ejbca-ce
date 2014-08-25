@@ -1024,9 +1024,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = cainfo.getExtendedCAServiceInfos();
         if (extendedCAServiceInfos != null) {
             for (final ExtendedCAServiceInfo extendedCAServiceInfo : extendedCAServiceInfos) {
-                // No OCSP Certificate exists that can be renewed.
-                if (extendedCAServiceInfo instanceof BaseSigningCAServiceInfo) {
-                    xkmsrenewcert = ((BaseSigningCAServiceInfo) extendedCAServiceInfo).getRenewFlag();
+                if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
+                    final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
+                    xkmsrenewcert = signingInfo.getRenewFlag() ||
+                        (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
+                } else if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
+                    final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
+                    cmsrenewcert = signingInfo.getRenewFlag() ||
+                        (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
                 }
             }
         }

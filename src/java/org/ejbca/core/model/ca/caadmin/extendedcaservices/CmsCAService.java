@@ -162,7 +162,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	public void init(final CryptoToken cryptoToken, final CA ca) throws Exception {
 		m_log.trace(">init");
 		
-		if (getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
+		if (info.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
            m_log.debug("Not generating certificates for inactive service");
         } else {
     		// lookup keystore passwords      
@@ -211,6 +211,12 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo; 
 		m_log.debug("CmsCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
+		
+		data.put(KEYSPEC, info.getKeySpec());
+		data.put(KEYALGORITHM, info.getKeyAlgorithm());
+		// We only updated the status, and keyspec/keyalg which can be edited in uninitialized CAs
+		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), info.getKeySpec(), info.getKeyAlgorithm(), certificatechain);
+		
 		if (info.getRenewFlag() || missingCert) {
 			// Renew The Signers certificate.
 			try {
@@ -219,10 +225,6 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				m_log.error("Error initilizing Extended CA service during upgrade: ", e);
 			}
 		}
-		data.put(KEYSPEC, info.getKeySpec());
-        data.put(KEYALGORITHM, info.getKeyAlgorithm());
-        // We only updated the status, and keyspec/keyalg which can be edited in uninitialized CAs
-		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), info.getKeySpec(), info.getKeyAlgorithm(), certificatechain);
 	}
 
 	@Override
