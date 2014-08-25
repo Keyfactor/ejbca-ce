@@ -174,6 +174,7 @@ import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -183,7 +184,6 @@ import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -1047,7 +1047,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 ArrayList<Certificate> xkmscertificate = new ArrayList<Certificate>();
                 xkmscertificate.add(xkmscert);
                 // Publish the extended service certificate, but only for active services
-                if ((info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!xkmscertificate.isEmpty())) {
+                if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
                     publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
                 }
             }
@@ -1057,7 +1057,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 ArrayList<Certificate> cmscertificate = new ArrayList<Certificate>();
                 cmscertificate.add(cmscert);
                 // Publish the extended service certificate, but only for active services
-                if ((info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!cmscertificate.isEmpty())) {
+                if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
                     publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
                 }
             }
@@ -1400,13 +1400,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     final ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
                     if (info instanceof BaseSigningCAServiceInfo) {
                         final List<Certificate> certPath = ((BaseSigningCAServiceInfo) info).getCertificatePath();
-                        if (certPath != null) {
+                        // Publish the extended service certificate, but only for active services
+                        if (certPath != null && info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
                             final List<Certificate> extcacertificate = new ArrayList<Certificate>();
                             extcacertificate.add(certPath.get(0));
-                            // Publish the extended service certificate, but only for active services
-                            if ((info != null) && (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!extcacertificate.isEmpty())) {
-                                publishCACertificate(authenticationToken, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
-                            }
+                            publishCACertificate(authenticationToken, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
                         }
                     }
                 } catch (Exception fe) {
