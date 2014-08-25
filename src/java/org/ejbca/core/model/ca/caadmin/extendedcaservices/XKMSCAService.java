@@ -150,7 +150,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     public void init(CryptoToken cryptoToken, final CA ca) throws Exception {
     	m_log.trace(">init");
     	
-    	if (getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
+    	if (info.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
     	   m_log.debug("Not generating certificates for inactive service");
     	} else {
         	// lookup keystore passwords      
@@ -196,6 +196,12 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     	final XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;
     	m_log.trace(">update: " + serviceinfo.getStatus());
     	setStatus(serviceinfo.getStatus());
+    	
+    	data.put(KEYSPEC, info.getKeySpec());
+        data.put(KEYALGORITHM, info.getKeyAlgorithm());
+        // We only updated the status, and keyspec/keyalg which can be edited in uninitialized CAs 
+        this.info = new XKMSCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), info.getKeySpec(), info.getKeyAlgorithm(), xKMScertificatechain);
+    	
     	if (info.getRenewFlag() || missingCert) {
     		// Renew The XKMS Signers certificate.
     		try {
@@ -204,10 +210,6 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 				m_log.error("Error updating the XKMS service: ", e);
 			}
     	}
-    	data.put(KEYSPEC, info.getKeySpec());
-        data.put(KEYALGORITHM, info.getKeyAlgorithm());
-    	// We only updated the status, and keyspec/keyalg which can be edited in uninitialized CAs 
-    	this.info = new XKMSCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), info.getKeySpec(), info.getKeyAlgorithm(), xKMScertificatechain);
     	m_log.trace("<update: " + serviceinfo.getStatus());
     }
 
