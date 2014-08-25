@@ -57,7 +57,7 @@
 			<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
 		</h:selectOneMenu>
 		<f:verbatim>&nbsp;&nbsp;&nbsp;</f:verbatim>
-		<h:commandButton id="updateButton" action="#{editService.update}" value="Update"  />			
+		<h:commandButton id="updateButton" action="#{editService.update}" value="#{web.text.UPDATE}"/>			
 	</h:panelGroup>
   
      <jsp:include page="<%=workerPage %>"/>

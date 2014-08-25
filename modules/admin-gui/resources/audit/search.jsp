@@ -56,7 +56,7 @@ org.cesecore.authorization.control.AuditLogRules
  	--%>
 	<p>
    	<h:dataTable value="#{auditor.conditions}" var="condition" captionClass="listCaption" headerClass="listHeader" styleClass="grid" rowClasses="a">
-		<f:facet name="caption"><h:outputText value="Current conditions"/></f:facet>
+		<f:facet name="caption"><h:outputText value="#{web.text.CONDITIONS_CURRENT}"/></f:facet>
 		<h:column rendered="false"><f:facet name="header"><h:outputText value="operation"/></f:facet><h:outputText value="#{condition.operation}"></h:outputText></h:column>
 		<h:column>
 			<f:facet name="header"><h:outputText value="#{web.text.COLUMN}"/></f:facet>

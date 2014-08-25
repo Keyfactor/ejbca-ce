@@ -1616,10 +1616,10 @@ function checkallfields(){
             <table>
                 <tbody>
                     <tr>
-                        <td>Next CA key:</td>
+                        <td><%= ejbcawebbean.getText("RENEWCA_NEXTCAKEY") %></td>
                         <td>
                             <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_RENEW %>" size="1">
-                                <option value="" >- Generate new key using KeySequence -</option>
+                                <option value="" ><c:out value="<%= ejbcawebbean.getText(\"RENEWCA_USINGKEYSEQUENCE\") %>"/></option>
                             <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
@@ -1630,7 +1630,7 @@ function checkallfields(){
                         </td>
                     </tr>
                     <tr>
-                        <td>Create link certificate:</td>
+                        <td><%= ejbcawebbean.getText("RENEWCA_LINKCERTIFICATE") %></td>
                         <td>
                         <% if (catype==CAInfo.CATYPE_CVC) { %>
                             <input type="checkbox" name="<%= CHECKBOX_CREATELINKCERTIFICATE %>" value="<%=CHECKBOX_VALUE%>" checked disabled/>
@@ -1646,13 +1646,13 @@ function checkallfields(){
                         </td>
                     </tr>
                     <tr>
-                        <td>Link Certificate (from last renewal):</td>
+                        <td><%= ejbcawebbean.getText("RENEWCA_FROMLASTRENEWAL") %></td>
                         <td>
                         <% if (cabean.getLinkCertificate(caid)!=null) { %>
-                            <a href="adminweb/ca/editcas/cacertreq?cmd=linkcert&format=binary&caid=<%=caid%>">der</a>
-                            <a href="adminweb/ca/editcas/cacertreq?cmd=linkcert&caid=<%=caid%>">pem</a>
+                            <a href="adminweb/ca/editcas/cacertreq?cmd=linkcert&format=binary&caid=<%=caid%>">DER</a>,
+                            <a href="adminweb/ca/editcas/cacertreq?cmd=linkcert&caid=<%=caid%>">PEM</a>
                         <% } else { %>
-                            <i>not available</i>
+                            <span><%= ejbcawebbean.getText("RENEWCA_NOTAVAILABLE") %></span>
                         <% } %>
                         </td>
                     </tr>
@@ -1685,12 +1685,12 @@ function checkallfields(){
             <table>
                 <tbody>
                     <%  if (editca) { %>
-                    <tr><td>Step 1:</td><td></td></tr>
+                    <tr><td colspan="2"><strong><%= ejbcawebbean.getText("EXTERNALLYSIGNED_STEP1") %></strong></td></tr>
                     <tr>
-                        <td>Next CA key to use in CSR:</td>
+                        <td><%= ejbcawebbean.getText("EXTERNALLYSIGNED_NEXTKEY") %></td>
                         <td>
                             <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_MAKEREQUEST %>" size="1">
-                                <option value="" >- Generate new key using KeySequence -</option>
+                                <option value="" ><c:out value="<%= ejbcawebbean.getText(\"RENEWCA_USINGKEYSEQUENCE\") %>"/></option>
                         <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
@@ -1702,7 +1702,8 @@ function checkallfields(){
                     </tr>
                     <%  } %>
                     <tr>
-                        <td>Path to PEM certificate chain or a single DER certificate about to sign CA:</td>
+                        <td><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CACHAIN") %><br/>
+                            <p class="help"><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CACHAIN_HELP") %></p></td>
                         <td>
                             <input type="file" name="<%= FILE_RECIEVEFILE_MAKEREQUEST %>">
                         </td>
@@ -1715,9 +1716,9 @@ function checkallfields(){
                     </tr>
                     <%  if (editca) { %>
                     <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-                    <tr><td>Step 2:</td><td></td></tr>
+                    <tr><td colspan="2"><strong><%= ejbcawebbean.getText("EXTERNALLYSIGNED_STEP2") %></strong></td></tr>
                     <tr>
-                        <td>Replace CA certificate using key</td>
+                        <td><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CAKEY") %></td>
                         <td>
                             <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_RECEIVEREQ %>" size="1">
                         <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
@@ -1730,7 +1731,8 @@ function checkallfields(){
                         </td>
                     </tr>
                     <tr>
-                        <td>Path to certificate signed by external CA:</td>
+                        <td><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CACERT") %><br/>
+                            <p class="help"><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CACERT_HELP") %></p></td>
                         <td>
                             <input type="file" name="<%= FILE_RECIEVEFILE_RECEIVEREQUEST %>">
                         </td>

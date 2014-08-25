@@ -50,7 +50,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:panelGroup>
 		<h:commandButton action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode && cryptoTokenMBean.allowedToModify}"/>
 		<h:panelGroup id="placeholder1" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode || !cryptoTokenMBean.allowedToModify}"/>
-		<h:outputLabel for="currentCryptoTokenId" value="Id:" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
+		<h:outputLabel for="currentCryptoTokenId" value="#{web.text.CRYPTOTOKEN_ID}:" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		<h:outputText id="currentCryptoTokenId" value="#{cryptoTokenMBean.currentCryptoTokenId}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		<h:outputLabel for="currentCryptoTokenName" value="#{web.text.CRYPTOTOKEN_NAME}:"/>
 		<h:panelGroup id="currentCryptoTokenName">

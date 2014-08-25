@@ -111,7 +111,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<h:outputText rendered="#{internalKeyBindingMBean.currentSignatureAlgorithm != null}"
 					value="#{internalKeyBindingMBean.currentSignatureAlgorithm}"/>
 				<h:outputText rendered="#{internalKeyBindingMBean.currentSignatureAlgorithm == null}"
-					value="Not specified (error)"/>
+					value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED} (error)"/>
 			</h:panelGroup>
 		</h:panelGroup>
 		<h:message for="signatureAlgorithm"/>
@@ -120,7 +120,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h:panelGroup id="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}">
 			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}">
 			<h:selectOneMenu value="#{internalKeyBindingMBean.currentNextKeyPairAlias}">
-				<f:selectItem itemValue="" itemLabel="None"/>
+				<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
 				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
 			</h:selectOneMenu>
 			</h:panelGroup>
@@ -128,7 +128,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias != null}"
 					value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
 				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias == null}"
-					value="Not specified"/>
+					value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED}"/>
 			</h:panelGroup>
 		</h:panelGroup>
 		<h:message for="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
