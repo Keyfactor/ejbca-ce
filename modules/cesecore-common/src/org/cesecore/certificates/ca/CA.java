@@ -656,12 +656,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             setExpireTime(CertTools.getNotAfter(cacert));  
         }
         // Update or create extended CA services
-        Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+        final Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
-            Iterator<ExtendedCAServiceInfo> iter = infos.iterator();
+            final Collection<ExtendedCAServiceInfo> newInfos = new ArrayList<ExtendedCAServiceInfo>();
             Collection<Integer> extendedservicetypes = getExternalCAServiceTypes(); // Se we can add things to this
-            while (iter.hasNext()) {
-                ExtendedCAServiceInfo info = iter.next();
+            for (ExtendedCAServiceInfo info : infos) {
                 ExtendedCAService service = this.getExtendedCAService(info.getType());
                 if (service == null) {
                     if (log.isDebugEnabled()) {
@@ -669,14 +668,22 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                     }
                     createExtendedCAService(info);
                     extendedservicetypes.add(info.getType());
+                    newInfos.add(info);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Updating extended CA service of type: "+info.getType());
                     }
-                    service.update(cryptoToken, info, this);
+                    service.update(cryptoToken, info, this); // the service's signing certificate might get created at this point!
                     setExtendedCAService(service);
+                    
+                    // Now read back the info object from the service.
+                    // This is necessary because the service's signing certificate is "lazy-created",
+                    // i.e. created when the service becomes active the first time.
+                    final ExtendedCAServiceInfo newInfo = service.getExtendedCAServiceInfo();
+                    newInfos.add(newInfo);
                 }
             }
+            cainfo.setExtendedCAServiceInfos(newInfos);
             data.put(EXTENDEDCASERVICES, extendedservicetypes);            
         }
         
