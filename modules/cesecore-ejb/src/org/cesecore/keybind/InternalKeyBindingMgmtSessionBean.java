@@ -57,6 +57,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -236,6 +237,49 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         return internalKeyBindingId;
     }
+    
+    /**
+     * Returns a collection of the trusted certificates defined in the specified InternalKeyBinding's trusted certificates references 
+     * along with their issuers' certificate chains.
+     * 
+     * The List of the trusted certificates references should contain a list of of InternalKeyBindingTrustEntry, 
+     * each entry containing a certificate serial number along with the CA that issued it.
+     * 
+     * @param authenticationToken
+     * @param internalKeyBinding
+     * @return
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     */
+    @Override
+    public Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
+                    InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException {
+        
+        Collection<Collection<Certificate> > trustedCerts = new ArrayList< Collection<Certificate> >();
+        for (final InternalKeyBindingTrustEntry trustedReference : internalKeyBinding.getTrustedCertificateReferences()) {
+            final CAInfo caInfo = caSession.getCAInfo(authenticationToken, trustedReference.getCaId());
+            if (trustedReference.getCertificateSerialNumberDecimal()==null) {
+                // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
+                // CA certificate chain to be used for issuer verification
+                trustedCerts.add(caInfo.getCertificateChain());
+            } else {
+                // If a cert serialnumber is specified, then we trust only this certificate. We create a certificate collection 
+                // containing this certificate and it's issuer's certificate chain to be used for issuer verification
+                X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
+                                caInfo.getSubjectDN(), trustedReference.fetchCertificateSerialNumber());
+                if(cert!=null) {
+                    ArrayList<Certificate> leafCertChain = new ArrayList<Certificate>();
+                    leafCertChain.add(cert);
+                    String issuer = CertTools.getIssuerDN(cert);
+                    CAInfo issuerInfo = caSession.getCAInfo(authenticationToken, issuer.hashCode());
+                    leafCertChain.addAll((ArrayList<Certificate>) issuerInfo.getCertificateChain());
+                    trustedCerts.add(leafCertChain);                
+                }
+            }
+        }
+        return trustedCerts;
+    }
+
     
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
