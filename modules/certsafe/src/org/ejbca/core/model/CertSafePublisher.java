@@ -25,6 +25,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -42,14 +43,15 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.ClientX509KeyManager;
+import org.cesecore.keybind.impl.ClientX509TrustManager;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -167,18 +169,11 @@ public class CertSafePublisher implements ICustomPublisher {
             log.trace(">storeCertificate, Storing Certificate for user: " + username);
         }
         
-        if(!isPropertiesSet()) {
-            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
-                            certSafeAuthKeyBindingPropertyName + "' is not set.";
-            log.info(msg);
-            throw new PublisherException(msg);
-        }
-
-        String jsonObject = getJSONString(incert, status, revocationReason);
-        
+       
         // Construct the SSL context for the HTTPS exchange
         SSLSocketFactory sslSocketFactory;
         try {
+            checkProperties();
             sslSocketFactory = getSSLSocketFactory(admin);
         } catch (PublisherConnectionException e1) {
             String msg = e1.getLocalizedMessage();
@@ -186,6 +181,8 @@ public class CertSafePublisher implements ICustomPublisher {
             throw new PublisherException(msg);
         }
         
+        String jsonObject = getJSONString(incert, status, revocationReason);
+                
         // Make the HTTPS connection and send the request
         HttpsURLConnection con = null;
         try {
@@ -260,13 +257,7 @@ public class CertSafePublisher implements ICustomPublisher {
         if (log.isTraceEnabled()) {
             log.trace("testConnection, Testing connection");
         }
-        
-        if(!isPropertiesSet()) {
-            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
-                            certSafeAuthKeyBindingPropertyName + "' is not set.";
-            log.info(msg);
-            throw new PublisherConnectionException(msg);
-        }
+        checkProperties();
         
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Test SSL Connection"));
         
@@ -300,8 +291,13 @@ public class CertSafePublisher implements ICustomPublisher {
     }
     
     
-    private boolean isPropertiesSet() {
-        return (urlstr!=null && authKeyBindingName!=null);
+    private void checkProperties() throws PublisherConnectionException {
+        if (urlstr==null || authKeyBindingName==null) {
+            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
+                            certSafeAuthKeyBindingPropertyName + "' is not set.";
+            log.info(msg);
+            throw new PublisherConnectionException(msg);
+        }
     }
     
     private SSLSocketFactory getSSLSocketFactory(AuthenticationToken authenticationToken) throws PublisherConnectionException {
@@ -331,14 +327,14 @@ public class CertSafePublisher implements ICustomPublisher {
         final List<X509Certificate> chain = new ArrayList<X509Certificate>();
         chain.add(sslCertificate);
         chain.addAll(getCaCertificateChain(sslCertificate));
-        final List<X509Certificate> trustedCertificates = getListOfTrustedCertificates(authenticationKeyBinding.getTrustedCertificateReferences());
         final String alias = authenticationKeyBinding.getKeyPairAlias();
         try {
+            final Collection< Collection<Certificate> > trustedCertificates = internalKeyBindingMgmtSession.getListOfTrustedCertificates(authenticationToken, authenticationKeyBinding);
             final TrustManager trustManagers[];
-            if (trustedCertificates == null || trustedCertificates.isEmpty()) {
+            if (trustedCertificates.isEmpty()) {
                 trustManagers = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
             } else {
-                throw new RuntimeException("Configurable trust not yet implemented.");
+                trustManagers = new X509TrustManager[] { new ClientX509TrustManager(trustedCertificates) };
             }
             final KeyManager keyManagers[] = new X509KeyManager[] { new ClientX509KeyManager(alias, cryptoToken.getPrivateKey(alias), chain) };
             // Now construct a SSLContext using these (possibly wrapped) KeyManagers, and the TrustManagers.
@@ -359,6 +355,14 @@ public class CertSafePublisher implements ICustomPublisher {
             String msg = e.getLocalizedMessage();
             log.error(msg, e);
             throw new PublisherConnectionException(msg);
+        } catch (CADoesntExistsException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
+        } catch (AuthorizationDeniedException e) {
+            String msg = e.getLocalizedMessage();
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);
         }
     }
     
@@ -370,7 +374,7 @@ public class CertSafePublisher implements ICustomPublisher {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
             currentLevelCertificate = certificateStoreSession.findLatestX509CertificateBySubject(issuerDn);
             if (currentLevelCertificate == null) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                log.warn("Unable to build certificate chain for SSL authentication certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
                 return null;
             }
@@ -379,15 +383,22 @@ public class CertSafePublisher implements ICustomPublisher {
         return caCertificateChain;
     }
     
-    private List<X509Certificate> getListOfTrustedCertificates(List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
-        if (trustedCertificateReferences == null || trustedCertificateReferences.isEmpty()) {
-            return null;
-        }
-        // TODO: Here we need to lookup all the trusted certificates from the provided references so a X509TrustManager can do verification later
-        log.warn("Trusted references was non-empty, but will be ignored. (Not yet implemented.)");
-        return null;
-    }
-    
+    /**
+     * Returns the input in a String of JSON format:
+     * 
+     *          {
+     *              "status" : STATUS
+     *              "revocationReason" : REVOCATION_REASON_IF_ANY
+     *              "pem" : THE_CERTIFICATE
+     *          }
+     *          
+     *          
+     * @param incert
+     * @param status
+     * @param revocationReason
+     * @return
+     * @throws PublisherException
+     */
     private String getJSONString(Certificate incert, int status, int revocationReason) throws PublisherException {
         
         JSONObject json = new JSONObject();
@@ -429,6 +440,18 @@ public class CertSafePublisher implements ICustomPublisher {
         return ret;
     }
     
+    /**
+     * Obtaining a JSON object from the InputStream and returns the error message inside the JSON object.
+     * 
+     * The JSON object format is:
+     *          {
+     *              "error" : ERROR_MESSAGE
+     *          }
+     *          
+     * @param errins
+     * @return the error message if found. Empty string otherwise
+     * @throws IOException
+     */
     private String getJSONErrorMessage(InputStream errins) throws IOException {
         byte[] errB = new byte[1024];
         errins.read(errB);
