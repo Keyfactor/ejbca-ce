@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 
 /**
  * @see InternalKeyBindingMgmtSession
@@ -51,4 +54,16 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @throws AuthorizationDeniedException if the authentication token was not authorized to fetch the requested InternalKeyBinding
      */
     InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
+
+    /**
+     * Returns a collection of the trusted certificates defined in the specified InternalKeyBinding along with their issuers' certificate chains.
+     * 
+     * @param authenticationToken
+     * @param internalKeyBinding
+     * @return a collection of the trusted certificates along with their issuers' certificate chains.
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     */
+    public Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
+                    InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException;
 }

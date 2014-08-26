@@ -2498,11 +2498,11 @@ public abstract class CertTools {
      * Check the certificate with CA certificate.
      * 
      * @param certificate cert to verify
-     * @param caCertPath collection of X509Certificate
+     * @param caCertChain collection of X509Certificate
      * @return true if verified OK
      * @throws Exception if verification failed
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertPath) throws Exception {
+    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain) throws Exception {
         try {
             ArrayList<Certificate> certlist = new ArrayList<Certificate>();
             // Create CertPath
@@ -2510,12 +2510,14 @@ public abstract class CertTools {
             // Add other certs...
             CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
             java.security.cert.CertPath cp = cf.generateCertPath(certlist);
+            
             // Create TrustAnchor. Since EJBCA use BouncyCastle provider, we assume
             // certificate already in correct order
-            X509Certificate[] cac = (X509Certificate[]) caCertPath.toArray(new X509Certificate[] {});
+            X509Certificate[] cac = (X509Certificate[]) caCertChain.toArray(new X509Certificate[] {});
             java.security.cert.TrustAnchor anchor = new java.security.cert.TrustAnchor(cac[0], null);
             // Set the PKIX parameters
             java.security.cert.PKIXParameters params = new java.security.cert.PKIXParameters(java.util.Collections.singleton(anchor));
+            
             params.setRevocationEnabled(false);
             java.security.cert.CertPathValidator cpv = java.security.cert.CertPathValidator.getInstance("PKIX", "BC");
             java.security.cert.PKIXCertPathValidatorResult result = (java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
@@ -2528,6 +2530,44 @@ public abstract class CertTools {
             throw new Exception("Error checking certificate chain: " + e.getMessage());
         }
         return true;
+    }
+    
+    /**
+     * Check the certificate with a list of trusted certificates.
+     * The trusted certificates list can either be end entity certificates, in this case, only this certificate by this issuer 
+     * is trusted; or it could be CA certificates, in this case, all certificates issued by this CA are trusted.
+     * 
+     * @param certificate cert to verify
+     * @param trustedCertificates collection of trusted X509Certificate
+     * @return true if verified OK
+     * @throws Exception if verification failed
+     */
+    public static boolean verifyWithTrustedCertificates(Certificate certificate, Collection< Collection<Certificate> > trustedCertificates) {
+        BigInteger certSN = getSerialNumber(certificate);
+        for(Collection<Certificate> trustedCertChain : trustedCertificates) {
+            Certificate trustedCert = trustedCertChain.iterator().next();
+            BigInteger trustedCertSN = getSerialNumber(trustedCert);
+            if(certSN.equals(trustedCertSN)) {
+                // If the serial number of the certificate matches the serial number of a certificate in the list, make sure that it in 
+                // fact is the same certificate by verifying that they were issued by the same issuer.
+                // Removing this trusted certificate from the trustedCertChain will leave only the CA's certificate chain, which will be 
+                // used to verify the issuer.
+                if(trustedCertChain.size() > 1) {
+                    trustedCertChain.remove(trustedCert);
+                }
+            }
+            try {
+                verify(certificate, trustedCertChain);
+                if(log.isDebugEnabled()) {
+                    log.debug("Trusting certificate with SubjectDN '" + getSubjectDN(certificate) + "' and issuerDN '" + getIssuerDN(certificate) + "'.");
+                }
+                return true;
+            } catch (Exception e) {
+                //Do nothing. Just try the next trusted certificate chain in the list
+            }
+            
+        }
+        return false;
     }
 
     /**
