@@ -23,13 +23,14 @@
       	<% if (customClassChoice) { %>
          <strong><%= ejbcawebbean.getText("CUSTOMPUBLISHERSETTINGS") %></strong>
       	<% } else { %>
-         <strong><%= currentClassText + " " + ejbcawebbean.getText("PUBLISHERSETTINGS") %></strong>
+         <strong><%= ejbcawebbean.getText("PUBLISHERSETTINGS") + " : " + currentClassText %></strong>
       	<% } %>
       </td>
       <td width="55%" valign="top"> 
         <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled() || customClassChoice) { %>
          &nbsp;
         <% } else { %>
+         &nbsp;
             <input type="hidden" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>"
                    value='<c:out value="<%= currentClass %>"/>'>
         <% } %>
@@ -79,7 +80,7 @@
     			</select>
     		<%
     		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_TEXTINPUT) { %>
-                <input type="text" name="<%=current.getName()%>" id="<%=current.getName()%>" size="80" maxlength="255"
+                <input type="text" name="<%=current.getName()%>" id="<%=current.getName()%>" size="45" maxlength="255"
                         value='<c:out value="<%= current.getValue() %>"/>'>
     		<%
     		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_BOOLEAN) { %>
