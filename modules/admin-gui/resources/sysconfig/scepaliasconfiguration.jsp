@@ -54,9 +54,6 @@ org.cesecore.authorization.control.AuditLogRules
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" rendered="true"/>
 		</h:panelGroup>
  
-		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" rendered="true"/>
-		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
-
 		<h:outputLabel for="currentMode" value="#{web.text.SCEP_OPERATIONAL_MODE}"/>
 		<h:panelGroup id="currentMode">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
@@ -69,6 +66,9 @@ org.cesecore.authorization.control.AuditLogRules
 			</h:panelGroup>
 			<h:outputText value="#{scepConfigMBean.currentAlias.mode}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
+
+		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" rendered="true"/>
+		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
 
 		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
 		<h:panelGroup id="eep"  rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
