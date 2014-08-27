@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authorization;
+package org.cesecore.authorization.rules;
 
 import java.util.List;
 
@@ -24,4 +24,7 @@ import java.util.List;
 public interface AccessRulePlugin {
 
     List<String> getRules();
+    
+    String getCategory();
+    
 }

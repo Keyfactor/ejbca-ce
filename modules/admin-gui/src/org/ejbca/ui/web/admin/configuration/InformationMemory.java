@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -95,7 +97,7 @@ public class InformationMemory implements Serializable {
     TreeMap<String, Integer> publishernames = null;
     Map<Integer, String> roldIdMap = null;
 
-    HashSet<String> authorizedaccessrules = null;
+    Map<String, Set<String>> authorizedaccessrules = null;
 
     GlobalConfiguration globalconfiguration = null;
     CmpConfiguration cmpconfiguration = null;
@@ -387,14 +389,22 @@ public class InformationMemory implements Serializable {
      * @return A HashSet containing the administrators authorized available accessrules.
      */
 
-    public HashSet<String> getAuthorizedAccessRules() {
+    public Map<String, Set<String>> getAuthorizedAccessRules() {
         if (authorizedaccessrules == null) {
-            authorizedaccessrules = new HashSet<String>(complexAccessControlSession.getAuthorizedAvailableAccessRules(administrator,
+            authorizedaccessrules = complexAccessControlSession.getAuthorizedAvailableAccessRules(administrator,
                     globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
                     globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator),
-                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules()));
+                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules());
         }
         return authorizedaccessrules;
+    }
+    
+    public Set<String> getAuthorizedAccessRulesUncategorized() {
+        Set<String> accessRulesSet = new HashSet<String>();
+        for(Entry<String, Set<String>> entry : getAuthorizedAccessRules().entrySet()) {
+            accessRulesSet.addAll(entry.getValue());
+        }
+        return accessRulesSet;
     }
 
     /**

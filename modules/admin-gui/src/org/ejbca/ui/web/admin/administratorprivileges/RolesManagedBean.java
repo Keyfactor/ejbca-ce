@@ -18,8 +18,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -51,7 +53,6 @@ import org.ejbca.core.model.authorization.BasicAccessRuleSetEncoder;
 import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.configuration.AccessRulesView;
 import org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler;
 
 /**
@@ -88,8 +89,8 @@ public class RolesManagedBean extends BaseManagedBean {
 
     private String newRoleName = "new";
 
-
-    private AccessRulesView accessRulesViewCache = null;
+  //  private AccessRulesView accessRulesViewCache = null;
+    private Map<String, List<AccessRuleData>> accessRulesViewCache = null;
     
     // Simple from backing
     public String getNewRoleName() {
@@ -520,7 +521,7 @@ public class RolesManagedBean extends BaseManagedBean {
 
     private BasicAccessRuleSetEncoder getBasicRuleSetInternal(RoleData role) {
         GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
-        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRules(),
+        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRulesUncategorized(),
                 globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
     }
 
@@ -530,22 +531,14 @@ public class RolesManagedBean extends BaseManagedBean {
 
 
     /** @return a cached list of all the available access rules holding the current state */
-    private AccessRulesView getAccessRules() {
+    private Map<String, List<AccessRuleData>> getAccessRules() {
     	if (log.isTraceEnabled()) {
     		log.trace(">getAccessRules");
     	}
         if (accessRulesViewCache == null) {
             RoleData role = getCurrentRoleObject();
-            Collection<AccessRuleData> usedAccessRulesCollection = role.getAccessRules().values();
-            // We need to create a new arraylist here, because the collection returned by role.getAccessRules().values() does not support addAll
-            ArrayList<AccessRuleData> usedAccessRules = new ArrayList<AccessRuleData>();
-            usedAccessRules.addAll(usedAccessRulesCollection);
-            Collection<String> rules = getAuthorizationDataHandler().getAvailableAccessRules();
-            Collection<AccessRuleData> unusedAccessRules = role.getDisjunctSetOfRules(rules);
-            if (!unusedAccessRules.isEmpty()) {
-                usedAccessRules.addAll(unusedAccessRules);
-            }
-            accessRulesViewCache = new AccessRulesView(usedAccessRules);
+            Map<String, Set<String>> allAvailableRules = getAuthorizationDataHandler().getAvailableAccessRules();
+            accessRulesViewCache = getCategorizedRuleSet(role, allAvailableRules);
         }
     	if (log.isTraceEnabled()) {
     		log.trace("<getAccessRules");
@@ -553,15 +546,40 @@ public class RolesManagedBean extends BaseManagedBean {
         return accessRulesViewCache;
     }
 
-    /** @return a list of lists with access rules and the catagory name */
-    public Collection<AccessRuleCollection> getAccessRulesCollections() {
-        Collection<AccessRuleCollection> result = new ArrayList<AccessRuleCollection>();
-        result.add(new AccessRuleCollection("ROLEBASEDACCESSRULES", getAccessRules().getRoleBasedAccessRules()));
-        result.add(new AccessRuleCollection("REGULARACCESSRULES", getAccessRules().getRegularAccessRules()));
-        result.add(new AccessRuleCollection("CAACCESSRULES", getAccessRules().getCAAccessRules()));
-        result.add(new AccessRuleCollection("ENDENTITYPROFILEACCESSR", getAccessRules().getEndEntityProfileAccessRules()));
-        result.add(new AccessRuleCollection("CRYPTOTOKENACCESSRULES", getAccessRules().getCryptoTokenAccessRules()));
-        result.add(new AccessRuleCollection("USERDATASOURCEACCESSRULES", getAccessRules().getUserDataSourceAccessRules()));
+    /**
+     *  Takes a role and a set of rules, returning map (sorted by category) of all rules, with set states for those rules contained in the role
+     * 
+     * @param role a Role
+     * @param allRules a list of all rules
+     * @return the sought map
+     */
+    private Map<String, List<AccessRuleData>> getCategorizedRuleSet(RoleData role, Map<String, Set<String>> allRules) {
+        Map<String, List<AccessRuleData>> result = new LinkedHashMap<String, List<AccessRuleData>>();
+        Map<Integer, AccessRuleData> knownRules = role.getAccessRules();
+        if (allRules != null) {
+            for (String category : allRules.keySet()) {
+                List<AccessRuleData> subset = new ArrayList<AccessRuleData>();
+                for (String rule : allRules.get(category)) {
+                    Integer key = AccessRuleData.generatePrimaryKey(role.getRoleName(), rule);
+                    if (!knownRules.containsKey(key)) {
+                        // Access rule can not be found, create a new AccessRuleData that we can return
+                        subset.add(new AccessRuleData(key.intValue(), rule, AccessRuleState.RULE_NOTUSED, false));
+                    } else {
+                        subset.add(knownRules.get(key));
+                    }
+                }
+                result.put(category, subset);
+            }
+        }
+        return result;
+    }
+    
+    /** @return a list of lists with access rules and the category name */
+    public List<AccessRuleCollection> getAccessRulesCollections() {
+        List<AccessRuleCollection> result = new ArrayList<AccessRuleCollection>();
+        for(Entry<String, List<AccessRuleData>> entry : getAccessRules().entrySet()) {
+            result.add(new AccessRuleCollection(entry.getKey(), entry.getValue()));
+        }
         return result;
     }
 
@@ -646,12 +664,9 @@ public class RolesManagedBean extends BaseManagedBean {
         Collection<AccessRuleData> allRules = new ArrayList<AccessRuleData>();
         Collection<AccessRuleData> toReplace = new ArrayList<AccessRuleData>();
         List<AccessRuleData> toRemove = new ArrayList<AccessRuleData>();
-        allRules.addAll(getAccessRules().getRoleBasedAccessRules());
-        allRules.addAll(getAccessRules().getRegularAccessRules());
-        allRules.addAll(getAccessRules().getEndEntityProfileAccessRules());
-        allRules.addAll(getAccessRules().getCAAccessRules());
-        allRules.addAll(getAccessRules().getCryptoTokenAccessRules());
-        allRules.addAll(getAccessRules().getUserDataSourceAccessRules());
+        for (Entry<String, List<AccessRuleData>> entry : getAccessRules().entrySet()) {
+            allRules.addAll(entry.getValue());
+        }
         // Remove all access rules marked as UNUSED and replace the others
         for (AccessRuleData ar : allRules) {
             if (ar.getInternalState() == AccessRuleState.RULE_NOTUSED) {

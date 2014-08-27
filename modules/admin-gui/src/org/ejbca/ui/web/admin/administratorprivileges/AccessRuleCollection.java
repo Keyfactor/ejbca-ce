@@ -13,7 +13,7 @@
 
 package org.ejbca.ui.web.admin.administratorprivileges;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.cesecore.authorization.rules.AccessRuleData;
 
@@ -26,9 +26,9 @@ import org.cesecore.authorization.rules.AccessRuleData;
 public class AccessRuleCollection {
 
     private String name;
-    private Collection<AccessRuleData> collection;
+    private List<AccessRuleData> collection;
 
-    public AccessRuleCollection(String name, Collection<AccessRuleData> collection) {
+    public AccessRuleCollection(String name, List<AccessRuleData> collection) {
         this.name = name;
         this.collection = collection;
     }
@@ -41,11 +41,11 @@ public class AccessRuleCollection {
         this.name = name;
     }
 
-    public Collection<AccessRuleData> getCollection() {
+    public List<AccessRuleData> getCollection() {
         return collection;
     }
 
-    public void setCollection(Collection<AccessRuleData> collection) {
+    public void setCollection(List<AccessRuleData> collection) {
         this.collection = collection;
     }
 }

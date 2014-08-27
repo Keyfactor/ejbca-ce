@@ -16,7 +16,10 @@ package org.ejbca.ui.cli.roles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -90,7 +93,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
             }
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
                     GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
-            Collection<String> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
+            Map<String, Set<String>> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
                     .getAuthorizedAvailableAccessRules(
                             getAuthenticationToken(),
                             globalConfiguration.getEnableEndEntityProfileLimitations(),
@@ -100,8 +103,11 @@ public class ChangeRuleCommand extends BaseRolesCommand {
                                     getAuthenticationToken()),
                             EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(
                                     getAuthenticationToken(), true), EjbcaConfiguration.getCustomAvailableAccessRules());
-
-            if (!authorizedAvailableAccessRules.contains(accessRule)) {
+            Set<String> uncategorizedAuthorizedAccessRules = new HashSet<String>();
+            for(Set<String> subset : authorizedAvailableAccessRules.values()) {
+                uncategorizedAuthorizedAccessRules.addAll(subset);
+            }
+            if (!uncategorizedAuthorizedAccessRules.contains(accessRule)) {
                 getLogger().error("ERROR: Accessrule \"" + accessRule + "\" is not available.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
@@ -164,7 +170,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
                 GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
 
-        Collection<String> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
+        Map<String, Set<String>> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
                 .getAuthorizedAvailableAccessRules(
                         getAuthenticationToken(),
                         globalConfiguration.getEnableEndEntityProfileLimitations(),
@@ -176,13 +182,16 @@ public class ChangeRuleCommand extends BaseRolesCommand {
                                 getAuthenticationToken(), true), EjbcaConfiguration.getCustomAvailableAccessRules());
 
         StringBuilder availableRules = new StringBuilder();
-        for (String current : authorizedAvailableAccessRules) {
-            try {
-                availableRules.append("   " + getParsedAccessRule(getAuthenticationToken(), current) + "\n");
-            } catch (AuthorizationDeniedException e) {
-                log.error("ERROR: Rules exist for CAs(" + current + ") that CLI user is not authorized to.");
-            } catch (CADoesntExistsException e) {
-                log.error("ERROR: Rules exist for CAs(" + current + ") that don't exist.");
+        for(String category : authorizedAvailableAccessRules.keySet()) {
+            availableRules.append("   " + category.toUpperCase() + ":\n");
+            for (String current : authorizedAvailableAccessRules.get(category)) {
+                try {
+                    availableRules.append("      " + getParsedAccessRule(getAuthenticationToken(), current) + "\n");
+                } catch (AuthorizationDeniedException e) {
+                    log.error("ERROR: Rules exist for CAs(" + current + ") that CLI user is not authorized to.");
+                } catch (CADoesntExistsException e) {
+                    log.error("ERROR: Rules exist for CAs(" + current + ") that don't exist.");
+                }
             }
         }
         sb.append("Available access rules: \n" + availableRules);
