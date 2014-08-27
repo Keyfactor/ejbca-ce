@@ -10,17 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authorization;
+package org.cesecore.authorization.control;
 
+import java.util.List;
+
+import org.cesecore.authorization.rules.AccessRulePlugin;
 
 /**
- * Common interface for all AccessRule sets
- * 
  * @version $Id$
  *
  */
-public interface AccessRule {
+public class AuditLogRulesReference implements AccessRulePlugin{
 
-    String getCategory();
+    @Override
+    public List<String> getRules() {
+        return AuditLogRules.getAllResources();
+    }
+
+    @Override
+    public String getCategory() {
+        return "AUDITLOGRULES";
+    }
 
 }

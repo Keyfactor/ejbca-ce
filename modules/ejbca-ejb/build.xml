@@ -235,8 +235,6 @@
 		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileNotFoundException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
 		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
-		<!-- General Plugin Dependency -->
-		<include name="org/ejbca/core/ejb/authorization/AccessRulePlugin.java"/>
 		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->
 		<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
 		<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>

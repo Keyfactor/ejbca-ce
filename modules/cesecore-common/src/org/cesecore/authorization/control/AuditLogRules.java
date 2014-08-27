@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @version $Id$
  *
@@ -26,6 +29,13 @@ public enum AuditLogRules {
     LOG_CUSTOM(BASE.resource() + "/log_custom_events");
 
     private final String resource;
+    private static final List<String> allResources = new ArrayList<String>();
+    
+    static {
+        for (AuditLogRules rule : AuditLogRules.values()) {
+            allResources.add(rule.resource());
+        }
+    }
     
     private AuditLogRules(String resource) {
         this.resource = resource;
@@ -37,5 +47,9 @@ public enum AuditLogRules {
 
     public String toString() {
         return this.resource;
+    }
+
+    public static List<String> getAllResources() {
+        return allResources;
     }
 }
