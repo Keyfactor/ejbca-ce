@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
@@ -57,6 +58,9 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
+import org.ejbca.core.model.ca.publisher.CustomPublisherUiSupport;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
@@ -72,8 +76,9 @@ import org.json.simple.parser.ParseException;
  * 
  * @version $Id: CertSafePublisher.java 19535 2014-08-20 07:45:56Z aveen4711 $
  */
-public class CertSafePublisher implements ICustomPublisher {
+public class CertSafePublisher extends CustomPublisherContainer implements ICustomPublisher, CustomPublisherUiSupport {
 
+    private static final long serialVersionUID = 1L;
     private static Logger log = Logger.getLogger(CertSafePublisher.class);    
     
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
@@ -143,9 +148,17 @@ public class CertSafePublisher implements ICustomPublisher {
     } // init  
     
 
-
-    // Public Methods
-
+    @Override
+    public List<CustomPublisherProperty> getCustomUiPropertyList() {
+        List<CustomPublisherProperty> ret = new ArrayList<CustomPublisherProperty>();
+        // Make selection of the remote CertSafe server configurable 
+        ret.add(new CustomPublisherProperty(certSafeUrlPropertyName, CustomPublisherProperty.UI_TEXTINPUT, urlstr));
+        // Authentication key binding we use to authenticate against the remove remote CertSafe server 
+        ret.add(new CustomPublisherProperty(certSafeAuthKeyBindingPropertyName, CustomPublisherProperty.UI_TEXTINPUT, authKeyBindingName));
+        // HTTPS connection timeout
+        ret.add(new CustomPublisherProperty(certSafeConnectionTimeOutPropertyName, CustomPublisherProperty.UI_TEXTINPUT, String.valueOf(timeout)));
+        return ret;
+    }
 
     /**
      * Sends the certificate in a JSON object to Cert Safe server through HTTPS.
@@ -294,7 +307,7 @@ public class CertSafePublisher implements ICustomPublisher {
     private void checkProperties() throws PublisherConnectionException {
         if (urlstr==null || authKeyBindingName==null) {
             String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
-                            certSafeAuthKeyBindingPropertyName + "' is not set.";
+                    certSafeAuthKeyBindingPropertyName + "' is not set.";
             log.info(msg);
             throw new PublisherConnectionException(msg);
         }
