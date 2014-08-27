@@ -1858,18 +1858,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession
                 .getAllInternalKeyBindingInfos(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
             if (internalKeyBindingInfo.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
-                Certificate ocspCertificate = certificateStoreSession.findCertificateByFingerprint(internalKeyBindingInfo.getCertificateId());
-                X509Certificate issuingCertificate = certificateStoreSession.findLatestX509CertificateBySubject(CertTools
+                final Certificate ocspCertificate = certificateStoreSession.findCertificateByFingerprint(internalKeyBindingInfo.getCertificateId());
+                final X509Certificate issuingCertificate = certificateStoreSession.findLatestX509CertificateBySubject(CertTools
                         .getIssuerDN(ocspCertificate));
-                List<CertificateID> certIds = OcspSigningCache.getCertificateIDFromCertificate(issuingCertificate);
-                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certIds.get(0));
-                if(ocspSigningCacheEntry == null) {
-                    //Could be a cache issue?
-                    try {
-                        ocspSigningCacheEntry = findAndAddMissingCacheEntry(certIds.get(0));
-                    } catch (CertificateEncodingException e) {
-                       throw new IllegalStateException("Could not process certificate", e);
-                    }
+                OcspSigningCacheEntry ocspSigningCacheEntry = null;
+                if (issuingCertificate != null) {
+                    final List<CertificateID> certIds = OcspSigningCache.getCertificateIDFromCertificate(issuingCertificate);
+                    // We only need to use the first certId type to find an entry in the cache, certIds.get(0), since all of them should be in the cache
+                    ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certIds.get(0));
+                    if (ocspSigningCacheEntry == null) {
+                        //Could be a cache issue?
+                        try {
+                            ocspSigningCacheEntry = findAndAddMissingCacheEntry(certIds.get(0));
+                        } catch (CertificateEncodingException e) {
+                           throw new IllegalStateException("Could not process certificate", e);
+                        }
+                    }                    
+                } else {
+                    log.info("Can not find issuer certificate from subject DN '"+CertTools.getIssuerDN(ocspCertificate)+"'.");
                 }
                 
                 if (ocspSigningCacheEntry == null) {
