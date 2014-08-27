@@ -372,18 +372,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 
 <%
-   // If authorized to edit services then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
-       if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
-         systemheaderprinted=true;
-         }  %>
-				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){} 
-%>
-<%
    // If authorized to edit peerconnectors then display related links.
    try{
      if(ejbcawebbean.isPeerConnectorPresent() && ejbcawebbean.isAuthorizedNoLog(PEERCONNECTOR_RESOURCE)){
@@ -395,6 +383,20 @@ org.cesecore.keybind.InternalKeyBindingRules
 <%   }
   }catch(AuthorizationDeniedException e){} 
 %>
+
+<%
+   // If authorized to edit services then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){} 
+%>
+
 
 <%
    if(systemheaderprinted){

@@ -16,6 +16,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -191,12 +193,21 @@ public class AuthorizationDataHandler implements Serializable {
     /**
      * Method returning all the available access rules authorized to administrator to manage.
      * 
-     * @returns a Collection of strings with available access rules.
+     * @returns a map of sets of strings with available access rules, sorted by category
      */
-    public Collection<String> getAvailableAccessRules() {
+    public Map<String, Set<String>> getAvailableAccessRules() {
         return this.informationmemory.getAuthorizedAccessRules();
     }
 
+    /**
+     * Method returning all the available access rules authorized to administrator to manage.
+     * 
+     * @returns a Collection of strings with available access rules.
+     */
+    public Set<String> getAvailableAccessRulesUncategorized() {
+        return this.informationmemory.getAuthorizedAccessRulesUncategorized();
+    }
+    
     /**
      * Method to add a Collection of AdminEntity to an role.
      * 
@@ -219,13 +230,4 @@ public class AuthorizationDataHandler implements Serializable {
         informationmemory.administrativePriviledgesEdited();
     }
 
-
-
-    private void authorizedToAddAccessRules(Collection<AccessRuleData> accessrules) throws AuthorizationDeniedException {
-        for (AccessRuleData accessRule : accessrules) {
-            if (!this.informationmemory.getAuthorizedAccessRules().contains(accessRule)) {
-                throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules");
-            }
-        }
-    }
 }

@@ -15,10 +15,14 @@ package org.ejbca.core.ejb.authorization;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,6 +42,7 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRulePlugin;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -206,39 +211,109 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<String> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
+    public Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
             boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
             Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules) {
         if (log.isTraceEnabled()) {
             log.trace(">getAuthorizedAvailableAccessRules");
         }
-        ArrayList<String> accessrules = new ArrayList<String>();
-
-        accessrules.add(AccessRulesConstants.ROLEACCESSRULES[0]);
-        accessrules.add(AccessRulesConstants.ROLEACCESSRULES[1]);
+        Map<String, Set<String>> accessrules = new LinkedHashMap<String, Set<String>>();
+        
+        //Role based access rules 
+        Set<String> roleRules = new LinkedHashSet<String>();      
+        roleRules.add(AccessRulesConstants.ROLEACCESSRULES[0]);
+        roleRules.add(AccessRulesConstants.ROLEACCESSRULES[1]);
         if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-            accessrules.add(StandardRules.ROLE_ROOT.resource());
+            roleRules.add(StandardRules.ROLE_ROOT.resource());
         }
         if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-            accessrules.add(StandardRules.ROLE_ROOT.resource());
+            roleRules.add(StandardRules.ROLE_ROOT.resource());
         }
-
+        accessrules.put("ROLEBASEDACCESSRULES", roleRules);
+        
+        //Standard rules
+        Set<String> standardRules = new LinkedHashSet<String>();          
         // Insert Standard Access Rules.
         for (int i = 0; i < AccessRulesConstants.STANDARDREGULARACCESSRULES.length; i++) {
             if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.STANDARDREGULARACCESSRULES[i])) {
-                accessrules.add(AccessRulesConstants.STANDARDREGULARACCESSRULES[i]);
+                standardRules.add(AccessRulesConstants.STANDARDREGULARACCESSRULES[i]);
             }
         }
-  
-        for(AuditLogRules rule : AuditLogRules.values()) {
-            if(accessControlSession.isAuthorizedNoLogging(authenticationToken, rule.resource())) {
-                accessrules.add(rule.resource());
+        if (usehardtokenissuing) {
+            for (int i = 0; i < AccessRulesConstants.HARDTOKENACCESSRULES.length; i++) {
+                standardRules.add(AccessRulesConstants.HARDTOKENACCESSRULES[i]);
+            }
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
+                standardRules.add(AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
+            }
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWPUKS)) {
+                standardRules.add(AccessRulesConstants.REGULAR_VIEWPUKS);
             }
         }
+        if (usekeyrecovery) {
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
+                standardRules.add(AccessRulesConstants.REGULAR_KEYRECOVERY);
+            }
+        }
+        // Insert custom access rules
+        for (int i = 0; i < customaccessrules.length; i++) {
+            if (!customaccessrules[i].trim().equals("")) {
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, customaccessrules[i].trim())) {
+                    standardRules.add(customaccessrules[i].trim());
+                }
+
+            }
+        }
+        accessrules.put("REGULARACCESSRULES", standardRules);
+        
+        // Insert available CA access rules
+        Set<String> caAccessRules = new LinkedHashSet<String>();     
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESSBASE.resource())) {
+            caAccessRules.add(StandardRules.CAACCESSBASE.resource());
+        }
+        for (int caId : getAuthorizedCAIds(authenticationToken)) {
+            caAccessRules.add(StandardRules.CAACCESS.resource() + caId);
+        }
+        accessrules.put("CAACCESSRULES", caAccessRules);
+        
+        //End entity profile rules
+        Set<String> endEntityProfileRules = new LinkedHashSet<String>();     
+        if (enableendentityprofilelimitations) {
+            // Add most basic rule if authorized to it.
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEBASE)) {
+                endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
+            } else {
+                // Add it to SuperAdministrator anyway
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+                    endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
+                }
+            }
+            // Add all authorized End Entity Profiles
+            for (int profileid : authorizedEndEntityProfileIds) {
+                // Administrator is authorized to this End Entity Profile, add it.
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid)) {
+                    endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);
+                    for (int j = 0; j < AccessRulesConstants.ENDENTITYPROFILE_ENDINGS.length; j++) {
+                        endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.ENDENTITYPROFILE_ENDINGS[j]);
+                    }
+                    if (usehardtokenissuing) {
+                        endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.HARDTOKEN_RIGHTS);
+                        endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);
+                    }
+                    if (usekeyrecovery) {
+                        endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.KEYRECOVERY_RIGHTS);
+                    }
+                }
+            }
+        }
+        accessrules.put("ENDENTITYPROFILEACCESSR", endEntityProfileRules);
+        
+        //Crypto token rules
+        Set<String> cryptoTokenRules = new HashSet<String>();     
         for (CryptoTokenRules rule : CryptoTokenRules.values()) {
             final String fullRule = rule.resource();
             if (accessControlSession.isAuthorizedNoLogging(authenticationToken, fullRule)) {
-                accessrules.add(fullRule);
+                cryptoTokenRules.add(fullRule);
             }
         }
         final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
@@ -247,97 +322,40 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
                 if (!rule.equals(CryptoTokenRules.BASE) && !rule.equals(CryptoTokenRules.MODIFY_CRYPTOTOKEN) && !rule.equals(CryptoTokenRules.DELETE_CRYPTOTOKEN)) {
                     final String fullRule = rule.resource() + "/" + cryptoTokenId;
                     if (accessControlSession.isAuthorizedNoLogging(authenticationToken, fullRule)) {
-                        accessrules.add(fullRule);
+                        cryptoTokenRules.add(fullRule);
                     }
                 }
             }
         }
-        if (usehardtokenissuing) {
-            for (int i = 0; i < AccessRulesConstants.HARDTOKENACCESSRULES.length; i++) {
-                accessrules.add(AccessRulesConstants.HARDTOKENACCESSRULES[i]);
-            }
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
-                accessrules.add(AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
-            }
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWPUKS)) {
-                accessrules.add(AccessRulesConstants.REGULAR_VIEWPUKS);
-            }
-        }
-
-        if (usekeyrecovery) {
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
-                accessrules.add(AccessRulesConstants.REGULAR_KEYRECOVERY);
-            }
-        }
-
-        if (enableendentityprofilelimitations) {
-            // Add most basic rule if authorized to it.
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEBASE)) {
-                accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-            } else {
-                // Add it to SuperAdministrator anyway
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-                    accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-                }
-            }
-            // Add all authorized End Entity Profiles
-            for (int profileid : authorizedEndEntityProfileIds) {
-                // Administrator is authorized to this End Entity Profile, add it.
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid)) {
-                    accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);
-                    for (int j = 0; j < AccessRulesConstants.ENDENTITYPROFILE_ENDINGS.length; j++) {
-                        accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.ENDENTITYPROFILE_ENDINGS[j]);
-                    }
-                    if (usehardtokenissuing) {
-                        accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.HARDTOKEN_RIGHTS);
-                        accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);
-                    }
-                    if (usekeyrecovery) {
-                        accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.KEYRECOVERY_RIGHTS);
-                    }
-                }
-            }
-        }
+        accessrules.put("CRYPTOTOKENACCESSRULES", cryptoTokenRules);
+       
         // Insert User data source access rules
+        Set<String> userDataSourceRules = new HashSet<String>();
         if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEBASE)) {
-            accessrules.add(AccessRulesConstants.USERDATASOURCEBASE);
+            userDataSourceRules.add(AccessRulesConstants.USERDATASOURCEBASE);
         }
         for (int id : authorizedUserDataSourceIds) {
             if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEPREFIX + id
                     + AccessRulesConstants.UDS_FETCH_RIGHTS)) {
-                accessrules.add(AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS);
+                userDataSourceRules.add(AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS);
             }
             if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEPREFIX + id
                     + AccessRulesConstants.UDS_REMOVE_RIGHTS)) {
-                accessrules.add(AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS);
+                userDataSourceRules.add(AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS);
             }
         }
-        // Insert available CA access rules
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESSBASE.resource())) {
-            accessrules.add(StandardRules.CAACCESSBASE.resource());
-        }
-        for (int caId : getAuthorizedCAIds(authenticationToken)) {
-            accessrules.add(StandardRules.CAACCESS.resource() + caId);
-        }
-
-        // Insert custom access rules
-        for (int i = 0; i < customaccessrules.length; i++) {
-            if (!customaccessrules[i].trim().equals("")) {
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, customaccessrules[i].trim())) {
-                    accessrules.add(customaccessrules[i].trim());
-                }
-
-            }
-        }
-        
+        accessrules.put("USERDATASOURCEACCESSRULES", userDataSourceRules);
+             
         //Insert plugin rules 
         ServiceLoader<? extends AccessRulePlugin> serviceLoader = ServiceLoader.load(AccessRulePlugin.class);
         for (AccessRulePlugin accessRulePlugin : serviceLoader) {
+            Set<String> pluginRules = new LinkedHashSet<String>();
             for (String rule : accessRulePlugin.getRules()) {
                 if (accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
-                    accessrules.add(rule);
+                    pluginRules.add(rule);
                 }
             }
+            accessrules.put(accessRulePlugin.getCategory(), pluginRules);
         }
         
         if (log.isTraceEnabled()) {

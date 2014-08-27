@@ -13,6 +13,8 @@
 package org.ejbca.core.ejb.authorization;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -54,9 +56,9 @@ public interface ComplexAccessControlSession {
      * @param usekeyrecovery Include Key Recovery access rules
      * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
      * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
-     * @return a Collection of strings representing the available access rules.
+     * @return a LinkedHashMap of strings representing the available access rules, keyed by category
      */
-    Collection<String> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,
+    Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,
             boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,
             Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules);
 }

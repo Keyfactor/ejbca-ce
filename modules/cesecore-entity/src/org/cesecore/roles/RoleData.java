@@ -229,27 +229,6 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
         return roleName.compareTo(o.roleName);
     }
 
-    /**
-     * This method takes a collection of access rules and returns the set of those rules that don't exist in this Role's rules.
-     * 
-     * FIXME: Unit test this method.
-     * 
-     * @param rules a list of rules
-     * @return the set of the above rules not used in this role. Returns empty array if rules was null.
-     */
-    public Collection<AccessRuleData> getDisjunctSetOfRules(Collection<String> rules) {
-        List<AccessRuleData> result = new ArrayList<AccessRuleData>();
-        if (rules != null) {
-            for (String rule : rules) {
-                Integer key = AccessRuleData.generatePrimaryKey(roleName, rule);
-                if (!accessRules.containsKey(key)) {
-                	// Access rule can not be found, create a new AccessRuleData that we can return
-                    result.add(new AccessRuleData(key.intValue(), rule, AccessRuleState.RULE_NOTUSED, false));
-                }
-            }
-        }
-        return result;
 
-    }
 
 }
