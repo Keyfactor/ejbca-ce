@@ -272,11 +272,13 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         }
         checkProperties();
         
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Test SSL Connection"));
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Test CertSafe Connection"));
         
         SSLSocketFactory sslSocketFactory = getSSLSocketFactory(admin);
         try {
-            log.info("https URL: " + urlstr);
+            if (log.isDebugEnabled()) {
+                log.info("CertSafe https URL: " + urlstr);
+            }
             URL url = new URL(urlstr);
             HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
             con.setSSLSocketFactory(sslSocketFactory);
@@ -286,19 +288,23 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             con.setConnectTimeout(timeout);
             con.connect();
             if(con.getResponseCode() != 200) {
-                throw new PublisherConnectionException("Testing connection failed");
+                throw new PublisherConnectionException("Testing connection failed, response code: "+con.getResponseCode());
             }
+        } catch (UnknownHostException e) {
+            String msg = "Unknown host: "+e.getLocalizedMessage();
+            log.info(msg, e);
+            throw new PublisherConnectionException(msg); 
         } catch (MalformedURLException e) {
             String msg = e.getLocalizedMessage();
-            log.error(msg, e);
+            log.info(msg, e);
             throw new PublisherConnectionException(msg); 
         } catch (ProtocolException e) {
             String msg = e.getLocalizedMessage();
-            log.error(msg, e);
+            log.info(msg, e);
             throw new PublisherConnectionException(msg);
         } catch (IOException e) {
             String msg = e.getLocalizedMessage();
-            log.error(msg, e);
+            log.info(msg, e);
             throw new PublisherConnectionException(msg);
         }
     }
