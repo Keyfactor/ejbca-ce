@@ -82,8 +82,9 @@ public final class ExtendedKeyUsageConfiguration {
     				// A null value in the properties file means that we should not use this value, so set it to null for real
     				if (name.equalsIgnoreCase("null")) {
     					name = null;
+    				} else {
+                        map.put(oid, name);    				    
     				}
-    				map.put(oid, name);
     			} else {
     				log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
     			}
