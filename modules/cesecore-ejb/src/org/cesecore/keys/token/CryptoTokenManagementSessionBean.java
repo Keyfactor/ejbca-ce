@@ -624,7 +624,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         
         boolean removed = false;
-        final Properties props = new Properties(cryptoToken.getProperties());
+        final Properties props = new Properties();
+        props.putAll(cryptoToken.getProperties());
         final String placeholdersString = props.getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, "");
         final List<String> entries = new ArrayList<String>(Arrays.asList(placeholdersString.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")));
         final Iterator<String> iter = entries.iterator();
