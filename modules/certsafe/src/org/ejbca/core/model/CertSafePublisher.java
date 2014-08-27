@@ -302,6 +302,9 @@ public class CertSafePublisher implements ICustomPublisher {
     
     private SSLSocketFactory getSSLSocketFactory(AuthenticationToken authenticationToken) throws PublisherConnectionException {
         Integer keyBindingID = internalKeyBindingMgmtSession.getIdFromName(authKeyBindingName);
+        if (keyBindingID == null) {
+            throw new PublisherConnectionException("The authentication key binding '"+authKeyBindingName+"' does not exist.");
+        }
         final AuthenticationKeyBinding authenticationKeyBinding;
         try {
             authenticationKeyBinding = (AuthenticationKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBindingReference(authenticationToken, keyBindingID);
