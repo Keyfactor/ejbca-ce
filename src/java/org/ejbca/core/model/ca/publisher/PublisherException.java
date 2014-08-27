@@ -19,9 +19,8 @@ import org.ejbca.core.EjbcaException;
 
 
 /**
- * Is throw when error occured when publishing certificate, crl or revoking certificate to a publisher 
+ * Is throw when error occurred when publishing certificate, crl or revoking certificate to a publisher 
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 @WebFault

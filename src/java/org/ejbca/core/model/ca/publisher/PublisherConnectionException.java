@@ -19,7 +19,6 @@ import org.ejbca.core.EjbcaException;
 /**
  * Is throw when connection to a publisher have failed i some way.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class PublisherConnectionException extends EjbcaException {
