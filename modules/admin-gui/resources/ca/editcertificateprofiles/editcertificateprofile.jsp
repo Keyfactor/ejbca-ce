@@ -57,7 +57,9 @@
 <h:form id="cpf">
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
-		<h:panelGroup/>
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.caPath}/editcertificateprofiles/editcertificateprofiles.jsf">
 			<h:outputText value="#{web.text.BACKTOCERTIFICATEPROFILES}"/>
 		</h:outputLink>
@@ -89,14 +91,15 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="textfieldvalidity" value="#{web.text.CERT_VALIDITY}"/>
-			<h:outputText value="#{web.text.FORMAT_TIME_YMD} #{web.text.ORENDDATE}"/>
+			<h:outputText value=" #{web.text.FORMAT_TIME_YMD} #{web.text.ORENDDATE}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:inputText id="textfieldvalidity" value="#{certProfileBean.validity}" title="#{web.text.FORMAT_TIME_YMD} #{web.text.OR} #{web.text.FORMAT_ISO8601}" size="25" maxlength="255"/>
+			<br/>
 			<h:panelGroup styleClass="help">
 				<h:outputText value="#{web.text.DATE_HELP}"/>
-				<h:outputText value="#{web.ejbcaWebBean.dateExample}"/>
+				<h:outputText value=" #{web.ejbcaWebBean.dateExample}"/>
 			</h:panelGroup>
 		</h:panelGroup>
 
@@ -137,6 +140,7 @@
 			<h:selectBooleanCheckbox rendered="#{certProfileBean.uniqueCertificateSerialNumberIndex}" id="allowcertserialnumberoverride"
 				value="#{certProfileBean.certificateProfile.allowCertSerialNumberOverride}"/>
 			<h:outputLabel rendered="#{certProfileBean.uniqueCertificateSerialNumberIndex}" for="allowcertserialnumberoverride" value="#{web.text.ALLOW} "/>
+			<br/>
 			<h:outputText styleClass="help" rendered="#{!certProfileBean.uniqueCertificateSerialNumberIndex}" value="#{web.text.CERTSERIALNOUNIQUEIX}"/>
 		</h:panelGroup>
 
@@ -196,7 +200,7 @@
 				value="#{certProfileBean.certificateProfile.usePathLengthConstraint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
 				disabled="#{!certProfileBean.certificateProfile.useBasicConstraints}"/>
 			<h:outputLabel for="checkusepathlengthconstraint" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
-			<h:outputLabel for="textfieldpathlengthconstraint" value="#{web.text.VALUE}"/>
+			<h:outputLabel for="textfieldpathlengthconstraint" value="#{web.text.VALUE} "/>
 			<h:inputText id="textfieldpathlengthconstraint" value="#{certProfileBean.certificateProfile.pathLengthConstraint}" size="2" maxlength="2"
 				disabled="#{!certProfileBean.certificateProfile.usePathLengthConstraint || !certProfileBean.certificateProfile.useBasicConstraints}"
 				title="#{web.text.FORMAT_INTEGER}" validatorMessage="#{web.text.ONLYDECNUMBERSINPATHLEN}" converterMessage="#{web.text.ONLYDECNUMBERSINPATHLEN}">
@@ -334,16 +338,10 @@
 			<h:outputLabel for="checknameconstraintscritical" value="#{web.text.EXT_CRITICAL}"/>
 		</h:panelGroup>
 
-	</h:panelGrid>
-	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-
 		<%-- PKIX CRL Distribution Points (CRL-DP) extension --%>
 
-		<h:outputLabel for="header_crls" value="#{web.text.EXT_PKIX_CRLDIST}" style="font-weight: bold;"/>
-		<h:panelGroup id="header_crls"/>
-
 		<h:panelGroup>
-			<h:outputLabel for="cbcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CRLDISTRIBPOINTS}"/>
+			<h:outputLabel for="cbcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CRLDISTRIBPOINTS}" style="font-weight: bold;"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbcrldistributionpointgroup">
@@ -417,15 +415,15 @@
 			<h:dataTable value="#{certProfileBean.certificatePolicies}" var="certificatePolicy" rendered="#{certProfileBean.certificateProfile.useCertificatePolicies}">
 				<h:column>
 					<h:panelGrid columns="1">
-						<h:outputLabel for="policyid" value="#{web.text.EXT_PKIX_CP_POLICYID}:"/>
-						<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE} (#{certificatePolicy.qualifierId}):" styleClass="subItem"
-							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdUserNotice}"/>
-						<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI} (#{certificatePolicy.qualifierId}):" styleClass="subItem"
-							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdCpsUri}"/>
+						<h:outputLabel for="policyid" value="#{web.text.EXT_PKIX_CP_POLICYID}" style="white-space: nowrap;"/>
+						<h:outputLabel for="policynoticeunotice" value="#{web.text.EXT_PKIX_CP_USERNOTICE}" styleClass="subItem"
+							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdUserNotice}" style="white-space: nowrap;"/>
+						<h:outputLabel for="policynoticedcpsurl" value="#{web.text.EXT_PKIX_CP_CPSURI}" styleClass="subItem"
+							rendered="#{certProfileBean.currentCertificatePolicyQualifierIdCpsUri}" style="white-space: nowrap;"/>
 					</h:panelGrid>
 					<f:facet name="footer">
 						<h:panelGrid columns="1">
-							<h:outputLabel for="textfieldcertificatepolicyid" value="#{web.text.EXT_PKIX_CP_POLICYID}:"/>
+							<h:outputLabel for="textfieldcertificatepolicyid" value="#{web.text.EXT_PKIX_CP_POLICYID}" style="white-space: nowrap;"/>
 						</h:panelGrid>
 					</f:facet>
 				</h:column>
@@ -627,7 +625,7 @@
 			<h:commandButton id="checkqccustomstring" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCCustomString}"
 				value="#{certProfileBean.certificateProfile.useQCCustomString?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkqccustomstring" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
-			<h:outputLabel for="textfieldqccustomstringoid" value="#{web.text.EXT_PKIX_QCS_CUSTOMSTR_OID}"/>
+			<h:outputLabel for="textfieldqccustomstringoid" value="#{web.text.EXT_PKIX_QCS_CUSTOMSTR_OID} "/>
 			<h:inputText id="textfieldqccustomstringoid" value="#{certProfileBean.certificateProfile.QCCustomStringOid}" size="20" maxlength="255" title="#{web.text.FORMAT_OID}"
 				disabled="#{!certProfileBean.certificateProfile.useQCCustomString}"/>
 		</h:panelGroup>
@@ -701,7 +699,7 @@
 			<h:commandButton id="checkusemstemplate" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseMicrosoftTemplate}"
 				value="#{certProfileBean.certificateProfile.useMicrosoftTemplate?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkusemstemplate" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
-			<h:outputLabel for="selectmstemplate" value="#{web.text.VALUE}: "/>
+			<h:outputLabel for="selectmstemplate" value="#{web.text.VALUE} "/>
 			<h:selectOneMenu id="selectmstemplate" value="#{certProfileBean.certificateProfile.microsoftTemplate}" disabled="#{!certProfileBean.certificateProfile.useMicrosoftTemplate}">
 				<f:selectItems value="#{certProfileBean.microsoftTemplateAvailable}"/>
 			</h:selectOneMenu>
@@ -744,7 +742,7 @@
 				<h:column>
 					<h:outputText value="#{current}"/>
 					<f:facet name="footer">
-						<h:inputText value="#{certProfileBean.documentTypeListNew}" size="45" maxlength="4096"/>
+						<h:inputText value="#{certProfileBean.documentTypeListNew}" size="20" maxlength="4096"/>
 					</f:facet>
 				</h:column>
 				<h:column>
@@ -818,7 +816,7 @@
 			<h:commandButton id="checkusecnpostfix" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCNPostfix}"
 				value="#{certProfileBean.certificateProfile.useCNPostfix?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="checkusecnpostfix" value="#{web.text.ADD}…" styleClass="checkBoxOverlay"/>
-			<h:outputText value="#{web.text.VALUE}: "/>
+			<h:outputText value="#{web.text.VALUE} "/>
 			<h:inputText id="textfieldcnpostfix" size="20" maxlength="255" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.certificateProfile.CNPostfix}"
 				disabled="#{!certProfileBean.certificateProfile.useCNPostfix}"/>
 			<h:outputText styleClass="help" value=" #{web.text.CERT_SUBJECTDN_CNPF_HELP}"/>
@@ -888,14 +886,16 @@
 				<h:outputLabel for="approvalEnabledActivateCa" value="#{web.text.APPROVEACTIVATECA}"/>
 			</h:panelGrid>
 			<h:panelGroup>
-				<h:outputLabel for="selectnumofrequiredapprovals" value="#{web.text.NUMOFREQUIREDAPPROVALS}"/>
+				<h:outputLabel for="selectnumofrequiredapprovals" value="#{web.text.NUMOFREQUIREDAPPROVALS} "/>
 				<h:selectOneMenu id="selectnumofrequiredapprovals" value="#{certProfileBean.certificateProfile.numOfReqApprovals}" converter="javax.faces.Integer">
 					<f:selectItems value="#{certProfileBean.numOfReqApprovalsAvailable}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
 		</h:panelGrid>
 
-		<h:panelGroup/>
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>
 		<h:panelGroup>
 			<h:commandButton value="#{web.text.SAVE}" action="#{certProfileBean.save}"/>
 			<h:commandButton value="#{web.text.CANCEL}" action="#{certProfileBean.cancel}"/>
