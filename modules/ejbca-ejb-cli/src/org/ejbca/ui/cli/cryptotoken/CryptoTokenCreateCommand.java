@@ -126,7 +126,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             }
             // Parse attribute file
             String attributeFileName = parameters.get(PKCS11_ATTR_FILE_KEY);
-            if (!"null".equalsIgnoreCase(attributeFileName)) {
+            if ( (attributeFileName != null) && (!"null".equalsIgnoreCase(attributeFileName)) ) {
                 if (!new File(attributeFileName).exists()) {
                     getLogger().info("PKCS#11 attribute file " + attributeFileName + " does not exist!");
                     return CommandResult.FUNCTIONAL_FAILURE;
