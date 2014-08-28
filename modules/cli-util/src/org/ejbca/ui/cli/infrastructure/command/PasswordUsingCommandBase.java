@@ -13,11 +13,9 @@
 package org.ejbca.ui.cli.infrastructure.command;
 
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -103,12 +101,8 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
         if (username != null) {
             defensiveCopy.remove(USERNAME_KEY);
         }
-        boolean passwordPrompt = parameters.containsKey(PASSWORD_PROMPT_KEY);
-        password = parameters.get(PASSWORD_KEY);
-        if (password != null && passwordPrompt) {
-            //Can't do both...
-            throw new CliAuthenticationFailedException("Can't define both " + PASSWORD_KEY + " and specify a prompt (" + PASSWORD_PROMPT_KEY + ")");
-        } else if (password != null) {
+        if(parameters.containsKey(PASSWORD_KEY)) {
+            password = parameters.get(PASSWORD_KEY);
             defensiveCopy.remove(PASSWORD_KEY);
             if (password.startsWith("file:") && (password.length() > 5)) {
                 final String fileName = password.substring(5);
@@ -129,15 +123,9 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
                     throw new CliAuthenticationFailedException("File '" + fileName + "' can not be read: " + e.getMessage());
                 }
             }
-        } else if (passwordPrompt) {
+        } else if (parameters.containsKey(PASSWORD_PROMPT_KEY)) {
+            password = parameters.get(PASSWORD_PROMPT_KEY);
             defensiveCopy.remove(PASSWORD_PROMPT_KEY);
-            // Okay, let's prompt
-            Console console;
-            char[] readPassword;
-            if ((console = System.console()) != null && (readPassword = console.readPassword("[%s]", "Password:")) != null) {
-                password = new String(readPassword);
-                Arrays.fill(readPassword, ' ');
-            }
         }
         boolean defaultUserEnabled = configuration.getEnableCommandLineInterfaceDefaultUser();
         if ((username == null || password == null)) {
@@ -179,8 +167,24 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
             log.error("ERROR: Command Line Interface is disabled");
             return CommandResult.CLI_FAILURE;
         }
+        //Check this before parsing so that user doesn't have to enter CLI password for a nonfunctional command
+        boolean passwordPromt = false;
+        boolean passwordSet = false;
+        for(String argument : arguments) {
+            if(argument.equals(PASSWORD_PROMPT_KEY)) {
+                passwordPromt = true;
+            } else if(argument.startsWith(PASSWORD_KEY)) {
+                passwordSet = true;
+            }
+        }
+        if (passwordPromt && passwordSet) {
+            //Can't do both...
+            log.error("Can't define both " + PASSWORD_KEY + " and specify a prompt (" + PASSWORD_PROMPT_KEY + ")");
+            return CommandResult.CLI_FAILURE;
+        }
+        
         try {
-            ParameterContainer parameters = parameterHandler.parseParameters(this, arguments);
+            ParameterContainer parameters = parameterHandler.parseParameters(arguments);
             if(parameters == null) {
                 //Parameters couldn't be parsed, but this should already be handled. 
                 return CommandResult.CLI_FAILURE;
