@@ -88,7 +88,7 @@ public class ParameterHandler {
      * @param arguments the parameters as given by the command line
      * @return a map of parameters and their values, null if command cannot run.
      */
-    public ParameterContainer parseParameters(CommandBase callback, String... arguments) {
+    public ParameterContainer parseParameters(String... arguments) {
         ParameterContainer result = new ParameterContainer();
         List<String> argumentList = new ArrayList<String>();
         for (int i = 0; i < arguments.length; i++) {
@@ -165,7 +165,7 @@ public class ParameterHandler {
                     log.info("Enter value for " + parameterString + ": ");
                     value = System.console().readLine();
                 } else if (parameter.getParameterMode() == ParameterMode.PASSWORD) {
-                    log.info("Password (" + parameterString + "): ");
+                    log.info("Enter password for parameter (" + parameterString + "): ");
                     value = new String(System.console().readPassword());
                 } else {
                     throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
@@ -175,7 +175,7 @@ public class ParameterHandler {
             if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
                 value = value.substring(1, value.length() - 1);
             }
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && parameter.getParameterMode() != ParameterMode.PASSWORD) {
                 if (!StringUtils.isEmpty(value)) {
                     log.error("SETTING: " + parameterString + " as " + value);
                 }
