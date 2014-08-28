@@ -38,6 +38,11 @@ public final class ParameterContainer {
         this.parameters = new HashMap<String, ParameterContainer.ParameterInformation>(parameterContainer.parameters);
     }
 
+    /** Returns parameter value, or null if parameter does not exist
+     * 
+     * @param key
+     * @return parameter value, or null if parameter was not set
+     */
     public String get(String key) {
         if (parameters.containsKey(key)) {
             return parameters.get(key).getValue();
