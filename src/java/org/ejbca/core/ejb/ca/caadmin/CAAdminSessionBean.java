@@ -1021,17 +1021,19 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Check if extended service certificates are about to be renewed.
-        final Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = cainfo.getExtendedCAServiceInfos();
-        if (extendedCAServiceInfos != null) {
-            for (final ExtendedCAServiceInfo extendedCAServiceInfo : extendedCAServiceInfos) {
-                if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
-                    final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
-                    xkmsrenewcert = signingInfo.getRenewFlag() ||
-                        (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
-                } else if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
-                    final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
-                    cmsrenewcert = signingInfo.getRenewFlag() ||
-                        (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
+        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+            final Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = cainfo.getExtendedCAServiceInfos();
+            if (extendedCAServiceInfos != null) {
+                for (final ExtendedCAServiceInfo extendedCAServiceInfo : extendedCAServiceInfos) {
+                    if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
+                        final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
+                        xkmsrenewcert = signingInfo.getRenewFlag() ||
+                            (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
+                    } else if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
+                        final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
+                        cmsrenewcert = signingInfo.getRenewFlag() ||
+                            (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
+                    }
                 }
             }
         }
@@ -1040,25 +1042,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             caSession.editCA(admin, cainfo);
             CA ca = caSession.getCA(admin, cainfo.getCAId());
-            // No OCSP Certificate exists that can be renewed.
-            if (xkmsrenewcert) {
-                XKMSCAServiceInfo info = (XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE);
-                Certificate xkmscert = (Certificate) info.getCertificatePath().get(0);
-                ArrayList<Certificate> xkmscertificate = new ArrayList<Certificate>();
-                xkmscertificate.add(xkmscert);
-                // Publish the extended service certificate, but only for active services
-                if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-                    publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+            if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+                // No OCSP Certificate exists that can be renewed.
+                if (xkmsrenewcert) {
+                    XKMSCAServiceInfo info = (XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE);
+                    // Publish the extended service certificate, but only for active services
+                    if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+                        final ArrayList<Certificate> xkmscertificate = new ArrayList<Certificate>();
+                        xkmscertificate.add(info.getCertificatePath().get(0));
+                        publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+                    }
                 }
-            }
-            if (cmsrenewcert) {
-                CmsCAServiceInfo info = (CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE);
-                Certificate cmscert = (Certificate) info.getCertificatePath().get(0);
-                ArrayList<Certificate> cmscertificate = new ArrayList<Certificate>();
-                cmscertificate.add(cmscert);
-                // Publish the extended service certificate, but only for active services
-                if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-                    publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+                if (cmsrenewcert) {
+                    CmsCAServiceInfo info = (CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE);
+                    if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+                        final ArrayList<Certificate> cmscertificate = new ArrayList<Certificate>();
+                        cmscertificate.add(info.getCertificatePath().get(0));
+                        // Publish the extended service certificate, but only for active services
+                        publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+                    }
                 }
             }
             // Log Action was done by caSession
@@ -1399,11 +1401,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     ca.initExtendedService(cryptoToken, type, ca);
                     final ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
                     if (info instanceof BaseSigningCAServiceInfo) {
-                        final List<Certificate> certPath = ((BaseSigningCAServiceInfo) info).getCertificatePath();
                         // Publish the extended service certificate, but only for active services
-                        if (certPath != null && info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+                        if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
                             final List<Certificate> extcacertificate = new ArrayList<Certificate>();
-                            extcacertificate.add(certPath.get(0));
+                            extcacertificate.add(((BaseSigningCAServiceInfo) info).getCertificatePath().get(0));
                             publishCACertificate(authenticationToken, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
                         }
                     }
