@@ -794,7 +794,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if(CaCertificateCache.INSTANCE.isCacheExpired()) {
                             certificateStoreSession.reloadCaCertificateCache();
                         }
-                        final X509Certificate signerca = CaCertificateCache.INSTANCE.findLatestBySubjectDN(HashID.getFromDNString(signerissuer));
+                        final X509Certificate signerca = CaCertificateCache.INSTANCE.findLatestBySubjectDN(HashID.getFromIssuerDN(signercert));
                         String subject = signerSubjectDn;
                         String issuer = signerissuer;
                         if (signerca != null) {
