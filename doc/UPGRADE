@@ -92,7 +92,7 @@ include the signer certificate.
 Having OCSP responses as small as possible is an important performance feature, and since the 
 client must have the root certificate as trusted there is no need to include the root certificate in the chain. 
 
-If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss (5) does not clean temporary files very good.
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss (5) does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
 From EJBCA 6.0.x to EJBCA 6.0.x
@@ -110,7 +110,7 @@ See Admin Guide
 
 Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
-If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
 If you have customized the Public Web interface logo -- in EJBCA 6.0.4 or earlier --, you need to rename the logo filename
