@@ -32,6 +32,7 @@
 		<path location="${mod.peerconnector-rar.lib}"/>
 		<path location="${mod.peerconnector-common.lib}"/>
 		<path location="${mod.peerconnector-interface.lib}"/>
+		<path location="${mod.peerconnector-publ.lib}"/>
 	</path>
 	
     <path id="jasper.classpath">
@@ -55,7 +56,7 @@
     <target name="build" description="Build this module" depends="validate">
     	<!-- Declare a reference to PeerConnectionSessionLocal if it is available -->
 		<condition property="replacement-string-peer-connector-reference" else="!--@peer-connector-reference@-->"
-			value="ejb-local-ref> &lt;ejb-ref-name>PeerConnectionSession&lt;/ejb-ref-name> &lt;local>org.ejbca.peerconnector.PeerConnectionSessionLocal&lt;/local> &lt;/ejb-local-ref>">
+			value="ejb-local-ref> &lt;ejb-ref-name>PeerConnectionSession&lt;/ejb-ref-name> &lt;local>org.ejbca.peerconnector.PeerConnectionSessionLocal&lt;/local> &lt;/ejb-local-ref> &lt;ejb-local-ref> &lt;ejb-ref-name>BackgroundTaskSession&lt;/ejb-ref-name> &lt;local>org.ejbca.peerconnector.BackgroundTaskSessionLocal&lt;/local> &lt;/ejb-local-ref>">
 			<available classpathref="compile.classpath" classname="org.ejbca.peerconnector.PeerConnectionSessionLocal" ignoresystemclasses="true"/>
 		</condition>
     	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
