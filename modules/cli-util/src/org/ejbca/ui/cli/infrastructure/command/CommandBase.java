@@ -74,7 +74,7 @@ public abstract class CommandBase implements CliCommandPlugin {
 
     @Override
     public CommandResult execute(String... arguments) {
-        ParameterContainer parameters = parameterHandler.parseParameters(this, arguments);
+        ParameterContainer parameters = parameterHandler.parseParameters(arguments);
         if (parameters == null) {
             //Parameters couldn't be parsed, but this should already be handled. 
             return CommandResult.CLI_FAILURE;
