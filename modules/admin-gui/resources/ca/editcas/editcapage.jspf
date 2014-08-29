@@ -189,7 +189,7 @@ function isExternalGeneric(){
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;
-      createorinitbutton.disabled = true; 
+      <% if (!isUninitialized) { %>createorinitbutton.disabled = true;<% } %> 
       validityfield.disabled = true; 
       certproffield.disabled = true; 
    } 
