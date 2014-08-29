@@ -187,7 +187,7 @@ public class HttpMethodsTest {
     /** Perform basic HTTP method tests on the specified resource */
     private void performResourceTest(String resourceName) throws Exception {
         log.info("Started tests of " + resourceName);
-        assertEquals("HTTP GET is not supported. (This test expects " + httpBaseUrl+resourceName + " to exist)", 200, getUrl(httpBaseUrl + resourceName));
+        assertEquals("HTTP GET is not supported. (This test expects " + httpBaseUrl+resourceName + " to exist and return 200).", 200, getUrl(httpBaseUrl + resourceName));
         assertFalse("HTTP DELETE is supported.", allowsDeleteHttpRequest(resourceName, httpPort));
         assertFalse("HTTP PUT is supported.", allowsPutHttpRequest(resourceName + ".2", httpPort));
         assertFalse("HTTP TRACE is supported.", allowsTraceHttpRequest(resourceName, httpPort));
@@ -285,7 +285,7 @@ public class HttpMethodsTest {
     private int getUrl(String url) throws IOException {
         final HttpURLConnection con = getHttpURLConnection(url);
         int ret = con.getResponseCode();
-        log.debug("HTTP response code: "+ret);
+        log.debug("HTTP response code: "+ret+". Response message: "+con.getResponseMessage());
         if ( ret == 200 ) {
             log.debug(Streams.asString(con.getInputStream())); 
         }
