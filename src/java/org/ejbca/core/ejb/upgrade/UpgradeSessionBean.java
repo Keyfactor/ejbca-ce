@@ -59,7 +59,6 @@ import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -121,8 +120,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private AccessControlSessionLocal accessControlSession;
     @EJB
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
-    @EJB
-    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
