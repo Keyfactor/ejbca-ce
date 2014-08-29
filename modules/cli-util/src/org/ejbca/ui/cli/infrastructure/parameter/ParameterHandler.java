@@ -170,16 +170,17 @@ public class ParameterHandler {
                 } else {
                     throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
                 }
+                if (log.isDebugEnabled() && parameter.getParameterMode() != ParameterMode.PASSWORD) {
+                    if (!StringUtils.isEmpty(value)) {
+                        log.error("SETTING: " + parameterString + " as " + value);
+                    }
+                }
             }
             //Lastly, strip any quotes 
             if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
                 value = value.substring(1, value.length() - 1);
             }
-            if (log.isDebugEnabled() && parameter.getParameterMode() != ParameterMode.PASSWORD) {
-                if (!StringUtils.isEmpty(value)) {
-                    log.error("SETTING: " + parameterString + " as " + value);
-                }
-            }
+            
             result.put(parameterString, value, isStandalone);
         }
 
