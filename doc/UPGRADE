@@ -87,7 +87,7 @@ added to KeyRecoveryData.
 If you had existing KeyrecoveryData, you need to set the new column cryptoTokenId to 0 (see src/upgrade/600_610).
 update KeyRecoveryData set cryptoTokenId=0;
 
-Since EJBCA 6.1.0 OCSP responses no longer includes the Root CA Certificate, unless the Root CA is the OCSP signer, and it is configured to 
+Since EJBCA 6.1.0 OCSP responses no longer include the Root CA Certificate, unless the Root CA is the OCSP signer, and it is configured to 
 include the signer certificate.
 Having OCSP responses as small as possible is an important performance feature, and since the 
 client must have the root certificate as trusted there is no need to include the root certificate in the chain. 
