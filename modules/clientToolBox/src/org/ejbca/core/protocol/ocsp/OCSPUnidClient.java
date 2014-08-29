@@ -344,6 +344,8 @@ public class OCSPUnidClient {
       
         //If we have a chain, verify it
         if(chain.length > 1) {
+            // end at one shortof chain.length, because the root certificate is (usually) not included in the OCSP response
+            // TODO: improve this when we can pass in the root cert from parameter to properly validate the whole chain
             for (int i = 0; i+1 < chain.length; i++) {
                 final X509Certificate cert1 = converter.getCertificate(chain[i]);
                 final X509Certificate cert2 = converter.getCertificate(chain[Math.min(i + 1, chain.length - 1)]);
