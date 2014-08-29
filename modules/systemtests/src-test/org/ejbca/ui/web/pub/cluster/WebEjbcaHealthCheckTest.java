@@ -16,9 +16,13 @@ package org.ejbca.ui.web.pub.cluster;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -44,9 +48,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  *
@@ -124,6 +125,23 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
     public void tearDown() throws Exception {
     }
 
+    
+    /** Returns a connected HttpURLConnection, that must be closed with con.diconnect() when you are done 
+     * 
+     * @param url The URL to connect to 
+     * @return HttpURLConnection that you can use
+     * @throws IOException In case the connection can not be opened
+     */
+    private HttpURLConnection getHttpURLConnection(String url) throws IOException {
+        final HttpURLConnection con;
+        URL u = new URL(url);
+        con = (HttpURLConnection)u.openConnection();
+        con.setRequestMethod("GET");
+        con.getDoOutput();
+        con.connect();
+        return con;
+    }
+
     /**
      * Creates a number of threads that bombards the health check servlet 1000
      * times each
@@ -131,13 +149,17 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
     @Test
     public void testEjbcaHealthHttp() throws Exception {
         log.trace(">testEjbcaHealthHttp()");
-
         // Make a quick test first that it works at all before starting all threads
-        final WebClient webClient = new WebClient();
-		webClient.setTimeout(41*1000);
-        WebResponse resp = webClient.getPage(httpReqPath).getWebResponse();
-        assertEquals("Response code", 200, resp.getStatusCode());
-        assertEquals("ALLOK", resp.getContentAsString());
+        final HttpURLConnection con = getHttpURLConnection(httpReqPath);
+        int ret = con.getResponseCode();
+        log.debug("HTTP response code: "+ret+". Response message: "+con.getResponseMessage());
+        assertEquals("Response code", 200, ret);
+        String retStr = Streams.asString(con.getInputStream());
+        log.debug("Return String: "+retStr);
+        assertEquals("ALLOK", retStr);
+        con.disconnect();
+
+        // Create several threads to test
         long before = System.currentTimeMillis();
         createThreads();
         long after = System.currentTimeMillis();
