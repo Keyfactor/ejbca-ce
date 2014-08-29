@@ -317,12 +317,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 }
             }
         }
-        // Check that CryptoToken and alias exists (and that the user is authorized to see it)
-        final KeyPairInfo keyPairInfo = cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, keyPairAlias);
-        if (keyPairInfo == null) {
-            // Missing key alias. Perhaps that's allowed?
-            if (!allowMissingKeyPair || cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId) == null) {
-                throw new CryptoTokenOfflineException("Unable to access keyPair with alias " + keyPairAlias + " in CryptoToken with id " + cryptoTokenId);
+        if (!allowMissingKeyPair) {
+            // Check that CryptoToken and alias exists (and that the user is authorized to see it)
+            final KeyPairInfo keyPairInfo = cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, keyPairAlias);
+            if (keyPairInfo == null) {
+                if (cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId) == null) {
+                    throw new CryptoTokenOfflineException("Unable to access keyPair with alias " + keyPairAlias + " in CryptoToken with id " + cryptoTokenId);
+                }
             }
         }
         if (certificateId != null) {
