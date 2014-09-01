@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
+	<classpathentry kind="src" path="modules/admin-gui/src"/>
+	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>	
+	<classpathentry kind="src" path="modules/buildtools/src"/>
+	<classpathentry kind="src" path="modules/buildtools/src-test"/>
+	<classpathentry kind="src" path="modules/certsafe/src"/>	
+	<classpathentry kind="src" path="modules/cesecore-common/src"/>	
 	<classpathentry kind="src" path="modules/cesecore-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/cesecore-ejb/src"/>
-	<classpathentry kind="src" path="modules/cesecore-common/src"/>
-	<classpathentry kind="src" path="modules/admin-gui/src"/>
-	<classpathentry kind="src" path="modules/certsafe/src"/>
+	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
+	<classpathentry kind="src" path="modules/cli-util/src"/>
+	<classpathentry kind="src" path="modules/cli-util/src-test"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
+	<classpathentry kind="src" path="modules/ct/src"/>
+	<classpathentry kind="src" path="modules/ct/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb/src-test"/>
@@ -34,34 +41,27 @@
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
-	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
-	<classpathentry kind="src" path="modules/va-war/src"/>
-	<classpathentry kind="src" path="modules/validationtool/src"/>
-	<classpathentry kind="src" path="modules/validationtool/test"/>
-	<classpathentry kind="src" path="modules/systemtests/src-test"/>
-	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
-	<classpathentry kind="src" path="modules/systemtests/src"/>
-	<classpathentry kind="src" path="modules/statedump/src"/>
-	<classpathentry kind="src" path="modules/statedump/src-test"/>
-	<classpathentry kind="src" path="modules/cli-util/src"/>
-	<classpathentry kind="src" path="modules/cli-util/src-test"/>
-	<classpathentry kind="src" path="modules/buildtools/src"/>
-	<classpathentry kind="src" path="modules/buildtools/src-test"/>
-	<classpathentry kind="src" path="modules/ct/src"/>
-	<classpathentry kind="src" path="modules/ct/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
-	<classpathentry kind="src" path="modules/peerconnector/src-interface"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-ejb"/>
+	<classpathentry kind="src" path="modules/peerconnector/src-interface"/>
+	<classpathentry kind="src" path="modules/peerconnector/src-publ"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-rar"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-war"/>
-	<classpathentry kind="src" path="modules/peerconnector/src-publ"/>
+	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
+	<classpathentry kind="src" path="modules/statedump/src"/>
+	<classpathentry kind="src" path="modules/statedump/src-test"/>
+	<classpathentry kind="src" path="modules/systemtests/src-test"/>
+	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
+	<classpathentry kind="src" path="modules/systemtests/src"/>
+	<classpathentry kind="src" path="modules/va-war/src"/>
+	<classpathentry kind="src" path="modules/validationtool/src"/>
+	<classpathentry kind="src" path="modules/validationtool/test"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces-comps.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xmlpull-1.1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.2.jar"/>
-	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
