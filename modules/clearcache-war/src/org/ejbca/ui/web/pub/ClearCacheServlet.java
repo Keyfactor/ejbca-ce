@@ -87,6 +87,9 @@ public class ClearCacheServlet extends HttpServlet {
 		}
         
         if (StringUtils.equals(req.getParameter("command"), "clearcaches")) {
+            
+            boolean excludeCryptotokenCache = StringUtils.equalsIgnoreCase("true", req.getParameter("excludectcache"));
+            
             if(!acceptedHost(req.getRemoteHost())) {
         		if (log.isDebugEnabled()) {
         			log.debug("Clear cache request denied from host "+req.getRemoteHost());
@@ -125,10 +128,16 @@ public class ClearCacheServlet extends HttpServlet {
         		if(log.isDebugEnabled()) {
         			log.debug("CA cache cleared");
         		}
-        		cryptoTokenSession.flushCache();
-                if(log.isDebugEnabled()) {
-                    log.debug("CryptoToken cache cleared");
-                }
+        		if(!excludeCryptotokenCache) {
+        		    cryptoTokenSession.flushCache();
+        		    if(log.isDebugEnabled()) {
+        		        log.debug("CryptoToken cache cleared");
+        		    }
+        		} else {
+        		    if(log.isDebugEnabled()) {
+        		        log.debug("Excluding CryptoToken cache");
+        		    }
+        		}
                 publisherSession.flushPublisherCache();
                 if(log.isDebugEnabled()) {
                     log.debug("Publisher cache cleared");

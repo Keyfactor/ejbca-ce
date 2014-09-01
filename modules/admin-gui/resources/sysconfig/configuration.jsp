@@ -50,6 +50,7 @@
   static final String CHECKBOX_AUTOENROLL_USE                = "checkboxautoenrolluse";
   static final String CHECKBOX_ENABLECOMMANDLINEINTERFACE	 = "checkboxenablecommandlineinterface";
   static final String CHECKBOX_ENABLECLIDEFAULTUSER			 = "checkboxenableclidefaultuser";
+  static final String CHECKBOX_CLEARCACHES_EXCLUDE_CRYPTOTOKEN  = "checkboxclearcachesexcludecryptotokencache";
   
   static final String TEXTFIELD_CTLOG_URL                    = "textfieldctlogurl";
   static final String FILE_CTLOG_PUBLICKEY                   = "filectlogpublickey";
@@ -254,7 +255,8 @@
         
         ejbcawebbean.saveGlobalConfiguration();
      } else if (params.contains(BUTTON_CLEAR_ALL_CACHES)) {
-    	 ejbcawebbean.clearClusterCache();
+    	 boolean exclude_ctokens = CHECKBOX_VALUE.equals(params.getParameter(CHECKBOX_CLEARCACHES_EXCLUDE_CRYPTOTOKEN));
+    	 ejbcawebbean.clearClusterCache(exclude_ctokens);
      }
 
      if (!params.contains(BUTTON_SAVE) &&
