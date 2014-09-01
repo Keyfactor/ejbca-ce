@@ -126,7 +126,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final CA ca,
-            final RequestMessage req, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams) throws CryptoTokenOfflineException,
+            final RequestMessage req, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CryptoTokenOfflineException,
             SignRequestSignatureException, IllegalKeyException, IllegalNameException, CustomCertificateSerialNumberException,
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, AuthorizationDeniedException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
@@ -194,7 +194,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             
-            Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams);
+            Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
             // Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain());
             ResponseStatus status = ResponseStatus.SUCCESS;
@@ -226,10 +226,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         return ret;
     }
 
-
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData,
             final RequestMessage req, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams) throws CADoesntExistsException,
+            AuthorizationDeniedException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException, IllegalNameException,
+            CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+        final long updateTime = System.currentTimeMillis();
+        return createCertificate(admin, userData, req, responseClass, certGenParams, updateTime);
+    }
+
+
+    @Override
+    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData,
+            final RequestMessage req, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, final long updateTime) throws CADoesntExistsException,
             AuthorizationDeniedException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException, IllegalNameException,
             CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         if (log.isTraceEnabled()) {
@@ -247,7 +256,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage)");
         }
-        return createCertificate(admin, userData, ca, req, responseClass, certGenParams);
+        return createCertificate(admin, userData, ca, req, responseClass, certGenParams, updateTime);
     }
 
     /**
@@ -280,7 +289,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final RequestMessage request,
             final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence,
-            CertificateGenerationParams certGenParams) throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException,
+            CertificateGenerationParams certGenParams, final long updateTime) throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException,
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalKeyException, CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
@@ -331,7 +340,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             Certificate cert = null;
             String cafingerprint = null;
             String serialNo = "unknown";
-            final long updateTime = new Date().getTime();
             final boolean useCustomSN;
             {
                 final ExtendedInformation ei = data.getExtendedinformation();

@@ -328,10 +328,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         log.info(failText);
                         ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.WRONG_AUTHORITY, failText);
                     } else {
-
+                        final long updateTime = System.currentTimeMillis();
                         // Issue the certificate from the request
-                        ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass, fetchCertGenParams());
-                        postCreateCertificate(admin, data, ca, ret.getCertificate());
+                        ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass, fetchCertGenParams(), updateTime);
+                        postCreateCertificate(admin, data, ca, ret.getCertificate(), updateTime);
                     }
                 } catch (ObjectNotFoundException e) {
                     // If we didn't find the entity return error message
@@ -718,13 +718,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
-
+        final long updateTime = System.currentTimeMillis();
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
-                sequence, fetchCertGenParams());
-
-        postCreateCertificate(admin, data, ca, cert);
-
+                sequence, fetchCertGenParams(), updateTime);
+        postCreateCertificate(admin, data, ca, cert, updateTime);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
@@ -750,10 +748,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param endEntity the end entity involved
      * @param ca the relevant CA
      * @param certificate the newly created Certificate
+     * @param updateTime the time when this operation takes place
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final Certificate certificate) throws AuthorizationDeniedException {
+            final Certificate certificate, final long updateTime) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificate, endEntity);
@@ -773,7 +772,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final Certificate cacert = ca.getCACertificate();
             final String cafingerprint = CertTools.getFingerprintAsString(cacert);
             final String tag = null; // TODO: this should not be hard coded here, but as of now (2012-02-14) tag is not used, but only there for the future.
-            final long updateTime = System.currentTimeMillis();
             final long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
             int certstatus = CertificateConstants.CERT_ACTIVE;
             int revreason = RevokedCertInfo.NOT_REVOKED;
