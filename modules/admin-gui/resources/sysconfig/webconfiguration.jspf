@@ -330,10 +330,17 @@ function checkuseautoenroll(){
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES\") %>"/></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES_HELP\") %>"/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES_HELP1\") %>"/></p>
+        <p/>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES_HELP2\") %>"/></p>
       </td>
       <td width="51%" valign="top">
         <input type="submit" name="<%= BUTTON_CLEAR_ALL_CACHES %>" value="<c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES\") %>"/>" />
+        
+        <input type="checkbox" name="<%=CHECKBOX_CLEARCACHES_EXCLUDE_CRYPTOTOKEN%>" value="<%=CHECKBOX_VALUE %>" 
+        				id="<%=CHECKBOX_CLEARCACHES_EXCLUDE_CRYPTOTOKEN%>" />
+		<label for="<%=CHECKBOX_CLEARCACHES_EXCLUDE_CRYPTOTOKEN%>"><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES_EXCLUDE_CRYPTOTOKEN_CACHE\") %>" /></label>
+        
       </td>
     </tr>
 
