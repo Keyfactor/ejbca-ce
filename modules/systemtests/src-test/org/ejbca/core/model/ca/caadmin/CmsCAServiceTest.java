@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.caadmin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,6 +46,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
@@ -54,7 +56,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests the CertTools class.
+ * Tests the CMS Extended CA Service
  * 
  * @version $Id$
  */
@@ -90,8 +92,20 @@ public class CmsCAServiceTest extends CaTestCase {
 
     @Test
     public void testCmsCAServiceNotActive() throws Exception {
-        CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
+        // No certificates should have been generated at this point
+        final CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
+        final Collection<ExtendedCAServiceInfo> svcinfos = cainfo.getExtendedCAServiceInfos();
+        assertFalse("cainfo contained no extended service infos", svcinfos.isEmpty());
+        for (ExtendedCAServiceInfo svcinfo : svcinfos) {
+            if (svcinfo instanceof CmsCAServiceInfo) {
+                final BaseSigningCAServiceInfo signinfo = (BaseSigningCAServiceInfo)svcinfo;
+                assertEquals("Status should be INACTIVE initially", ExtendedCAServiceInfo.STATUS_INACTIVE, signinfo.getStatus());
+                assertNull("No CMS certificate should have been generated until it has been activated", signinfo.getCertificatePath());
+            }
+        }
+        
         // First try a request when the service is not active
+        CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         try {
             caAdminSession.extendedService(admin, getTestCAId(), request);
             fail("extended CA service should not have been active");
