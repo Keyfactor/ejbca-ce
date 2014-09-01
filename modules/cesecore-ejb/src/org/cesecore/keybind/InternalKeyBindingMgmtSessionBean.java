@@ -780,8 +780,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final PublicKey publicKey = getNextPublicKeyForInternalKeyBinding(authenticationToken, internalKeyBinding);
         final RequestMessage req = new SimpleRequestMessage(publicKey, endEntityInformation.getUsername(), endEntityInformation.getPassword());
         final CertificateResponseMessage response;
+        final long updateTime = System.currentTimeMillis();
         try {
-            response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, null);
+            response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, null, updateTime);
         } catch (CustomCertificateSerialNumberException e) {
             throw new CertificateImportException(e);
         } catch (IllegalKeyException e) {
