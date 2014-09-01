@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
-	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>	
+	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src-test"/>
-	<classpathentry kind="src" path="modules/certsafe/src"/>	
-	<classpathentry kind="src" path="modules/cesecore-common/src"/>	
+	<classpathentry kind="src" path="modules/certsafe/src"/>
+	<classpathentry kind="src" path="modules/cesecore-common/src"/>
 	<classpathentry kind="src" path="modules/cesecore-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/cesecore-ejb/src"/>
 	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
@@ -41,6 +41,8 @@
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
+	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
+	<classpathentry kind="src" path="modules/peerconnector/src-cli-test"/>	
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-ejb"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-interface"/>
