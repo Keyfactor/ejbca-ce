@@ -61,7 +61,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     /** Method taking a string, needs as input the available languages.
      * 
      * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
-     * @param languagecode two letter language code, ex SE
+     * @param languagecode two letter language code (ISO 639-1), e.g. en, sv
      * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getAvailableLanguages()
      */
     public void setPreferedLanguage(String[] languages, String languagecode) {
@@ -79,7 +79,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     /** Method taking a string, needs as input the available languages.
      * 
      * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
-     * @param languagecode two letter language code, ex SE
+     * @param languagecode two letter language code (ISO 639-1), e.g. en, sv
      * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getAvailableLanguages()
      */
     public void setSecondaryLanguage(String[] languages, String languagecode){
