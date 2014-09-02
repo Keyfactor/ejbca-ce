@@ -844,7 +844,7 @@ public class EjbcaWebBean implements Serializable {
         throw new Exception("Trying to set an invalid option.");
     }
 
-    public void clearClusterCache(boolean exclude_cryptotokenCache) throws Exception {
+    public void clearClusterCache(boolean excludeActiveCryptoTokens) throws Exception {
         if (log.isTraceEnabled()) {
             log.trace(">clearClusterCache");
         }
@@ -853,14 +853,14 @@ public class EjbcaWebBean implements Serializable {
         final StringBuilder succeededHost = new StringBuilder();
         for (final String host : nodes) {
             if (host != null) {
-                if (checkHost(host, exclude_cryptotokenCache)) {
+                if (checkHost(host, excludeActiveCryptoTokens)) {
                     succeededHost.append(' ').append(host);
                 } else {
                     if (isLocalHost(host)) {
                         // If we are trying to clear the cache on this instance and failed,
                         // we give it another chance using 127.0.0.1 (which is allowed by default)
                         log.info("Failed to clear cache on local node using '"+host+"'. Will try with 'localhost'.");
-                        if (checkHost("localhost", exclude_cryptotokenCache)) {
+                        if (checkHost("localhost", excludeActiveCryptoTokens)) {
                             succeededHost.append(' ').append(host);
                         } else {
                             failedHosts.append(' ').append(host);
@@ -882,10 +882,10 @@ public class EjbcaWebBean implements Serializable {
     }
     
     /** Perform HTTP connection to the cluster nodes clear-cache Servlet */
-    private boolean checkHost(String hostname, boolean exclude_cryptotokenCache) throws IOException {
+    private boolean checkHost(String hostname, boolean excludeActiveCryptoTokens) throws IOException {
         // get http port of remote host, this requires that all cluster nodes uses the same public htt port
         final int pubport = WebConfiguration.getPublicHttpPort();
-        final String requestUrl = "http://" + hostname + ":" + pubport + "/ejbca/clearcache?command=clearcaches&excludectcache=" + exclude_cryptotokenCache;
+        final String requestUrl = "http://" + hostname + ":" + pubport + "/ejbca/clearcache?command=clearcaches&excludeactivects=" + excludeActiveCryptoTokens;
         final URL url = new URL(requestUrl);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         if (log.isDebugEnabled()) {

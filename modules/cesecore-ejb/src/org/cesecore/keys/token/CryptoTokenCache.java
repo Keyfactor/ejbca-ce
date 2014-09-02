@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.config.CesecoreConfiguration;
@@ -73,5 +74,10 @@ public enum CryptoTokenCache implements CommonCache<CryptoToken> {
     @Override
     public void flush() {
         cryptoTokenCache.flush();
+    }
+    
+    @Override
+    public void flushWith(List<Integer> keys) {
+        cryptoTokenCache.flushWith(keys);
     }
 }

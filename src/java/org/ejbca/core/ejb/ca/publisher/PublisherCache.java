@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.internal.CommonCache;
@@ -72,5 +73,10 @@ public enum PublisherCache implements CommonCache<BasePublisher> {
     @Override
     public void flush() {
         cache.flush();
+    }
+    
+    @Override
+    public void flushWith(List<Integer> keys) {
+        cache.flushWith(keys);
     }
 }

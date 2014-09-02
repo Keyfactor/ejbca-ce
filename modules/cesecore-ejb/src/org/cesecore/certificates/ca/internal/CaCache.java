@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.internal;
 
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.certificates.ca.CA;
@@ -72,5 +73,10 @@ public enum CaCache implements CommonCache<CA> {
     @Override
     public void flush() {
         caCache.flush();
+    }
+    
+    @Override
+    public void flushWith(List<Integer> keys) {
+        caCache.flushWith(keys);
     }
 }

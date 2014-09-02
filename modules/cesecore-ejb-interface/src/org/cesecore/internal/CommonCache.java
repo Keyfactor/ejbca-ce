@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.internal;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,4 +44,7 @@ public interface CommonCache<T> {
 
     /** Remove all references from this cache */
     void flush();
+    
+    /** Replace cache with the entries referenced in keys */
+    void flushWith(List<Integer> keys);
 }
