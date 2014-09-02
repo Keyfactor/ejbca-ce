@@ -14,6 +14,7 @@ package org.cesecore.internal;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -178,6 +179,26 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     public void flush() {
         final Map<Integer, CacheEntry> cacheStage = new HashMap<Integer, CacheEntry>();
         final Map<String, Integer> nameToIdMapStage = new HashMap<String, Integer>();
+        flushWith(cacheStage, nameToIdMapStage);
+    }
+    
+    @Override
+    public void flushWith(List<Integer> keys) {
+        Map<Integer, CacheEntry> cacheStage = new HashMap<Integer, CacheEntry>();
+        Map<String, Integer> nameToIdMapStage = new HashMap<String, Integer>();
+        
+        for(Integer key : keys) {
+            CacheEntry entry = cache.get(key);
+            cacheStage.put(key, entry);
+            
+            String name = entry.name;
+            nameToIdMapStage.put(name, nameToIdMap.get(name));
+        }
+        
+        flushWith(cacheStage, nameToIdMapStage);
+    }
+    
+    private void flushWith(Map<Integer, CacheEntry> cacheStage, Map<String, Integer> nameToIdMapStage) {
         synchronized (this) {
             cache = cacheStage;
             nameToIdMap = nameToIdMapStage;
