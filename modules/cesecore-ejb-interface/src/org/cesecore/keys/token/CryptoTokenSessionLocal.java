@@ -45,6 +45,9 @@ public interface CryptoTokenSessionLocal extends CryptoTokenSession {
 
     /** Clears the CryptoToken cache. */
     void flushCache();
+    
+    /** Clears the CryptoToken cache except for the cache entries specified in excludeIDs */
+    void flushExcludingIDs(List<Integer> excludeIDs);
 
     /** @return true if the specified name is used by exactly one CryptoToken and that cryptoToken has the same id (checks the database, not the cache) */
     boolean isCryptoTokenNameUsedByIdOnly(String cryptoTokenName, int cryptoTokenId);

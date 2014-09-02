@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.config.CesecoreConfiguration;
@@ -72,5 +73,10 @@ public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     @Override
     public void flush() {
         internalKeyBindingCache.flush();
+    }
+    
+    @Override
+    public void flushWith(List<Integer> keys) {
+        internalKeyBindingCache.flushWith(keys);
     }
 }

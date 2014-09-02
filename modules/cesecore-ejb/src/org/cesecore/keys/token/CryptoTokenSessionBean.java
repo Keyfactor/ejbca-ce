@@ -60,6 +60,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
             log.debug("Flushed CryptoToken cache.");
         }
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public void flushExcludingIDs(List<Integer> ids) {
+        CryptoTokenCache.INSTANCE.flushWith(ids);
+        if (log.isDebugEnabled()) {
+            log.debug("Flushed CryptoToken cache except for " + ids.size() + " specific entries.");
+        }
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
