@@ -50,7 +50,13 @@ public class WebLanguages implements java.io.Serializable {
             String availablelanguagesstring = globalconfiguration.getAvailableLanguagesAsString();
             availablelanguages =  availablelanguagesstring.split(",");
             for(int i=0; i < availablelanguages.length;i++){
-                availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();
+                availablelanguages[i] = availablelanguages[i].trim().toLowerCase();
+                if (availablelanguages[i].equalsIgnoreCase("se")) {  /* For compatibility with EJBCA 6.2.x and before */
+                    availablelanguages[i] = "sv";
+                }
+                if (availablelanguages[i].equalsIgnoreCase("ua")) {  /* For compatibility with EJBCA 6.2.x and before */
+                    availablelanguages[i] = "uk";
+                }
             }
             // Load available languages
             languages = new LanguageProperties[availablelanguages.length];
@@ -58,7 +64,7 @@ public class WebLanguages implements java.io.Serializable {
                 languages[i] = new LanguageProperties();
                 String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
                 + globalconfiguration.getLanguageFilename() + "."
-                + availablelanguages[i].toLowerCase() +".properties";
+                + availablelanguages[i] +".properties";
                 
                 InputStream is = null;
                 if (servletContext != null) {

@@ -472,16 +472,15 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * A functions that returns wanted helpfile in prefered language. The parameter helpfilename should the wanted filename without language infix.
-     * For example: given helpfilename 'cahelp.html' would return 'cahelp.en.html' if english was the users prefered language.
+     * A functions that returns wanted helpfile in preferred language. The parameter helpfilename should the wanted filename without language infix.
+     * For example: given helpfilename 'cahelp.html' would return 'cahelp.en.html' if English was the users preferred language.
      */
     public String getHelpfileInfix(String helpfilename) {
         String returnedurl = null;
         String[] strs = adminsweblanguage.getAvailableLanguages();
         int index = currentadminpreference.getPreferedLanguage();
         String prefered = strs[index];
-        prefered = prefered.toLowerCase();
-        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()].toLowerCase();
+        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()];
 
         String helpfile = helpfilename.substring(0, helpfilename.lastIndexOf('.'));
         String postfix = helpfilename.substring(helpfilename.lastIndexOf('.') + 1);
@@ -503,14 +502,14 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * A functions that returns wanted imagefile in prefered language and theme. If none of the language specific images are found the original
+     * A functions that returns wanted imagefile in preferred language and theme. If none of the language specific images are found the original
      * imagefilename will be returned.
      * 
-     * The priority of filenames are int the following order 1. imagename.theme.preferedlanguage.jpg/gif 2. imagename.theme.secondarylanguage.jpg/gif
-     * 3. imagename.theme.jpg/gif 4. imagename.preferedlanguage.jpg/gif 5. imagename.secondarylanguage.jpg/gif 6. imagename.jpg/gif
+     * The priority of filenames are in the following order 1. imagename.theme.preferedlanguage.png/jpg/gif 2. imagename.theme.secondarylanguage.png/jpg/gif
+     * 3. imagename.theme.png/jpg/gif 4. imagename.preferedlanguage.png/jpg/gif 5. imagename.secondarylanguage.png/jpg/gif 6. imagename.png/jpg/gif
      * 
-     * The parameter imagefilename should the wanted filename without language infix. For example: given imagefilename 'caimg.gif' would return
-     * 'caimg.en.gif' if english was the users prefered language. It's important that all letters i imagefilename is lowercase.
+     * The parameter imagefilename should the wanted filename without language infix. For example: given imagefilename 'caimg.png' would return
+     * 'caimg.en.png' if English was the users preferred language. It's important that all letters in imagefilename is lowercase.
      */
 
     public String getImagefileInfix(String imagefilename) {
@@ -518,8 +517,7 @@ public class EjbcaWebBean implements Serializable {
         String[] strs = adminsweblanguage.getAvailableLanguages();
         int index = currentadminpreference.getPreferedLanguage();
         String prefered = strs[index];
-        prefered = prefered.toLowerCase();
-        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()].toLowerCase();
+        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()];
 
         String imagefile = imagefilename.substring(0, imagefilename.lastIndexOf('.'));
         String theme = currentadminpreference.getTheme().toLowerCase();
@@ -781,14 +779,8 @@ public class EjbcaWebBean implements Serializable {
     public Locale getLocale() {
         Locale[] locales = DateFormat.getAvailableLocales(); // TODO: Why not use Locale.getAvailableLocales()? Difference?
         Locale returnValue = null;
-        String prefered = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()].toLowerCase();
-        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()].toLowerCase();
-        if (prefered.equalsIgnoreCase("se")) {
-            prefered = "SV";
-        }
-        if (secondary.equalsIgnoreCase("se")) {
-            secondary = "SV";
-        }
+        String prefered = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()];
+        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()];
         for (int i = 0; i < locales.length; i++) {
             if (locales[i].getLanguage().equalsIgnoreCase(prefered)) {
                 returnValue = locales[i];
