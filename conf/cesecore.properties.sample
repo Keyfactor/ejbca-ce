@@ -78,14 +78,14 @@
 
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
-# The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties/intresources.xx.properties'.
-# Should be one of EN,FR,PT,SE,JA
-# Default: EN
-#intresources.preferredlanguage=EN
+# The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties' and 'intresources.xx.properties'.
+# Should be one of: en, fr, ja, pt, sv.
+# Default: en
+#intresources.preferredlanguage=en
 
-# The language used internally if a resource not found in the preferred language
-# Default: SE
-#intresources.secondarylanguage=SE
+# The language used internally if a resource not found in the preferred language.
+# Default: sv
+#intresources.secondarylanguage=sv
 
 # ------------ Audit log configuration ---------------------
 # I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you

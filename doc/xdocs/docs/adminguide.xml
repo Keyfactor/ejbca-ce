@@ -5189,15 +5189,15 @@ This is database and JDBC-driver dependent.</li>
 </ol>
 </p><p>
 The Admin GUI is meant to support multiple languages through language files
-in src/adminweb/languages. In order to add a language you should do the following:
+in modules/admin-gui/resources/languages. In order to add a language you should do the following:
 <ol>
-<li>Rename the languagefile you have created to
-language.<i>languagecode</i>.properties. In case of chinese it should be 'zh', and place 
-it in the modules/admin-gui/resources/languages/ directory.
+<li>Rename the language file you have created to
+languagefile.<em>languagecode</em>.properties, where <em>languagecode</em> is the 2-letter language code (ISO 639-1),
+e.g. 'zh' for Chinese, and place it in the 'modules/admin-gui/resources/languages' directory.
 </li>
 <li>Edit conf/web.properties (create with conf/web.properties.sample as template if you don't have one).
-Change 'web.availablelanguages' and add your language code to the value. i.e:
-<source>web.availablelanguages=EN,DE,ES,FR,IT,JA,PT,SE,ZH</source>
+Change 'web.availablelanguages' and add your language code to the value. i.e.:
+<source>web.availablelanguages=en,bs,de,es,fr,it,ja,pt,sv,uk,zh</source>
 </li>
 <li>You may have to change the default page encoding in 'web.contentencoding' to for example ISO-8859-1
 instead of the default UTF-8.
@@ -5207,9 +5207,9 @@ Restart JBoss and your browser after this.
 </li>
 </ol>
 </p><p>
-Now it should be possible to select ZH in the system configuration as default language 
+Now it should be possible to select 'zh' in the system configuration as default language 
 and in the administrator preferences page. 
-The language will be changed next time the administrator logs in.
+The language will be changed when the administrator go to a web page.
 </p></subsection>
 <subsection name="Internal Internationalization">
 <p>
