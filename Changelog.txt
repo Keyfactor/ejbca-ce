@@ -1,3 +1,36 @@
+EJBCA 6.2.2, 2014-09-03
+---
+Bug
+	[ECA-3683] - Statedump: For an uninitialised CA, it appears in its own list of possible issuers. 
+	[ECA-3687] - Error upgrading old installations to JBoss 7 (jboss serialization)
+	[ECA-3692] - Regression: Certificate and CRL store download pages empty after server restart
+	[ECA-3695] - 100% upgrade from EJBCA 4 to 6 fails on CertificatePolicy
+	[ECA-3696] - If there are Ocsp key binding with messed up certificate, you can get NPE
+	[ECA-3698] - Clear all caches makes crypto tokens off-line
+	[ECA-3714] - Authority Information Access is deselected in Certificate Profiles under some circumstances when upgrading from EJBCA 4 to EJBCA 6
+	[ECA-3721] - Import of internal key bindings via statedump requires crypto token to be online
+	[ECA-3725] - EJBCA CLI prompts twice for the CLI password when using -p
+	[ECA-3727] - Deprecated (null) extended key usages visible in Certificate profile
+	[ECA-3729] - Statedump: Properties object is copied the wrong way when generating cryptotoken keys from a template
+	[ECA-3730] - Not finding some OCSP request signer certificate in DB
+	[ECA-3732] - clientToolbox ocsp test was not updated after that the root certificate was removed from the certificate chain in the OCSP response.
+	[ECA-3733] - cryptotoken create command requires attr flag
+	[ECA-3735] - Statedumped end entities do not keep clear password settings
+	[ECA-3736] - Unable to "Save and Initialize" externally-signed sub-CA imported via statedump
+	[ECA-3744] - InternalKeyBindingCreateCommand misses a null check for missing cryptotokens
+
+Improvement
+	[ECA-3688] - "ant build" failes on JBoss EAP 6.2 installed via RPM package from Redhat repositories
+	[ECA-3690] - Possible information leakage
+	[ECA-3691] - Improve message when profile changes name during work in the GUI
+	[ECA-3707] - Do not generate non-active XKMS and CMS certificates as it can violate name constraints
+
+New Feature
+	[ECA-3149] - OCSP responder support for CertId using SHA256 in OCSP requests
+
+Task
+	[ECA-3703] - Upgrade tomahawk to latest 1.1.14
+
 EJBCA 6.2.1, 2014-08-06
 ---
 Bug
