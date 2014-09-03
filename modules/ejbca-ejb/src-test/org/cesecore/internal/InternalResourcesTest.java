@@ -34,8 +34,8 @@ public class InternalResourcesTest {
         assertEquals("Test en-US                        ", intres.getLocalizedMessageCs("raadmin.testmsg").toString());
         // This message will only exist in the secondary language file
         res = intres.getLocalizedMessage("raadmin.testmsgsv");
-        assertEquals("Test SV", res);
-        assertEquals("Test SV", intres.getLocalizedMessageCs("raadmin.testmsgsv").toString());
+        assertEquals("Test sv-SE", res);
+        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv").toString());
     }
 
     @Test
@@ -77,10 +77,10 @@ public class InternalResourcesTest {
     public void testMessageStringWithExtraParameter() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.testmsgsv");
-        assertEquals("Test SV", res);
-        assertEquals("Test SV", intres.getLocalizedMessageCs("raadmin.testmsgsv").toString());
+        assertEquals("Test sv-SE", res);
+        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv").toString());
         res = intres.getLocalizedMessage("raadmin.testmsgsv", "foo $bar \\haaaar");
-        assertEquals("Test SV", res);
-        assertEquals("Test SV", intres.getLocalizedMessageCs("raadmin.testmsgsv", "foo $bar \\haaaar").toString());
+        assertEquals("Test sv-SE", res);
+        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv", "foo $bar \\haaaar").toString());
     }
 }
