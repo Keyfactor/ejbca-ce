@@ -351,13 +351,8 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         chain.addAll(getCaCertificateChain(sslCertificate));
         final String alias = authenticationKeyBinding.getKeyPairAlias();
         try {
-            final Collection< Collection<Certificate> > trustedCertificates = internalKeyBindingMgmtSession.getListOfTrustedCertificates(authenticationToken, authenticationKeyBinding);
-            final TrustManager trustManagers[];
-            if (trustedCertificates.isEmpty()) {
-                trustManagers = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
-            } else {
-                trustManagers = new X509TrustManager[] { new ClientX509TrustManager(trustedCertificates) };
-            }
+            Collection< Collection<Certificate> > trustedCertificates = internalKeyBindingMgmtSession.getListOfTrustedCertificates(authenticationToken, authenticationKeyBinding);
+            final TrustManager trustManagers[] = new X509TrustManager[] { new ClientX509TrustManager(trustedCertificates) };
             final KeyManager keyManagers[] = new X509KeyManager[] { new ClientX509KeyManager(alias, cryptoToken.getPrivateKey(alias), chain) };
             // Now construct a SSLContext using these (possibly wrapped) KeyManagers, and the TrustManagers.
             // We still use a null SecureRandom, indicating that the defaults should be used.
