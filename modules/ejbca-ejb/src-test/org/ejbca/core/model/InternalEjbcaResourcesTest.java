@@ -34,8 +34,8 @@ public class InternalEjbcaResourcesTest {
         assertEquals("Test en-US", intres.getLocalizedMessageCs("test.testmsg").toString());
         // This message will only exist in the secondary language file
         res = intres.getLocalizedMessage("test.testmsgsv");
-        assertEquals("Test SV", res);
-        assertEquals("Test SV", intres.getLocalizedMessageCs("test.testmsgsv").toString());
+        assertEquals("Test sv-SE", res);
+        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
     }
 
 	@Test
@@ -70,11 +70,11 @@ public class InternalEjbcaResourcesTest {
     public void testMessageStringWithExtraParameter() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.testmsgsv");
-        assertEquals("Test SV", res);
-        assertEquals("Test SV", intres.getLocalizedMessageCs("test.testmsgsv").toString());
+        assertEquals("Test sv-SE", res);
+        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
         res = intres.getLocalizedMessage("test.testmsgsv", "foo $bar \\haaaar");
-        assertEquals("Test SV", res);
-        assertEquals("Test SV", intres.getLocalizedMessageCs("test.testmsgsv", "foo $bar \\haaaar").toString());
+        assertEquals("Test sv-SE", res);
+        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv", "foo $bar \\haaaar").toString());
     }
     
 	@Test
