@@ -39,7 +39,11 @@ public class ClientX509KeyManager implements X509KeyManager {
     public ClientX509KeyManager(final String alias, final PrivateKey privateKey, final List<X509Certificate> certificateChain) {
         this.alias = alias;
         this.privateKey = privateKey;
-        this.certificateChain = certificateChain.toArray(new X509Certificate[certificateChain.size()]);
+        if(certificateChain != null) {
+            this.certificateChain = certificateChain.toArray(new X509Certificate[certificateChain.size()]);
+        } else {
+            this.certificateChain = null;
+        }
     }
     
     @Override

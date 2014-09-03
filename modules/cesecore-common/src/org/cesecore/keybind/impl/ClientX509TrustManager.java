@@ -29,10 +29,11 @@ import org.cesecore.util.CertTools;
  */
 public class ClientX509TrustManager implements X509TrustManager {
 
-    private final Collection<Collection<Certificate> > trustedCertificatesChains = new ArrayList< Collection<Certificate> >();
+    private Collection<Collection<Certificate> > trustedCertificatesChains = null;
     
     public ClientX509TrustManager(final Collection< Collection<Certificate> > trustedCertificates) {
         if (trustedCertificates!=null) {
+            trustedCertificatesChains = new ArrayList<Collection<Certificate> >();
             for(Collection<Certificate> col : trustedCertificates) {
                 this.trustedCertificatesChains.add(col);
             }
@@ -67,6 +68,10 @@ public class ClientX509TrustManager implements X509TrustManager {
 
     @Override
     public X509Certificate[] getAcceptedIssuers() {
+        if(trustedCertificatesChains == null) {
+            return new X509Certificate[0];
+        }
+        
         ArrayList<X509Certificate> acceptedIssuers = new ArrayList<X509Certificate>();
         for(Collection<Certificate> certChain : trustedCertificatesChains) {
             Iterator<Certificate> itr = certChain.iterator();

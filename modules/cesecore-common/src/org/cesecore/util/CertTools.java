@@ -2543,6 +2543,21 @@ public abstract class CertTools {
      * @throws Exception if verification failed
      */
     public static boolean verifyWithTrustedCertificates(Certificate certificate, Collection< Collection<Certificate> > trustedCertificates) {
+        
+        if(trustedCertificates == null) {
+            if(log.isDebugEnabled()) {
+                log.debug("Input of trustedCertificates was null. Trusting nothing.");
+            }
+            return false;
+        }
+        
+        if(trustedCertificates.size() == 0) {
+            if(log.isDebugEnabled()) {
+                log.debug("Input of trustedCertificates was empty. Trusting everything.");
+            }
+            return true;
+        }
+        
         BigInteger certSN = getSerialNumber(certificate);
         for(Collection<Certificate> trustedCertChain : trustedCertificates) {
             Certificate trustedCert = trustedCertChain.iterator().next();
