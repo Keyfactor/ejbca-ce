@@ -76,7 +76,7 @@ public enum CaCache implements CommonCache<CA> {
     }
     
     @Override
-    public void flushWith(List<Integer> keys) {
-        caCache.flushWith(keys);
+    public void replaceCacheWith(List<Integer> keys) {
+        caCache.replaceCacheWith(keys);
     }
 }
