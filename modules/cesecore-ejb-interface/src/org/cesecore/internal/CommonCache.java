@@ -46,5 +46,5 @@ public interface CommonCache<T> {
     void flush();
     
     /** Replace cache with the entries referenced in keys */
-    void flushWith(List<Integer> keys);
+    void replaceCacheWith(List<Integer> keys);
 }

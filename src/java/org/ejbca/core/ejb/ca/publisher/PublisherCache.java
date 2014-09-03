@@ -76,7 +76,7 @@ public enum PublisherCache implements CommonCache<BasePublisher> {
     }
     
     @Override
-    public void flushWith(List<Integer> keys) {
-        cache.flushWith(keys);
+    public void replaceCacheWith(List<Integer> keys) {
+        cache.replaceCacheWith(keys);
     }
 }

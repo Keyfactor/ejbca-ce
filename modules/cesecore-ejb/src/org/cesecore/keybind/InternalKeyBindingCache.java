@@ -76,7 +76,7 @@ public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     }
     
     @Override
-    public void flushWith(List<Integer> keys) {
-        internalKeyBindingCache.flushWith(keys);
+    public void replaceCacheWith(List<Integer> keys) {
+        internalKeyBindingCache.replaceCacheWith(keys);
     }
 }

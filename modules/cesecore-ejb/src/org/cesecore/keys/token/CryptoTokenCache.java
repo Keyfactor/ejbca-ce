@@ -77,7 +77,7 @@ public enum CryptoTokenCache implements CommonCache<CryptoToken> {
     }
     
     @Override
-    public void flushWith(List<Integer> keys) {
-        cryptoTokenCache.flushWith(keys);
+    public void replaceCacheWith(List<Integer> keys) {
+        cryptoTokenCache.replaceCacheWith(keys);
     }
 }
