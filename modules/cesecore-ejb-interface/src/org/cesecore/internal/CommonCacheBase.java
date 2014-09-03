@@ -179,11 +179,11 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     public void flush() {
         final Map<Integer, CacheEntry> cacheStage = new HashMap<Integer, CacheEntry>();
         final Map<String, Integer> nameToIdMapStage = new HashMap<String, Integer>();
-        flushWith(cacheStage, nameToIdMapStage);
+        replaceCache(cacheStage, nameToIdMapStage);
     }
     
     @Override
-    public void flushWith(List<Integer> keys) {
+    public void replaceCacheWith(List<Integer> keys) {
         Map<Integer, CacheEntry> cacheStage = new HashMap<Integer, CacheEntry>();
         Map<String, Integer> nameToIdMapStage = new HashMap<String, Integer>();
         
@@ -195,10 +195,10 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             nameToIdMapStage.put(name, nameToIdMap.get(name));
         }
         
-        flushWith(cacheStage, nameToIdMapStage);
+        replaceCache(cacheStage, nameToIdMapStage);
     }
     
-    private void flushWith(Map<Integer, CacheEntry> cacheStage, Map<String, Integer> nameToIdMapStage) {
+    private void replaceCache(Map<Integer, CacheEntry> cacheStage, Map<String, Integer> nameToIdMapStage) {
         synchronized (this) {
             cache = cacheStage;
             nameToIdMap = nameToIdMapStage;
