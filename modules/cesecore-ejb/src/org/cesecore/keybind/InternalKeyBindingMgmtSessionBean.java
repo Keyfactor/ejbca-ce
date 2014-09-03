@@ -255,25 +255,44 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
                     InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException {
         
+        List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
+        if(trustedReferences == null) {
+            return null;
+        }
+        
         Collection<Collection<Certificate> > trustedCerts = new ArrayList< Collection<Certificate> >();
-        for (final InternalKeyBindingTrustEntry trustedReference : internalKeyBinding.getTrustedCertificateReferences()) {
-            final CAInfo caInfo = caSession.getCAInfo(authenticationToken, trustedReference.getCaId());
-            if (trustedReference.getCertificateSerialNumberDecimal()==null) {
-                // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
-                // CA certificate chain to be used for issuer verification
+        if(trustedReferences.size()==0) {
+            // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
+            // This is done by adding all CAs' certificate chains to trustedCerts
+            List<Integer> allCAs = caSession.getAvailableCAs();
+            for(int caid : allCAs) {
+                final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caid);
                 trustedCerts.add(caInfo.getCertificateChain());
-            } else {
-                // If a cert serialnumber is specified, then we trust only this certificate. We create a certificate collection 
-                // containing this certificate and it's issuer's certificate chain to be used for issuer verification
-                X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
+            }
+            
+            if(log.isDebugEnabled()) {
+                log.debug("Trusted Certificates list is empty. Trust ANY certificates issued by ANY CA known to this EJBCA instance");
+            }
+        } else {
+            for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
+                final CAInfo caInfo = caSession.getCAInfo(authenticationToken, trustedReference.getCaId());
+                if (trustedReference.getCertificateSerialNumberDecimal()==null) {
+                    // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
+                    // CA certificate chain to be used for issuer verification
+                    trustedCerts.add(caInfo.getCertificateChain());
+                } else {
+                    // If a cert serialnumber is specified, then we trust only this certificate. We create a certificate collection 
+                    // containing this certificate and it's issuer's certificate chain to be used for issuer verification
+                    X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
                                 caInfo.getSubjectDN(), trustedReference.fetchCertificateSerialNumber());
-                if(cert!=null) {
-                    ArrayList<Certificate> leafCertChain = new ArrayList<Certificate>();
-                    leafCertChain.add(cert);
-                    String issuer = CertTools.getIssuerDN(cert);
-                    CAInfo issuerInfo = caSession.getCAInfo(authenticationToken, issuer.hashCode());
-                    leafCertChain.addAll((ArrayList<Certificate>) issuerInfo.getCertificateChain());
-                    trustedCerts.add(leafCertChain);                
+                    if(cert!=null) {
+                        ArrayList<Certificate> leafCertChain = new ArrayList<Certificate>();
+                        leafCertChain.add(cert);
+                        String issuer = CertTools.getIssuerDN(cert);
+                        CAInfo issuerInfo = caSession.getCAInfo(authenticationToken, issuer.hashCode());
+                        leafCertChain.addAll((ArrayList<Certificate>) issuerInfo.getCertificateChain());
+                        trustedCerts.add(leafCertChain);                
+                    }
                 }
             }
         }
