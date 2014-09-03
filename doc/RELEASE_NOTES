@@ -13,10 +13,14 @@ For upgrade instructions, please see UPGRADE.
 
 EJBCA 6.2.2
 -----------
-This is a maintenance release with only bug fixes and minor improvement. All in all, 40 issues have been fixed.
+This is a maintenance release with one new feature, some minor bug fixes and minor improvements. All in all, 23 issues have been fixed.
 
 * Noteworthy changes:
-- 
+- The OCSP responder now supports requests containing Certificate IDs hashed in SHA256
+- A minor regression where Certificate and CRL caches were not automatically refilled after server restart
+- CLI no longer prompts twice when asked to prompt for the CLI password
+- Several issues improving the upgrade procedure
+- An information leakage issue in the public web concerning end entities sharing the same keys
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
