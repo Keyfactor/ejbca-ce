@@ -22,6 +22,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
@@ -62,6 +65,21 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
         query.setParameter("primaryKey", primaryKey);
 
         return (RoleData) QueryResultWrapper.getSingleResult(query);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final List<RoleData> roleDatas = getAllRoles();
+        final List<String> roleNames = new ArrayList<String>();
+        for (final RoleData roleData : roleDatas) {
+            for (final AccessUserAspectData a : roleData.getAccessUsers().values()) {
+                if (authenticationToken.matches(a)) {
+                    roleNames.add(roleData.getRoleName());
+                }
+            }
+        }
+        return roleNames;
     }
     
 }

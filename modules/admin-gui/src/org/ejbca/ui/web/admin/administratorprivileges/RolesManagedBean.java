@@ -89,7 +89,6 @@ public class RolesManagedBean extends BaseManagedBean {
 
     private String newRoleName = "new";
 
-  //  private AccessRulesView accessRulesViewCache = null;
     private Map<String, List<AccessRuleData>> accessRulesViewCache = null;
     
     // Simple from backing
