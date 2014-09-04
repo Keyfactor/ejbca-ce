@@ -28,6 +28,10 @@
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.cli-util.lib}"/>
+		<path location="${mod.peerconnector-cli.lib}"/>
+		<path location="${mod.peerconnector-interface.lib}"/>
+		<path location="${mod.peerconnector-common.lib}"/>
+		<path location="${mod.peerconnector-publ.lib}"/>
 		<path refid="lib.xstream.classpath"/>
 	</path>
 	

@@ -445,6 +445,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
         return result;
     }
+   
     
     @Override
     public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {

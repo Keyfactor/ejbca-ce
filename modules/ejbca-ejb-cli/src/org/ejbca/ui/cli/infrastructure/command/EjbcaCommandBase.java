@@ -25,4 +25,6 @@ public abstract class EjbcaCommandBase extends CommandBase{
     public String getImplementationName() {
         return "EJBCA CLI";
     }
+    
+    
 }

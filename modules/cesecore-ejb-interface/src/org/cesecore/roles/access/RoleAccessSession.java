@@ -14,6 +14,8 @@ package org.cesecore.roles.access;
 
 import java.util.List;
 
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.roles.RoleData;
 
 /**
@@ -48,4 +50,13 @@ public interface RoleAccessSession {
      * @return The sought roll, null if not found
      */
     RoleData findRole(final String roleName);
+    
+    /**
+     * Get a list of role that match the given authentication token
+     * 
+     * @param authenticationToken a token to match with
+     * @return a list of role that match the given authentication token
+     * @throws AuthenticationFailedException if any errors were found with the authentication token
+     */
+    List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }
