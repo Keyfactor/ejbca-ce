@@ -1020,9 +1020,13 @@ SHA-256 checksum: ${cesecorebinSHA256}
        	<ant dir="modules" target="ejbca-ejb-interface" />
     </target>
 
-    <target name="ejbca-ejb-cli" depends="deprecated:check" description="Builds EJBCA command line interface">
+    <target name="ejbca-ejb-cli" depends="deprecated:check, peerconnector-cli" description="Builds EJBCA command line interface">
     	<ant dir="modules" target="ejbca-ejb-cli" />
     </target>
+	
+	<target name="peerconnector-cli" if="mod.peerconnector.exists">
+		<ant antfile="${mod.peerconnector.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
 	
     <target name="adminweb.war">
     	<ant dir="modules" target="admin-gui" />

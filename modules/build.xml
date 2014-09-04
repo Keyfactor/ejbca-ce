@@ -149,7 +149,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface" description="Build EJBCA EJB CLI">
+	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface, peerconnector-cli" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -353,6 +353,10 @@
 
 	<target name="peerconnector" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
 		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
+	
+	<target name="peerconnector-cli" if="mod.peerconnector.exists">
+		<ant antfile="${mod.peerconnector.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
 	<target name="externalra-service" depends="ejbca-common-web" if="externalra.enabled.true" description="Build the EJBCA External RA Service">
