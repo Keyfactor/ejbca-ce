@@ -110,17 +110,31 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="JBOSS5_HOME"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system-jmx.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-j2se.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/servlet-api.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/el-api.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jstl.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.Final-redhat-2.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.1.Final-redhat-2.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.2.Final-redhat-2.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/org/jboss/metadata/main/jboss-metadata-ejb-7.0.8.Final-redhat-1.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.2.Final-redhat-1.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.1.19.1.Final-redhat-1.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec-1.0.1.Final-redhat-2.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/org/jboss/as/naming/main/jboss-as-naming-7.2.0.Final-redhat-8.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/el/api/main/jboss-el-api_2.2_spec-1.0.2.Final-redhat-1.jar"/>
-	<classpathentry kind="var" path="JBOSS7_HOME/modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.6_spec-1.0.1.Final-redhat-2.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/resource/api/main/jboss-connector-api_1.6_spec-1.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
