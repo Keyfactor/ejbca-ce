@@ -390,7 +390,7 @@ public class OcspKeyRenewalTest {
     @Test
     public void testAutomaticKeyRenewal() throws InvalidKeyException, KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InterruptedException {
         if (managementCaId == 0) {
-            throw new Error("This test cannot run without a ManagementCA that issued the localhost SSL certificate.");
+            throw new RuntimeException("This test cannot run without a ManagementCA that issued the localhost SSL certificate.");
         }
         ocspKeyRenewalProxySession.setTimerToFireInOneSecond();
         //Race condition, the WS object takes about two years to materialize
