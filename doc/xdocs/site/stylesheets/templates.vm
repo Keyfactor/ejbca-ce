@@ -176,7 +176,7 @@
       
         <li><div class="menuheader">Used Services</div>
           <p><br/>
-          <a href="http://sourceforge.net/projects/ejbca"><img style="border:none; margin-left:20px" src="//sflogo.sourceforge.net/sflogo.php?group_id=39716&amp;type=13" width="120" height="30" alt="Get EJBCA, J2EE PKI Certificate Authority at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+          <a href="http://sourceforge.net/projects/ejbca/"><img style="border:none; margin-left:20px" src="//sourceforge.net/sflogo.php?group_id=39716&amp;type=13" width="120" height="30" alt="Get EJBCA, J2EE PKI Certificate Authority at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
           </p>
         </li>
         <li><div class="menuheader">PKI by PrimeKey</div>

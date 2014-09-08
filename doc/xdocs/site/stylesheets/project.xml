@@ -18,8 +18,7 @@
                 <item name="Credits"               href="/credits.html"/>
                 <item name="Reference installations" href="/installations.html"/>
                 <item name="Complementary software"  href="/complementary.html"/>
-                <item name="Sourceforge project" href="http://www.sf.net/projects/ejbca/"/>
-                <item name="Release news"        href="http://sourceforge.net/news/?group_id=39716"/>
+                <item name="Sourceforge project" href="http://sourceforge.net/projects/ejbca/"/>
             </menu>
 
             <menu name="Download">
