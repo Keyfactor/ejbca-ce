@@ -204,7 +204,7 @@ public abstract class CommandBase implements CliCommandPlugin {
         getLogger().info(sb.toString());
     }
 
-    private String bold(String text) {
+    protected static String bold(String text) {
         return (char) 27 + "[1m" + text + (char) 27 + "[0m";
     }
 
@@ -237,7 +237,7 @@ public abstract class CommandBase implements CliCommandPlugin {
         return sb.toString();
     }
 
-    private String tab(int times) {
+    private static String tab(int times) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < times; i++) {
             sb.append(TAB);
@@ -263,7 +263,7 @@ public abstract class CommandBase implements CliCommandPlugin {
             } else {
                 String subString = input.substring(0, lineLength);
                 int lastSpace = subString.lastIndexOf(" ");
-                if(lastSpace == -1) {
+                if (lastSpace == -1) {
                     // lineLength characters without a single space. Eh...fine.
                     lastSpace = lineLength;
                 }
@@ -279,5 +279,46 @@ public abstract class CommandBase implements CliCommandPlugin {
     }
 
     protected abstract Logger getLogger();
+
+    public static String formatTable(int tabs, String[] titles, List<String[]> contents) {
+        int[] offset = new int[titles.length];
+        //Validate contents and figure out tab size per column
+        for (int i = 0; i < titles.length; i++) {
+            offset[i] = titles[i].length() / TAB.length() + 2;
+        }
+        for (String[] row : contents) {
+            if (row.length < titles.length) {
+                throw new IllegalArgumentException("Invalid column length. Titlebar had " + titles.length + " columns, while content row had "
+                        + row.length);
+            }
+            for (int i = 0; i < row.length; i++) {
+                int rowOffset = row[i].length() / TAB.length() + 2;
+                if (rowOffset > offset[i]) {
+                    offset[i] = rowOffset;
+                }
+            }
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        //Build title bar
+        stringBuilder.append(tab(tabs));
+        for (int i = 0; i < titles.length; i++) {
+            String title = titles[i];
+            String whitespace = tab(offset[i]);
+            stringBuilder.append(bold(title) + whitespace.substring(title.length(), whitespace.length()));
+        }
+        stringBuilder.append("\n");
+        //And add contents
+        for (String[] row : contents) {
+            stringBuilder.append(tab(tabs));
+            for (int i = 0; i < row.length; i++) {
+                String rowWord = row[i];
+                String whitespace = tab(offset[i]);
+                stringBuilder.append(rowWord + whitespace.substring(rowWord.length(), whitespace.length()));
+            }
+            stringBuilder.append("\n");
+
+        }
+        return stringBuilder.toString();
+    }
 
 }
