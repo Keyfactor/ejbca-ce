@@ -272,27 +272,27 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCRLDistributionPoint(!getCertificateProfile().getUseCRLDistributionPoint());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseDefaultCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultCRLDistributionPoint(!getCertificateProfile().getUseDefaultCRLDistributionPoint());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseCADefinedFreshestCRL() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCADefinedFreshestCRL(!getCertificateProfile().getUseCADefinedFreshestCRL());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseFreshestCRL() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseFreshestCRL(!getCertificateProfile().getUseFreshestCRL());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseCertificatePolicies() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCertificatePolicies(!getCertificateProfile().getUseCertificatePolicies());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     private ListDataModel certificatePoliciesModel = null;
@@ -331,17 +331,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void actionNewCertificatePolicyQualifierIdNone() throws IOException {
         getNewCertificatePolicy().setQualifierId("");
         getNewCertificatePolicy().setQualifier("");
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     public void actionNewCertificatePolicyQualifierIdCpsUri() throws IOException {
         getNewCertificatePolicy().setQualifierId(CertificatePolicy.id_qt_cps);
         getNewCertificatePolicy().setQualifier("");
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     public void actionNewCertificatePolicyQualifierIdUserNotice() throws IOException {
         getNewCertificatePolicy().setQualifierId(CertificatePolicy.id_qt_unotice);
         getNewCertificatePolicy().setQualifier("");
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     public boolean isNewCertificatePolicyQualifierIdNone() { return "".equals(getNewCertificatePolicy().getQualifierId()); }
     public boolean isNewCertificatePolicyQualifierIdCpsUri() { return CertificatePolicy.id_qt_cps.equals(getNewCertificatePolicy().getQualifierId()); }
@@ -356,7 +356,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         setNewCertificatePolicy(null);
         certificatePoliciesModel = null;
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
         return "";
     }
 
@@ -365,7 +365,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCertificatePolicy(certificatePolicy);
         newCertificatePolicy = certificatePolicy;
         certificatePoliciesModel = null;
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
         return "";
     }
 
@@ -386,12 +386,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUseAuthorityInformationAccess() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseAuthorityInformationAccess(!getCertificateProfile().getUseAuthorityInformationAccess());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public void toggleUseDefaultOCSPServiceLocator() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultOCSPServiceLocator(!getCertificateProfile().getUseDefaultOCSPServiceLocator());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public String getNewCaIssuer() { return newCaIssuer; }
@@ -401,7 +401,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().addCaIssuer(newCaIssuer);
         newCaIssuer = "";
         caIssuersModel = null;
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
         return "";
     }
 
@@ -410,13 +410,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCaIssuer(caIssuer);
         newCaIssuer = caIssuer;
         caIssuersModel = null;
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
         return "";
     }
     
     public void toggleUsePrivateKeyUsagePeriodNotBefore() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotBefore(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotBefore());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
 
     public String getPrivateKeyUsagePeriodStartOffset() throws AuthorizationDeniedException {
@@ -440,7 +440,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUsePrivateKeyUsagePeriodNotAfter() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotAfter(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotAfter());
-        redirectToComponent("header_crls");
+        redirectToComponent("header_x509v3extensions");
     }
     
     public String getPrivateKeyUsagePeriodLength() throws AuthorizationDeniedException {
