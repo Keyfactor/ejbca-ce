@@ -219,7 +219,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseKeyUsage() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseKeyUsage(!getCertificateProfile().getUseKeyUsage());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
     }
     
     public boolean isKeyUsageDigitalSignature() throws AuthorizationDeniedException { return getCertificateProfile().getKeyUsage(CertificateConstants.DIGITALSIGNATURE); }
@@ -243,7 +243,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUseExtendedKeyUsage() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseExtendedKeyUsage(!getCertificateProfile().getUseExtendedKeyUsage());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
     }
 
     public List<SelectItem/*<String,String*/> getExtendedKeyUsageOidsAvailable() {
@@ -257,42 +257,42 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     public void toggleUseSubjectAlternativeName() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseSubjectAlternativeName(!getCertificateProfile().getUseSubjectAlternativeName());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_names");
     }
     
     public void toggleUseIssuerAlternativeName() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseIssuerAlternativeName(!getCertificateProfile().getUseIssuerAlternativeName());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_names");
     }
 
     public void toggleUseNameConstraints() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseNameConstraints(!getCertificateProfile().getUseNameConstraints());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_names");
     }
     
     public void toggleUseCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCRLDistributionPoint(!getCertificateProfile().getUseCRLDistributionPoint());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public void toggleUseDefaultCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultCRLDistributionPoint(!getCertificateProfile().getUseDefaultCRLDistributionPoint());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public void toggleUseCADefinedFreshestCRL() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCADefinedFreshestCRL(!getCertificateProfile().getUseCADefinedFreshestCRL());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public void toggleUseFreshestCRL() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseFreshestCRL(!getCertificateProfile().getUseFreshestCRL());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public void toggleUseCertificatePolicies() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCertificatePolicies(!getCertificateProfile().getUseCertificatePolicies());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
     }
     
     private ListDataModel certificatePoliciesModel = null;
@@ -331,17 +331,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void actionNewCertificatePolicyQualifierIdNone() throws IOException {
         getNewCertificatePolicy().setQualifierId("");
         getNewCertificatePolicy().setQualifier("");
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
     }
     public void actionNewCertificatePolicyQualifierIdCpsUri() throws IOException {
         getNewCertificatePolicy().setQualifierId(CertificatePolicy.id_qt_cps);
         getNewCertificatePolicy().setQualifier("");
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
     }
     public void actionNewCertificatePolicyQualifierIdUserNotice() throws IOException {
         getNewCertificatePolicy().setQualifierId(CertificatePolicy.id_qt_unotice);
         getNewCertificatePolicy().setQualifier("");
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
     }
     public boolean isNewCertificatePolicyQualifierIdNone() { return "".equals(getNewCertificatePolicy().getQualifierId()); }
     public boolean isNewCertificatePolicyQualifierIdCpsUri() { return CertificatePolicy.id_qt_cps.equals(getNewCertificatePolicy().getQualifierId()); }
@@ -356,7 +356,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         setNewCertificatePolicy(null);
         certificatePoliciesModel = null;
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
         return "";
     }
 
@@ -365,7 +365,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCertificatePolicy(certificatePolicy);
         newCertificatePolicy = certificatePolicy;
         certificatePoliciesModel = null;
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_usages");
         return "";
     }
 
@@ -386,12 +386,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUseAuthorityInformationAccess() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseAuthorityInformationAccess(!getCertificateProfile().getUseAuthorityInformationAccess());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public void toggleUseDefaultOCSPServiceLocator() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultOCSPServiceLocator(!getCertificateProfile().getUseDefaultOCSPServiceLocator());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public String getNewCaIssuer() { return newCaIssuer; }
@@ -401,7 +401,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().addCaIssuer(newCaIssuer);
         newCaIssuer = "";
         caIssuersModel = null;
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
         return "";
     }
 
@@ -410,13 +410,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCaIssuer(caIssuer);
         newCaIssuer = caIssuer;
         caIssuersModel = null;
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
         return "";
     }
     
     public void toggleUsePrivateKeyUsagePeriodNotBefore() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotBefore(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotBefore());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
 
     public String getPrivateKeyUsagePeriodStartOffset() throws AuthorizationDeniedException {
@@ -440,7 +440,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void toggleUsePrivateKeyUsagePeriodNotAfter() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotAfter(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotAfter());
-        redirectToComponent("header_x509v3extensions");
+        redirectToComponent("header_x509v3extensions_valdata");
     }
     
     public String getPrivateKeyUsagePeriodLength() throws AuthorizationDeniedException {
