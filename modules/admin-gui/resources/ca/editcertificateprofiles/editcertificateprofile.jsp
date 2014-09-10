@@ -225,6 +225,14 @@
 			<h:outputLabel for="cbsubjectkeyidentifier" value="#{web.text.USE} "/>
 		</h:panelGroup>
 
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+		<%-- X.509v3 extensions (PKIX) : Usages --%>
+
+		<h:outputLabel for="header_x509v3extensions_usages" value="#{web.text.X509EXTENSIONS}" style="font-weight: bold;"/>
+		<h:outputLabel id="header_x509v3extensions_usages" value="#{web.text.X509EXTENSIONS_USAGES}"/>
+
 		<%-- PKIX Key Usage (KU) extension --%>
 
 		<h:outputLabel for="cbkeyusagegroup" value="#{web.text.EXT_PKIX_KEYUSAGE}" style="font-weight: bold;"/>
@@ -284,120 +292,6 @@
 				<f:selectItems value="#{certProfileBean.extendedKeyUsageOidsAvailable}"/>
 			</h:selectManyListbox>
 		</h:panelGrid>
-
-		<%-- PKIX Subject Alternative Name (SAN) extension --%>
-
-		<h:outputLabel for="cbsubjectalternativenamegroup" value="#{web.text.EXT_PKIX_SUBJECTALTNAME}"/>
-		<h:panelGroup id="cbsubjectalternativenamegroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectAlternativeName}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="cbsubjectalternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectAlternativeName}"
-				value="#{certProfileBean.certificateProfile.useSubjectAlternativeName?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="cbsubjectalternativename" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-			<h:selectBooleanCheckbox id="cbsubjectalternativenamecritical" value="#{certProfileBean.certificateProfile.subjectAlternativeNameCritical}"
-				disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName}"/>
-			<h:outputLabel for="cbsubjectalternativenamecritical" value="#{web.text.EXT_CRITICAL}"/>
-		</h:panelGroup>
-
-		<%-- PKIX Issuer Alternative Name (IAN) extension --%>
-
-		<h:panelGroup>
-			<h:outputLabel for="cbissueralternativenamegroup" value="#{web.text.EXT_PKIX_ISSUERALTNAME}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Issuer%20Alternative%20Name") %>
-		</h:panelGroup>
-		<h:panelGroup id="cbissueralternativenamegroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useIssuerAlternativeName}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="cbissueralternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseIssuerAlternativeName}"
-				value="#{certProfileBean.certificateProfile.useIssuerAlternativeName?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="cbissueralternativename" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-			<h:selectBooleanCheckbox id="cbissueralternativenamecritical" value="#{certProfileBean.certificateProfile.issuerAlternativeNameCritical}"
-				disabled="#{!certProfileBean.certificateProfile.useIssuerAlternativeName}"/>
-			<h:outputLabel for="cbissueralternativenamecritical" value="#{web.text.EXT_CRITICAL}"/>
-		</h:panelGroup>
-
-		<%-- PKIX Subject Directory Attributes (SDA) extension --%>
-
-		<h:outputLabel for="checksubjectdirattributesgroup" value="#{web.text.EXT_PKIX_SUBJECTDIRATTRS}"/>
-		<h:panelGroup id="checksubjectdirattributesgroup">
-			<h:selectBooleanCheckbox id="checksubjectdirattributes" value="#{certProfileBean.certificateProfile.useSubjectDirAttributes}"/>
-			<h:outputLabel for="checksubjectdirattributes" value="#{web.text.USE} "/>
-		</h:panelGroup>
-
-		<%-- PKIX Name Constraints extension --%>
-
-        <h:panelGroup>
-    		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
-    		<%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
-		</h:panelGroup>
-		<h:panelGroup id="checknameconstraintsgroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="checknameconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseNameConstraints}"
-				value="#{certProfileBean.certificateProfile.useNameConstraints?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="checknameconstraints" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-			<h:selectBooleanCheckbox id="checknameconstraintscritical" value="#{certProfileBean.certificateProfile.nameConstraintsCritical}"
-				disabled="#{!certProfileBean.certificateProfile.useNameConstraints}"/>
-			<h:outputLabel for="checknameconstraintscritical" value="#{web.text.EXT_CRITICAL}"/>
-		</h:panelGroup>
-
-		<%-- PKIX CRL Distribution Points (CRL-DP) extension --%>
-
-		<h:panelGroup>
-			<h:outputLabel for="cbcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CRLDISTRIBPOINTS}" style="font-weight: bold;"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
-		</h:panelGroup>
-		<h:panelGroup id="cbcrldistributionpointgroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="cbcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCRLDistributionPoint}"
-				value="#{certProfileBean.certificateProfile.useCRLDistributionPoint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="cbcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-			<h:selectBooleanCheckbox id="cbcrldistributionpointcritical" value="#{certProfileBean.certificateProfile.CRLDistributionPointCritical}"
-				disabled="#{!certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
-			<h:outputLabel for="cbcrldistributionpointcritical" value="#{web.text.EXT_CRITICAL}"/>
-		</h:panelGroup>
-
-		<h:outputLabel for="cbusedefaultcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CDP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" styleClass="subItem"/>
-		<h:panelGroup id="cbusedefaultcrldistributionpointgroup" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="cbusedefaultcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCRLDistributionPoint}"
-				value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="cbusedefaultcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-		</h:panelGroup>
-
-		<h:outputLabel for="textfieldcrldisturi" value="#{web.text.EXT_PKIX_CDP_URI}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" styleClass="subItem"/>
-		<h:inputText id="textfieldcrldisturi" value="#{certProfileBean.certificateProfile.CRLDistributionPointURI}" size="60" maxlength="4096"
-			rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
-			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" title="#{web.text.FORMAT_URI}"/>
-
-		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
-			<h:outputLabel for="textfieldcrlissuer" value="#{web.text.EXT_PKIX_CDP_CRLISSUER}" styleClass="subItem"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
-		</h:panelGroup>
-		<h:inputText id="textfieldcrlissuer" value="#{certProfileBean.certificateProfile.CRLIssuer}" size="60" maxlength="255" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
-			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" title="#{web.text.FORMAT_DN}"/>
-
-		<%-- PKIX Freshest CRL extension --%>
-
-		<h:panelGroup>
-			<h:outputLabel for="cbusefreshestcrlgroup" value="#{web.text.EXT_PKIX_FRESHESTCRL}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
-		</h:panelGroup>
-		<h:panelGroup id="cbusefreshestcrlgroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="cbusefreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseFreshestCRL}"
-				value="#{certProfileBean.certificateProfile.useFreshestCRL?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="cbusefreshestcrl" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-		</h:panelGroup>
-
-		<h:outputLabel for="cbusecadefinedfreshestcrlgroup" value="#{web.text.EXT_PKIX_FCRL_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}" styleClass="subItem"/>
-		<h:panelGroup id="cbusecadefinedfreshestcrlgroup" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"/>
-			<h:commandButton id="cbusecadefinedfreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCADefinedFreshestCRL}"
-				value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-			<h:outputLabel for="cbusecadefinedfreshestcrl" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
-		</h:panelGroup>
-
-		<h:outputLabel for="textfieldfreshestcrluri" value="#{web.text.EXT_PKIX_FCRL_URI}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}" styleClass="subItem"/>
-		<h:inputText id="textfieldfreshestcrluri" value="#{certProfileBean.certificateProfile.freshestCRLURI}" size="45" maxlength="255" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}"
-			disabled="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}" title="#{web.text.FORMAT_URI}"/>
 
 		<%-- PKIX Certificate Policies extension --%>
 
@@ -462,6 +356,136 @@
 				</h:column>
 			</h:dataTable>
 		</h:panelGrid>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+		<%-- X.509v3 extensions (PKIX) : Names --%>
+
+		<h:outputLabel for="header_x509v3extensions_names" value="#{web.text.X509EXTENSIONS}" style="font-weight: bold;"/>
+		<h:outputLabel id="header_x509v3extensions_names" value="#{web.text.X509EXTENSIONS_NAMES}"/>
+
+		<%-- PKIX Subject Alternative Name (SAN) extension --%>
+
+		<h:outputLabel for="cbsubjectalternativenamegroup" value="#{web.text.EXT_PKIX_SUBJECTALTNAME}"/>
+		<h:panelGroup id="cbsubjectalternativenamegroup">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useSubjectAlternativeName}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbsubjectalternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseSubjectAlternativeName}"
+				value="#{certProfileBean.certificateProfile.useSubjectAlternativeName?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="cbsubjectalternativename" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			<h:selectBooleanCheckbox id="cbsubjectalternativenamecritical" value="#{certProfileBean.certificateProfile.subjectAlternativeNameCritical}"
+				disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName}"/>
+			<h:outputLabel for="cbsubjectalternativenamecritical" value="#{web.text.EXT_CRITICAL}"/>
+		</h:panelGroup>
+
+		<%-- PKIX Issuer Alternative Name (IAN) extension --%>
+
+		<h:panelGroup>
+			<h:outputLabel for="cbissueralternativenamegroup" value="#{web.text.EXT_PKIX_ISSUERALTNAME}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Issuer%20Alternative%20Name") %>
+		</h:panelGroup>
+		<h:panelGroup id="cbissueralternativenamegroup">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useIssuerAlternativeName}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbissueralternativename" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseIssuerAlternativeName}"
+				value="#{certProfileBean.certificateProfile.useIssuerAlternativeName?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="cbissueralternativename" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			<h:selectBooleanCheckbox id="cbissueralternativenamecritical" value="#{certProfileBean.certificateProfile.issuerAlternativeNameCritical}"
+				disabled="#{!certProfileBean.certificateProfile.useIssuerAlternativeName}"/>
+			<h:outputLabel for="cbissueralternativenamecritical" value="#{web.text.EXT_CRITICAL}"/>
+		</h:panelGroup>
+
+		<%-- PKIX Subject Directory Attributes (SDA) extension --%>
+
+		<h:outputLabel for="checksubjectdirattributesgroup" value="#{web.text.EXT_PKIX_SUBJECTDIRATTRS}"/>
+		<h:panelGroup id="checksubjectdirattributesgroup">
+			<h:selectBooleanCheckbox id="checksubjectdirattributes" value="#{certProfileBean.certificateProfile.useSubjectDirAttributes}"/>
+			<h:outputLabel for="checksubjectdirattributes" value="#{web.text.USE} "/>
+		</h:panelGroup>
+
+		<%-- PKIX Name Constraints extension --%>
+
+        <h:panelGroup>
+    		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
+    		<%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+		</h:panelGroup>
+		<h:panelGroup id="checknameconstraintsgroup">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="checknameconstraints" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseNameConstraints}"
+				value="#{certProfileBean.certificateProfile.useNameConstraints?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="checknameconstraints" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			<h:selectBooleanCheckbox id="checknameconstraintscritical" value="#{certProfileBean.certificateProfile.nameConstraintsCritical}"
+				disabled="#{!certProfileBean.certificateProfile.useNameConstraints}"/>
+			<h:outputLabel for="checknameconstraintscritical" value="#{web.text.EXT_CRITICAL}"/>
+		</h:panelGroup>
+
+	</h:panelGrid>
+	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+		<%-- X.509v3 extensions (PKIX) : Validation data --%>
+
+		<h:outputLabel for="header_x509v3extensions_valdata" value="#{web.text.X509EXTENSIONS}" style="font-weight: bold;"/>
+		<h:outputLabel id="header_x509v3extensions_valdata" value="#{web.text.X509EXTENSIONS_VALDATA}"/>
+
+		<%-- PKIX CRL Distribution Points (CRL-DP) extension --%>
+
+		<h:panelGroup>
+			<h:outputLabel for="cbcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CRLDISTRIBPOINTS}" style="font-weight: bold;"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
+		</h:panelGroup>
+		<h:panelGroup id="cbcrldistributionpointgroup">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCRLDistributionPoint}"
+				value="#{certProfileBean.certificateProfile.useCRLDistributionPoint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="cbcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			<h:selectBooleanCheckbox id="cbcrldistributionpointcritical" value="#{certProfileBean.certificateProfile.CRLDistributionPointCritical}"
+				disabled="#{!certProfileBean.certificateProfile.useCRLDistributionPoint}"/>
+			<h:outputLabel for="cbcrldistributionpointcritical" value="#{web.text.EXT_CRITICAL}"/>
+		</h:panelGroup>
+
+		<h:outputLabel for="cbusedefaultcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CDP_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" styleClass="subItem"/>
+		<h:panelGroup id="cbusedefaultcrldistributionpointgroup" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusedefaultcrldistributionpoint" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseDefaultCRLDistributionPoint}"
+				value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="cbusedefaultcrldistributionpoint" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+		</h:panelGroup>
+
+		<h:outputLabel for="textfieldcrldisturi" value="#{web.text.EXT_PKIX_CDP_URI}" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" styleClass="subItem"/>
+		<h:inputText id="textfieldcrldisturi" value="#{certProfileBean.certificateProfile.CRLDistributionPointURI}" size="45" maxlength="4096"
+			rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
+			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" title="#{web.text.FORMAT_URI}"/>
+
+		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
+			<h:outputLabel for="textfieldcrlissuer" value="#{web.text.EXT_PKIX_CDP_CRLISSUER}" styleClass="subItem"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
+		</h:panelGroup>
+		<h:inputText id="textfieldcrlissuer" value="#{certProfileBean.certificateProfile.CRLIssuer}" size="45" maxlength="255" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
+			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}" title="#{web.text.FORMAT_DN}"/>
+
+		<%-- PKIX Freshest CRL extension --%>
+
+		<h:panelGroup>
+			<h:outputLabel for="cbusefreshestcrlgroup" value="#{web.text.EXT_PKIX_FRESHESTCRL}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
+		</h:panelGroup>
+		<h:panelGroup id="cbusefreshestcrlgroup">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusefreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseFreshestCRL}"
+				value="#{certProfileBean.certificateProfile.useFreshestCRL?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="cbusefreshestcrl" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+		</h:panelGroup>
+
+		<h:outputLabel for="cbusecadefinedfreshestcrlgroup" value="#{web.text.EXT_PKIX_FCRL_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}" styleClass="subItem"/>
+		<h:panelGroup id="cbusecadefinedfreshestcrlgroup" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:commandButton id="cbusecadefinedfreshestcrl" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCADefinedFreshestCRL}"
+				value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+			<h:outputLabel for="cbusecadefinedfreshestcrl" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+		</h:panelGroup>
+
+		<h:outputLabel for="textfieldfreshestcrluri" value="#{web.text.EXT_PKIX_FCRL_URI}" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}" styleClass="subItem"/>
+		<h:inputText id="textfieldfreshestcrluri" value="#{certProfileBean.certificateProfile.freshestCRLURI}" size="45" maxlength="255" rendered="#{certProfileBean.certificateProfile.useFreshestCRL}"
+			disabled="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}" title="#{web.text.FORMAT_URI}"/>
 
 		<%-- PKIX Authority Information Access (AIA) extension --%>
 

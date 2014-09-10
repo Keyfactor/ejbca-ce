@@ -334,6 +334,7 @@ table.edit {
 	margin: .75em -2px 0em -2px;
 	border-spacing: 3px 1px;
 }
+table.subsection,
 table.edit-bottom {
 	margin-top: -1px;
 }
