@@ -140,7 +140,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         try {
             pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
         } catch (IOException e) {
-            log.warn("PKCS10 not initiated!");
+            log.warn("PKCS10 not initiated! "+e.getMessage());
         }
     }
 
@@ -173,7 +173,7 @@ public class PKCS10RequestMessage implements RequestMessage {
                 init();
             }
         } catch (NullPointerException e) {
-            log.error("PKCS10 not initated!");
+            log.error("PKCS10 not initated! "+e.getMessage());
             return null;
         }
 
@@ -367,7 +367,7 @@ public class PKCS10RequestMessage implements RequestMessage {
                 init();
             }
         } catch (NullPointerException e) {
-            log.error("PKCS10 not inited!");
+            log.error("PKCS10 not inited! "+e.getMessage());
             return null;
         }
         Extensions ret = null;
@@ -407,7 +407,7 @@ public class PKCS10RequestMessage implements RequestMessage {
                 init();
             }
         } catch (NullPointerException e) {
-            log.error("PKCS10 not inited!");
+            log.error("PKCS10 not inited! "+e.getMessage());
             return null;
         }
 
