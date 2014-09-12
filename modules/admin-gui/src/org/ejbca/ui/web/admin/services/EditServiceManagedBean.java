@@ -212,6 +212,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
         if ( (cp != null) && cp.equals(CRLDownloadWorker.class.getName()) ) {
             ret = CRLDownloadWorkerType.NAME;
         }
+        if (ret==null) {
+            ret = CustomWorkerType.NAME;
+        }
 		return ret;
 	}
 
@@ -237,28 +240,19 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return (PeriodicalIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PeriodicalIntervalType.NAME);
 	}
 
-	public void changeWorker(ValueChangeEvent e){
-		log.trace(">changeWorker");		
-		String newName = (String) e.getNewValue();
-		WorkerType newWorkerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
-		serviceConfigurationView.setWorkerType(newWorkerType);
-		serviceConfigurationView.setSelectedWorker(newName);
-		log.trace("<changeWorker");		
-	}
-	
 	public void changeInterval(ValueChangeEvent e){
 		String newName = (String) e.getNewValue();		
-		WorkerType workerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(serviceConfigurationView.getSelectedWorker());
+        WorkerType workerType = serviceConfigurationView.getWorkerType();
 		if(workerType.getCompatibleIntervalTypeNames().contains(newName)){
 			IntervalType newIntervalType = (IntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
 			serviceConfigurationView.setIntervalType(newIntervalType);
-			serviceConfigurationView.setSelectedInterval(newName);			
+			serviceConfigurationView.setSelectedInterval(newName);
 		}
 	}
 	
 	public void changeAction(ValueChangeEvent e){
 		String newName = (String) e.getNewValue();		
-		WorkerType workerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(serviceConfigurationView.getSelectedWorker());
+        WorkerType workerType = serviceConfigurationView.getWorkerType();
 		if(workerType.getCompatibleActionTypeNames().contains(newName)){
 		  ActionType newActionType = (ActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
 		  serviceConfigurationView.setActionType(newActionType);
@@ -301,7 +295,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public List<SelectItem> getAvailableExternalX509CAsWithAnyOption() {
         final List<SelectItem> availableCANames = new ArrayList<SelectItem>();
-        final String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
+        final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
         availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         for (final Integer caid : ejb.getCaSession().getAuthorizedCAs(getAdmin())) {
             try {

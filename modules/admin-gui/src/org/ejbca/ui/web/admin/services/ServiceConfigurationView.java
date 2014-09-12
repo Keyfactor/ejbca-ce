@@ -18,6 +18,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,8 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
@@ -54,7 +58,6 @@ public class ServiceConfigurationView implements Serializable{
 	private ActionType actionType;
 	private IntervalType intervalType;
 	
-    private String selectedWorker;
     private String selectedInterval;
     private String selectedAction;
     
@@ -73,25 +76,34 @@ public class ServiceConfigurationView implements Serializable{
 	
 		this.serviceConfiguration = serviceConfiguration;
 		WorkerType workerType = (WorkerType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getWorkerClassPath());
-		if(workerType == null){
-		   workerType = (WorkerType) typeManager.getServiceTypeByName(CustomWorkerType.NAME);
-		  ((CustomWorkerType) workerType).setClassPath(serviceConfiguration.getWorkerClassPath());
+		if (workerType == null) {
+		    workerType = (WorkerType) typeManager.getServiceTypeByName(CustomWorkerType.NAME);
+		    ((CustomWorkerType) workerType).setClassPath(serviceConfiguration.getWorkerClassPath());
 		}			
 	    setWorkerType(workerType);
-	    selectedWorker = workerType.getName();			
 		
 		IntervalType intervalType = (IntervalType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getIntervalClassPath());
-		if(intervalType == null){
-		  intervalType = (IntervalType) typeManager.getServiceTypeByName(CustomIntervalType.NAME);
-		  ((CustomIntervalType) intervalType).setClassPath(serviceConfiguration.getIntervalClassPath());
+		if (intervalType == null) {
+		    if (workerType.getCompatibleIntervalTypeNames().contains(PeriodicalIntervalType.NAME)) {
+	            // It seems most likely that the admin wants to configure a periodic interval even if custom interval are available
+	            intervalType = (IntervalType) typeManager.getServiceTypeByName(PeriodicalIntervalType.NAME);
+		    } else {
+	            intervalType = (IntervalType) typeManager.getServiceTypeByName(CustomIntervalType.NAME);
+	            ((CustomIntervalType) intervalType).setClassPath(serviceConfiguration.getIntervalClassPath());
+		    }
 		}						
 		setIntervalType(intervalType);
 		selectedInterval = intervalType.getName();
 		
 		ActionType actionType = (ActionType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getActionClassPath());
-		if(actionType == null){
-		  actionType = (ActionType) typeManager.getServiceTypeByName(CustomActionType.NAME);
-		  ((CustomActionType) actionType).setClassPath(serviceConfiguration.getActionClassPath());
+		if (actionType == null) {
+            if (workerType.getCompatibleActionTypeNames().contains(NoActionType.NAME)) {
+                // It seems most likely that the admin wants to configure a "no action" action even if custom actions are available
+                actionType = (ActionType) typeManager.getServiceTypeByName(NoActionType.NAME);
+            } else {
+                actionType = (ActionType) typeManager.getServiceTypeByName(CustomActionType.NAME);
+                ((CustomActionType) actionType).setClassPath(serviceConfiguration.getActionClassPath());
+            }
 		}						
 	    setActionType(actionType);
 	    selectedAction = actionType.getName();
@@ -264,54 +276,88 @@ public class ServiceConfigurationView implements Serializable{
 	 * @return the selectedWorker
 	 */
 	public String getSelectedWorker() {
-		return selectedWorker;
+	    final WorkerType workerType = getWorkerType();
+	    if (workerType instanceof CustomWorkerType) {
+	        final CustomWorkerType customWorkerType = (CustomWorkerType) workerType;
+	        if (customWorkerType.getClassPath()!=null && customWorkerType.getClassPath().length()>0) {
+	            return workerType.getName() + "-" + customWorkerType.getClassPath();
+	        }
+	    }
+		return workerType.getName();
 	}
 
 	/**
 	 * @param selectedWorker the selectedWorker to set
 	 */
-	public void setSelectedWorker(String selectedWorker) {
-		this.selectedWorker = selectedWorker;
+	public void setSelectedWorker(final String selectedWorker) {
+	    final int separatorPos = selectedWorker.indexOf('-');
+	    if (separatorPos==-1) {
+	        final WorkerType workerType = (WorkerType) getServiceTypeManager().getServiceTypeByName(selectedWorker);
+	        if (workerType instanceof CustomWorkerType) {
+	            ((CustomWorkerType) workerType).setClassPath("");
+	        }
+	        setWorkerType(workerType);
+	    } else {
+	        final String customClassPath = selectedWorker.split("-")[1];
+	        final WorkerType workerType = (WorkerType) typeManager.getServiceTypeByName(CustomWorkerType.NAME);
+            ((CustomWorkerType) workerType).setClassPath(customClassPath);
+	        setWorkerType(workerType);
+	    }
 	}	
 	
 	public List<SelectItem> getAvailableWorkers(){
-		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
-		Collection<ServiceType> available = typeManager.getAvailableWorkerTypes();
-		for(ServiceType next : available) {
+		final ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		final Collection<ServiceType> available = typeManager.getAvailableWorkerTypes();
+		for (final ServiceType next : available) {
 			String label = next.getName();
-			if(next.isTranslatable()){
-				label = (String) EjbcaJSFHelper.getBean().getText().get(next.getName());
+			if (next.isTranslatable()) {
+				label = EjbcaJSFHelper.getBean().getText().get(next.getName());
 			}
-			retval.add(new SelectItem(next.getName(),label));
+            retval.add(new SelectItem(next.getName(),label));
+			if (next instanceof CustomWorkerType) {
+		        List<String> customClasses = CustomLoader.getCustomClasses(IWorker.class);
+		        for (final String customClass : customClasses) {
+		            final String customClassSimpleName = customClass.substring(customClass.lastIndexOf('.')+1);
+		            final String labelKey = customClassSimpleName.toUpperCase()+"_TITLE";
+		            label = EjbcaJSFHelper.getBean().getText().get(labelKey);
+		            if (label.equals(labelKey)) {
+		                label = customClassSimpleName + " ("+EjbcaJSFHelper.getBean().getText().get(next.getName())+")";
+		            }
+		            retval.add(new SelectItem(next.getName()+"-"+customClass, label));
+		        }
+			}
 		}
-		
+		// Sort by label
+		Collections.sort(retval, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem arg0, SelectItem arg1) {
+                return arg0.getLabel().compareTo(arg1.getLabel());
+            }
+		});
 		return retval;
 	}
 	
 	public List<SelectItem> getAvailableIntervals(){
-		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
-		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
-		for(String name : currentWorkerType.getCompatibleIntervalTypeNames()) {
-			ServiceType next = typeManager.getServiceTypeByName(name);
+		final ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		final WorkerType currentWorkerType = getWorkerType();
+		for (final String name : currentWorkerType.getCompatibleIntervalTypeNames()) {
+			final ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if(next.isTranslatable()){
 				label = (String) EjbcaJSFHelper.getBean().getText().get(name);
 			}
-			
 			retval.add(new SelectItem(name,label));
 		}
-		
-		
 		return retval;
 	}
 	
 	public List<SelectItem> getAvailableActions(){
-		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
-		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
-		for(String name : currentWorkerType.getCompatibleActionTypeNames()) {
-			ServiceType next = typeManager.getServiceTypeByName(name);
+		final ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		final WorkerType currentWorkerType = getWorkerType();
+		for (final String name : currentWorkerType.getCompatibleActionTypeNames()) {
+			final ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
-			if(next.isTranslatable()){
+			if (next.isTranslatable()) {
 				label = (String) EjbcaJSFHelper.getBean().getText().get(name);
 			}
 			retval.add(new SelectItem(name,label));
@@ -328,7 +374,15 @@ public class ServiceConfigurationView implements Serializable{
 	}
 	
 	public List<SelectItem> getAvailableCustomWorkerItems() {
-	   return stringsToItems(CustomLoader.getCustomClasses(IWorker.class));
+	    final List<String> customClasses = CustomLoader.getCustomClasses(IWorker.class);
+	    final List<String> customClassesWithoutUiSupport = new ArrayList<String>();
+	    for (final String classPath : customClasses) {
+	    	// Exclude all the workers that have custom UI support and will be shown as any other worker
+	        if (!CustomWorkerType.isCustomUiRenderingSupported(classPath)) {
+	            customClassesWithoutUiSupport.add(classPath);
+	        }
+	    }
+	    return stringsToItems(customClassesWithoutUiSupport);
 	}
 	
 	public List<SelectItem> getAvailableCustomIntervalItems() {
