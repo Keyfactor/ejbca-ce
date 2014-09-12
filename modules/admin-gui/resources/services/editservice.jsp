@@ -36,9 +36,8 @@
 
 <h3><%= ejbcawebbean.getText("SERVICE")+ " : " %><h:outputText value="#{editService.serviceName}" /></h3>
 
-<h:form id="edit">
-
-<h:panelGrid styleClass="edit" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="label,field">
+<h:form id="selectWorker" style="margin-bottom: 3px;">
+<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
 	<h:panelGroup>
 		&nbsp;
 	</h:panelGroup>
@@ -52,22 +51,29 @@
 		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %></h:outputText>
 	</h:panelGroup>
 	<h:panelGroup style="white-space: nowrap;">
-		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"
-		                 onchange="document.getElementById('edit:updateButton').click();">
+		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}"
+		                 onchange="document.getElementById('selectWorker:updateButton').click();">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
 		</h:selectOneMenu>
 		<f:verbatim>&nbsp;&nbsp;&nbsp;</f:verbatim>
-		<h:commandButton id="updateButton" action="#{editService.update}" value="#{web.text.UPDATE}"/>			
+		<h:commandButton id="updateButton" action="#{editService.update}" value="#{web.text.UPDATE}"/>
+		<script>document.getElementById('selectWorker:updateButton').style.display = 'none'</script>
 	</h:panelGroup>
-  
+</h:panelGrid>
+</h:form>
+<h:form id="edit">
+<h:inputHidden value="#{editService.serviceConfigurationView.selectedWorker}"/>
+<% if (workerPage.equals("customworker.jsp")) { %>
      <jsp:include page="<%=workerPage %>"/>
+<% } else { %>
+<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
+
+     <jsp:include page="<%=workerPage %>"/>
+
+</h:panelGrid>
+<% } %>
   
-  	<h:panelGroup>
-		<f:verbatim>&nbsp;</f:verbatim>
-	</h:panelGroup>
-	<h:panelGroup>				
-		<f:verbatim>&nbsp;</f:verbatim>
-	</h:panelGroup>
+<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTINTERVAL}"/>
 	</h:panelGroup>
@@ -76,16 +82,16 @@
 		                 onchange="document.getElementById('edit:updateButton').click();">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableIntervals}"/>
 		</h:selectOneMenu>			
+		<f:verbatim>&nbsp;&nbsp;&nbsp;</f:verbatim>
+		<h:commandButton id="updateButton" action="#{editService.update}" value="#{web.text.UPDATE}"/>			
+		<script>document.getElementById('edit:updateButton').style.display = 'none'</script>
 	</h:panelGroup>
 	
      <jsp:include page="<%=intervalPage %>"/>  
  
-  	<h:panelGroup>
-		<f:verbatim>&nbsp;</f:verbatim>
-	</h:panelGroup>
-	<h:panelGroup>				
-		<f:verbatim>&nbsp;</f:verbatim>
-	</h:panelGroup>
+</h:panelGrid>
+
+<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTACTION}"/>
 	</h:panelGroup>
@@ -98,13 +104,9 @@
   
      <jsp:include page="<%=actionPage %>"/>
       
-  	<h:panelGroup>
-		<f:verbatim>&nbsp;</f:verbatim>
-	</h:panelGroup>
-	<h:panelGroup>				
-		<f:verbatim>&nbsp;</f:verbatim>
-	</h:panelGroup>
+</h:panelGrid>
 
+<h:panelGrid styleClass="edit-bottom" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
 	<h:panelGroup>
 		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.GENERALSETTINGS}"/><f:verbatim></strong></f:verbatim>						
 	</h:panelGroup>

@@ -330,6 +330,7 @@ table.view,
 table.action,
 table.edit-top,
 table.edit-bottom,
+table.edit-ctnd,
 table.edit {
 	margin: .75em -2px 0em -2px;
 	border-spacing: 3px 1px;
@@ -341,6 +342,7 @@ table.edit-bottom {
 table.view tr td,
 table.action tr td,
 table.edit-top tr td,
+table.edit-ctnd tr td,
 table.edit-bottom tr td,
 table.edit tr td {
 	padding: .25em .5em;
