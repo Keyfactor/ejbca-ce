@@ -296,6 +296,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 }
             }
         }
+        
+        if(trustedCerts.size() == 0) {
+            // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate. 
+            // In this case, EJBCA should not trust anything
+            return null;
+        }
         return trustedCerts;
     }
 
