@@ -288,6 +288,9 @@
 		<!-- Tool for tests. -->
 		<include name="org/ejbca/util/NonEjbTestTools.java"/>
 		<include name="org/ejbca/core/ejb/ProfilingStat.java"/>
+		<!-- For customer services -->
+		<include name="org/ejbca/core/model/services/CustomServiceWorkerUiSupport.java"/>
+		<include name="org/ejbca/core/model/services/CustomServiceWorkerProperty.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files">
 		<map from="${src.dir}/" to=""/>

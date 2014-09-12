@@ -16,11 +16,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+
+import org.ejbca.core.model.services.CustomServiceWorkerProperty;
+import org.ejbca.core.model.services.CustomServiceWorkerUiSupport;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.ui.web.admin.CustomLoader;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * Class used to populate the fields in the customworker.jsp subview page. 
@@ -101,9 +109,16 @@ public class CustomWorkerType extends WorkerType {
         return manualClassPath;
     }
 
-	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
-		Properties retval = new Properties();
-	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
+	@SuppressWarnings("unchecked")
+    public Properties getProperties(final ArrayList<String> errorMessages) throws IOException{
+		final Properties retval = new Properties();
+		if (customUiPropertyListDataModel==null) {
+            retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));        
+		} else {
+		    for (final CustomServiceWorkerProperty customUiProperty : (List<CustomServiceWorkerProperty>)customUiPropertyListDataModel.getWrappedData()) {
+	            retval.setProperty(customUiProperty.getName(), customUiProperty.getValue());
+		    }
+		}
 		return retval;
 	}
 	
@@ -131,4 +146,62 @@ public class CustomWorkerType extends WorkerType {
 		return true;
 	}
 
+	public boolean isCustomUiRenderingSupported() {
+	    return isCustomUiRenderingSupported(getClassPath());
+	}
+	
+	public static boolean isCustomUiRenderingSupported(final String classPath) {
+        try {
+            return Arrays.asList(Class.forName(classPath).getInterfaces()).contains(CustomServiceWorkerUiSupport.class);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+	}
+	
+	private ListDataModel/*<CustomServiceWorkerProperty>*/ customUiPropertyListDataModel = null;
+	
+	public ListDataModel/*<CustomServiceWorkerProperty>*/ getCustomUiPropertyList() {
+	    if (isCustomUiRenderingSupported()) {
+	        if (customUiPropertyListDataModel==null) {
+	            final List<CustomServiceWorkerProperty> customUiPropertyList = new ArrayList<CustomServiceWorkerProperty>();
+	            try {
+	                final CustomServiceWorkerUiSupport customPublisherUiSupport = (CustomServiceWorkerUiSupport) Class.forName(getClassPath()).newInstance();
+	                final Properties currentProperties = new Properties();
+	                currentProperties.load(new ByteArrayInputStream(getPropertyText().getBytes()));
+	                customUiPropertyList.addAll(customPublisherUiSupport.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin(), currentProperties, EjbcaJSFHelper.getBean().getText()));
+	            } catch (InstantiationException e) {
+	                e.printStackTrace();
+	            } catch (IllegalAccessException e) {
+	                e.printStackTrace();
+	            } catch (ClassNotFoundException e) {
+	                e.printStackTrace();
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+	            this.customUiPropertyListDataModel = new ListDataModel(customUiPropertyList);
+            }
+	    }
+	    return customUiPropertyListDataModel;
+	}
+	
+	public List<SelectItem> getCustomUiPropertySelectItems() {
+	    final List<SelectItem> ret = new ArrayList<SelectItem>();
+	    final CustomServiceWorkerProperty customServiceWorkerProperty = (CustomServiceWorkerProperty) getCustomUiPropertyList().getRowData();
+	    customServiceWorkerProperty.getOptions();
+	    for (int i=0; i<customServiceWorkerProperty.getOptions().size(); i++) {
+	        ret.add(new SelectItem(customServiceWorkerProperty.getOptions().get(i), customServiceWorkerProperty.getOptionTexts().get(i)));
+	    }
+	    return ret;
+	}
+	
+	public String getCustomUiTitleText() {
+        final String customClassSimpleName = getClassPath().substring(getClassPath().lastIndexOf('.')+1);
+	    return EjbcaJSFHelper.getBean().getText().get(customClassSimpleName.toUpperCase() + "_TITLE");
+	}
+
+    public String getCustomUiPropertyText() {
+        final String customClassSimpleName = getClassPath().substring(getClassPath().lastIndexOf('.')+1);
+        final String name = ((CustomServiceWorkerProperty)getCustomUiPropertyList().getRowData()).getName().replaceAll("\\.", "_");
+        return EjbcaJSFHelper.getBean().getText().get(customClassSimpleName.toUpperCase() + "_" + name.toUpperCase());
+    }
 }
