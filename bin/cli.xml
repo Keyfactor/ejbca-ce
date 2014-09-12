@@ -105,7 +105,7 @@ appserver.home         : ${appserver.home}
 
     <target name="ejbca:initCA" >
        <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' &lt;ca.tokenpassword hidden&gt; '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${ca.tokenproperties} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
-        <ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
+        <ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} --tokenprop ${ca.tokenproperties} -certprofile ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
      </target>
 
 	<target name="ejbca:adminweb">
