@@ -38,7 +38,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
      * Tries to encode a advanced rule set into basic ones. Sets the forceadvanced flag if encoding isn't possible.
      */
     public BasicAccessRuleSetDecoder(String currentRoleTemplate, Collection<Integer> currentcas, Collection<Integer> currentendentityrules,
-            Collection<Integer> currentendentityprofiles, Collection<Integer> currentotherrules) {
+            Collection<Integer> currentendentityprofiles, List<String> internalKeybindingRules, Collection<Integer> currentotherrules) {
 
         if (DefaultRoles.SUPERADMINISTRATOR.getName().equals(currentRoleTemplate)) {
             currentruleset.addAll(DefaultRoles.SUPERADMINISTRATOR.getRuleSet());
@@ -47,6 +47,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
             currentruleset.addAll(getOtherRules(currentRoleTemplate, currentotherrules));
             if (DefaultRoles.CAADMINISTRATOR.equals(currentRoleTemplate)) {
                 currentruleset.addAll(DefaultRoles.CAADMINISTRATOR.getRuleSet());
+                currentruleset.addAll(getInternalKeybindingRules(currentRoleTemplate, internalKeybindingRules));
             } else {
                 currentruleset.addAll(getEndEntityRules(currentendentityprofiles, currentendentityrules));
                 if (DefaultRoles.RAADMINISTRATOR.equals(currentRoleTemplate)) {
@@ -87,6 +88,14 @@ public class BasicAccessRuleSetDecoder implements Serializable {
         result.addAll(carules);
         return result;
 
+    }
+    
+    public static List<AccessRuleTemplate> getInternalKeybindingRules(String rolename, List<String> currentInternalKeybindingRules) {
+        List<AccessRuleTemplate> result = new ArrayList<AccessRuleTemplate>();
+        for(String rules : currentInternalKeybindingRules) {
+            result.add(new AccessRuleTemplate(rules, AccessRuleState.RULE_ACCEPT, false));
+        }
+        return result;
     }
 
     public static Collection<AccessRuleTemplate> getOtherRules(String roleName, Collection<Integer> currentOtherRules) {

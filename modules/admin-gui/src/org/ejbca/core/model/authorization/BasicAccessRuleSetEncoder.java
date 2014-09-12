@@ -19,11 +19,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.keybind.InternalKeyBindingRules;
 
 /**
  * A class used as a help class for displaying and configuring basic access rules
@@ -37,14 +39,16 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     private boolean forceadvanced = false;
 
     private Collection<String> namesOfAvailableRoles = new ArrayList<String>();
-    private HashSet<Integer> currentcas = new HashSet<Integer>();
-    private HashSet<Integer> availablecas = new HashSet<Integer>();
-    private HashSet<Integer> currentendentityrules = new HashSet<Integer>();
+    private Set<Integer> currentcas = new HashSet<Integer>();
+    private Set<Integer> availablecas = new HashSet<Integer>();
+    private Set<Integer> currentendentityrules = new HashSet<Integer>();
     private ArrayList<Integer> availableendentityrules = new ArrayList<Integer>();
-    private HashSet<Integer> currentendentityprofiles = new HashSet<Integer>();
-    private HashSet<Integer> availableendentityprofiles = new HashSet<Integer>();
-    private HashSet<Integer> currentotherrules = new HashSet<Integer>();
+    private Set<Integer> currentendentityprofiles = new HashSet<Integer>();
+    private Set<Integer> availableendentityprofiles = new HashSet<Integer>();
+    private Set<Integer> currentotherrules = new HashSet<Integer>();
     private List<Integer> availableotherrules = new ArrayList<Integer>();
+    private List<String> currentInternalKeybindingRules = new ArrayList<String>();
+    private List<String> availableInternalKeybindingRules = new ArrayList<String>();
 
     /**
      * Tries to encode a advanced ruleset into basic ones. Sets the forceadvanced flag if encoding isn't possible.
@@ -82,7 +86,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     /**
      * @return a Collection of CAids the role is authorized to or BasicAccessRuleSet.CA_ALL for all cas.
      */
-    public HashSet<Integer> getCurrentCAs() {
+    public Set<Integer> getCurrentCAs() {
         return currentcas;
     }
 
@@ -96,10 +100,17 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     /**
      * @return a Collection of EndEntityRules the role is authorized to, BasicAccessRuleSet.ENDENTITY_ constants (Integer).
      */
-    public HashSet<Integer> getCurrentEndEntityRules() {
+    public Set<Integer> getCurrentEndEntityRules() {
         return currentendentityrules;
     }
 
+    /**
+     * @return a Collection of Internal Keybinding Rules the role is authorized to.
+     */
+    public List<String> getCurrentInternalKeyBindingRules() {
+        return currentInternalKeybindingRules;
+    }
+    
     /**
      * @return a Collection of available EndEntityRules, BasicAccessRuleSet.ENDENTITY_ constants (Integer)
      */
@@ -110,7 +121,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     /**
      * @return a Collection of authorized EndEntityProfileIds or BasicAccessRuleSet.ENDENTITYPROFILE_ALL for all
      */
-    public HashSet<Integer> getCurrentEndEntityProfiles() {
+    public Set<Integer> getCurrentEndEntityProfiles() {
         return currentendentityprofiles;
     }
 
@@ -124,7 +135,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     /**
      * @return a Collection of authorized other rules. (Integer).
      */
-    public HashSet<Integer> getCurrentOtherRules() {
+    public Set<Integer> getCurrentOtherRules() {
         return currentotherrules;
     }
 
@@ -133,6 +144,10 @@ public class BasicAccessRuleSetEncoder implements Serializable {
      */
     public Collection<Integer> getAvailableOtherRules() {
         return availableotherrules;
+    }
+    
+    public List<String> getAvailableInternalKeyBindingRules() {
+        return availableInternalKeybindingRules;
     }
 
     private void initAvailableRoles(HashSet<String> availableruleset) {
@@ -184,6 +199,9 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         if (usehardtokens) {
             this.availableotherrules.add(Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
         }
+        availableInternalKeybindingRules.add(InternalKeyBindingRules.DELETE.resource());
+        availableInternalKeybindingRules.add(InternalKeyBindingRules.MODIFY.resource());
+        availableInternalKeybindingRules.add(InternalKeyBindingRules.VIEW.resource());
     }
 
     private void initCurrentRules(Collection<AccessRuleData> currentaccessrules) {

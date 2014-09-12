@@ -40,6 +40,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
@@ -74,6 +75,7 @@ public class RolesManagedBean extends BaseManagedBean {
     private List<Integer> currentEndEntityProfiles = null;
     private List<Integer> currentOtherRules = null;
     private List<Integer> currentEndEntityRules = null;
+    private List<String> currentInternalKeybindingRules = null;
     
     
     private String currentRoleName = null;
@@ -412,7 +414,15 @@ public class RolesManagedBean extends BaseManagedBean {
     public List<String> getCurrentEndEntityRules() {
         return integerSetToStringList(getBasicRuleSet().getCurrentEndEntityRules());
     }
+    
+    public List<String> getCurrentInternalKeyBindingRules() {
+        return getBasicRuleSet().getCurrentInternalKeyBindingRules();
+    }
 
+    public void setCurrentInternalKeyBindingRules(List<String> internalKeyBindingRules) {
+        this.currentInternalKeybindingRules = internalKeyBindingRules;
+    }
+    
     public void setCurrentEndEntityRules(List<String> currentEndEntityRules) {
         this.currentEndEntityRules = stringListToIntegerList(currentEndEntityRules);
     }
@@ -481,6 +491,14 @@ public class RolesManagedBean extends BaseManagedBean {
         return list;
     }
 
+    public List<SelectItem> getAvailableInternalKeyBindingRules() {
+        List<SelectItem> list = new ArrayList<SelectItem>();
+        for(String rule : getBasicRuleSet().getAvailableInternalKeyBindingRules()) {
+            list.add(new SelectItem(rule, InternalKeyBindingRules.getFromResource(rule).getReference()));
+        }
+        return list;
+    }
+    
     /**
      * Save the current state of the access rules and invalidate caches
      * 
@@ -489,7 +507,7 @@ public class RolesManagedBean extends BaseManagedBean {
      */
     public void saveAccessRules() throws RoleNotFoundException, InvalidRoleTemplateException {
         BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRoleTemplate.getName(), currentCAs, currentEndEntityRules,
-                currentEndEntityProfiles, currentOtherRules);
+                currentEndEntityProfiles, currentInternalKeybindingRules, currentOtherRules);
         
         if(currentRoleTemplate.equals(DefaultRoles.CUSTOM.getName())) {
             throw new InvalidRoleTemplateException("Attempting to add rules to a rule using the Custom role template from basic mode is invalid.");

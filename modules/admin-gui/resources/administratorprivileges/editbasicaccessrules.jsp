@@ -47,6 +47,7 @@ function roleupdated(){
   var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
   var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');  
   var selectother = document.getElementById('basicRules:selectother');	
+  var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');	 
   var currentrole = selectrole.options[selectrole.options.selectedIndex].value;  
  
   if(currentrole == '<%=DefaultRoles.CUSTOM.getName() %>'){
@@ -54,6 +55,7 @@ function roleupdated(){
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
     selectother.disabled = true;
+    selectinternalkeybindingrules.disabled = true;
  
     numofcas = selectcas.length;
     for( i=numofcas-1; i >= 0; i-- ){          
@@ -68,6 +70,11 @@ function roleupdated(){
     numofprofiles = selectendentityprofiles.length;
     for( i=numofprofiles-1; i >= 0; i-- ){          
          selectendentityprofiles.options[i].selected=false;
+    }
+    
+    numofintinternalkeybindings = selectinternalkeybindingrules.length;
+    for( i=numofintinternalkeybindings-1; i >= 0; i-- ){          
+    	numofintinternalkeybindings.options[i].selected=false;
     }
  
   }
@@ -77,6 +84,7 @@ function roleupdated(){
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
     selectother.disabled = true;
+    selectinternalkeybindingrules.disabled = true;
  
     numofcas = selectcas.length;
     for( i=numofcas-1; i >= 0; i-- ){          
@@ -92,6 +100,11 @@ function roleupdated(){
     for( i=numofprofiles-1; i >= 0; i-- ){          
          selectendentityprofiles.options[i].selected=false;
     }
+    
+    numofintinternalkeybindings = selectinternalkeybindingrules.length;
+    for( i=numofintinternalkeybindings-1; i >= 0; i-- ){          
+    	numofintinternalkeybindings.options[i].selected=false;
+    }
  
   }
   if(currentrole == '<%= DefaultRoles.CAADMINISTRATOR.getName()%>'){
@@ -99,6 +112,7 @@ function roleupdated(){
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
     selectother.disabled = false;
+    selectinternalkeybindingrules.disabled = false;
  
     numofendentity = selectendentityrules.length;
     for( i=numofendentity-1; i >= 0; i-- ){          
@@ -109,6 +123,11 @@ function roleupdated(){
     for( i=numofprofiles-1; i >= 0; i-- ){          
          selectendentityprofiles.options[i].selected=false;
     }
+    numberofkeybindingrules = selectinternalkeybindingrules.length;
+    for( i = numberofkeybindingrules -1; i >= 0; i--) {
+    	selectinternalkeybindingrules.options[i].selected=true;
+    }
+    
 
   }
   if(currentrole == '<%= DefaultRoles.RAADMINISTRATOR.getName()%>'){
@@ -116,6 +135,12 @@ function roleupdated(){
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
     selectother.disabled = false;
+    selectinternalkeybindingrules.disabled = true;
+    
+    numberofkeybindingrules = selectinternalkeybindingrules.length;
+    for( i = numberofkeybindingrules -1; i >= 0; i--) {
+    	selectinternalkeybindingrules.options[i].selected=false;
+    }
 
   }  
   if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){
@@ -123,6 +148,7 @@ function roleupdated(){
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
     selectother.disabled = true;
+    selectinternalkeybindingrules.disabled = true;
  
     numofendentity = selectendentityrules.length;
     for( i=numofendentity-1; i >= 0; i-- ){
@@ -138,6 +164,11 @@ function roleupdated(){
     		selectother.options[i].selected=false;
     	}
     }
+    
+    numberofkeybindingrules = selectinternalkeybindingrules.length;
+    for( i = numberofkeybindingrules -1; i >= 0; i--) {
+    	selectinternalkeybindingrules.options[i].selected=false;
+    }
   }
 }
  
@@ -147,6 +178,7 @@ function checkallfields(){
 	var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
 	var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');
 	var selectother = document.getElementById('basicRules:selectother');
+	var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');
 
     var illegalfields = 0;
     var illegalselection = false;
@@ -155,6 +187,7 @@ function checkallfields(){
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
     selectother.disabled = false;
+    selectinternalkeybindingrules.disabled = false;
  
     var currentrole = selectrole.options[selectrole.options.selectedIndex].value;        
  
@@ -251,6 +284,11 @@ function checkallfields(){
 		<h:outputText value="#{web.text.ENDENTITYPROFILES}"/>
 		<h:selectManyListbox id="selectendentityprofiles" value="#{rolesManagedBean.currentEndEntityProfiles}" size="8">
 			<f:selectItems value="#{rolesManagedBean.availableEndEntityProfiles}" />
+		</h:selectManyListbox> 
+
+		<h:outputText value="#{web.text.INTERNALKEYBINDINGRULES}"/>
+		<h:selectManyListbox id="selectinternalkeybindingrules" value="#{rolesManagedBean.currentInternalKeyBindingRules}" size="6">
+			<f:selectItems value="#{rolesManagedBean.availableInternalKeyBindingRules}" />
 		</h:selectManyListbox> 
 
 		<h:outputText value="#{web.text.OTHERRULES}"/>

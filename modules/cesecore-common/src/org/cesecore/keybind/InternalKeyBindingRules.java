@@ -13,22 +13,35 @@
 
 package org.cesecore.keybind;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Authorization Rules for InternalKeyBindings.
  * 
  * @version $Id$
  */
 public enum InternalKeyBindingRules {
-    BASE("/internalkeybinding"),
-    DELETE(BASE.resource() + "/delete"),
-    MODIFY(BASE.resource() + "/modify"),
-    VIEW(BASE.resource() + "/view"),
-    ;
+    BASE("/internalkeybinding", ""),
+    DELETE(BASE.resource() + "/delete", "DELETE"),
+    MODIFY(BASE.resource() + "/modify", "MODIFY"),
+    VIEW(BASE.resource() + "/view", "VIEW");
 
-    private final String resource;
+    private static final Map<String, InternalKeyBindingRules> reverseResourceLookup;
     
-    private InternalKeyBindingRules(String resource) {
+    static {
+        reverseResourceLookup = new HashMap<String, InternalKeyBindingRules>();
+        for(InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
+            reverseResourceLookup.put(rule.resource(), rule);
+        }
+    }
+    
+    private final String resource;
+    private final String reference;
+    
+    private InternalKeyBindingRules(String resource, String reference) {
         this.resource = resource;
+        this.reference = reference;
     }
 
     public String resource() {
@@ -37,5 +50,13 @@ public enum InternalKeyBindingRules {
 
     public String toString() {
         return this.resource;
+    }
+    
+    public String getReference() {
+        return reference;
+    }
+    
+    public static InternalKeyBindingRules getFromResource(String resource) {
+        return reverseResourceLookup.get(resource);
     }
 }
