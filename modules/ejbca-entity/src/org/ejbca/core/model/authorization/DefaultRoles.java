@@ -22,6 +22,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.keybind.InternalKeyBindingRules;
 
 /**
  * Represents a set of predefined roles.
@@ -43,11 +44,17 @@ public enum DefaultRoles {
             new AccessRuleTemplate(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, AccessRuleState.RULE_ACCEPT, false),
-            new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true)/*,
-            Note:
-            We DO NOT allow CA Administrators to USE CryptoTokens, since this would mean that they could
-            bind any existing CryptoToken to a new CA and access the keys.
-            new AccessRuleTemplate(CryptoTokenRules.USE.resource(), AccessRuleState.RULE_ACCEPT, true)*/),
+            new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true),
+            /*
+             * Note:
+             * We DO NOT allow CA Administrators to USE CryptoTokens, since this would mean that they could
+             * bind any existing CryptoToken to a new CA and access the keys.
+             * new AccessRuleTemplate(CryptoTokenRules.USE.resource(), AccessRuleState.RULE_ACCEPT, true)
+             */
+            new AccessRuleTemplate(InternalKeyBindingRules.DELETE.resource(), AccessRuleState.RULE_ACCEPT, false),
+            new AccessRuleTemplate(InternalKeyBindingRules.MODIFY.resource(), AccessRuleState.RULE_ACCEPT, false),
+            new AccessRuleTemplate(InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, false)
+    ),
     RAADMINISTRATOR("RAADMINISTRATOR",
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false), 
