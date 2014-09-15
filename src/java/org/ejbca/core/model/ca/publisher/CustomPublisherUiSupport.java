@@ -23,5 +23,5 @@ import java.util.List;
 public interface CustomPublisherUiSupport {
 
     /** @return A list of the publisher's properties in such a way that a UI can parse the information. */
-    public List<CustomPublisherProperty> getCustomUiPropertyList();
+    List<CustomPublisherProperty> getCustomUiPropertyList();
 }
