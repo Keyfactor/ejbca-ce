@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.Local;
@@ -116,9 +117,20 @@ public interface PublisherQueueSessionLocal {
     		String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
     		long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
 
-    /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
+    /** Publishers do not run as part of regular transactions and expect to run in auto-commit mode. */
 	public boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
 
+    /**
+     * Publishers do not run as part of regular transactions and expect to run in auto-commit mode.
+     * This method is invoked locally to publish to multiple publishers in parallel.
+     * 
+     * The implementing method returns the result in the same order as the publishers are provided.
+     * Each result Object is either a PublisherException (if the publishing failed) or a Boolean.TRUE (if the publishing succeeded).
+     */
+    public List<Object> storeCertificateNonTransactionalInternal(List<BasePublisher> publishers, AuthenticationToken admin, Certificate cert, String username, String password, String userDN,
+            String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
+            long lastUpdate, ExtendedInformation extendedinformation);
+	
     /** Publishers digest queues in transaction-based "chunks". */
 	int doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 }

@@ -164,3 +164,15 @@ ejbca.cli.defaultpassword=ejbca
 # 0 means simple SHA1 hashing will be used. A decent value for high security is ~8.
 # Default=1
 #ejbca.passwordlogrounds=1
+
+# Parallel publishing invokes all the configured publishers for certificates in parallel instead of
+# sequentially. So instead of waiting for the total time it takes to write to all publishers, you
+# only have to wait for the time it takes to publish to the slowest one.
+#
+# This feature is non-compliant with the JEE5 specifications and could potentially have unintended
+# side effects (even though none has been found so far).
+# If you find any type of problem with this feature that can be mitigated by disabling it, please
+# report it to the EJBCA developers or this option will disappear in a future version.
+#
+# Default: true
+#publish.parallel.enabled=true
