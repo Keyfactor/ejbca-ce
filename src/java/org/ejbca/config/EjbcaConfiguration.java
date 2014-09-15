@@ -260,4 +260,8 @@ public final class EjbcaConfiguration {
         return EjbcaConfigurationHolder.getString("scep.defaultca");
     }
 
+    /** @return true if publishers should be invoked in parallel instead of sequentially. */
+    public static boolean isPublishParallelEnabled() {
+        return !"false".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("publish.parallel.enabled"));
+    }
 }
