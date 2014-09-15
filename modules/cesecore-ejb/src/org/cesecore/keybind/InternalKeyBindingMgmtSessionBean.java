@@ -238,19 +238,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         return internalKeyBindingId;
     }
     
-    /**
-     * Returns a collection of the trusted certificates defined in the specified InternalKeyBinding's trusted certificates references 
-     * along with their issuers' certificate chains.
-     * 
-     * The List of the trusted certificates references should contain a list of of InternalKeyBindingTrustEntry, 
-     * each entry containing a certificate serial number along with the CA that issued it.
-     * 
-     * @param authenticationToken
-     * @param internalKeyBinding
-     * @return
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     */
     @Override
     public Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
                     InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException {
