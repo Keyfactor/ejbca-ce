@@ -44,6 +44,8 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
@@ -255,6 +257,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
+    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
 
     /** Force reload from underlying (cache) layer */
     private void flushCaches() {
@@ -271,11 +274,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     /** @return a List of all CryptoToken Identifiers referenced by CAs. */
     private List<Integer> getReferencedCryptoTokenIds() {
         final List<Integer> ret = new ArrayList<Integer>();
+        // Add all CryptoToken ids referenced by CAs
         for (int caId : caSession.getAvailableCAs()) {
             try {
                 ret.add(Integer.valueOf(caSession.getCAInfoInternal(caId).getCAToken().getCryptoTokenId()));
             } catch (CADoesntExistsException e) {
                 log.warn("Referenced CA has suddenly disappearded unexpectedly. caid=" + caId);
+            }
+        }
+        // Add all CryptoToken ids referenced by InternalKeyBindings
+        for (final String internalKeyBindingType : internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet()) {
+            for (final InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(internalKeyBindingType)) {
+                ret.add(Integer.valueOf(internalKeyBindingInfo.getCryptoTokenId()));
             }
         }
         // In the future other components that use CryptoTokens should be checked here as well!
