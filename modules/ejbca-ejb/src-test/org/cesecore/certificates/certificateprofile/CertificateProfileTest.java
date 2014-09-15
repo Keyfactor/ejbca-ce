@@ -305,11 +305,11 @@ public class CertificateProfileTest {
     public void test04createSubjectDNSubSet() throws Exception{
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
-    	ArrayList<Integer> dnsubset = new ArrayList<Integer>();
-    	dnsubset.add(Integer.valueOf(DNFieldExtractor.CN));
-    	dnsubset.add(Integer.valueOf(DNFieldExtractor.UID));
-    	dnsubset.add(Integer.valueOf(DNFieldExtractor.GIVENNAME));
-    	dnsubset.add(Integer.valueOf(DNFieldExtractor.SURNAME));    	
+    	ArrayList<String> dnsubset = new ArrayList<String>();
+    	dnsubset.add(Integer.toString(DNFieldExtractor.CN));
+    	dnsubset.add(Integer.toString(DNFieldExtractor.UID));
+    	dnsubset.add(Integer.toString(DNFieldExtractor.GIVENNAME));
+    	dnsubset.add(Integer.toString(DNFieldExtractor.SURNAME));    	
     	profile.setSubjectDNSubSet(dnsubset);
     	
     	String indn1 = "UID=PVE,CN=Philip Vendil,SN=123435,GIVENNAME=Philip,SURNAME=Vendil";
