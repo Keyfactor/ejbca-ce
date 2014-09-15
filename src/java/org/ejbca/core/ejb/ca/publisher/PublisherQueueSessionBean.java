@@ -20,8 +20,19 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -39,6 +50,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -57,6 +69,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
 
 	private static final Logger log = Logger.getLogger(PublisherQueueSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    private static final ReentrantLock executorServiceLock = new ReentrantLock(false);
+    private static final AtomicInteger beanInstanceCount = new AtomicInteger(0);
+    private static volatile ExecutorService executorService = null;
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
@@ -68,8 +83,40 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
     private PublisherQueueSessionLocal publisherQueueSession;
 
     @PostConstruct
-    public void ejbCreate() {
+    public void postConstruct() {
     	publisherQueueSession = sessionContext.getBusinessObject(PublisherQueueSessionLocal.class);
+    	// Keep track of number of instances of this bean, so we can free the executorService thread pool when the last is destroyed
+    	beanInstanceCount.incrementAndGet();
+    }
+    @PreDestroy
+    public void preDestroy() {
+        // Shut down the thread pool when the last instance of this SSB is destroyed
+        if (beanInstanceCount.decrementAndGet()==0) {
+            executorServiceLock.lock();
+            try {
+                if (executorService!=null) {
+                    executorService.shutdown();
+                    executorService = null;
+                }
+            } finally {
+                executorServiceLock.unlock();
+            }
+        }
+    }
+
+    /** @return a reference to the "CachedThreadPool" executor service (creating one if needed). */
+    private ExecutorService getExecutorService() {
+        if (executorService==null) {
+            executorServiceLock.lock();
+            try {
+                if (executorService==null) {
+                    executorService = Executors.newCachedThreadPool();
+                }
+            } finally {
+                executorServiceLock.unlock();
+            }
+        }
+        return executorService;
     }
 
     @Override
@@ -378,5 +425,91 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
     @Override
     public boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
     	return publisher.storeCRL(admin, incrl, cafp, number, userDN);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public List<Object> storeCertificateNonTransactionalInternal(final List<BasePublisher> publishers, final AuthenticationToken admin,
+            final Certificate cert, final String username, final String password, final String userDN, final String cafp, final int status, final int type,
+            final long revocationDate, final int revocationReason, final String tag, final int certificateProfileId, final long lastUpdate,
+            final ExtendedInformation extendedinformation) {
+        final List<Object> publisherResults = new ArrayList<Object>();
+        final boolean parallel = EjbcaConfiguration.isPublishParallelEnabled();
+        // Are we doing parallel publishing (only meaningful if there is more than one publisher configured)?
+        if (parallel && publishers.size()>1) {
+            final List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+            BasePublisher publisherFirst = null;
+            for (final BasePublisher publisher : publishers) {
+                if (publisherFirst==null) {
+                    // We will execute the first of the publishers in the main thread...
+                    publisherFirst = publisher;
+                } else {
+                    // ...and the rest of the publishers will be executed in new threads
+                    final Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            if (storeCertificateNonTransactional(publisher, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                                throw new PublisherException("Return code from publisher is false.");
+                            }
+                            return Boolean.TRUE;
+                        }}
+                    );
+                    futures.add(future);
+                }
+            }
+            // Wait at most 300 seconds in total for all the publishers to complete.
+            final long deadline = System.currentTimeMillis() + 300000L;
+            // Execute the first publishing in the calling thread
+            Object publisherResultFirst;
+            try {
+                if (storeCertificateNonTransactional(publisherFirst, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                    throw new PublisherException("Return code from publisher is false.");
+                }
+                publisherResultFirst = Boolean.TRUE;
+            } catch (Exception e) {
+                final Throwable t = e.getCause();
+                if (t instanceof PublisherException) {
+                    publisherResultFirst = (PublisherException)t;
+                } else {
+                    publisherResultFirst = new PublisherException(e.getMessage());
+                }
+            }            
+            publisherResults.add(publisherResultFirst);
+            // Wait for all the background threads to finish and get the result from each invocation
+            for (final Future<Boolean> future : futures) {
+                Object publisherResult;
+                try {
+                    final long maxTimeToWait = Math.max(1000L, deadline-System.currentTimeMillis());
+                    publisherResult = new Boolean(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
+                } catch (ExecutionException e) {
+                    final Throwable t = e.getCause();
+                    if (t instanceof PublisherException) {
+                        publisherResult = (PublisherException)t;
+                    } else {
+                        publisherResult = new PublisherException(e.getMessage());
+                    }
+                } catch (CancellationException e) {
+                    publisherResult = new PublisherException(e.getMessage());
+                } catch (InterruptedException e) {
+                    publisherResult = new PublisherException(e.getMessage());
+                } catch (TimeoutException e) {
+                    publisherResult = new PublisherException(e.getMessage());
+                }
+                publisherResults.add(publisherResult);
+            }
+        } else {
+            // Perform publishing sequentially (old fall back behavior)
+            for (final BasePublisher publisher : publishers) {
+                try {
+                    if (storeCertificateNonTransactional(publisher, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                        throw new PublisherException("Return code from publisher is false.");
+                    }
+                    publisherResults.add(Boolean.TRUE);
+                } catch (PublisherException e) {
+                    publisherResults.add(e);
+                }
+            }
+        }
+        return publisherResults;
     }
 }
