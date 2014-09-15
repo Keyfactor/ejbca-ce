@@ -380,7 +380,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCNPostfix("");
 
         setUseSubjectDNSubSet(false);
-        setSubjectDNSubSet(new ArrayList<Integer>());
+        setSubjectDNSubSet(new ArrayList<String>());
         setUseSubjectAltNameSubSet(false);
         setSubjectAltNameSubSet(new ArrayList<Integer>());
 
@@ -1262,12 +1262,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Should contain a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
      * 
+     * Will come in as a list of string from the GUI, because JSP doesn't always care about type safety.
+     * 
      */
-    public void setSubjectDNSubSet(List<Integer> subjectdns) {
-        data.put(SUBJECTDNSUBSET, subjectdns);
+    public void setSubjectDNSubSet(List<String> subjectdns) {
+        List<Integer> convertedList = new ArrayList<Integer>();
+        for(String value : subjectdns) {
+            convertedList.add(Integer.valueOf(value));
+        }
+        data.put(SUBJECTDNSUBSET, convertedList);
 
     }
-
+    
     /**
      * Method taking a full user dn and returns a DN only containing the DN fields specified in the subjectdn sub set array.
      * 
@@ -1324,16 +1330,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param usefields
      * @return
      */
-    protected String constructUserData(DNFieldExtractor extractor, Collection<Integer> usefields, boolean subjectdn) {
+    protected static String constructUserData(DNFieldExtractor extractor, Collection<Integer> usefields, boolean subjectdn) {
         String retval = "";
 
         if (usefields instanceof List<?>) {
             Collections.sort((List<Integer>) usefields);
         }
-        Iterator<Integer> iter = usefields.iterator();
         String dnField = null;
-        while (iter.hasNext()) {
-            Integer next = iter.next();
+        for (Integer next : usefields) {
             dnField = extractor.getFieldString(next.intValue());
             if (StringUtils.isNotEmpty(dnField)) {
                 if (retval.length() == 0) {
@@ -2078,7 +2082,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
             if (data.get(USESUBJECTDNSUBSET) == null) {
                 setUseSubjectDNSubSet(false);
-                setSubjectDNSubSet(new ArrayList<Integer>());
+                setSubjectDNSubSet(new ArrayList<String>());
                 setUseSubjectAltNameSubSet(false);
                 setSubjectAltNameSubSet(new ArrayList<Integer>());
             }
