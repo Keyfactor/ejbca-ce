@@ -51,9 +51,9 @@ public enum DefaultRoles {
              * bind any existing CryptoToken to a new CA and access the keys.
              * new AccessRuleTemplate(CryptoTokenRules.USE.resource(), AccessRuleState.RULE_ACCEPT, true)
              */
-            new AccessRuleTemplate(InternalKeyBindingRules.DELETE.resource(), AccessRuleState.RULE_ACCEPT, false),
-            new AccessRuleTemplate(InternalKeyBindingRules.MODIFY.resource(), AccessRuleState.RULE_ACCEPT, false),
-            new AccessRuleTemplate(InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, false)
+            new AccessRuleTemplate(InternalKeyBindingRules.DELETE.resource(), AccessRuleState.RULE_ACCEPT, true),
+            new AccessRuleTemplate(InternalKeyBindingRules.MODIFY.resource(), AccessRuleState.RULE_ACCEPT, true),
+            new AccessRuleTemplate(InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true)
     ),
     RAADMINISTRATOR("RAADMINISTRATOR",
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 

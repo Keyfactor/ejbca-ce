@@ -28,6 +28,15 @@ public class InternalKeybindingRulesReference implements AccessRulePlugin {
         List<String> allRules = new ArrayList<String>();
         for(InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
             allRules.add(rule.resource());
+            
+        }
+        for(InternalKeyBinding keyBinding : InternalKeyBindingCache.INSTANCE.getAllValues()) {
+            int id = keyBinding.getId();
+            for(InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
+                if(rule != InternalKeyBindingRules.BASE) {
+                    allRules.add(rule.resource() + "/" + id);
+                }
+            }
         }
         return allRules;
     }

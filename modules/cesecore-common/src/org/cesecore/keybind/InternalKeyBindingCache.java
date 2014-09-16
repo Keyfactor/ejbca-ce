@@ -14,6 +14,7 @@ package org.cesecore.keybind;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.CommonCache;
@@ -27,7 +28,7 @@ import org.cesecore.internal.CommonCacheBase;
 public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     INSTANCE;
 
-    final private CommonCache<InternalKeyBinding> internalKeyBindingCache = new CommonCacheBase<InternalKeyBinding>() {
+    final private CommonCacheBase<InternalKeyBinding> internalKeyBindingCache = new CommonCacheBase<InternalKeyBinding>() {
         @Override
         protected long getCacheTime() {
             // We never disable storage of InternalKeyBindings in the cache completely
@@ -78,5 +79,9 @@ public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     @Override
     public void replaceCacheWith(List<Integer> keys) {
         internalKeyBindingCache.replaceCacheWith(keys);
+    }
+
+    public Set<InternalKeyBinding> getAllValues() {
+       return internalKeyBindingCache.getAllEntries();
     }
 }

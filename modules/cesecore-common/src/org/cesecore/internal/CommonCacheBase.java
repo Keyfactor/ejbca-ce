@@ -14,9 +14,11 @@ package org.cesecore.internal;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -64,6 +66,14 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             log.debug("Returning cached " + cacheEntry.object.getClass().getSimpleName() + " object. Digest was " + cacheEntry.digest);
         }
         return cacheEntry.object;
+    }
+    
+    public Set<T> getAllEntries() {
+        Set<T> result = new HashSet<T>();
+        for(CacheEntry cacheEntry : cache.values()) {
+            result.add(cacheEntry.object);
+        }
+        return result;
     }
 
     @Override
@@ -204,4 +214,5 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             nameToIdMap = nameToIdMapStage;
         }
     }
+    
 }
