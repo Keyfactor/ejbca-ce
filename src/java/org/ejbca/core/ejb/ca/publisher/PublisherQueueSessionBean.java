@@ -448,7 +448,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
                     final Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            if (storeCertificateNonTransactional(publisher, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                            if (!storeCertificateNonTransactional(publisher, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
                                 throw new PublisherException("Return code from publisher is false.");
                             }
                             return Boolean.TRUE;
@@ -462,17 +462,12 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
             // Execute the first publishing in the calling thread
             Object publisherResultFirst;
             try {
-                if (storeCertificateNonTransactional(publisherFirst, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                if (!storeCertificateNonTransactional(publisherFirst, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
                     throw new PublisherException("Return code from publisher is false.");
                 }
                 publisherResultFirst = Boolean.TRUE;
             } catch (Exception e) {
-                final Throwable t = e.getCause();
-                if (t instanceof PublisherException) {
-                    publisherResultFirst = (PublisherException)t;
-                } else {
-                    publisherResultFirst = new PublisherException(e.getMessage());
-                }
+                publisherResultFirst = getAsPublisherException(e);
             }            
             publisherResults.add(publisherResultFirst);
             // Wait for all the background threads to finish and get the result from each invocation
@@ -481,19 +476,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
                 try {
                     final long maxTimeToWait = Math.max(1000L, deadline-System.currentTimeMillis());
                     publisherResult = new Boolean(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
-                } catch (ExecutionException e) {
-                    final Throwable t = e.getCause();
-                    if (t instanceof PublisherException) {
-                        publisherResult = (PublisherException)t;
-                    } else {
-                        publisherResult = new PublisherException(e.getMessage());
-                    }
-                } catch (CancellationException e) {
-                    publisherResult = new PublisherException(e.getMessage());
-                } catch (InterruptedException e) {
-                    publisherResult = new PublisherException(e.getMessage());
-                } catch (TimeoutException e) {
-                    publisherResult = new PublisherException(e.getMessage());
+                } catch (Exception e) {
+                    publisherResult = getAsPublisherException(e);
                 }
                 publisherResults.add(publisherResult);
             }
@@ -501,15 +485,29 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
             // Perform publishing sequentially (old fall back behavior)
             for (final BasePublisher publisher : publishers) {
                 try {
-                    if (storeCertificateNonTransactional(publisher, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                    if (!storeCertificateNonTransactional(publisher, admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
                         throw new PublisherException("Return code from publisher is false.");
                     }
                     publisherResults.add(Boolean.TRUE);
-                } catch (PublisherException e) {
-                    publisherResults.add(e);
+                } catch (Exception e) {
+                    publisherResults.add(getAsPublisherException(e));
                 }
             }
         }
         return publisherResults;
+    }
+    
+    private PublisherException getAsPublisherException(final Exception e) {
+        if (e instanceof PublisherException) {
+            return (PublisherException) e;
+        }
+        Throwable t = e;
+        while (t.getCause()!=null) {
+            t = t.getCause();
+            if (t instanceof PublisherException) {
+                return (PublisherException)t;
+            }
+        }
+        return new PublisherException(e.getMessage());
     }
 }

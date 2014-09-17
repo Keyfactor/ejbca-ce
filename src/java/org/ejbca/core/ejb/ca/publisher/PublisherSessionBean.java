@@ -101,7 +101,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
             int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
-        int caid = CertTools.getIssuerDN(incert).hashCode();
+        final int caid = CertTools.getIssuerDN(incert).hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
@@ -110,15 +110,22 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return true;
         }
         boolean returnval = true;
-        List<BasePublisher> publishersToTryDirect = new ArrayList<BasePublisher>();
-        List<BasePublisher> publishersToQueue = new ArrayList<BasePublisher>();
-        for (Integer id : publisherids) {
+        final List<BasePublisher> publishersToTryDirect = new ArrayList<BasePublisher>();
+        final List<BasePublisher> publishersToQueuePending = new ArrayList<BasePublisher>();
+        final List<BasePublisher> publishersToQueueSuccess = new ArrayList<BasePublisher>();
+        for (final Integer id : publisherids) {
             BasePublisher publ = getPublisher(id);
             if (publ != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
                 if (publ.willPublishCertificate(status, revocationReason)) {
                     if (publ.getOnlyUseQueue()) {
-                        publishersToQueue.add(publ);
+                        if (publ.getUseQueueForCertificates()) {
+                            publishersToQueuePending.add(publ);
+                            // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
+                            returnval = false;
+                        } else {
+                            // NOOP: This publisher is configured to only write to the queue, but not for certificates
+                        }
                     } else {
                         publishersToTryDirect.add(publ);
                     }
@@ -147,7 +154,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
                 if (publ.getKeepPublishedInQueue() && publ.getUseQueueForCertificates()) {
-                    publishersToQueue.add(publ);
+                    publishersToQueueSuccess.add(publ);
                 }
             } else {
                 final String msg = intres.getLocalizedMessage("publisher.errorstore", name, fingerprint);
@@ -155,11 +162,19 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 details.put("msg", msg);
                 details.put("error", ((PublisherException)publisherResult).getMessage());
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
-                publishersToQueue.add(publ);
+                if (publ.getUseQueueForCertificates()) {
+                    publishersToQueuePending.add(publ);
+                }
                 returnval = false;
             }
         }
-        
+        addQueueData(publishersToQueueSuccess, username, password, extendedinformation, userDN, incert, status, PublisherConst.STATUS_SUCCESS);
+        addQueueData(publishersToQueuePending, username, password, extendedinformation, userDN, incert, status, PublisherConst.STATUS_PENDING);
+        return returnval;
+    }
+    
+    private void addQueueData(final List<BasePublisher> publishersToQueue, final String username, final String password, final ExtendedInformation extendedInformation,
+            final String userDN, final Certificate incert, final int status, final int publisherStatus) {
         for (final BasePublisher publ : publishersToQueue) {
             final int id = publ.getPublisherId();
             final String name = getPublisherName(id);
@@ -167,25 +182,22 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 log.debug("KeepPublishedInQueue: " + publ.getKeepPublishedInQueue());
                 log.debug("UseQueueForCertificates: " + publ.getUseQueueForCertificates());
             }
-            if (publ.getKeepPublishedInQueue() && publ.getUseQueueForCertificates()) {
-                // Write to the publisher queue either for audit reasons or to be able try again
-                PublisherQueueVolatileInformation pqvd = new PublisherQueueVolatileInformation();
-                pqvd.setUsername(username);
-                pqvd.setPassword(password);
-                pqvd.setExtendedInformation(extendedinformation);
-                pqvd.setUserDN(userDN);
-                String fp = CertTools.getFingerprintAsString(incert);
-                try {
-                    publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fp, pqvd, PublisherConst.STATUS_PENDING);
-                    final String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, status);
-                    log.info(msg);
-                } catch (CreateException e) {
-                    final String msg = intres.getLocalizedMessage("publisher.errorstorequeue", name, fp, status);
-                    log.info(msg, e);
-                }
+            // Write to the publisher queue either for audit reasons or to be able try again
+            PublisherQueueVolatileInformation pqvd = new PublisherQueueVolatileInformation();
+            pqvd.setUsername(username);
+            pqvd.setPassword(password);
+            pqvd.setExtendedInformation(extendedInformation);
+            pqvd.setUserDN(userDN);
+            String fp = CertTools.getFingerprintAsString(incert);
+            try {
+                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fp, pqvd, publisherStatus);
+                final String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, status);
+                log.info(msg);
+            } catch (CreateException e) {
+                final String msg = intres.getLocalizedMessage("publisher.errorstorequeue", name, fp, status);
+                log.info(msg, e);
             }
         }
-        return returnval;
     }
 
     @Override
