@@ -24,9 +24,7 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
 
 /**
  * Abstract base class that initializes the worker and its interval and action.
- * 
- * @author Philip Vendil 2006 sep 27
- *
+ *  
  * @version $Id$
  */
 public abstract class BaseWorker implements IWorker {
