@@ -351,11 +351,11 @@
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="peerconnector" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
+	<target name="peerconnector" depends="ejbca-util" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
 		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 	
-	<target name="peerconnector-cli" if="mod.peerconnector.exists">
+	<target name="peerconnector-cli" depends="ejbca-common-web" if="mod.peerconnector.exists">
 		<ant antfile="${mod.peerconnector.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
