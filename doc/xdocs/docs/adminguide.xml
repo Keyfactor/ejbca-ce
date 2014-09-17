@@ -5088,6 +5088,7 @@ certsafe.authkeybindingname=INTERNAL_KEYBINDING_NAME
 # Optional properties:
 certsafe.connectiontimeout=CONNECTION_TIMEOUT.
 </source>
+<p>An example certsafe.url would be 'https://certsafe.host.domain/PrimeKey/certificates'.</p>
 <p>
 An Authentication Key Binding token should be created to specify the parameters used to establish connection 
 with the HTTPS server. For instructions on how to create an Authentication Key Binding, see 
