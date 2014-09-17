@@ -279,6 +279,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         CAInfo issuerInfo = caSession.getCAInfo(authenticationToken, issuer.hashCode());
                         leafCertChain.addAll((ArrayList<Certificate>) issuerInfo.getCertificateChain());
                         trustedCerts.add(leafCertChain);                
+                    } else {
+                        log.info("No (trusted) certificate with issuer '"+caInfo.getSubjectDN()+"' and serialNo "+trustedReference.fetchCertificateSerialNumber().toString(16)+" could be found for authentication key binding "+internalKeyBinding.getName()+"."); 
                     }
                 }
             }
