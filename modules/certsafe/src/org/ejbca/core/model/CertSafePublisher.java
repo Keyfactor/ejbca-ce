@@ -199,6 +199,11 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         // Make the HTTPS connection and send the request
         HttpsURLConnection con = null;
         try {
+            
+            if (log.isDebugEnabled()) {
+                log.debug("CertSafe https URL: " + urlstr);
+            }
+
             URL url = new URL(urlstr);
             con = (HttpsURLConnection)url.openConnection();
             con.setSSLSocketFactory(sslSocketFactory);
@@ -215,20 +220,27 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             int responseCode = con.getResponseCode();
             if(responseCode == 200) {
                 if(log.isDebugEnabled()) {
-                    log.debug("Publish successful");
+                    log.debug("Publish successful, response code 200.");
                 }
             } else if( (responseCode >= 400) && (responseCode < 600) ){
+                InputStream ins = con.getErrorStream();
+                if (ins == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Error stream was null, trying InputStream.");
+                    }
+                    ins = con.getInputStream();
+                }
                 String errMsg = getJSONErrorMessage(con.getErrorStream());
-                log.info("Publish failed. HTTPS response code: " + responseCode + ". Error message: " + errMsg);
+                log.error("CERTSAFE ERROR: Publish failed. HTTPS response code: " + responseCode + ". Error message: " + errMsg);
                 throw new PublisherException(errMsg);
             }
         } catch (MalformedURLException e) {
             String msg = e.getLocalizedMessage();
-            log.error(msg, e);
+            log.error("CERTSAFE ERROR: "+msg, e);
             throw new PublisherException(msg);
         } catch (IOException e) {
             String msg = e.getLocalizedMessage();
-            log.error(msg, e);
+            log.error("CERTSAFE ERROR: "+msg, e);
             throw new PublisherException(msg);
         } finally {
             if(con != null) {
@@ -244,10 +256,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
     
     
     /**
-     * Writes the CRL to a temporary file and executes an external command with
-     * the temporary file as argument. By default, a PublisherException is
-     * thrown if the external command returns with an errorlevel or outputs to
-     * stderr.
+     * Does nothing for CertSafe, only certificates are published.
      * 
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
      *      byte[], java.lang.String, int)
@@ -260,11 +269,6 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         return true;
     }
 
-    /**
-     * Check if the HTTP connection works.
-     * 
-     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection()
-     */
     @Override
     public void testConnection() throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
@@ -277,7 +281,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         SSLSocketFactory sslSocketFactory = getSSLSocketFactory(admin);
         try {
             if (log.isDebugEnabled()) {
-                log.info("CertSafe https URL: " + urlstr);
+                log.debug("CertSafe https URL: " + urlstr);
             }
             URL url = new URL(urlstr);
             HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
@@ -470,12 +474,21 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
      * @throws IOException
      */
     private String getJSONErrorMessage(InputStream errins) throws IOException {
+        if (errins == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("No error input stream available, returning empty error string.");
+            }
+            return "";
+        }
         byte[] errB = new byte[1024];
         errins.read(errB);
         errins.close();
         String response = new String(errB);
+        if (log.isTraceEnabled()) {
+            log.trace("Recieved error response: " + response);
+        }
         response = response.substring(0, response.lastIndexOf("}")+1);
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Recieved JSON response: " + response);
         }
         
