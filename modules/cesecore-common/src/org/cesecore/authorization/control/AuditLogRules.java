@@ -13,6 +13,7 @@
 package org.cesecore.authorization.control;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -50,6 +51,6 @@ public enum AuditLogRules {
     }
 
     public static List<String> getAllResources() {
-        return allResources;
+        return Collections.unmodifiableList(allResources);
     }
 }
