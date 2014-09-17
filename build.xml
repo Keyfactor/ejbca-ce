@@ -1020,7 +1020,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
        	<ant dir="modules" target="ejbca-ejb-interface" />
     </target>
 
-    <target name="ejbca-ejb-cli" depends="deprecated:check, peerconnector-cli" description="Builds EJBCA command line interface">
+    <target name="ejbca-ejb-cli" depends="deprecated:check" description="Builds EJBCA command line interface">
     	<ant dir="modules" target="ejbca-ejb-cli" />
     </target>
 	
