@@ -13,7 +13,7 @@
 package org.cesecore.util;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 
@@ -43,7 +43,7 @@ public class GUIDGeneratorTest {
             if (map.put(guid, guid) != null) {
                 //                    log.warn("Duplicate guids produced: " + hex);
                 //                    log.warn("Number of guids produced before duplicate: "+j);
-                assertTrue("Duplicate serno produced after "+j+" guids: "+guid, false);
+                fail("Duplicate serno produced after "+j+" guids: "+guid);
             }
         }
     }
