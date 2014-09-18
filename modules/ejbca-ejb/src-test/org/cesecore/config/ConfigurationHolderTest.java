@@ -77,7 +77,7 @@ public class ConfigurationHolderTest {
     public void testGetDefaultValuesWithCommas() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException, ConfigurationException {        
         // Make sure we handle comma in default values
         String val = ConfigurationHolder.getString("intresources.preferredlanguage");
-        assertEquals("EN", val);
+        assertEquals("en", val);
         // A little reflection magic just to avoid dumping a test value in defaultvalues.properties file.
         Field field = ConfigurationHolder.class.getDeclaredField("defaultValues");
         field.setAccessible(true);
