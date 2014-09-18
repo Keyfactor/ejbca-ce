@@ -395,6 +395,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
+        // Never allow activation of an InternalKeyBinding that has no certificate reference yet
+        if (internalKeyBinding.getStatus().equals(InternalKeyBindingStatus.ACTIVE) && internalKeyBinding.getCertificateId()==null
+                || internalKeyBinding.getCertificateId().length()==0) {
+            internalKeyBinding.setStatus(InternalKeyBindingStatus.DISABLED);
+            log.info("Preventing activation of Internal Key Binding " + internalKeyBinding.getId() + " since there is no certificate referenced.");
+        }
         // Audit log the result before persistence
         final InternalKeyBinding originalInternalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBinding.getId());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();

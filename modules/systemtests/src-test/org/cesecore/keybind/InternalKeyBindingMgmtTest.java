@@ -111,7 +111,37 @@ public class InternalKeyBindingMgmtTest {
         assertTrue("Expected property " + PROPERTY_ALIAS + " in " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.",
                 availableProperties.containsKey(PROPERTY_ALIAS));
     }
-    
+
+    @Test
+    public void activationNotPossibleWithoutCertificateReference() throws Exception {
+        final String TEST_METHOD_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
+        final String KEY_BINDING_NAME = TEST_METHOD_NAME;
+        final String KEY_PAIR_ALIAS = TEST_METHOD_NAME;
+        removeInternalKeyBindingByName(alwaysAllowToken, TEST_METHOD_NAME);
+        int internalKeyBindingId = 0;
+        try {
+            // First create a new CryptoToken
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
+            // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
+            final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
+            dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+            internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
+                    KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
+            // Check that the status is not ACTIVE, despite our request (since no certificate reference was provided)
+            final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            assertEquals("Creation of active IKB with without a certificate reference was allowed.", InternalKeyBindingStatus.DISABLED.name(),
+                       internalKeyBinding.getStatus().name());
+            internalKeyBinding.setStatus(InternalKeyBindingStatus.ACTIVE);
+            internalKeyBindingMgmtSession.persistInternalKeyBinding(alwaysAllowToken, internalKeyBinding);
+            final InternalKeyBinding internalKeyBindingUpdated = internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            assertEquals("Update of active IKB with without a certificate reference was allowed.", InternalKeyBindingStatus.DISABLED.name(),
+                    internalKeyBindingUpdated.getStatus().name());
+        } finally {
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+        }
+        
+    }
+
     @Test
     public void workflowIssueCertFromPublicKeyAndUpdate() throws Exception {
         final String TEST_METHOD_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
