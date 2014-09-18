@@ -103,9 +103,20 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public void setName(final String name) { this.name = name; }
     @Override
-    public InternalKeyBindingStatus getStatus() { return status; }
+    public InternalKeyBindingStatus getStatus() {
+        if (status==null) {
+            status = InternalKeyBindingStatus.DISABLED;
+        }
+        return status;
+    }
     @Override
-    public void setStatus(final InternalKeyBindingStatus status) { this.status = status; }
+    public void setStatus(final InternalKeyBindingStatus status) {
+        if (status==null) {
+            this.status = InternalKeyBindingStatus.DISABLED;
+        } else {
+            this.status = status;
+        }
+    }
     @Override
     public String getCertificateId() { return certificateId; }
     @Override
