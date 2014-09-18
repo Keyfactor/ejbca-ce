@@ -494,7 +494,7 @@ public class RolesManagedBean extends BaseManagedBean {
     public List<SelectItem> getAvailableInternalKeyBindingRules() {
         List<SelectItem> list = new ArrayList<SelectItem>();
         for(String rule : getBasicRuleSet().getAvailableInternalKeyBindingRules()) {
-            list.add(new SelectItem(rule, InternalKeyBindingRules.getFromResource(rule).getReference()));
+            list.add(new SelectItem(rule, getEjbcaWebBean().getText(InternalKeyBindingRules.getFromResource(rule).getReference())));
         }
         return list;
     }
