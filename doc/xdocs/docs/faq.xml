@@ -5,6 +5,20 @@
     <title>FAQ</title>
   </properties>
   <faqsection title="General">
+    <faq id="jboss7install">
+     <question>
+      Timeouts and errors during 'ant deploy' with EJBCA 6+ and JBoss 7 / EAP 6.
+      </question>
+      <answer>
+      <p>
+      Ensure JBoss 7 / EAP 6 has enough cores (more than one), enough CPU (otherwise timeouts will occur) and enough memory (will also slow down the system).
+      </p><p> 
+The current installation procedures for JBoss 7 / EAP 6 uses the JBoss CLI to configure the application server. 
+The JBoss CLI turns out not to be too well suited for automated deploys, so functions can break. For example if the machine has too few cores CLI connections will mysteriously terminate and report errors.
+<br/>Contributions to improve the automated installation on JBoss 7 / EAP 6 are welcome.
+      </p>
+      </answer>    
+    </faq>
     <faq id="jboss600">
      <question>
       I get an error during installation on JBoss 5, 6 or 7 using Oracle JDK (JCE cannot authenticate the provider BC).
