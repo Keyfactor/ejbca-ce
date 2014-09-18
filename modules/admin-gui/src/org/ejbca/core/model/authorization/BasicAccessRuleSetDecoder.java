@@ -93,7 +93,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
     public static List<AccessRuleTemplate> getInternalKeybindingRules(String rolename, List<String> currentInternalKeybindingRules) {
         List<AccessRuleTemplate> result = new ArrayList<AccessRuleTemplate>();
         for(String rules : currentInternalKeybindingRules) {
-            result.add(new AccessRuleTemplate(rules, AccessRuleState.RULE_ACCEPT, false));
+            result.add(new AccessRuleTemplate(rules, AccessRuleState.RULE_ACCEPT, true));
         }
         return result;
     }
