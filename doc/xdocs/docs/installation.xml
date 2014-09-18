@@ -224,7 +224,7 @@ Needed to build and run are:</p>
 </p>
 <p>If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory.</p>
 <note>
-There is a bug in JBoss causing issues when using Oracle JDK. See this <a href="faq.html#jboss600">FAQ entry</a> for more information.
+There is a bug in JBoss causing issues when using Oracle JDK on JBoss 5. See this <a href="faq.html#jboss600">FAQ entry</a> for more information.
 </note>
 </subsection>
 
