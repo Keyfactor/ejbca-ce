@@ -10,12 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keybind;
+package org.ejbca.core.ejb.keybind;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.cesecore.authorization.rules.AccessRulePlugin;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingRules;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * @version $Id$
@@ -30,11 +34,14 @@ public class InternalKeybindingRulesReference implements AccessRulePlugin {
             allRules.add(rule.resource());
             
         }
-        for(InternalKeyBinding keyBinding : InternalKeyBindingCache.INSTANCE.getAllValues()) {
-            int id = keyBinding.getId();
-            for(InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
-                if(rule != InternalKeyBindingRules.BASE) {
-                    allRules.add(rule.resource() + "/" + id);
+        InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession =  new EjbLocalHelper().getInternalKeyBindingMgmtSession();
+        for (String type : internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet()) {
+            for (InternalKeyBinding keyBinding : internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(type)) {
+                int id = keyBinding.getId();
+                for (InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
+                    if (rule != InternalKeyBindingRules.BASE) {
+                        allRules.add(rule.resource() + "/" + id);
+                    }
                 }
             }
         }
