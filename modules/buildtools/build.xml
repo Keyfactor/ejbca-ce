@@ -6,23 +6,23 @@
 
 	<dirname property="buildtools.dir" file="${ant.file.buildtools}"/>
 	<import file="${buildtools.dir}/../build.xml"/>
-	<property name="build.dir" location="${mod.buildtools.build}"/>
-	<property name="build-test.dir" location="${buildtools.dir}/build-test"/>
-	<property name="src.dir" location="${buildtools.dir}/src"/>
-	<property name="src-test.dir" location="${buildtools.dir}/src-test"/>
+	<property name="buildtools.build.dir" location="${mod.buildtools.build}"/>
+	<property name="buildtools.build-test.dir" location="${buildtools.dir}/build-test"/>
+	<property name="buildtools.src.dir" location="${buildtools.dir}/src"/>
+	<property name="buildtools.src-test.dir" location="${buildtools.dir}/src-test"/>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${buildtools.build.dir}" />
     	<delete dir="${build-test.dir}" />
     </target>
 	
     <target name="compile-servicemanifestbuilder">
-    	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+    	<mkdir dir="${buildtools.build.dir}" />
+        <javac destdir="${buildtools.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
             <classpath>
             	<path refid="lib.jee.classpath"/>
             </classpath>
-        	<src path="${src.dir}"/>
+        	<src path="${buildtools.src.dir}"/>
         </javac>
     </target>
       
@@ -30,11 +30,11 @@
     <!-- Tests -->
     <target name="compile-tests" depends="compile-servicemanifestbuilder">
     	<mkdir dir="${build-test.dir}" />
-        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        <javac srcdir="${buildtools.src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="lib.junit.classpath"/>
-                <path location="${build.dir}" />
+                <path location="${buildtools.build.dir}" />
         		<path location="${build-test.dir}" />
         	</classpath>
     	</javac>
@@ -42,16 +42,16 @@
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
     	<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" dir="${buildtools.dir}">
+		<junit printsummary="yes" haltonfailure="no" dir="${buildtools.build-test.dir}">
 			<classpath>
                 <path refid="lib.junit.classpath"/>
-                <path location="${build.dir}" />
-				<path location="${build-test.dir}" />
+                <path location="${buildtools.build.dir}" />
+				<path location="${buildtools.build-test.dir}" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				<fileset dir="${buildtools.build-test.dir}" includes="**/*Test.class">
 				</fileset>
 			</batchtest>
 		</junit>

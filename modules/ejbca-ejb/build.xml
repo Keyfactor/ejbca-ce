@@ -432,6 +432,7 @@
         <condition property="include-ejb-jar-xml" value="" else="ejb-jar.xml">
             <equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
         </condition>
+    	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin" file="${build.dir}" classpath="compile-ejbca-ejb.classpath"/>
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}" excludes="${exclude.fileset.ejbca-util.files} ${exclude.fileset.ejbca-common-web.files}"/>
 			<!--

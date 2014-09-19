@@ -141,34 +141,6 @@ public class ServiceManifestBuilderTest {
         }
     }
 
-    /**
-     * Tests both the static methods for creating jars in ServiceManifestBuilder and that proper manifest files are included. 
-     * 
-     */
-    @Test
-    public void testAddServiceManifestToJar() throws IOException, ClassNotFoundException {
-        File jarFile = File.createTempFile("tmp", ".jar", temporaryFileDirectory);
-        try {
-            //Now, let's make a jar out of our dummy classes. 
-            ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile, null);
-            //Next add the manifest folder to the jar 
-            Class<?> dummyInterfaceClass = Class.forName(DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME);
-            ServiceManifestBuilder.buildServiceManifestInJar(jarFile, dummyInterfaceClass);
-            //Testing time. Check the jar file in question and see if the manifest is there. 
-            JarFile result = new JarFile(jarFile);
-            try {
-                assertTrue("Manifest file was not created.",
-                        result.getEntry("/META-INF/services/" + DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME) != null);
-            } finally {
-                if (result != null) {
-                    result.close();
-                }
-            }
-        } finally {
-            jarFile.delete();
-        }
-    }
-
     @Test
     public void testMainMethod() throws IOException {
         File jarFile = File.createTempFile("tmp", ".jar", temporaryFileDirectory);
