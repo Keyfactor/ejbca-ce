@@ -55,7 +55,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  */
 // Declarations in faces-config.xml
-//@javax.faces.bean.RequestScoped
+//@javax.faces.bean.SessionScoped
 //@javax.faces.bean.ManagedBean(name="certProfileBean")
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -67,6 +67,24 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     private int currentCertProfileId = -1;
     private CertificateProfile certificateProfile = null;
+    private ListDataModel certificatePoliciesModel = null;
+    private CertificatePolicy newCertificatePolicy = null;
+    private ListDataModel caIssuersModel = null;
+    private String newCaIssuer = "";
+    private ListDataModel documentTypeList = null;
+    private String documentTypeListNew = "";
+
+    /** Since this MBean is session scoped we need to reset all the values when needed. */
+    private void reset() {
+        currentCertProfileId = -1;
+        certificateProfile = null;
+        certificatePoliciesModel = null;
+        newCertificatePolicy = null;
+        caIssuersModel = null;
+        newCaIssuer = "";
+        documentTypeList = null;
+        documentTypeListNew = "";
+    }
 
     public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
     public void setCertProfilesBean(CertProfilesBean certProfilesBean) { this.certProfilesBean = certProfilesBean; }
@@ -81,8 +99,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public CertificateProfile getCertificateProfile() throws AuthorizationDeniedException {
         if (currentCertProfileId!=-1 && certificateProfile!=null && getSelectedCertProfileId().intValue() != currentCertProfileId) {
-            currentCertProfileId = -1;
-            certificateProfile = null;
+            reset();
         }
         if (certificateProfile==null) {
             currentCertProfileId = getSelectedCertProfileId().intValue();
@@ -110,8 +127,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     //public void setCertificateProfile(CertificateProfile certificateProfile) { this.certificateProfile = certificateProfile; }
 
     public String cancel() {
-        currentCertProfileId = -1;
-        certificateProfile = null;
+        reset();
         return "done";  // Outcome defined in faces-config.xml
     }
 
@@ -127,8 +143,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), getCertificateProfile());
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 addInfoMessage("CERTIFICATEPROFILESAVED");
-                currentCertProfileId = -1;
-                certificateProfile = null;
+                reset();
                 return "done";  // Outcome defined in faces-config.xml
             }
         } catch (AuthorizationDeniedException e) {
@@ -295,9 +310,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_x509v3extensions_usages");
     }
     
-    private ListDataModel certificatePoliciesModel = null;
-    private CertificatePolicy newCertificatePolicy = null;
-
     public ListDataModel/*<CertificatePolicy>*/ getCertificatePolicies() throws AuthorizationDeniedException {
         if (certificatePoliciesModel==null) {
             final List<CertificatePolicy> certificatePolicies = getCertificateProfile().getCertificatePolicies();
@@ -368,9 +380,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_x509v3extensions_usages");
         return "";
     }
-
-    private ListDataModel caIssuersModel = null;
-    private String newCaIssuer = "";
 
     public ListDataModel/*<String>*/ getCaIssuers() throws AuthorizationDeniedException {
         if (caIssuersModel==null) {
@@ -536,9 +545,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("cvc_epassport");
     }
     
-    private ListDataModel documentTypeList = null;
-    private String documentTypeListNew = "";
-
     public String getDocumentTypeListNew() { return documentTypeListNew; }
     public void setDocumentTypeListNew(String documentTypeListNew) { this.documentTypeListNew = documentTypeListNew.trim(); }
 
