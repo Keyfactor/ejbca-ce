@@ -28,7 +28,7 @@
 
     <target name="jar" depends="build">
         <mkdir dir="${mod.dist.path}"/>
-        <jar destfile="${mod.dist.path}/certsafe.jar">
+        <jar destfile="${mod.certsafe.lib}">
    			<fileset dir="${this.dir}/build" includes="META-INF/**/*"/>
             <fileset dir="${this.dir}/build/classes/" excludes="**/*.java"/>
             <fileset dir="${this.dir}/src/" excludes="**/*.java"/>
