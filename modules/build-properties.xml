@@ -135,6 +135,7 @@
 	<property name="mod.ct.path" location="${mod.path}/ct" />
 	<property name="mod.ct.lib" location="${mod.dist.path}/ct.jar" />
 	<property name="mod.certsafe.path" location="${mod.path}/certsafe"/>
+	<property name="mod.certsafe.lib" location="${mod.dist.path}/certsafe.jar"/>
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
