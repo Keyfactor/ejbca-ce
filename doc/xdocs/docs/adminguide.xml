@@ -5035,7 +5035,7 @@ entry will also be inserted for every health check run.
 </p>
 </subsubsection>
 
-<subsubsection name="Cert Safe publisher for a HTTPS server">
+<subsubsection name="Cert Safe publisher for a HTTPS server (Enterprise only)">
 <p>
 The CertSafePublisher publishes certificate issuance and life cycle events 
 (revoke and unrevoke) to a HTTPS server. The HTTPS request body is a JSON 
@@ -5075,20 +5075,16 @@ The "revocationReason" is optional.
 To use the Cert Safe Publisher, select "Edit Publishers" in the Administration GUI, create a new publisher and edit it.
 </p>
 <ul>
-<li>Publisher type: Custom Publisher</li>
-<li>Class Path: <br/>
+<li>Publisher type: CertSafe Publisher</li>
+<li>Class Path (not editable): <br/>
 org.ejbca.core.model.ca.publisher.CertSafePublisher</li>
-<li>Properties of Custom Publisher: 
+<li>Properties of the publisher: 
 </li>
-</ul>
-<source>
-certsafe.url=https://HOST:PORT/RELATIVE_PATH
-certsafe.authkeybindingname=INTERNAL_KEYBINDING_NAME
-
-# Optional properties:
-certsafe.connectiontimeout=CONNECTION_TIMEOUT.
-</source>
-<p>An example certsafe.url would be 'https://certsafe.host.domain/PrimeKey/certificates'.</p>
+<ul>
+<li>CertSafe Server URL: https://HOST:PORT/RELATIVE_PATH, for example https://certsafe.host.domain/PrimeKey/certificates.</li>
+<li>Authentication Key Binding for Connection: Name of the Authentication Key Binding used to authenticate (TLS) against the CertSafe server.</li>
+<li>HTTPS connection timeout: connection timeout (default 10s)</li>
+</ul></ul>
 <p>
 An Authentication Key Binding token should be created to specify the parameters used to establish connection 
 with the HTTPS server. For instructions on how to create an Authentication Key Binding, see 
@@ -5109,6 +5105,8 @@ keyword "error". The error message will be visible in the log file.
 	"error": "An error message from the server.",                                              
 }
 </source>
+<p>In order to avoid that certificates go missing in the CertSafe server if publishing fails (network down etc), it's recommended to configure a Publish Queue process service, as described below.
+</p>
 </subsubsection>
 
 </subsection>

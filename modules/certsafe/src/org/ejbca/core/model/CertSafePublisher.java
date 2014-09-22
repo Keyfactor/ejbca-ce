@@ -193,7 +193,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             throw new PublisherException(msg);
         }
         
-        String jsonObject = getJSONString(incert, status, revocationReason);
+        final String jsonObject = getJSONString(incert, status, revocationReason);
                 
         // Make the HTTPS connection and send the request
         HttpsURLConnection con = null;
@@ -203,7 +203,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
                 log.debug("CertSafe https URL: " + urlstr);
             }
 
-            URL url = new URL(urlstr);
+            final URL url = new URL(urlstr);
             con = (HttpsURLConnection)url.openConnection();
             con.setSSLSocketFactory(sslSocketFactory);
             
@@ -213,10 +213,10 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             con.setConnectTimeout(timeout);
         
             // POST it
-            OutputStream os = con.getOutputStream();
+            final OutputStream os = con.getOutputStream();
             os.write(jsonObject.getBytes());
             os.close();
-            int responseCode = con.getResponseCode();
+            final int responseCode = con.getResponseCode();
             if(responseCode == 200) {
                 if(log.isDebugEnabled()) {
                     log.debug("Publish successful, response code 200.");
@@ -229,7 +229,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
                     }
                     ins = con.getInputStream();
                 }
-                String errMsg = getJSONErrorMessage(con.getErrorStream());
+                final String errMsg = getJSONErrorMessage(con.getErrorStream());
                 log.error("CERTSAFE ERROR: Publish failed. HTTPS response code: " + responseCode + ". Error message: " + errMsg);
                 throw new PublisherException(errMsg);
             }
