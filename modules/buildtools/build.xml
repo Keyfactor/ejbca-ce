@@ -13,7 +13,7 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${buildtools.build.dir}" />
-    	<delete dir="${build-test.dir}" />
+    	<delete dir="${buildtools.build-test.dir}" />
     </target>
 	
     <target name="compile-servicemanifestbuilder">
