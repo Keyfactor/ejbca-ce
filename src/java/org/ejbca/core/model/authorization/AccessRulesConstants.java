@@ -13,7 +13,6 @@
  
 package org.ejbca.core.model.authorization;
 
-import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 
 /**
@@ -90,7 +89,9 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_KEYRECOVERY                        = "/ra_functionality" + KEYRECOVERY_RIGHTS;
 
     /** EE version only, reference by String value */
-    public static final String REGULAR_PEERCONNECTOR_MGMT                 = "/peer/mgmt"; // org.ejbca.peerconnector.PeerAccessRules.MANAGE
+    public static final String REGULAR_PEERCONNECTOR_VIEW                 = "/peer/view";   // org.ejbca.peerconnector.PeerAccessRules.VIEW
+    public static final String REGULAR_PEERCONNECTOR_MODIFY               = "/peer/modify"; // org.ejbca.peerconnector.PeerAccessRules.MODIFY
+    public static final String REGULAR_PEERCONNECTOR_MANAGE               = "/peer/manage"; // org.ejbca.peerconnector.PeerAccessRules.MANAGE
     
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY           = "/hardtoken_functionality";
     public static final String HARDTOKEN_EDITHARDTOKENISSUERS             = "/hardtoken_functionality/edit_hardtoken_issuers";
