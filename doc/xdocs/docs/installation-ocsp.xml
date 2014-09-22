@@ -580,7 +580,7 @@ If you use category instead of logger Log4j will output warnings on startup
 
   <section name="OCSP GET">
   <p>
-The GET OCSP request is defined in <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> A.1.1 as: <code>'GET {url}/{url-encoding of base-64 encoding
+The GET OCSP request is defined in <a href="http://www.ietf.org/rfc/rfc6960.txt">RFC 6960</a> (and RFC2560) A.1 as: <code>'GET {url}/{url-encoding of base-64 encoding
 of the DER encoding of the OCSPRequest}'</code>. A base64-encoded request can contain the reserved
 characters '+', '/' and '=', but will be handled correctly both in their %-escaped and original form
 by the responder, since it's unclear if they do conflict as defined in <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a> 2.2. 
@@ -593,7 +593,7 @@ JBOSS_HOME/bin/run.conf. On Glassfish this JVM option is configured under Applic
 
   <section name="Responses with longer validity and caching">
   <p>
-<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> defines thisUpdate, nextUpdate and producedAt.
+<a href="http://www.ietf.org/rfc/rfc6960.txt">RFC 6960</a> (and RFC2560) defines thisUpdate, nextUpdate and producedAt.
 producedAt is always included in the response and is the time the response was created.
 thisUpdate and nextUpdate is enabled by configuring 'ocsp.untilNextUpdate' in ocsp.properties or in the OcspKeyBinding.
 thisUpdate will be the time a singleResponse is embedded in the main response and nextUpdate will be 'untilNextUpdate'
