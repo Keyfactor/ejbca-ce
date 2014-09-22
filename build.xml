@@ -426,7 +426,7 @@
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${mod.peerconnector.exists}"
 			replacement-web-uri="peerconnector.war"
-			replacement-context-root="/ejbca/peerconnector"
+			replacement-context-root="/ejbca/peer"
 		/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
