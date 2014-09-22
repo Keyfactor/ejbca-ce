@@ -29,13 +29,13 @@
     
     <!-- Tests -->
     <target name="compile-tests" depends="compile-servicemanifestbuilder">
-    	<mkdir dir="${build-test.dir}" />
-        <javac srcdir="${buildtools.src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+    	<mkdir dir="${buildtools.build-test.dir}" />
+        <javac srcdir="${buildtools.src-test.dir}" destdir="${buildtools.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="lib.junit.classpath"/>
                 <path location="${buildtools.build.dir}" />
-        		<path location="${build-test.dir}" />
+        		<path location="${buildtools.build-test.dir}" />
         	</classpath>
     	</javac>
     </target>
