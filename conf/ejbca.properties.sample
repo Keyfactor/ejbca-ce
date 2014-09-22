@@ -176,3 +176,10 @@ ejbca.cli.defaultpassword=ejbca
 #
 # Default: true
 #publish.parallel.enabled=true
+
+# ------------------- Peer Connector settings (Enterprise Edition only) -------------------
+# These settings are never expected to be used and should be considered deprecated. If you do need
+# to tweak this, please inform the EJBCA developers why.
+#
+# Don't go through JCA for outgoing connections to peer systems. Build time property. Default: false
+#peerconnector.rar.disabled=false
