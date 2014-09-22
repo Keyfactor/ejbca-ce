@@ -418,7 +418,7 @@
 		<connector-replacement-in-module
 			replacement-tag="!--@peerconnector.rar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${mod.peerconnector.exists}"
+			replacement-enabled="${mod.peerconnector-rar.exists}"
 			replacement-connector="peerconnector.rar"
 		/>
 		<war-replacement-in-module
