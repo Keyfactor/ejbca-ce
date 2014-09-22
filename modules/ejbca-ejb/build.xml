@@ -58,6 +58,12 @@
 		<pathelement location="${mod.ejbca-ws.lib}"/>
 	</path>
 
+	<path id="servicemanifest-ejbca-ejb.classpath">
+		<path refid="compile-ejbca-ejb.classpath"/>
+		<!-- Service manifest builder triggers static references to InternalResources -->
+		<path location="${ejbca.home}/src"/>
+	</path>
+
 	<path id="compile-test.classpath">
 		<path refid="compile-util.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
@@ -432,7 +438,7 @@
         <condition property="include-ejb-jar-xml" value="" else="ejb-jar.xml">
             <equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
         </condition>
-    	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin" file="${build.dir}" classpath="compile-ejbca-ejb.classpath"/>
+    	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin" file="${build.dir}" classpath="servicemanifest-ejbca-ejb.classpath"/>
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}" excludes="${exclude.fileset.ejbca-util.files} ${exclude.fileset.ejbca-common-web.files}"/>
 			<!--
