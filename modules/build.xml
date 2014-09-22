@@ -442,10 +442,6 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, peerconnector, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct, certsafe"/>
 
-	<target name="buildservicemanifestbuilder">
-		<ant antfile="${mod.buildtools.path}/build.xml" target="compile-servicemanifestbuilder" />
-	</target>
-	
 	<target name="ct" depends="ejbca-ejb-interface, cesecore-common, cesecore-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
