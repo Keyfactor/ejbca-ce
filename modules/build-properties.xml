@@ -487,6 +487,14 @@
 	<condition property="mod.peerconnector.exists">
 		<available file="${mod.peerconnector.path}/build.xml" />
     </condition>
+	<condition property="mod.peerconnector-rar.exists">
+		<and>
+			<available file="${mod.peerconnector.path}/build.xml"/>
+			<not>
+				<istrue value="${peerconnector.rar.disabled}"/>
+			</not>
+		</and>
+    </condition>
 	<!--
 	<echo message="peerconnector available: ${mod.peerconnector.exists}"/>
 	-->
