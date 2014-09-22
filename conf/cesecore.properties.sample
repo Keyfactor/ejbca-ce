@@ -186,3 +186,22 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # before PKCS#11 is called.
 # Default: true (the mechanisms are disabled).
 #pkcs11.disableHashingSignMechanisms=false
+
+# ------------------- Authentication Key Binding settings -------------------
+# Configuration of available cipher suites for outgoing SSL/TLS connections
+# that can be selected for an Authentication Key Binding.
+# 
+# Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+#   TLS versions: SSLv3, TLSv1, SSLv2Hello
+# Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+#   TLS versions: SSLv3, TLSv1, SSLv2Hello, TLSv1.1, TLSv1.2
+#   Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
+#
+# The configuration format is "<TLS version>;cipher" and the follow ciphers are defined by default
+# and can be undefined by setting the properties to "undefined".
+#authkeybind.ciphersuite.0=TLSv1.2;TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+#authkeybind.ciphersuite.1=TLSv1.2;TLS_RSA_WITH_AES_256_CBC_SHA256
+#authkeybind.ciphersuite.2=TLSv1.2;TLS_RSA_WITH_AES_128_CBC_SHA
+#authkeybind.ciphersuite.3=TLSv1;TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+#authkeybind.ciphersuite.4=TLSv1;TLS_RSA_WITH_AES_256_CBC_SHA
+#authkeybind.ciphersuite.5=TLSv1;TLS_RSA_WITH_AES_128_CBC_SHA

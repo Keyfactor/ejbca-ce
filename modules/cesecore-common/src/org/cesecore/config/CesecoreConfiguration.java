@@ -15,6 +15,7 @@ package org.cesecore.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -32,6 +33,7 @@ public final class CesecoreConfiguration {
 
     /** NOTE: diff between EJBCA and CESeCore */
     public static final String PERSISTENCE_UNIT = "ejbca";
+    public static final String AVAILABLE_CIPHER_SUITES_SPLIT_CHAR = ";";
 
     /** This is a singleton so it's not allowed to create an instance explicitly */
     private CesecoreConfiguration() {
@@ -368,5 +370,25 @@ public final class CesecoreConfiguration {
         final String value = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
         return value==null || Boolean.parseBoolean(value.trim());
     }
-}
 
+    /** @return a list of enabled TLS protocol versions and cipher suites */
+    /*
+     * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+     *  TLS versions: SSLv3, TLSv1, SSLv2Hello
+     * Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+     *  TLS versions: SSLv3, TLSv1, SSLv2Hello, TLSv1.1, TLSv1.2
+     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
+     */
+    public static String[] getAvailableCipherSuites() {
+        final List<String> availableCipherSuites = new ArrayList<String>();
+        for (int i=0; i<255; i++) {
+            final String key = "authkeybind.ciphersuite." + i;
+            final String value = ConfigurationHolder.getString(key);
+            if (value==null || value.indexOf(AVAILABLE_CIPHER_SUITES_SPLIT_CHAR)==-1) {
+                continue;
+            }
+            availableCipherSuites.add(value);
+        }
+        return availableCipherSuites.toArray(new String[0]);
+    }
+}
