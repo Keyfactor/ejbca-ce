@@ -179,7 +179,33 @@ ejbca.cli.defaultpassword=ejbca
 
 # ------------------- Peer Connector settings (Enterprise Edition only) -------------------
 # These settings are never expected to be used and should be considered deprecated. If you do need
-# to tweak this, please inform the EJBCA developers why.
+# to tweak this, please inform the EJBCA developers how and why this was necessary.
 #
-# Don't go through JCA for outgoing connections to peer systems. Build time property. Default: false
+# Don't go through JCA for outgoing connections to peer systems. Applied at build time.
+# Default: false
 #peerconnector.rar.disabled=false
+#
+# Use TCP keep alive. Applied when connection pool is restarted. Default: true
+#peerconnector.connection.sokeepalive=true
+#
+# Disable Nagle's algorithm. Applied when connection pool is restarted. Default: false
+#peerconnector.connection.tcpnodelay=false
+#
+# Socket timeout in milliseconds. Applied when connection pool is restarted.
+# Default: 20000 (default for Tomcat on the server side)
+#peerconnector.connection.sotimeout=20000
+#
+# Connection pool size per peer connector. Applied when connection pool is restarted. Default: 100
+#peerconnector.connection.maxpoolsize=100
+#
+# Background sync of certificate data. Batch size to compare. Default: 2000
+#peerconnector.sync.batchsize=2000
+#
+# Background sync of certificate data. Number of entries to write in parallel. 1=sequential writes. Default: 12
+#peerconnector.sync.concurrency=12
+#
+# Maximum allowed size for incoming messages. Default: 134217728 (128MiB)
+#peerconnector.incoming.maxmessagesize=134217728
+#
+# How long a peer can be absent in milliseconds before (re-)authentication is triggered. Default: 60000
+#peerconnector.incoming.authcachetime=60000

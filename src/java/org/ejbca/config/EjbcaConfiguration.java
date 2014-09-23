@@ -261,7 +261,80 @@ public final class EjbcaConfiguration {
     }
 
     /** @return true if publishers should be invoked in parallel instead of sequentially. */
+    @Deprecated // EJBCA 6.3.0 safety for the new Parallel publishing feature. Remove when default is considered stable.
     public static boolean isPublishParallelEnabled() {
-        return !"false".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("publish.parallel.enabled"));
+        return getBooleanProperty("publish.parallel.enabled", true);
+    }
+
+    /** @return true if TCP keep alive should be used for outgoing peer connections. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static boolean isPeerSoKeepAlive() {
+        return getBooleanProperty("peerconnector.connection.sokeepalive", true);
+    }
+
+    /** @return true if Nagle's algorithm should be disabled for outgoing peer connections. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static boolean isPeerTcpNoDelay() {
+        return getBooleanProperty("peerconnector.connection.tcpnodelay", false);
+    }
+
+    /** @return the socket timeout in milliseconds for outgoing peer connections. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static int getPeerSoTimeoutMillis() {
+        return getIntProperty("peerconnector.connection.sotimeout", 20000);
+    }
+
+    /** @return the maximum pool size for outgoing peer connections. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static int getPeerMaxPoolSize() {
+        return getIntProperty("peerconnector.connection.maxpoolsize", 100);
+    }
+
+    /** @return the number of database entries to compare at the time when doing background synchronization of certificate data. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static int getPeerSyncBatchSize() {
+        return getIntProperty("peerconnector.sync.batchsize", 2000);
+    }
+
+    /** @return the maximum number of updates to send in parallel when doing background synchronization of certificate data. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static int getPeerSyncConcurrency() {
+        return getIntProperty("peerconnector.sync.concurrency", 12);
+    }
+
+    /** @return the maximum number of updates to send in parallel when doing background synchronization of certificate data. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static int getPeerIncomingMaxMessageSize() {
+        return getIntProperty("peerconnector.incoming.maxmessagesize", 134217728);
+    }
+
+    /** @return how long a peer can be absent in milliseconds before (re-)authentication is triggered. */
+    @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
+    public static long getPeerIncomingAuthCacheTimeMillis() {
+        return Integer.valueOf(getIntProperty("peerconnector.incoming.authcachetime", 60000)).longValue();
+    }
+
+    /** @return the value as a boolean or the default otherwise. */
+    private static boolean getBooleanProperty(final String key, final boolean defaultValue) {
+        final String value = EjbcaConfigurationHolder.getString(key);
+        if (defaultValue) {
+            return !Boolean.FALSE.toString().equalsIgnoreCase(value);
+        } else {
+            return !Boolean.TRUE.toString().equalsIgnoreCase(value);
+        }
+    }
+    
+    /** @return the value as an int or the default otherwise. */
+    private static int getIntProperty(final String key, final int defaultValue) {
+        final String value = EjbcaConfigurationHolder.getString(key);
+        int ret = defaultValue;
+        try {
+            if (value!=null) {
+                ret = Integer.valueOf(value);
+            }
+        } catch (NumberFormatException e) {
+            log.error("Invalid value in "+defaultValue+", must be decimal number: " + e.getMessage());
+        }
+        return ret;
     }
 }
