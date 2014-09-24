@@ -1,3 +1,17 @@
+EJBCA 6.2.3, 2014-09-25
+---
+Bug
+	[ECA-3749] - Batch generation information for end entities in statedumps ignored during import
+	[ECA-3755] - Regression: Modifying approval settings when editing a certificate profile is broken
+	[ECA-3760] - Possible ClassCastException when using Subset of SubjectDN in Certificate Profile
+	[ECA-3763] - InternalKeyBinding.getListOfTrustedCertificates trusts everything if specified with a non existing certificate
+	[ECA-3765] - ca init command in cli.xml is missing two switches
+	[ECA-3779] - Values from first loaded certificate profile is shown and saved when editing other profiles
+	[ECA-3783] - Statedump can not export (custom)publisher where all classes are not on statedump classpath
+
+New Feature
+    [ECA-3437] - Cert Safe Publisher for EJBCA
+
 EJBCA 6.2.2, 2014-09-03
 ---
 Bug
