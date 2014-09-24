@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -181,7 +182,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     }
 
     @Override
-    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass)
+    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends CertificateResponseMessage> responseClass)
             throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException, CertificateExtensionException {
         // Check tokentype
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {

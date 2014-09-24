@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,6 +19,7 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
@@ -39,11 +39,11 @@ public interface PublisherQueueSessionLocal {
      * @param publishType the type of entry it is, {@link PublisherQueueData#PUBLISH_TYPE_CERT} or CRL
      * @throws CreateException if the entry can not be created
      */
-    public void addQueueData(int publisherId, int publishType, String fingerprint,
+    void addQueueData(int publisherId, int publishType, String fingerprint,
             PublisherQueueVolatileInformation queueData, int publishStatus) throws CreateException;
 
     /** Removes an entry from the publisher queue. */
-    public void removeQueueData(java.lang.String pk);
+    void removeQueueData(String pk);
 
     /**
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a
@@ -51,14 +51,14 @@ public interface PublisherQueueSessionLocal {
      * 
      * @return Collection of PublisherQueueData, never null
      */
-    public Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId);
+    Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId);
 
     /**
      * Gets the number of pending entries for a publisher.
      * @param publisherId The publisher to count the number of pending entries for.
      * @return The number of pending entries.
      */
-    public int getPendingEntriesCountForPublisher(int publisherId);
+    int getPendingEntriesCountForPublisher(int publisherId);
 
     /**
      * Gets an array with the number of new pending entries for a publisher in each intervals specified by 
@@ -70,7 +70,7 @@ public interface PublisherQueueSessionLocal {
      * @param publisherId The publisher to count the number of pending entries for.
      * @return Array with the number of pending entries corresponding to each element in <i>interval</i>.
      */
-    public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds);
+    int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds);
 
     /**
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a
@@ -81,14 +81,14 @@ public interface PublisherQueueSessionLocal {
      *            "order by timeCreated desc".
      * @return Collection of PublisherQueueData, never null
      */
-    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy);
+    Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy);
 
     /**
      * Finds all entries for a specific fingerprint.
      * 
      * @return Collection of PublisherQueueData, never null
      */
-    public Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint);
+    Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint);
 
     /**
      * Updates a record with new status
@@ -97,7 +97,7 @@ public interface PublisherQueueSessionLocal {
      * @param status status from PublisherQueueData.STATUS_SUCCESS etc, or -1 to not update status
      * @param tryCounter an updated try counter, or -1 to not update counter
      */
-    public void updateData(java.lang.String pk, int status, int tryCounter);
+    void updateData(String pk, int status, int tryCounter);
 
     /**
      * Intended for use from PublishQueueProcessWorker.
@@ -109,16 +109,16 @@ public interface PublisherQueueSessionLocal {
      * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
      * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
      */
-    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
+    void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 
     
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
-	public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, Certificate cert, String username, String password, String userDN,
+	boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper cert, String username, String password, String userDN,
     		String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
     		long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
 
     /** Publishers do not run as part of regular transactions and expect to run in auto-commit mode. */
-	public boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
+	boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
 
     /**
      * Publishers do not run as part of regular transactions and expect to run in auto-commit mode.
@@ -127,7 +127,7 @@ public interface PublisherQueueSessionLocal {
      * The implementing method returns the result in the same order as the publishers are provided.
      * Each result Object is either a PublisherException (if the publishing failed) or a Boolean.TRUE (if the publishing succeeded).
      */
-    public List<Object> storeCertificateNonTransactionalInternal(List<BasePublisher> publishers, AuthenticationToken admin, Certificate cert, String username, String password, String userDN,
+    List<Object> storeCertificateNonTransactionalInternal(List<BasePublisher> publishers, AuthenticationToken admin, CertificateDataWrapper certWrapper, String username, String password, String userDN,
             String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation);
 	

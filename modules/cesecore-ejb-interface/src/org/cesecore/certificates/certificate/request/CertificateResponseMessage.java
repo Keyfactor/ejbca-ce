@@ -14,6 +14,9 @@ package org.cesecore.certificates.certificate.request;
 
 import java.security.cert.Certificate;
 
+import org.cesecore.certificates.certificate.Base64CertData;
+import org.cesecore.certificates.certificate.CertificateData;
+
 /**
  * Interface extending ResponseMessage to add certificate functionality.
  * 
@@ -35,4 +38,12 @@ public interface CertificateResponseMessage extends ResponseMessage {
      * @param cert certificate in the response message.
      */
     void setCertificate(Certificate cert);
+    
+    CertificateData getCertificateData();
+
+    void setCertificateData(CertificateData certificateData);
+    
+    Base64CertData getBase64CertData();
+    
+    void setBase64CertData(final Base64CertData base64CertData);
 }
