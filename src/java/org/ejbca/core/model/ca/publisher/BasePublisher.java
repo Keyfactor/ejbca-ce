@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.Base64CertData;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
@@ -34,6 +36,9 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     private static final long serialVersionUID = -735659148394853025L;
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
+    
+    public static final int PUBLISHER_BASE_VERSION = 1;
+    public static final int CERTDATA_CAPABLE_PUBLISHER = 2; //Since 6.3.0
 
     // Protected Constants.
 	public static final String TYPE                           = "type";
@@ -174,6 +179,30 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @throws PublisherException if a communication or other error occurs.
      */    
     public abstract boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
+
+    /**
+     * Publishes a CertificateData object in order to retain rowversion and  integrity protection data. Any publisher overriding this method must also override the getPublisherVersion
+     * method and return a value > 1 from there. 
+     * 
+     * @param authenticationToken an authentication token
+     * @param certificateData a complete CertificateData object
+     * @param base64CertData a complete Base64CertData object
+     * 
+     * @return true if storage was successful.
+     * 
+     * @throws PublisherException if a communication or other error occurs.
+     */
+    public boolean storeCertificate(final AuthenticationToken authenticationToken, final CertificateData certificateData, final Base64CertData base64CertData) throws PublisherException {
+        throw new UnsupportedOperationException("This publisher has not implemented this method, and it has been called in error.");
+    }
+    
+    /**
+     *
+     * @return the version of this publisher, giving a hint of what methods it supports. Publishers implementing newer functionality should override this method.
+     */
+    public int getPublisherVersion() {
+        return PUBLISHER_BASE_VERSION;
+    }
 
     /**
      * Published a CRL to a CRL store.

@@ -47,7 +47,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws AuthorizationDeniedException if access was denied to the CA issuing cert
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert,
+    void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate,
             String username, String userDN, String cafp, int type, int reason, long revocationDate, String tag,
             int certificateProfileId, long lastUpdate) throws AuthorizationDeniedException;
 

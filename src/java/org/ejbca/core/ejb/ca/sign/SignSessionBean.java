@@ -59,6 +59,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -69,6 +70,7 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -280,7 +282,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req,
-            Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws AuthorizationDeniedException,
+            Class<? extends CertificateResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws AuthorizationDeniedException,
             CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, AuthStatusException,
             AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
@@ -331,7 +333,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         final long updateTime = System.currentTimeMillis();
                         // Issue the certificate from the request
                         ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass, fetchCertGenParams(), updateTime);
-                        postCreateCertificate(admin, data, ca, ret.getCertificate(), updateTime);
+                        postCreateCertificate(admin, data, ca, new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), updateTime);
                     }
                 } catch (ObjectNotFoundException e) {
                     // If we didn't find the entity return error message
@@ -438,8 +440,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
             decryptAndVerify(cryptoToken, req, ca);
             //Create the response message with all nonces and checks etc
-            ret = req
-                    .createResponseMessage(responseClass, req, ca.getCertificateChain(),
+            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(),
                             cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                             cryptoToken.getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
@@ -544,7 +545,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
             }
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign),
+            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign),
                     cryptoToken.getSignProviderName());
 
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
@@ -720,13 +721,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         final long updateTime = System.currentTimeMillis();
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
+        final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
                 sequence, fetchCertGenParams(), updateTime);
-        postCreateCertificate(admin, data, ca, cert, updateTime);
+        postCreateCertificate(admin, data, ca, certWrapper, updateTime);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
-        return cert;
+        return certWrapper.getCertificate();
     }
     
     @Override
@@ -752,10 +753,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final Certificate certificate, final long updateTime) throws AuthorizationDeniedException {
+            final CertificateDataWrapper certificateWrapper, final long updateTime) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
-            certreqHistorySession.addCertReqHistoryData(certificate, endEntity);
+            certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
         }
 
         /* Store certificate in certificate profiles publishers. But check if the certificate was revoked directly on issuance, 
@@ -783,7 +784,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 }
             }
 
-            publisherSession.storeCertificate(authenticationToken, publishers, certificate, username, endEntity.getPassword(),
+            publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, username, endEntity.getPassword(),
                     endEntity.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId,
                     updateTime, endEntity.getExtendedinformation());
         }

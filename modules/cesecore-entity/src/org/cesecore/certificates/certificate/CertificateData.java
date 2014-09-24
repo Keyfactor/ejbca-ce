@@ -165,6 +165,30 @@ public class CertificateData extends ProtectedData implements Serializable {
         }
     }
 
+    /**
+     * Copy Constructor
+     */
+    public CertificateData(CertificateData copy) {
+        setBase64Cert(copy.getBase64Cert());
+        setFingerprint(copy.getFingerprint());
+        setSubjectDN(copy.getSubjectDN());
+        setIssuerDN(copy.getIssuerDN());
+        setSerialNumber(copy.getSerialNumber());
+        setUsername(copy.getUsername());
+        setStatus(copy.getStatus());
+        setType(copy.getType());
+        setCaFingerprint(copy.getCaFingerprint());
+        setExpireDate(copy.getExpireDate());
+        setRevocationDate(copy.getRevocationDate());
+        setRevocationReason(copy.getRevocationReason());
+        setUpdateTime(copy.getUpdateTime());
+        setCertificateProfileId(copy.getCertificateProfileId());
+        setSubjectKeyId(copy.getSubjectKeyId());
+        setTag(copy.getTag());
+        setRowVersion(copy.getRowVersion());
+        setRowProtection(copy.getRowProtection());
+    }
+    
     public CertificateData() {
     }
 

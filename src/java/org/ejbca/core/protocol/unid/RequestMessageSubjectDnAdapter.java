@@ -167,22 +167,12 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	public int getRequestId() {
 		return this.original.getRequestId();
 	}
-	@Override
-	public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass,
-			RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv,
-			String provider) {
-		return this.original.createResponseMessage(responseClass, req, certs, signPriv, provider);
-	}
 	
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
         this.original.setResponseKeyInfo(key, provider);
     }
 
-    @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
-        return this.original.createResponseMessage(responseClass, req, certs);
-    }
 
 	@Override
 	public int getPbeIterationCount() {

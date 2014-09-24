@@ -49,6 +49,8 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.certificates.certificate.Base64CertData;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -112,12 +114,43 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
-    private transient String provider = "BC";
+    private transient String provider = BouncyCastleProvider.PROVIDER_NAME;
     /** If the CA certificate should be included in the reponse or not, default to true = yes */
     private transient boolean includeCACert = true;
 
     /** Default digest algorithm for SCEP response message, can be overridden */
     private transient String digestAlg = CMSSignedGenerator.DIGEST_MD5;
+    
+    private transient CertificateData certificateData;
+    private transient Base64CertData base64CertData;
+    
+    @Override
+    public CertificateData getCertificateData() {
+        return certificateData;
+    }
+    
+    @Override
+    public void setCertificateData(CertificateData certificateData) {
+        if (certificateData != null) {
+            this.certificateData = new CertificateData(certificateData);
+        } else {
+            this.certificateData = null;
+        }
+    }
+    
+    @Override
+    public Base64CertData getBase64CertData() {
+        return base64CertData;
+    }
+    
+    @Override
+    public void setBase64CertData(final Base64CertData base64CertData) {
+        if (base64CertData != null) {
+            this.base64CertData = new Base64CertData(base64CertData);
+        } else {
+            this.base64CertData = null;
+        }
+    }
 
     @Override
     public void setCertificate(Certificate cert) {

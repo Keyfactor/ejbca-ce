@@ -13,18 +13,16 @@
  
 package org.ejbca.core.model.ca.publisher;
 
+import java.io.Serializable;
 import java.util.Date;
 
 
 /**
  * Value object holding the data contained in a PublisherQueueData record in the database. 
  *
- * @author Tomas Gustavsson
  * @version $Id$
  */
-public class PublisherQueueData implements java.io.Serializable {
-
-    //private static final Logger log = Logger.getLogger(PublisherQueueData.class);
+public class PublisherQueueData implements Serializable {
 
     /**
      * Determines if a de-serialized file is compatible with this class.

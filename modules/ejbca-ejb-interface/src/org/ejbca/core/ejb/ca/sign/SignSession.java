@@ -36,6 +36,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -241,7 +242,7 @@ public interface SignSession {
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
      *
      */
-    ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
+    ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends CertificateResponseMessage> responseClass,
             EndEntityInformation suppliedUserData) throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException,
             CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException,
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException,

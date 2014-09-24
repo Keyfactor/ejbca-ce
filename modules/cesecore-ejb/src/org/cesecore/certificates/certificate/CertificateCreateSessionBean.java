@@ -72,6 +72,7 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -194,17 +195,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             
-            Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
+            CertificateDataWrapper certWrapper = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
             // Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain());
+            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
             String failText = null;
-            if ((cert == null) && (status == ResponseStatus.SUCCESS)) {
+            if ((certWrapper == null) && (status == ResponseStatus.SUCCESS)) {
                 status = ResponseStatus.FAILURE;
                 failInfo = FailInfo.BAD_REQUEST;
             } else {
-                ret.setCertificate(cert);
+                ret.setCertificate(certWrapper.getCertificate());
+                ret.setBase64CertData(certWrapper.getBase64CertData());
+                ret.setCertificateData(certWrapper.getCertificateData());
             }
             ret.setStatus(status);
             if (failInfo != null) {
@@ -287,7 +290,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
     
     @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final RequestMessage request,
+    public CertificateDataWrapper createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final RequestMessage request,
             final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence,
             CertificateGenerationParams certGenParams, final long updateTime) throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException,
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
@@ -320,6 +323,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         addCTLoggingCallback(certGenParams, admin.toString());
 
         try {
+            CertificateDataWrapper result = null;
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType().isType(EndEntityTypes.INVALID)) {
                 final String msg = intres.getLocalizedMessage("createcert.usertypeinvalid", data.getUsername());
@@ -377,6 +381,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage()) {
+                    result = new CertificateDataWrapper(cert, null, null);
                     break; // We have our cert and we don't need to store it.. Move on..
                 }
                 try {
@@ -386,7 +391,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final String tag = null;
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
-                    certificateStoreSession.storeCertificateNoAuth(admin, cert, data.getUsername(), cafingerprint, CertificateConstants.CERT_ACTIVE,
+                    result = certificateStoreSession.storeCertificateNoAuth(admin, cert, data.getUsername(), cafingerprint, CertificateConstants.CERT_ACTIVE,
                             certProfile.getType(), certProfileId, tag, updateTime);
                     storeEx = null;
                     break;
@@ -449,7 +454,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (log.isTraceEnabled()) {
                 log.trace("<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
             }
-            return cert;
+            return result;
             // We need to catch and re-throw all of these exception just because we need to audit log all failures
         } catch (CustomCertificateSerialNumberException e) {
             log.info(e.getMessage());
@@ -497,12 +502,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             throw e;
         }
         
-    /* catch (Exception e) {
-    log.error("Error creating certificate", e);
-    auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
-    // Rollback
-    throw new CertificateCreateException(e);
-}*/ 
     }
 
     private void addCTLoggingCallback(CertificateGenerationParams certGenParams, final String authTokenName) {

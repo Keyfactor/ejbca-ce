@@ -118,7 +118,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     /** Local interface only */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
+    public CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
@@ -130,8 +130,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // Probably not important in EJB3 anymore
         final CertificateData data1;
         final boolean useBase64CertTable = CesecoreConfiguration.useBase64CertTable();
+        Base64CertData base64CertData = null;
         if (useBase64CertTable) {
             // use special table for encoded data if told so.
+            base64CertData = new Base64CertData(incert);
             this.entityManager.persist(new Base64CertData(incert));
         }
         data1 = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, tag, updateTime, useBase64CertTable);
@@ -148,6 +150,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
         }
+        return new CertificateDataWrapper(incert, data1, base64CertData);
     }
 
     /** 

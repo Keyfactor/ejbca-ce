@@ -25,6 +25,7 @@ import java.util.Date;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CeSecoreNameStyle;
 
 
@@ -79,7 +80,7 @@ public class SimpleRequestMessage implements RequestMessage {
     /** Private key used for signing/encrypting response, if needed */
     private PrivateKey responsePrivateKey;
     /** Security provider used for the responsePrivateKey */
-    private String responseProvider = "BC";
+    private String responseProvider = BouncyCastleProvider.PROVIDER_NAME;
 
     /**
      * Constructs a new Simple message handler object.
@@ -247,11 +248,6 @@ public class SimpleRequestMessage implements RequestMessage {
     public int getRequestId() {
     	return 0;
     }
-    
-    @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv, String provider) {
-    	return RequestMessageUtils.createResponseMessage(responseClass, req, certs, signPriv, provider);
-    }
 
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
@@ -259,11 +255,6 @@ public class SimpleRequestMessage implements RequestMessage {
         if (provider != null) {
             this.responseProvider = provider;
         }
-    }
-
-    @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
-        return createResponseMessage(responseClass, req, certs, responsePrivateKey, responseProvider);
     }
 
 } // SimpleRequestMessage

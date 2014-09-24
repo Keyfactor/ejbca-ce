@@ -70,6 +70,16 @@ public class Base64CertData extends ProtectedData implements Serializable {
             throw new RuntimeException(msg);
         }
     }
+    
+    /**
+     * Copy constructor
+     */
+    public Base64CertData(final Base64CertData copy) {
+        setBase64Cert(copy.getBase64Cert());
+        setFingerprint(copy.getFingerprint());
+        setRowProtection(copy.getRowProtection());
+        setRowVersion(copy.getRowVersion());
+    }
 
     public Base64CertData() {
     }

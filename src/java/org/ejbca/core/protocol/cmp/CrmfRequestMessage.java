@@ -587,22 +587,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     @Override
-    public CertificateResponseMessage createResponseMessage(final Class<? extends ResponseMessage> responseClass, final RequestMessage req,
-            final Collection<Certificate> certs, final PrivateKey signPriv, final String provider) {
-        return RequestMessageUtils.createResponseMessage(responseClass, req, certs, signPriv, provider);
-    }
-    
-    @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
         this.responsePrivateKey = key;
         if (provider != null) {
             this.responseProvider = provider;
         }
-    }
-
-    @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
-        return createResponseMessage(responseClass, req, certs, responsePrivateKey, responseProvider);
     }
 
 }
