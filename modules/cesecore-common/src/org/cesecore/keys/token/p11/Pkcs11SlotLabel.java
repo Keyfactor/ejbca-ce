@@ -55,8 +55,6 @@ public class Pkcs11SlotLabel {
     private final Pkcs11SlotLabelType type;
     private final String value;
 
-	private static final Lock slotIDLock = new ReentrantLock();
-
     /**
      * Use explicit values.
      * @param type
@@ -106,10 +104,10 @@ public class Pkcs11SlotLabel {
 
         final long slot;
         log.debug("slot spec: " + this.toString());
+        final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile); // must be called before any provider is created for libFile
         switch (this.type) {
         case SLOT_LABEL:
-            doC_Initialize(libFile);
-            slot = getSlotID(this.value, libFile);
+            slot = getSlotID(this.value, p11);
             if (slot < 0) {
                 throw new IllegalStateException("Token label '" + this.value + "' not found.");
             }
@@ -151,28 +149,22 @@ public class Pkcs11SlotLabel {
     /** @return a List of "slotId;tokenLabel" in the (indexed) order we get the from the P11 */
     public static List<String> getExtendedTokenLabels(final File libFile) {
         final List<String> tokenLabels = new ArrayList<String>();
-        doC_Initialize(libFile);
-        slotIDLock.lock(); // only one thread at a time may use the p11 object
-        try {
-            final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile);
-            final long slots[] = p11.C_GetSlotList();
+        final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile);
+        final long slots[] = p11.getSlotList();
+        if (log.isDebugEnabled()) {
+            log.debug("Found numer of slots:\t" + slots.length);
+        }
+        for (int i=0; i<slots.length; i++) {
+            final long slotID = slots[i];
+            final char label[] = p11.getTokenLabel(slotID);
+            if (label == null) {
+                continue;
+            }
+            final String tokenLabel = new String(label);
             if (log.isDebugEnabled()) {
-                log.debug("Found numer of slots:\t" + slots.length);
+                log.debug(i+": Found token label:\t" + tokenLabel + "\tid="+slotID);
             }
-            for (int i=0; i<slots.length; i++) {
-                final long slotID = slots[i];
-                final char label[] = p11.getTokenLabel(slotID);
-                if (label == null) {
-                    continue;
-                }
-                final String tokenLabel = new String(label);
-                if (log.isDebugEnabled()) {
-                    log.debug(i+": Found token label:\t" + tokenLabel + "\tid="+slotID);
-                }
-                tokenLabels.add(slotID+";"+tokenLabel.trim());
-            }
-        } finally {
-            slotIDLock.unlock();// lock must always be unlocked.
+            tokenLabels.add(slotID+";"+tokenLabel.trim());
         }
         return tokenLabels;
     }
@@ -180,41 +172,35 @@ public class Pkcs11SlotLabel {
     /**
      * Get slot ID for a token label.
      * @param tokenLabel the label.
-     * @param the P11 module so file.
+     * @param object to get slot list and labels for all slots with tokens
      * @return the slot ID.
      * @throws NoSuchSlotException if no slot as defined by tokenLabel was found
 
      */
-    private static long getSlotID(final String tokenLabel, final File file) throws NoSuchSlotException {
-        slotIDLock.lock(); // only one thread at a time may use the p11 object
-        try {
-            final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(file);
-            final long slots[] = p11.C_GetSlotList();
-            if (log.isDebugEnabled()) {
-                log.debug("Searching for token label:\t" + tokenLabel);
-            }
-
-            for (final long slotID : slots) {
-                final char label[] = p11.getTokenLabel(slotID);
-                if (label == null) {
-                    continue;
-                }
-                final String candidateTokenLabel = new String(label);
-                if (log.isDebugEnabled()) {
-                    log.debug("Candidate token label:\t" + candidateTokenLabel);
-                }
-                if (!tokenLabel.equals(candidateTokenLabel.trim())) {
-                    continue;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Label '" + tokenLabel + "' found. The slot ID is:\t" + slotID);
-                }
-                return slotID;
-            }
-            throw new NoSuchSlotException("Token label '" + tokenLabel + "' not found.");
-        } finally {
-            slotIDLock.unlock();// lock must always be unlocked.
+    private static long getSlotID(final String tokenLabel, final Pkcs11Wrapper p11) throws NoSuchSlotException {
+        final long slots[] = p11.getSlotList();
+        if (log.isDebugEnabled()) {
+            log.debug("Searching for token label:\t" + tokenLabel);
         }
+
+        for (final long slotID : slots) {
+            final char label[] = p11.getTokenLabel(slotID);
+            if (label == null) {
+                continue;
+            }
+            final String candidateTokenLabel = new String(label);
+            if (log.isDebugEnabled()) {
+                log.debug("Candidate token label:\t" + candidateTokenLabel);
+            }
+            if (!tokenLabel.equals(candidateTokenLabel.trim())) {
+                continue;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Label '" + tokenLabel + "' found. The slot ID is:\t" + slotID);
+            }
+            return slotID;
+        }
+        throw new NoSuchSlotException("Token label '" + tokenLabel + "' not found.");
     }
 
     /**
@@ -394,16 +380,18 @@ public class Pkcs11SlotLabel {
 
     /**
      * Creating dummy provider just to have C_Initialize executed with multiple
-     * thread argument. If we don't call this method and getSlotID is called
-     * then C_Initialize will be called with null argument causing multi threading
-     * to be disabled for the token.
-     * There is a boolean in the sun code ensuring that C_Initialize is only called
-     * once.
+     * thread argument. {@link Pkcs11Wrapper#getInstance(File)} should call it
+     * before making any PKCS#11 calls. If not then C_Initialize will be called
+     * with null argument causing multi threading to be disabled for the token.
+     * 
+     * There is a boolean in the sun code ensuring that C_Initialize is only
+     * called once.
      * To check this implementation the p11 spy utils could be used. Check that
      * it is only one C_Initialize call and that null is not passed.
-     * @param a file with the path of the p11 module on which C_Finalize should be called.
+     * @param a file with the path of the p11 module on which C_Finalize should
+     * be called.
      */
-    private static void doC_Initialize(final File libFile) {
+    static void doC_Initialize(final File libFile) {
         try {
             getSunP11ProviderNoExceptionHandeling( getSunP11ProviderInputStream(-1, libFile, Pkcs11SlotLabelType.SLOT_NUMBER, null, null) );
         } catch (InvocationTargetException e) {
