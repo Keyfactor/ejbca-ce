@@ -427,9 +427,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
             int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
-        if (publisher.getPublisherVersion() == BasePublisher.CERTDATA_CAPABLE_PUBLISHER) {
-            return publisher.storeCertificate(admin, certWrapper.getCertificateData(),
-                    certWrapper.getBase64CertData());
+        if (publisher.isFullEntityPublishingSupported()) {
+            return publisher.storeCertificate(admin, certWrapper.getCertificateData(), certWrapper.getBase64CertData());
         } else {
             return publisher.storeCertificate(admin, certWrapper.getCertificate(), username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag,
                     certificateProfileId, lastUpdate, extendedinformation);
