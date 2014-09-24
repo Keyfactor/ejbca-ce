@@ -39,6 +39,14 @@ public interface InternalKeyBindingMgmtSession {
     Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties();
 
     /**
+     * Returns a list of all internal key bindings of a certain type, as {@link InternalKeyBindingInfo}s
+     * 
+     * @param internalKeyBindingType the key binding type
+     * @return a list of all internal key bindings of that type, as {@link InternalKeyBindingInfo}s
+     */
+    List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType);
+    
+    /**
      * Get a list of all InternalKeyBindings the caller is authorized to view of the requested type.
      * 
      * @param authenticationToken is the authentication token

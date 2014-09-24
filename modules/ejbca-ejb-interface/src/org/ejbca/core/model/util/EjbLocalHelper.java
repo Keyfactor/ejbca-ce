@@ -89,6 +89,8 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	 * Requires a "ejb-local-ref" definition in web.xml and ejb-jar.xml from all accessing components
 	 * or an application server that support global JNDI names (introduced in EJB 3.1).
 	 * @return a reference to the bridge SSB
+	 * 
+	 * @throws LocalLookupException if local lookup couldn't be made.
 	 */
 	private EjbBridgeSessionLocal getEjbLocal() {
 		EjbBridgeSessionLocal ret = null;
@@ -106,7 +108,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/ejbca-ejb/EjbBridgeSessionBean!org.ejbca.core.ejb.EjbBridgeSessionLocal");
 			}
 		} catch (NamingException e) {
-			throw new RuntimeException("Cannot lookup EjbBridgeSessionLocal.", e);
+			throw new LocalLookupException("Cannot lookup EjbBridgeSessionLocal.", e);
 		}
 		return ret;
 	}
