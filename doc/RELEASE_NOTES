@@ -11,6 +11,21 @@ For upgrade instructions, please see UPGRADE.
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 
+EJBCA 6.2.3
+-----------
+This is a maintenance release with a new feature, a couple of major and some minor bug fixes and improvements. All in all, 8 issues have been fixed.
+
+* Noteworthy changes:
+- Regression: The new Certificate Profile GUI page caused information from one profile to bleed into others due to incorrect scoping 
+- Regression: The install command failed if a certificate profile or token properties file was specified in install.properties due to a couple of missing switches
+- New functionality: A publisher for Cert-Safe has been implemented
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+
 EJBCA 6.2.2
 -----------
 This is a maintenance release with one new feature, some minor bug fixes and minor improvements. All in all, 23 issues have been fixed.
