@@ -24,6 +24,8 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.Base64CertData;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.util.CertTools;
 
 /**
@@ -57,6 +59,37 @@ public class X509ResponseMessage implements CertificateResponseMessage {
 
     /** Possible clear text error information in the response. Defaults to null. */
     private String failText = null;
+    
+    private transient CertificateData certificateData;
+    private transient Base64CertData base64CertData;
+    
+    @Override
+    public CertificateData getCertificateData() {
+        return certificateData;
+    }
+    
+    @Override
+    public void setCertificateData(CertificateData certificateData) {
+        if (certificateData != null) {
+            this.certificateData = new CertificateData(certificateData);
+        } else {
+            this.certificateData = null;
+        }
+    }
+    
+    @Override
+    public Base64CertData getBase64CertData() {
+        return base64CertData;
+    }
+    
+    @Override
+    public void setBase64CertData(final Base64CertData base64CertData) {
+        if (base64CertData != null) {
+            this.base64CertData = new Base64CertData(base64CertData);
+        } else {
+            this.base64CertData = null;
+        }
+    }
 
     /**
      * Sets the complete certificate in the response message.

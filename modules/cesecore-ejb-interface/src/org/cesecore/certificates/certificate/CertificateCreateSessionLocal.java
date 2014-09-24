@@ -13,7 +13,6 @@
 package org.cesecore.certificates.certificate;
 
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.util.Date;
 
 import javax.ejb.Local;
@@ -158,7 +157,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      *            CVC CAs for sequence field. Can be set to null.
      * @param certGenParams Parameters for certificate generation (e.g for the CT extension), or null.
      * @param updateTime the time when this operation takes place
-     * @return Certificate that has been generated and signed by the CA
+     * @return Certificate that has been generated and signed by the CA, contained in a CertificateDataWrapper
      * 
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
      * @throws CertificateCreateException (rollback) if certificate couldn't be created.
@@ -175,7 +174,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * 
      */
-    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage,
+    CertificateDataWrapper createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage,
             Date notBefore, Date notAfter, Extensions extensions, String sequence, CertificateGenerationParams certGenParams, long updateTime)
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,

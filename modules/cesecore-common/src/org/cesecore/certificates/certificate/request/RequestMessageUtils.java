@@ -18,15 +18,11 @@ import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Collection;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -54,18 +50,8 @@ import org.ejbca.cvc.exception.ParseException;
  *
  * @version $Id$
  */
-public class RequestMessageUtils {
-	/**
-	 * Determines if a de-serialized file is compatible with this class.
-	 *
-	 * Maintainers must change this value if and only if the new version
-	 * of this class is not compatible with old versions. See Sun docs
-	 * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
-	 * /serialization/spec/version.doc.html> details. </a>
-	 *
-	 */
-	static final long serialVersionUID = 3597275157018205139L;
-
+public abstract class RequestMessageUtils {
+	
 	private static final Logger log = Logger.getLogger(RequestMessageUtils.class);
 
 	/** Tries to parse the byte array to create a request message of the correct type.
@@ -81,49 +67,6 @@ public class RequestMessageUtils {
 			log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
 			ret = genCVCRequestMessage(request);
 		}
-		return ret;
-	}
-
-	public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv, String provider){
-	    CertificateResponseMessage ret = null;
-		// Create the response message and set all required fields
-		try {
-			ret = (CertificateResponseMessage) responseClass.newInstance();
-		} catch (InstantiationException e) {
-			//TODO : do something with these exceptions
-			log.error("Error creating response message", e);
-			return null;
-		} catch (IllegalAccessException e) {
-			log.error("Error creating response message", e);
-			return null;
-		}
-		if (ret.requireSignKeyInfo()) {
-			ret.setSignKeyInfo(certs, signPriv, provider);
-		}
-		if (req.getSenderNonce() != null) {
-			ret.setRecipientNonce(req.getSenderNonce());
-		}
-		if (req.getTransactionId() != null) {
-			ret.setTransactionId(req.getTransactionId());
-		}
-		// Sender nonce is a random number
-		byte[] senderNonce = new byte[16];
-		Random randomSource = new Random();
-		randomSource.nextBytes(senderNonce);
-		ret.setSenderNonce(new String(Base64.encode(senderNonce)));
-		// If we have a specified request key info, use it in the reply
-		if (req.getRequestKeyInfo() != null) {
-			ret.setRecipientKeyInfo(req.getRequestKeyInfo());
-		}
-		// Which digest algorithm to use to create the response, if applicable
-		ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
-		// Include the CA cert or not in the response, if applicable for the response type
-		ret.setIncludeCACert(req.includeCACert());
-		// Hint to the response which request type it is in response to
-		ret.setRequestType(req.getRequestType());
-		ret.setRequestId(req.getRequestId());
-		// If there is some protection parameters we need to lift over from the request message, the request and response knows about it
-		ret.setProtectionParamsFromRequest(req);
 		return ret;
 	}
 

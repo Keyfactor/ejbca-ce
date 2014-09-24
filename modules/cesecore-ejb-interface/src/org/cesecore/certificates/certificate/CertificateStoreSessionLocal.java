@@ -54,7 +54,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param tag a custom string tagging this certificate for some purpose
      * 
      */
-    void storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
+    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
             String cafp, int status, int type, int certificateProfileId, String tag, long updateTime);
 
     /**

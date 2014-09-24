@@ -17,6 +17,7 @@ import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -52,7 +53,7 @@ public interface PublisherSession {
     /** Removes publisher data.
      * @throws AuthorizationDeniedException
      */
-    public void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /**
      * Stores the certificate to the given collection of publishers. See
@@ -66,11 +67,36 @@ public interface PublisherSession {
      * @throws AuthorizationDeniedException if access is denied to the CA issuing incert
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate incert,
+    boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
             String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
             int revocationReason, String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation) throws AuthorizationDeniedException;
     
+    
+    /**
+     * Performs the same operation as the other storeCertificate method in this class, but performs a lookup for a CertificateData and Base64CertData object
+     * 
+     * @param admin
+     * @param publisherids
+     * @param certificate
+     * @param username
+     * @param password
+     * @param userDN
+     * @param cafp
+     * @param status
+     * @param type
+     * @param revocationDate
+     * @param revocationReason
+     * @param tag
+     * @param certificateProfileId
+     * @param lastUpdate
+     * @param extendedinformation
+     * @return
+     * @throws AuthorizationDeniedException
+     */
+    boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate, String username,
+            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
+            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws AuthorizationDeniedException; 
     
     /**
      * Stores the CRL to the given collection of publishers. See BasePublisher
