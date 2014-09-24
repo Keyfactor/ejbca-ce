@@ -31,7 +31,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  *
  * @version $Id$
  */
-public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {    
+public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable, FullEntityPublisher {    
 
     private static final long serialVersionUID = -735659148394853025L;
     public static final String TRUE  = "true";
@@ -180,28 +180,14 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      */    
     public abstract boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
 
-    /**
-     * Publishes a CertificateData object in order to retain rowversion and  integrity protection data. Any publisher overriding this method must also override the getPublisherVersion
-     * method and return a value > 1 from there. 
-     * 
-     * @param authenticationToken an authentication token
-     * @param certificateData a complete CertificateData object
-     * @param base64CertData a complete Base64CertData object
-     * 
-     * @return true if storage was successful.
-     * 
-     * @throws PublisherException if a communication or other error occurs.
-     */
+    @Override
     public boolean storeCertificate(final AuthenticationToken authenticationToken, final CertificateData certificateData, final Base64CertData base64CertData) throws PublisherException {
         throw new UnsupportedOperationException("This publisher has not implemented this method, and it has been called in error.");
     }
-    
-    /**
-     *
-     * @return the version of this publisher, giving a hint of what methods it supports. Publishers implementing newer functionality should override this method.
-     */
-    public int getPublisherVersion() {
-        return PUBLISHER_BASE_VERSION;
+
+    @Override
+    public boolean isFullEntityPublishingSupported() {
+        return false;
     }
 
     /**
