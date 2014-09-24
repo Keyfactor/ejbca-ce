@@ -17,9 +17,12 @@ import java.util.List;
 
 import org.cesecore.authorization.rules.AccessRulePlugin;
 import org.cesecore.keybind.InternalKeyBinding;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSession;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.model.util.LocalLookupException;
 
 /**
  * @version $Id$
@@ -30,11 +33,21 @@ public class InternalKeybindingRulesReference implements AccessRulePlugin {
     @Override
     public List<String> getRules() {
         List<String> allRules = new ArrayList<String>();
-        for(InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
+        for (InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
             allRules.add(rule.resource());
-            
+
         }
-        InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession =  new EjbLocalHelper().getInternalKeyBindingMgmtSession();
+        InternalKeyBindingMgmtSession internalKeyBindingMgmtSession = null;
+        try {
+            internalKeyBindingMgmtSession = new EjbLocalHelper().getInternalKeyBindingMgmtSession();
+        } catch (LocalLookupException e) {
+            //Possibly we're not local, then use the remote interface instead
+            internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        }
+        if(internalKeyBindingMgmtSession == null) {
+            //Fail state, can't continue
+            throw new IllegalStateException("Can't perform lookup of internal keybindings, can't continue.");
+        }
         for (String type : internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet()) {
             for (InternalKeyBinding keyBinding : internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(type)) {
                 int id = keyBinding.getId();
