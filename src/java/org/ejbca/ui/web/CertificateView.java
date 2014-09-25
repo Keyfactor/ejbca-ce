@@ -52,7 +52,6 @@ import org.ejbca.util.HTMLTools;
  * A class transforming X509 certificate data into more readable form used
  * by JSP pages.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class CertificateView implements Serializable {
