@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -20,6 +19,7 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
@@ -47,7 +47,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws AuthorizationDeniedException if access was denied to the CA issuing cert
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate,
+    void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certificateWrapper,
             String username, String userDN, String cafp, int type, int reason, long revocationDate, String tag,
             int certificateProfileId, long lastUpdate) throws AuthorizationDeniedException;
 

@@ -431,14 +431,14 @@ public class CAInterfaceBean implements Serializable {
 		return returnval;
 	}
 
-	public String republish(CertificateView certificatedata) throws AuthorizationDeniedException {
+	public String republish(CertificateView certificateView) throws AuthorizationDeniedException {
 		String returnval = "CERTREPUBLISHFAILED";
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 		String username = null;
 		String password = null;
 		String dn = null;
 		ExtendedInformation ei = null;
-		final Certificate certificate = certificatedata.getCertificate();
+		final Certificate certificate = certificateView.getCertificate();
 		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
@@ -469,7 +469,7 @@ public class CAInterfaceBean implements Serializable {
 			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
-					if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), certificatedata.getCertificate(), username, password, dn,
+					if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), certificateView.getCertificate(), username, password, dn,
 							certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(),
 							certinfo.getTag(), certificateProfileId, certinfo.getUpdateTime().getTime(), ei)) {
 						returnval = "CERTREPUBLISHEDSUCCESS";

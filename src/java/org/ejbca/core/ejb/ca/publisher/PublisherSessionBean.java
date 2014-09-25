@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
@@ -100,19 +101,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
-    @Override
-    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate, String username,
-            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
-            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
-        String fingerprint = CertTools.getFingerprintAsString(certificate);
-        return storeCertificate(
-                admin,
-                publisherids,
-                new CertificateDataWrapper(certificate, CertificateData.findByFingerprint(entityManager, fingerprint), Base64CertData
-                        .findByFingerprint(entityManager, fingerprint)), username, password, userDN, cafp, status, type, revocationDate,
-                revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
-    }
-    
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
@@ -194,6 +182,23 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
+    @Override
+    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate, String username,
+            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
+            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        String fingerprint = CertTools.getFingerprintAsString(certificate);
+        final Base64CertData base64CertData;
+        if (CesecoreConfiguration.useBase64CertTable()) {
+            base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
+        } else {
+            base64CertData = null;
+        }
+        return storeCertificate(admin, publisherids,
+                new CertificateDataWrapper(certificate, CertificateData.findByFingerprint(entityManager, fingerprint), base64CertData), username,
+                password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
+    }
+    
+    
     private void addQueueData(final List<BasePublisher> publishersToQueue, final String username, final String password,
             final ExtendedInformation extendedInformation, final String userDN, final Certificate incert, final int status, final int publisherStatus) {
         for (final BasePublisher publ : publishersToQueue) {
@@ -222,10 +227,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate, String username, String userDN,
+    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certificateWrapper, String username, String userDN,
             String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate)
             throws AuthorizationDeniedException {
-        storeCertificate(admin, publisherids, certificate, username, null, userDN, cafp, CertificateConstants.CERT_REVOKED, type, revocationDate, reason,
+        storeCertificate(admin, publisherids, certificateWrapper, username, null, userDN, cafp, CertificateConstants.CERT_REVOKED, type, revocationDate, reason,
                 tag, certificateProfileId, lastUpdate, null);
     }
 
