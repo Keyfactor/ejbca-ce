@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -331,7 +332,12 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         // actual cert or a native query w SqlResultSetMapping..
 
                         CertificateData cd = CertificateData.findByFingerprint(entityManager, fingerprint);
-                        final Base64CertData base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
+                        final Base64CertData base64CertData;
+                        if(CesecoreConfiguration.useBase64CertTable()) {
+                            base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
+                        } else {
+                            base64CertData = null;
+                        }
                         if (cd == null) {
                             throw new FinderException();
                         }

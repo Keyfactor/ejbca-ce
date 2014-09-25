@@ -34,7 +34,9 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -105,19 +107,27 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
     	    // that is part if the transaction in the EntityManager, so we need to get the object from the EntityManager.
-            CertificateData info = CertificateData.findByFingerprint(entityManager, CertTools.getFingerprintAsString(cert));
-    	    final String cafp = info.getCaFingerprint();
-    	    final String username = info.getUsername();
+    	    final String fingerprint = CertTools.getFingerprintAsString(cert);
+            final CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
+            final Base64CertData base64CertData;
+            if(CesecoreConfiguration.useBase64CertTable()) {
+                base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
+            } else {
+                base64CertData = null;
+            }
+    	    final String cafp = certificateData.getCaFingerprint();
+    	    final String username = certificateData.getUsername();
     	    final String password = null;
-    	    final int status = info.getStatus();
-    	    final int type = info.getType();
-    	    final String tag = info.getTag();
-    	    final long updateTime = info.getUpdateTime(); // Set the date to the same as in the database to ensure that publishing works as expected 
-    	    final int certProfile = info.getCertificateProfileId();
+    	    final int status = certificateData.getStatus();
+    	    final int type = certificateData.getType();
+    	    final String tag = certificateData.getTag();
+    	    final long updateTime = certificateData.getUpdateTime(); // Set the date to the same as in the database to ensure that publishing works as expected 
+    	    final int certProfile = certificateData.getCertificateProfileId();
     		// Only publish the revocation if it was actually performed
+    	    CertificateDataWrapper certificateDataWrapper = new CertificateDataWrapper(cert, certificateData, base64CertData);
     		if ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) {
     			// unrevocation, -1L as revocationDate
-    		    final boolean published = publisherSession.storeCertificate(admin, publishers, cert, username, password, userDataDN,
+    		    final boolean published = publisherSession.storeCertificate(admin, publishers, certificateDataWrapper, username, password, userDataDN,
         				cafp, status, type, -1L, reason, tag, certProfile, updateTime, null);
         		if (published) {
                     final String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));
@@ -132,7 +142,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		}    			
     		} else {
     			// revocation
-        		publisherSession.revokeCertificate(admin, publishers, cert, username, userDataDN, cafp, type, reason, revocationDate.getTime(), tag, certProfile, updateTime);    			
+        		publisherSession.revokeCertificate(admin, publishers, certificateDataWrapper, username, userDataDN, cafp, type, reason, revocationDate.getTime(), tag, certProfile, updateTime);    			
     		}
     	}
     }

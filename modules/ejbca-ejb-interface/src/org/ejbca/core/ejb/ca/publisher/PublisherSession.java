@@ -74,7 +74,9 @@ public interface PublisherSession {
     
     
     /**
-     * Performs the same operation as the other storeCertificate method in this class, but performs a lookup for a CertificateData and Base64CertData object
+     * Performs the same operation as the other storeCertificate method in this class, but performs a lookup for a CertificateData and Base64CertData object.
+     * 
+     * To avoid unnecessary database lookups, only use this method where the CertificateData object isn't immediately available. 
      * 
      * @param admin
      * @param publisherids
