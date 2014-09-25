@@ -108,7 +108,8 @@ public class CustomPublisherContainer extends BasePublisher {
   
 	@Override
 	public boolean isFullEntityPublishingSupported() {
-	    return this.getCustomPublisher() instanceof FullEntityPublisher;
+	    return this.getCustomPublisher() instanceof FullEntityPublisher
+	            && ((FullEntityPublisher)this.getCustomPublisher()).isFullEntityPublishingSupported();
 	}
     
     @Override
