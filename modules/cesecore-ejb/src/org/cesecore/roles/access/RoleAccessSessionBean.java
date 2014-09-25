@@ -71,10 +71,6 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        if (authenticationToken instanceof LocalJvmOnlyAuthenticationToken) {
-            // Ensure that the matching procedure below also works for remote EJB calls
-            ((LocalJvmOnlyAuthenticationToken) authenticationToken).initRandomToken();
-        }
         final List<RoleData> roleDatas = getAllRoles();
         final List<String> roleNames = new ArrayList<String>();
         for (final RoleData roleData : roleDatas) {
@@ -86,5 +82,18 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
         }
         return roleNames;
     }
-    
+
+    /*
+     * NOTE: This separate method for remote EJB calls exists for a good reason: If this is invoked as a part of a
+     * local transaction, the LocalJvmOnlyAuthenticationToken will be valid for subsequent authentication calls.
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<String> getRolesMatchingAuthenticationTokenRemote(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        if (authenticationToken instanceof LocalJvmOnlyAuthenticationToken) {
+            // Ensure that the matching procedure below also works for remote EJB calls
+            ((LocalJvmOnlyAuthenticationToken) authenticationToken).initRandomToken();
+        }
+        return getRolesMatchingAuthenticationToken(authenticationToken);
+    }
 }
