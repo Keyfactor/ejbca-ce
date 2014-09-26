@@ -109,8 +109,8 @@ appserver.home         : ${appserver.home}
      </target>
 
 	<target name="ejbca:adminweb">
-		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost -->
-	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
+		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost, otherwise add and altname with the same dnsName as hostname. -->
+	    <condition property="httpsserver.an" value="dnsName=localhost,IPAddress=127.0.0.1" else="dnsName=${httpsserver.hostname}">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>		
 		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;${httpsserver.dn}&quot; --altname &quot;${httpsserver.an}&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
