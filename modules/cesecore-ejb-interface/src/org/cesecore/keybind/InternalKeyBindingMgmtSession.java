@@ -239,7 +239,7 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the unique identifier of the InternalKeyBinding
-     * @return a list of InternalKeyBindings that extend a non-mutable general class.
+     * @return a InternalKeyBindingInfo, or null if the key binding does not exist
      * @throws AuthorizationDeniedException of the authentication token is not authorized to this operation
      */
     InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
