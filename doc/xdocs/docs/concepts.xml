@@ -106,6 +106,18 @@ Additionally the trusted certificates can be used to verify that OCSP requests a
 properties can be used to specify how long an OCSP response should be valid.
 </p>
 </subsection>
+<subsection name="Peer Connector">
+<p>
+A Peer Connector is a representation of a remote (EJBCA or EJBCA compatible) system and can be used for automated management of the remote system.
+A proprietary protocol is used over a dual authenticated HTTPS channel (where the client certificate keys can be stored in an HSM).
+</p>
+<p>
+Example:
+If one EJBCA instance (acting as CA) is given sufficient authorization at another EJBCA instance (acting as VA), the first can
+publish certificate revocation information to the second instance or perform automatic renewal of OCSP signing keys and
+certificates over the secure channel.
+</p>
+</subsection>
 <subsection name="External RA">
 <p>
 In some cases, for security reasons, is it preferable to deny all in-bound traffic to the CA and instead let the CA

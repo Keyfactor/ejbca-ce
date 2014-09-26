@@ -2012,6 +2012,44 @@ for an example of how this is used.
 </subsection>
 </section>
 
+<section name="Managing Remote Systems">
+<p>
+An EJBCA instance can be both target and initiator of remote operations from an other EJBCA instance.
+</p><p>
+Normally the instance with higher security requirements (e.g. an EJBCA acting as CA) initates connections to a system with
+lower security requirements (e.g. an EJBCA actiong as VA). 
+</p>
+<subsection name="Outgoing connections and peer connectors">
+<p>
+Outgoing connections are allowed by default and can be disabled by administrators authorized to "/peer/modify" recursive.
+See the <a href="concepts.html#Peer Connector">concepts page</a> for a high level description of what Peer Connectors are.
+</p><p>
+To authenticate to the remote system, you need to configure an <a href="#AuthenticationKeyBinding">AuthenticationKeyBinding</a>.
+The AuthenticationKeyBinding is the EJBCA instance identity and consists of a client SSL X509 certificate and a key pair in
+one of the instance's Crypto Tokens.
+Ensure that the AuthenticationKeyBinding is configured to trust the remote system's server SSL certificate.
+</p><p>
+In the overview of Peer Connectors, you can see the human readable name, connection end point and current connection status.
+You can "Ping" any of the remote systems to check connectivity and the result is the round-trip time from and to the
+application over the secure connection (giving a more accurate view than a network ping using the ICMP protocol).
+</p><p>
+For performance reasons connections are initiated when needed and reused whenever possible.
+Only the first connection to a remote system using the same client certificate will be subject to a full authentication check
+and subsequent requests will share the same credential.
+This means that an initial "Ping" request to a peer system will be significantly slower than the next one.
+</p><p>
+...TODO
+</p>
+</subsection>
+<subsection name="Incoming connections">
+<p>
+Incoming connections are not allowed by default and can be enabled by administrators authorized to "/peer/modify" recursive. 
+</p>
+<p>
+...TODO
+</p>
+</subsection>
+</section>
 
 <section name="EJBCA client toolbox">
 <p>
