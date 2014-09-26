@@ -69,7 +69,7 @@ public class InternalKeyBindingImportCertificateCommand extends RudInternalKeyBi
                 if (!CertTools.isCA(certificate)) {
                     final byte[] certificateBytes = certificate.getEncoded();
                     internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(getAdmin(), internalKeyBindingId, certificateBytes);
-                    getLogger().info("Operation complete successfully.");
+                    getLogger().info("Operation completed successfully.");
                     imported = true;
                     break;
                 } else {

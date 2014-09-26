@@ -78,7 +78,7 @@ public class InternalKeyBindingExportCertificateCommand extends RudInternalKeyBi
             PEMWriter pw = new PEMWriter(new FileWriter(filename));            
             pw.writeObject(cert);
             pw.close();
-            getLogger().info("Operation complete successfully.");
+            getLogger().info("Operation completed successfully.");
             return CommandResult.SUCCESS;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write PEM format certificate to \"" + filename + "\". " + e.getMessage());
