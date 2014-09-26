@@ -12,12 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -55,6 +59,7 @@ public class InternalKeyBindingImportCertificateCommandTest {
             InternalKeyBindingImportCertificateCommandTest.class.getSimpleName());
 
     private InternalKeyBindingImportCertificateCommand command = new InternalKeyBindingImportCertificateCommand();
+    private InternalKeyBindingExportCertificateCommand commandexport = new InternalKeyBindingExportCertificateCommand();
 
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -68,7 +73,9 @@ public class InternalKeyBindingImportCertificateCommandTest {
     private static int cryptoTokenId;
     private static int internalKeyBindingId;
     private File certificateFile;
-
+    private File certificateExportFile;
+    private String certSerial;
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -96,12 +103,14 @@ public class InternalKeyBindingImportCertificateCommandTest {
         certificateFile = File.createTempFile("test", ".pem");
         Certificate certificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, TESTCLASS_NAME, "C=SE,O=foo,CN=" + TESTCLASS_NAME,
                 internalKeyBindingId, x509ca.getCAId());
+        certSerial = CertTools.getSerialNumberAsString(certificate);
         FileOutputStream fileOutputStream = new FileOutputStream(certificateFile);
         try {
             fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(certificate)));
         } finally {
             fileOutputStream.close();
         }
+        certificateExportFile = File.createTempFile("testexport", ".pem");
     }
 
     @After
@@ -123,10 +132,19 @@ public class InternalKeyBindingImportCertificateCommandTest {
     }
 
     @Test
-    public void testImportCertificate() throws AuthorizationDeniedException {
+    public void testImportExportCertificate() throws AuthorizationDeniedException, CertificateParsingException, FileNotFoundException {
         String[] args = new String[] { TESTCLASS_NAME, certificateFile.getAbsolutePath() };
         command.execute(args);
         InternalKeyBinding keyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
         assertNotNull("Certificate was not imported", keyBinding.getCertificateId());
+        // Now export the same cert
+        String[] argsexport = new String[] { TESTCLASS_NAME, certificateExportFile.getAbsolutePath() };
+        commandexport.execute(argsexport);
+        List<Certificate> certs = CertTools.getCertsFromPEM(certificateExportFile.getAbsolutePath());
+        assertEquals("One certificate should be returned", 1, certs.size());
+        Certificate cert = certs.get(0);
+        assertEquals("Same certificate should have been exported as was imported", certSerial, CertTools.getSerialNumberAsString(cert));
+        
+        
     }
 }
