@@ -91,7 +91,7 @@ public class GetCaCertCommand extends BaseCaAdminCommand {
                     fos.write(rootcert.getEncoded());
                 }
                 fos.close();
-                log.info("Wrote Root CA certificate to '" + filename + "' using " + (pem ? "PEM" : "DER") + " encoding.");
+                log.info("Wrote CA certificate to '" + filename + "' using " + (pem ? "PEM" : "DER") + " encoding.");
                 return CommandResult.SUCCESS;
             } else {
                 log.error("No CA certificate found.");
