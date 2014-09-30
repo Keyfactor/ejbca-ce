@@ -133,6 +133,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    public List<Integer> getInternalKeyBindingIds(String internalKeyBindingType) {
+        return internalKeyBindingDataSession.getIds(internalKeyBindingType);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType) {
         final List<Integer> allIds = internalKeyBindingDataSession.getIds(internalKeyBindingType);
         final List<Integer> authorizedIds = new ArrayList<Integer>();
