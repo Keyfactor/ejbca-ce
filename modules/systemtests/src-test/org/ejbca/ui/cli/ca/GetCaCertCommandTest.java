@@ -16,65 +16,88 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
-import org.junit.After;
-import org.junit.Before;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * @version $Id$
  *
  */
 public class GetCaCertCommandTest {
+    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
 
-    private static final String CA_NAME = "CaGetRootCertCommandTest";
-    private static final String CA_DN = "CN=" + CA_NAME;
-
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-
-    private X509CA ca;
-    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
-            GetCaCertCommandTest.class.getSimpleName());
+    private static final String RESULT_FILENAME = "result.pem";
+    private static X509CA rootCa;
+    private static  X509CAInfo cainfo;
+    private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(GetCaCertCommandTest.class.getSimpleName());
 
     private final GetCaCertCommand command = new GetCaCertCommand();
-    private File resultFile;
 
-    @Before
-    public void setup() throws Exception {
-        resultFile = File.createTempFile("test", null);
-        ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
-        caSession.addCA(authenticationToken, ca);
+    @Rule
+    public TemporaryFolder testFolder = new TemporaryFolder();
+    
+    
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        rootCa = CaTestUtils.createTestX509CA("CN=GetCaCertCommandTestRoot", null, false);
+        caSession.addCA(authenticationToken, rootCa);
+        cainfo = new X509CAInfo("CN=GetCaCertCommandTestSub", "GetCaCertCommandTestSub", CAConstants.CA_ACTIVE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, rootCa.getCAId(), rootCa.getCertificateChain(), rootCa.getCAToken());
+        caAdminSession.createCA(authenticationToken, cainfo);
+        
     }
 
-    @After
-    public void tearDown() throws AuthorizationDeniedException {
-        if (resultFile != null) {
-            FileTools.delete(resultFile);
+    @AfterClass
+    public static void afterClass() throws AuthorizationDeniedException {
+
+        if (rootCa != null) {
+            caSession.removeCA(authenticationToken, rootCa.getCAId());
         }
-        if (ca != null) {
-            caSession.removeCA(authenticationToken, ca.getCAId());
+        if(cainfo != null) {
+            caSession.removeCA(authenticationToken, cainfo.getCAId());
         }
     }
 
     @Test
-    public void testCommand() throws CertificateException, FileNotFoundException {
-        String[] args = new String[] { ca.getName(), resultFile.getAbsolutePath() };
+    public void testCommandGetRootCert() throws CertificateException, IOException {
+        File resultFile = testFolder.newFile(RESULT_FILENAME);
+        String[] args = new String[] { rootCa.getName(), resultFile.getAbsolutePath()};
         command.execute(args);
         Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
         assertNotNull("No certificate was produced.", result);
-        assertTrue("Root cert was not delivered.", ca.getCACertificate().equals(result));
+        assertTrue("Root cert was not delivered.", rootCa.getCACertificate().equals(result));
+    }
+    
+    @Test
+    public void testCommandGetSubCert() throws CertificateException, IOException, CADoesntExistsException, AuthorizationDeniedException {
+        File resultFile = testFolder.newFile(RESULT_FILENAME);
+        String[] args = new String[] { cainfo.getName(), resultFile.getAbsolutePath()};
+        command.execute(args);
+        Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
+        assertNotNull("No certificate was produced.", result);
+        assertTrue("SubCa cert was not delivered.", new ArrayList<Certificate>( caSession.getCAInfo(authenticationToken, cainfo.getCAId()).getCertificateChain()).get(0).equals(result));
     }
 
 }
