@@ -14,6 +14,7 @@ package org.cesecore.keybind;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.List;
 
 import javax.ejb.Local;
 
@@ -27,7 +28,15 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
  */
 @Local
 public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMgmtSession {
-        
+       
+    /**
+     * Returns a list of all internal key bindings of a certain type, as {@link InternalKeyBindingInfo}s
+     * 
+     * @param internalKeyBindingType the key binding type
+     * @return a list of all internal key bindings of that type, as {@link InternalKeyBindingInfo}s
+     */
+    List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType);
+    
     /**
      * Internal (local only) method to get keybinding info without logging the authorization check
      * (the auth check is performed though).
@@ -56,6 +65,6 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
      */
-    public Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
+    Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
                     InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException;
 }
