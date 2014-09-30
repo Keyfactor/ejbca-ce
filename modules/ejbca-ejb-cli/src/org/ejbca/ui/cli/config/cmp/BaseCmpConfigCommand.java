@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -20,7 +20,7 @@ import org.ejbca.ui.cli.config.ConfigBaseCommand;
 /**
  * Shows the current server configuration
  * 
- * @version $Id: CmpConfigCommand.java 18393 2014-01-22 09:38:58Z mikekushner $
+ * @version $Id$
  */
 public abstract class BaseCmpConfigCommand extends ConfigBaseCommand {
      
