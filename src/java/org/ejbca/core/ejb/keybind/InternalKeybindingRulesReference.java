@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cesecore.authorization.rules.AccessRulePlugin;
-import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSession;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
@@ -49,8 +48,7 @@ public class InternalKeybindingRulesReference implements AccessRulePlugin {
             throw new IllegalStateException("Can't perform lookup of internal keybindings, can't continue.");
         }
         for (String type : internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet()) {
-            for (InternalKeyBinding keyBinding : internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(type)) {
-                int id = keyBinding.getId();
+            for (int id : internalKeyBindingMgmtSession.getInternalKeyBindingIds(type)) {
                 for (InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
                     if (rule != InternalKeyBindingRules.BASE) {
                         allRules.add(rule.resource() + "/" + id);
