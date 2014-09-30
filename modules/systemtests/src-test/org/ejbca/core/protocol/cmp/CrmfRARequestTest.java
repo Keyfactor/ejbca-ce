@@ -689,7 +689,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
             }
         } finally {
-            String escapedName = StringTools.stripUsername(username);
+            String escapedName = "another/nullguy/00\\<do\\>";
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, escapedName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } catch (NotFoundException e) {
