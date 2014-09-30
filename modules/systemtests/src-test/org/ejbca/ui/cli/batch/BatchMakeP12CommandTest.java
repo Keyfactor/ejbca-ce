@@ -18,11 +18,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -53,23 +53,14 @@ public class BatchMakeP12CommandTest extends CaTestCase {
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityAccessSessionRemote.class);
 
-    private static String username, username1;
+    private final String username1 = BatchMakeP12CommandTest.class.getSimpleName() + "1";
+    private final String username2 = BatchMakeP12CommandTest.class.getSimpleName() + "2";
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
         log.trace(">test01CreateNewUser()");
-        username = BatchMakeP12CommandTest.class.getName() + "1";
-        username1 = BatchMakeP12CommandTest.class.getName() + "2";
-
-        endEntityManagementSession.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, 0, caid);
-        endEntityManagementSession.setClearTextPassword(admin, username, "foo123");
-
-        log.debug("created " + username + ", pwd=foo123");
-        assertEquals("end entity password wasn't set", "foo123", findPassword(username));
-
+  
         endEntityManagementSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.TOKEN_SOFT_P12, 0, caid);
@@ -77,17 +68,25 @@ public class BatchMakeP12CommandTest extends CaTestCase {
 
         log.debug("created " + username1 + ", pwd=foo123");
         assertEquals("end entity password wasn't set", "foo123", findPassword(username1));
+
+        endEntityManagementSession.addUser(admin, username2, "foo123", "C=SE, O=AnaTom, CN=" + username2, "", username2 + "@anatom.se", false,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
+                SecConst.TOKEN_SOFT_P12, 0, caid);
+        endEntityManagementSession.setClearTextPassword(admin, username2, "foo123");
+
+        log.debug("created " + username2 + ", pwd=foo123");
+        assertEquals("end entity password wasn't set", "foo123", findPassword(username2));
         log.trace("<test01CreateNewUsers()");
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        if (endEntityAccessSession.findUser(admin, username) != null) {
-            endEntityManagementSession.deleteUser(admin, username);
-        }
         if (endEntityAccessSession.findUser(admin, username1) != null) {
             endEntityManagementSession.deleteUser(admin, username1);
+        }
+        if (endEntityAccessSession.findUser(admin, username2) != null) {
+            endEntityManagementSession.deleteUser(admin, username2);
         }
     }
 
@@ -98,20 +97,28 @@ public class BatchMakeP12CommandTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
-    public void testMakeP12() throws Exception {
-        log.trace(">test02MakeP12()");
-
+    public void testMakeP12All() throws Exception {
         BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.execute("-dir", tmpfile.getParent());
-        //log.debug("tempdir="+tmpfile.getParent());
-        //   makep12.setMainStoreDir(tmpfile.getParent());
-        //   makep12.createAllNew(admin, admin);
-        log.trace("<test02MakeP12()");
-        assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username)));
-        assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username1)));
+        assertTrue("No file was created.", tmpfile.exists());
+        EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
+        EndEntityInformation user2 = endEntityAccessSession.findUser(admin, username1);
+        assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus()); 
+        assertEquals("User2 was not generated.", EndEntityConstants.STATUS_GENERATED, user2.getStatus()); 
     }
 
+    @Test
+    public void testMakeP12ForSingleUser() throws Exception {
+        BatchMakeP12Command makep12 = new BatchMakeP12Command();
+        File tmpfile = File.createTempFile("ejbca", "p12");
+        makep12.execute("-dir", tmpfile.getParent(), "--username", username1);
+        assertTrue("No file was created.", tmpfile.exists());
+        EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
+        assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus()); 
+    }
+
+    
     /**
      * Gets the clear text password of a user.
      */
