@@ -383,6 +383,10 @@
 		<map from="${src.dir}/" to=""/>
 	</pathconvert>
 
+	<condition property="exclude.ee-ejbbridge-implementation" value="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionBean.java" else="exclude.ee-ejbbridge-implementation.nonexistingvalue">
+		<istrue value="${mod.peerconnector.exists}"/>
+	</condition>
+
 	<fileset id="source.fileset.ejbca-ejb" dir="${src.dir}" excludes="${source.fileset.ejbca-util.files} ${source.fileset.ejbca-common-web.files}">
 		<!-- CESeCore dependencies instatiated through reflection 
        	<include name="org/cesecore/audit/impl/**/*.java"/>-->
@@ -395,6 +399,8 @@
 		<exclude name="org/ejbca/util/PerformanceTest.java" />
 		<!-- Tool used to tidy generate EJB depenency graph -->
 		<exclude name="org/ejbca/util/EjbDependencyGraphTool.java"/>
+		<!-- Conditional exclude of EjbBridgeSessionBean implementation -->
+		<exclude name="${exclude.ee-ejbbridge-implementation}"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-ejb" pathsep=" " property="source.fileset.ejbca-ejb.files">
 		<map from="${src.dir}/" to=""/>
@@ -435,7 +441,7 @@
 		</pathconvert>
 
 		<!-- Only include the XML defined interceptors for every EJB if we are non-production mode -->
-        <condition property="include-ejb-jar-xml" value="" else="ejb-jar.xml">
+        <condition property="include-ejb-jar-xml" value="ejb-jar-prod.xml" else="ejb-jar.xml">
             <equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
         </condition>
     	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin" file="${build.dir}" classpath="servicemanifest-ejbca-ejb.classpath"/>
