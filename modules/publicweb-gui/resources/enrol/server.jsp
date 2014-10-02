@@ -12,6 +12,9 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
   <code>-----END CERTIFICATE REQUEST-----</code>
 </p>
 
+<p>If the CA signing the request is an External CA, choose "PEM - certificate only" as the result type.
+</p> 
+
 <form name="EJBCA" action="../certreq" method="post" enctype="multipart/form-data">
   <fieldset >
     <legend>Enroll</legend>
