@@ -72,7 +72,8 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal, EnterpriseEditionE
     private static final Logger log = Logger.getLogger(EjbLocalHelper.class);
 	private static Context initialContext = null;
 	private static ReentrantLock initialContextLock = new ReentrantLock(true);
-	private static boolean useEjb31GlobalJndiName = false;
+	// Static is more performant, but a failed JEE5 lookup from one module would block all other JEE5 lookups
+	private /*static*/ boolean useEjb31GlobalJndiName = false;
 	
 	public static final String DEFAULT_MODULE = "ejbca-ejb";
 
