@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
@@ -519,6 +520,29 @@ public class PublisherTest {
             this.internalCertStoreSession.removeCertificate(cert);
         }
         log.trace("<testVAPublisherOnlyPublishRevoked()");
+    }
+
+    @Test
+    public void testParallelPublishing() throws Exception {
+        final String TESTNAME = PublisherTest.class.getSimpleName() + "_testParallelPublishing";
+        final CustomPublisherContainer publisher = new CustomPublisherContainer();
+        publisher.setClassPath(DummyCustomPublisher.class.getName());
+        publisher.setDescription("Used in Junit Test '"+ TESTNAME + "'. Remove this one.");
+        final List<Integer> publishers = new ArrayList<Integer>();
+        for (int i=0; i<30; i++) {
+            final String PUBLISHER_NAME = TESTNAME + i;
+            publisherNames.add(PUBLISHER_NAME); // For cleanup in @AfterClass
+            publisherProxySession.addPublisher(internalAdmin, PUBLISHER_NAME, publisher);
+            final int publisherId = publisherProxySession.getPublisherId(PUBLISHER_NAME);
+            publisherProxySession.testConnection(publisherId);
+            publishers.add(publisherId);
+        }
+        final Certificate testCertificate = CertTools.getCertfromByteArray(testcert);
+        final String cafp = "CA fingerprint could be anything in this test.";
+        final boolean ret = publisherSession.storeCertificate(this.admin, publishers, testCertificate, "username", "foo123", null, cafp,
+                CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, -1,  RevokedCertInfo.NOT_REVOKED, "tag",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, System.currentTimeMillis(), null);
+        assertTrue("Unable to store certificate for " + publishers.size() + " publishers in one call.", ret);
     }
 
 	/**
