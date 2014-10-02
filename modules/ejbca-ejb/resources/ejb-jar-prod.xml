@@ -39,15 +39,4 @@
             </ejb-local-ref>
         </session>
     </enterprise-beans>
-    <interceptors>
-        <interceptor>
-            <interceptor-class>org.ejbca.core.ejb.ProfileAndTraceInterceptor</interceptor-class>
-        </interceptor>
-    </interceptors>
-    <assembly-descriptor>
-        <interceptor-binding>
-            <ejb-name>*</ejb-name>
-            <interceptor-class>org.ejbca.core.ejb.ProfileAndTraceInterceptor</interceptor-class>
-        </interceptor-binding>
-    </assembly-descriptor>
 </ejb-jar>
