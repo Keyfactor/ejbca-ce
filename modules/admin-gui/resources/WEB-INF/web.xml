@@ -273,5 +273,10 @@
         <local>org.ejbca.core.ejb.EjbBridgeSessionLocal</local>
         <ejb-link>EjbBridgeSessionBean</ejb-link>
     </ejb-local-ref>
-    <!--@peer-connector-reference@-->
+    <ejb-local-ref>
+        <description>An EJB that can provide references to all enterprise edition SSBs to avoid this kind of declarations</description>
+        <ejb-ref-name>EnterpriseEditionEjbBridgeSession</ejb-ref-name>
+        <local>org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal</local>
+        <ejb-link>EnterpriseEditionEjbBridgeSessionBean</ejb-link>
+    </ejb-local-ref>
 </web-app>

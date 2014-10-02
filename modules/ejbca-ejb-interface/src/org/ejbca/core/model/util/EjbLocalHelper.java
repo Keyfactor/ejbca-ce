@@ -36,6 +36,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.EjbcaAuditorSessionLocal;
@@ -66,13 +67,15 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
  * 
  * @version $Id$
  */
-public class EjbLocalHelper implements EjbBridgeSessionLocal {
+public class EjbLocalHelper implements EjbBridgeSessionLocal, EnterpriseEditionEjbBridgeSessionLocal {
 	
     private static final Logger log = Logger.getLogger(EjbLocalHelper.class);
 	private static Context initialContext = null;
 	private static ReentrantLock initialContextLock = new ReentrantLock(true);
 	private static boolean useEjb31GlobalJndiName = false;
 	
+	public static final String DEFAULT_MODULE = "ejbca-ejb";
+
 	private Context getInitialContext() throws NamingException {
 		try {
 			initialContextLock.lock();
@@ -102,10 +105,13 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 			// Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
 			// java:global[/<app-name>]/<module-name>/<bean-name>[!<fully-qualified-interface-name>]
 			useEjb31GlobalJndiName = true;	// So let's not try what we now know is a failing method ever again..
+			if (log.isDebugEnabled()) {
+	            log.debug("Failed JEE5 version of EjbBridgeSessionLocal JNDI lookup. All future lookups will JEE6 version lookups.");
+			}
 		}
 		try {
 			if (useEjb31GlobalJndiName) {
-				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/ejbca-ejb/EjbBridgeSessionBean!org.ejbca.core.ejb.EjbBridgeSessionLocal");
+				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/"+DEFAULT_MODULE+"/EjbBridgeSessionBean!org.ejbca.core.ejb.EjbBridgeSessionLocal");
 			}
 		} catch (NamingException e) {
 			throw new LocalLookupException("Cannot lookup EjbBridgeSessionLocal.", e);
@@ -113,29 +119,33 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 		return ret;
 	}
 
-	/**
+	   /**
      * Requires a "ejb-local-ref" definition in web.xml and ejb-jar.xml from all accessing components
      * or an application server that support global JNDI names (introduced in EJB 3.1).
+     * @return a reference to the bridge SSB
      * 
-     * Requires the naming convention that SSBNameLocal is the local interface of SSBNameBean.
-     * 
-	 * @param c is the Local interface class
-	 * @param modulename is the ejb sub-module where this bean is present
-	 * @return the interface or silently null, if the bean is not available
-	 */
-    @SuppressWarnings("unchecked")
-    public <T> T getEjbLocal(final Class<T> c, final String modulename) {
-        T ret = null;
+     * @throws LocalLookupException if local lookup couldn't be made.
+     */
+    private EnterpriseEditionEjbBridgeSessionLocal getEnterpriseEditionEjbLocal() {
+        EnterpriseEditionEjbBridgeSessionLocal ret = null;
         try {
-            ret = (T) getInitialContext().lookup("java:comp/env/" + c.getSimpleName().replaceAll("Local", ""));
+            if (!useEjb31GlobalJndiName) {
+                ret = (EnterpriseEditionEjbBridgeSessionLocal) getInitialContext().lookup("java:comp/env/EnterpriseEditionEjbBridgeSession");
+            }
         } catch (NamingException e) {
             // Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
             // java:global[/<app-name>]/<module-name>/<bean-name>[!<fully-qualified-interface-name>]
-            try {
-                ret = (T) getInitialContext().lookup("java:global/ejbca/"+modulename+"/"+c.getSimpleName().replaceAll("Local", "Bean") + "!"+c.getName());
-            } catch (NamingException e2) {
-                log.debug(e2.getMessage());
+            useEjb31GlobalJndiName = true;  // So let's not try what we now know is a failing method ever again..
+            if (log.isDebugEnabled()) {
+                log.debug("Failed JEE5 version of EnterpriseEditionEjbBridgeSessionLocal JNDI lookup. All future lookups will JEE6 version lookups.");
             }
+        }
+        try {
+            if (useEjb31GlobalJndiName) {
+                ret = (EnterpriseEditionEjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/peerconnector-ejb/EnterpriseEditionEjbBridgeSessionBean!org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal");
+            }
+        } catch (NamingException e) {
+            throw new LocalLookupException("Cannot lookup EnterpriseEditionEjbBridgeSessionLocal.", e);
         }
         return ret;
     }
@@ -179,4 +189,15 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return getEjbLocal().getCryptoTokenManagementSession(); }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return getEjbLocal().getInternalKeyBindingMgmtSession(); }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getEnterpriseEditionEjbLocal(final Class<T> localInterfaceClass, final String modulename) {
+        try {
+            // Try JEE6 lookup first
+            return (T) getInitialContext().lookup("java:global/ejbca/"+modulename+"/"+localInterfaceClass.getSimpleName().replaceAll("Local", "Bean") + "!"+localInterfaceClass.getName());
+        } catch (NamingException e) {
+            return getEnterpriseEditionEjbLocal().getEnterpriseEditionEjbLocal(localInterfaceClass, null);
+        }
+    }
 }
