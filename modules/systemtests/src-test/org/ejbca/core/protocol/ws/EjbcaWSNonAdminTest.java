@@ -456,7 +456,9 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @AfterClass
     public static void cleanUpAdmins() throws Exception {
         cleanUpAdmins(WS_ADMIN_ROLENAME);
-        endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        if (endEntityManagementSession.existsUser("WSTESTTOKENUSER1")) {
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
 
     }
 
