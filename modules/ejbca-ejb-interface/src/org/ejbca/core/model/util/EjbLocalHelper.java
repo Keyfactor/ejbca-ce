@@ -127,7 +127,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     public <T> T getEjbLocal(final Class<T> c, final String modulename) {
         T ret = null;
         try {
-            ret = (T) getInitialContext().lookup("java:comp/env/" + c.getName().replaceAll("Local", ""));
+            ret = (T) getInitialContext().lookup("java:comp/env/" + c.getSimpleName().replaceAll("Local", ""));
         } catch (NamingException e) {
             // Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
             // java:global[/<app-name>]/<module-name>/<bean-name>[!<fully-qualified-interface-name>]
