@@ -217,6 +217,7 @@ public class OcspKeyRenewalTest {
             roleManagementSession.remove(authenticationToken, TESTCLASSNAME);
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
         try {
             // find all certificates for Ocsp signing user and remove them
@@ -226,6 +227,7 @@ public class OcspKeyRenewalTest {
             }
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
         try {
             // find all certificates for Ocsp ECC signing user and remove them
@@ -235,21 +237,25 @@ public class OcspKeyRenewalTest {
             }
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
         try {
             internalCertificateStoreSession.removeCertificate(caCertificate);
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
         try {
             internalCertificateStoreSession.removeCertificate(caEccCertificate);
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
         try {
             internalCertificateStoreSession.removeCertificate(clientSSLCertificate);
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
         
         // Delete KeyBindings
@@ -270,6 +276,7 @@ public class OcspKeyRenewalTest {
             }
         } catch (Exception e) {
             // Get out of loop and ignore
+            log.debug(e.getMessage());
         }
         cleanupCryptoToken(caName);
         final String caEccName = CertTools.getPartFromDN(CA_ECC_DN, "CN");
@@ -280,6 +287,7 @@ public class OcspKeyRenewalTest {
             }
         } catch (Exception e) {
             // Get out of loop and ignore
+            log.debug(e.getMessage());
         }
         cleanupCryptoToken(caEccName);
         
@@ -304,6 +312,7 @@ public class OcspKeyRenewalTest {
             }
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
     }
     
@@ -316,6 +325,7 @@ public class OcspKeyRenewalTest {
             }
         } catch (Exception e) {
             //Ignore any failures.
+            log.debug(e.getMessage());
         }
     }
     
