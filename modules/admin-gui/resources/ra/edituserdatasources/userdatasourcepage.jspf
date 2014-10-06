@@ -2,7 +2,7 @@
   BaseUserDataSource userdatasourcedata = userdatasourcehelper.userdatasourcedata;
    
 
-  TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
+  Map authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
   Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
   int[] userdatasourcetypes = {
