@@ -404,7 +404,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
      */
     private Collection<Integer> getAuthorizedCAIds(AuthenticationToken admin) {
         List<Integer> returnval = new ArrayList<Integer>();
-        for (Integer caid : caSession.getAvailableCAs()) {
+        for (Integer caid : caSession.getAllCaIds()) {
             if (accessControlSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid.toString())) {
                 returnval.add(caid);
             } else {

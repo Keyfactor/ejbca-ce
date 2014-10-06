@@ -137,7 +137,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
 
         String caname = null;
         CaSession caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        List<String> cas = caSession.getAvailableCANames(internalAdmin);
+        List<String> cas = caSession.getActiveCANames(internalAdmin);
         if(cas.contains("ManagementCA")) {
             caname = "ManagementCA";
         } else {

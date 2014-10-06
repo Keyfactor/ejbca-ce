@@ -70,7 +70,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         if (!caIds.isEmpty()) {
             //if caIds contains SecConst.ALLCAS, reassign caIds to contain just that.
             if(caIds.contains(SecConst.ALLCAS)) {
-                caIds = caSession.getAvailableCAs();
+                caIds = caSession.getAllCaIds();
             }
             for(Integer caid : caIds) {
                 CAInfo caInfo;
