@@ -222,4 +222,28 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
         certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
     }
+
+    @Override
+    public CertificateData getCertificateData(final String fingerprint) {
+        final Query query = this.entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint=:fingerprint");
+        query.setParameter("fingerprint", fingerprint);
+        @SuppressWarnings("unchecked")
+        final List<CertificateData> results = query.getResultList();
+        if (results.size()!=1) {
+            return null;
+        }
+        return results.get(0);
+    }
+
+    @Override
+    public Base64CertData getBase64CertData(final String fingerprint) {
+        final Query query = this.entityManager.createQuery("SELECT a FROM Base64CertData a WHERE a.fingerprint=:fingerprint");
+        query.setParameter("fingerprint", fingerprint);
+        @SuppressWarnings("unchecked")
+        final List<Base64CertData> results = query.getResultList();
+        if (results.size()!=1) {
+            return null;
+        }
+        return results.get(0);
+    }
 }
