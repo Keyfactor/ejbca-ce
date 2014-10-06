@@ -34,8 +34,8 @@ public class ApproveActionRequestBean {
             if (param != null) {
                 uniqueId = Integer.parseInt(((HttpServletRequest) ctx.getExternalContext().getRequest()).getParameter("uniqueId"));
                 Application app = ctx.getApplication();
-                ApproveActionSessionBean value = (ApproveActionSessionBean) app.evaluateExpressionGet(ctx, "#{approvalActionSession}",
-                        ApproveActionSessionBean.class);
+                ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(ctx, "#{approvalActionSession}",
+                        ApproveActionManagedBean.class);
                 value.setUniqueId(uniqueId);
             }
         } catch (NumberFormatException e) {

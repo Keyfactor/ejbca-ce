@@ -59,7 +59,7 @@ public class ApprovalDataVO implements Serializable {
 		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE",
                                                       "APPROVEACTIVATECA"};
 	
-	/** Used to indicate that the approcal is applicable to any ca. */
+	/** Used to indicate that the approval is applicable to any ca. */
 	public static final int ANY_CA = SecConst.ALLCAS;
 	
 	/** Used to indicate that the approval is applicable to any end entity profile. */

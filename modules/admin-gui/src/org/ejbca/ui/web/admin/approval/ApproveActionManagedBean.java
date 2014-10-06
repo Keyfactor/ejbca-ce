@@ -42,19 +42,18 @@ import org.ejbca.util.query.Query;
 /**
  * Session scoped bean for displaying information about an approval request.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
-public class ApproveActionSessionBean extends BaseManagedBean {
+public class ApproveActionManagedBean extends BaseManagedBean {
 
     private static final long serialVersionUID = 1940920496104779323L;
-    private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);
+    private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
 	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private String comment = "";
 	private ApprovalDataVOView approveRequestData;
 	private HashMap<Integer, String> statustext = null;
 
-	public ApproveActionSessionBean() {
+	public ApproveActionManagedBean() {
 		super();		
 		approveRequestData = new ApprovalDataVOView();         
 	}
