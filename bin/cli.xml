@@ -102,10 +102,14 @@ appserver.home         : ${appserver.home}
     <condition property="install.certprofile.command" value="-certprofile &quot;${ca.certificateprofile}&quot;" else="">
     	<isset property="ca.certificateprofile" />
     </condition>
+	
+    <condition property="install.catoken.command" value="--tokenprop &quot;${ca.tokenproperties}&quot;" else="">
+    	<isset property="ca.tokenproperties" />
+    </condition>
 
     <target name="ejbca:initCA" >
-       <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' &lt;ca.tokenpassword hidden&gt; '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${ca.tokenproperties} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
-        <ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} --tokenprop ${ca.tokenproperties} -certprofile ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
+       <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' &lt;ca.tokenpassword hidden&gt; '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${install.catoken.command} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
+    	<ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${install.catoken.command} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
      </target>
 
 	<target name="ejbca:adminweb">

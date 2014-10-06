@@ -158,7 +158,6 @@
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />
 	<property name="ca.tokentype" value="soft"/>
-	<property name="ca.tokenproperties" value=""/>
     <property name="ocspHardTokenClasses" value="${ejbca.home}/ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
 	<property name="weblogic-oracle-columntype" value="" />
