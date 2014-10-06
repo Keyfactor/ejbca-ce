@@ -38,7 +38,6 @@ public class CAAuthorization implements Serializable {
     private TreeMap<String, Integer> profilenamesendentity = null;
     private TreeMap<String, Integer> profilenamessubca = null;
     private TreeMap<String, Integer> profilenamesrootca = null;
-    private TreeMap<String, Integer> canames = null;
     private TreeMap<String, Integer> allcanames = null;
     private AuthenticationToken admin;
     private CaSessionLocal caSession;
@@ -99,46 +98,28 @@ public class CAAuthorization implements Serializable {
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap<String, Integer>();  
-        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ROOTCA).iterator();      
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
-        while(iter.hasNext()){
-          Integer id = (Integer) iter.next();
-          profilenamesrootca.put(idtonamemap.get(id),id);
+            for (Integer id : certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ROOTCA)) {
+                profilenamesrootca.put(idtonamemap.get(id), id);
+            }
         }
-      }
       return profilenamesrootca;  
     }
-
-    public TreeMap<String, Integer> getCANames(){        
-      if(canames==null){        
-        canames = new TreeMap<String, Integer>();        
-        HashMap<Integer, String> idtonamemap = this.caSession.getCAIdToNameMap();
-        Iterator<Integer> iter = getAuthorizedCAIds().iterator();
-        while(iter.hasNext()){          
-          Integer id = (Integer) iter.next();          
-          canames.put(idtonamemap.get(id),id);
-        }        
-      }       
-      return canames;  
-    }
     
-	public TreeMap<String, Integer> getAllCANames(){              
-		allcanames = new TreeMap<String, Integer>();        
-		HashMap<Integer, String> idtonamemap = this.caSession.getCAIdToNameMap();
-		Iterator<Integer> iter = idtonamemap.keySet().iterator();
-		while(iter.hasNext()){          
-		  Integer id = (Integer) iter.next();          
-		  allcanames.put(idtonamemap.get(id),id);
-		}        
-       
-	  return allcanames;  
-	}    
+    public TreeMap<String, Integer> getAllCANames() {
+        allcanames = new TreeMap<String, Integer>();
+        HashMap<Integer, String> idtonamemap = this.caSession.getCAIdToNameMap();
+        for (Integer id : idtonamemap.keySet()) {
+            allcanames.put(idtonamemap.get(id), id);
+        }
+        return allcanames;
+    }
+ 
     public void clear(){
       authcas=null;
       profilenamesendentity = null;
       profilenamessubca = null;
       profilenamesrootca = null;
-      canames=null;
       allcanames=null;
     }
 

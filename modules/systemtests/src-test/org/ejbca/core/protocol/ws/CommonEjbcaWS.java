@@ -263,7 +263,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     
     protected static void setAdminCAName() {
         CaSessionRemote cs = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        List<String> canames = cs.getAvailableCANames(intAdmin);
+        List<String> canames = cs.getActiveCANames(intAdmin);
         if(canames.contains("AdminCA1")) {
             ADMIN_CA_NAME = "AdminCA1";
         } else if(canames.contains("ManagementCA")) {

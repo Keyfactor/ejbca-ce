@@ -379,7 +379,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	migrateDatabase("/400_500/400_500-upgrade-"+dbtype+".sql");
     	
     	// fix CAs that don't have classpath for extended CA services
-    	Collection<Integer> caids = caSession.getAvailableCAs();
+    	Collection<Integer> caids = caSession.getAllCaIds();
     	for (Integer caid : caids) {
     		try {
 				CA ca = caSession.getCAForEdit(admin, caid);
@@ -652,7 +652,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         // post-upgrade "change CertificatePolicy from ejbca class to cesecore class in CAs profiles that have that defined?
         // fix CAs that don't have classpath for extended CA services
-        Collection<Integer> caids = caSession.getAvailableCAs();
+        Collection<Integer> caids = caSession.getAllCaIds();
         for (Integer caid : caids) {
             try {
                 CA ca = caSession.getCAForEdit(admin, caid);

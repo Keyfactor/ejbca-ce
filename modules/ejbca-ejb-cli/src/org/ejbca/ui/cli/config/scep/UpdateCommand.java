@@ -127,7 +127,7 @@ public class UpdateCommand extends BaseScepConfigCommand {
         sb.append("    " + ScepConfiguration.SCEP_RA_CERTPROFILE + " - possible values: ProfileDefault" + divider + existingCps + "\n");
         
         StringBuilder existingCas = new StringBuilder();
-        for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken())) {
+        for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(getAuthenticationToken())) {
             existingCas.append((existingCas.length() == 0 ? "" : divider) + ca);
         }
         sb.append("    " + ScepConfiguration.SCEP_RA_DEFAULTCA + " - possible values: ProfileDefault" + divider + existingCas + "\n");

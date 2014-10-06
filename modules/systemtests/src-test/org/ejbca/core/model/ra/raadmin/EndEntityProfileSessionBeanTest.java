@@ -409,7 +409,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         final String NAME = "EndEntityProfileReferenceDetection";
         try {
             // Get a CA that really does exist, otherwise we will not be "authorized" to this CA
-            final Collection<Integer> caIds = caSession.getAvailableCAs();
+            final Collection<Integer> caIds = caSession.getAllCaIds();
             final int caid = caIds.iterator().next();
         	try {
         		EndEntityProfile profile = new EndEntityProfile();
@@ -522,7 +522,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             }
             // EE profiles checks for authorization to the CAs that are present as AVAILCAs.
             // So we have to deny the admin specifically for a certain CA
-            Collection<Integer> caids = caSession.getAvailableCAs();
+            Collection<Integer> caids = caSession.getAllCaIds();
             int caid = caids.iterator().next();
             profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(1337));
             profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(caid));

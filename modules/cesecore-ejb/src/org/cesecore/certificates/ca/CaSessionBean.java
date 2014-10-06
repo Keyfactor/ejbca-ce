@@ -35,6 +35,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -383,14 +384,42 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<Integer> getAvailableCAs() {
+    public List<Integer> getAllCaIds() {
         return CAData.findAllCaIds(entityManager);
     }
 
+    @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<String> getActiveCANames(final AuthenticationToken admin) {
+        final ArrayList<String> returnval = new ArrayList<String>();
+        Query query =  entityManager.createQuery("SELECT a FROM CAData a WHERE a.status=:status");
+        query.setParameter("status", CAConstants.CA_ACTIVE);
+        for (CAData ca : (List<CAData>) query.getResultList()) {
+            if (authorizedToCA(admin, ca.getCaId())) {
+                returnval.add(ca.getName());
+            }
+        }
+        return returnval;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<Integer, String> getActiveCAIdToNameMap() {
+        final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        Query query =  entityManager.createQuery("SELECT a FROM CAData a WHERE a.status=:status");
+        query.setParameter("status", CAConstants.CA_ACTIVE);
+        for (CAData ca : (List<CAData>) query.getResultList()) {
+            returnval.put(ca.getCaId(), ca.getName());
+        }
+        return returnval;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getAuthorizedCAs(final AuthenticationToken admin) {
-        final Collection<Integer> availableCaIds = getAvailableCAs();
+        final Collection<Integer> availableCaIds = getAllCaIds();
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {
@@ -400,18 +429,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return returnval;
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<String> getAvailableCANames(final AuthenticationToken admin) {
-        final Collection<CAData> allCAs = CAData.findAll(entityManager);
-        final ArrayList<String> returnval = new ArrayList<String>();
-        for (CAData ca : allCAs) {
-            if (authorizedToCA(admin, ca.getCaId())) {
-                returnval.add(ca.getName());
-            }
-        }
-        return returnval;
-    }
+    
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override

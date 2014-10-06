@@ -277,7 +277,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
-    	final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+    	final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
 		// If this is the special value ALLCAs we are authorized
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
@@ -317,7 +317,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Override
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
         allcaids.add(Integer.valueOf(SecConst.ALLCAS));
         if (!authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             // we can only see profiles with missing CA Ids if we have root rule access
@@ -545,7 +545,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
              * availablecas /to be a list of all CAs
              */
             if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
-                Collection<Integer> allcaids = caSession.getAvailableCAs();
+                Collection<Integer> allcaids = caSession.getAllCaIds();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "
                             + allcaids.size() + " CAs in the system");

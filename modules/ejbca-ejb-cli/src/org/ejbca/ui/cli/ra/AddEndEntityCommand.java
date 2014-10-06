@@ -308,7 +308,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
         sb.append(getCommandDescription()).append("\n");
         StringBuilder existingCas = new StringBuilder();
         //The below require quite a few database operations, so shouldn't be run unless the help text has been called upon.
-        for (String caName : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken())) {
+        for (String caName : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(getAuthenticationToken())) {
             existingCas.append((existingCas.length() == 0 ? "" : ", ") + caName);
         }
         sb.append("Existing cas: " + existingCas + "\n");

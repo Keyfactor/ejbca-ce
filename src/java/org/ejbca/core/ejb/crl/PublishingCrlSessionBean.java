@@ -128,7 +128,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             iter = caids.iterator();
         }
         if ((iter == null) || (caids.contains(Integer.valueOf(CAConstants.ALLCAS)))) {
-            iter = caSession.getAvailableCAs().iterator();
+            iter = caSession.getAllCaIds().iterator();
         }
         while (iter.hasNext()) {
             int caid = ((Integer) iter.next()).intValue();
@@ -161,7 +161,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             iter = caids.iterator();
         }
         if ((iter == null) || (caids.contains(Integer.valueOf(CAConstants.ALLCAS)))) {
-            iter = caSession.getAvailableCAs().iterator();
+            iter = caSession.getAllCaIds().iterator();
         }
         while (iter.hasNext()) {
             int caid = iter.next().intValue();
