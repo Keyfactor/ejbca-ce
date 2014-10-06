@@ -123,4 +123,10 @@ public interface InternalCertificateStoreSessionRemote {
      * @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, BigInteger, Date, int, String)
      */
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
+
+    /** @return a raw CertificateData row */
+    CertificateData getCertificateData(String fingerprint);
+
+    /** @return a raw Base64CertData row */
+    Base64CertData getBase64CertData(String fingerprint);
 }
