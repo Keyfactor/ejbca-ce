@@ -60,7 +60,7 @@ public interface CaSession {
      * @throws CAExistsException if CA already exists
      * @throws AuthorizationDeniedException if not authorized to add CA
      */
-    public void addCA(AuthenticationToken admin, CA ca) throws CAExistsException, AuthorizationDeniedException;
+     void addCA(AuthenticationToken admin, CA ca) throws CAExistsException, AuthorizationDeniedException;
     
     /** Changes a CA in the database. Can change mostly everything except caid, caname and subject DN. When editing a CA the CA token will usually be taken off line.
      * So you need to activate the CA token after editing, if auto-activation of the CA token is not enabled. 
@@ -73,14 +73,14 @@ public interface CaSession {
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
      */
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException;
+    void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
-     * Method returning id's of all CA's available to the system.
+     * Method returning id's of all CA's in system.
      * 
      * @return a List (Integer) of CA id's
      */
-    public List<Integer> getAvailableCAs();
+    List<Integer> getAllCaIds();
 
     /**
      * Method returning id's of all CA's available to the system, i.e. not 
@@ -93,7 +93,7 @@ public interface CaSession {
      * @param admin AuthenticationToken of admin
      * @return a List<Integer> of available CA id's
      */
-    public List<Integer> getAuthorizedCAs(AuthenticationToken admin);
+     List<Integer> getAuthorizedCAs(AuthenticationToken admin);
     
     /**
      * Method returning names of all CA's available to the system that the
@@ -103,7 +103,7 @@ public interface CaSession {
      * @param admin AuthenticationToken of admin
      * @return a List<String> of available CA names
      */
-    public List<String> getAvailableCANames(final AuthenticationToken admin);
+    List<String> getActiveCANames(final AuthenticationToken admin);
 
     /**
      * Returns a value object containing non-sensitive information about a CA
@@ -115,7 +115,7 @@ public interface CaSession {
      * @throws CADoesntExistsException if CA with caid does not exist
      * @throws AuthorizationDeniedException if admin not authorized to CA 
      */
-    public CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException;
+    CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Returns a value object containing non-sensitive information about a CA
@@ -127,7 +127,7 @@ public interface CaSession {
      * @throws CADoesntExistsException if CA with caid does not exist
      * @throws AuthorizationDeniedException if admin not authorized to CA 
      */
-    public CAInfo getCAInfo(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
+    CAInfo getCAInfo(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Method used to remove a CA from the system. You should first check that
@@ -142,7 +142,7 @@ public interface CaSession {
      * If the CA does not exist, nothing happens the method return silently.
      * @throws AuthorizationDeniedException if not authorized to remove CA
      */
-    public void removeCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    void removeCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Renames the short name of CA (used in administrators interfaces). 
@@ -156,7 +156,7 @@ public interface CaSession {
      * @throws CADoesntExistsException if the CA with oldname does not exist
      * @throws AuthorizationDeniedException if not authorized to rename CA
      */
-    public void renameCA(AuthenticationToken admin, String oldname, String newname) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException;
+    void renameCA(AuthenticationToken admin, String oldname, String newname) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Check if a CA with given ID exists

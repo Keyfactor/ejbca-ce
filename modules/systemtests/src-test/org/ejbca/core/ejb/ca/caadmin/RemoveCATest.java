@@ -166,7 +166,7 @@ public class RemoveCATest extends CaTestCase {
         } catch (AuthorizationDeniedException e) {
             throw new RuntimeException(e);
         }
-        assertFalse("Removal of CA failed. " + caid + " still reported as existing.", caSession.getAvailableCAs().contains(Integer.valueOf(caid)));
+        assertFalse("Removal of CA failed. " + caid + " still reported as existing.", caSession.getAllCaIds().contains(Integer.valueOf(caid)));
         // Log trace with calling methods name
         log.trace("<" + Thread.currentThread().getStackTrace()[2].getMethodName());
     }

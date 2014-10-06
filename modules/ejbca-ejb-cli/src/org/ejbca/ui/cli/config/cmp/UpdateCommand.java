@@ -101,7 +101,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         sb.append("The key could be any of the following:\n");
         StringBuilder existingCas = new StringBuilder();
         final String divider = " | ";
-        for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken())) {
+        for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(getAuthenticationToken())) {
             existingCas.append((existingCas.length() == 0 ? "" : divider) + ca);
         }
         sb.append("    " + CmpConfiguration.CONFIG_DEFAULTCA + " - possible values: " + existingCas + "\n");

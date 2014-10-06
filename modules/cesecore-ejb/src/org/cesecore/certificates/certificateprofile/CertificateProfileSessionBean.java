@@ -228,7 +228,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     public Collection<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken admin, final int certprofiletype) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
-        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
 
         // Add fixed certificate profiles.
         if (certprofiletype == 0 || certprofiletype == CertificateConstants.CERTTYPE_ENDENTITY
@@ -282,7 +282,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             return returnval;
         }
         
-        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
         allcaids.add(CertificateProfile.ANYCA);
         for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile profile = cpEntry.getValue();

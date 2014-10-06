@@ -2413,7 +2413,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // to most-trusted CA). Multiple CA chains can contains the
             // issuer certificate; so only the chain where target certificate
             // is the issuer will be selected.
-            for(int caid : caSession.getAvailableCAs()) {  
+            for(int caid : caSession.getAllCaIds()) {  
                 CAInfo superCaInfo;
                 try {
                     superCaInfo = caSession.getCAInfo(admin, caid);
@@ -2598,7 +2598,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public Collection<Certificate> getAllCACertificates() {
         final ArrayList<Certificate> returnval = new ArrayList<Certificate>();
-        for (final Integer caid : caSession.getAvailableCAs()) {
+        for (final Integer caid : caSession.getAllCaIds()) {
             try {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caid.intValue(), null, true);
                 if (log.isDebugEnabled()) {
@@ -2686,7 +2686,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<String> getCAsUsingCertificateProfile(final int certificateprofileid) {
         List<String> result = new ArrayList<String>();
-        for (final Integer caid : caSession.getAvailableCAs()) {
+        for (final Integer caid : caSession.getAllCaIds()) {
             try {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caid.intValue(), null, true);
                 if (caInfo.getCertificateProfileId() == certificateprofileid) {
@@ -2862,7 +2862,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isDebugEnabled()) {
             log.debug("CaTokenSignTest: " + caTokenSignTest);
         }
-        for (final Integer caid : caSession.getAvailableCAs()) {
+        for (final Integer caid : caSession.getAllCaIds()) {
             try {
                 final CAInfo cainfo = caSession.getCAInfoInternal(caid.intValue());
                 if (cainfo.getStatus() == CAConstants.CA_ACTIVE && cainfo.getIncludeInHealthCheck()) {

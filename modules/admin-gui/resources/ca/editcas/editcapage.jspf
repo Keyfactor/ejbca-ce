@@ -6,7 +6,7 @@
   TreeMap<String,Integer> rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
   TreeMap<String,Integer> subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();    
   
-  TreeMap<String,Integer> casigners = info.getCANames();
+  Map<String,Integer> casigners = info.getCANames();
 
   Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 

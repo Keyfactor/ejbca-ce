@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.ejb.Local;
 
@@ -149,6 +150,14 @@ public interface CaSessionLocal extends CaSession {
      * @return HashMap with Integer->String mappings
      */
     HashMap<Integer,String> getCAIdToNameMap();
+    
+    /**
+     * Returns a HashMap containing mappings of caid (Integer) to CA name
+     * (String) of all active CAs in the system.
+     * 
+     * @return HashMap with Integer->String mappings
+     */
+    Map<Integer, String> getActiveCAIdToNameMap();
 
     /**
      * Internal (local only) method for getting CAInfo, to avoid access control logging for

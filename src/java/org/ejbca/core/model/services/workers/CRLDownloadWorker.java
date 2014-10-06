@@ -73,7 +73,7 @@ public class CRLDownloadWorker extends BaseWorker {
         // Parse worker configuration
         Collection<Integer> caIdsToCheck = getCAIdsToCheck(true);
         if (caIdsToCheck!=null && caIdsToCheck.contains(Integer.valueOf(CAConstants.ALLCAS))) {
-            caIdsToCheck = caSession.getAvailableCAs();
+            caIdsToCheck = caSession.getAllCaIds();
         }
         final boolean ignoreNextUpdate = Boolean.valueOf(properties.getProperty(PROP_IGNORE_NEXT_UPDATE, Boolean.FALSE.toString()));
         final int maxDownloadSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));

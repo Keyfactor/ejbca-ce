@@ -261,7 +261,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         if(trustedReferences.size()==0) {
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
             // This is done by adding all CAs' certificate chains to trustedCerts
-            List<Integer> allCAs = caSession.getAvailableCAs();
+            List<Integer> allCAs = caSession.getAllCaIds();
             for(int caid : allCAs) {
                 final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caid);
                 trustedCerts.add(caInfo.getCertificateChain());
@@ -879,7 +879,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final int certificateProfileId = 0;
         final String username = "IMPORTED_InternalKeyBinding_" + internalKeyBinding.getId();
         // Find caFingerprint through ca(Admin?)Session
-        final List<Integer> availableCaIds = caSession.getAvailableCAs();
+        final List<Integer> availableCaIds = caSession.getAllCaIds();
         final String issuerDn = CertTools.getIssuerDN(certificate);
         String caFingerprint = null;
         for (final Integer caId : availableCaIds) {
