@@ -135,9 +135,23 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         boolean success = true;
         try {
             // Perform last minute validations before saving
-            if (getCertificateProfile().getAvailableBitLengthsAsList().isEmpty()) {
+            CertificateProfile prof = getCertificateProfile();
+            if (prof.getAvailableBitLengthsAsList().isEmpty()) {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
                 success = false;
+            }
+            if (isCtEnabled()) {
+                if (prof.getEnabledCTLogs().isEmpty()) {
+                    addErrorMessage("NOCTLOGSSELECTED");
+                    success = false;
+                } else if (prof.getCTMinSCTs() < 0 ||
+                    prof.getCTMinSCTs() > prof.getEnabledCTLogs().size() ||
+                    prof.getCTMaxSCTs() < 1 ||
+                    prof.getCTMaxSCTs() > prof.getEnabledCTLogs().size() ||
+                    prof.getCTMinSCTs() > prof.getCTMaxSCTs()) {
+                    addErrorMessage("INCORRECTMINMAXSCTS");
+                    success = false;
+                }
             }
             if (success) {
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), getCertificateProfile());
@@ -511,7 +525,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    public int getEnabledCTLogsAvailableSize() { return Math.max(1, Math.min(6, getEnabledCTLogsAvailable().size())); }
+    /** @returns the size of the select box */  
+    public int getEnabledCTLogsAvailableSize() { return Math.max(3, Math.min(6, getEnabledCTLogsAvailable().size())); }
     public List<String> getEnabledCTLogs() throws AuthorizationDeniedException {
         final List<String> ret = new ArrayList<String>();
         for (Integer current : getCertificateProfile().getEnabledCTLogs()) {
