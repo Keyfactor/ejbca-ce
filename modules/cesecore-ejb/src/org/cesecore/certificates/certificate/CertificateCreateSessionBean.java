@@ -206,6 +206,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 failInfo = FailInfo.BAD_REQUEST;
             } else {
                 ret.setCertificate(certWrapper.getCertificate());
+                ret.setCACert(ca.getCACertificate());
                 ret.setBase64CertData(certWrapper.getBase64CertData());
                 ret.setCertificateData(certWrapper.getCertificateData());
             }

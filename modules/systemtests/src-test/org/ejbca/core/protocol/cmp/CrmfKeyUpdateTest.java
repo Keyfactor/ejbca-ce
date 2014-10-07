@@ -30,6 +30,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,8 +46,10 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CertOrEncCert;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -1520,8 +1523,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         return this.getClass().getSimpleName(); 
     }
     
-    private static X509Certificate checkKurCertRepMessage(X500Name eeDN, Certificate issuerCert, byte[] retMsg, int requestId) throws IOException,
-                        CertificateException {
+    private static X509Certificate checkKurCertRepMessage(X500Name eeDN, Certificate issuerCert, byte[] retMsg, int requestId) throws Exception {
         //
         // Parse response message
         //
@@ -1536,23 +1538,45 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         assertNotNull(respObject);
 
+        // Verify body type
         PKIBody body = respObject.getBody();
         int tag = body.getType();
         assertEquals(8, tag);
+        
+        // Verify the response
         CertRepMessage c = (CertRepMessage) body.getContent();
         assertNotNull(c);
         CertResponse resp = c.getResponse()[0];
         assertNotNull(resp);
         assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
+        
+        // Verify response status
         PKIStatusInfo info = resp.getStatus();
         assertNotNull(info);
         assertEquals(0, info.getStatus().intValue());
-        CMPCertificate cmpcert = c.getCaPubs()[0]; //cc.getCertificate();
+        
+        // Verify response certificate
+        CertifiedKeyPair kp = resp.getCertifiedKeyPair();
+        assertNotNull(kp);
+        CertOrEncCert cc = kp.getCertOrEncCert();
+        assertNotNull(cc);
+        final CMPCertificate cmpcert = cc.getCertificate();
         assertNotNull(cmpcert);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
         final X500Name name = new X500Name(CertTools.getSubjectDN(cert));
         assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
-        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(issuerCert));
+        
+        // Verify the issuer of cert
+        CMPCertificate respCmpCaCert = c.getCaPubs()[0];
+        final X509Certificate respCaCert = (X509Certificate) CertTools.getCertfromByteArray(respCmpCaCert.getEncoded());
+        assertEquals(CertTools.getFingerprintAsString(issuerCert), CertTools.getFingerprintAsString(respCaCert));
+        
+        Collection<Certificate> cacerts = new ArrayList<Certificate>();
+        cacerts.add(issuerCert);
+        assertTrue(CertTools.verify(cert, cacerts));
+        cacerts = new ArrayList<Certificate>();
+        cacerts.add(respCaCert);
+        assertTrue(CertTools.verify(cert,  cacerts));
         return cert;
     }
     
