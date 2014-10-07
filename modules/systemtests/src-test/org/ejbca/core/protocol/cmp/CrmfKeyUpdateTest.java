@@ -1565,6 +1565,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
         final X500Name name = new X500Name(CertTools.getSubjectDN(cert));
         assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
+        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(issuerCert));
         
         // Verify the issuer of cert
         CMPCertificate respCmpCaCert = c.getCaPubs()[0];
