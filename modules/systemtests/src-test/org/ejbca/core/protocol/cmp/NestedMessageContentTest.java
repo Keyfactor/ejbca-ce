@@ -265,14 +265,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
+
         
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null, pAlg, new DEROctetString(senderNonce));
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, nb, na, null, pAlg, new DEROctetString(senderNonce));
 
         String adminName = "cmpTestAdmin";
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
@@ -343,15 +344,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
-                nb.getDate(), na.getDate(), null, null, null);
+                nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);
         
         
@@ -464,15 +465,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfReqMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
-                nb.getDate(), na.getDate(), null, null, null);
+                nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfReqMsg);
         PKIMessage crmfMsg = protectPKIMessage(crmfReqMsg, false, "foo123", 567);
         CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
@@ -535,15 +536,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
-                nb.getDate(), na.getDate(), null, null, null);
+                nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
         
         
@@ -705,15 +706,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
-                nb.getDate(), na.getDate(), null, null, null);
+                nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
         
         
@@ -738,9 +739,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         
         long nbTime = (new Date()).getTime() - 1000000L;
-        nb = new org.bouncycastle.asn1.x509.Time(new Date(nbTime));
-        na = new org.bouncycastle.asn1.x509.Time(new Date());
-        createRACertificate("raExpiredSignerTest07", "foo123", this.raCertsPath, cmpAlias, raKeys, nb.getDate(), na.getDate(), CMPTESTPROFILE, this.caid);
+        createRACertificate("raExpiredSignerTest07", "foo123", this.raCertsPath, cmpAlias, raKeys, new Date(nbTime), new Date(), CMPTESTPROFILE, this.caid);
         Thread.sleep(5000);
         myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, "BC");
         
@@ -785,15 +784,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //------------------- Creating Certificate Request ---------------
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
-                nb.getDate(), na.getDate(), null, null, null);
+                nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
         
         
@@ -860,15 +859,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
+        Date na = new Date((new Date()).getTime() + 31536000000L); // not afer a yeat from now
         assertNotNull(nb);
         assertNotNull(na);
         
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
-                nb.getDate(), na.getDate(), null, pAlg, new DEROctetString(senderNonce));
+                nb, na, null, pAlg, new DEROctetString(senderNonce));
 
         KeyPair nonAdminKeys = KeyTools.genKeys("1024", "RSA");
         Certificate nonAdminCert = CertTools.genSelfCert("CN=cmpTestAdmin,C=SE", 365, null, nonAdminKeys.getPrivate(), nonAdminKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);

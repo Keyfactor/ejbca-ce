@@ -111,6 +111,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     /** Certificate to be in certificate response message, not serialized */
     private transient Certificate cert = null;
+    /** The CA certificate to be included in the response message to be used to verify the end entity certificate */
+    private transient Certificate cacert = null;
     /** Certificate for the signer of the response message (CA) */
     private transient Collection<Certificate> signCertChain = null;
     /** Private key used to sign the response message */
@@ -181,6 +183,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     @Override
     public void setCACert(Certificate cACert) {
+        this.cacert = cACert;
     }
 
     @Override
@@ -249,18 +252,19 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                         log.debug("Creating a CertRepMessage 'accepted'");
                     }
                     PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
-                    ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
+                    ASN1InputStream certASN1InputStream = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
+                    ASN1InputStream cacertASN1InputStream = new ASN1InputStream(new ByteArrayInputStream(cacert.getEncoded()));
                     try {
                         try {
-                            CMPCertificate cmpcert = CMPCertificate.getInstance(asn1InputStream.readObject());
+                            CMPCertificate cmpcert = CMPCertificate.getInstance(certASN1InputStream.readObject());
                             CertOrEncCert retCert = new CertOrEncCert(cmpcert);
                             CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
                             CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
-
+                            
                             CertResponse[] certRespos = { myCertResponse };
-                            CMPCertificate[] cmpCerts = { cmpcert };
+                            CMPCertificate[] caPubs = { CMPCertificate.getInstance(cacertASN1InputStream.readObject()) };
 
-                            CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
+                            CertRepMessage myCertRepMessage = new CertRepMessage(caPubs, certRespos);
 
                             int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
                             if (log.isDebugEnabled()) {
@@ -268,7 +272,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                             }
                             myPKIBody = new PKIBody(respType, myCertRepMessage);
                         } finally {
-                            asn1InputStream.close();
+                            certASN1InputStream.close();
+                            cacertASN1InputStream.close();
                         }
                     } catch (IOException e) {
                         throw new IllegalStateException("Unexpected IOException caught.", e);

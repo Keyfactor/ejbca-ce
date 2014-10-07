@@ -48,6 +48,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -868,8 +869,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertArrayEquals("Was '"+actual+"' expected '"+expected+"'.", expected.getEncoded(), actual.getEncoded() );
     }
 
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, Certificate cacert, byte[] retMsg, int requestId) throws IOException,
-            CertificateException {
+    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, Certificate cacert, byte[] retMsg, int requestId) throws Exception {
         //
         // Parse response message
         //
@@ -883,17 +883,24 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         assertNotNull(respObject);
 
+        // Verify body type
         PKIBody body = respObject.getBody();
         int tag = body.getType();
         assertEquals(1, tag);
+        
+        // Verify the response
         CertRepMessage c = (CertRepMessage) body.getContent();
         assertNotNull(c);
         CertResponse resp = c.getResponse()[0];
         assertNotNull(resp);
         assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
+        
+        // Verify response status
         PKIStatusInfo info = resp.getStatus();
         assertNotNull(info);
         assertEquals(0, info.getStatus().intValue());
+        
+        // Verify response certificate
         CertifiedKeyPair kp = resp.getCertifiedKeyPair();
         assertNotNull(kp);
         CertOrEncCert cc = kp.getCertOrEncCert();
@@ -902,7 +909,19 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(cmpcert);
         final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
         checkDN(userDN, new JcaX509CertificateHolder(cert).getSubject());
-        assertArrayEquals(cert.getIssuerX500Principal().getEncoded(), ((X509Certificate)cacert).getSubjectX500Principal().getEncoded());
+        
+        // Verify the issuer of cert
+        CMPCertificate respCmpCaCert = c.getCaPubs()[0];
+        final X509Certificate respCaCert = (X509Certificate) CertTools.getCertfromByteArray(respCmpCaCert.getEncoded());
+        assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
+
+        Collection<Certificate> cacerts = new ArrayList<Certificate>();
+        cacerts.add(cacert);
+        assertTrue(CertTools.verify(cert, cacerts));
+        cacerts = new ArrayList<Certificate>();
+        cacerts.add(respCaCert);
+        assertTrue(CertTools.verify(cert,  cacerts));
+        
         return cert;
     }
 
