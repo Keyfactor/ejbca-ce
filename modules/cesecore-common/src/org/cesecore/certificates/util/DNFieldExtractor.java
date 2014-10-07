@@ -72,7 +72,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int IPADDRESS = 19;
     public static final int X400ADDRESS = 20;
     public static final int DIRECTORYNAME = 21;
-    public static final int EDIPARTNAME = 22;
+    public static final int EDIPARTYNAME = 22;
     public static final int URI = 23;
     public static final int REGISTEREDID = 24;
     public static final int UPN = 25;
@@ -88,7 +88,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int COUNTRYOFRESIDENCE = 31;
 
     private static final int BOUNDRARY = 100;
-    /** Mapping dnid to number of occurances in this DN */
+    /** Mapping dnid to number of occurrences in this DN */
     private HashMap<Integer, Integer> fieldnumbers;
     /** mapping dn (or altname or subject dir attrs) numerical ids with the value of the components */
     private HashMap<Integer, String> dnfields;

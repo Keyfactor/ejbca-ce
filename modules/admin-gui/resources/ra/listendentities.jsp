@@ -70,18 +70,18 @@
   static final String BUTTON_DESELECTALL       = "buttondeselectall";
   static final String BUTTON_INVERTSELECTION   = "buttoninvertselection";
 
-  static final String SORTBY_USERNAME_ACC         = "sortbyusernameaccending";
-  static final String SORTBY_USERNAME_DEC         = "sortbyusernamedecending";
-  static final String SORTBY_CA_ACC               = "sortbycaaccending";
-  static final String SORTBY_CA_DEC               = "sortbycadecending";
-  static final String SORTBY_COMMONNAME_ACC       = "sortbycommonnameaccending";
-  static final String SORTBY_COMMONNAME_DEC       = "sortbycommonnamedecending";
-  static final String SORTBY_ORGANIZATIONUNIT_ACC = "sortbyorganizationunitaccending";
-  static final String SORTBY_ORGANIZATIONUNIT_DEC = "sortbyorganizationunitdecending";
-  static final String SORTBY_ORGANIZATION_ACC     = "sortbyorganizationaccending";
-  static final String SORTBY_ORGANIZATION_DEC     = "sortbyorganizationdecending";
-  static final String SORTBY_STATUS_ACC           = "sortbystatusaccending";
-  static final String SORTBY_STATUS_DEC           = "sortbystatusdecending";
+  static final String SORTBY_USERNAME_ACC           = "sortbyusernameaccending";
+  static final String SORTBY_USERNAME_DEC           = "sortbyusernamedecending";
+  static final String SORTBY_CA_ACC                 = "sortbycaaccending";
+  static final String SORTBY_CA_DEC                 = "sortbycadecending";
+  static final String SORTBY_COMMONNAME_ACC         = "sortbycommonnameaccending";
+  static final String SORTBY_COMMONNAME_DEC         = "sortbycommonnamedecending";
+  static final String SORTBY_ORGANIZATIONALUNIT_ACC = "sortbyorganizationalunitaccending";
+  static final String SORTBY_ORGANIZATIONALUNIT_DEC = "sortbyorganizationalunitdecending";
+  static final String SORTBY_ORGANIZATION_ACC       = "sortbyorganizationaccending";
+  static final String SORTBY_ORGANIZATION_DEC       = "sortbyorganizationdecending";
+  static final String SORTBY_STATUS_ACC             = "sortbystatusaccending";
+  static final String SORTBY_STATUS_DEC             = "sortbystatusdecending";
 
   static final String SELECT_LIST_STATUS        = "selectliststatus";
 //  static final String SELECT_CHANGE_STATUS      = "selectchangestatus"; 
@@ -186,7 +186,7 @@
   String[] validOldActions = {OLD_ACTION, OLD_ACTION_LISTUSERS, OLD_ACTION_FINDUSER, OLD_ACTION_FINDTOKEN, OLD_ACTION_ISREVOKED, 
 		  OLD_ACTION_LISTEXPIRED, OLD_ACTION_NOACTION, OLD_ACTION_ADVANCEDLIST, OLD_ACTION_VALUE};
   String[] validSortBys = {SORTBY_USERNAME_ACC, SORTBY_USERNAME_DEC, SORTBY_CA_ACC, SORTBY_CA_DEC, SORTBY_COMMONNAME_ACC, SORTBY_COMMONNAME_DEC,
-		  SORTBY_ORGANIZATIONUNIT_ACC, SORTBY_ORGANIZATIONUNIT_DEC, SORTBY_ORGANIZATION_ACC, SORTBY_ORGANIZATION_DEC, SORTBY_STATUS_ACC, SORTBY_STATUS_DEC};
+		  SORTBY_ORGANIZATIONALUNIT_ACC, SORTBY_ORGANIZATIONALUNIT_DEC, SORTBY_ORGANIZATION_ACC, SORTBY_ORGANIZATION_DEC, SORTBY_STATUS_ACC, SORTBY_STATUS_DEC};
 
   // Determine action 
   int record   = 0;
@@ -361,15 +361,15 @@
      sortby = SORTBY_COMMONNAME_DEC;
      rabean.sortUserData(SortBy.COMMONNAME,SortBy.DECENDING);
    }
-   if( request.getParameter(SORTBY_ORGANIZATIONUNIT_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_ORGANIZATIONALUNIT_ACC+".x") != null ){
      // Sortby username accending
-     sortby = SORTBY_ORGANIZATIONUNIT_ACC;
-     rabean.sortUserData(SortBy.ORGANIZATIONUNIT,SortBy.ACCENDING);
+     sortby = SORTBY_ORGANIZATIONALUNIT_ACC;
+     rabean.sortUserData(SortBy.ORGANIZATIONALUNIT,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_ORGANIZATIONUNIT_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_ORGANIZATIONALUNIT_DEC+".x") != null ){
      // Sortby username accending
-     sortby = SORTBY_ORGANIZATIONUNIT_DEC;
-     rabean.sortUserData(SortBy.ORGANIZATIONUNIT,SortBy.DECENDING);
+     sortby = SORTBY_ORGANIZATIONALUNIT_DEC;
+     rabean.sortUserData(SortBy.ORGANIZATIONALUNIT,SortBy.DECENDING);
    }
    if( request.getParameter(SORTBY_ORGANIZATION_ACC+".x") != null ){
      // Sortby username accending

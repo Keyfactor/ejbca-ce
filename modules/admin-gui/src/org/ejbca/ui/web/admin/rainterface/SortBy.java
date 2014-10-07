@@ -32,12 +32,12 @@ public class SortBy implements java.io.Serializable {
     public static final int USERNAME         = 0;
     public static final int PASSWORD         = 1;
     public static final int COMMONNAME       = 2;
-    public static final int SERIALNUMBER     = 3;  
+    public static final int DNSERIALNUMBER   = 3;  
     public static final int TITLE            = 4;        
-    public static final int ORGANIZATIONUNIT = 5;
+    public static final int ORGANIZATIONALUNIT = 5;
     public static final int ORGANIZATION     = 6;
-    public static final int LOCALE           = 7;
-    public static final int STATE            = 8;
+    public static final int LOCALITY         = 7;
+    public static final int STATEORPROVINCE  = 8;
     public static final int DOMAINCOMPONENT  = 9;      
     public static final int COUNTRY          = 10;
     public static final int EMAIL            = 11;

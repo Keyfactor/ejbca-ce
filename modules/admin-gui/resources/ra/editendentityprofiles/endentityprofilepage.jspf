@@ -74,7 +74,7 @@ function checkallfields(){
 
 
     for(var i=0; i < numbersubjectdnfields; i++){
-      if( dnfieldtypes[i] != <%= DnComponents.DNEMAIL %>){
+      if( dnfieldtypes[i] != <%= DnComponents.DNEMAILADDRESS %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTDN%>" + i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
@@ -669,7 +669,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>" />
       </td>
       <td width="50%"> 
-        <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){ %>
+        <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS) ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN + i%>" size="45" maxlength="1024"
            value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {%><c:out value="<%= profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) %>"/><%}%>">
         <br /> 

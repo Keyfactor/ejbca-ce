@@ -94,7 +94,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
         }
         
         EndEntityProfile endEntityProfile = new EndEntityProfile();
-        endEntityProfile.addField(DnComponents.DNEMAIL);
+        endEntityProfile.addField(DnComponents.DNEMAILADDRESS);
         endEntityProfile.addField(DnComponents.COUNTRY);
         endEntityProfile.addField(DnComponents.RFC822NAME);     
         endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileSession.getCertificateProfileId(PROFILE_NAME)));

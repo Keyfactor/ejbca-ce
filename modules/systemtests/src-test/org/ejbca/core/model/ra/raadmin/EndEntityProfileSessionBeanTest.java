@@ -120,7 +120,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         boolean ret = false;
         try {
             EndEntityProfile profile = new EndEntityProfile();
-            profile.addField(DnComponents.ORGANIZATIONUNIT);
+            profile.addField(DnComponents.ORGANIZATIONALUNIT);
 
             endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TEST", profile);
             EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile("TEST");
@@ -194,17 +194,17 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         log.trace(">test04EditEndEntityProfile()");
 
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile("TEST");
-        assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
+        assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT) == 1);
 
-        profile.addField(DnComponents.ORGANIZATIONUNIT);
-        assertEquals(profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT), 2);
+        profile.addField(DnComponents.ORGANIZATIONALUNIT);
+        assertEquals(profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT), 2);
 
         // Change the profile, if save fails it should throw an exception
         endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TEST", profile);
 
         EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile("TEST");
         assertNotNull(eep);
-        assertEquals(eep.getNumberOfField(DnComponents.ORGANIZATIONUNIT), 2);
+        assertEquals(eep.getNumberOfField(DnComponents.ORGANIZATIONALUNIT), 2);
 
         log.trace("<test04EditEndEntityProfile()");
     }
@@ -252,10 +252,10 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         endEntityProfileSession.addEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Add two dynamic fields
         profile = endEntityProfileSession.getEndEntityProfile(testProfileName);
-        profile.addField(DnComponents.ORGANIZATIONUNIT);
-        profile.addField(DnComponents.ORGANIZATIONUNIT);
-        profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, testString1);
-        profile.setValue(DnComponents.ORGANIZATIONUNIT, 1, testString2);
+        profile.addField(DnComponents.ORGANIZATIONALUNIT);
+        profile.addField(DnComponents.ORGANIZATIONALUNIT);
+        profile.setValue(DnComponents.ORGANIZATIONALUNIT, 0, testString1);
+        profile.setValue(DnComponents.ORGANIZATIONALUNIT, 1, testString2);
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.DNSNAME);
         profile.setValue(DnComponents.DNSNAME, 0, testString1);
@@ -263,12 +263,12 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Remove first field
         profile = endEntityProfileSession.getEndEntityProfile(testProfileName);
-        profile.removeField(DnComponents.ORGANIZATIONUNIT, 0);
+        profile.removeField(DnComponents.ORGANIZATIONALUNIT, 0);
         profile.removeField(DnComponents.DNSNAME, 0);
         endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Test if changes are what we expected
         profile = endEntityProfileSession.getEndEntityProfile(testProfileName);
-        returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONUNIT, 0));
+        returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONALUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
@@ -312,9 +312,9 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         EndEntityProfile profile = new EndEntityProfile();
 
         // Simple one that is guaranteed to succeed.
-        assertEquals(0, profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT));
-        profile.addField(DnComponents.ORGANIZATIONUNIT);
-        assertEquals(1, profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT));
+        assertEquals(0, profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT));
+        profile.addField(DnComponents.ORGANIZATIONALUNIT);
+        assertEquals(1, profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT));
 
         // Newer one
         assertEquals(0, profile.getNumberOfField(DnComponents.TELEPHONENUMBER));

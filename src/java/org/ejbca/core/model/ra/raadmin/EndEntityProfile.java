@@ -166,7 +166,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	dataConstantsUsedInEmpty.remove(SENDNOTIFICATION);
     	dataConstantsUsedInEmpty.remove(DnComponents.OTHERNAME);
     	dataConstantsUsedInEmpty.remove(DnComponents.X400ADDRESS);
-    	dataConstantsUsedInEmpty.remove(DnComponents.EDIPARTNAME);
+    	dataConstantsUsedInEmpty.remove(DnComponents.EDIPARTYNAME);
     	dataConstantsUsedInEmpty.remove(DnComponents.REGISTEREDID);
     }
 
@@ -1235,10 +1235,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		final String[] subjectsToProcess = new String[nof];
     		for ( int j=0; j<nof; j++ ) {
     			String fieldValue = fields.getField(dnFieldExtractorID, j);
-    			// Only keep domain for comparison of RFC822NAME, DNEMAIL and UPN fields
-    			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAIL.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnid)) ) {
+    			// Only keep domain for comparison of RFC822NAME, DNEMAILADDRESS and UPN fields
+    			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAILADDRESS.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnid)) ) {
         			if ( fieldValue.indexOf('@') == -1 ) {
-        				throw new UserDoesntFullfillEndEntityProfile(DnComponents.dnIdToProfileName(dnid) + " does not seem to be in something@somthingelse format.");
+        				throw new UserDoesntFullfillEndEntityProfile(DnComponents.dnIdToProfileName(dnid) + " does not seem to be in something@somethingelse format.");
         			}
         			//Don't split RFC822NAME addresses. 
         			if(!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) {
@@ -1260,7 +1260,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			profileCrossOffList[j] += ( isModifyable(profileID, j) ? 0 : NONMODIFYABLE_FIELD ) + ( isRequired(profileID, j) ? REQUIRED_FIELD : 0 ); 
     		}
     		// Start by matching email strings
-			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAIL.equals(DnComponents.dnIdToProfileName(dnid)) ) {
+			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAILADDRESS.equals(DnComponents.dnIdToProfileName(dnid)) ) {
 	    		for ( int k=3; k>=0; k--) {
 	    			//	For every value in profile
 	    			for ( int l=0; l<profileCrossOffList.length; l++ ) {
@@ -1612,7 +1612,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	boolean ret = true;
         if (field.equals(DnComponents.OTHERNAME) 
         		|| field.equals(DnComponents.X400ADDRESS) 
-        		|| field.equals(DnComponents.EDIPARTNAME) 
+        		|| field.equals(DnComponents.EDIPARTYNAME) 
         		|| field.equals(DnComponents.REGISTEREDID)) {
     		log.info("isFieldImplemented got call for non-implemented field: "+field);
         	ret = false;
@@ -1777,7 +1777,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
     		}
     	}
-    	if (field.equals(DnComponents.DNEMAIL)) {
+    	if (field.equals(DnComponents.DNEMAILADDRESS)) {
     		if (isRequired(field,number)) {
     			if (!data.trim().equals(email.trim())) {
     				throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");

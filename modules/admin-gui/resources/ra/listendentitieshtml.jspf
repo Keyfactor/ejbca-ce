@@ -272,13 +272,13 @@ function confirmrevocation(){
                        } %>
     </td>
     <td width="17%">
-                   <% if(sortby.equals(SORTBY_ORGANIZATIONUNIT_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
+                   <% if(sortby.equals(SORTBY_ORGANIZATIONALUNIT_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONALUNIT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
                    <% }else{
-                         if(sortby.equals(SORTBY_ORGANIZATIONUNIT_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
+                         if(sortby.equals(SORTBY_ORGANIZATIONALUNIT_DEC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
                    <%    }
                        } %>
     </td>

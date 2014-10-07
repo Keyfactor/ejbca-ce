@@ -64,7 +64,7 @@ public class UserMatch extends BasicMatch {
     public static final int MATCH_WITH_IPADDRESS           = 202;
     public static final int MATCH_WITH_X400ADDRESS         = 203;
     public static final int MATCH_WITH_DIRECTORYNAME       = 204;
-    public static final int MATCH_WITH_EDIPARTNAME         = 205;
+    public static final int MATCH_WITH_EDIPARTYNAME        = 205;
     public static final int MATCH_WITH_URI                 = 206;
     public static final int MATCH_WITH_REGISTEREDID        = 207;
     public static final int MATCH_WITH_UPN                 = 208;
@@ -89,7 +89,7 @@ public class UserMatch extends BasicMatch {
     private static final String MATCH_WITH_SUBJECTALTNAME = "subjectAltName";
     private static final String[] MATCH_WITH_SUBJECTALTNAME_NAMES = {
         "RFC822NAME=", "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=",
-        "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
+        "EDIPARTYNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
     };
     // Public methods.
 
@@ -101,7 +101,7 @@ public class UserMatch extends BasicMatch {
      *        with 'begins with'.
      * @param matchvalue the value to match with.
      *
-     * @throws NumberFormatException if matchvalue constains illegal numbervalue when matching
+     * @throws NumberFormatException if matchvalue contains illegal numbervalue when matching
      *         number field.
      */
     public UserMatch(int matchwith, int matchtype, String matchvalue)

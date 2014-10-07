@@ -259,7 +259,7 @@ public class UserView implements Serializable, Comparable<UserView> {
     }
 
     /**
-     * getCommonName is a special function used in list end entity gui to display names in cases not a CN field exists in dn only, surname and givennamn
+     * getCommonName is a special function used in list end entity gui to display names in cases not a CN field exists in dn only, surname and givenname
      */
     public String getCommonName() {
         return commonname;
@@ -282,22 +282,22 @@ public class UserView implements Serializable, Comparable<UserView> {
         case SortBy.COMMONNAME:
             returnvalue = this.commonname.compareTo(obj.getCommonName());
             break;
-        case SortBy.SERIALNUMBER:
+        case SortBy.DNSERIALNUMBER:
             returnvalue = getSubjectDNField(DNFieldExtractor.SN, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.SN, 0));
             break;
         case SortBy.TITLE:
             returnvalue = getSubjectDNField(DNFieldExtractor.T, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.T, 0));
             break;
-        case SortBy.ORGANIZATIONUNIT:
+        case SortBy.ORGANIZATIONALUNIT:
             returnvalue = getSubjectDNField(DNFieldExtractor.OU, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.OU, 0));
             break;
         case SortBy.ORGANIZATION:
             returnvalue = getSubjectDNField(DNFieldExtractor.O, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.O, 0));
             break;
-        case SortBy.LOCALE:
+        case SortBy.LOCALITY:
             returnvalue = getSubjectDNField(DNFieldExtractor.L, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.L, 0));
             break;
-        case SortBy.STATE:
+        case SortBy.STATEORPROVINCE:
             returnvalue = getSubjectDNField(DNFieldExtractor.ST, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.ST, 0));
             break;
         case SortBy.DOMAINCOMPONENT:

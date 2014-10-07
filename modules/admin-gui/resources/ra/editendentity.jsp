@@ -259,7 +259,7 @@
        for(int i=0; i < numberofsubjectdnfields; i++){
          value=null;
          fielddata = profile.getSubjectDNFieldsInOrder(i); 
-         if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL))
+         if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS))
            value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
          else{
            if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
@@ -791,7 +791,7 @@ function checkallfields(){
  <%    
      for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
-         if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL)) {
+         if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)) {
            if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
     if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
@@ -1245,7 +1245,7 @@ function checkUseInBatch(){
 	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <% 
-             if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL)){  
+             if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)){  
                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                %>

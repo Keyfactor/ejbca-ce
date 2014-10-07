@@ -134,8 +134,8 @@ public class EndEntityInformationFiller {
         profiledn = new DistinguishedName(rdnList);
 
         Map<String, String> dnMap = new HashMap<String, String>();
-        if (profile.getUse(DnComponents.DNEMAIL, 0)) {
-            dnMap.put(DnComponents.DNEMAIL, entityEmail);
+        if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+            dnMap.put(DnComponents.DNEMAILADDRESS, entityEmail);
         }
         
         return  CertTools.stringToBCDNString(profiledn.mergeDN(userdn, true, dnMap).toString());
