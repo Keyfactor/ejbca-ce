@@ -909,6 +909,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(cmpcert);
         final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
         checkDN(userDN, new JcaX509CertificateHolder(cert).getSubject());
+        assertArrayEquals(cert.getIssuerX500Principal().getEncoded(), ((X509Certificate)cacert).getSubjectX500Principal().getEncoded());
         
         // Verify the issuer of cert
         CMPCertificate respCmpCaCert = c.getCaPubs()[0];
