@@ -31,7 +31,7 @@ public class EndEntityProfileTest {
     public void testEndEntityProfileDiff() {
         EndEntityProfile foo = new EndEntityProfile();
         EndEntityProfile bar = new EndEntityProfile();
-        bar.addField(DnComponents.ORGANIZATIONUNIT);
+        bar.addField(DnComponents.ORGANIZATIONALUNIT);
         Map<Object, Object> diff = foo.diff(bar);
         assertFalse(diff.isEmpty());
     }

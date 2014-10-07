@@ -203,7 +203,7 @@ public class DistinguishedName extends LdapName {
     /** Get a relative Distinguished Name.
      * @param dn the DN.
      * @param type type of the DN.
-     * @param index index of the DN (in case of multiple occurences).
+     * @param index index of the DN (in case of multiple occurrences).
      * @return the requested DN.
      */
     public static Rdn getRdn(DistinguishedName dn, String type, int index) {
@@ -236,7 +236,7 @@ public class DistinguishedName extends LdapName {
      * @return translated name.
      */
     public String translateComponentName(String name) {
-        if (DnComponents.DNEMAIL.equals(name)) {
+        if (DnComponents.DNEMAILADDRESS.equals(name)) {
             return "E";
         }
         return name;

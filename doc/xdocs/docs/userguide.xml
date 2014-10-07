@@ -1139,7 +1139,7 @@ If you have for example:
 </ul>
 <p>Then when adding an end entity with DN "CN=Foo,OU=Bar1,OU=Bar2" will result in an error:</p>
 <source>
-org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile: Subject DN field 'ORGANIZATIONUNIT' must exist. 
+org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile: Subject DN field 'ORGANIZATIONALUNIT' must exist. 
 </source>
 <p>This is because EJBCA can not keep track of which fields you mean to set, if it is one of the required or non-required. To help EJBCA determine this you can specify the non-required OU fields with empty values, "CN=Foo,OU=Bar1,OU=,OU=,OU=,OU=Bar2".
 </p>
