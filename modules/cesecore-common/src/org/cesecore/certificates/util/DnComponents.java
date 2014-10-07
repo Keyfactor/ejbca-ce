@@ -99,19 +99,19 @@ public class DnComponents {
      * 
      */
     // DN components
-    public static final String DNEMAIL             = "DNEMAIL";
-    public static final String DNQUALIFIER         = "DN";
+    public static final String DNEMAILADDRESS      = "EMAILADDRESS";
+    public static final String DNQUALIFIER         = "DNQUALIFIER";
     public static final String UID                 = "UID";
     public static final String COMMONNAME          = "COMMONNAME";
-    public static final String SN                  = "SN";
+    public static final String DNSERIALNUMBER      = "SERIALNUMBER";
     public static final String GIVENNAME           = "GIVENNAME";
     public static final String INITIALS            = "INITIALS";
     public static final String SURNAME             = "SURNAME";
     public static final String TITLE               = "TITLE";
-    public static final String ORGANIZATIONUNIT    = "ORGANIZATIONUNIT";
+    public static final String ORGANIZATIONALUNIT  = "ORGANIZATIONALUNIT";
     public static final String ORGANIZATION        = "ORGANIZATION";
-    public static final String LOCALE              = "LOCALE";
-    public static final String STATE               = "STATE";
+    public static final String LOCALITY            = "LOCALITY";
+    public static final String STATEORPROVINCE     = "STATEORPROVINCE";
     public static final String DOMAINCOMPONENT     = "DOMAINCOMPONENT";
     public static final String COUNTRY             = "COUNTRY";
     public static final String UNSTRUCTUREDADDRESS = "UNSTRUCTUREDADDRESS";
@@ -121,7 +121,7 @@ public class DnComponents {
     public static final String POSTALADDRESS       = "POSTALADDRESS";
     public static final String TELEPHONENUMBER     = "TELEPHONENUMBER";
     public static final String PSEUDONYM           = "PSEUDONYM";
-    public static final String STREET              = "STREET";
+    public static final String STREETADDRESS       = "STREETADDRESS";
     public static final String NAME                = "NAME";
     
     // AltNames
@@ -137,7 +137,7 @@ public class DnComponents {
     // Below are altNames that are not implemented yet
     public static final String OTHERNAME          = "OTHERNAME";
     public static final String X400ADDRESS        = "X400ADDRESS";
-    public static final String EDIPARTNAME        = "EDIPARTNAME";
+    public static final String EDIPARTYNAME       = "EDIPARTYNAME";
     public static final String REGISTEREDID       = "REGISTEREDID";
     
     // Subject directory attributes

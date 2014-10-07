@@ -542,8 +542,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (userData != null) {
                 if (userData.getSubjectDN() != null) {
                     final Map<String, String> dnMap = new HashMap<String, String>();
-                    if (profile.getUse(DnComponents.DNEMAIL, 0)) {
-                        dnMap.put(DnComponents.DNEMAIL, endEntityInformation.getEmail());
+                    if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+                        dnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
                     }
                     try {
                         dn = (new DistinguishedName(userData.getSubjectDN())).mergeDN(new DistinguishedName(dn), true, dnMap).toString();
