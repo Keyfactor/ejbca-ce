@@ -27,12 +27,17 @@
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE_HELP\") %>"/></p>
       </td>
       <td width="50%" valign="top"> 
-        <select name="<%= LIST_PREFEREDLANGUAGE %>" class="acronym">
+        <select name="<%= LIST_PREFEREDLANGUAGE %>">
           <% String[] availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
+             String[] languagesenglishnames = ejbcawebbean.getLanguagesEnglishNames();
+             String[] languagesnativenames = ejbcawebbean.getLanguagesNativeNames();
              int preferedlanguage = dup.getPreferedLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == preferedlanguage){ %> selected <% } %>
-                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= availablelanguages[i] %>"/></option>
+                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= languagesenglishnames[i] %>" />
+                     <% if (languagesenglishnames[i] != null && languagesnativenames[i] != null) { %> - <% } %>
+                     <c:out value="<%= languagesnativenames[i] %>" />
+                     [<c:out value="<%= availablelanguages[i] %>"/>]</option>
           <% } %>
         </select>
       </td>
@@ -44,12 +49,17 @@
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE_HELP\") %>"/></p>
       </td>
       <td width="50%" valign="top"> 
-        <select name="<%= LIST_SECONDARYLANGUAGE %>" class="acronym">
-          <% availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
+        <select name="<%= LIST_SECONDARYLANGUAGE %>">
+          <% //availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
+             //languagesenglishnames = ejbcawebbean.getLanguagesEnglishNames();
+             //languagesnativenames = ejbcawebbean.getLanguagesNativeNames();
              int secondarylanguage = dup.getSecondaryLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == secondarylanguage){ %> selected <% } %>
-                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= availablelanguages[i] %>"/></option>
+                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= languagesenglishnames[i] %>" />
+                     <% if (languagesenglishnames[i] != null && languagesnativenames[i] != null) { %> - <% } %>
+                     <c:out value="<%= languagesnativenames[i] %>" />
+                     [<c:out value="<%= availablelanguages[i] %>"/>]</option>
           <% } %>
         </select>
       </td>
