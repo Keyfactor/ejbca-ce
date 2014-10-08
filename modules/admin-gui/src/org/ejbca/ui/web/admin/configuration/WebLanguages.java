@@ -46,7 +46,6 @@ public class WebLanguages implements java.io.Serializable {
         if(languages == null){
             // Get available languages.
             availablelanguages=null;
-            
             String availablelanguagesstring = globalconfiguration.getAvailableLanguagesAsString();
             availablelanguages =  availablelanguagesstring.split(",");
             for(int i=0; i < availablelanguages.length;i++){
@@ -81,6 +80,13 @@ public class WebLanguages implements java.io.Serializable {
                 }
                 languages[i].load(is);
             }
+            // Get languages English and native names
+            languagesenglishnames = new String[availablelanguages.length];
+            languagesnativenames = new String[availablelanguages.length];
+            for(int i = 0; i < availablelanguages.length; i++){
+                languagesenglishnames[i] = languages[i].getProperty("LANGUAGE_ENGLISHNAME");
+                languagesnativenames[i] = languages[i].getProperty("LANGUAGE_NATIVENAME");
+            }
         }
     }
 
@@ -109,9 +115,19 @@ public class WebLanguages implements java.io.Serializable {
       return returnvalue;
     }
 
-    /* Returns a text string containing the available languages */
+    /* Returns a text string array containing the available languages */
     public String[] getAvailableLanguages(){
       return availablelanguages;
+    }
+
+    /* Returns a text string array containing the languages English names */
+    public String[] getLanguagesEnglishNames(){
+      return languagesenglishnames;
+    }
+
+    /* Returns a text string array containing the languages native names */
+    public String[] getLanguagesNativeNames(){
+      return languagesnativenames;
     }
 
 
@@ -120,6 +136,8 @@ public class WebLanguages implements java.io.Serializable {
     private int userssecondarylanguage;
 
     private String[] availablelanguages;
+    private String[] languagesenglishnames;
+    private String[] languagesnativenames;
     private LanguageProperties[] languages = null;
 
 }
