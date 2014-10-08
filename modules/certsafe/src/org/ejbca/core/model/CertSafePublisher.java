@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -44,6 +45,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -155,8 +157,17 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         List<CustomPublisherProperty> ret = new ArrayList<CustomPublisherProperty>();
         // Make selection of the remote CertSafe server configurable 
         ret.add(new CustomPublisherProperty(certSafeUrlPropertyName, CustomPublisherProperty.UI_TEXTINPUT, urlstr));
+        
         // Authentication key binding we use to authenticate against the remove remote CertSafe server 
-        ret.add(new CustomPublisherProperty(certSafeAuthKeyBindingPropertyName, CustomPublisherProperty.UI_TEXTINPUT, authKeyBindingName));
+        List<InternalKeyBindingInfo> kinfos = internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
+        ArrayList<String> options = new ArrayList<String>();
+        Iterator<InternalKeyBindingInfo> itr = kinfos.iterator();
+        while(itr.hasNext()) {
+            InternalKeyBindingInfo kinfo = itr.next();
+            options.add(kinfo.getName());
+        }
+        ret.add(new CustomPublisherProperty(certSafeAuthKeyBindingPropertyName, CustomPublisherProperty.UI_SELECTONE, options, options, authKeyBindingName));
+
         // HTTPS connection timeout
         ret.add(new CustomPublisherProperty(certSafeConnectionTimeOutPropertyName, CustomPublisherProperty.UI_TEXTINPUT, String.valueOf(timeout)));
         return ret;
