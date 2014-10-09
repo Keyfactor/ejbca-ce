@@ -65,19 +65,18 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -819,10 +818,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Creates a "hardtoken" with certficates.
      */
     private void createHardToken(String username, String caName, String serialNumber) throws Exception {
-        GlobalConfiguration gc = (GlobalConfiguration) raAdminSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration gc = (GlobalConfiguration) raAdminSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        raAdminSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
+        raAdminSession.saveConfiguration(intAdmin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         }
@@ -877,7 +876,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertTrue(responses.size() == 2);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        raAdminSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
+        raAdminSession.saveConfiguration(intAdmin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     } // createHardToken
 
     /**

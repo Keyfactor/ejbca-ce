@@ -54,13 +54,12 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -177,7 +176,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         this.issuerDN2 = CertTools.getSubjectDN(this.cacert2);
             this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     @Override
@@ -203,7 +202,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
         this.cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
         updatePropertyOnServer("cmp.tcp.portno", "5587");
-        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     @Override
@@ -225,7 +224,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", configAlias);
         }
-        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     @Override

@@ -71,6 +71,8 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationData;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -85,7 +87,6 @@ import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
-import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
@@ -125,18 +126,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @EJB
     private CaSessionLocal caSession;
     @EJB
+    private CertificateProfileSessionLocal certProfileSession;
+    @EJB
     private ComplexAccessControlSessionLocal complexAccessControlSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
-    private CertificateProfileSessionLocal certProfileSession;
-    @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
-    @EJB
-    private CryptoTokenSessionLocal cryptoTokenSession;
-   
 
     private UpgradeSessionLocal upgradeSession;
 
@@ -321,7 +323,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		eepd.setDataUnsafe(h);
     	}
     	log.info(" Processing GlobalConfigurationData entities.");
-    	GlobalConfigurationData gcd = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
+    	GlobalConfigurationData gcd = globalConfigurationSession.findByConfigurationId("0");
 		HashMap h = getDataUnsafe(gcd.getDataUnsafe());
     	gcd.setDataUnsafe(h);
     }

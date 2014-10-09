@@ -15,10 +15,9 @@ package org.ejbca.ui.cli.config;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.ui.cli.config.cmp.AddAliasCommand;
 import org.ejbca.ui.cli.config.cmp.RemoveAliasCommand;
 import org.ejbca.ui.cli.config.cmp.RenameAliasCommand;
@@ -36,18 +35,18 @@ public class CmpConfigCommandTest {
     @Test
     public void testAliasOperations() {
         final String aliasName = "foo";
-        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if(cmpConfiguration.aliasExists(aliasName)) {
             throw new RuntimeException("Test can't continue, alias already exists.");
         }
         final String[] addAliasArgs = new String[] { aliasName };
         new AddAliasCommand().execute(addAliasArgs);
-        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         assertTrue("No alias was added", cmpConfiguration.aliasExists(aliasName));
         final String newAliasName = "bar";
         String[] renameAliasArgs = new String[] { aliasName, newAliasName };
         new RenameAliasCommand().execute(renameAliasArgs);
-        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         assertFalse("Old alias is still there", cmpConfiguration.aliasExists(aliasName));
         assertTrue("No alias was renamed", cmpConfiguration.aliasExists(newAliasName));
         String[] removeAliasArgs = new String[] { newAliasName };

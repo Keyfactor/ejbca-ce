@@ -17,7 +17,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.Configuration;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
@@ -39,7 +39,7 @@ public class DumpAllConfigCommand extends BaseCmpConfigCommand {
         Properties properties;
         try {
             properties = getGlobalConfigurationSession().getAllProperties(getAuthenticationToken(),
-                    Configuration.CMPConfigID);
+                    CmpConfiguration.CMP_CONFIGURATION_ID);
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user is not authorized to dump configuration.");
             return CommandResult.AUTHORIZATION_FAILURE;

@@ -12,7 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 
 /**
@@ -24,14 +32,14 @@ import org.ejbca.config.GlobalConfiguration;
  * 
  * @version $Id$
  */
-public final class GlobalConfigurationCache {
+public final class GlobalConfigurationCache implements ConfigurationCache {
 
     /**
      * Cache variable containing the global configuration. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
-    private volatile GlobalConfiguration globalconfigurationCache = null;
+    private volatile ConfigurationBase globalconfigurationCache = null;
     /** help variable used to control that GlobalConfiguration update isn't performed to often. */
     private volatile long lastupdatetime = -1;  
 
@@ -39,15 +47,8 @@ public final class GlobalConfigurationCache {
 		// Do nothing
 	}
 
-	public GlobalConfiguration getGlobalconfiguration() {
-		return globalconfigurationCache;
-	}
 
-	public void setGlobalconfiguration(final GlobalConfiguration globalconfiguration) {
-		globalconfigurationCache = globalconfiguration;
-        lastupdatetime = System.currentTimeMillis();
-	}
-
+	@Override
 	public boolean needsUpdate() {
         if (globalconfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
         	return false;
@@ -58,4 +59,51 @@ public final class GlobalConfigurationCache {
 	public void clearCache() {
 		globalconfigurationCache = null;
 	}
+
+    @Override
+    public String getConfigId() {
+        return GlobalConfiguration.GLOBAL_CONFIGURATION_ID;
+    }
+
+    @Override
+    public void saveData() {
+        globalconfigurationCache.saveData();
+    }
+
+    @Override
+    public ConfigurationBase getConfiguration() {
+        return globalconfigurationCache;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public ConfigurationBase getConfiguration(HashMap data) {
+        ConfigurationBase returnval = new GlobalConfiguration();
+        returnval.loadData(data);
+        return returnval;
+    }
+
+    @Override
+    public void updateConfiguration(ConfigurationBase configuration) {
+      this.globalconfigurationCache = configuration;
+      lastupdatetime = System.currentTimeMillis();
+    }
+
+
+    @Override
+    public ConfigurationBase getNewConfiguration() {
+       return new GlobalConfiguration();      
+    }
+
+
+    @Override
+    public Properties getAllProperties() {
+        Properties ejbca = EjbcaConfigurationHolder.getAsProperties();
+        Properties cesecore = ConfigurationHolder.getAsProperties();
+        for (Iterator<Object> iterator = ejbca.keySet().iterator(); iterator.hasNext();) {
+            String key = (String)iterator.next();
+            cesecore.setProperty(key, ejbca.getProperty(key));            
+        }
+        return cesecore;
+    }
 }

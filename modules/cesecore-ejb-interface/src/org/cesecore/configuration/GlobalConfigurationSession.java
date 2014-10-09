@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,13 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.config;
+package org.cesecore.configuration;
 
 import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.Configuration;
+import org.cesecore.configuration.ConfigurationBase;
 
 /** 
  * Session bean to handle global configuration and such.
@@ -32,7 +32,7 @@ public interface GlobalConfigurationSession {
      * @return a fresh GlobalConfiguration from persistence, or null of no such
      *         configuration exists.
      */
-    Configuration flushCache(String configID);
+    ConfigurationBase flushCache(String configID);
     
     /**
      * Retrieves the cached GlobalConfiguration. This cache is updated from
@@ -43,7 +43,7 @@ public interface GlobalConfigurationSession {
      * 
      * @return the cached GlobalConfiguration value.
      */
-    Configuration getCachedConfiguration(String configID);
+    ConfigurationBase getCachedConfiguration(String configID);
 
     /** Clear and load global configuration cache. */
     void flushConfigurationCache(String configID);
@@ -56,11 +56,11 @@ public interface GlobalConfigurationSession {
     /** Saves the GlobalConfiguration. 
     *
     * @param admin an authentication token
-    * @param globconf the new Global Configuration
+    * @param globconf the new Configuration
     * @param configId constant defining what type of configuration, Configuration.GlobalConfigID or Configuration.CMPConfigID
     * 
     * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
     */
-   void saveConfiguration(AuthenticationToken admin, Configuration conf, String configID) throws AuthorizationDeniedException;
+   void saveConfiguration(AuthenticationToken admin, ConfigurationBase conf, String configID) throws AuthorizationDeniedException;
 
 }

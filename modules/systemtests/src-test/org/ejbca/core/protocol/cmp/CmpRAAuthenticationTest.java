@@ -35,15 +35,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -88,7 +87,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.caCertificate1 = setupCA(CA_NAME_1, null, PBE_SECRET_1);
         this.caCertificate2 = setupCA(CA_NAME_2, null, PBE_SECRET_2);
         
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     /** Create CAs and change configuration for the following tests. */
@@ -108,7 +107,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         this.cmpConfiguration.setRACAName(this.configAlias, "KeyId");
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(this.configAlias, "-;-");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     /** Remove CAs and restore configuration that was used by the tests. */
@@ -121,7 +120,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).restoreConfiguration();
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(ADMIN, EEP_1);
         this.cmpConfiguration.removeAlias(this.configAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     private static X509Certificate setupCA(String caName, String _caDN, String pbeSecret) throws Exception {
@@ -159,7 +158,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     public void test03IssueConfirmRevokeWithCommonSecret() throws Exception {
         LOG.trace(">test03IssueConfirmRevokeWithCommonSecret");
         this.cmpConfiguration.setAuthenticationParameters(this.configAlias , "-;" + PBE_SECRET_3);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         testIssueConfirmRevoke(this.caCertificate2, PBE_SECRET_3, CA_NAME_2, false);
         LOG.trace("<test03IssueConfirmRevokeWithCommonSecret");
     }
@@ -170,7 +169,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         LOG.trace(">test04IssueConfirmRevokeEEP");
         this.cmpConfiguration.setRACAName(this.configAlias, "ProfileDefault");
         this.cmpConfiguration.setRAEEProfile(this.configAlias, EEP_1);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         // Create EEP
         if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
             // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
@@ -202,7 +201,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         
         this.cmpConfiguration.setRACAName(this.configAlias, caName);
         this.cmpConfiguration.setRAEEProfile(this.configAlias, EEP_1);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         // Create EEP
         if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
@@ -239,7 +238,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
 
         this.cmpConfiguration.setAuthenticationModule(this.configAlias, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(this.configAlias, pbeSecret);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         String issuerDN = CertTools.getSubjectDN(caCertificate);
         if(reverseIssuerDN) {

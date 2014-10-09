@@ -85,6 +85,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keys.util.KeyTools;
@@ -93,12 +94,10 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -202,9 +201,9 @@ public class ProtocolScepHttpTest {
         final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
         httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
              
-        scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         scepConfiguration.addAlias(scepAlias);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
 
     }
 
@@ -225,7 +224,7 @@ public class ProtocolScepHttpTest {
         }        
         
         scepConfiguration.removeAlias(scepAlias);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
     @AfterClass
@@ -252,11 +251,11 @@ public class ProtocolScepHttpTest {
     @Test
     public void test02AccessTest() throws Exception {
         
-        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         boolean remove = false;
         if(!scepConfig.aliasExists("scep")) {
             scepConfig.addAlias("scep");
-            globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
             remove = true;
         }
         
@@ -283,7 +282,7 @@ public class ProtocolScepHttpTest {
         
         if(remove) {
             scepConfig.removeAlias("scep");
-            globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
         }
         assertEquals("HTTP GET is not supported. (This test expects " + httpBaseUrl+resourceName + " to exist)", 200, ret);
         
@@ -300,7 +299,7 @@ public class ProtocolScepHttpTest {
     public void test02Access() throws Exception {
         log.trace(">test02Access()");
         
-        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         sendScepAliasRequest(scepConfig, "alias123", "alias123", "SCEP alias 'alias123' does not exist"); // "alias123" in the request causes Ejbca to use "alias123" as SCEP alias
         sendScepAliasRequest(scepConfig, "123", "123", "SCEP alias '123' does not exist"); // "123" in the request causes Ejbca to use "123" as SCEP alias
@@ -345,7 +344,7 @@ public class ProtocolScepHttpTest {
         // send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, true);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         // Make user that we know...
         createScepUser(userName1, userDN1);
@@ -366,7 +365,7 @@ public class ProtocolScepHttpTest {
         // send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, true);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         // Make user that we know...
         createScepUser(userName1, userDN1);
@@ -387,7 +386,7 @@ public class ProtocolScepHttpTest {
         // send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, true);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         createScepUser(userName1, userDN1);
 
@@ -407,7 +406,7 @@ public class ProtocolScepHttpTest {
         // send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, false);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         createScepUser(userName1, userDN1);
 
@@ -498,7 +497,7 @@ public class ProtocolScepHttpTest {
     public void test09ScepGetCrl() throws Exception {
         
         scepConfiguration.setIncludeCA(scepAlias, false);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         publishingCrlSession.forceCRL(admin, x509ca.getCAId());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
@@ -542,7 +541,7 @@ public class ProtocolScepHttpTest {
         log.debug(">test10EnforcementOfUniquePublicKeys()");
         
         scepConfiguration.setIncludeCA(scepAlias, false);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         // create new user for new DN.
         createScepUser(userName2, userDN2);
@@ -566,7 +565,7 @@ public class ProtocolScepHttpTest {
     public void test12EnforcementOfUniqueDN() throws Exception {
         
         scepConfiguration.setIncludeCA(scepAlias, false);
-        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, ScepConfiguration.SCEP_CONFIGURATION_ID);
         
         createScepUser(userName2, userDN2);
         // new user will have a DN of a certificate already issued for another
@@ -600,7 +599,7 @@ public class ProtocolScepHttpTest {
         if(extractedAlias != null) {
             if(scepConfig.aliasExists(extractedAlias)) {
                 scepConfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
-                globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+                globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
             }
         }
         
@@ -627,7 +626,7 @@ public class ProtocolScepHttpTest {
             if(extractedAlias != null) {
                 if(scepConfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
                     scepConfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
-                    globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+                    globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
                 }
             }
         }

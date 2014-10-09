@@ -18,9 +18,9 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
@@ -45,7 +45,7 @@ public class ConfigDumpCommand extends ConfigBaseCommand {
         Properties properties;
         try {
             properties = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAuthenticationToken(),
-                    Configuration.GlobalConfigID);
+                    GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to retrieve global configuration.");
             return CommandResult.AUTHORIZATION_FAILURE;

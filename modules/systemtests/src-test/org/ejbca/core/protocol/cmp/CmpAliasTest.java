@@ -30,12 +30,11 @@ import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSession;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,7 +79,7 @@ public class CmpAliasTest extends CmpTestCase {
         
         if(cmpconfig.aliasExists(extractedAlias)) {
             cmpconfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
-            this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, CmpConfiguration.CMP_CONFIGURATION_ID);
         }
         
         try {
@@ -125,7 +124,7 @@ public class CmpAliasTest extends CmpTestCase {
         } finally {
             if(cmpconfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
                 cmpconfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
-                this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
+                this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, CmpConfiguration.CMP_CONFIGURATION_ID);
             }
         }
     }
@@ -142,7 +141,7 @@ public class CmpAliasTest extends CmpTestCase {
     public void test01Access() throws Exception {
         log.trace(">test01Access()");
         
-        CmpConfiguration cmpConfig = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        CmpConfiguration cmpConfig = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         
         sendCmpRequest(cmpConfig, "alias123", "alias123"); // "alias123" in the request causes Ejbca to use "alias123" as CMP alias
         sendCmpRequest(cmpConfig, "123", "123"); // "123" in the request causes Ejbca to use "123" as CMP alias
@@ -160,7 +159,7 @@ public class CmpAliasTest extends CmpTestCase {
 
     @Test
     public void test02CmpAliasTest() {
-        CmpConfiguration cmpConfig = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        CmpConfiguration cmpConfig = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
         // Test adding an alias
         String alias = "CmpURLTestCmpConfigAlias";
