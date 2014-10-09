@@ -145,6 +145,40 @@ public class Base64CertData extends ProtectedData implements Serializable {
     }
 
     //
+    // Comparators
+    //
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof Base64CertData)) {
+            return false;
+        }
+        return equals((Base64CertData) obj);
+    }
+    
+    public boolean equals(final Base64CertData other) {
+        if (other==null) {
+            return false;
+        }
+        if (!fingerprint.equals(other.fingerprint)) {
+            return false;
+        }
+        if (!base64Cert.equals(other.base64Cert)) {
+            return false;
+        }
+        if (rowProtection!=null && !rowProtection.equals(other.rowProtection)) {
+            return false;
+        }
+        if (rowProtection==null && other.rowProtection!=null) {
+            return false;
+        }
+        if (rowVersion!=other.rowVersion) {
+            return false;
+        }
+        return true;
+    }
+
+    //
     // Search functions.
     //
 
