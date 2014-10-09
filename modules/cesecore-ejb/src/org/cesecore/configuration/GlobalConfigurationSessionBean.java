@@ -139,7 +139,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                     result = GlobalConfigurationCacheHolder.INSTANCE.getNewConfiguration(configID);
                     try {
                         // Call self bean as external here in order to create a transaction if no transaction exists (this method only has SUPPORTS to be as fast as possible)
-                        globalConfigSession.saveConfiguration(internalAdmin, result, configID);
+                        globalConfigSession.saveConfiguration(internalAdmin, result);
                     } catch (AuthorizationDeniedException e) {
                         throw new RuntimeException("Internal admin was denied access. This should not be able to happen.");
                     }
@@ -154,10 +154,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
     
     @Override
-    public void saveConfiguration(final AuthenticationToken admin, final ConfigurationBase conf, final String configID) throws AuthorizationDeniedException {
+    public void saveConfiguration(final AuthenticationToken admin, final ConfigurationBase conf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveConfiguration()");
         }
+        String configID = conf.getConfigurationId();
         if (this.accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
             final GlobalConfigurationData gcdata = findByConfigurationId(configID);
             if (gcdata != null) {

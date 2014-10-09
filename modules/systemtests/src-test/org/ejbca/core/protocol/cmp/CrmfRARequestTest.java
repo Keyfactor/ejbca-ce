@@ -135,7 +135,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         this.cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
-        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
     /**
@@ -336,11 +336,11 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         GlobalConfiguration gc = (GlobalConfiguration) this.globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         gc.setEnableEndEntityProfileLimitations(true);
-        this.globalConfSession.saveConfiguration(ADMIN, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        this.globalConfSession.saveConfiguration(ADMIN, gc);
         
         this.cmpConfiguration.setRAEEProfile(cmpAlias, "KeyId");
         this.cmpConfiguration.setRACertProfile(cmpAlias, "KeyId");
-        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         try {
             this.certProfileSession.removeCertificateProfile(ADMIN, "CMPKEYIDTESTPROFILE");
@@ -620,7 +620,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             createEllipticCurveDsaCa();
             CAInfo caInfo = this.caSession.getCAInfo(ADMIN, "TESTECDSA");
             this.cmpConfiguration.setRACAName(cmpAlias, "TESTECDSA");
-            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
             final String issuerDN = caInfo.getSubjectDN(); // Make sure this CA is used for the test
             final X509Certificate caCert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
@@ -644,7 +644,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             // Reset this test class as it was before this test
             this.cmpConfiguration.setRACAName(cmpAlias, "TestCA");
-            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
             removeTestCA("TESTECDSA");
         }
     }
@@ -707,7 +707,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         
         Assert.assertTrue("Unable to restore server configuration.", this.configurationSession.restoreConfiguration());
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         // Remove test profiles
         this.certProfileSession.removeCertificateProfile(ADMIN, "CMPTESTPROFILE");

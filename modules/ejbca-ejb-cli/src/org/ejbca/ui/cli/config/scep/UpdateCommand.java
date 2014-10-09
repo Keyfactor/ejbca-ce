@@ -79,7 +79,7 @@ public class UpdateCommand extends BaseScepConfigCommand {
         log.info("Configuration was: " + key + "=" + scepConfig.getValue(key, alias));
         scepConfig.setValue(key, value, alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig);
             log.info("Configuration updated: " + key + "=" + getScepConfiguration().getValue(key, alias));
             getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;

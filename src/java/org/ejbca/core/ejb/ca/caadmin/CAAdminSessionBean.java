@@ -518,7 +518,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 changed = true;
             }
             if (changed) {
-                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
             }
         }
         
@@ -535,7 +535,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
             }
             if (changed) {
-                globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfig, CmpConfiguration.CMP_CONFIGURATION_ID);
+                globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfig);
             }
         }
         

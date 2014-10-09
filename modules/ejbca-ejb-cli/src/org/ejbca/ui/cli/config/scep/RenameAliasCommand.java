@@ -57,7 +57,7 @@ public class RenameAliasCommand extends BaseScepConfigCommand {
         }
         scepConfig.renameAlias(oldalias, newalias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig);
             log.info("Renamed SCEP alias '" + oldalias + "' to '" + newalias + "'");
             getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;

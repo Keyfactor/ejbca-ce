@@ -240,7 +240,7 @@ public class XKMSKRSSTest {
 
         final GlobalConfiguration newGlobalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         newGlobalConfig.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveConfiguration(administrator, newGlobalConfig, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(administrator, newGlobalConfig);
 
         // Setup with two new Certificate profiles.
         CertificateProfile profile1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);

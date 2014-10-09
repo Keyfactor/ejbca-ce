@@ -237,7 +237,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA;foo123");
         this.cmpConfiguration.setRACertPath(cmpAlias, this.raCertsPath);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
     }
 
     @Override
@@ -251,7 +251,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         this.caSession.removeCA(this.admin, this.caid);
         
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
         
         this.certProfileSession.removeCertificateProfile(this.admin, CMPTESTPROFILE);
         this.eeProfileSession.removeEndEntityProfile(this.admin, CMPTESTPROFILE);
@@ -851,7 +851,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
         this.cmpConfiguration.setOmitVerificationsInECC(cmpAlias, true);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
 
         
         //-----------------Creating CRMF request

@@ -113,7 +113,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
         this.cmpConfiguration.setRACAName(cmpAlias, this.testx509ca.getName());
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         // Configure a Certificate profile (CmpRA) using CP_DN_OVERRIDE_NAME as template and check "Allow validity override".
         final CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
@@ -145,7 +145,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
         }
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
     
     @Override

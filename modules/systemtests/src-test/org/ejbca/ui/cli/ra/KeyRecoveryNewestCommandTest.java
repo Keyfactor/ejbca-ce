@@ -92,7 +92,7 @@ public class KeyRecoveryNewestCommandTest {
         x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
         GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         configuration.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveConfiguration(authenticationToken, configuration, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
     }
 
     @AfterClass

@@ -52,7 +52,7 @@ public class AddAliasCommand extends BaseScepConfigCommand {
         }
         getScepConfiguration().addAlias(alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getScepConfiguration(), ScepConfiguration.SCEP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getScepConfiguration());
             log.info("Added SCEP alias: " + alias);
             getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
