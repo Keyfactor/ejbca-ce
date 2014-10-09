@@ -61,6 +61,6 @@ public interface GlobalConfigurationSession {
     * 
     * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
     */
-   void saveConfiguration(AuthenticationToken admin, ConfigurationBase conf, String configID) throws AuthorizationDeniedException;
+   void saveConfiguration(AuthenticationToken admin, ConfigurationBase conf) throws AuthorizationDeniedException;
 
 }

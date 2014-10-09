@@ -680,12 +680,12 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public void saveGlobalConfiguration() throws Exception {
-        globalConfigurationSession.saveConfiguration(administrator, globalconfiguration, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(administrator, globalconfiguration);
         informationmemory.systemConfigurationEdited(globalconfiguration);
     }
     
     public void saveCMPConfiguration() throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
         informationmemory.cmpConfigurationEdited(cmpconfiguration);
     }
 

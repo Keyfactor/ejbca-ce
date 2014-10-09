@@ -202,7 +202,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRACertProfile(configAlias, "KeyId");
         this.cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
         updatePropertyOnServer("cmp.tcp.portno", "5587");
-        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
     @Override
@@ -224,7 +224,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", configAlias);
         }
-        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
     
     @Override

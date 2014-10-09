@@ -220,7 +220,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setRANameGenerationPostfix(alias, currentAlias.getRaNameGenPostfix());
             
             try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save alias. Administrator is not authorized.";
                 log.info(msg + e.getLocalizedMessage());
@@ -234,7 +234,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if(scepConfig.aliasExists(currentAliasStr)) {
             scepConfig.removeAlias(currentAliasStr);
             try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Failed to remove alias: " + e.getLocalizedMessage();
                 log.info(msg, e);
@@ -252,7 +252,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if(StringUtils.isNotEmpty(newAlias) && !scepConfig.aliasExists(newAlias)) {
             scepConfig.renameAlias(currentAliasStr, newAlias);
             try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Failed to rename alias: " + e.getLocalizedMessage();
                 log.info(msg, e);
@@ -270,7 +270,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if(StringUtils.isNotEmpty(newAlias) && !scepConfig.aliasExists(newAlias)) {
             scepConfig.addAlias(newAlias);
             try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Failed to add alias: " + e.getLocalizedMessage();
                 log.info(msg, e);

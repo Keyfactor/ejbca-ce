@@ -141,7 +141,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, false);
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
     /**
@@ -222,13 +222,13 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // Second it should fail when the certificate profile does not allow serial number override
             // crmfHttpUserTest checks the returned serno if bint parameter is not null
     		this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
-    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+this.cpDnOverrideId+"') is not allowing certificate serial number override.", bint);
     		
     		
     		// Third it should succeed and we should get our custom requested serialnumber
     		this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
-    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     		CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
     		cp.setAllowCertSerialNumberOverride(true);
     		// Now when the profile allows serial number override it should work
@@ -246,7 +246,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     public void tearDown() throws Exception {
     	super.tearDown();
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
     
     @Override

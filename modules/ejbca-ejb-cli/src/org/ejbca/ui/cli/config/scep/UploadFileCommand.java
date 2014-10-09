@@ -144,8 +144,7 @@ public class UploadFileCommand extends BaseScepConfigCommand {
         // Save the new configurations.
         if (populated) {
             try {
-                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig,
-                        ScepConfiguration.SCEP_CONFIGURATION_ID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig);
                 log.info("\nNew configurations saved successfully.");
                 log.info("If there are any issues with the configurations, check them in the AdminGUI and click 'Save'");
                 getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);

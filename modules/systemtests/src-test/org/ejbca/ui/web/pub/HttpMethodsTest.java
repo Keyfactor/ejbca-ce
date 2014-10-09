@@ -152,7 +152,7 @@ public class HttpMethodsTest {
         boolean remove = false;
         if(!scepConfig.aliasExists("scep")) {
             scepConfig.addAlias("scep");
-            globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+            globalConfigSession.saveConfiguration(admin, scepConfig);
             remove = true;
         }
         
@@ -161,7 +161,7 @@ public class HttpMethodsTest {
         } finally {
             if(remove) {
                 scepConfig.removeAlias("scep");
-                globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
+                globalConfigSession.saveConfiguration(admin, scepConfig);
             }
         }
     }

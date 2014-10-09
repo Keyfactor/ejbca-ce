@@ -52,7 +52,7 @@ public class RemoveAliasCommand extends BaseCmpConfigCommand {
         }
         getCmpConfiguration().removeAlias(alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), CmpConfiguration.CMP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration());
             log.info("Removed CMP alias: " + alias);
             getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;

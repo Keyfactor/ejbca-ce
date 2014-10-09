@@ -201,7 +201,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setRACertProfile(ALIAS, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRACAName(ALIAS, "TestCA");
         this.cmpConfiguration.setExtractUsernameComponent(ALIAS, "CN");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
     }
 
@@ -211,7 +211,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         super.tearDown();
 
         this.cmpConfiguration.removeAlias(ALIAS);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
         this.caSession.removeCA(ADMIN, this.caid);
@@ -224,7 +224,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         log.trace(">test01HMACModule()");
 
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -253,7 +253,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.cmpConfiguration.setResponseProtection(ALIAS, "signature");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -281,7 +281,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final X500Name revUserDN = new X500Name("CN=cmprevuser1,C=SE");
         final String revUsername = "cmprevuser1";
@@ -338,7 +338,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final X500Name testUserDN = new X500Name("CN=cmptestuser5,C=SE");
         final String testUsername = "cmptestuser5";
@@ -396,7 +396,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(USER_DN.toString(), issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + USER_DN + "\"");
@@ -449,7 +449,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(USER_DN.toString(), issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + USER_DN + "\"");
@@ -523,7 +523,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, modules);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, parameters);
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -574,7 +574,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, parameters);
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.cmpConfiguration.setResponseProtection(ALIAS, "pbe");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -609,7 +609,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_DN_PART_PWD);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "UID");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -648,7 +648,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -696,7 +696,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setOmitVerificationsInECC(ALIAS, true);
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -757,7 +757,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setRAMode(ALIAS, false);
         this.cmpConfiguration.setAllowRAVerifyPOPO(ALIAS, true);
         this.cmpConfiguration.setResponseProtection(ALIAS, "signature");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         String clientUsername = "clientTestUser";
         final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
@@ -836,7 +836,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             WaitingForApprovalException, EjbcaException, java.lang.Exception {
 
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final String clientUsername = "clientTestUser";
         final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
@@ -876,7 +876,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final String clientUsername = "clientTestUser";
         final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
@@ -919,7 +919,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, authmodules);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123hmac;-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final String clientUsername = "clientTestUser";
         final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
@@ -961,7 +961,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123client");
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final String clientUsername = "clientTestUser";
         final X500Name clientDN = new X500Name("CN=" + clientUsername + ",C=SE");
@@ -1024,7 +1024,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final X500Name testUserDN = new X500Name("CN=cmptestuser16,C=SE");
         final String testUsername = "cmptestuser16";
@@ -1232,7 +1232,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "foo123");
         this.cmpConfiguration.setRAMode(ALIAS, true);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -1273,7 +1273,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -1316,7 +1316,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
         this.cmpConfiguration.setRAMode(ALIAS, false);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         final X500Name testUserDN = new X500Name("CN=cmptestuser21,C=SE");
         final String testUsername = "cmptestuser21";
@@ -1397,7 +1397,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setRANameGenParams(ALIAS, "CN");
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "CmpECDSATestCA");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         removeTestCA("CmpECDSATestCA");
         try {
@@ -1585,7 +1585,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setRANameGenParams(ALIAS, "CN");
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         //---------------- Send a CMP initialization request
         AuthenticationToken admToken = null;
@@ -1654,7 +1654,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
         this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
         this.cmpConfiguration.setRACAName(ALIAS, "TestCA");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 

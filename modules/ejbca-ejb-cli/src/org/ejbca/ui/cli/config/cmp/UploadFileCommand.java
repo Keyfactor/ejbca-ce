@@ -126,8 +126,7 @@ public class UploadFileCommand extends BaseCmpConfigCommand {
         // Save the new configurations.
         if (populated) {
             try {
-                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(),
-                        CmpConfiguration.CMP_CONFIGURATION_ID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration());
                 log.info("\nNew configurations saved successfully.");
                 log.info("If there are any issues with the configurations, check them in the AdminGUI and click 'Save'");
                 getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);

@@ -28,5 +28,7 @@ public abstract class ConfigurationBase extends UpgradeableDataHashMap {
 
     @Override
     public abstract void upgrade();
+    
+    public abstract String getConfigurationId();
 
 }

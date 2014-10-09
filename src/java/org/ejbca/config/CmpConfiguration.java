@@ -749,6 +749,11 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         }
     }
 
+    @Override
+    public String getConfigurationId() {
+        return CMP_CONFIGURATION_ID;
+    }
+
 }
 
 

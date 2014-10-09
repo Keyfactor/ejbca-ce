@@ -56,7 +56,7 @@ public class RenameAliasCommand extends BaseCmpConfigCommand {
         }
         getCmpConfiguration().renameAlias(oldalias, newalias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), CmpConfiguration.CMP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration());
             log.info("Renamed CMP alias '" + oldalias + "' to '" + newalias + "'");
             getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;

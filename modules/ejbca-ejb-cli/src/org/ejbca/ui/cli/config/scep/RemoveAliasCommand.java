@@ -52,7 +52,7 @@ public class RemoveAliasCommand extends BaseScepConfigCommand {
         }
         getScepConfiguration().removeAlias(alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getScepConfiguration(), ScepConfiguration.SCEP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getScepConfiguration());
             log.info("Removed SCEP alias: " + alias);
             getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;

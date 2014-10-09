@@ -203,7 +203,7 @@ public class InitCATest extends CaTestCase {
             cmpConfig.addAlias(CMP_ALIAS);
             cmpConfig.setCMPDefaultCA(CMP_ALIAS, "CN="+RENAME_CA);
             cmpConfig.setRACAName(CMP_ALIAS, RENAME_CA); // this one shouldn't need to be updated, but it's tested anyway
-            globalConfigurationSession.saveConfiguration(admin, cmpConfig, CmpConfiguration.CMP_CONFIGURATION_ID);
+            globalConfigurationSession.saveConfiguration(admin, cmpConfig);
             
             RoleData role = roleManagementSession.create(admin, ROLE_NAME);
             final List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
@@ -312,7 +312,7 @@ public class InitCATest extends CaTestCase {
         final CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (cmpConfig.aliasExists(CMP_ALIAS)) {
             cmpConfig.removeAlias(CMP_ALIAS);
-            globalConfigurationSession.saveConfiguration(admin, cmpConfig, CmpConfiguration.CMP_CONFIGURATION_ID);
+            globalConfigurationSession.saveConfiguration(admin, cmpConfig);
         }
         log.trace("<deleteTestData");
     }

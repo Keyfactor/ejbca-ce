@@ -150,7 +150,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRACAName(ALIAS, this.testx509ca.getName());
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-;" + PBEPASSWORD);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
@@ -175,7 +175,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
         this.caSession.removeCA(ADMIN, this.caid);
         
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
     @Override
@@ -290,7 +290,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         
         this.cmpConfiguration.setRACertProfile(ALIAS, "KeyId");
         this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         try {
             final byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -364,7 +364,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             
             // Update property on server so that we use ProfileDefault as certificate profile, should give a little different result
             this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
-            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
             
             // Make new request, the certificate should now be produced with the other certificate profile
             PKIMessage two = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);

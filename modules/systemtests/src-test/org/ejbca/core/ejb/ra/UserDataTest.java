@@ -86,7 +86,7 @@ public class UserDataTest extends CaTestCase {
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
-        globalConfigurationSession.saveConfiguration(admin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(admin, gc);
         createNewUser();
     }
 
@@ -97,7 +97,7 @@ public class UserDataTest extends CaTestCase {
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
-        globalConfigurationSession.saveConfiguration(admin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(admin, gc);
 
         // Delete test users we created
 

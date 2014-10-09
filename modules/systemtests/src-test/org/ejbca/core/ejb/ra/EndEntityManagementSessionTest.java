@@ -218,7 +218,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         final GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
-        globalConfSession.saveConfiguration(roleMgmgToken, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);   
+        globalConfSession.saveConfiguration(roleMgmgToken, gc);   
         final String eeprofileName = "TESTADDUSER";
         try {            
             // Add a new end entity profile, by default password is required and we should not be able to add a user with empty or null password.
@@ -269,7 +269,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             }
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveConfiguration(roleMgmgToken, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);            
+            globalConfSession.saveConfiguration(roleMgmgToken, gc);            
             endEntityProfileSession.removeEndEntityProfile(admin, eeprofileName);
         }
     }
@@ -626,12 +626,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             accessControlSession.forceCacheExpire();
             // We must enforce end entity profile limitations for this, with false it should be ok now
             gc.setEnableEndEntityProfileLimitations(false);
-            globalConfSession.saveConfiguration(roleMgmgToken, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
             endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
             // Enforce EE profile limitations
             gc.setEnableEndEntityProfileLimitations(true);
-            globalConfSession.saveConfiguration(roleMgmgToken, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc);
             // Do the same test, now we should get auth denied on EE profiles instead
             try {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
@@ -642,7 +642,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
 
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveConfiguration(roleMgmgToken, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc);
             try {
                 endEntityManagementSession.deleteUser(admin, authUsername);
             } catch (Exception e) { // NOPMD

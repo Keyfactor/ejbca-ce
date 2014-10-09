@@ -147,7 +147,7 @@ public class CrmfRequestTest extends CmpTestCase {
         this.cmpConfiguration.setExtractUsernameComponent(cmpAlias, "CN");
         this.cmpConfiguration.setRACertProfile(cmpAlias, CP_DN_OVERRIDE_NAME);
         this.cmpConfiguration.setRAEEProfile(cmpAlias, EEP_DN_OVERRIDE_NAME);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
     @Override
@@ -166,7 +166,7 @@ public class CrmfRequestTest extends CmpTestCase {
         }
 
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
     
     @Override
@@ -471,7 +471,7 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace(">test10EscapedCharsInDN");
 
         this.cmpConfiguration.setExtractUsernameComponent(cmpAlias, "DN");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
