@@ -67,6 +67,7 @@
 	<path id="servicemanifest-util.classpath">
 		<path refid="compile-util.classpath"/>
 		<!-- Service manifest builder triggers static references to InternalResources -->
+		<path location="${ejbca.home}/src"/>
 		<path location="${ejbca.home}/src/java"/>
 	</path>
 
