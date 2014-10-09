@@ -79,7 +79,7 @@ public class CmpAliasTest extends CmpTestCase {
         
         if(cmpconfig.aliasExists(extractedAlias)) {
             cmpconfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
-            this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, CmpConfiguration.CMP_CONFIGURATION_ID);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig);
         }
         
         try {
@@ -124,7 +124,7 @@ public class CmpAliasTest extends CmpTestCase {
         } finally {
             if(cmpconfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
                 cmpconfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
-                this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig, CmpConfiguration.CMP_CONFIGURATION_ID);
+                this.globalConfigurationSession.saveConfiguration(ADMIN, cmpconfig);
             }
         }
     }

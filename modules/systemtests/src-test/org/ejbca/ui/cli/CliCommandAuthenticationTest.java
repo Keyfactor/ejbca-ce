@@ -270,7 +270,7 @@ public class CliCommandAuthenticationTest {
         GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
-        globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config);
         log.debug("Updated globalconfiguration with clienabled: " + config.getEnableCommandLineInterface());
         return oldValue;
     }
@@ -279,7 +279,7 @@ public class CliCommandAuthenticationTest {
         GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);
-        globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config);
         log.debug("Updated globalconfiguration with cliuserenabled: " + config.getEnableCommandLineInterfaceDefaultUser());
         return oldValue;
     }

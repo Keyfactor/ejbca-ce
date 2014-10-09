@@ -419,5 +419,10 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
         }
     }
+
+    @Override
+    public String getConfigurationId() {
+        return SCEP_CONFIGURATION_ID;
+    }
     
 }

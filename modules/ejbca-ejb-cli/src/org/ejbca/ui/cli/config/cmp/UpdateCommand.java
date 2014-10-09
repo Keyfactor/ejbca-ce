@@ -77,7 +77,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         log.info("Configuration was: " + key + "=" + getCmpConfiguration().getValue(key, alias));
         getCmpConfiguration().setValue(key, value, alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), CmpConfiguration.CMP_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration());
             log.info("Configuration updated: " + key + "=" + getCmpConfiguration().getValue(key, alias));
             getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;

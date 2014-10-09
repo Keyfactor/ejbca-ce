@@ -124,7 +124,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRACAName(this.cmpAlias, "TestCA");
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "-;" + PBEPASSWORD);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", this.cmpAlias);
         }
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         boolean cleanUpOk = true;
         if (!this.configurationSession.restoreConfiguration()) {

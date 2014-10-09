@@ -105,7 +105,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         this.cmpConfiguration.setRACAName(configAlias, TESTCA_NAME);
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBE_SECRET);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         LOG.trace("<test000Setup");
     }
     
@@ -116,7 +116,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         LOG.trace(">testZZZTearDown");
         removeTestCA(TESTCA_NAME);
         this.cmpConfiguration.removeAlias(configAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         LOG.trace("<testZZZTearDown");
     }
 

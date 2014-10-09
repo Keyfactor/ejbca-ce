@@ -94,7 +94,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        globalConfigurationSession.saveConfiguration(internalAdmin, original, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, original);
         enableCLI(true);
         internalAdmin = null;
     }
@@ -120,7 +120,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
-        globalConfigurationSession.saveConfiguration(internalAdmin, newValue, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, newValue);
 
         GlobalConfiguration cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
@@ -156,7 +156,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         String str1 = gc.getNodesInCluster().toString();
         assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str1);
         // Save and make sure it's ok across database saves as well
-        globalConfigurationSession.saveConfiguration(internalAdmin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, gc);
         globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         GlobalConfiguration newgc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         String str2 = newgc.getNodesInCluster().toString();
@@ -172,7 +172,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
-        globalConfigurationSession.saveConfiguration(internalAdmin, initial, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, initial);
     }
 
     /**
@@ -239,7 +239,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
             newConfig = config;
         } else {
             config.setEnableCommandLineInterface(enable);
-            globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfigurationSession.saveConfiguration(internalAdmin, config);
             newConfig = (GlobalConfiguration) globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         }
         assertEquals("CLI should have been enabled/disabled", enable, newConfig.getEnableCommandLineInterface());

@@ -140,7 +140,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
         this.cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
         this.cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
         
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
         if (this.certProfileSession.getCertificateProfile(CPNAME) == null) {
@@ -176,7 +176,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());
         this.cmpConfiguration.removeAlias(configAlias);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
     }
     
     @Override
