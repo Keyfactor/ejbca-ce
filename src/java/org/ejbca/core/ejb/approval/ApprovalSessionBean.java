@@ -45,16 +45,15 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -128,7 +127,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
                 approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
                 entityManager.persist(approvalData);
-                final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+                final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 if (gc.getUseApprovalNotifications()) {
                     sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
                             + "adminweb/approval/approveaction.jsf?uniqueId=" + freeId,
@@ -200,7 +199,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
         try {
             reject(adl, approval);
-            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (gc.getUseApprovalNotifications()) {
                 final ApprovalDataVO approvalDataVO = getApprovalDataVO(adl);
                 sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
@@ -262,7 +261,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                         null);
                 throw new AuthorizationDeniedException(msg);
             }
-            GlobalConfiguration globalConfiguration =  (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+            GlobalConfiguration globalConfiguration =  (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
                 if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
                         + AccessRulesConstants.APPROVAL_RIGHTS)) {

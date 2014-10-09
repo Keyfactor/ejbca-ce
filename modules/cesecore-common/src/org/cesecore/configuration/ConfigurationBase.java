@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,31 +10,23 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.audit.enums;
 
-import org.cesecore.audit.enums.ModuleType;
+package org.cesecore.configuration;
 
-/**
- * EJBCA specific module types.
- * 
- * @version $Id$
- * 
- */
-public enum EjbcaModuleTypes implements ModuleType {
-    RA,
-    HARDTOKEN,
-    KEYRECOVERY,
-    APPROVAL,
-    PUBLISHER,
-    SERVICE,
-    CUSTOM,
-    ADMINWEB;
+import org.cesecore.internal.UpgradeableDataHashMap;
+
+public abstract class ConfigurationBase extends UpgradeableDataHashMap {
+
+    private static final long serialVersionUID = 4886872276324915327L;
+
+    public static final float LATEST_VERSION = 3f;
+        
+    @Override
+    public float getLatestVersion() {
+        return LATEST_VERSION;
+    }
 
     @Override
-    public boolean equals(ModuleType value) {
-        if (value == null) {
-            return false;
-        }
-        return this.toString().equals(value.toString());
-    }
+    public abstract void upgrade();
+
 }

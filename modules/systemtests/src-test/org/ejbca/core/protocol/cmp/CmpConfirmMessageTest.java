@@ -24,13 +24,12 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -72,7 +71,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     public CmpConfirmMessageTest() throws Exception {
         this.testx509ca = cryptoTokenRule.createX509Ca();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     @Override
     @Before
@@ -84,7 +83,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         log.debug("caid: " + this.testx509ca.getCAId());
         
         this.cmpConfiguration.addAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     @Override
@@ -93,7 +92,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         super.tearDown();
         cryptoTokenRule.cleanUp();
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     @Override
@@ -115,7 +114,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         this.cmpConfiguration.setResponseProtection(cmpAlias, "signature");
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -147,7 +146,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         this.cmpConfiguration.setResponseProtection(cmpAlias, "signature");
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, this.testx509ca.getSubjectDN());
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -185,7 +184,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "password");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -222,7 +221,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         this.cmpConfiguration.setCMPDefaultCA(cmpAlias, this.testx509ca.getSubjectDN());
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();

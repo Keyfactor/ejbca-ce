@@ -123,6 +123,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -150,7 +151,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -159,7 +159,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -511,7 +510,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update System Configuration
-        GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalConfig != null) {
             boolean changed = false;
             if (globalConfig.getAutoEnrollCA() == fromId) {
@@ -519,13 +518,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 changed = true;
             }
             if (changed) {
-                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig, Configuration.GlobalConfigID);
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             }
         }
         
         // Update CMP Configuration
         // Only "Default CA" contains a reference to the Subject DN. All other fields reference the CAs by CA name.
-        CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (cmpConfig != null) {
             boolean changed = false;
             for (String alias : cmpConfig.getAliasList()) {
@@ -536,7 +535,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
             }
             if (changed) {
-                globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfig, Configuration.CMPConfigID);
+                globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfig, CmpConfiguration.CMP_CONFIGURATION_ID);
             }
         }
         

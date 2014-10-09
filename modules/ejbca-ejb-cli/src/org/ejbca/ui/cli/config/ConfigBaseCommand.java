@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config;
 
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 
 /**

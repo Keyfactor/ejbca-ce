@@ -38,13 +38,12 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
@@ -75,7 +74,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     }
 
     public CrmfRARequestCustomSerialNoTest() throws Exception {
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
         // Try to use ManagementCA if it exists
         final CAInfo managementca;
@@ -142,7 +141,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, false);
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     /**
@@ -223,13 +222,13 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // Second it should fail when the certificate profile does not allow serial number override
             // crmfHttpUserTest checks the returned serno if bint parameter is not null
     		this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
-    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+this.cpDnOverrideId+"') is not allowing certificate serial number override.", bint);
     		
     		
     		// Third it should succeed and we should get our custom requested serialnumber
     		this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
-    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+    		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     		CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
     		cp.setAllowCertSerialNumberOverride(true);
     		// Now when the profile allows serial number override it should work
@@ -247,7 +246,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     public void tearDown() throws Exception {
     	super.tearDown();
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     @Override

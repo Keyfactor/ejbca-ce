@@ -86,9 +86,7 @@ public enum EjbcaEventTypes implements EventType {
     SERVICE_EDIT,
     SERVICE_EXECUTED,
     SERVICE_REMOVE,
-    SERVICE_RENAME,
-    SYSTEMCONF_CREATE,
-    SYSTEMCONF_EDIT
+    SERVICE_RENAME
     ;
 
     @Override

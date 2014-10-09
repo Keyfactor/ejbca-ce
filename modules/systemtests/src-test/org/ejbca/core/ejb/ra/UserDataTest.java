@@ -32,13 +32,12 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -84,10 +83,10 @@ public class UserDataTest extends CaTestCase {
         // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for
         // the request counter tests to pass, we check if we are allowed to set this value or not
         // The value is reset to whatever it was from the beginning in the last "clean up" test.
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
-        globalConfigurationSession.saveConfiguration(admin, gc, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(admin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         createNewUser();
     }
 
@@ -96,9 +95,9 @@ public class UserDataTest extends CaTestCase {
         super.tearDown();
 
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
-        globalConfigurationSession.saveConfiguration(admin, gc, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(admin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
         // Delete test users we created
 

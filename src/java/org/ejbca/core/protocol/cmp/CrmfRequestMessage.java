@@ -27,7 +27,6 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,10 +58,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.util.Arrays;
-import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;

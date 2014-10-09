@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 
@@ -24,7 +29,7 @@ import org.ejbca.config.EjbcaConfiguration;
  * 
  * @version $Id$
  */
-public final class CMPConfigurationCache {
+public final class CMPConfigurationCache implements ConfigurationCache {
 
     /**
      * Cache variable containing the cmp configuration. This cache may be
@@ -39,15 +44,8 @@ public final class CMPConfigurationCache {
         // Do nothing
     }
 
-    public CmpConfiguration getCMPConfiguration() {
-        return cmpconfigurationCache;
-    }
 
-    public void setCMPConfiguration(final CmpConfiguration cmpconfiguration) {
-        cmpconfigurationCache = cmpconfiguration;
-        lastupdatetime = System.currentTimeMillis();
-    }
-
+    @Override
     public boolean needsUpdate() {
         if (cmpconfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
             return false;
@@ -57,5 +55,47 @@ public final class CMPConfigurationCache {
     
     public void clearCache() {
         cmpconfigurationCache = null;
+    }
+
+    @Override
+    public String getConfigId() {
+        return CmpConfiguration.CMP_CONFIGURATION_ID;
+    }
+
+    @Override
+    public void saveData() {
+       cmpconfigurationCache.saveData();
+    }
+
+    @Override
+    public ConfigurationBase getConfiguration() {
+        return cmpconfigurationCache;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    @Override
+    public ConfigurationBase getConfiguration(HashMap data) {
+        ConfigurationBase returnval = new CmpConfiguration();
+        returnval.loadData(data);
+        return returnval;
+    }
+
+
+    @Override
+    public void updateConfiguration(final ConfigurationBase configuration) {
+        this.cmpconfigurationCache = (CmpConfiguration) configuration;
+        lastupdatetime = System.currentTimeMillis();
+        
+    }
+    
+    @Override
+    public ConfigurationBase getNewConfiguration() {
+       return new CmpConfiguration();      
+    }
+
+
+    @Override
+    public Properties getAllProperties() {
+        return ( cmpconfigurationCache).getAsProperties();
     }
 }

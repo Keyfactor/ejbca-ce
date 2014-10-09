@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli.config.scep;
 
-import org.ejbca.config.Configuration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
@@ -33,7 +32,7 @@ public abstract class BaseScepConfigCommand extends ConfigBaseCommand {
     
     protected ScepConfiguration getScepConfiguration() {
         if (scepConfiguration == null) {
-            scepConfiguration = (ScepConfiguration) getGlobalConfigurationSession().getCachedConfiguration(Configuration.ScepConfigID);
+            scepConfiguration = (ScepConfiguration) getGlobalConfigurationSession().getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         }
         return scepConfiguration;
     }

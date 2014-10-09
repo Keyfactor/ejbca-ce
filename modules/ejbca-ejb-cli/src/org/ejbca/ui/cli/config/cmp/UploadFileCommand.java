@@ -23,7 +23,6 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -128,10 +127,10 @@ public class UploadFileCommand extends BaseCmpConfigCommand {
         if (populated) {
             try {
                 getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(),
-                        Configuration.CMPConfigID);
+                        CmpConfiguration.CMP_CONFIGURATION_ID);
                 log.info("\nNew configurations saved successfully.");
                 log.info("If there are any issues with the configurations, check them in the AdminGUI and click 'Save'");
-                getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
+                getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             } catch (AuthorizationDeniedException e) {
                 log.error("Failed to save configuration from file: " + e.getLocalizedMessage());
             }

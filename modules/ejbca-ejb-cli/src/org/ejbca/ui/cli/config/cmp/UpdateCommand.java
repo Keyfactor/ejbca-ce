@@ -23,7 +23,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -78,9 +77,9 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         log.info("Configuration was: " + key + "=" + getCmpConfiguration().getValue(key, alias));
         getCmpConfiguration().setValue(key, value, alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), Configuration.CMPConfigID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), CmpConfiguration.CMP_CONFIGURATION_ID);
             log.info("Configuration updated: " + key + "=" + getCmpConfiguration().getValue(key, alias));
-            getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
+            getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.info("Failed to update configuration: " + e.getLocalizedMessage());

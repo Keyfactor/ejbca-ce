@@ -34,14 +34,15 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.ejbca.config.Configuration;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 
 /**
@@ -99,17 +100,17 @@ public class ClearCacheServlet extends HttpServlet {
         		}
         		res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The remote host "+req.getRemoteHost()+" is unknown");
         	} else {       
-        		globalconfigurationsession.flushConfigurationCache(Configuration.GlobalConfigID);
+        		globalconfigurationsession.flushConfigurationCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         		if(log.isDebugEnabled()){
         			log.debug("Global Configuration cache cleared");
         		}
         			
-                globalconfigurationsession.flushConfigurationCache(Configuration.CMPConfigID);
+                globalconfigurationsession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
                 if(log.isDebugEnabled()){
                     log.debug("CMP Configuration cache cleared");
                 }
                 
-                globalconfigurationsession.flushConfigurationCache(Configuration.ScepConfigID);
+                globalconfigurationsession.flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
                 if(log.isDebugEnabled()) {
                     log.debug("SCEP Configuration cache cleared");
                 }
@@ -193,7 +194,7 @@ public class ClearCacheServlet extends HttpServlet {
 			log.trace(">acceptedHost: "+remotehost);
 		}    	
 		boolean ret = false;
-		GlobalConfiguration gc = (GlobalConfiguration) globalconfigurationsession.getCachedConfiguration(Configuration.GlobalConfigID);
+		GlobalConfiguration gc = (GlobalConfiguration) globalconfigurationsession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
 		String nodename = null;

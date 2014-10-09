@@ -35,7 +35,7 @@ public enum ModuleTypes implements ModuleType {
 	SECURITY_AUDIT,
 	TRUSTED_TIME,
 	INTERNALKEYBINDING,
-	;
+    GLOBALCONF;
 
     @Override
     public boolean equals(ModuleType value) {

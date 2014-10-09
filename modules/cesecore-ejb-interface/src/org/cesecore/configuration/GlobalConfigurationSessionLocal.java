@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,31 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.audit.enums;
+package org.cesecore.configuration;
 
-import org.cesecore.audit.enums.ModuleType;
+import javax.ejb.Local;
 
 /**
- * EJBCA specific module types.
- * 
+ * Local interface for GlobalConfigurationSession.
  * @version $Id$
- * 
  */
-public enum EjbcaModuleTypes implements ModuleType {
-    RA,
-    HARDTOKEN,
-    KEYRECOVERY,
-    APPROVAL,
-    PUBLISHER,
-    SERVICE,
-    CUSTOM,
-    ADMINWEB;
-
-    @Override
-    public boolean equals(ModuleType value) {
-        if (value == null) {
-            return false;
-        }
-        return this.toString().equals(value.toString());
-    }
+@Local
+public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSession {
+    
+    /** @return the found entity instance or null if the entity does not exist */
+    GlobalConfigurationData findByConfigurationId(String configurationId);
 }

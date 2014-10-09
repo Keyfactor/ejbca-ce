@@ -34,9 +34,9 @@
 		<path refid="lib.batik.classpath"/>
 		<path refid="lib.xmlsec.classpath"/>
 		<path refid="lib.jee.classpath"/>
-                <path location="${mod.cesecore-entity.lib}"/>
-                <path location="${mod.cesecore-common.lib}"/>
-                <path location="${mod.cesecore-ejb-interface.lib}"/>
+        <path location="${mod.cesecore-entity.lib}"/>
+        <path location="${mod.cesecore-common.lib}"/>
+        <path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
 
 	<path id="compile-common-web.classpath">
@@ -62,6 +62,12 @@
 		<path refid="compile-ejbca-ejb.classpath"/>
 		<!-- Service manifest builder triggers static references to InternalResources -->
 		<path location="${ejbca.home}/src"/>
+	</path>
+	
+	<path id="servicemanifest-util.classpath">
+		<path refid="compile-util.classpath"/>
+		<!-- Service manifest builder triggers static references to InternalResources -->
+		<path location="${ejbca.home}/src/java"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -243,7 +249,7 @@
 		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
 		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->
 		<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
-		<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
+		<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>		
 		<!-- Dependecies from EJB CLI, AdminWeb -->
 		<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
 		<include name="org/ejbca/core/model/ra/EndEntityManagementConstants.java"/>
@@ -269,6 +275,9 @@
 		<!-- Dependecies from multiple places -->
 		<include name="com/novosec/pkix/asn1/**/*.java"/>
 		<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java"/>
+		<include name="org/ejbca/core/ejb/config/CMPConfigurationCache.java"/>
+		<include name="org/ejbca/core/ejb/config/GlobalConfigurationCache.java"/>
+		<include name="org/ejbca/core/ejb/config/ScepConfigurationCache.java"/>
 		<!-- Dependecies from EJB CLI and CTB -->
 		<include name="org/ejbca/util/CliTools.java"/>
 		<!-- Dependecies from EJB CLI and XMKS -->
@@ -479,12 +488,13 @@
 	<target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
 		<dirname file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.dir"/>
 		<mkdir dir="${mod.ejbca-util.lib.dir}" />
+		<buildservicemanifest interface="org.cesecore.configuration.ConfigurationCache" file="${build-util.dir}" classpath="servicemanifest-util.classpath"/>
 		<!-- Since the base classes reading properties is in ejbca-util, we also store defaultvalues.properties here so it can be used stand-alone -->
 		<jar destfile="${mod.ejbca-util.lib}">
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
 			</manifest>
-			<fileset dir="${build-util.dir}" includes="**/*.class"/>
+			<fileset dir="${build-util.dir}" includes="**/*.class,META-INF/**/*"/>
 			<fileset dir="${ejbca.home}/src/java">
 			    <include name="META-INF/services/org.ejbca.core.model.ca.publisher.ICustomPublisher"/> <!-- for GeneralPurposeCustomPublisher, etc. -->
 				<include name="dncomponents.properties"/>

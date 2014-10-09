@@ -17,9 +17,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
@@ -95,15 +97,15 @@ public class ClearCacheCommand extends EjbcaCommandBase {
                     .getRemoteSession(GlobalConfigurationSessionRemote.class);
             log.info("Flushing Global Configuration cache.");
             // Flush GlobalConfiguration
-            globalConfigurationSession.flushConfigurationCache(Configuration.GlobalConfigID);
+            globalConfigurationSession.flushConfigurationCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
             log.info("Flushing CMP configuration cache.");
             // Flush CMPConfiguration
-            globalConfigurationSession.flushConfigurationCache(Configuration.CMPConfigID);
+            globalConfigurationSession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             
             log.info("Flushing SCEP configuration cache.");
             // Flush SCEP Configuration
-            globalConfigurationSession.flushConfigurationCache(Configuration.ScepConfigID);
+            globalConfigurationSession.flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
         }
         if (eeprofile) {
             log.info("Flushing End Entity Profile cache.");

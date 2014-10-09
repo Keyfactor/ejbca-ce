@@ -34,12 +34,11 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
@@ -90,7 +89,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
          * An extra check if CLI authentication is allowed. This must be done on the
          * server and not the client to avoid spoofing.
          */
-        if (!((GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableCommandLineInterface()) {
+        if (!((GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableCommandLineInterface()) {
             log.info("CLI authentication attempted, but CLI is disabled.");
             return null;
         } else {
@@ -107,7 +106,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
 
             UsernamePrincipal usernamePrincipal = subjectPrincipals.toArray((new UsernamePrincipal[subjectPrincipals.size()]))[0];
             
-            if(!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableCommandLineInterfaceDefaultUser() 
+            if(!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableCommandLineInterfaceDefaultUser() 
                 && usernamePrincipal.getName().equals(EjbcaConfiguration.getCliDefaultUser())) {
                 log.info("CLI authentication attempted, but the default user ("+EjbcaConfiguration.getCliDefaultUser()+") is disabled.");
                 return null;

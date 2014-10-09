@@ -99,6 +99,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -111,9 +112,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -170,7 +169,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
 
     public NestedMessageContentTest() throws Exception {
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
         final X500NameBuilder x500nb = new X500NameBuilder();
         x500nb.addRDN(BCStyle.O, " Nested Inc.");
@@ -238,7 +237,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA;foo123");
         this.cmpConfiguration.setRACertPath(cmpAlias, this.raCertsPath);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     @Override
@@ -252,7 +251,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         this.caSession.removeCA(this.admin, this.caid);
         
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         this.certProfileSession.removeCertificateProfile(this.admin, CMPTESTPROFILE);
         this.eeProfileSession.removeEndEntityProfile(this.admin, CMPTESTPROFILE);
@@ -852,7 +851,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
         this.cmpConfiguration.setOmitVerificationsInECC(cmpAlias, true);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
         
         //-----------------Creating CRMF request

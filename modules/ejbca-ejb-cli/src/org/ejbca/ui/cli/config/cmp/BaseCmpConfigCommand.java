@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.config.cmp;
 
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
@@ -33,7 +32,7 @@ public abstract class BaseCmpConfigCommand extends ConfigBaseCommand {
     
     protected CmpConfiguration getCmpConfiguration() {
         if (cmpConfiguration == null) {
-            cmpConfiguration = (CmpConfiguration) getGlobalConfigurationSession().getCachedConfiguration(Configuration.CMPConfigID);
+            cmpConfiguration = (CmpConfiguration) getGlobalConfigurationSession().getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         }
         return cmpConfiguration;
     }

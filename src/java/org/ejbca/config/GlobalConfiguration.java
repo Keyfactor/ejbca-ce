@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -32,7 +33,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  *
  * @version $Id$
  */
-public class GlobalConfiguration extends Configuration implements Serializable {
+public class GlobalConfiguration extends ConfigurationBase implements Serializable {
 
     private static final long serialVersionUID = -2051789798029184421L;
 
@@ -50,6 +51,8 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
     // Entries to choose from in view log part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
+
+    public static final String GLOBAL_CONFIGURATION_ID = "0";
 
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=";

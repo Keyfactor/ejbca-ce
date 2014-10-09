@@ -22,7 +22,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -80,9 +79,9 @@ public class UpdateCommand extends BaseScepConfigCommand {
         log.info("Configuration was: " + key + "=" + scepConfig.getValue(key, alias));
         scepConfig.setValue(key, value, alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig, Configuration.ScepConfigID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
             log.info("Configuration updated: " + key + "=" + getScepConfiguration().getValue(key, alias));
-            getGlobalConfigurationSession().flushConfigurationCache(Configuration.ScepConfigID);
+            getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.info("Failed to update configuration: " + e.getLocalizedMessage());

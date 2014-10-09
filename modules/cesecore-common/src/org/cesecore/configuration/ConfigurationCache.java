@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,15 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.config;
+package org.cesecore.configuration;
 
-import javax.ejb.Local;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
- * Local interface for RaAdminSession.
+ * Marker interface for classes that want to be treated as contents of the Global Configuration Cache
+ * 
  * @version $Id$
+ *
  */
-@Local
-public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSession {
+public interface ConfigurationCache {
+
+    String getConfigId();
     
+    void clearCache();
+    
+    void saveData();
+    
+    boolean needsUpdate();
+    
+    ConfigurationBase getConfiguration();
+    
+    @SuppressWarnings("rawtypes")
+    ConfigurationBase getConfiguration(final HashMap data);
+    
+    ConfigurationBase getNewConfiguration();
+    
+    void updateConfiguration(ConfigurationBase configuration);
+    
+    Properties getAllProperties();
 }

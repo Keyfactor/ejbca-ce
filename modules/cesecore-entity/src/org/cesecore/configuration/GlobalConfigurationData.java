@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -11,28 +11,22 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.core.ejb.ra.raadmin;
+package org.cesecore.configuration;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.JBossUnmarshaller;
-import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.ScepConfiguration;
 
 /**
  * Entity Bean representing admin web interface global configuration.
@@ -57,7 +51,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	 * @param id the unique id of global configuration.
 	 * @param globalconfiguration is the serialized string representation of the global configuration.
 	 */
-	public GlobalConfigurationData(String configurationId, Configuration configuration) {
+	public GlobalConfigurationData(String configurationId, ConfigurationBase configuration) {
 		setConfigurationId(configurationId);
 		setConfiguration(configuration);
 		log.debug("Created configuration "+configurationId);
@@ -86,7 +80,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 
 	@SuppressWarnings("rawtypes")
     @Transient
-	private HashMap getData() {
+	public HashMap getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
 	
@@ -94,27 +88,10 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
     private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	/** 
-	 * Method that returns the global configuration and updates it if necessary.
-	 */
-	@Transient
-	public Configuration getConfiguration(String configID){
-	    Configuration returnval = null;
-	    if(StringUtils.equals(configID, Configuration.GlobalConfigID) ) {
-	        returnval = new GlobalConfiguration();
-	    } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
-	        returnval = new CmpConfiguration();
-	    } else if(StringUtils.equals(configID, Configuration.ScepConfigID)) {
-	        returnval = new ScepConfiguration();
-	    }
-		returnval.loadData(getData());
-		return returnval;
-	}
-
-	/** 
 	 * Method that saves the global configuration to database.
 	 */
 	@SuppressWarnings("rawtypes")
-    public void setConfiguration(Configuration configuration){
+    public void setConfiguration(ConfigurationBase configuration){
 		setData((HashMap) configuration.saveData());   
 	}
 
@@ -160,12 +137,4 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
     // End Database integrity protection methods
     //
 
-	//
-	// Search functions. 
-	//
-
-	/** @return the found entity instance or null if the entity does not exist */
-	public static GlobalConfigurationData findByConfigurationId(EntityManager entityManager, String configurationId) {
-		return entityManager.find(GlobalConfigurationData.class, configurationId);
-	}
 }

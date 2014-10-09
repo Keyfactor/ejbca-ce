@@ -36,14 +36,13 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -149,11 +148,11 @@ public class HttpMethodsTest {
     /** Test the scep.war module. */
     @Test
     public void testScep() throws Exception {
-        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         boolean remove = false;
         if(!scepConfig.aliasExists("scep")) {
             scepConfig.addAlias("scep");
-            globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
             remove = true;
         }
         
@@ -162,7 +161,7 @@ public class HttpMethodsTest {
         } finally {
             if(remove) {
                 scepConfig.removeAlias("scep");
-                globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+                globalConfigSession.saveConfiguration(admin, scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
             }
         }
     }

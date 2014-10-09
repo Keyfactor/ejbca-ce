@@ -342,7 +342,7 @@
 					<include name="org/cesecore/certificates/certificate/CertificateRevokeException.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateStatus.java"/>
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
-					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
+					<include name="org/ejbca/config/GlobalConfiguration.java"/>
 					<include name="org/ejbca/config/WebConfiguration.java"/>                
 					<include name="org/ejbca/util/SlotList.java"/>
 					<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->

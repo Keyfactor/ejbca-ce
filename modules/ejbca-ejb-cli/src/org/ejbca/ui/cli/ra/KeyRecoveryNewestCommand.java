@@ -16,10 +16,9 @@ package org.ejbca.ui.cli.ra;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -58,7 +57,7 @@ public class KeyRecoveryNewestCommand extends BaseRaCommand {
 
         String username = parameters.get(USERNAME_KEY);
         boolean usekeyrecovery = ((GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class)
-                .getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
         if (!usekeyrecovery) {
             getLogger().error("ERROR: Keyrecovery have to be enabled in the system configuration in order to use this command.");
             return CommandResult.FUNCTIONAL_FAILURE;

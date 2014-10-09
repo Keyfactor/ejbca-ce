@@ -54,15 +54,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.TestAssertionFailedException;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.unid.UnidFnrHandler;
@@ -118,7 +117,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     @Override
     @Before
@@ -141,7 +140,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
         this.cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
         this.cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
         if (this.certProfileSession.getCertificateProfile(CPNAME) == null) {
@@ -177,7 +176,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());
         this.cmpConfiguration.removeAlias(configAlias);
-        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     @Override

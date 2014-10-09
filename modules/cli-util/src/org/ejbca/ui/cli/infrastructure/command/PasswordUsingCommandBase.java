@@ -23,14 +23,13 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.infrastructure.CliUsernameException;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -93,7 +92,7 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
         if (gcsession == null) {
             throw new CliAuthenticationFailedException("Can not get configuration from server. Is server started and communication working?");
         }
-        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
         ParameterContainer defensiveCopy = new ParameterContainer(parameters);
 
@@ -161,7 +160,7 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
             log.error("ERROR: Can not get configuration from server. Is server started and communication working?");
             return CommandResult.CLI_FAILURE;
         }
-        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         //Check if ClI is enabled
         if (!configuration.getEnableCommandLineInterface()) {
             log.error("ERROR: Command Line Interface is disabled");

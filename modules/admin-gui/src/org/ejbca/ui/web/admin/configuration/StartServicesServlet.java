@@ -50,9 +50,9 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -60,7 +60,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -260,14 +259,14 @@ public class StartServicesServlet extends HttpServlet {
             // Requires a transaction in order to create the initial global configuration
             tx.begin();
             try {
-                final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+                final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 final Set<String> nodes = config.getNodesInCluster();
                 final String hostname = getHostName();
                 if (hostname != null && !nodes.contains(hostname)) {
                     log.debug("Adding this node ("+hostname+") to the list of nodes");
                     nodes.add(hostname);
                     config.setNodesInCluster(nodes);
-                    globalConfigurationSession.saveConfiguration(admin, config, Configuration.GlobalConfigID);
+                    globalConfigurationSession.saveConfiguration(admin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 }
             } finally {
                 tx.commit();

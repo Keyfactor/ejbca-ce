@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.audit;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.security.KeyPair;

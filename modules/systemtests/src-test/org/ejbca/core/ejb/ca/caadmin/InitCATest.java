@@ -44,6 +44,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -66,9 +67,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
@@ -200,11 +199,11 @@ public class InitCATest extends CaTestCase {
             
             // Global configuration is not tested since we can't test that without overwriting data 
             
-            CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+            CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             cmpConfig.addAlias(CMP_ALIAS);
             cmpConfig.setCMPDefaultCA(CMP_ALIAS, "CN="+RENAME_CA);
             cmpConfig.setRACAName(CMP_ALIAS, RENAME_CA); // this one shouldn't need to be updated, but it's tested anyway
-            globalConfigurationSession.saveConfiguration(admin, cmpConfig, Configuration.CMPConfigID);
+            globalConfigurationSession.saveConfiguration(admin, cmpConfig, CmpConfiguration.CMP_CONFIGURATION_ID);
             
             RoleData role = roleManagementSession.create(admin, ROLE_NAME);
             final List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
@@ -242,7 +241,7 @@ public class InitCATest extends CaTestCase {
             final InternalKeyBindingInfo keybind = keyBindMgmtSession.getInternalKeyBindingInfo(admin, keybindId);
             assertEquals("CAId was not updated in keybinding trusted certificate reference.", newCaId, keybind.getTrustedCertificateReferences().get(0).getCaId());
             
-            cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+            cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             assertEquals("CA Subject DN was not updated in CMP config", NEW_DN, cmpConfig.getCMPDefaultCA(CMP_ALIAS));
             
             role = roleAccessSession.findRole(ROLE_NAME);
@@ -310,10 +309,10 @@ public class InitCATest extends CaTestCase {
         try {
             roleManagementSession.remove(admin, ROLE_NAME);
         } catch (RoleNotFoundException e) { } // NOPMD already deleted or non-existent
-        final CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        final CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (cmpConfig.aliasExists(CMP_ALIAS)) {
             cmpConfig.removeAlias(CMP_ALIAS);
-            globalConfigurationSession.saveConfiguration(admin, cmpConfig, Configuration.CMPConfigID);
+            globalConfigurationSession.saveConfiguration(admin, cmpConfig, CmpConfiguration.CMP_CONFIGURATION_ID);
         }
         log.trace("<deleteTestData");
     }
