@@ -1779,7 +1779,7 @@ To enable this feature, go to CA Functions, Publishers and add a new publisher w
 The following parameters have to be configured in a log:</p>
 
 <ul>
-<li>Log URL : The log URL, e.g. <code>http://something/ctlog/v1/</code></li>
+<li>Log URL : The log URL, e.g. <code>http://something/ctlog/v1/</code>, for example <code>https://ct.googleapis.com/testtube/ct/v1/</code>.</li>
 <li>Public Key : The log's public key, in PEM or DER format. Usually this is an Elliptic Curve key.</li>
 <li>Timeout : Connection timeout in milliseconds. Five seconds is the default. Note that certificate
 issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.</li>
