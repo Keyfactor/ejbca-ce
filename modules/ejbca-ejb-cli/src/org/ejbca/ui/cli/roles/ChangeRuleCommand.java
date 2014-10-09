@@ -26,16 +26,15 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -92,7 +91,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
-                    GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
+                    GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             Map<String, Set<String>> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
                     .getAuthorizedAvailableAccessRules(
                             getAuthenticationToken(),
@@ -168,7 +167,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
         sb.append("Available roles: " + availableRoles + "\n");
 
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
-                GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
+                GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
         Map<String, Set<String>> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
                 .getAuthorizedAvailableAccessRules(

@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.configuration.ConfigurationBase;
 
 
 /**
@@ -33,7 +34,7 @@ import org.apache.log4j.Logger;
  *
  * @version $Id$
  */
-public class CmpConfiguration extends Configuration implements Serializable {
+public class CmpConfiguration extends ConfigurationBase implements Serializable {
 
     // Constants: Authentication modules
     public static final String AUTHMODULE_REG_TOKEN_PWD         = "RegTokenPwd";
@@ -75,6 +76,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     
     
     private final String ALIAS_LIST = "aliaslist";
+    public static final String CMP_CONFIGURATION_ID = "1";
 
     
     

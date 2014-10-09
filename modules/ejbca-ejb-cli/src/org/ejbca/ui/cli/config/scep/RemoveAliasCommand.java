@@ -14,7 +14,7 @@ package org.ejbca.ui.cli.config.scep;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.Configuration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -52,9 +52,9 @@ public class RemoveAliasCommand extends BaseScepConfigCommand {
         }
         getScepConfiguration().removeAlias(alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getScepConfiguration(), Configuration.ScepConfigID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getScepConfiguration(), ScepConfiguration.SCEP_CONFIGURATION_ID);
             log.info("Removed SCEP alias: " + alias);
-            getGlobalConfigurationSession().flushConfigurationCache(Configuration.ScepConfigID);
+            getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.info("Failed to remove alias '" + alias + "': " + e.getLocalizedMessage());

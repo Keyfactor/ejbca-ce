@@ -29,12 +29,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -164,7 +163,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
         for (final UserData data : result) {
-            if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableEndEntityProfileLimitations()) {
+            if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
                     continue;
@@ -185,7 +184,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     private EndEntityInformation convertUserDataToEndEntityInformation(final AuthenticationToken admin, final UserData data, final String requestedUsername)
             throws AuthorizationDeniedException {
         if (data != null) {
-            if (( (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableEndEntityProfileLimitations()) {
+            if (( (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
                     if (requestedUsername == null) {

@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.config.scep;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -58,9 +57,9 @@ public class RenameAliasCommand extends BaseScepConfigCommand {
         }
         scepConfig.renameAlias(oldalias, newalias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig, Configuration.ScepConfigID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), scepConfig, ScepConfiguration.SCEP_CONFIGURATION_ID);
             log.info("Renamed SCEP alias '" + oldalias + "' to '" + newalias + "'");
-            getGlobalConfigurationSession().flushConfigurationCache(Configuration.ScepConfigID);
+            getGlobalConfigurationSession().flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.info("Failed to rename alias '" + oldalias + "' to '" + newalias + "': " + e.getLocalizedMessage());

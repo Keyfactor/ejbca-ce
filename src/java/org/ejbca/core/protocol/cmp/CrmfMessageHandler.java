@@ -43,14 +43,13 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -124,7 +123,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession,
             AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, EndEntityManagementSession endEntityManagementSession, 
             GlobalConfigurationSession globalConfSession) {
-		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfSession.getCachedConfiguration(Configuration.CMPConfigID));
+		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID));
 		this.signSession = signSession;
 		this.certificateRequestSession = certificateRequestSession;
 		this.endEntityAccessSession = endEntityAccessSession;

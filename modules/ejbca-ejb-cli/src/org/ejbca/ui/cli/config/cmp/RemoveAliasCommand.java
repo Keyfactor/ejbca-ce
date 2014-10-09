@@ -14,7 +14,7 @@ package org.ejbca.ui.cli.config.cmp;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.Configuration;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -52,9 +52,9 @@ public class RemoveAliasCommand extends BaseCmpConfigCommand {
         }
         getCmpConfiguration().removeAlias(alias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), Configuration.CMPConfigID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), CmpConfiguration.CMP_CONFIGURATION_ID);
             log.info("Removed CMP alias: " + alias);
-            getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
+            getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.info("Failed to remove alias '" + alias + "': " + e.getLocalizedMessage());

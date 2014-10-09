@@ -28,7 +28,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -40,14 +39,11 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 
 /**
  * Nested Message Content according to RFC4210. The PKI message is signed by an RA authority.
@@ -77,7 +73,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     public NestedMessageContent(final PKIMessage pkiMsg, String configAlias, GlobalConfigurationSession globalConfigSession) {
         this.raSignedMessage = pkiMsg;
         this.confAlias = configAlias;
-        this.cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         setPKIMessageBytes(pkiMsg);
         init();
     }

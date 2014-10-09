@@ -12,8 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
-import org.ejbca.config.ScepConfiguration;
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.ScepConfiguration;
 
 /**
  * Class Holding cache variable for SCEP configuration. Needed because EJB spec does not allow volatile, non-final 
@@ -24,7 +29,7 @@ import org.ejbca.config.EjbcaConfiguration;
  * 
  * @version $Id$
  */
-public final class ScepConfigurationCache {
+public final class ScepConfigurationCache implements ConfigurationCache  {
 
     /**
      * Cache variable containing the scep configuration. This cache may be
@@ -39,15 +44,8 @@ public final class ScepConfigurationCache {
         // Do nothing
     }
 
-    public ScepConfiguration getScepConfiguration() {
-        return scepConfigurationCache;
-    }
 
-    public void setScepConfiguration(final ScepConfiguration scepconfiguration) {
-        scepConfigurationCache = scepconfiguration;
-        lastupdatetime = System.currentTimeMillis();
-    }
-
+    @Override
     public boolean needsUpdate() {
         if (scepConfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
             return false;
@@ -57,5 +55,45 @@ public final class ScepConfigurationCache {
     
     public void clearCache() {
         scepConfigurationCache = null;
+    }
+
+    @Override
+    public String getConfigId() {
+        return ScepConfiguration.SCEP_CONFIGURATION_ID;
+    }
+
+    @Override
+    public void saveData() {
+        scepConfigurationCache.saveData();       
+    }
+
+    @Override
+    public ConfigurationBase getConfiguration() {
+        return scepConfigurationCache;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    @Override
+    public ConfigurationBase getConfiguration(HashMap data) {
+        ConfigurationBase returnval = new ScepConfiguration();
+        returnval.loadData(data);
+        return returnval;
+    }
+
+    @Override
+    public void updateConfiguration(ConfigurationBase configuration) {
+      this.scepConfigurationCache = (ScepConfiguration) configuration;
+      lastupdatetime = System.currentTimeMillis();
+    }
+    
+    @Override
+    public ConfigurationBase getNewConfiguration() {
+       return new ScepConfiguration();      
+    }
+
+
+    @Override
+    public Properties getAllProperties() {
+        return scepConfigurationCache.getAsProperties();
     }
 }

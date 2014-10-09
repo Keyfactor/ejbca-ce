@@ -31,7 +31,6 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.IAction;
@@ -331,7 +330,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
             }
         }
         //Only add hardprofile certificate profiles if enabled. 
-        if( ( (GlobalConfiguration) ejb.getGlobalConfigurationSession().getCachedConfiguration(Configuration.GlobalConfigID)).getIssueHardwareTokens()) {
+        if( ( (GlobalConfiguration) ejb.getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getIssueHardwareTokens()) {
             Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_HARDTOKEN);
             for (Integer certificateProfile : profiles) {
                 String profileName = ejb.getCertificateProfileSession().getCertificateProfileName(

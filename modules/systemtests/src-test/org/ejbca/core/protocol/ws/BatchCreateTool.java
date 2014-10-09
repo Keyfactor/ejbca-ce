@@ -34,15 +34,14 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -65,7 +64,7 @@ public abstract class BatchCreateTool {
     private static final Logger log = Logger.getLogger(BatchCreateTool.class);
     private static final BatchToolProperties props = new BatchToolProperties(log);
     private static final boolean useKeyRecovery = ((GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
-            GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();
+            GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
 
     /**
      * Creates keystore-files for all users with status NEW in the local

@@ -34,13 +34,12 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
@@ -89,7 +88,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     @Override
@@ -114,7 +113,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
         this.cmpConfiguration.setRACAName(cmpAlias, this.testx509ca.getName());
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         // Configure a Certificate profile (CmpRA) using CP_DN_OVERRIDE_NAME as template and check "Allow validity override".
         final CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
@@ -146,7 +145,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
         }
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
     @Override

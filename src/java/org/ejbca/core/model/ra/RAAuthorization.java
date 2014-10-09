@@ -25,10 +25,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
-import org.ejbca.config.Configuration;
+import org.cesecore.configuration.GlobalConfigurationSession;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -109,7 +108,7 @@ public class RAAuthorization implements Serializable {
         }
 
     	String endentityauth = null;
-        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){
         	endentityauth = getEndEntityProfileAuthorizationString(true);
         	if(authorizedToApproveCAActions && authorizedToApproveRAActions){

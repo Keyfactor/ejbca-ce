@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.config;
+package org.cesecore.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,11 +36,11 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
@@ -50,9 +50,6 @@ import org.junit.Test;
 /**
  * Tests the global configuration entity bean.
  * 
- * TODO: Remake this test into a mocked unit test, to allow testing of a
- * multiple instance database. TODO: Add more tests for other remote methods
- * similar to testNonCLIUser_* and testDisabledCLI_*.
  * 
  * @version $Id$
  */
@@ -76,7 +73,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         // First save the original
         if (original == null) {
-            original = (GlobalConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+            original = (GlobalConfiguration) this.globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         }
         caids = caSession.getAuthorizedCAs(internalAdmin);
         assertFalse("No CAs exists so this test will not work", caids.isEmpty());
@@ -97,7 +94,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        globalConfigurationSession.saveConfiguration(internalAdmin, original, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, original, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         enableCLI(true);
         internalAdmin = null;
     }
@@ -117,17 +114,17 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
 
         // Read a value to reset the timer
-        globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         setInitialValue();
 
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
-        globalConfigurationSession.saveConfiguration(internalAdmin, newValue, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, newValue, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
-        GlobalConfiguration cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
-        cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         assertEquals("The GlobalConfigfuration cache was not automatically updated.", "BAR", cachedValue.getEjbcaTitle());
 
     }
@@ -159,9 +156,9 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         String str1 = gc.getNodesInCluster().toString();
         assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str1);
         // Save and make sure it's ok across database saves as well
-        globalConfigurationSession.saveConfiguration(internalAdmin, gc, Configuration.GlobalConfigID);
-        globalConfigurationSession.flushCache(Configuration.GlobalConfigID);
-        GlobalConfiguration newgc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalConfiguration newgc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         String str2 = newgc.getNodesInCluster().toString();
         assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str2);
     }
@@ -175,7 +172,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
-        globalConfigurationSession.saveConfiguration(internalAdmin, initial, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, initial, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
 
     /**
@@ -236,14 +233,14 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * @throws AuthorizationDeniedException 
      */
     private void enableCLI(final boolean enable) throws AuthorizationDeniedException {
-        final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.flushCache(Configuration.GlobalConfigID);
+        final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final GlobalConfiguration newConfig;
         if (config.getEnableCommandLineInterface() == enable) {
             newConfig = config;
         } else {
             config.setEnableCommandLineInterface(enable);
-            globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
-            newConfig = (GlobalConfiguration) globalConfigurationSession.flushCache(Configuration.GlobalConfigID);
+            globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            newConfig = (GlobalConfiguration) globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         }
         assertEquals("CLI should have been enabled/disabled", enable, newConfig.getEnableCommandLineInterface());
         authorizationSession.forceCacheExpire();

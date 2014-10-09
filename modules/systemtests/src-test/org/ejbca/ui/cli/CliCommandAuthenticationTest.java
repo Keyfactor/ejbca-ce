@@ -31,15 +31,14 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTestHelperSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -268,19 +267,19 @@ public class CliCommandAuthenticationTest {
     }
 
     private boolean setCliEnabled(boolean enabled) throws AuthorizationDeniedException {
-        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
-        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         log.debug("Updated globalconfiguration with clienabled: " + config.getEnableCommandLineInterface());
         return oldValue;
     }
 
     private boolean setCliUserEnabled(boolean enabled) throws AuthorizationDeniedException {
-        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);
-        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         log.debug("Updated globalconfiguration with cliuserenabled: " + config.getEnableCommandLineInterfaceDefaultUser());
         return oldValue;
     }

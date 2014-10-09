@@ -11,8 +11,9 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.configuration.ConfigurationBase;
 
-public class ScepConfiguration extends Configuration implements Serializable {
+public class ScepConfiguration extends ConfigurationBase implements Serializable {
     
     
  // Constants: Configuration keys
@@ -35,6 +36,7 @@ public class ScepConfiguration extends Configuration implements Serializable {
     public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA);
     
     private final String ALIAS_LIST = "aliaslist";
+    public static final String SCEP_CONFIGURATION_ID = "2";
     
     private static final long serialVersionUID = -2051789798029184421L;
 

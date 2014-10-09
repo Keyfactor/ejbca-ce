@@ -59,6 +59,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -66,10 +67,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -116,7 +115,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         this.caSession.addCA(ADMIN, this.testx509ca);
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     @Override
     @Before
@@ -136,7 +135,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         this.cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
         this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
-        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     /**
@@ -335,13 +334,13 @@ public class CrmfRARequestTest extends CmpTestCase {
     @Test
     public void test03UseKeyID() throws Exception {
 
-        GlobalConfiguration gc = (GlobalConfiguration) this.globalConfSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration gc = (GlobalConfiguration) this.globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         gc.setEnableEndEntityProfileLimitations(true);
-        this.globalConfSession.saveConfiguration(ADMIN, gc, Configuration.GlobalConfigID);
+        this.globalConfSession.saveConfiguration(ADMIN, gc, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         
         this.cmpConfiguration.setRAEEProfile(cmpAlias, "KeyId");
         this.cmpConfiguration.setRACertProfile(cmpAlias, "KeyId");
-        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
         try {
             this.certProfileSession.removeCertificateProfile(ADMIN, "CMPKEYIDTESTPROFILE");
@@ -621,7 +620,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             createEllipticCurveDsaCa();
             CAInfo caInfo = this.caSession.getCAInfo(ADMIN, "TESTECDSA");
             this.cmpConfiguration.setRACAName(cmpAlias, "TESTECDSA");
-            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
 
             final String issuerDN = caInfo.getSubjectDN(); // Make sure this CA is used for the test
             final X509Certificate caCert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
@@ -645,7 +644,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         } finally {
             // Reset this test class as it was before this test
             this.cmpConfiguration.setRACAName(cmpAlias, "TestCA");
-            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
             removeTestCA("TESTECDSA");
         }
     }
@@ -708,7 +707,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         
         Assert.assertTrue("Unable to restore server configuration.", this.configurationSession.restoreConfiguration());
         this.cmpConfiguration.removeAlias(cmpAlias);
-        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         // Remove test profiles
         this.certProfileSession.removeCertificateProfile(ADMIN, "CMPTESTPROFILE");

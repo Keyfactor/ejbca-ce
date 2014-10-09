@@ -60,6 +60,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
@@ -67,7 +68,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -77,7 +77,6 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -665,7 +664,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public void reloadGlobalConfiguration() throws Exception {
-        globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalconfiguration.initializeAdminWeb();
         if (informationmemory != null) {
             informationmemory.systemConfigurationEdited(globalconfiguration);
@@ -673,7 +672,7 @@ public class EjbcaWebBean implements Serializable {
     }
     
     public void reloadCMPConfiguration() throws Exception {
-        cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (informationmemory != null) {
             informationmemory.cmpConfigurationEdited(cmpconfiguration);
         }
@@ -681,12 +680,12 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public void saveGlobalConfiguration() throws Exception {
-        globalConfigurationSession.saveConfiguration(administrator, globalconfiguration, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(administrator, globalconfiguration, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         informationmemory.systemConfigurationEdited(globalconfiguration);
     }
     
     public void saveCMPConfiguration() throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration, Configuration.CMPConfigID);
+        globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         informationmemory.cmpConfigurationEdited(cmpconfiguration);
     }
 
@@ -979,7 +978,7 @@ public class EjbcaWebBean implements Serializable {
     }
     
     public void clearCMPCache() throws Exception {
-        globalConfigurationSession.flushConfigurationCache(Configuration.CMPConfigID);
+        globalConfigurationSession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
         reloadCMPConfiguration();
     }
     

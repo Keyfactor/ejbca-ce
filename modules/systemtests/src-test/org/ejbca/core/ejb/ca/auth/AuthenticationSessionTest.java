@@ -32,15 +32,14 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -198,10 +197,10 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void testUnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
-        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean orgkeyrecconfig = config.getEnableKeyRecovery();
         config.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
         // create certificate for user
         // Set status to NEW
@@ -229,7 +228,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         keyRecoverySession.removeAllKeyRecoveryData(internalAdmin, username1);
 
         config.setEnableKeyRecovery(orgkeyrecconfig);
-        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
 

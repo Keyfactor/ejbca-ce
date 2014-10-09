@@ -14,7 +14,7 @@ package org.ejbca.ui.cli.config.cmp;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.Configuration;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -56,9 +56,9 @@ public class RenameAliasCommand extends BaseCmpConfigCommand {
         }
         getCmpConfiguration().renameAlias(oldalias, newalias);
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), Configuration.CMPConfigID);
+            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration(), CmpConfiguration.CMP_CONFIGURATION_ID);
             log.info("Renamed CMP alias '" + oldalias + "' to '" + newalias + "'");
-            getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
+            getGlobalConfigurationSession().flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.info("Failed to rename alias '" + oldalias + "' to '" + newalias + "': " + e.getLocalizedMessage());

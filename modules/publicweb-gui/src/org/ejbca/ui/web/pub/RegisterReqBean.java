@@ -36,7 +36,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -68,7 +67,7 @@ public class RegisterReqBean {
     private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final ApprovalSessionLocal approvalSession = ejbLocalHelper.getApprovalSession();
-    private final GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejbLocalHelper.getGlobalConfigurationSession().getCachedConfiguration(Configuration.GlobalConfigID);
+    private final GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejbLocalHelper.getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
     // Form fields
     private final Map<String,String> formDNFields = new HashMap<String,String>();

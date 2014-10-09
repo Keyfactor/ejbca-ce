@@ -57,19 +57,18 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSession;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSession;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -132,7 +131,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
         
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
@@ -151,7 +150,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         this.cmpConfiguration.setRACAName(ALIAS, this.testx509ca.getName());
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "-;" + PBEPASSWORD);
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
@@ -176,7 +175,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
         this.caSession.removeCA(ADMIN, this.caid);
         
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
     @Override
@@ -291,7 +290,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         
         this.cmpConfiguration.setRACertProfile(ALIAS, "KeyId");
         this.cmpConfiguration.setRAEEProfile(ALIAS, "KeyId");
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
         
         try {
             final byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -365,7 +364,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             
             // Update property on server so that we use ProfileDefault as certificate profile, should give a little different result
             this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
-            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, Configuration.CMPConfigID);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration, CmpConfiguration.CMP_CONFIGURATION_ID);
             
             // Make new request, the certificate should now be produced with the other certificate profile
             PKIMessage two = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);

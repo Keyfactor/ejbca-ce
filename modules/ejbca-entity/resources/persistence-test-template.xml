@@ -52,7 +52,7 @@
         <class>org.ejbca.core.ejb.ra.UserData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
-        <class>org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData</class>
+        <class>org.cesecore.configuration.GlobalConfigurationData</class>
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <properties>
