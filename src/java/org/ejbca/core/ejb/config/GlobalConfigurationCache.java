@@ -39,7 +39,7 @@ public final class GlobalConfigurationCache implements ConfigurationCache {
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
-    private volatile ConfigurationBase globalconfigurationCache = null;
+    private volatile GlobalConfiguration globalconfigurationCache = null;
     /** help variable used to control that GlobalConfiguration update isn't performed to often. */
     private volatile long lastupdatetime = -1;  
 
@@ -85,7 +85,7 @@ public final class GlobalConfigurationCache implements ConfigurationCache {
 
     @Override
     public void updateConfiguration(ConfigurationBase configuration) {
-      this.globalconfigurationCache = configuration;
+      this.globalconfigurationCache = (GlobalConfiguration) configuration;
       lastupdatetime = System.currentTimeMillis();
     }
 
