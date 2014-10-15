@@ -1161,15 +1161,23 @@ public class X509CA extends CA implements Serializable {
 
              
         // Authority key identifier
-        if (getUseAuthorityKeyIdentifier() == true) {      
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cryptoToken.getPublicKey(
-                    getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded()));
-            try {
-                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
-                AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+        if (getUseAuthorityKeyIdentifier() == true) {  
+            byte[] caSkid = (cacert != null ? CertTools.getSubjectKeyId(cacert) : null);
+            if (caSkid != null) {
+                // Use subject key id from CA certificate
+                AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(caSkid);
                 crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
-            } finally {
-                asn1InputStream.close();
+            } else {
+                // Generate from SHA1 of public key
+                ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cryptoToken.getPublicKey(
+                        getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded()));
+                try {
+                    SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
+                    AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+                    crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
+                } finally {
+                    asn1InputStream.close();
+                }
             }
         }
         
