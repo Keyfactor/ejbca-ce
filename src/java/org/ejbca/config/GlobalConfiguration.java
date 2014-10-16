@@ -120,6 +120,73 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     public static final  String MAINFRAME           = "mainFrame"; // Name of main browser frame
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
+    // Private constants
+    private static final   String ADMINPATH             = "raadminpath";
+    private static final   String AVAILABLELANGUAGES    = "availablelanguages";
+    private static final   String AVAILABLETHEMES       = "availablethemes";
+    private static final   String PUBLICPORT            = "publicport";
+    private static final   String PRIVATEPORT           = "privateport";
+    private static final   String PUBLICPROTOCOL        = "publicprotocol";
+    private static final   String PRIVATEPROTOCOL       = "privateprotocol";
+
+
+      // Title
+    private static final   String TITLE              = "title";
+      // Banner files.
+    private static final   String HEADBANNER         = "headbanner";
+    private static final   String FOOTBANNER         = "footbanner";
+      // Other configuration.
+    private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
+    private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
+    private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
+    private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
+    
+    private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
+    private static final   String HARDTOKENENCRYPTCA           = "hardtokenencryptca";
+    private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
+    private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
+    private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
+    
+    private static final   String NODESINCLUSTER               = "nodesincluster";
+    
+    private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
+    private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
+
+    // Configuration for Auto Enrollment
+    private static final   String AUTOENROLL_USE = "autoenroll.use";
+    private static final   String AUTOENROLL_ADSERVER = "autoenroll.adserver";
+    private static final   String AUTOENROLL_ADPORT = "autoenroll.adport";
+    private static final   String AUTOENROLL_SSLCONNECTION = "autoenroll.sslconnection";
+    private static final   String AUTOENROLL_CONNECTIONDN = "autoenroll.connectiondn";
+    private static final   String AUTOENROLL_CONNECTIONPWD = "autoenroll.connectionpwd";
+    private static final   String AUTOENROLL_BASEDN_USER = "autoenroll.basedn.user";
+    private static final   String AUTOENROLL_CA = "autoenroll.caid";
+    
+      // Paths
+    private static final   String AUTHORIZATION_PATH  = "authorization_path";
+    private static final   String BANNERS_PATH        = "banners_path";
+    private static final   String CA_PATH             = "ca_path";
+    private static final   String CONFIG_PATH         = "data_path";
+    private static final   String HELP_PATH           = "help_path";
+    private static final   String IMAGES_PATH         = "images_path";
+    private static final   String LANGUAGE_PATH       = "language_path";
+    private static final   String LOG_PATH            = "log_path";
+    private static final   String REPORTS_PATH        = "reports_path";
+    private static final   String RA_PATH             = "ra_path";
+    private static final   String THEME_PATH          = "theme_path";
+    private static final   String HARDTOKEN_PATH      = "hardtoken_path";
+    
+    private static final   String CTLOGS              = "ctlogs";
+    private static final   String PEERCONNECTORIN     = "peerconnectorin";
+    private static final   String PEERCONNECTOROUT    = "peerconnectorout";
+
+    private static final   String LANGUAGEFILENAME      =  "languagefilename";
+    private static final   String MAINFILENAME          =  "mainfilename";
+    private static final   String INDEXFILENAME         =  "indexfilename";
+    private static final   String MENUFILENAME          =  "menufilename";
+    private static final   String ERRORPAGE             =  "errorpage";
+    private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
+        
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -513,6 +580,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     public void setPeerConnectorIncomingEnabled(final boolean enabledIncoming) { putBoolean(PEERCONNECTORIN, enabledIncoming); }
     public boolean isPeerConnectorOutgoingEnabled() { return getBoolean(PEERCONNECTOROUT, true); }
     public void setPeerConnectorOutgoingEnabled(boolean enabledOutgoing) { putBoolean(PEERCONNECTOROUT, enabledOutgoing); }
+   
     
     private boolean getBoolean(final String key, final boolean defaultValue) {
         final Boolean ret = (Boolean) data.get(key);
@@ -522,13 +590,12 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
         data.put(key, Boolean.valueOf(value));
     }
 
-    /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
-
+    @Override
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
@@ -546,74 +613,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     	}
     }
 
-    // Private fields.
 
-    // Private constants
-    private static final   String ADMINPATH             = "raadminpath";
-    private static final   String AVAILABLELANGUAGES    = "availablelanguages";
-    private static final   String AVAILABLETHEMES       = "availablethemes";
-    private static final   String PUBLICPORT            = "publicport";
-    private static final   String PRIVATEPORT           = "privateport";
-    private static final   String PUBLICPROTOCOL        = "publicprotocol";
-    private static final   String PRIVATEPROTOCOL       = "privateprotocol";
-
-
-      // Title
-    private static final   String TITLE              = "title";
-      // Banner files.
-    private static final   String HEADBANNER         = "headbanner";
-    private static final   String FOOTBANNER         = "footbanner";
-      // Other configuration.
-    private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
-    private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
-    private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
-    private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
-    
-    private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
-    private static final   String HARDTOKENENCRYPTCA           = "hardtokenencryptca";
-    private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
-    private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
-    private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
-    
-    private static final   String NODESINCLUSTER               = "nodesincluster";
-    
-    private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
-    private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
-
-    // Configuration for Auto Enrollment
-    private static final   String AUTOENROLL_USE = "autoenroll.use";
-    private static final   String AUTOENROLL_ADSERVER = "autoenroll.adserver";
-    private static final   String AUTOENROLL_ADPORT = "autoenroll.adport";
-    private static final   String AUTOENROLL_SSLCONNECTION = "autoenroll.sslconnection";
-    private static final   String AUTOENROLL_CONNECTIONDN = "autoenroll.connectiondn";
-    private static final   String AUTOENROLL_CONNECTIONPWD = "autoenroll.connectionpwd";
-    private static final   String AUTOENROLL_BASEDN_USER = "autoenroll.basedn.user";
-    private static final   String AUTOENROLL_CA = "autoenroll.caid";
-    
-      // Paths
-    private static final   String AUTHORIZATION_PATH  = "authorization_path";
-    private static final   String BANNERS_PATH        = "banners_path";
-    private static final   String CA_PATH             = "ca_path";
-    private static final   String CONFIG_PATH         = "data_path";
-    private static final   String HELP_PATH           = "help_path";
-    private static final   String IMAGES_PATH         = "images_path";
-    private static final   String LANGUAGE_PATH       = "language_path";
-    private static final   String LOG_PATH            = "log_path";
-    private static final   String REPORTS_PATH        = "reports_path";
-    private static final   String RA_PATH             = "ra_path";
-    private static final   String THEME_PATH          = "theme_path";
-    private static final   String HARDTOKEN_PATH      = "hardtoken_path";
-    
-    private static final   String CTLOGS              = "ctlogs";
-    private static final   String PEERCONNECTORIN     = "peerconnectorin";
-    private static final   String PEERCONNECTOROUT    = "peerconnectorout";
-
-    private static final   String LANGUAGEFILENAME      =  "languagefilename";
-    private static final   String MAINFILENAME          =  "mainfilename";
-    private static final   String INDEXFILENAME         =  "indexfilename";
-    private static final   String MENUFILENAME          =  "menufilename";
-    private static final   String ERRORPAGE             =  "errorpage";
-    private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
+  
 
     @Override
     public String getConfigurationId() {

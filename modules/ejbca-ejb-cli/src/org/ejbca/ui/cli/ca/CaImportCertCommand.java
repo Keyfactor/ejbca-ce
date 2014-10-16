@@ -312,7 +312,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         sb.append("If E-mail isn't set (" + E_MAIL_KEY + "), the value from the certificate will be tried.\n\n");
         String existingCas = "";
 
-        Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
+        Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken());
         try {
             for (int caid : cas) {
                 CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caid);

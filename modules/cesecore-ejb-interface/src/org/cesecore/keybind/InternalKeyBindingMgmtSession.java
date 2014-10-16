@@ -41,7 +41,6 @@ public interface InternalKeyBindingMgmtSession {
     /**
      * Get a list of all InternalKeyBindings of the requested type, regardless of authorization.
      * 
-     * @param authenticationToken is the authentication token
      * @param internalKeyBindingType is the identifier of the type of InternalKeyBinding
      * @return a list of IDs for the specific type and that the caller is authorized to view
      */

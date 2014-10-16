@@ -72,8 +72,10 @@ import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keybind.InternalKeyBinding;
@@ -113,7 +115,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             .getRemoteSession(CertificateCreateSessionRemote.class);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
@@ -198,7 +201,9 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testStandAloneOcspResponseDefaultResponder() throws Exception {
         // Make sure that a default responder is set
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, CertTools.getIssuerDN(ocspSigningCertificate));
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
         try {
               //Now delete the original CA, making this test completely standalone.
@@ -538,7 +543,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws Exception {        
         // Set a fake value
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=FancyPants");
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference("CN=FancyPants");
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
         
        

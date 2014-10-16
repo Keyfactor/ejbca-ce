@@ -32,7 +32,6 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.CertTools;
 
 /**
@@ -42,7 +41,7 @@ import org.cesecore.util.CertTools;
  */
 public enum OcspSigningCache {
     INSTANCE;
-
+    
     private Map<Integer, OcspSigningCacheEntry> cache = new HashMap<Integer, OcspSigningCacheEntry>();
     private Map<Integer, OcspSigningCacheEntry> staging = new HashMap<Integer, OcspSigningCacheEntry>();
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
@@ -52,6 +51,8 @@ public enum OcspSigningCache {
     private volatile boolean loggedDefaultResponder = false;
     /** Flag to cache if we have logged the non-existence of a default responder */
     private volatile boolean loggedNoDefaultResponder = false;
+    private String defaultResponderSubjectDn;
+
     
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
@@ -87,22 +88,22 @@ public enum OcspSigningCache {
         for (final OcspSigningCacheEntry entry : staging.values()) {
             if (entry.getOcspSigningCertificate() == null) {
                 final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
-                if (CertTools.getSubjectDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
+                if (CertTools.getSubjectDN(signingCertificate).equals(defaultResponderSubjectDn)) {
                     defaultResponderCacheEntry = entry;
                     if (!loggedDefaultResponder) {
                         log.info("Setting CA with DN "
-                                + OcspConfiguration.getDefaultResponderId() + " as default OCSP responder.");
+                                + defaultResponderSubjectDn + " as default OCSP responder.");
                         loggedDefaultResponder = true; // we should only log this once, unless status changes
                     }
                     break;
                 }
             } else {
                 final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
-                if (CertTools.getIssuerDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
+                if (CertTools.getIssuerDN(signingCertificate).equals(defaultResponderSubjectDn)) {
                     defaultResponderCacheEntry = entry;
                     if (!loggedDefaultResponder) {
                         log.info("Setting keybinding with ID" + entry.getOcspKeyBinding().getId() + " and DN "
-                                + OcspConfiguration.getDefaultResponderId() + " as default OCSP responder.");
+                                + defaultResponderSubjectDn + " as default OCSP responder.");
                         loggedDefaultResponder = true; // we should only log this once, unless status changes
                     }
                     break;
@@ -111,13 +112,13 @@ public enum OcspSigningCache {
         }
         if (defaultResponderCacheEntry == null) {
             if (!loggedNoDefaultResponder) {
-                log.info("The default OCSP responder with subject '" + OcspConfiguration.getDefaultResponderId() + "' was not found."
+                log.info("The default OCSP responder with subject '" + defaultResponderSubjectDn + "' was not found."
                         + " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3");
                 loggedNoDefaultResponder = true; // we should only log this once, unless status changes
             }
             loggedDefaultResponder = false; // if we get a default responder again, log it
         } else {
-            loggedNoDefaultResponder = false; // if we loose a default responder again, log it
+            loggedNoDefaultResponder = false; // if we lose a default responder again, log it
         }
         if (log.isDebugEnabled()) {
             log.debug("Committing the following to OCSP cache:");
@@ -189,5 +190,9 @@ public enum OcspSigningCache {
         } catch (OperatorCreationException e) {
             throw new OcspFailureException(e);
         }
+    }
+
+    public void setDefaultResponderSubjectDn(String defaultResponderSubjectDn) {
+        this.defaultResponderSubjectDn = defaultResponderSubjectDn;
     }
 }

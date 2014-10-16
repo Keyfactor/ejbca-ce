@@ -71,7 +71,7 @@ public class RAAuthorization implements Serializable {
      */
     public String getCAAuthorizationString() {      
       if(authcastring==null){
-        Iterator<Integer> iter =  caSession.getAuthorizedCAs(admin).iterator();
+        Iterator<Integer> iter =  caSession.getAuthorizedCaIds(admin).iterator();
          
         authcastring = "";
         

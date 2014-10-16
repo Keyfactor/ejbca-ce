@@ -209,7 +209,7 @@
 		<include name="org/ejbca/core/model/log/LogEntry.java"/>
 		<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
 		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
-		<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
+		<include name="org/ejbca/config/GlobalConfiguration.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceData.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/*DataSource.java"/>
 		<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>

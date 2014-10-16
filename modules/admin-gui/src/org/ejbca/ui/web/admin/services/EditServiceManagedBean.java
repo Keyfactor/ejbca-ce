@@ -265,7 +265,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public List<SelectItem> getAvailableCAs() {
         List<SelectItem> availableCANames = new ArrayList<SelectItem>();
-        for (Integer caid : ejb.getCaSession().getAuthorizedCAs(getAdmin())) {
+        for (Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName()));
             } catch (CADoesntExistsException e) {
@@ -296,7 +296,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
         final List<SelectItem> availableCANames = new ArrayList<SelectItem>();
         final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
         availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
-        for (final Integer caid : ejb.getCaSession().getAuthorizedCAs(getAdmin())) {
+        for (final Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caid);
                 availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName(), null, caInfo.getCAType()!=CAInfo.CATYPE_X509 || caInfo.getStatus()!=CAConstants.CA_EXTERNAL));

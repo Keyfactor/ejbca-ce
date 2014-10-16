@@ -44,7 +44,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
 
-        Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
+        Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken());
         for (Integer caId : caIds) {
             CAInfo cainfo;
             try {
