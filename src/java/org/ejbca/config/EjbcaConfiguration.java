@@ -314,6 +314,10 @@ public final class EjbcaConfiguration {
         return Integer.valueOf(getIntProperty("peerconnector.incoming.authcachetime", 60000)).longValue();
     }
 
+    public static long getPeerDataCacheTime() {
+        return getLongProperty("peerconnector.cachetime", 60000L);
+    }
+
     /** @return the value as a boolean or the default otherwise. */
     private static boolean getBooleanProperty(final String key, final boolean defaultValue) {
         final String value = EjbcaConfigurationHolder.getString(key);
@@ -331,6 +335,20 @@ public final class EjbcaConfiguration {
         try {
             if (value!=null) {
                 ret = Integer.valueOf(value);
+            }
+        } catch (NumberFormatException e) {
+            log.error("Invalid value in "+defaultValue+", must be decimal number: " + e.getMessage());
+        }
+        return ret;
+    }
+
+    /** @return the value as an long or the default otherwise. */
+    private static long getLongProperty(final String key, final long defaultValue) {
+        final String value = EjbcaConfigurationHolder.getString(key);
+        long ret = defaultValue;
+        try {
+            if (value!=null) {
+                ret = Long.valueOf(value);
             }
         } catch (NumberFormatException e) {
             log.error("Invalid value in "+defaultValue+", must be decimal number: " + e.getMessage());
