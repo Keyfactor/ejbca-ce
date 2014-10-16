@@ -209,3 +209,10 @@ ejbca.cli.defaultpassword=ejbca
 #
 # How long a peer can be absent in milliseconds before (re-)authentication is triggered. Default: 60000
 #peerconnector.incoming.authcachetime=60000
+#
+# How long to cache outgoing PeerData database objects.
+# Default: 60000 (60 seconds)
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years).  
+#peerconnector.cachetime=157680000000
+#peerconnector.cachetime=-1
