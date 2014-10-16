@@ -29,7 +29,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.JBossUnmarshaller;
 
 /**
- * Entity Bean representing admin web interface global configuration.
+ * Entity Bean for database persisted configurations
  * 
  * @version $Id$
  */
