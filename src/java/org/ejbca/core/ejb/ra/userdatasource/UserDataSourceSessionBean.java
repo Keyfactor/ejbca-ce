@@ -335,7 +335,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         boolean superadmin = false;
         // If superadmin return all available user data sources
         superadmin = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        Collection<Integer> authorizedcas = caSession.getAuthorizedCAs(admin);
+        Collection<Integer> authorizedcas = caSession.getAuthorizedCaIds(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	UserDataSourceData next = i.next();
@@ -474,7 +474,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return true;
             }
-            Collection<Integer> authorizedcas = caSession.getAuthorizedCAs(admin);
+            Collection<Integer> authorizedcas = caSession.getAuthorizedCaIds(admin);
             if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
                 return true;
             }
@@ -505,7 +505,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 ret = false;
             }
-            Collection<Integer> authorizedcas = caSession.getAuthorizedCAs(admin);
+            Collection<Integer> authorizedcas = caSession.getAuthorizedCaIds(admin);
             if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
                 ret =  true;
             }

@@ -138,8 +138,17 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<f:selectItems value="#{internalKeyBindingMBean.uploadTargets}"/>
 			</h:selectOneMenu>
 			<h:outputLabel for="certificateUploadInput" value="#{web.text.INTERNALKEYBINDING_UPLOAD_CERTIFICATE}:"/>
-				<t:inputFileUpload id="certificateUploadInput" value="#{internalKeyBindingMBean.uploadToTargetFile}" size="20"/>
+			<t:inputFileUpload id="certificateUploadInput" value="#{internalKeyBindingMBean.uploadToTargetFile}" size="20"/>
 			<h:commandButton action="#{internalKeyBindingMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
+		</h:panelGrid>
+	</h:form>
+	<h:form id="defaultResponder" enctype="multipart/form-data" rendered="#{not empty internalKeyBindingMBean.defaultResponerTargets}">
+		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}"/></h3>
+		<h:panelGrid columns="3">
+			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}">
+				<f:selectItems value="#{internalKeyBindingMBean.defaultResponerTargets}"/>
+			</h:selectOneMenu>
+			<h:commandButton action="#{internalKeyBindingMBean.saveDefaultResponder}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 		</h:panelGrid>
 	</h:form>
 	<%	// Include Footer 

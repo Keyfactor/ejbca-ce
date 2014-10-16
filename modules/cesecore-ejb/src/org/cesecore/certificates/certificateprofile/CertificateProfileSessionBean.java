@@ -227,7 +227,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @Override
     public Collection<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken admin, final int certprofiletype) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
+        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCaIds(admin));
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
 
         // Add fixed certificate profiles.

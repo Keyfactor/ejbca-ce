@@ -136,7 +136,9 @@ import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
@@ -202,6 +204,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
 
@@ -240,6 +244,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             // Populate OcspSigningCache
             try {
+                GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                OcspSigningCache.INSTANCE.setDefaultResponderSubjectDn(ocspConfiguration.getOcspDefaultResponderReference());
                 OcspSigningCache.INSTANCE.stagingStart();
                 // Add all potential CA's as OCSP responders to the staging area
                 for (final Integer caId : caSession.getAllCaIds()) {
@@ -1071,8 +1077,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         transactionLogger.writeln();
                         continue;
                     } else {
+                        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                        String defaultResponder = ocspConfiguration.getOcspDefaultResponderReference();
                         String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", new String(Hex.encode(certId.getIssuerNameHash())),
-                                OcspConfiguration.getDefaultResponderId());
+                                defaultResponder);
                         log.error(errMsg);
                         // If we are responding to multiple requests, the last found ocspSigningCacheEntry will be used in the end
                         // so even if there are not any one now, it might be later when it is time to sign the responses.

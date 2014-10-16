@@ -46,7 +46,7 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
     public CommandResult execute(ParameterContainer parameters) {
 
         CryptoProviderTools.installBCProvider();
-        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
+        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken());
         try {
             for (int caid : caids) {
                 CAInfo ca;

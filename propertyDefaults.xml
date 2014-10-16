@@ -225,7 +225,6 @@ appserver.type           = ${appserver.type}
 appserver.subtype        = ${appserver.subtype}
 appserver.home           = ${appserver.home}
 java.version             = ${java.version}
-ocsp.defaultresponder    = ${ocsp.defaultresponder}
 ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
 datasource.jndi-name     = ${datasource.jndi-name}
 datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}

@@ -83,8 +83,7 @@ public interface CaSession {
     List<Integer> getAllCaIds();
 
     /**
-     * Method returning id's of all CA's available to the system, i.e. not 
-     * having status "external" or "waiting for certificate response" and that the
+     * Method returning id's of all CA's available to the system that the
      * administrator is authorized to, 
      * 
      * Does not log access control to all CAs it checks, because this does not 
@@ -93,7 +92,20 @@ public interface CaSession {
      * @param admin AuthenticationToken of admin
      * @return a List<Integer> of available CA id's
      */
-     List<Integer> getAuthorizedCAs(AuthenticationToken admin);
+     List<Integer> getAuthorizedCaIds(AuthenticationToken admin);
+     
+     /**
+      * Method returning info objects for  all CA's available to the system, i.e. not 
+      * having status "external" or "waiting for certificate response" and that the
+      * administrator is authorized to, 
+      * 
+      * Does not log access control to all CAs it checks, because this does not 
+      * give access to the CAs but only returns CAIds of CAs.
+      * 
+      * @param admin AuthenticationToken of admin
+      * @return a List<Integer> of available CA id's
+      */
+     List<CAInfo> getAuthorizedCaInfos(AuthenticationToken authenticationToken);
     
     /**
      * Method returning names of all CA's available to the system that the

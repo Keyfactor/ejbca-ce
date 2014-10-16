@@ -418,7 +418,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<Integer> getAuthorizedCAs(final AuthenticationToken admin) {
+    public List<Integer> getAuthorizedCaIds(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAllCaIds();
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : availableCaIds) {
@@ -429,6 +429,19 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return returnval;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<CAInfo> getAuthorizedCaInfos(AuthenticationToken authenticationToken) {
+        List<CAInfo> result = new ArrayList<CAInfo>();
+        for (CAData ca : CAData.findAll(entityManager)) {
+            int status = ca.getStatus();
+            if (authorizedToCANoLogging(authenticationToken, ca.getCaId()) && status != CAConstants.CA_UNINITIALIZED
+                    && status != CAConstants.CA_EXTERNAL && status != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                result.add(ca.getCA().getCAInfo());
+            }
+        }
+        return result;
+    }
     
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -775,5 +788,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // Note: We did not remove the keystore in the CA properties here, so old versions running in parallel will still work
         return true;
     }
+
+ 
    
 }

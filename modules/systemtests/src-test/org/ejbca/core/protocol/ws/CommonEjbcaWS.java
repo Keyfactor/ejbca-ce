@@ -1897,7 +1897,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAvailableCAs() throws Exception {
         log.trace(">getAvailableCAs");
-        Collection<Integer> ids = caSession.getAuthorizedCAs(intAdmin);
+        Collection<Integer> ids = caSession.getAuthorizedCaIds(intAdmin);
         List<NameAndId> cas = ejbcaraws.getAvailableCAs();
         assertNotNull(cas);
         assertEquals(cas.size(), ids.size());

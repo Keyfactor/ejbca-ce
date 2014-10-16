@@ -745,7 +745,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem/*<Integer,String*/> getAvailableCAsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        final List<Integer> authorizedCAs = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCAs(getAdmin());
+        final List<Integer> authorizedCAs = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
         final Map<Integer, String> caIdToNameMap = getEjbcaWebBean().getEjb().getCaSession().getCAIdToNameMap();
         ret.add(new SelectItem(String.valueOf(CertificateProfile.ANYCA), getEjbcaWebBean().getText("ANYCA")));
         for (final Integer caId : authorizedCAs) {

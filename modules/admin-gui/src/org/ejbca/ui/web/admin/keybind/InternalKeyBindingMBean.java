@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -42,12 +44,15 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingInfo;
@@ -91,10 +96,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         private final String caCertificateSerialNumber;
         private final String certificateInternalCaName;
         private final int certificateInternalCaId;
+        private final String certificateSubjectDn;
 
         private GuiInfo(int internalKeyBindingId, String name, int cryptoTokenId, String cryptoTokenName, boolean cryptoTokenAvailable,
                 boolean cryptoTokenActive, String keyPairAlias, String nextKeyPairAlias, String status, String certificateId,
-                String certificateIssuerDn, String certificateInternalCaName, int certificateInternalCaId, String certificateSerialNumber,
+                String certificateIssuerDn, String certificateSubjectDn, String certificateInternalCaName, int certificateInternalCaId, String certificateSerialNumber,
                 String caCertificateIssuerDn, String caCertificateSerialNumber) {
             this.internalKeyBindingId = internalKeyBindingId;
             this.name = name;
@@ -112,6 +118,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             this.caCertificateSerialNumber = caCertificateSerialNumber;
             this.certificateInternalCaName = certificateInternalCaName;
             this.certificateInternalCaId = certificateInternalCaId;
+            this.certificateSubjectDn = certificateSubjectDn;
         }
 
         public int getInternalKeyBindingId() {
@@ -189,18 +196,22 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         public boolean isCryptoTokenActive() {
             return cryptoTokenActive;
         }
+
+        public String getCertificateSubjectDn() {
+            return certificateSubjectDn;
+        }
     }
 
-    private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
-
-    private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
-    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
-    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    private static final long serialVersionUID = 2L;
     private final AuthenticationToken authenticationToken = getAdmin();
-    private final CertificateStoreSessionLocal certificateStoreSession = getEjbcaWebBean().getEjb().getCertificateStoreSession();
+
+    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
+    private final CertificateStoreSessionLocal certificateStoreSession = getEjbcaWebBean().getEjb().getCertificateStoreSession();
+    private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final EndEntityAccessSessionLocal endEntityAccessSessionSession = getEjbcaWebBean().getEjb().getEndEntityAccessSession();
+    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    private final GlobalConfigurationSessionLocal globalConfigurationSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
 
     ////
     //// Below is code related to viewing and/or interacting with the list of InternalKeyBindings
@@ -208,6 +219,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     private String selectedInternalKeyBindingType = null;
     private ListDataModel internalKeyBindingGuiList = null;
+    private Integer uploadTarget = null;
+    private UploadedFile uploadToTargetFile;
+    private String defaultResponderTarget;
 
     public String getSelectedInternalKeyBindingType() {
         final String typeHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("type");
@@ -242,9 +256,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         internalKeyBindingGuiList = null;
     }
 
-    private Integer uploadTarget = null;
-    private UploadedFile uploadToTargetFile;
-
     public Integer getUploadTarget() {
         return uploadTarget;
     }
@@ -260,6 +271,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public void setUploadToTargetFile(UploadedFile uploadToTargetFile) {
         this.uploadToTargetFile = uploadToTargetFile;
     }
+   
 
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<Integer,String>*/> getUploadTargets() {
@@ -269,7 +281,58 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
         return ret;
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<SelectItem/*<String,String>*/> getDefaultResponerTargets() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        ret.add(new SelectItem("", "None"));
+        //Create a map so that we can exclude bounded CAs. 
+        Set<String> internalkeybindingSet = new HashSet<String>();
+        for (final GuiInfo guiInfo : (List<GuiInfo>) getInternalKeyBindingGuiList().getWrappedData()) {
+            if (guiInfo.getStatus().equals("enabled")) {
+                internalkeybindingSet.add(guiInfo.getCertificateSubjectDn());
+                ret.add(new SelectItem(guiInfo.getCertificateSubjectDn(), "OCSPKeyBinding: " + guiInfo.getName()));
+            }
+        }
+        for (CAInfo caInfo : caSession.getAuthorizedCaInfos(authenticationToken)) {
+            if (caInfo.getCAType() == CAInfo.CATYPE_X509) {
+                if (!internalkeybindingSet.contains(caInfo.getSubjectDN())) {
+                    //Skip CAs already represented by an internal keybinding
+                    ret.add(new SelectItem(caInfo.getSubjectDN(), "CA: " + caInfo.getName()));
+                }
+            }
+        }
 
+        return ret;
+    }
+    
+    public void saveDefaultResponder() {
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (!defaultResponderTarget.equals(globalConfiguration.getOcspDefaultResponderReference())) {
+            globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+        }
+    }
+    
+    public String getDefaultResponderTarget() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        String reference = configuration.getOcspDefaultResponderReference();
+        if(reference == null) {
+            return "none";
+        } else {
+            return reference;
+        }
+    }
+    
+    public void setDefaultResponderTarget(String defaultResponderTarget) {
+        this.defaultResponderTarget = defaultResponderTarget;
+    }
+    
     /** Invoked when the user is trying to import a new certificate for an InternalKeyBinding */
     public void uploadToTarget() {
         if (uploadTarget == null) {
@@ -294,8 +357,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }
+    
+
 
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
+    @SuppressWarnings("rawtypes")
     public ListDataModel getInternalKeyBindingGuiList() {
         if (internalKeyBindingGuiList == null) {
             // Get the current type of tokens we operate on
@@ -318,12 +384,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 final String certificateId = current.getCertificateId();
                 final Certificate certificate = certificateId == null ? null : certificateStoreSession.findCertificateByFingerprint(certificateId);
                 String certificateIssuerDn = "";
+                String certificateSubjectDn = "";
                 String certificateSerialNumber = "";
                 String caCertificateIssuerDn = "";
                 String caCertificateSerialNumber = "";
                 String certificateInternalCaName = null;
                 int certificateInternalCaId = 0;
                 if (certificate != null) {
+                    certificateSubjectDn = CertTools.getSubjectDN(certificate);
                     certificateIssuerDn = CertTools.getIssuerDN(certificate);
                     certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                     try {
@@ -348,7 +416,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 }
                 internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, cryptoTokenAvailable,
                         cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), current.getStatus().name(), current
-                                .getCertificateId(), certificateIssuerDn, certificateInternalCaName, certificateInternalCaId,
+                                .getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
                         certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
                 Collections.sort(internalKeyBindingList, new Comparator<GuiInfo>() {
                     @Override

@@ -76,8 +76,10 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keys.token.CryptoToken;
@@ -114,6 +116,7 @@ public class IntegratedOcspResponseTest {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -123,6 +126,7 @@ public class IntegratedOcspResponseTest {
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
     private CA testx509ca;
+    private String originalDefaultResponder;
 
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
 
@@ -141,7 +145,10 @@ public class IntegratedOcspResponseTest {
         ocspCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, req,
                 X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         // Modify the default value
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, CertTools.getSubjectDN(caCertificate));
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        originalDefaultResponder = configuration.getOcspDefaultResponderReference();
+        configuration.setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));
+        globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
 
     }
@@ -151,7 +158,9 @@ public class IntegratedOcspResponseTest {
         cryptoTokenRule.cleanUp();
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         // Restore the default value
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", OcspConfiguration.getDefaultResponderId());
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        configuration.setOcspDefaultResponderReference(originalDefaultResponder);
+        globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
     }
 
     /**
@@ -507,8 +516,10 @@ public class IntegratedOcspResponseTest {
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws OCSPException, AuthorizationDeniedException, IOException,
             MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
         // Set a fake value
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=FancyPants");
-
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        configuration.setOcspDefaultResponderReference("CN=FancyPants");
+        globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
+        
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request

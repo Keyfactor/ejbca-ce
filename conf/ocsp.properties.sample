@@ -12,6 +12,9 @@
 # Default is '/${app.name}/publicweb/status'
 #ocsp.contextroot=/status
 
+# DEPRECATED VALUE
+# Deprecated since 6.2.4. The current value will be used to perform upgrade at first startup, and may be removed afterwards. 
+#
 # Specifies the subject of a certificate which is used to identify the 
 # responder which will generate responses when no real CA can be found from the request. 
 # This is used to generate 'unknown' responses when a request is received for a certificate 
@@ -30,7 +33,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # If set to false, the  OCSP response will not contain the signing certificate.
 # Default true 
 #ocsp.includesignercert=true
-
 
 # Defines the ResponderID type as defined in RFC2560. Set to name for the Name type and keyhash for the KeyHash type.
 # Possible values: name, keyhash
@@ -198,6 +200,12 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #
 # Default: false
 #ocsp.signaturerequired=false
+
+# Timeout setting for the Global OCSP configuration cache. Once the cache has timed out it will be reread from the 
+# database.
+#
+# Default: 30000ms 
+#ocspconfigurationcache.cachetime=30000
 
 #------------------- Re-keying used by external OCSP responder------------------------------
 # When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.

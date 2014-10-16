@@ -65,8 +65,10 @@ import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
@@ -96,6 +98,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     
     private CesecoreConfigurationProxySessionRemote configurationSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -228,21 +231,22 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Test
     public void test05OcspUnknownCA() throws Exception {
         final String issuerDN = CertTools.getIssuerDN(ocspSigningCertificate);
-        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, issuerDN);
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference(issuerDN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         super.test05OcspUnknownCA();
-
         // Reverted issuer DN should work as well, we are independent of the order here
         final String revertedIssuerDN = CertTools.reverseDN(issuerDN);
         assertNotEquals("Reverting DN should produce a different result.", issuerDN, revertedIssuerDN);
-        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, revertedIssuerDN);
+        ocspConfiguration.setOcspDefaultResponderReference(revertedIssuerDN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         super.test05OcspUnknownCA();
-        
-        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=error");
+        ocspConfiguration.setOcspDefaultResponderReference("CN=error");
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         testOcspUnauthorized();
-
     }
 
     private void testOcspUnauthorized() throws Exception { // NOPMD, this is not a test class itself

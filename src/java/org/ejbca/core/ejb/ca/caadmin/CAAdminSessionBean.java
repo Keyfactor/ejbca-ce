@@ -1103,7 +1103,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 final CardVerifiableCertificate dvcert = (CardVerifiableCertificate) ca.getCACertificate();
                 final String ca_ref = dvcert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated();
                 log.debug("DV renewal missing CVCA cert, try finding CA for:" + ca_ref);
-                for (final Integer availableCaId : caSession.getAuthorizedCAs(authenticationToken)) {
+                for (final Integer availableCaId : caSession.getAuthorizedCaIds(authenticationToken)) {
                     final CA cvca = caSession.getCA(authenticationToken, availableCaId);
                     if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED) {
                         final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cvca.getCACertificate();
@@ -2702,7 +2702,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean exitsPublisherInCAs(AuthenticationToken admin, int publisherid) {
         try {
-            for (final Integer caid : caSession.getAuthorizedCAs(admin)) {
+            for (final Integer caid : caSession.getAuthorizedCaIds(admin)) {
                 for (final Integer pubInt : caSession.getCA(admin, caid).getCRLPublishers()) {
                     if (pubInt.intValue() == publisherid) {
                         // We have found a match. No point in looking for more..
@@ -2840,7 +2840,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             returnval.addAll(publisherSession.getAllPublisherIds(admin));
         } catch (AuthorizationDeniedException e1) {
             // If regular CA-admin return publishers he is authorized to
-            for (final Integer caid : caSession.getAuthorizedCAs(admin)) {
+            for (final Integer caid : caSession.getAuthorizedCaIds(admin)) {
                 try {
                     returnval.addAll(caSession.getCAInfo(admin, caid).getCRLPublishers());
                 } catch (CADoesntExistsException e) {

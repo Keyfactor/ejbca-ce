@@ -45,11 +45,14 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
@@ -151,6 +154,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace("<doGet()");
     } // doGet
 
+    @SuppressWarnings("deprecation")
     private void ejbcaInit() {
     	
         //
@@ -293,6 +297,18 @@ public class StartServicesServlet extends HttpServlet {
             Class.forName(CliUserAccessMatchValue.class.getName());
         } catch (ClassNotFoundException e) {
             log.error("Failure during match value initialization", e);
+        }
+        // Check if there the default responder has been set. If not, try setting it using the old value.
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (globalConfiguration.getOcspDefaultResponderReference() == null) {
+            globalConfiguration.setOcspDefaultResponderReference(OcspConfiguration.getDefaultResponderId());
+            try {
+                globalConfigurationSession.saveConfiguration(admin, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException(
+                        "An always allow token was not allowed access. Likely cause is that the database hasn't been configured.");
+            }
         }
         // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
         ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);

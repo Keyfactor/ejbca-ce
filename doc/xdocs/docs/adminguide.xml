@@ -1279,12 +1279,15 @@ For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Sig
 This KeyUsage must be included if the CA is to sign OCSP-responses.
 The default certificate profiles for CAs includes the key usage 'Digital Signature'.
 </p><p>
-You can configure the CA which will generate responses when no real CA can be found from the request by setting
-'ocsp.defaultresponder' in conf/ocsp.properties. This is used to generate 'unknown' responses when a request is
+You can configure the CA which will generate responses when no real CA can be found from the request by choosing the default responder from 
+the dropdown menu in the OCSP Internal Keybindings page in the GUI, or with the CLI command:</p>
+<source>
+bin/ejbca.sh keybind setdefaultresponder &lt;name&gt;
+</source>
+<p>
+The chosen value can be any CA or OCSP Key Binding. This is used to generate 'unknown' responses when a request is
 received for a certificate that is not signed by any CA on this server. Set this to the same DN as your initial Admin
-CA for example. This value should be set during deployment of EJBCA. After the values have been edited, they are
-installed with the 'ant deploy' command. If no default responder is defined, or if no certificate exists that corresponds
-to the specified value, and no other responders defined in the request could be used to sign the reply, the responder will reply
+CA for example. If no default responder is defined or the chosen responder doesn't have a certificate, the responder will reply
 "Unauthorized" (as per RFC2560) with a null payload.  
 </p><p>
 Example to generate an OCSP request using OpenSSL (works with both internal and external OCSP responders):
