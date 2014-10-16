@@ -196,7 +196,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         // List available CAs by name
         final StringBuilder existingCas = new StringBuilder();
         try {
-            for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken())) {
+            for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken())) {
                 final String caName = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class)
                         .getCAInfo(getAuthenticationToken(), nextId.intValue()).getName();
                 if (existingCas.length() > 0) {
@@ -250,7 +250,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
     
     protected String getCaList() {
         final String TAB = "    ";
-        Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
+        Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken());
         String casList = "Available CAs:\n";
         for (Integer caid : cas) {
             CAInfo info;

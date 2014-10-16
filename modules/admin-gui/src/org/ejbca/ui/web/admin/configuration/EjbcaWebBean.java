@@ -740,7 +740,7 @@ public class EjbcaWebBean implements Serializable {
      */
     public Collection<Integer> getCAIdsWithCMSServiceActive() {
         ArrayList<Integer> retval = new ArrayList<Integer>();
-        Collection<Integer> caids = caSession.getAuthorizedCAs(administrator);
+        Collection<Integer> caids = caSession.getAuthorizedCaIds(administrator);
         Iterator<Integer> iter = caids.iterator();
         while (iter.hasNext()) {
             Integer caid = iter.next();

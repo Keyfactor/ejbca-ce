@@ -125,8 +125,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -245,13 +247,14 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             + "KuCHXrnUlw5RLeublCbUAAAAAAAAAAAAAAAAAAAAAAAAMD0wITAJBgUrDgMCGgUA" + "BBRo3arw4fuHPsqvDnvA8Q/TLyjoRQQU3Xm6ZsAJT0/iLV7S3mKeme0FVGACAgQA" + "AAA=")
             .getBytes());
 
-    final private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    final private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
-    final private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    final private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws CertificateException {
@@ -276,11 +279,14 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         caid = CaTestCase.getTestCAId();
         
         Map<String, String> config = new HashMap<String, String>();
-        config.put("ocsp.defaultresponder", CertTools.getSubjectDN(CaTestCase.getTestCACert()));
+        
         config.put("ocsp.nonexistingisgood", "false");
         config.put("ocsp.nonexistingisrevoked", "false");
         helper.alterConfig(config);
         helper.reloadKeys();
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference(CertTools.getSubjectDN(CaTestCase.getTestCACert()));
+        globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
     }
 
     @After
@@ -1305,7 +1311,9 @@ Content-Type: text/html; charset=iso-8859-1
         // set OCSP configuration
         Map<String,String> map = new HashMap<String, String>();
         map.put(OcspConfiguration.INCLUDE_CERT_CHAIN, "true");
-        map.put("ocsp.defaultresponder", subSubCaDN);
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference(subSubCaDN);
+        globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
         this.helper.alterConfig(map);
         helper.reloadKeys();
         

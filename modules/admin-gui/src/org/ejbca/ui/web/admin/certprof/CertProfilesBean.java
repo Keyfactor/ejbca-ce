@@ -202,7 +202,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 final List<Integer> authorizedCaIds;
                 if (isCertProfileFixed(getSelectedCertProfileId()) && !isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
                     // Expand ANYCA to the current admin's list of authorized CA Ids
-                    authorizedCaIds = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCAs(getAdmin());
+                    authorizedCaIds = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
                 } else {
                     // Use null as authorizedCaIds, so we will copy the profile exactly as the template(, including ANY CA for SuperAdmin)
                     authorizedCaIds = null;

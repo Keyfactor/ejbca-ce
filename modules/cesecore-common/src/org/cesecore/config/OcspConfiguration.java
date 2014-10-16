@@ -35,6 +35,7 @@ public class OcspConfiguration {
 
     private static final Logger log = Logger.getLogger(OcspConfiguration.class);
 
+    @Deprecated // Deprecated in 6.2.4, remains to allow migration from previous versions
     public static final String DEFAULT_RESPONDER = "ocsp.defaultresponder";
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
     public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
@@ -264,7 +265,10 @@ public class OcspConfiguration {
      * the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this
      * server.
      * @return the name configured in ocsp.defaultresponder, reordered to EJBCA normalized ordering.
+     * 
+     * @deprecated This value is deprecated since 6.2.4, and only remains in order to allow migration. Default responder is now set in global configuration instead. 
      */
+    @Deprecated
     public static String getDefaultResponderId() {
         final String ret = ConfigurationHolder.getExpandedString(DEFAULT_RESPONDER);
         if (ret != null) {

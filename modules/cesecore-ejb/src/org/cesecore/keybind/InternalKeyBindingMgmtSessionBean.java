@@ -883,7 +883,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final int certificateProfileId = 0;
         final String username = "IMPORTED_InternalKeyBinding_" + internalKeyBinding.getId();
         // Find caFingerprint through ca(Admin?)Session
-        final List<Integer> availableCaIds = caSession.getAuthorizedCAs(authenticationToken);
+        final List<Integer> availableCaIds = caSession.getAuthorizedCaIds(authenticationToken);
         final String issuerDn = CertTools.getIssuerDN(certificate);
         String caFingerprint = null;
         for (final Integer caId : availableCaIds) {
