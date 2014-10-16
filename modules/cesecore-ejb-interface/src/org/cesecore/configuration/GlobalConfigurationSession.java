@@ -24,15 +24,6 @@ import org.cesecore.configuration.ConfigurationBase;
  * @version $Id$
  */
 public interface GlobalConfigurationSession {
-
-    /**
-     * Flushes the cached GlobalConfiguration value and reads the current one
-     * from persistence.
-     * 
-     * @return a fresh GlobalConfiguration from persistence, or null of no such
-     *         configuration exists.
-     */
-    ConfigurationBase flushCache(String configID);
     
     /**
      * Retrieves the cached GlobalConfiguration. This cache is updated from

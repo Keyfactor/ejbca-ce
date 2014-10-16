@@ -157,7 +157,6 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str1);
         // Save and make sure it's ok across database saves as well
         globalConfigurationSession.saveConfiguration(internalAdmin, gc);
-        globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         GlobalConfiguration newgc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         String str2 = newgc.getNodesInCluster().toString();
         assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str2);
@@ -233,14 +232,14 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * @throws AuthorizationDeniedException 
      */
     private void enableCLI(final boolean enable) throws AuthorizationDeniedException {
-        final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final GlobalConfiguration newConfig;
         if (config.getEnableCommandLineInterface() == enable) {
             newConfig = config;
         } else {
             config.setEnableCommandLineInterface(enable);
             globalConfigurationSession.saveConfiguration(internalAdmin, config);
-            newConfig = (GlobalConfiguration) globalConfigurationSession.flushCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            newConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         }
         assertEquals("CLI should have been enabled/disabled", enable, newConfig.getEnableCommandLineInterface());
         authorizationSession.forceCacheExpire();
