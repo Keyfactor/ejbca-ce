@@ -15,6 +15,12 @@ package org.cesecore.configuration;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public abstract class ConfigurationBase extends UpgradeableDataHashMap {
 
     private static final long serialVersionUID = 4886872276324915327L;
