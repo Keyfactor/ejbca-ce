@@ -3,9 +3,9 @@
 ### Language tool for EJBCA (Admin GUI)
 #
 # Filename:    language-tool.sh
-# Version:     1.1, 2012-06-01
-# Script:      Bash script
-# Require:     EJBCA 4.0.x
+# Version:     1.2, 2014-10-16
+# Script:      Bash
+# Require:     EJBCA 6.3.0
 # Contributor: David CARELLA, david.carella [AT] gmail.com
 
 
@@ -14,10 +14,11 @@
 ## Constants
 
 PROGRAM=$(basename "$0")
-VERSION="1.1"
+VERSION="1.2"
 
 #- EJBCA folders
-SVN_ROOT="../../../.."		# Script path = modules/admin-gui/resources/languages/
+SVN_ROOT="$(dirname "$0")/../../../.."				# Script path = modules/admin-gui/resources/languages/
+LANG_ROOT=$(dirname "$0")							# Languages path = modules/admin-gui/resources/languages/
 PATH_ADMINGUI_RES="modules/admin-gui/resources"		# Files: JSP, JSPF, JSF
 PATH_ADMINGUI_SRC="modules/admin-gui/src"			# Files: Java
 PATH_CONFIG="conf"									# Files: Properties
@@ -33,7 +34,7 @@ PATH_MODULES="modules"								# Files: module source files
 #  $SVN_ROOT/$PATH_JAVA_CESECORE/
 #  $SVN_ROOT/$PATH_JAVA_EJBCA/
 #  $SVN_ROOT/$PATH_JAVA/
-#  $SVN_ROOT/$PATH_MODULES
+#  $SVN_ROOT/$PATH_MODULES/
 
 #- EJBCA version (only numbers and dots)
 EJBCA_VERSION=$(cat $SVN_ROOT/src/internal.properties | grep "app.version.number=" | sed -e "s/^.*=\([0-9.]*\).*/\1/")
@@ -50,7 +51,7 @@ FILENAME_REF=$LANG_PREFIX"."$LANG_REF"."$LANG_EXT
 status=0
 action=""
 lang=""
-format=""
+format="text"
 filename=$FILENAME_REF
 
 
@@ -66,7 +67,7 @@ echo
 ## Function print_help()
 
 print_help ( ) (
-	echo "Usage: ${PROGRAM} [-h] [-a|-u|-s] [-l <LANG>] [-e csv|xdoc|doku]"
+	echo "Usage: ${PROGRAM} [-h] [-a|-u|-s] [-l <LANG>] [-e text|csv|xdoc|doku]"
 	echo "Usage: ${PROGRAM} [-h] [-f|-c] -k <KEY>"
 	echo "Usage: ${PROGRAM} [-h] [-p]"
 	echo "    -a: all message keys in <LANG> file."
@@ -78,7 +79,7 @@ print_help ( ) (
 	echo "    -c: count message key <KEY> (in source files)."
 	echo "    -p: parsed source files [internal technical info]."
 	echo "    -l <LANG>: language code [default: $LANG_REF]."
-	echo "    -e <FORMAT>: export format (CSV, XDoc, DokuWiki) [default: Text]."
+	echo "    -e <FORMAT>: export format (Text, CSV, XDoc, DokuWiki) [default: text]."
 	echo "    -k <KEY>: message key."
 	echo "    -h: this help."
 	echo
@@ -174,11 +175,16 @@ case "$action" in
 
 	"all" | "unused" | "stats")
 		## Test if filename exists
-		if [ ! -f $filename ]; then
-			echo "Error: File not found ($filename)."
+		if [ ! -f $LANG_ROOT/$filename ]; then
+			echo "Error: File not found ($LANG_ROOT/$filename)."
 			echo
 			exit 4
 		fi
+		## Test if format is correct
+		case "$format" in
+			"text" | "csv" | "xdoc" | "doku") ;;
+			*) echo "Error: Unknown format ('$format')."; echo; exit 4 ;;
+		esac
 		;;
 
 #-- Message key
@@ -237,9 +243,9 @@ case "$action" in
 		echo "$hr"
 
 		## Extract and display all message keys
-		cat $filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" -e "s/[ \t=].*$//"
+		cat $LANG_ROOT/$filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" -e "s/\s*=.*$//"
 		## Count all message keys, i.e. all lines with '=' and without '#' (comment)
-		keycount=$(cat $filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" | wc -l)
+		keycount=$(cat $LANG_ROOT/$filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" | wc -l)
 
 		echo "$hr"
 		echo "Count = $keycount message keys  (in $filename)"
@@ -259,7 +265,7 @@ case "$action" in
 		echo "$hr"
 
 		## Read each message keys in filename, then search them in source files
-		for key in $(cat $filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" -e "s/[ \t=].*$//")
+		for key in $(cat $LANG_ROOT/$filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" -e "s/\s*=.*$//")
 		do
 
 		## ADMIN-GUI > RESOURCES (JSP, JSPF, JSF)
@@ -338,14 +344,17 @@ case "$action" in
 	## INIT Variables
 
 		## List all language files, then remove the virtual language 'zz'
+		pathtmp=$(pwd)
+		cd $LANG_ROOT
 		filelist=$(echo *.$LANG_EXT | sed -e "s/"$LANG_PREFIX".zz."$LANG_EXT"//")
+		cd $pathtmp
 		if [ "$lang" != "" ]; then
 			filelist=$filename
 		fi
 		## Count all language files
 		filecount=$(echo $filelist | wc -w)
 		## Count all message keys of the reference language file
-		refcount=$(cat $FILENAME_REF | sed -e "/^[^=]*$/d" -e "/^#.*/d" | wc -l)
+		refcount=$(cat $LANG_ROOT/$FILENAME_REF | sed -e "/^[^=]*$/d" -e "/^#.*/d" | wc -l)
 
 		echo
 		echo "Message key statistics:"
@@ -353,45 +362,51 @@ case "$action" in
 
 	## TABLE > HEADER
 		case "$format" in 
-		"csv")		# CSV format (Comma-separated values)
-			echo "Syntax: CSV format"
-			echo "$hr"
-			echo "Language;Filename;Key count;Completed (%)"
-			;;
-		"xdoc")		# XDoc code (XML document)
-			echo "Syntax: XDoc code"
-			echo "$hr"
-			echo '<section name="Language file statistics">'
-			echo '<table>'
-			echo '<tr><th>Language</th><th>Filename</th><th>Key count</th><th>Completed (%)</th></tr>'
-			;;
-		"doku")		# DokuWiki code
-			echo "Syntax: DokuWiki code"
-			echo "$hr"
-			echo "===== Language file statistics ====="
-			echo "^  Language  ^ Filename  ^  Key count  ^  Completed (%)  ^"
-			;;
-		*)			# Text (terminal)
+		"text")		# Text (terminal)
 			## Table constants (column width, spaces, horizontal rule)
-			col1=8
-			col2=31
-			col3=11
-			col4=9
+			col1=15
+			col2=6
+			col3=31
+			col4=11
+			col5=9
 			spaces100=$(printf '%.s ' {1..100})
-			hr_table=$(eval printf '%.s-' {1..$(($col1+$col2+$col3+$col4))})
+			hr_table=$(eval printf '%.s-' {1..$(($col1+$col2+$col3+$col4+$col5))})
 			## Header appending
-			col1_title="Lang."$spaces100
-			col2_title="Filename"$spaces100
-			col3_title="Key count"$spaces100
-			col4_title="Completed"$spaces100
+			col1_title="Language"$spaces100
+			col2_title="Code"$spaces100
+			col3_title="Filename"$spaces100
+			col4_title="Key count"$spaces100
+			col5_title="Completed"$spaces100
 			## Header cutting
 			col1_title=${col1_title:0:$col1}	# Left align
 			col2_title=${col2_title:0:$col2}	# Left align
 			col3_title=${col3_title:0:$col3}	# Left align
 			col4_title=${col4_title:0:$col4}	# Left align
+			col5_title=${col5_title:0:$col5}	# Left align
 			## Header displaying
-			echo "$col1_title$col2_title$col3_title$col4_title"
+			echo "$col1_title$col2_title$col3_title$col4_title$col5_title"
 			echo "$hr_table"
+			;;
+		"csv")		# CSV format (Comma-separated values)
+			echo "Syntax: CSV format"
+			echo "$hr"
+			echo "Language;Code (ISO 639-1);Filename;Key count;Completed (%)"
+			;;
+		"xdoc")		# XDoc code (XML document)
+			echo "Syntax: XDoc code"
+			echo "$hr"
+			echo '<section name="Language file statistics">'
+			echo '<p>Language file statistics of the administration web interface (Admin GUI).</p>'
+			echo '<table>'
+			echo '<tr><th>Language</th><th>Code (ISO 639-1)</th><th>Filename</th><th>Key count</th><th>Completed (%)</th></tr>'
+			;;
+		"doku")		# DokuWiki code
+			echo "Syntax: DokuWiki code"
+			echo "$hr"
+			echo "===== Language file statistics ====="
+			echo "^ Language  ^  Code  ^ Filename  ^  Key count  ^  Completed (%)  ^"
+			;;
+		*)			# Error
 			;;
 		esac
 
@@ -401,35 +416,48 @@ case "$action" in
 
 			## Extract the language code from current language file name
 			lang=$(echo "$filename" | sed -e "s/"$LANG_PREFIX"\.\(.*\)\."$LANG_EXT"/\1/")
+			## Extract the language name from current language file name
+			langname=$(cat $LANG_ROOT/$filename | grep -e "^LANGUAGE_ENGLISHNAME" | sed -e "s/^LANGUAGE_ENGLISHNAME\s*=\s*\(.*\)\s*$/\1/")
+			if [ -z "$langname" ]; then
+				langname="[$lang]"				# Default value, if the language name is not found.
+			fi
 			## Count all message keys of the current language file 'filename'
-			keycount=$(cat $filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" | wc -l)
+			keycount=$(cat $LANG_ROOT/$filename | sed -e "/^[^=]*$/d" -e "/^#.*/d" | wc -l)
 			## Compute the completion rate of the current language file
 			progress=$(echo "scale=1; 100*$keycount/$refcount" | bc)
 
 		## TABLE > BODY
 			case "$format" in 
-			"csv")		# CSV format (Comma-separated values)
-				echo "$lang;$filename;$keycount;$progress %"
-				;;
-			"xdoc")		# XDoc code (XML document)
-				echo '<tr><td align="center"><strong>'$lang'</strong></td><td><big><code>'$filename'</code></big></td><td align="center">'$keycount'</td><td align="center">'$progress' %</td></tr>'
-				;;
-			"doku")		# DokuWiki code
-				echo "|  **$lang**  | ''$filename''  |  $keycount  |  $progress %  |"
-				;;
-			*)			# Text (terminal)
+			"text")		# Text (terminal)
+				## Reference language notation
+				if [ "$lang" = "$LANG_REF" ]; then
+					langname="$langname"" (ref)"
+				fi
 				## Cell appending
-				col1_data=" ""$lang"$spaces100
-				col2_data="$filename"$spaces100
-				col3_data=$spaces100"$keycount keys""  "
-				col4_data=$spaces100"$progress %"" "
+				col1_data="$langname"$spaces100
+				col2_data=" ""$lang"$spaces100
+				col3_data="$filename"$spaces100
+				col4_data=$spaces100"$keycount keys""  "
+				col5_data=$spaces100"$progress %"" "
 				## Cell cutting
 				col1_data=${col1_data:0:$col1}							# Left align
 				col2_data=${col2_data:0:$col2}							# Left align
-				col3_data=${col3_data:$((${#col3_data}-$col3)):$col3}	# Right align
+				col3_data=${col3_data:0:$col3}							# Left align
 				col4_data=${col4_data:$((${#col4_data}-$col4)):$col4}	# Right align
+				col5_data=${col5_data:$((${#col5_data}-$col5)):$col5}	# Right align
 				## Cell displaying
-				echo "$col1_data$col2_data$col3_data$col4_data"
+				echo "$col1_data$col2_data$col3_data$col4_data$col5_data"
+				;;
+			"csv")		# CSV format (Comma-separated values)
+				echo "$langname;$lang;$filename;$keycount;$progress %"
+				;;
+			"xdoc")		# XDoc code (XML document)
+				echo '<tr><td>'$langname'</td><td align="center"><big><code>'$lang'</code></big></td><td><big><code>'$filename'</code></big></td><td align="center">'$keycount'</td><td align="center">'$progress' %</td></tr>'
+				;;
+			"doku")		# DokuWiki code
+				echo "| $langname  |  **''$lang''**  | ''$filename''  |  $keycount  |  $progress %  |"
+				;;
+			*)			# Error
 				;;
 			esac
 
@@ -437,9 +465,17 @@ case "$action" in
 
 	## TABLE > FOOTER
 		case "$format" in 
+		"text")		# Text (terminal)
+			## Footer displaying
+			echo "$hr_table"
+			echo "Code: ISO 639-1, two-letter language code."
+			#echo "Reference: $FILENAME_REF"
+			echo "Count: $filecount language files (Admin GUI)"
+			echo "Date: $(date +%F) (EJBCA $EJBCA_VERSION)"
+			;;
 		"csv")		# CSV format (Comma-separated values)
 			echo "$hr"
-			echo "Count = $filecount language files (Admin GUI)"
+			echo "Count: $filecount language files (Admin GUI)"
 			;;
 		"xdoc")		# XDoc code (XML document)
 			echo '</table>'
@@ -450,16 +486,13 @@ case "$action" in
 			echo "$hr"
 			;;
 		"doku")		# DokuWiki code
+			echo "Code: ISO 639-1, two-letter language code.\\\\"
 			echo "Reference: ''$FILENAME_REF''\\\\"
 			echo "Count: **$filecount language files** (Admin GUI)\\\\"
 			echo "Date: $(date +%F) (EJBCA $EJBCA_VERSION)"
 			echo "$hr"
 			;;
-		*)			# Text (terminal)
-			## Footer displaying
-			echo "$hr_table"
-			echo "Count = $filecount language files (Admin GUI)"
-			echo "Date: $(date +%F) (EJBCA $EJBCA_VERSION)"
+		*)			# Error
 			;;
 		esac
 
@@ -476,49 +509,49 @@ case "$action" in
 		filecount=0
 
 		echo
-		echo "Source files that contains '$keysearch':"
+		echo "Source files which contains '$keysearch':"
 
 	## ADMIN-GUI > RESOURCES (JSP, JSPF, JSF)
 
 	#-- PATTERNS = |"KEY"|, |\"KEY\"|, |'KEY'|, |\'KEY\'|
-		grep -l -e "[\"']"$keysearch"[\"'\]" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | sed -e "s/\.\.\///g"
+		grep -l -e "[\"']"$keysearch"[\"'\]" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[\"']"$keysearch"[\"'\]" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | wc -l)
 		let "filecount+=count"
 
 	#-- PATTERNS = |{web.text.KEY}|
-		grep -l -e "{web.text.$keysearch}" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | sed -e "s/\.\.\///g"
+		grep -l -e "{web.text.$keysearch}" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "{web.text.$keysearch}" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | wc -l)
 		let "filecount+=count"
 
 	## ADMIN-GUI > SRC (Java)
 
 	#-- PATTERNS = |"KEY"|, |'KEY'|
-		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_SRC/ | sed -e "s/\.\.\///g"
+		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_SRC/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_SRC/ | wc -l)
 		let "filecount+=count"
 
 	## CONF
 
 	#-- PATTERNS = | KEY|, | KEY |, |=KEY|, |=KEY |
-		grep -l -e "[ \t=]"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | sed -e "s/\.\.\///g"
+		grep -l -e "[ \t=]"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[ \t=]"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | wc -l)
 		let "filecount+=count"
 
 	## SRC > JAVA (CESecore, EJBCA, properties)
 
 	#-- PATTERNS = |"KEY"|, |'KEY'|
-		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
+		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
-		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ MODULES/ | sed -e "s/\.\.\///g"
+		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
 
 	#-- PATTERNS = |;KEY;|, |,KEY,|, |;KEY|, |,KEY|, |= KEY|, etc.
-		grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
+		grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
-		grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/\.\.\///g"
+		grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
 
@@ -527,12 +560,12 @@ case "$action" in
 	## INIT Variables
 		filecount=0
 		echo
-		echo "Language files that contains '$keysearch':"
+		echo "Language files which contains '$keysearch':"
 
 	## ADMIN-GUI > RESOURCES > LANGUAGES
 
 	#-- PATTERNS = |"KEY"|, |\"KEY\"|, |'KEY'|, |\'KEY\'|
-		grep -l -e "^"$keysearch"[ \t=].*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/languages/ | sed -e "s/\.\.\///g"
+		grep -l -e "^"$keysearch"[ \t=].*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/languages/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "^"$keysearch"[ \t=].*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/languages/ | wc -l)
 		let "filecount+=count"
 
@@ -621,36 +654,36 @@ case "$action" in
 	## ADMIN-GUI > RESOURCES (JSP, JSPF, JSF)
 
 	#-- PATTERNS = ||
-		grep -l -e "" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | sed -e "s/\.\.\///g"
+		grep -l -e "" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "" --include=*.js* --exclude=*.js -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_RES/ | wc -l)
 		let "filecount+=count"
 
 	## ADMIN-GUI > SRC (Java)
 
 	#-- PATTERNS = ||
-		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_SRC/ | sed -e "s/\.\.\///g"
+		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_SRC/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ADMINGUI_SRC/ | wc -l)
 		let "filecount+=count"
 
 	## CONF
 
 	#-- PATTERNS = ||
-		grep -l -e "" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | sed -e "s/\.\.\///g"
+		grep -l -e "" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | wc -l)
 		let "filecount+=count"
 
 	## SRC > JAVA (CESecore, EJBCA, properties)
 
 	#-- PATTERNS = ||
-		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
+		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
-		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/\.\.\///g"
+		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
 
 	#-- PATTERNS = ||
-		grep -l -e "" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
+		grep -l -e "" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/.*\.\.\///"
 		count=$(grep -l -e "" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
 
@@ -675,7 +708,7 @@ case "$action" in
 
 	"unused")
 		echo
-		echo "Warning: DON'T REMOVE ALL UNUSED KEYS; it is probably normal that this count is not equal to zero, because some message keys exist for future use." | fmt -80
+		echo "/!\ Warning: DON'T REMOVE ALL UNUSED KEYS; it is normal that this count is not equal to zero, because some message keys exist for future use, and a lot of message keys are used in the Enterprise Edition of EJBCA." | fmt -80
 		echo
 		echo "Important: before remove message keys, please:" | fmt -80
 		if [ "$lang" != "" ]; then
