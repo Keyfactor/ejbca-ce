@@ -82,6 +82,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
@@ -323,7 +324,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		eepd.setDataUnsafe(h);
     	}
     	log.info(" Processing GlobalConfigurationData entities.");
-    	GlobalConfigurationData gcd = globalConfigurationSession.findByConfigurationId("0");
+    	GlobalConfigurationData gcd = globalConfigurationSession.findByConfigurationId(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 		HashMap h = getDataUnsafe(gcd.getDataUnsafe());
     	gcd.setDataUnsafe(h);
     }
