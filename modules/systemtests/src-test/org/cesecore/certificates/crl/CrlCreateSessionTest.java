@@ -12,23 +12,44 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
+import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -41,12 +62,20 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -65,15 +94,18 @@ public class CrlCreateSessionTest {
 
     private static final Logger log = Logger.getLogger(CrlCreateSessionTest.class);
 
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CaTestSessionRemote caTestSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
-    private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CaTestSessionRemote caTestSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
+    private final CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+    private final CryptoTokenManagementSessionRemote cryptoTokenMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final String className = CrlCreateSessionTest.class.getSimpleName();
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CrlCreateSessionTest.class.getSimpleName());
+
+    private static final byte[] TEST_AKID = new byte[] { 1, 2, 3, 4 };
 
     
     @BeforeClass
@@ -152,6 +184,100 @@ public class CrlCreateSessionTest {
         X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
         BigInteger num2 = CrlExtensions.getCrlNumber(x509crl2);
         assertEquals(number1 + 2, num2.intValue());
+    }
+    
+    /**
+     * Tests issuing a CRL from a CA with a SKID that is not generated with SHA1.
+     * The CRL is checked to contain the correct AKID value.
+     */
+    @Test
+    public void testNonSHA1KeyId() throws Exception {
+        final String subcaname = "CrlCSTestSub";
+        try {
+            // Create an external root ca certificate
+            final KeyPair rootcakp = KeyTools.genKeys("1024", "RSA");
+            final String rootcadn = "CN=CrlCSTestRoot";
+            final X509Certificate rootcacert = CertTools.genSelfCert(rootcadn, 3650, null, rootcakp.getPrivate(), rootcakp.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, "BC", false);
+            
+            // Create sub ca
+            final String subcadn = "CN="+subcaname;
+            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024");
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            X509CAInfo subcainfo = new X509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 365, CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
+            X509CA subca = new X509CA(subcainfo);
+            subca.setCAToken(catoken);
+            caSession.addCA(authenticationToken, subca);
+            
+            // Issue sub CA certificate with a non-standard SKID
+            PublicKey subcapubkey = cryptoTokenMgmtSession.getPublicKey(authenticationToken, cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            Date firstDate = new Date();
+            firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+            Date lastDate = new Date();
+            lastDate.setTime(lastDate.getTime() + (365 * (24 * 60 * 60 * 1000)));
+            final SubjectPublicKeyInfo subcaspki = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(subcapubkey.getEncoded()));
+            final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(rootcadn, false), new BigInteger(64, new Random(System.nanoTime())),
+                    firstDate, lastDate, CertTools.stringToBcX500Name(subcadn, false), subcaspki);
+            final AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(CertTools.getAuthorityKeyId(rootcacert));
+            final SubjectKeyIdentifier ski = new SubjectKeyIdentifier(TEST_AKID); // Non-standard SKID. It should match the AKID in the CRL
+            certbuilder.addExtension(Extension.authorityKeyIdentifier, true, aki);
+            certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+            BasicConstraints bc = new BasicConstraints(true);
+            certbuilder.addExtension(Extension.basicConstraints, true, bc);
+            
+            X509KeyUsage ku = new X509KeyUsage(X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign);
+            certbuilder.addExtension(Extension.keyUsage, true, ku);
+            
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider("BC").build(rootcakp.getPrivate()), 20480);
+            final X509CertificateHolder certHolder = certbuilder.build(signer);
+            final X509Certificate subcacert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded(), "BC");
+            
+            // Add sub CA certificate
+            subcainfo = (X509CAInfo)caSession.getCAInfo(authenticationToken, subcaname);
+            List<Certificate> certificatechain = new ArrayList<Certificate>();
+            certificatechain.add(subcacert);
+            certificatechain.add(rootcacert);
+            subcainfo.setCertificateChain(certificatechain);
+            subcainfo.setExpireTime(CertTools.getNotAfter(subcacert));
+            caSession.editCA(authenticationToken, subcainfo);
+            subca = (X509CA) caTestSessionRemote.getCA(authenticationToken, subcaname);
+            assertArrayEquals("Wrong SKID in test CA.", TEST_AKID, CertTools.getSubjectKeyId(subca.getCACertificate()));
+            
+            // Create a CRL and check the AKID
+            int nextCrlNumber = crlStoreSession.getLastCRLNumber(subcadn, false) + 1;
+            assertEquals("For a new CA, the next crl number should be 1.", 1, nextCrlNumber);
+            crlCreateSession.generateAndStoreCRL(authenticationToken, subca, new ArrayList<RevokedCertInfo>(), -1, nextCrlNumber);
+            final byte[] crl = crlStoreSession.getLastCRL(subcadn, false);
+            try {
+                assertNotNull(crl);
+                // Check that it is signed by the correct public key
+                final X509CRL xcrl = CertTools.getCRLfromByteArray(crl);
+                final PublicKey pubK = subca.getCACertificate().getPublicKey();
+                xcrl.verify(pubK);
+                // Check that the correct AKID is used
+                final byte[] akidExtBytes = xcrl.getExtensionValue(Extension.authorityKeyIdentifier.getId());
+                ASN1InputStream octAis = new ASN1InputStream(new ByteArrayInputStream(akidExtBytes));
+                DEROctetString oct = (DEROctetString) (octAis.readObject());
+                ASN1InputStream keyidAis = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyidAis.readObject());
+                keyidAis.close();
+                octAis.close();
+                assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());
+            } finally {
+                // Remove it to clean database
+                internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
+            }
+        } finally {
+            final Integer cryptoTokenId = cryptoTokenMgmtSession.getIdFromName(subcaname);
+            if (cryptoTokenId != null) {
+                CryptoTokenTestUtils.removeCryptoToken(authenticationToken, cryptoTokenId);
+            }
+            try {
+                int caid = caSession.getCAInfo(authenticationToken, subcaname).getCAId();
+                caSession.removeCA(authenticationToken, caid);
+            } catch (CADoesntExistsException cade) {
+                // NOPMD ignore
+            }
+        }
     }
     
     private void forceDeltaCRL(AuthenticationToken admin, CA ca) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, CRLException {
