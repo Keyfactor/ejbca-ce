@@ -48,7 +48,6 @@ public interface GlobalConfigurationSession {
     *
     * @param admin an authentication token
     * @param globconf the new Configuration
-    * @param configId constant defining what type of configuration, Configuration.GlobalConfigID or Configuration.CMPConfigID
     * 
     * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
     */

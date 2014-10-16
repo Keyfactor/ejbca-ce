@@ -23,4 +23,10 @@ public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSess
     
     /** @return the found entity instance or null if the entity does not exist */
     GlobalConfigurationData findByConfigurationId(String configurationId);
+    
+    /** Saves the GlobalConfiguration without logging, should be used only for creating an initial configuration.
+    *
+    * @param globconf the new Configuration
+    */
+   void saveConfigurationNoLog(ConfigurationBase conf);
 }
