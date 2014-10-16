@@ -36,9 +36,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -60,9 +58,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-    
-    private final AlwaysAllowLocalAuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal GlobalConfiguration Admin"));
-    
+        
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -126,12 +122,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
                     result = GlobalConfigurationCacheHolder.INSTANCE.getNewConfiguration(configID);
-                    try {
-                        // Call self bean as external here in order to create a transaction if no transaction exists (this method only has SUPPORTS to be as fast as possible)
-                        globalConfigSession.saveConfiguration(internalAdmin, result);
-                    } catch (AuthorizationDeniedException e) {
-                        throw new RuntimeException("Internal admin was denied access. This should not be able to happen.");
-                    }
+                    // Call self bean as external here in order to create a transaction if no transaction exists (this method only has SUPPORTS to be as fast as possible)
+                    globalConfigSession.saveConfigurationNoLog(result);            
                 }
             }
             return result;
@@ -171,8 +163,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             } else {
                 // Global configuration doesn't yet exists.
                 try {
-                    GlobalConfigurationData gcd = new GlobalConfigurationData(configID, conf);
-                    entityManager.persist(gcd);
+                    saveConfigurationNoLog(conf);
                     final String msg = intres.getLocalizedMessage("globalconfig.createdconf", configID);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
@@ -188,7 +179,6 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                             admin.toString(), null, null, null, details);
                 }
             }
-            GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(conf, configID);
         } else {
             throw new AuthorizationDeniedException("Authorization was denied to user " + admin
                     + " to resource /. Could not save configuration.");
@@ -196,6 +186,14 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
         }
+    }
+    
+    @Override
+   public void saveConfigurationNoLog(ConfigurationBase conf) {
+        String configID = conf.getConfigurationId();
+        GlobalConfigurationData gcd = new GlobalConfigurationData(configID, conf);
+        entityManager.persist(gcd);
+        GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(conf, configID);
     }
 
     @Override
