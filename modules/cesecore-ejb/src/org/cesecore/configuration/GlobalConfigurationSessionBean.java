@@ -147,6 +147,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>) GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(gcdata.getData(), configID).saveData();
                 gcdata.setConfiguration(conf);
+                GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(conf, configID);
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> newmap = (Map<Object, Object>) conf.saveData();
                 // Get the diff of what changed
