@@ -220,10 +220,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     private static enum GlobalConfigurationCacheHolder {
         INSTANCE;
         
-        private Map<String, ConfigurationCache> caches;
+        private final Map<String, ConfigurationCache> caches = new ConcurrentHashMap<String, ConfigurationCache>();
         
-        {
-            caches = new ConcurrentHashMap<String, ConfigurationCache>();
+        private GlobalConfigurationCacheHolder() {
             ServiceLoader<? extends ConfigurationCache> serviceLoader = ServiceLoader.load(ConfigurationCache.class);
             // Extract all the caches from the plugin list
             for (ConfigurationCache cache : serviceLoader) {
