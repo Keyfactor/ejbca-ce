@@ -85,17 +85,6 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         // the transaction setting (REQUIRED) which created a new transaction in order to create default config
         globalConfigSession = sessionContext.getBusinessObject(GlobalConfigurationSessionLocal.class);
     }
-
-    @Override
-    public ConfigurationBase flushCache(String configID) {
-        GlobalConfigurationData gcdata = findByConfigurationId(configID);
-        ConfigurationBase result = null;
-        if (gcdata != null) {
-            result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(gcdata.getData(), configID);
-            GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(result, configID);
-        }
-        return result;
-    }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override

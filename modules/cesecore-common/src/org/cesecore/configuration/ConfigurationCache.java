@@ -41,4 +41,5 @@ public interface ConfigurationCache {
     void updateConfiguration(ConfigurationBase configuration);
     
     Properties getAllProperties();
+    
 }
