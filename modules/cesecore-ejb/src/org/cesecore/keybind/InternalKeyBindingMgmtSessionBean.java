@@ -220,7 +220,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        return new InternalKeyBindingInfo(internalKeyBindingDataSession.getInternalKeyBinding(id));
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(id);
+        if (internalKeyBinding==null) {
+            return null;
+        }
+        return new InternalKeyBindingInfo(internalKeyBinding);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
