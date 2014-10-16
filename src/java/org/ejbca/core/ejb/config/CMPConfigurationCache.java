@@ -96,6 +96,6 @@ public final class CMPConfigurationCache implements ConfigurationCache {
 
     @Override
     public Properties getAllProperties() {
-        return ( cmpconfigurationCache).getAsProperties();
+        return cmpconfigurationCache.getAsProperties();
     }
 }
