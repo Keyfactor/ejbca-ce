@@ -79,9 +79,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final String TRUE = "true";
-    public static final String FALSE = "false";
-
     // protected fields.
     public static final String CATYPE = "catype";
     protected static final String SUBJECTDN = "subjectdn";
@@ -509,20 +506,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return ret;
     }
 
-    private boolean getBoolean(String key, boolean defaultValue) {
-        final Object temp = data.get(key);
-        if (temp != null && temp instanceof Boolean) {
-            return ((Boolean) temp).booleanValue();
-        }
-        return defaultValue;
-    }
-
     protected boolean getFinishUser() {
         return getBoolean(FINISHUSER, true);
     }
 
     private void setFinishUser(boolean finishuser) {
-        data.put(FINISHUSER, Boolean.valueOf(finishuser));
+        putBoolean(FINISHUSER, finishuser);
     }
 
     protected boolean getIncludeInHealthCheck() {
@@ -530,7 +519,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     protected void setIncludeInHealthCheck(boolean includeInHealthCheck) {
-        data.put(INCLUDEINHEALTHCHECK, Boolean.valueOf(includeInHealthCheck));
+        putBoolean(INCLUDEINHEALTHCHECK, includeInHealthCheck);
     }
 
     public boolean isDoEnforceUniquePublicKeys() {
@@ -538,7 +527,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
-        data.put(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, Boolean.valueOf(doEnforceUniquePublicKeys));
+        putBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, doEnforceUniquePublicKeys);
     }
 
     public boolean isDoEnforceUniqueDistinguishedName() {
@@ -546,7 +535,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setDoEnforceUniqueDistinguishedName(boolean doEnforceUniqueDistinguishedName) {
-        data.put(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, Boolean.valueOf(doEnforceUniqueDistinguishedName));
+        putBoolean(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, doEnforceUniqueDistinguishedName);
     }
 
     public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
@@ -554,7 +543,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSerialnumber) {
-        data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, Boolean.valueOf(doEnforceUniqueSubjectDNSerialnumber));
+        putBoolean(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, doEnforceUniqueSubjectDNSerialnumber);
     }
 
     /**
@@ -568,7 +557,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setUseCertReqHistory(boolean useCertReqHistory) {
-        data.put(USE_CERTREQ_HISTORY, Boolean.valueOf(useCertReqHistory));
+        putBoolean(USE_CERTREQ_HISTORY, useCertReqHistory);
     }
 
     /** whether users should be stored or not, default true as was the case before 3.10.x */
@@ -577,7 +566,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setUseUserStorage(boolean useUserStorage) {
-        data.put(USE_USER_STORAGE, Boolean.valueOf(useUserStorage));
+        putBoolean(USE_USER_STORAGE, useUserStorage);
     }
 
     /** whether issued certificates should be stored or not, default true as was the case before 3.10.x */
@@ -586,7 +575,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setUseCertificateStorage(boolean useCertificateStorage) {
-        data.put(USE_CERTIFICATE_STORAGE, Boolean.valueOf(useCertificateStorage));
+        putBoolean(USE_CERTIFICATE_STORAGE, useCertificateStorage);
     }
 
     /**

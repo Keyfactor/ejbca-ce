@@ -184,6 +184,20 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
         }
 	    return b.toString();
 	}
+	
+	// Helper methods for interacting with the stored data
+
+	/** @return the value for the specified key as a primitive (never null) boolean */
+    protected boolean getBoolean(final String key, final boolean defaultValue) {
+        final Boolean ret = (Boolean) data.get(key);
+        return (ret==null || !(ret instanceof Boolean) ? defaultValue : ret);
+    }
+
+    /** Set the value for the specified key as a primitive (never null) boolean */
+    protected void putBoolean(final String key, final boolean value) {
+        data.put(key, Boolean.valueOf(value));
+    }
+
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;

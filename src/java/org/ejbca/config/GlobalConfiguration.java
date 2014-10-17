@@ -177,8 +177,6 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
     
     private static final   String CTLOGS              = "ctlogs";
-    private static final   String PEERCONNECTORIN     = "peerconnectorin";
-    private static final   String PEERCONNECTOROUT    = "peerconnectorout";
 
     private static final   String LANGUAGEFILENAME      =  "languagefilename";
     private static final   String MAINFILENAME          =  "mainfilename";
@@ -192,10 +190,10 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        super();
 
        setEjbcaTitle(DEFAULTEJBCATITLE);
-       setEnableEndEntityProfileLimitations(true);
-       setEnableAuthenticatedUsersOnly(false);
-       setEnableKeyRecovery(false);
-       setIssueHardwareTokens(false);
+       setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
+       setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
+       setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
+       setIssueHardwareTokens(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
     }
     
     
@@ -385,17 +383,17 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     public   String getAvailableLanguagesAsString(){return (String) data.get(AVAILABLELANGUAGES);}
     public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
-    public   boolean getEnableEndEntityProfileLimitations(){return ((Boolean) data.get(ENABLEEEPROFILELIMITATIONS)).booleanValue();}
-    public   void    setEnableEndEntityProfileLimitations(boolean value){ data.put(ENABLEEEPROFILELIMITATIONS, Boolean.valueOf(value));}
+    public boolean getEnableEndEntityProfileLimitations() { return getBoolean(ENABLEEEPROFILELIMITATIONS, true); }
+    public void setEnableEndEntityProfileLimitations(final boolean value) { putBoolean(ENABLEEEPROFILELIMITATIONS, value); }
 
-    public   boolean getEnableAuthenticatedUsersOnly(){return ((Boolean) data.get(ENABLEAUTHENTICATEDUSERSONLY)).booleanValue();}
-    public   void    setEnableAuthenticatedUsersOnly(boolean value){ data.put(ENABLEAUTHENTICATEDUSERSONLY, Boolean.valueOf(value));}
+    public boolean getEnableAuthenticatedUsersOnly() { return getBoolean(ENABLEAUTHENTICATEDUSERSONLY, false);}
+    public void setEnableAuthenticatedUsersOnly(final boolean value) { putBoolean(ENABLEAUTHENTICATEDUSERSONLY, value);}
 
-    public   boolean getEnableKeyRecovery(){return ((Boolean) data.get(ENABLEKEYRECOVERY)).booleanValue();}
-    public   void    setEnableKeyRecovery(boolean value){ data.put(ENABLEKEYRECOVERY, Boolean.valueOf(value));}
+    public boolean getEnableKeyRecovery() { return getBoolean(ENABLEKEYRECOVERY, false); }
+    public void setEnableKeyRecovery(final boolean value) { putBoolean(ENABLEKEYRECOVERY, value);}
 
-    public   boolean getIssueHardwareTokens(){return ((Boolean) data.get(ISSUEHARDWARETOKENS)).booleanValue();}
-    public   void    setIssueHardwareTokens(boolean value){ data.put(ISSUEHARDWARETOKENS, Boolean.valueOf(value));}
+    public boolean getIssueHardwareTokens() { return getBoolean(ISSUEHARDWARETOKENS, false);}
+    public void setIssueHardwareTokens(final boolean value) { putBoolean(ISSUEHARDWARETOKENS, value);}
 
    /**
     * @return the number of required approvals to access sensitive hard token data (default 0)
@@ -432,21 +430,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
      	data.put(HARDTOKENENCRYPTCA, Integer.valueOf(hardTokenEncryptCA));
      }
     
-    /**
-     * @return true of email notification of requested approvals should be sent (default false)
-     */
-     public boolean getUseApprovalNotifications(){
-     	Object value = data.get(USEAPPROVALNOTIFICATIONS);
-         if(value == null){
-         	return false;
-         }
-     	
-     	return ((Boolean) value).booleanValue();
-     }
-     
-     public   void    setUseApprovalNotifications(boolean useApprovalNotifications){ 
-     	data.put(USEAPPROVALNOTIFICATIONS, Boolean.valueOf(useApprovalNotifications));
-     }   
+    /** @return true of email notification of requested approvals should be sent (default false) */
+     public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
+     public void setUseApprovalNotifications(final boolean value) { putBoolean(USEAPPROVALNOTIFICATIONS, value); }
     
      /**
       * Returns the email address to the administrators that should recieve notification emails
@@ -513,16 +499,11 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     	   String ret = (String) data.get(AUTOENROLL_CONNECTIONPWD);
    		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONPWD : StringTools.deobfuscateIf(ret));
        }
-       public void setAutoEnrollSSLConnection(boolean use) { data.put(AUTOENROLL_SSLCONNECTION, Boolean.valueOf(use)); }
-       public boolean getAutoEnrollSSLConnection() {
-    	   Boolean ret = (Boolean) data.get(AUTOENROLL_SSLCONNECTION);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_SSLCONNECTION : ret);
-       }
-       public void setAutoEnrollUse(boolean use) { data.put(AUTOENROLL_USE, Boolean.valueOf(use)); }
-       public boolean getAutoEnrollUse() {
-    	   Boolean ret = (Boolean) data.get(AUTOENROLL_USE);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_USE : ret);
-       }
+       public void setAutoEnrollSSLConnection(final boolean value) { putBoolean(AUTOENROLL_SSLCONNECTION, value); }
+       public boolean getAutoEnrollSSLConnection() { return getBoolean(AUTOENROLL_SSLCONNECTION, AUTOENROLL_DEFAULT_SSLCONNECTION); }
+
+       public void setAutoEnrollUse(final boolean value) { putBoolean(AUTOENROLL_USE, value); }
+       public boolean getAutoEnrollUse() { return getBoolean(AUTOENROLL_USE, AUTOENROLL_DEFAULT_USE); }
        
        public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
        @SuppressWarnings("unchecked")
@@ -542,17 +523,11 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
            return (ret == null ? NODESINCLUSTER_DEFAULT : ret);
        }
 
-       public void setEnableCommandLineInterface(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACE, Boolean.valueOf(enable)); }
-       public boolean getEnableCommandLineInterface() {
-    	   final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACE);
-    	   return (ret == null ? DEFAULTENABLECOMMANDLINEINTERFACE : ret);
-       }
+       public void setEnableCommandLineInterface(final boolean value) { putBoolean(ENABLECOMMANDLINEINTERFACE, value); }
+       public boolean getEnableCommandLineInterface() { return getBoolean(ENABLECOMMANDLINEINTERFACE, DEFAULTENABLECOMMANDLINEINTERFACE); }
        
-       public void setEnableCommandLineInterfaceDefaultUser(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.valueOf(enable)); }
-       public boolean getEnableCommandLineInterfaceDefaultUser() {
-           final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER);
-           return(ret == null ? DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER : ret);
-       }
+       public void setEnableCommandLineInterfaceDefaultUser(final boolean value) { putBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, value); }
+       public boolean getEnableCommandLineInterfaceDefaultUser() { return getBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER); }
        
     @SuppressWarnings("unchecked")
     public Map<Integer,CTLogInfo> getCTLogs() {
@@ -576,20 +551,6 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
         setCTLogs(logs);
     }
 
-    public boolean isPeerConnectorIncomingEnabled() { return getBoolean(PEERCONNECTORIN, false); }
-    public void setPeerConnectorIncomingEnabled(final boolean enabledIncoming) { putBoolean(PEERCONNECTORIN, enabledIncoming); }
-    public boolean isPeerConnectorOutgoingEnabled() { return getBoolean(PEERCONNECTOROUT, true); }
-    public void setPeerConnectorOutgoingEnabled(boolean enabledOutgoing) { putBoolean(PEERCONNECTOROUT, enabledOutgoing); }
-   
-    
-    private boolean getBoolean(final String key, final boolean defaultValue) {
-        final Boolean ret = (Boolean) data.get(key);
-        return (ret==null ? defaultValue : ret);
-    }
-    private void putBoolean(final String key, final boolean value) {
-        data.put(key, Boolean.valueOf(value));
-    }
-
     @Override
     public float getLatestVersion(){
        return LATEST_VERSION;
@@ -608,17 +569,12 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     		if(data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER) == null) {
     		        data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.TRUE);
     		}
-    		
     		data.put(VERSION,  Float.valueOf(LATEST_VERSION));    		
     	}
     }
-
-
-  
 
     @Override
     public String getConfigurationId() {
         return GLOBAL_CONFIGURATION_ID;
     }
-
 }
