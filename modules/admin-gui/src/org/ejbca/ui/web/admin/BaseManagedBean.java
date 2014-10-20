@@ -15,12 +15,16 @@ package org.ejbca.ui.web.admin;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -99,5 +103,15 @@ public abstract class BaseManagedBean implements Serializable{
 		}
 		publicConstantCache.put(classObject.getName(), result);
 		return result;
+	}
+
+	/** Sort the provided list by the SelectItems' labels. */
+	protected void sortSelectItemsByLabel(List<SelectItem> selectItems) {
+	    Collections.sort(selectItems, new Comparator<SelectItem>() {
+            @Override
+            public int compare(final SelectItem item1, final SelectItem item2) {
+                return item1.getLabel().compareTo(item2.getLabel());
+            }
+	    });
 	}
 }
