@@ -926,6 +926,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentKeyPairAlias = null;
             currentNextKeyPairAlias = null;
         }
+        sortSelectItemsByLabel(availableKeyPairAliases);
         return availableKeyPairAliases;
     }
 
