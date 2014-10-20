@@ -78,10 +78,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     
     @Override
-    public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
-        if (!isOcspSigningCertificate(certificate)) {
-            throw new CertificateImportException();
-        }
+    public void assertCertificateCompatability(final Certificate certificate) throws CertificateImportException {
+        assertCertificateCompatabilityInternal(certificate);
     }
 
     public boolean getNonExistingGood() {
@@ -137,14 +135,21 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         setProperty(PROPERTY_MAX_AGE, Long.valueOf(maxAge));
     }
 
-    public static boolean isOcspSigningCertificate(Certificate certificate) {
-        if (certificate == null) {
-            log.debug("No certificate provided.");
+    public static boolean isOcspSigningCertificate(final Certificate certificate) {
+        try {
+            assertCertificateCompatabilityInternal(certificate);
+        } catch (CertificateImportException e) {
             return false;
         }
+        return true;
+    }
+
+    private static void assertCertificateCompatabilityInternal(final Certificate certificate) throws CertificateImportException {
+        if (certificate == null) {
+            throw new CertificateImportException("No certificate provided.");
+        }
         if (!(certificate instanceof X509Certificate)) {
-            log.debug("Only X509 supported.");
-            return false;
+            throw new CertificateImportException("Only X509 certificates are supported for OCSP.");
         }
         try {
             final X509Certificate x509Certificate = (X509Certificate) certificate;
@@ -159,25 +164,20 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
                 }
             }
             if (x509Certificate.getExtendedKeyUsage() == null) {
-                log.debug("No EKU to verify.");
-                return false;
+                throw new CertificateImportException("No Extended Key Usage present in certificate.");
             }
             for (String extendedKeyUsage : x509Certificate.getExtendedKeyUsage()) {
                 log.debug("EKU: " + extendedKeyUsage + " (" +
                         ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
             }
             if (!x509Certificate.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_OCSPSigning.getId())) {
-                log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");
-                return false;
+                throw new CertificateImportException("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");
             }
             if (!x509Certificate.getKeyUsage()[0] && !x509Certificate.getKeyUsage()[1] ) {
-                log.debug("Key Usage digitalSignature is required (nonRepudiation would also be accepted).");
-                return false;
+                throw new CertificateImportException("Key Usage digitalSignature is required (nonRepudiation would also be accepted).");
             }
         } catch (CertificateParsingException e) {
-            log.debug(e.getMessage());
-            return false;
+            throw new CertificateImportException(e.getMessage(), e);
         }
-        return true;
     }
 }
