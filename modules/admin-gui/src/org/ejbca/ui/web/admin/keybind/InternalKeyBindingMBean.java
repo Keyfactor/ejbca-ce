@@ -38,6 +38,7 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -287,11 +288,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ret.add(new SelectItem("", "None"));
         //Create a map so that we can exclude bounded CAs. 
+        String currentValue = getDefaultResponderTarget();
+        boolean currentValueMatched = false;
         Set<String> internalkeybindingSet = new HashSet<String>();
         for (final GuiInfo guiInfo : (List<GuiInfo>) getInternalKeyBindingGuiList().getWrappedData()) {
-            if (guiInfo.getStatus().equals("enabled")) {
-                internalkeybindingSet.add(guiInfo.getCertificateSubjectDn());
-                ret.add(new SelectItem(guiInfo.getCertificateSubjectDn(), "OCSPKeyBinding: " + guiInfo.getName()));
+            if (guiInfo.getStatus().equalsIgnoreCase("active")) {
+                internalkeybindingSet.add(guiInfo.getCertificateIssuerDn());
+                ret.add(new SelectItem(guiInfo.getCertificateIssuerDn(), "OCSPKeyBinding: " + guiInfo.getName()));
+                if (currentValue.equals(guiInfo.getCertificateIssuerDn())) {
+                    currentValueMatched = true;
+                }
             }
         }
         for (CAInfo caInfo : caSession.getAuthorizedCaInfos(authenticationToken)) {
@@ -299,13 +305,19 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 if (!internalkeybindingSet.contains(caInfo.getSubjectDN())) {
                     //Skip CAs already represented by an internal keybinding
                     ret.add(new SelectItem(caInfo.getSubjectDN(), "CA: " + caInfo.getName()));
+                    if (currentValue.equals(caInfo.getSubjectDN())) {
+                        currentValueMatched = true;
+                    }
                 }
             }
+        }
+        if (currentValueMatched == false && !StringUtils.isEmpty(currentValue)) {
+            ret.add(new SelectItem(currentValue, "Unmatched DN: " + currentValue));
         }
 
         return ret;
     }
-    
+
     public void saveDefaultResponder() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -323,10 +335,13 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         String reference = configuration.getOcspDefaultResponderReference();
         if(reference == null) {
-            return "none";
+            this.defaultResponderTarget = "none";
         } else {
-            return reference;
+            
+            this.defaultResponderTarget = reference;
         }
+        
+        return this.defaultResponderTarget;
     }
     
     public void setDefaultResponderTarget(String defaultResponderTarget) {
