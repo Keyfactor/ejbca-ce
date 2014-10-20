@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditDevicesConfig;
 import org.cesecore.audit.enums.EventStatus;
@@ -301,10 +302,11 @@ public class StartServicesServlet extends HttpServlet {
         // Check if there the default responder has been set. If not, try setting it using the old value.
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (globalConfiguration.getOcspDefaultResponderReference() == null) {
+        if (StringUtils.isEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
             globalConfiguration.setOcspDefaultResponderReference(OcspConfiguration.getDefaultResponderId());
             try {
                 globalConfigurationSession.saveConfiguration(admin, globalConfiguration);
+                globalConfigurationSession.flushConfigurationCache(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(
                         "An always allow token was not allowed access. Likely cause is that the database hasn't been configured.");
