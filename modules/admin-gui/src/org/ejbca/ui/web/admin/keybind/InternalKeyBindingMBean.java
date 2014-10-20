@@ -350,18 +350,15 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
             flushListCaches();
         } catch (IOException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
         } catch (CertificateImportException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
         } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
         }
     }
-    
-
 
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
-    @SuppressWarnings("rawtypes")
     public ListDataModel getInternalKeyBindingGuiList() {
         if (internalKeyBindingGuiList == null) {
             // Get the current type of tokens we operate on
