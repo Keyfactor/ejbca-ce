@@ -13,6 +13,7 @@
 package org.cesecore.config;
 
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.util.CertTools;
 
 /**
  * @version $Id$
@@ -27,7 +28,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase {
     private static final String DEFAULT_OCSP_RESPONDER_REFERENCE = "defaultOcspResponderReference";
     
     public String getOcspDefaultResponderReference() {
-        return (String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE);
+        return CertTools.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
     }
     
     public void setOcspDefaultResponderReference(String reference) {
