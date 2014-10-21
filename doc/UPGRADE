@@ -50,13 +50,16 @@ from EJBCA home directory:
 NOTE: If you are using External RA, please note that the name of the scep.properties file has been changed to 
 scepra.properties 
 
-From EJBCA 6.2.x to EJBCA 6.2.x
+From EJBCA 6.2.x to EJBCA 6.2.4
 -------------------------------
-See the procedure, and notes, for upgrading from 6.0.x to 6.0.x.
+The configuration from for the OCSP default responder has been moved from va.properties into the global configuration, into a new cache with ID=3. 
+The old value will automatically be committed into the database by the first upgraded node. If va.properties didn't point to a subject DN matching 
+an existent CA or OCSP keybinding, the old value will be retained until either a CA or keybinding matching it has been created or a valid CA or 
+keybinding has been selected in the GUI. 
 
-From EJBCA 6.1.x to EJBCA 6.2.x
+From EJBCA 6.1.x up to EJBCA 6.2.3
 -------------------------------
-There are no database upgrades to perform to 6.2.x
+There are no database upgrades to perform to 6.2.3
 
 From EJBCA 6.1.x to EJBCA 6.1.x
 -------------------------------
