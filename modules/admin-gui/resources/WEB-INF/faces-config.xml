@@ -16,7 +16,7 @@
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <managed-bean-name>approvalActionSession</managed-bean-name>
+    <managed-bean-name>approvalActionManagedBean</managed-bean-name>
     <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionManagedBean</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
