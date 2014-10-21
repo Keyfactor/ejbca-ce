@@ -165,7 +165,7 @@ public class ApprovalDataVOView implements Serializable {
         }
         FacesContext context = FacesContext.getCurrentInstance();
         Application app = context.getApplication();
-        ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(context, "#{approvalActionSession}",
+        ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(context, "#{approvalActionManagedBean}",
                 ApproveActionManagedBean.class);
         return (String) value.getStatusText().get(Integer.valueOf(data.getStatus()));
     }

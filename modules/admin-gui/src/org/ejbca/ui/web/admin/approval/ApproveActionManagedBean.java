@@ -50,13 +50,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
 	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private String comment = "";
-	private ApprovalDataVOView approveRequestData;
+	private ApprovalDataVOView approveRequestData = new ApprovalDataVOView();      
 	private HashMap<Integer, String> statustext = null;
-
-	public ApproveActionManagedBean() {
-		super();		
-		approveRequestData = new ApprovalDataVOView();         
-	}
 
 	public  HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
