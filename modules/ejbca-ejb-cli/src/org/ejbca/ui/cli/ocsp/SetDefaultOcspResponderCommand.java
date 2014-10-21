@@ -121,6 +121,11 @@ public class SetDefaultOcspResponderCommand extends EjbcaCliUserCommandBase {
             stringBuilder.append(formatTable(1, new String[] { "Keybinding Name:", "Issuer DN:" }, ikbContents));
             stringBuilder.append("\n");
         }
+        GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(GlobalConfigurationSessionRemote.class);
+        GlobalOcspConfiguration conf = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        stringBuilder.append("The current default responder is: " + conf.getOcspDefaultResponderReference());
         return stringBuilder.toString();
     }
 
