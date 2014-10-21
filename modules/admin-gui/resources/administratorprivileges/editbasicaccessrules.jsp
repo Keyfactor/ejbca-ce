@@ -220,7 +220,7 @@ function checkallfields(){
 
 <div align="center">
 
-	<h2><h:outputText value="#{web.text.EDITACCESSRULES}" /></h2>
+	<h2><h:outputText value="#{web.text.EDITACCESSRULES}" /><%= ejbcawebbean.getHelpReference("/userguide.html#Pre-defined%20Role%20Templates") %></h2>
 	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}" /></h3>
 
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
