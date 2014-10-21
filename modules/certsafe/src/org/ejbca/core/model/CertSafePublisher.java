@@ -123,7 +123,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         certificateStoreSession = localHelper.getCertificateStoreSession();
 
         // Extract system properties
-        urlstr = properties.getProperty(certSafeUrlPropertyName);
+        urlstr = (properties.getProperty(certSafeUrlPropertyName)).trim();
         authKeyBindingName = properties.getProperty(certSafeAuthKeyBindingPropertyName);
         timeout = properties.containsKey(certSafeConnectionTimeOutPropertyName)? 
                         Integer.parseInt(properties.getProperty(certSafeConnectionTimeOutPropertyName)) : 
@@ -333,17 +333,26 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             throw new PublisherConnectionException(msg);
         }
         
+        URL uurl = null;
         try {
-            String protocol = getURL().getProtocol();
-            if(!protocol.equalsIgnoreCase("https")) {
-                String msg = "The URL must be a HTTPS address";
-                log.info(msg);
-                throw new PublisherConnectionException(msg);
-            }
-        } catch (MalformedURLException e1) {
+            uurl = getURL();
+        } catch (MalformedURLException e) {
             String msg = "Could not create a URL object from the value of " + certSafeUrlPropertyName + " property: " + urlstr;
             log.info(msg);
-            log.info(e1.getLocalizedMessage(), e1);
+            log.info(e);
+            throw new PublisherConnectionException(msg);
+        }
+        
+        String protocol = uurl.getProtocol();
+        if(!protocol.equalsIgnoreCase("https")) {
+            String msg = "The URL must be a HTTPS address";
+            log.info(msg);
+            throw new PublisherConnectionException(msg);
+        }
+        
+        if(isEmptyString(uurl.getHost())) {
+            String msg = "The URL is missing the hostname";
+            log.info(msg);
             throw new PublisherConnectionException(msg);
         }
     }
