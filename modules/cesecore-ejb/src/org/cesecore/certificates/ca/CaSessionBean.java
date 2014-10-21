@@ -388,31 +388,44 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return CAData.findAllCaIds(entityManager);
     }
 
-    @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<String> getActiveCANames(final AuthenticationToken admin) {
         final ArrayList<String> returnval = new ArrayList<String>();
-        Query query =  entityManager.createQuery("SELECT a FROM CAData a WHERE a.status=:status");
-        query.setParameter("status", CAConstants.CA_ACTIVE);
-        for (CAData ca : (List<CAData>) query.getResultList()) {
-            if (authorizedToCA(admin, ca.getCaId())) {
-                returnval.add(ca.getName());
+        for (int caiId : getAllCaIds()) {
+            if (authorizedToCA(admin, caiId)) {
+                CAInfo caInfo;
+                try {
+                    caInfo = getCAInfoInternal(caiId);
+                    if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+                        returnval.add(caInfo.getName());
+                    }
+                } catch (CADoesntExistsException e) {
+                    //NOPMD: This can never happen
+                }
             }
         }
         return returnval;
     }
-    
-    @SuppressWarnings("unchecked")
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<Integer, String> getActiveCAIdToNameMap() {
+    public Map<Integer, String> getActiveCAIdToNameMap(final AuthenticationToken authenticationToken) {
         final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        Query query =  entityManager.createQuery("SELECT a FROM CAData a WHERE a.status=:status");
-        query.setParameter("status", CAConstants.CA_ACTIVE);
-        for (CAData ca : (List<CAData>) query.getResultList()) {
-            returnval.put(ca.getCaId(), ca.getName());
+        for (int caiId : getAllCaIds()) {
+            if (authorizedToCA(authenticationToken, caiId)) {
+                CAInfo caInfo;
+                try {
+                    caInfo = getCAInfoInternal(caiId);
+                    if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+                        returnval.put(caInfo.getCAId(), caInfo.getName());
+                    }
+                } catch (CADoesntExistsException e) {
+                    //NOPMD: This can never happen
+                }
+            }
         }
+     
         return returnval;
     }
     

@@ -270,7 +270,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESSBASE.resource())) {
             caAccessRules.add(StandardRules.CAACCESSBASE.resource());
         }
-        for (int caId : getAuthorizedCAIds(authenticationToken)) {
+        for (int caId : caSession.getAuthorizedCaIds(authenticationToken)) {
             caAccessRules.add(StandardRules.CAACCESS.resource() + caId);
         }
         accessrules.put("CAACCESSRULES", caAccessRules);
@@ -395,25 +395,6 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             log.trace("<existsEndEntityProfileInRules(" + profileid + "): " + count);
         }
         return count > 0;
-    }
-    
-    /**
-     * Method used to return an ArrayList of Integers indicating which CAids an administrator is authorized to access.
-     * 
-     * @return Collection of Integer
-     */
-    private Collection<Integer> getAuthorizedCAIds(AuthenticationToken admin) {
-        List<Integer> returnval = new ArrayList<Integer>();
-        for (Integer caid : caSession.getAllCaIds()) {
-            if (accessControlSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid.toString())) {
-                returnval.add(caid);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Admin not authorized to CA: " + caid);
-                }
-            }
-        }
-        return returnval;
     }
 
 }
