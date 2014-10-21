@@ -280,7 +280,7 @@ public abstract class CommandBase implements CliCommandPlugin {
 
     protected abstract Logger getLogger();
 
-    public static String formatTable(int tabs, String[] titles, List<String[]> contents) {
+    protected static String formatTable(int tabs, String[] titles, List<String[]> contents) {
         int[] offset = new int[titles.length];
         //Validate contents and figure out tab size per column
         for (int i = 0; i < titles.length; i++) {
