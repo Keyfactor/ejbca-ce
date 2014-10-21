@@ -255,29 +255,30 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                             AccessRulesConstants.REGULAR_APPROVECAACTION, null);
                     throw new AuthorizationDeniedException(msg);
                 }
-            }
-            if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY)) {
-                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_APPROVEENDENTITY,
-                        null);
-                throw new AuthorizationDeniedException(msg);
-            }
-            GlobalConfiguration globalConfiguration =  (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
-                        + AccessRulesConstants.APPROVAL_RIGHTS)) {
-                    final String msg = intres
-                            .getLocalizedMessage("authorization.notuathorizedtoresource",
-                                    AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
-                                            + AccessRulesConstants.APPROVAL_RIGHTS, null);
+            } else {
+                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY)) {
+                    final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
+                            AccessRulesConstants.REGULAR_APPROVEENDENTITY, null);
                     throw new AuthorizationDeniedException(msg);
                 }
-            }
+                GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                        .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+                    if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
+                            + AccessRulesConstants.APPROVAL_RIGHTS)) {
+                        final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
+                                AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid() + AccessRulesConstants.APPROVAL_RIGHTS,
+                                null);
+                        throw new AuthorizationDeniedException(msg);
+                    }
+                }
 
-            if (retval.getCaid() != ApprovalDataVO.ANY_CA) {
-                if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + retval.getCaid())) {
-                    final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                            StandardRules.CAACCESS.resource() + retval.getCaid(), null);
-                    throw new AuthorizationDeniedException(msg);
+                if (retval.getCaid() != ApprovalDataVO.ANY_CA) {
+                    if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + retval.getCaid())) {
+                        final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource()
+                                + retval.getCaid(), null);
+                        throw new AuthorizationDeniedException(msg);
+                    }
                 }
             }
         } else {
