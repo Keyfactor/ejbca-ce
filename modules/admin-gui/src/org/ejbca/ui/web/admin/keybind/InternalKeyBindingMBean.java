@@ -286,7 +286,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<String,String>*/> getDefaultResponerTargets() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem("", "None"));
+        ret.add(new SelectItem("", super.getEjbcaWebBean().getText("INTERNALKEYBINDING_OCSPKEYBINDING_NODEFAULTRESPONDER")));
         //Create a map so that we can exclude bounded CAs. 
         String currentValue = getDefaultResponderTarget();
         boolean currentValueMatched = false;
