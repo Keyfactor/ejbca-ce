@@ -342,11 +342,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         KeyStore ks = null;
 
         if (createJKS) {
-            log.error("aaa");
             ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
         } else {
             ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
-            log.error("bbb");
         }
 
         storeKeyStore(ks, username, password, createJKS, createPEM);
@@ -410,8 +408,6 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         boolean createJKS = (tokentype == SecConst.TOKEN_SOFT_JKS);
         boolean createPEM = (tokentype == SecConst.TOKEN_SOFT_PEM);
         boolean createP12 = (tokentype == SecConst.TOKEN_SOFT_P12);
-        log.error("ggg" + tokentype);
-
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
