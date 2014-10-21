@@ -297,8 +297,8 @@ issuing the certificates for the OCSP responder, as well as for certificate prof
 For manual re-keying the GET request should contain the parameters "renewSigner" and "password".
 The "renewSigner" parameter can be used to specify which OCSP keys should be renewed.
 It can be either set to "all", which will renew all of the OCSP signer keys, or to a specific OCSP responder
-certificate subject DN (unlike the default responder options, the parameter specified here should be the OCSP's subject
-DN, not the issuer's).
+certificate subject DN. The parameter specified here should be the OCSP's subject
+DN, not the issuer's.
 Password should be configured in the ocsp.properties file.
 If the password is not set, manual re-keying will not be enabled.
 </p><p>

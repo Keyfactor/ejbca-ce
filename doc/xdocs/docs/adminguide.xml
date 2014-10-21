@@ -1282,7 +1282,7 @@ The default certificate profiles for CAs includes the key usage 'Digital Signatu
 You can configure the CA which will generate responses when no real CA can be found from the request by choosing the default responder from 
 the dropdown menu in the OCSP Internal Keybindings page in the GUI, or with the CLI command:</p>
 <source>
-bin/ejbca.sh keybind setdefaultresponder &lt;name&gt;
+bin/ejbca.sh keybind setdefaultresponder &lt;Subject DN&gt;
 </source>
 <p>
 The chosen value can be any CA or OCSP Key Binding. This is used to generate 'unknown' responses when a request is
