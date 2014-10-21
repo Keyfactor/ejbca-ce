@@ -40,18 +40,18 @@ function viewcert(link){
 <h2 align="center"><h:outputText value="#{web.text.APPROVEACTION}"/></h2>
 <h:form>
   <h:inputHidden id="approveActionID" value="#{approvalActionRequest.uniqueId}"/>
-  <f:attribute name="windowWidth" value="#{approvalActionSession.windowWidth}"/>
+  <f:attribute name="windowWidth" value="#{approvalActionManagedBean.windowWidth}"/>
 
    <h3 align="center">
-     <h:outputText value="#{approvalActionSession.approveRequestData.approveActionName}"/>
+     <h:outputText value="#{approvalActionManagedBean.approveRequestData.approveActionName}"/>
      <br /><h:messages  layout="table" errorClass="alert"/><br />
-     <h:outputText value="#{web.text.CURRENTSTATUS}"/> <h:outputText value=" : "/> <h:outputText value="#{approvalActionSession.approveRequestData.status}"/><br />     
+     <h:outputText value="#{web.text.CURRENTSTATUS}"/> <h:outputText value=" : "/> <h:outputText value="#{approvalActionManagedBean.approveRequestData.status}"/><br />     
    </h3>
 
    	<table border="0" cellpadding="5" width="100%">
    	   	<tr id="Row0">
    			<td><h:outputText value="#{web.text.REQUESTDATE}"/></td>
-   			<td><h:outputText value="#{approvalActionSession.approveRequestData.requestDate}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.requestDate}"/></td>
    		</tr>
    	   	<tr id="Row1">
    			<td><h:outputText value="#{web.text.EXPIREDATE}"/></td>
@@ -59,27 +59,27 @@ function viewcert(link){
    		</tr>
    	   	<tr id="Row0">
    			<td><h:outputText value="#{web.text.REQUESTINGADMIN}"/></td>
-   			<td><h:outputText value="#{approvalActionSession.approveRequestData.requestAdminName}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.requestAdminName}"/></td>
    		</tr>
    	   	<tr id="Row1">
    			<td><h:outputText value="#{web.text.RELATEDCA}"/></td>
-   			<td><h:outputText value="#{approvalActionSession.approveRequestData.caName}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.caName}"/></td>
    		</tr>
    	   	<tr id="Row0">
    			<td><h:outputText value="#{web.text.RELATEDEEPROFILE}"/></td>
-   			<td><h:outputText value="#{approvalActionSession.approveRequestData.endEntityProfileName}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.endEntityProfileName}"/></td>
    		</tr>
    		<tr id="Row1">
    			<td><h:outputText value="#{web.text.REMAININGAPPROVALS}"/></td>
-   			<td><h:outputText value="#{approvalActionSession.approveRequestData.remainingApprovals}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.remainingApprovals}"/></td>
    		</tr>
    	</table>
 
    
 
    <f:verbatim>
-    <f:subview id="showcmp" rendered="#{approvalActionSession.approvalRequestComparable}">
-      <h:dataTable value="#{approvalActionSession.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%">
+    <f:subview id="showcmp" rendered="#{approvalActionManagedBean.approvalRequestComparable}">
+      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%">
         <h:column>
           <f:facet name="header">
             <h:outputText value="#{web.text.ORIGINALACTIONDATA}"/>
@@ -94,9 +94,9 @@ function viewcert(link){
         </h:column>
       </h:dataTable>
      </f:subview>
-     <f:subview id="shownoncmp" rendered="#{!approvalActionSession.approvalRequestComparable and !approvalActionSession.approveRequestData.containingLink}">
+     <f:subview id="shownoncmp" rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionSession.approveRequestData.containingLink}">
       <p align="center">
-      <h:dataTable value="#{approvalActionSession.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%">
+      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%">
         <h:column>
           <f:facet name="header">
             <h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
@@ -106,9 +106,9 @@ function viewcert(link){
       </h:dataTable>
       </p>
      </f:subview>
-     <f:subview id="shownoncmpwithlinks" rendered="#{!approvalActionSession.approvalRequestComparable and approvalActionSession.approveRequestData.containingLink}">
+     <f:subview id="shownoncmpwithlinks" rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionSession.approveRequestData.containingLink}">
       <p align="center">
-      <h:dataTable value="#{approvalActionSession.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%">
+      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%">
         <h:column>
           <f:facet name="header">
             <h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
@@ -116,7 +116,7 @@ function viewcert(link){
           <h:outputText value="#{singleTextCompareRow.newvalue}"/>
         </h:column>
       </h:dataTable>
-      <h:dataTable value="#{approvalActionSession.approveRequestData.approvalDataLinks}" var="link"  width="100%">
+      <h:dataTable value="#{approvalActionManagedBean.approveRequestData.approvalDataLinks}" var="link"  width="100%">
         <h:column>
           <h:outputText value="#{link.preDescription}"/>
           <h:outputLink value="#{link.URI}" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
@@ -132,7 +132,7 @@ function viewcert(link){
 <br/>
     <h3 align="center"><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
  
-  <h:dataTable id="approvalTable" value="#{approvalActionSession.approvalViews}" var="approvalView" width="100%">
+  <h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%">
     <h:column>
       <f:facet name="header">
         <h:panelGroup>
@@ -165,15 +165,15 @@ function viewcert(link){
     </h:column>
   </h:dataTable>   
     <p align="center">
-    <f:subview id="shownonerow" rendered="#{!approvalActionSession.existsApprovals}">
+    <f:subview id="shownonerow" rendered="#{!approvalActionManagedBean.existsApprovals}">
       <h3 align="center"><h:outputText value="#{web.text.NONE}"/></h3>
     </f:subview>    
     <br /><br /><br />       
-      <f:subview id="showapprovebuttons" rendered="#{approvalActionSession.approvable}">
+      <f:subview id="showapprovebuttons" rendered="#{approvalActionManagedBean.approvable}">
         <h:outputText value="#{web.text.COMMENT}"/><h:outputText value=":"/> 
-        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionSession.comment}"/><br />
-        <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionSession.approve}" onclick="return confirmapprove()"/>
-        <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionSession.reject}" onclick="return confirmreject()"/>
+        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"/><br />
+        <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionManagedBean.approve}" onclick="return confirmapprove()"/>
+        <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionManagedBean.reject}" onclick="return confirmreject()"/>
        </f:subview>
       <h:commandButton  id="button" value="#{web.text.CLOSE}" onclick="self.close()"/>    
     </p>
@@ -182,7 +182,7 @@ function viewcert(link){
   <script language="javascript">
 <!--
 function resize(){
-  window.resizeTo(<h:outputText value="#{approvalActionSession.windowWidth}"/>,800);
+  window.resizeTo(<h:outputText value="#{approvalActionManagedBean.windowWidth}"/>,800);
 }
 function confirmapprove(){
   return confirm('<h:outputText value="#{web.text.AREYOUSUREAPPROVE}"/>');

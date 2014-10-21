@@ -34,7 +34,7 @@ public class ApproveActionRequestBean {
             if (param != null) {
                 uniqueId = Integer.parseInt(((HttpServletRequest) ctx.getExternalContext().getRequest()).getParameter("uniqueId"));
                 Application app = ctx.getApplication();
-                ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(ctx, "#{approvalActionSession}",
+                ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(ctx, "#{approvalActionManagedBean}",
                         ApproveActionManagedBean.class);
                 value.setUniqueId(uniqueId);
             }
