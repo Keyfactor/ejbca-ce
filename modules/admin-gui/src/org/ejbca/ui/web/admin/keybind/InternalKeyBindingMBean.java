@@ -302,7 +302,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
         for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
             if (caInfo.getCAType() == CAInfo.CATYPE_X509) {
-                if (!internalkeybindingSet.contains(caInfo.getSubjectDN())) {
+                //Checking actual certificate, because CA subject DN does not have to be CA certificate subject DN
+                if (!internalkeybindingSet.contains(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0))) {
                     //Skip CAs already represented by an internal keybinding
                     ret.add(new SelectItem(caInfo.getSubjectDN(), "CA: " + caInfo.getName()));
                     if (currentValue.equals(caInfo.getSubjectDN())) {
@@ -335,7 +336,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         String reference = configuration.getOcspDefaultResponderReference();
         if(reference == null) {
-            this.defaultResponderTarget = "none";
+            this.defaultResponderTarget = "";
         } else {
             
             this.defaultResponderTarget = reference;
