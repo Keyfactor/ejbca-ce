@@ -292,7 +292,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         boolean currentValueMatched = false;
         Set<String> internalkeybindingSet = new HashSet<String>();
         for (final GuiInfo guiInfo : (List<GuiInfo>) getInternalKeyBindingGuiList().getWrappedData()) {
-            if (guiInfo.getStatus().equalsIgnoreCase("active")) {
+            if (guiInfo.getStatus().equalsIgnoreCase(InternalKeyBindingStatus.ACTIVE.name())) {
                 internalkeybindingSet.add(guiInfo.getCertificateIssuerDn());
                 ret.add(new SelectItem(guiInfo.getCertificateIssuerDn(), "OCSPKeyBinding: " + guiInfo.getName()));
                 if (currentValue.equals(guiInfo.getCertificateIssuerDn())) {
@@ -300,7 +300,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 }
             }
         }
-        for (CAInfo caInfo : caSession.getAuthorizedCaInfos(authenticationToken)) {
+        for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
             if (caInfo.getCAType() == CAInfo.CATYPE_X509) {
                 if (!internalkeybindingSet.contains(caInfo.getSubjectDN())) {
                     //Skip CAs already represented by an internal keybinding
