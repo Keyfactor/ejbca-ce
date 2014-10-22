@@ -55,7 +55,7 @@ function viewcert(link){
    		</tr>
    	   	<tr id="Row1">
    			<td><h:outputText value="#{web.text.EXPIREDATE}"/></td>
-   			<td><h:outputText value="#{approvalActionSession.approveRequestData.expireDate}"/></td>
+   			<td><h:outputText value="#{approvalActionManagedBean.approveRequestData.expireDate}"/></td>
    		</tr>
    	   	<tr id="Row0">
    			<td><h:outputText value="#{web.text.REQUESTINGADMIN}"/></td>
@@ -94,7 +94,7 @@ function viewcert(link){
         </h:column>
       </h:dataTable>
      </f:subview>
-     <f:subview id="shownoncmp" rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionSession.approveRequestData.containingLink}">
+     <f:subview id="shownoncmp" rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}">
       <p align="center">
       <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%">
         <h:column>
@@ -106,7 +106,7 @@ function viewcert(link){
       </h:dataTable>
       </p>
      </f:subview>
-     <f:subview id="shownoncmpwithlinks" rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionSession.approveRequestData.containingLink}">
+     <f:subview id="shownoncmpwithlinks" rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
       <p align="center">
       <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%">
         <h:column>
