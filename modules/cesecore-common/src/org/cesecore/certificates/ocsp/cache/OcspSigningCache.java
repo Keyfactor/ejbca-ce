@@ -51,8 +51,6 @@ public enum OcspSigningCache {
     private volatile boolean loggedDefaultResponder = false;
     /** Flag to cache if we have logged the non-existence of a default responder */
     private volatile boolean loggedNoDefaultResponder = false;
-    private String defaultResponderSubjectDn;
-
     
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
@@ -83,7 +81,7 @@ public enum OcspSigningCache {
         }
     }
 
-    public void stagingCommit() {
+    public void stagingCommit(final String defaultResponderSubjectDn) {
         OcspSigningCacheEntry defaultResponderCacheEntry = null;
         for (final OcspSigningCacheEntry entry : staging.values()) {
             if (entry.getOcspSigningCertificate() == null) {
@@ -190,9 +188,5 @@ public enum OcspSigningCache {
         } catch (OperatorCreationException e) {
             throw new OcspFailureException(e);
         }
-    }
-
-    public void setDefaultResponderSubjectDn(String defaultResponderSubjectDn) {
-        this.defaultResponderSubjectDn = defaultResponderSubjectDn;
     }
 }

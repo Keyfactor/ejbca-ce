@@ -444,13 +444,19 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<CAInfo> getAuthorizedCaInfos(AuthenticationToken authenticationToken) {
+    public List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken) {
         List<CAInfo> result = new ArrayList<CAInfo>();
-        for (CAData ca : CAData.findAll(entityManager)) {
-            int status = ca.getStatus();
-            if (authorizedToCANoLogging(authenticationToken, ca.getCaId()) && status != CAConstants.CA_UNINITIALIZED
+        for (int caId : getAuthorizedCaIds(authenticationToken)) {
+            CAInfo caInfo;
+            try {
+                caInfo = getCAInfoInternal(caId);
+            } catch (CADoesntExistsException e) {
+                throw new IllegalStateException("CA with ID " + caId + " was not found in spite if just being retrieved.");
+            }
+            int status = caInfo.getStatus();
+            if ( status != CAConstants.CA_UNINITIALIZED
                     && status != CAConstants.CA_EXTERNAL && status != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
-                result.add(ca.getCA().getCAInfo());
+                result.add(caInfo);
             }
         }
         return result;

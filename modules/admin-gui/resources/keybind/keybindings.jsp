@@ -142,8 +142,8 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<h:commandButton action="#{internalKeyBindingMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
 		</h:panelGrid>
 	</h:form>
-	<h:form id="defaultResponder" enctype="multipart/form-data">
-		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}"/><%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %></h3>
+	<h:form id="defaultResponder" enctype="multipart/form-data" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
+		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER} "/><%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %></h3>
 		<h:panelGrid columns="3">
 			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}">
 				<f:selectItems value="#{internalKeyBindingMBean.defaultResponerTargets}"/>
