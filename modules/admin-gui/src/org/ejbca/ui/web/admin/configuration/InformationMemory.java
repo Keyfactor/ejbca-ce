@@ -223,7 +223,6 @@ public class InformationMemory implements Serializable {
         TreeMap<String, Integer> canames = new TreeMap<String, Integer>();
         Map<Integer, String> idtonamemap = this.casession.getActiveCAIdToNameMap(administrator);
         for (Integer id : idtonamemap.keySet()) {
-            //We may have access to inactive CAs. 
             canames.put(idtonamemap.get(id), id);
         }
         return canames;
