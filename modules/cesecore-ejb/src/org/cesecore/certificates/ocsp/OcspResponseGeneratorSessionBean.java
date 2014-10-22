@@ -245,7 +245,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // Populate OcspSigningCache
             try {
                 GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-                OcspSigningCache.INSTANCE.setDefaultResponderSubjectDn(ocspConfiguration.getOcspDefaultResponderReference());
                 OcspSigningCache.INSTANCE.stagingStart();
                 // Add all potential CA's as OCSP responders to the staging area
                 for (final Integer caId : caSession.getAllCaIds()) {
@@ -323,7 +322,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
                     }
                 }
-                OcspSigningCache.INSTANCE.stagingCommit();
+                OcspSigningCache.INSTANCE.stagingCommit(ocspConfiguration.getOcspDefaultResponderReference());
             } finally {
                 OcspSigningCache.INSTANCE.stagingRelease();
             }

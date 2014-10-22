@@ -27,6 +27,7 @@ import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.util.CertTools;
 
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean
@@ -50,7 +51,7 @@ public class OcspResponseGeneratorTestSessionBean implements
         try {
             OcspSigningCache.INSTANCE.stagingStart();
             OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
-            OcspSigningCache.INSTANCE.stagingCommit();
+            OcspSigningCache.INSTANCE.stagingCommit(CertTools.getIssuerDN(ocspSigningCertificate));
         } finally {
             OcspSigningCache.INSTANCE.stagingRelease();
         }

@@ -14,7 +14,9 @@ package org.ejbca.ui.cli.ocsp;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -94,11 +96,27 @@ public class SetDefaultOcspResponderCommand extends EjbcaCliUserCommandBase {
                 .append(" The value is saved in the form of a DN, either the subject DN of the CA or the issuer DN of the Internal Keybinding chosen as default responder.");
         stringBuilder
                 .append(" Note that input from this command is not vetted, so be sure to be exact in setting the value. DNs inputed in reverse order will be saved in standard order.");
-        stringBuilder.append(" If no default responder is to be set, simply enter an emptry string within quotes (\"\").\n\n");
+        stringBuilder.append(" If no default responder is to be set, simply enter an emptry string within quotes (\"\"). Local CAs with active OCSP Keybindings will not be listed.\n\n");
+        InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        List<String[]> ikbContents = new ArrayList<String[]>();
+        Set<String> knownDNs = new HashSet<String>();
+        for(InternalKeyBindingInfo info : internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAuthenticationToken(), OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            if(info.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
+                Certificate certificate = certificateStoreSession.findCertificateByFingerprint(info.getCertificateId());
+                ikbContents.add(new String[]{info.getName(), CertTools.getIssuerDN(certificate)});
+                knownDNs.add(CertTools.getIssuerDN(certificate));
+            }
+        }
+        if(!ikbContents.isEmpty()) {
+            stringBuilder.append(bold("The following Internal Keybindings are available as signers:\n"));
+            stringBuilder.append(formatTable(1, new String[] { "Keybinding Name:", "Issuer DN:" }, ikbContents));
+            stringBuilder.append("\n");
+        }
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         List<String[]> caContents = new ArrayList<String[]>();
-        for (CAInfo caInfo : caSession.getAuthorizedCaInfos(getAuthenticationToken())) {
-            if (caInfo.getCAType() == CAInfo.CATYPE_X509) {
+        for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(getAuthenticationToken())) {
+            if (caInfo.getCAType() == CAInfo.CATYPE_X509 && !knownDNs.contains(caInfo.getSubjectDN())) {
                 caContents.add(new String[] { caInfo.getName(), caInfo.getSubjectDN() });
             }
         }
@@ -107,20 +125,7 @@ public class SetDefaultOcspResponderCommand extends EjbcaCliUserCommandBase {
             stringBuilder.append(formatTable(1, new String[] { "CA Name:", "Subject DN:" }, caContents));
             stringBuilder.append("\n");
         }
-        InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        List<String[]> ikbContents = new ArrayList<String[]>();
-        for(InternalKeyBindingInfo info : internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAuthenticationToken(), OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
-            if(info.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
-                Certificate certificate = certificateStoreSession.findCertificateByFingerprint(info.getCertificateId());
-                ikbContents.add(new String[]{info.getName(), CertTools.getIssuerDN(certificate)});
-            }
-        }
-        if(!ikbContents.isEmpty()) {
-            stringBuilder.append(bold("The following Internal Keybindings are available as signers:\n"));
-            stringBuilder.append(formatTable(1, new String[] { "Keybinding Name:", "Issuer DN:" }, ikbContents));
-            stringBuilder.append("\n");
-        }
+       
         GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(GlobalConfigurationSessionRemote.class);
         GlobalOcspConfiguration conf = (GlobalOcspConfiguration) globalConfigurationSession

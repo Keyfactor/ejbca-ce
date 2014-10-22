@@ -105,7 +105,7 @@ public interface CaSession {
       * @param admin AuthenticationToken of admin
       * @return a List<Integer> of available CA id's
       */
-     List<CAInfo> getAuthorizedCaInfos(AuthenticationToken authenticationToken);
+     List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken);
     
     /**
      * Method returning names of all CA's available to the system that the

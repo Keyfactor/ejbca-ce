@@ -21,7 +21,7 @@ import org.cesecore.util.CertTools;
  */
 public class GlobalOcspConfiguration extends ConfigurationBase {
 
-    public static final String OCSP_CONFIGURATION_ID = "3";
+    public static final String OCSP_CONFIGURATION_ID = "OCSP";
    
     private static final long serialVersionUID = 1L;
 
