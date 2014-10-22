@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
@@ -110,8 +111,14 @@ public enum OcspSigningCache {
         }
         if (defaultResponderCacheEntry == null) {
             if (!loggedNoDefaultResponder) {
-                log.info("The default OCSP responder with subject '" + defaultResponderSubjectDn + "' was not found."
-                        + " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3");
+                String msg;
+                if (StringUtils.isEmpty(defaultResponderSubjectDn)) {
+                    msg = "No default responder was defined.";
+                } else {
+                    msg = "The default OCSP responder with subject '" + defaultResponderSubjectDn + "' was not found.";
+                }
+                msg += " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3";
+                log.info(msg);
                 loggedNoDefaultResponder = true; // we should only log this once, unless status changes
             }
             loggedDefaultResponder = false; // if we get a default responder again, log it
