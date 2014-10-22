@@ -35,7 +35,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -392,11 +391,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public List<String> getActiveCANames(final AuthenticationToken admin) {
         final ArrayList<String> returnval = new ArrayList<String>();
-        for (int caiId : getAllCaIds()) {
-            if (authorizedToCA(admin, caiId)) {
+        for (int caId : getAllCaIds()) {
+            if (authorizedToCA(admin, caId)) {
                 CAInfo caInfo;
                 try {
-                    caInfo = getCAInfoInternal(caiId);
+                    caInfo = getCAInfoInternal(caId);
                     if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                         returnval.add(caInfo.getName());
                     }
@@ -412,11 +411,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public Map<Integer, String> getActiveCAIdToNameMap(final AuthenticationToken authenticationToken) {
         final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        for (int caiId : getAllCaIds()) {
-            if (authorizedToCA(authenticationToken, caiId)) {
+        for (int caId : getAllCaIds()) {
+            if (authorizedToCA(authenticationToken, caId)) {
                 CAInfo caInfo;
                 try {
-                    caInfo = getCAInfoInternal(caiId);
+                    caInfo = getCAInfoInternal(caId);
                     if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                         returnval.put(caInfo.getCAId(), caInfo.getName());
                     }
