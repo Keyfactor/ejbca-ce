@@ -390,21 +390,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<String> getActiveCANames(final AuthenticationToken admin) {
-        final ArrayList<String> returnval = new ArrayList<String>();
-        for (int caId : getAllCaIds()) {
-            if (authorizedToCA(admin, caId)) {
-                CAInfo caInfo;
-                try {
-                    caInfo = getCAInfoInternal(caId);
-                    if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
-                        returnval.add(caInfo.getName());
-                    }
-                } catch (CADoesntExistsException e) {
-                    //NOPMD: This can never happen
-                }
-            }
-        }
-        return returnval;
+        return new ArrayList<String>(getActiveCAIdToNameMap(admin).values());
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
