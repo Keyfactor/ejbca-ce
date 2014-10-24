@@ -177,7 +177,7 @@ public final class CesecoreConfiguration {
      * Parameter to specify if retrieving GlobalOcspConfiguration (in GlobalConfigurationSessionBean) should be cached, and in that case for how long.
      */
     public static long getCacheGlobalOcspConfigurationTime() {
-        return getLongValue("ocspconfigurationcache.cachetime", 30000, "milliseconds to cache Certificate profiles");
+        return getLongValue("ocspconfigurationcache.cachetime", 30000, "milliseconds to cache OCSP settings");
     }
     
     /** Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long. */

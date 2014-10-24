@@ -251,46 +251,60 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
                     try {
                         final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue());
-                        if (caInfo.getCAType() == CAInfo.CATYPE_CVC || caInfo.getStatus() != CAConstants.CA_ACTIVE) {
-                            // Bravely ignore OCSP for CVC CAs or CA's that have no CA certificate (yet)
+                        if (caInfo.getCAType() == CAInfo.CATYPE_CVC ) {
+                            // Bravely ignore OCSP for CVC CAs
                             continue;
                         } 
-                        if (log.isDebugEnabled()) {
-                            log.debug("Processing X509 CA " + caInfo.getName() + " (" + caInfo.getCAId() + ").");
-                        }
-                        final CAToken caToken = caInfo.getCAToken();
-                        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
-                        if (cryptoToken == null) {
-                            log.info("Excluding CA with id " + caId + " for OCSP signing consideration due to missing CryptoToken.");
-                            continue;
-                        }
-                        for (final Certificate certificate : caInfo.getCertificateChain()) {
-                            caCertificateChain.add((X509Certificate) certificate);
-                        }
-                        final String keyPairAlias;
-                        try {
-                            keyPairAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                        } catch (CryptoTokenOfflineException e) {
-                            log.warn("Referenced private key with purpose " + CATokenConstants.CAKEYPURPOSE_CERTSIGN + " could not be used. CryptoToken is off-line for CA with id "+caId+": " + e.getMessage());
-                            continue;
-                        }
-                        final PrivateKey privateKey;
-                        try {
-                            privateKey = cryptoToken.getPrivateKey(keyPairAlias);
-                        } catch (CryptoTokenOfflineException e) {
-                            log.warn("Referenced private key with alias " + keyPairAlias + " could not be used. CryptoToken is off-line for CA with id "+caId+": " + e.getMessage());
-                            continue;
-                        }
-                        if (privateKey == null) {
-                            log.warn("Referenced private key with alias " + keyPairAlias + " does not exist. Ignoring CA with id "+caId);
-                            continue;
-                        }
-                        final String signatureProviderName = cryptoToken.getSignProviderName();
-                        if (caCertificateChain.size() > 0) {
-                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, privateKey,
-                                    signatureProviderName, null));
-                        } else {
-                            log.warn("CA with ID " + caId + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
+                        if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+                            //Cache active CAs as signers
+                            if (log.isDebugEnabled()) {
+                                log.debug("Processing X509 CA " + caInfo.getName() + " (" + caInfo.getCAId() + ").");
+                            }
+                            final CAToken caToken = caInfo.getCAToken();
+                            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
+                            if (cryptoToken == null) {
+                                log.info("Excluding CA with id " + caId + " for OCSP signing consideration due to missing CryptoToken.");
+                                continue;
+                            }
+                            for (final Certificate certificate : caInfo.getCertificateChain()) {
+                                caCertificateChain.add((X509Certificate) certificate);
+                            }
+                            final String keyPairAlias;
+                            try {
+                                keyPairAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                            } catch (CryptoTokenOfflineException e) {
+                                log.warn("Referenced private key with purpose " + CATokenConstants.CAKEYPURPOSE_CERTSIGN
+                                        + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                                continue;
+                            }
+                            final PrivateKey privateKey;
+                            try {
+                                privateKey = cryptoToken.getPrivateKey(keyPairAlias);
+                            } catch (CryptoTokenOfflineException e) {
+                                log.warn("Referenced private key with alias " + keyPairAlias
+                                        + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                                continue;
+                            }
+                            if (privateKey == null) {
+                                log.warn("Referenced private key with alias " + keyPairAlias + " does not exist. Ignoring CA with id " + caId);
+                                continue;
+                            }
+                            final String signatureProviderName = cryptoToken.getSignProviderName();
+                            if (caCertificateChain.size() > 0) {
+                                OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, privateKey,
+                                        signatureProviderName, null));
+                            } else {
+                                log.warn("CA with ID " + caId
+                                        + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
+                            }
+                        } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL && OcspConfiguration.getUseDefaultResponderForExternal()) {
+                            // If set, all external CA's without a keybinding (set below) will be responded to by the default responder. 
+                            for (final Certificate certificate : caInfo.getCertificateChain()) {
+                                caCertificateChain.add((X509Certificate) certificate);
+                            }
+                            //Add an entry with just a chain and nothing else
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, null, null, null));
+                            
                         }
                     } catch (CADoesntExistsException e) {
                         // Should only happen if the CA was deleted between the getAvailableCAs and the last one
