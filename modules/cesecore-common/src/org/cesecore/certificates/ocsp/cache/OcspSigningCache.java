@@ -140,6 +140,17 @@ public enum OcspSigningCache {
         }
         cache = staging;
         this.defaultResponderCacheEntry = defaultResponderCacheEntry;
+        //Lastly, walk through the list of entries and replace all placeholders with the default responder
+        for(Integer key : cache.keySet()) {
+            OcspSigningCacheEntry entry = cache.get(key);
+            //If entry has been created without a private key, replace it with the default responder.
+            if (entry.isPlaceholder()) {
+                entry = new OcspSigningCacheEntry(entry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
+                        defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
+                        defaultResponderCacheEntry.getOcspKeyBinding());
+                cache.put(key, entry);
+            }
+        }
     }
 
     public void stagingRelease() {

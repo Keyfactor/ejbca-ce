@@ -65,4 +65,6 @@ public class OcspSigningCacheEntry {
      * Only entries with a keybinding can have a separate certificate.
      * */
     public boolean isUsingSeparateOcspSigningCertificate() { return ocspSigningCertificate != null; }
+    
+    public boolean isPlaceholder() { return privateKey == null; }
 }

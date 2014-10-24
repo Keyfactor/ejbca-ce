@@ -55,7 +55,6 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -86,7 +85,6 @@ public class CADataHandler implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
     private EndEntityManagementSessionLocal endEntitySession;
-    private RevocationSessionLocal revocationSession;
 
     private EjbcaWebBean ejbcawebbean;
     
@@ -99,7 +97,6 @@ public class CADataHandler implements Serializable {
        this.endEntitySession = ejb.getEndEntityManagementSession();
        this.certificateProfileSession = ejb.getCertificateProfileSession();
        this.endEntityProfileSession = ejb.getEndEntityProfileSession();
-       this.revocationSession = ejb.getRevocationSession();
        this.administrator = authenticationToken;
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
