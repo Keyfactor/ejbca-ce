@@ -114,10 +114,11 @@ public class SetDefaultOcspResponderCommand extends EjbcaCliUserCommandBase {
             stringBuilder.append("\n");
         }
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        List<String[]> caContents = new ArrayList<String[]>();
+        List<String[]> caContents = new ArrayList<String[]>();     
         for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(getAuthenticationToken())) {
-            if (caInfo.getCAType() == CAInfo.CATYPE_X509 && !knownDNs.contains(caInfo.getSubjectDN())) {
-                caContents.add(new String[] { caInfo.getName(), caInfo.getSubjectDN() });
+            final String caSubjectDn = CertTools.getSubjectDN(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0));
+            if (caInfo.getCAType() == CAInfo.CATYPE_X509 && !knownDNs.contains(caSubjectDn)) {
+                caContents.add(new String[] { caInfo.getName(), caSubjectDn});
             }
         }
         if (!caContents.isEmpty()) {

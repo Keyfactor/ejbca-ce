@@ -22,8 +22,15 @@
 #
 # For the internal OCSP responder this is the subject DN of the CA to use for signing
 # For an external OCSP responder this is the issuer DN of the OCSP responders certificate to use for signing, i.e. the CAs subject DN.
-# Default: CN=ManagementCA,O=EJBCA Sample,C=SE
 ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
+
+# Sets whether the default responder should be used for signing external CAs that don't have a dedicated keybinding. Behavior prior to EJBCA 6.2.4
+# was reply "Unknown" using the default responder for certificates issued by a non-active CA lacking a keybinding, but enabling this behavior allows
+# the default responder to perform a lookup on certificates stored in the database whose issuer certificates have been imported as external CA, for
+# example as a result of a CRL import. Set to 'true' to enable. 
+#
+# default: false
+ocsp.usedefaultresponderforexternal=false
 
 # If set to false the OCSP responses will only contain the signature certificate (if ocsp.includesignercertinresponse is set to 'true'), 
 # and not the whole certificate chain of the OCSP responder.

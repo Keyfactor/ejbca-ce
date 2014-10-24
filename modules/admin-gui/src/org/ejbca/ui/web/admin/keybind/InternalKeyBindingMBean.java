@@ -303,10 +303,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
             if (caInfo.getCAType() == CAInfo.CATYPE_X509) {
                 //Checking actual certificate, because CA subject DN does not have to be CA certificate subject DN
-                if (!internalkeybindingSet.contains(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0))) {
+                final String caSubjectDn = CertTools.getSubjectDN(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0));
+                if (!internalkeybindingSet.contains(caSubjectDn)) {
                     //Skip CAs already represented by an internal keybinding
-                    ret.add(new SelectItem(caInfo.getSubjectDN(), "CA: " + caInfo.getName()));
-                    if (currentValue.equals(caInfo.getSubjectDN())) {
+                    ret.add(new SelectItem(caSubjectDn, "CA: " + caInfo.getName()));
+                    if (currentValue.equals(caSubjectDn)) {
                         currentValueMatched = true;
                     }
                 }
