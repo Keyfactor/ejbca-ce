@@ -438,9 +438,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             } catch (CADoesntExistsException e) {
                 throw new IllegalStateException("CA with ID " + caId + " was not found in spite if just being retrieved.");
             }
-            int status = caInfo.getStatus();
-            if ( status != CAConstants.CA_UNINITIALIZED
-                    && status != CAConstants.CA_EXTERNAL && status != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+            if ( caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 result.add(caInfo);
             }
         }
