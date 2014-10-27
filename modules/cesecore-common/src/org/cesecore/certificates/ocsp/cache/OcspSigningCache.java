@@ -120,9 +120,8 @@ public enum OcspSigningCache {
                 msg += " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3";
                 log.info(msg);
                 loggedNoDefaultResponder = true; // we should only log this once, unless status changes
-            } else {
-                loggedDefaultResponder = false; // if we get a default responder again, log it
             }
+            loggedDefaultResponder = false; // if we get a default responder again, log it
         } else {
             loggedNoDefaultResponder = false; // if we lose a default responder again, log it
         }
