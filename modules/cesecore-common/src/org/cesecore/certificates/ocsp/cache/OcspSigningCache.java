@@ -125,6 +125,24 @@ public enum OcspSigningCache {
         } else {
             loggedNoDefaultResponder = false; // if we lose a default responder again, log it
         }
+        //Lastly, walk through the list of entries and replace all placeholders with the default responder
+        for (Integer key : staging.keySet()) {
+            OcspSigningCacheEntry entry = staging.get(key);
+            //If entry has been created without a private key, replace it with the default responder.
+            if (entry.isPlaceholder()) {
+                if (defaultResponderCacheEntry != null) {
+                    entry = new OcspSigningCacheEntry(entry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
+                            defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
+                            defaultResponderCacheEntry.getOcspKeyBinding());
+                    staging.put(key, entry);
+                } else {
+                    //If no default responder is defined, remove placeholder. 
+                    staging.remove(key);
+                }
+            }
+        }
+        cache = staging;
+        this.defaultResponderCacheEntry = defaultResponderCacheEntry;
         if (log.isDebugEnabled()) {
             log.debug("Committing the following to OCSP cache:");
             for (final Integer key : staging.keySet()) {
@@ -138,19 +156,6 @@ public enum OcspSigningCache {
                 }
             }
         }
-        //Lastly, walk through the list of entries and replace all placeholders with the default responder
-        for(Integer key : staging.keySet()) {
-            OcspSigningCacheEntry entry = staging.get(key);
-            //If entry has been created without a private key, replace it with the default responder.
-            if (entry.isPlaceholder()) {
-                entry = new OcspSigningCacheEntry(entry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
-                        defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
-                        defaultResponderCacheEntry.getOcspKeyBinding());
-                staging.put(key, entry);
-            }
-        }
-        cache = staging;
-        this.defaultResponderCacheEntry = defaultResponderCacheEntry;
     }
 
     public void stagingRelease() {
