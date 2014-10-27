@@ -193,6 +193,7 @@ public class CrlCreateSessionTest {
     @Test
     public void testNonSHA1KeyId() throws Exception {
         final String subcaname = "CrlCSTestSub";
+        final String subcadn = "CN="+subcaname;
         try {
             // Create an external root ca certificate
             final KeyPair rootcakp = KeyTools.genKeys("1024", "RSA");
@@ -200,7 +201,6 @@ public class CrlCreateSessionTest {
             final X509Certificate rootcacert = CertTools.genSelfCert(rootcadn, 3650, null, rootcakp.getPrivate(), rootcakp.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, "BC", false);
             
             // Create sub ca
-            final String subcadn = "CN="+subcaname;
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             X509CAInfo subcainfo = new X509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 365, CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
@@ -213,7 +213,7 @@ public class CrlCreateSessionTest {
             Date firstDate = new Date();
             firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
             Date lastDate = new Date();
-            lastDate.setTime(lastDate.getTime() + (365 * (24 * 60 * 60 * 1000)));
+            lastDate.setTime(lastDate.getTime() + 365 * 24 * 60 * 60 * 1000);
             final SubjectPublicKeyInfo subcaspki = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(subcapubkey.getEncoded()));
             final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(rootcadn, false), new BigInteger(64, new Random(System.nanoTime())),
                     firstDate, lastDate, CertTools.stringToBcX500Name(subcadn, false), subcaspki);
@@ -231,7 +231,7 @@ public class CrlCreateSessionTest {
             final X509CertificateHolder certHolder = certbuilder.build(signer);
             final X509Certificate subcacert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded(), "BC");
             
-            // Add sub CA certificate
+            // Replace sub CA certificate with a sub CA cert containing the test AKID
             subcainfo = (X509CAInfo)caSession.getCAInfo(authenticationToken, subcaname);
             List<Certificate> certificatechain = new ArrayList<Certificate>();
             certificatechain.add(subcacert);
@@ -242,42 +242,66 @@ public class CrlCreateSessionTest {
             subca = (X509CA) caTestSessionRemote.getCA(authenticationToken, subcaname);
             assertArrayEquals("Wrong SKID in test CA.", TEST_AKID, CertTools.getSubjectKeyId(subca.getCACertificate()));
             
-            // Create a CRL and check the AKID
-            int nextCrlNumber = crlStoreSession.getLastCRLNumber(subcadn, false) + 1;
-            assertEquals("For a new CA, the next crl number should be 1.", 1, nextCrlNumber);
-            crlCreateSession.generateAndStoreCRL(authenticationToken, subca, new ArrayList<RevokedCertInfo>(), -1, nextCrlNumber);
+            // Create a base CRL and check the AKID
+            int baseCrlNumber = crlStoreSession.getLastCRLNumber(subcadn, false) + 1;
+            assertEquals("For a new CA, the next crl number should be 1.", 1, baseCrlNumber);
+            crlCreateSession.generateAndStoreCRL(authenticationToken, subca, new ArrayList<RevokedCertInfo>(), -1, baseCrlNumber);
             final byte[] crl = crlStoreSession.getLastCRL(subcadn, false);
-            try {
-                assertNotNull(crl);
-                // Check that it is signed by the correct public key
-                final X509CRL xcrl = CertTools.getCRLfromByteArray(crl);
-                final PublicKey pubK = subca.getCACertificate().getPublicKey();
-                xcrl.verify(pubK);
-                // Check that the correct AKID is used
-                final byte[] akidExtBytes = xcrl.getExtensionValue(Extension.authorityKeyIdentifier.getId());
-                ASN1InputStream octAis = new ASN1InputStream(new ByteArrayInputStream(akidExtBytes));
-                DEROctetString oct = (DEROctetString) (octAis.readObject());
-                ASN1InputStream keyidAis = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
-                AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyidAis.readObject());
-                keyidAis.close();
-                octAis.close();
-                assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());
-            } finally {
-                // Remove it to clean database
-                internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
-            }
+            checkCrlAkid(subca, crl);
+            
+            // Create a delta CRL and check the AKID
+            int deltaCrlNumber = crlStoreSession.getLastCRLNumber(subcadn, false) + 1;
+            assertEquals("Next CRL number should be 2 at this point.", 2, deltaCrlNumber);
+            crlCreateSession.generateAndStoreCRL(authenticationToken, subca, new ArrayList<RevokedCertInfo>(), baseCrlNumber, deltaCrlNumber);
+            final byte[] deltacrl = crlStoreSession.getLastCRL(subcadn, true); // true = get delta CRL
+            checkCrlAkid(subca, deltacrl);
         } finally {
+            // Remove everything created above to clean the database
             final Integer cryptoTokenId = cryptoTokenMgmtSession.getIdFromName(subcaname);
             if (cryptoTokenId != null) {
                 CryptoTokenTestUtils.removeCryptoToken(authenticationToken, cryptoTokenId);
             }
             try {
                 int caid = caSession.getCAInfo(authenticationToken, subcaname).getCAId();
+                
+                // Delete sub CA CRLs
+                while (true) {
+                    final byte[] crl = crlStoreSession.getLastCRL(subcadn, true); // delta CRLs
+                    if (crl == null) { break; }
+                    internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
+                }
+                
+                while (true) {
+                    final byte[] crl = crlStoreSession.getLastCRL(subcadn, false); // base CRLs
+                    if (crl == null) { break; }
+                    internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
+                }
+                
+                // Delete sub CA
                 caSession.removeCA(authenticationToken, caid);
             } catch (CADoesntExistsException cade) {
                 // NOPMD ignore
             }
         }
+    }
+
+    private void checkCrlAkid(X509CA subca, final byte[] crl) throws Exception {
+        assertNotNull(crl);
+        
+        // First, check that it is signed by the correct public key
+        final X509CRL xcrl = CertTools.getCRLfromByteArray(crl);
+        final PublicKey pubK = subca.getCACertificate().getPublicKey();
+        xcrl.verify(pubK);
+        
+        // Check that the correct AKID is used
+        final byte[] akidExtBytes = xcrl.getExtensionValue(Extension.authorityKeyIdentifier.getId());
+        ASN1InputStream octAis = new ASN1InputStream(new ByteArrayInputStream(akidExtBytes));
+        DEROctetString oct = (DEROctetString) (octAis.readObject());
+        ASN1InputStream keyidAis = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+        AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyidAis.readObject());
+        keyidAis.close();
+        octAis.close();
+        assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());
     }
     
     private void forceDeltaCRL(AuthenticationToken admin, CA ca) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, CRLException {
