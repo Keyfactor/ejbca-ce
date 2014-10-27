@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
+import java.util.Set;
+
 import javax.ejb.Local;
 
 /**
@@ -28,5 +30,8 @@ public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSess
     *
     * @param globconf the new Configuration
     */
-   void saveConfigurationNoLog(ConfigurationBase conf);
+    void saveConfigurationNoLog(ConfigurationBase conf);
+
+    /** @return all registered configuration IDs. */
+    Set<String> getIds();
 }
