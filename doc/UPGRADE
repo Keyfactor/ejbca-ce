@@ -52,10 +52,14 @@ scepra.properties
 
 From EJBCA 6.2.x to EJBCA 6.2.4
 -------------------------------
-The configuration from for the OCSP default responder has been moved from ocsp.properties into the global configuration, into a new cache with ID=3. 
+The configuration from for the OCSP default responder has been moved from ocsp.properties into the global configuration, into a new cache with ID=OCSP. 
 The old value will automatically be committed into the database by the first upgraded node. If ocsp.properties didn't point to a subject DN matching 
 an existent CA or OCSP keybinding, the old value will be retained until either a CA or keybinding matching it has been created or a valid CA or 
 keybinding has been selected in the GUI. 
+
+Default behavior of the default responder has been modified to automatically reply for all and any externally imported CAs which lack specific OCSP 
+keybindings. Be aware that this may cause unexpected behavior in the case of where an inactivated (due to responder certificate being 
+revoked or expiring) keybinding exists, and that keybinding has a different behavior in regards to unknown certificates than the default responder. 
 
 From EJBCA 6.1.x up to EJBCA 6.2.3
 -------------------------------
