@@ -279,6 +279,80 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         }
     }
     
+    /** Tests using the default responder for external CAs for a good certificate. */
+    @Test
+    public void testResponseWithDefaultResponderForExternalNoDefaultSet() throws Exception {
+        // Make sure that a default responder is set
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference("");
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
+        try {
+            //Make default responder standalone
+            OcspTestUtils.deleteCa(authenticationToken, x509ca);
+            activateKeyBinding(internalKeyBindingId);      
+            // Now, construct an external CA. 
+            final String externalCaName = "testStandAloneOcspResponseExternalCa";
+            final String externalCaSubjectDn = "CN=" + externalCaName;
+            long validity = 3650L;
+            KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
+                    externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+            X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
+                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, validity, CAInfo.SELFSIGNED, null, null);
+            CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
+            X509CA externalCa = new X509CA(externalCaInfo);
+            externalCa.setCAToken(token);
+            externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
+            caSession.addCA(authenticationToken, externalCa);
+            certificateStoreSession.storeCertificate(authenticationToken, externalCaCertificate, externalCaName, "1234",
+                    CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
+                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            try {
+                final String externalUsername = "testStandAloneOcspResponseExternalUser";
+                final String externalSubjectDn = "CN=" + externalUsername;
+                // Create a certificate signed by the external CA and stuff it in the database (we can pretend it was imported)
+                Date firstDate = new Date();
+                firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+                Date lastDate = new Date();
+                lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+                byte[] serno = new byte[8];
+                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                random.setSeed(new Date().getTime());
+                random.nextBytes(serno);
+                KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
+                final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair
+                        .getPublic().getEncoded()));
+                X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
+                        new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
+                final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").build(externalCaKeys
+                        .getPrivate()), 20480);
+                final X509CertificateHolder certHolder = certbuilder.build(signer);
+                X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+                certificateStoreSession.storeCertificate(authenticationToken, importedCertificate, externalUsername, "1234",
+                        CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+                try {
+                    //Now everything is in place. Perform a request, make sure that the default responder signed it. 
+                    final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
+                            importedCertificate.getSerialNumber());
+                    final OCSPResp response = sendRequest(ocspRequest);                    
+                    assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+                    assertNull("Response should not have contained a response object.", response.getResponseObject());
+                } finally {
+                    internalCertificateStoreSession.removeCertificate(importedCertificate);
+                }
+            } finally {
+                caSession.removeCA(authenticationToken, externalCa.getCAId());
+                internalCertificateStoreSession.removeCertificate(externalCaCertificate);
+            }
+        } finally {
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+        }
+    }
+    
     /** Tests using the default responder for external CAs, tests with a revoked cert */
     @Test
     public void testResponseWithDefaultResponderForExternalRevoked() throws Exception {
@@ -408,47 +482,6 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
         }
     }
-    
-    /** Tests asking about an unknown CA, and making sure that the response is correctly signed. Same test as above, but with default responder 
-     * responding for external CAs.
-     */
-    @Test
-    public void testStandAloneOcspResponseDefaultResponderWithDefaultResponderForExternalActive() throws Exception {
-        // Make sure that a default responder is set
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        ocspConfiguration.setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
-        String originalNonExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");   
-        try {
-            //Now delete the original CA, making this test completely standalone.
-            OcspTestUtils.deleteCa(authenticationToken, x509ca);
-            activateKeyBinding(internalKeyBindingId);
-            ocspResponseGeneratorSession.reloadOcspSigningCache();
-            // Do the OCSP request
-            final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            final X509Certificate fakeIssuerCertificate = CertTools.genSelfCert("CN=fakeCA", 365, null, keys.getPrivate(), keys.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-            final BigInteger fakeSerialNumber = new BigInteger("4711");
-            final OCSPReq ocspRequest = buildOcspRequest(null, null, fakeIssuerCertificate, fakeSerialNumber);
-            final OCSPResp response = sendRequest(ocspRequest);
-            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-            //Response will be signed with the OCSP signing certificate, because that certificate's issuing CA was given as a default responder.
-            assertTrue("OCSP response was not signed correctly.",
-                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
-            SingleResp[] singleResponses = basicOcspResponse.getResponses();
-            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-            assertEquals("Response cert did not match up with request cert", fakeSerialNumber, singleResponses[0].getCertID().getSerialNumber());
-            assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
-        } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, originalNonExistingIsGood);
-        }
-        
-    }
-    
-    
     
     /** Tests the case where there exists both a CA and a key binding for that CA on the same machine. The Key Binding should have priority. */
     @Test
