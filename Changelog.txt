@@ -1,3 +1,27 @@
+EJBCA 6.2.4, 2014-10-
+---
+Bug
+	[ECA-3657] - RA administrator, failure while Approvement
+	[ECA-3716] - Regression: Externally imported CAs appear in list of signers when creating a CA
+	[ECA-3814] - getcacert does not return CA Certificate
+	[ECA-3822] - CertSafePublisher.testConnection doesn't test URL properly
+	[ECA-3834] - CertSafePublisher does not work under JDK6
+	[ECA-3845] - Certificate Transparency, not selecting any CT log passes issuance even if Min SCTs is 1
+	[ECA-3853] - AKID is different from CA SKID in CRLs, if not using SHA1
+	[ECA-3868] - Attempting to use a non-ocsp certificate for an OCSPKeyBinding fails silently
+
+Improvement
+	[ECA-3826] - ant install shows annoying but harmless error messages
+	[ECA-3843] - Create a link from basic access rules page to documentation
+	[ECA-3848] - Shift GlobalConfiguration* to CESeCore, make plugin friendly
+
+New Feature
+	[ECA-3580] - Certificate Transparency: Private Domains
+	[ECA-3794] - Default OCSP responder improvements
+    
+Task
+	[ECA-3801] - Enterprise feature
+
 EJBCA 6.2.3, 2014-09-25
 ---
 Bug
