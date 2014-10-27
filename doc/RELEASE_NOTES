@@ -11,6 +11,23 @@ For upgrade instructions, please see UPGRADE.
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 
+EJBCA 6.2.4
+-----------
+This is a maintenance release introducing two new features, foremost of which are Private Domains for the Certificate Transparency (CT) Protocol and a change
+in the behavior of the OCSP default responder.
+
+* Noteworthy changes:
+- The OCSP default responder is now configurable from the GUI. Old configurations in ocsp.properties will automatically be migrated, and the configuration
+  line should be removed from ocsp.properties. 
+- The OCSP default responder will now reply for all external CAs that don't have a specific OCSP keybinding set. See UPGRADE document and documentation 
+  for further information. 
+- CertSafe publisher now works in JDK6
+- An annoying but harmless error message which appeared in ant install has been removed.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*   SSLv3 is still available for use, but is considered vulnerable due to the POODLE exploit
+
 EJBCA 6.2.3
 -----------
 This is a maintenance release with a new feature, a couple of major and some minor bug fixes and improvements. All in all, 8 issues have been fixed.
