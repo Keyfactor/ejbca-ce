@@ -83,38 +83,34 @@ public class ClearCacheServlet extends HttpServlet {
     	doGet(req,res);
     }
 
-
 	public void doGet(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
 		if (log.isTraceEnabled()) {
 			log.trace(">doGet()");
 		}
-        
         if (StringUtils.equals(req.getParameter("command"), "clearcaches")) {
-            
             boolean excludeActiveCryptoTokens = StringUtils.equalsIgnoreCase("true", req.getParameter("excludeactivects"));
-            
             if(!acceptedHost(req.getRemoteHost())) {
         		if (log.isDebugEnabled()) {
         			log.debug("Clear cache request denied from host "+req.getRemoteHost());
         		}
         		res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The remote host "+req.getRemoteHost()+" is unknown");
-        	} else {       
-        		globalconfigurationsession.flushConfigurationCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        		if(log.isDebugEnabled()){
-        			log.debug("Global Configuration cache cleared");
-        		}
-        			
-                globalconfigurationsession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
-                if(log.isDebugEnabled()){
-                    log.debug("CMP Configuration cache cleared");
-                }
-                
-                globalconfigurationsession.flushConfigurationCache(ScepConfiguration.SCEP_CONFIGURATION_ID);
-                if(log.isDebugEnabled()) {
-                    log.debug("SCEP Configuration cache cleared");
-                }
-                
+        	} else {
+        	    // Clear all known global configuration caches
+        	    for (final String globalConfigurationId : globalconfigurationsession.getIds()) {
+                    globalconfigurationsession.flushConfigurationCache(globalConfigurationId);
+                    if(log.isDebugEnabled()){
+                        if (GlobalConfiguration.GLOBAL_CONFIGURATION_ID.equals(globalConfigurationId)) {
+                            log.debug("Global Configuration cache cleared.");
+                        } else if (CmpConfiguration.CMP_CONFIGURATION_ID.equals(globalConfigurationId)) {
+                            log.debug("CMP Configuration cache cleared.");
+                        } else if (ScepConfiguration.SCEP_CONFIGURATION_ID.equals(globalConfigurationId)) {
+                            log.debug("SCEP Configuration cache cleared.");
+                        } else {
+                            log.debug(globalConfigurationId + " Configuration cache cleared.");
+                        }
+                    }
+        	    }
         		endentitysession.flushProfileCache();
         		if(log.isDebugEnabled()) {
         			log.debug("RA Profile cache cleared");
