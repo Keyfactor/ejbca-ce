@@ -130,7 +130,13 @@ See the file doc/sql-scripts/create-index-ejbca.sql (section for certificatedata
 <p>
 The default responder is the valid CA or OCSP Keybinding set to sign responses to requests that come in for unknown issuers.
 </p>
-<p>The default responder will reply with an 'UNKNOWN' response if set correctly. If no default responder is defined, is defined incorrectly, or the chosen responder doesn't have a certificate, the responder will reply
+<p>
+For all unknown issuers the default responder will reply with an 'UNKNOWN' response. For external CAs without dedicated OCSP keybindings the default responder will perform standard OCSP lookups. 
+Be aware that this may cause unexpected behavior in the case of where an inactivated (due to responder certificate being 
+revoked or expiring) keybinding exists, and that keybinding has a different behavior in regards to unknown certificates than the default responder. 
+</p>
+<p>
+If no default responder is defined, is defined incorrectly, or the chosen responder doesn't have a certificate, the responder will reply
 "Unauthorized" (as per RFC2560) with a null payload.  
 </p>
 <h5>Setting the Default Responder from the GUI</h5>
@@ -144,13 +150,6 @@ choose none and allow retaining an old but unmatched value imported via migratio
 bin/ejbca.sh ocsp setdefaultresponder &lt;DN&gt;
 </source>
 <p>To see a list of valid responders, run the command with the <i>--help</i> switch. This will also show the current chosen responder.</p>
-<h5>Letting the Default Responder respond to externally imported CAs</h5>
-<p> If required, the OCSPResponder can be set to reply to externally imported CAs that don't have specific keybindings (which is allowed in RFC2560). By setting:
-</p>
-<source>
-ocsp.usedefaultresponderforexternal=true
-</source>
-<p>in ocsp.properties (default is false), any external CAs without a specified keybinding will be replied with using the default keybinding.</p>
 </subsection>
 <subsection name="A CLI example for setting up a responder">
 <p>In this sample scenario we have a CA (can be off line), and we will set up an OCSP responder using the CLI that answers for this CA. This example starts when you have a basic installed EJBCA instance that you can use CLI commands on (no CA needed).</p>

@@ -120,8 +120,9 @@ public enum OcspSigningCache {
                 msg += " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3";
                 log.info(msg);
                 loggedNoDefaultResponder = true; // we should only log this once, unless status changes
+            } else {
+                loggedDefaultResponder = false; // if we get a default responder again, log it
             }
-            loggedDefaultResponder = false; // if we get a default responder again, log it
         } else {
             loggedNoDefaultResponder = false; // if we lose a default responder again, log it
         }
@@ -138,19 +139,19 @@ public enum OcspSigningCache {
                 }
             }
         }
-        cache = staging;
-        this.defaultResponderCacheEntry = defaultResponderCacheEntry;
         //Lastly, walk through the list of entries and replace all placeholders with the default responder
-        for(Integer key : cache.keySet()) {
-            OcspSigningCacheEntry entry = cache.get(key);
+        for(Integer key : staging.keySet()) {
+            OcspSigningCacheEntry entry = staging.get(key);
             //If entry has been created without a private key, replace it with the default responder.
             if (entry.isPlaceholder()) {
                 entry = new OcspSigningCacheEntry(entry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
                         defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
                         defaultResponderCacheEntry.getOcspKeyBinding());
-                cache.put(key, entry);
+                staging.put(key, entry);
             }
         }
+        cache = staging;
+        this.defaultResponderCacheEntry = defaultResponderCacheEntry;
     }
 
     public void stagingRelease() {

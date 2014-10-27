@@ -297,7 +297,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 log.warn("CA with ID " + caId
                                         + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
                             }
-                        } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL && OcspConfiguration.getUseDefaultResponderForExternal()) {
+                        } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                             // If set, all external CA's without a keybinding (set below) will be responded to by the default responder. 
                             for (final Certificate certificate : caInfo.getCertificateChain()) {
                                 caCertificateChain.add((X509Certificate) certificate);

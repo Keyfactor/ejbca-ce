@@ -60,7 +60,6 @@ public class OcspConfiguration {
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
-    public static final String USE_DEFAULT_RESPONDER_FOR_EXTERNAL = "ocsp.usedefaultresponderforexternal";
     
     @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
     public static final int RESTRICTONISSUER = 0;
@@ -136,17 +135,6 @@ public class OcspConfiguration {
         String value = ConfigurationHolder.getString(SIGNATUREREQUIRED);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
-    
-    /**
-     * 
-     * @return true if configuration says to use the default responder for external CA's without OCSP keybindings
-     */
-    public static boolean getUseDefaultResponderForExternal() {
-        String value = ConfigurationHolder.getString(USE_DEFAULT_RESPONDER_FOR_EXTERNAL);
-        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-    }
-
-
 
     /**
      * If set to true the responder will restrict OCSP request signing
