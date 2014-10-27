@@ -14,6 +14,7 @@ Improvement
 	[ECA-3826] - ant install shows annoying but harmless error messages
 	[ECA-3843] - Create a link from basic access rules page to documentation
 	[ECA-3848] - Shift GlobalConfiguration* to CESeCore, make plugin friendly
+	[ECA-3860] - New call to get registered global configuration types
 
 New Feature
 	[ECA-3580] - Certificate Transparency: Private Domains
