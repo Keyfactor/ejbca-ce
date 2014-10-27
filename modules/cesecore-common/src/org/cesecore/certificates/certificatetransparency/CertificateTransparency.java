@@ -17,8 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 
@@ -74,11 +72,6 @@ public interface CertificateTransparency {
      * Adds a critical extension to prevent the certificate from being used
      */
     void addPreCertPoison(X509v3CertificateBuilder precertbuilder);
-    
-    /**
-     * Replaces wildcards in DNS-ID in the SubjectAlternativeName with "(PRIVATE)" and adds the necessary extension
-     */
-    void handleSubjectAltNameExtension(X509v3CertificateBuilder certbuilder, X509v3CertificateBuilder precertbuilder, Extension subAltNameExtension) throws CertIOException;
     
     /**
      * Returns true if the given certificate has an SCT extension with at least one entry. 
