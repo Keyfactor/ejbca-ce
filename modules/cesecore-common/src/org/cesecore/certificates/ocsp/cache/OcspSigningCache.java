@@ -126,6 +126,8 @@ public enum OcspSigningCache {
             loggedNoDefaultResponder = false; // if we lose a default responder again, log it
         }
         //Lastly, walk through the list of entries and replace all placeholders with the default responder
+        Map<Integer, OcspSigningCacheEntry> modifiedEntries = new HashMap<Integer, OcspSigningCacheEntry>();
+        List<Integer> removedEntries = new ArrayList<Integer>();
         for (Integer key : staging.keySet()) {
             OcspSigningCacheEntry entry = staging.get(key);
             //If entry has been created without a private key, replace it with the default responder.
@@ -134,12 +136,16 @@ public enum OcspSigningCache {
                     entry = new OcspSigningCacheEntry(entry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
                             defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
                             defaultResponderCacheEntry.getOcspKeyBinding());
-                    staging.put(key, entry);
+                    modifiedEntries.put(key, entry);
                 } else {
                     //If no default responder is defined, remove placeholder. 
-                    staging.remove(key);
+                    removedEntries.add(key);
                 }
             }
+        }
+        staging.putAll(modifiedEntries);
+        for (Integer removedKey : removedEntries) {
+            staging.remove(removedKey);
         }
         cache = staging;
         this.defaultResponderCacheEntry = defaultResponderCacheEntry;
