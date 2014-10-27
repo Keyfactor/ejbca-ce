@@ -685,7 +685,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     // This default is taken from CAToken.SOFTPRIVATESIGNKEYALIAS, but we don't want to depend on the CA module
     private String newKeyPairAlias = "privatesignkeyalias";
-    private String newKeyPairSpec = AlgorithmConstants.KEYALGORITHM_RSA+"2048";
+    private String newKeyPairSpec = AlgorithmConstants.KEYALGORITHM_RSA+"4096";
     
     /** @return a List of available (but not neccessarly supported by the underlying CryptoToken) key specs */
     public List<SelectItem> getAvailbleKeySpecs() {
