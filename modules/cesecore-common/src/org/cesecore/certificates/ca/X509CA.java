@@ -73,6 +73,7 @@ import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.CertException;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v2CRLBuilder;
@@ -919,17 +920,7 @@ public class X509CA extends CA implements Serializable {
         try {
             for (ASN1ObjectIdentifier oid : oids) {
                 final Extension ext = exts.getExtension(oid);
-                final boolean isCritical = ext.isCritical();
-                final ASN1Encodable parsedValue = ext.getParsedValue();
-                
-                if(oid.equals(Extension.subjectAlternativeName) && (ct != null)) {
-                    ct.handleSubjectAltNameExtension(certbuilder, precertbuilder, ext);
-                } else {
-                    certbuilder.addExtension(oid, isCritical, parsedValue);
-                    if (precertbuilder != null) {
-                        precertbuilder.addExtension(oid, isCritical, parsedValue);
-                    }
-                }
+                addExtension(certbuilder, precertbuilder, ext);
             }
 
             // Add Certificate Transparency extension. It needs to access the certbuilder and
@@ -1090,6 +1081,26 @@ public class X509CA extends CA implements Serializable {
             IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
             NoSuchAlgorithmException {
         return generateCRL(cryptoToken, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
+    }
+    
+    /**
+     * Adds the extension to certbuilder and to precertbuilder if it is not null. Special handling of SubjectAlternativeName extension.
+     * @param certbuilder
+     * @param precertbuilder
+     * @param extension
+     * @throws CertIOException
+     */
+    private void addExtension(X509v3CertificateBuilder certbuilder, final X509v3CertificateBuilder precertbuilder, Extension extension) throws CertIOException {
+        if(extension.getExtnId().equals(Extension.subjectAlternativeName)) {
+            CertTools.addSubjectAlternativeNameExtension(certbuilder, precertbuilder, extension);
+        } else {
+            final boolean isCritical = extension.isCritical();
+            final ASN1Encodable parsedValue = extension.getParsedValue();
+            certbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+            if (precertbuilder != null) {
+                precertbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+            }
+        }
     }
 
     /**

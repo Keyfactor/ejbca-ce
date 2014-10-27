@@ -75,6 +75,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -115,6 +116,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -2128,6 +2130,65 @@ public abstract class CertTools {
         }
         ASN1Sequence seq = ASN1Sequence.getInstance(oct);
         return seq;
+    }
+    
+    /**
+     * Replaces wildcards in DNS-ID in the SubjectAlternativeName with "(PRIVATE)" and adds the necessary extensions.
+     * 
+     * If SubjectAlternativeName contains DNS values with parentheses: 
+     *      If the certificate is to be published to a CTLog: the parentheses will be removed from the DNS values and that will be the value of the SubjectAlternativeName extension in certbuilder. 
+     *                                                        the part of DNS value between the parentheses will be replaced by the String 'PRIVATE' and that will be the value of SubjectAlternativeName extension in precertbuilder
+     *                                                        the extension '1.3.6.1.4.1.11129.2.4.6' will be added to certbuilder
+     *      If the certificate is not to be published to a CTLog: the parentheses will be removed from the DNS values and that will be the value of the SubjectAlternativeName extension in certbuilder.
+     *                                                            precertbuilder is null and no other extensions will be added.
+     * If SubjectAlternativeName does not contain DNS values with parentheses: no special considerations will be taken concerning CTLog. Only the SubjectAlternativeName with its current value will be added.
+     */
+    public static void addSubjectAlternativeNameExtension(X509v3CertificateBuilder certbuilder, final X509v3CertificateBuilder precertbuilder, Extension subAltNameExtension) throws CertIOException {
+        String subAltName = getAltNameStringFromExtension(subAltNameExtension);
+        String subAltNameCert = subAltName;
+        String subAltNamePreCert = subAltName;
+        
+        boolean containsRedacted = false;
+            
+        List<String> dnsValues = CertTools.getPartsFromDN(subAltName, CertTools.DNS);
+        int[] nrOfRecactedLables = new int[dnsValues.size()];
+        int i = 0;
+        for(String dns : dnsValues) {
+            if(StringUtils.contains(dns, "(") && StringUtils.contains(dns, ")") ) { // if it contains parts that should be redacted
+                // Remove the parentheses from the SubjectAltName that will end up on the certificate
+                String certBuilderDNSValue = StringUtils.remove(dns, '(');
+                certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, ')');
+                subAltNameCert = StringUtils.replace(subAltNameCert, dns, certBuilderDNSValue);
+                    
+                if(precertbuilder != null) {
+                    // If there is a preCertificate that will be published on a Certificate Transparency Log, replace the redacted DNS part with 
+                    // the String "PRIVATE"
+                    containsRedacted = true;
+                    String redactedLable = StringUtils.substring(dns, StringUtils.indexOf(dns, "("), StringUtils.lastIndexOf(dns, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses 
+                    nrOfRecactedLables[i] = StringUtils.countMatches(redactedLable, ".")+1;
+                    subAltNamePreCert = StringUtils.replace(subAltNamePreCert, redactedLable, "(PRIVATE)");
+                }
+            }
+            i++;
+        }
+            
+        // add the subjectAltName extension, whose value does not contain parentheses, to the certificate
+        certbuilder.addExtension(Extension.subjectAlternativeName, subAltNameExtension.isCritical(), CertTools.getGeneralNamesFromAltName(subAltNameCert));
+            
+        // if there is a precertificate, add the subjectAltName, whose value might contain redacted parts, to the precertificate
+        if (precertbuilder != null) {
+            precertbuilder.addExtension(Extension.subjectAlternativeName, subAltNameExtension.isCritical(), CertTools.getGeneralNamesFromAltName(subAltNamePreCert));
+                
+            // If there actually are redacted parts, add the extension containing the number of redacted lables to the certificate 
+            if(containsRedacted) {
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                for(int val : nrOfRecactedLables) {
+                    v.add(new ASN1Integer(val));
+                }
+                ASN1Encodable seq = new DERSequence(v);
+                certbuilder.addExtension(new ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.4.6"), false, seq);
+            }
+        }
     }
 
     /**
