@@ -146,13 +146,29 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         setNextKeyPairAlias(null);
     }
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
+    private static final SimpleDateFormat DATE_FORMAT_MS = new SimpleDateFormat("yyyyMMddHHmmssSSS");
     private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile("_\\d{8}\\d{6}$");
+    private static final Pattern DATE_FORMAT_PATTERN_MS = Pattern.compile("_\\d{8}\\d{9}$");
     
-    private String getNewAlias(String oldAlias) {
-        final Matcher matcher = DATE_FORMAT_PATTERN.matcher(oldAlias);
-        final String newPostFix = "_" + DATE_FORMAT.format(new Date());
-        return matcher.find() ? matcher.replaceAll(newPostFix) : oldAlias + newPostFix;
+    /** Replace existing postfix or generate add a new one (using current time with millisecond granularity). */
+    private String getNewAlias(final String oldAlias) {
+        final Matcher matcherMs = DATE_FORMAT_PATTERN_MS.matcher(oldAlias);
+        final String newPostFix = "_" + DATE_FORMAT_MS.format(new Date());
+        // Check if the key alias postfix is in EJBCA 6.2.4+ format
+        if (matcherMs.find()) {
+            // Replace postfix in millisecond format
+            return matcherMs.replaceAll(newPostFix);
+        } else {
+            final Matcher matcher = DATE_FORMAT_PATTERN.matcher(oldAlias);
+            // Check if the key alias postfix is in EJBCA 6.2.3- format
+            if (matcher.find()) {
+                // Replace postfix with millisecond format
+                return matcher.replaceAll(newPostFix);
+            } else {
+                // No postfix, add one
+                return oldAlias + newPostFix;
+            }
+        }
     }
 
     @Override
