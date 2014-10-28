@@ -1011,6 +1011,14 @@ The purpose of CT is to create public audit logs of all certificates issued by t
 <li>Number of retries: If a log server times out it will be tried again after all other logs have been tried. This is the maximum number of tries per server.</li>
 </ul>
 
+<p>
+If part of the DNS in the SubjectAlternativeName extension should be a secret, that part can be redacted and replaced by the String "(PRIVATE)" in the precertificate 
+that will be published to the Certificate Transparency Log. 	When adding the end entity to EJBCA, the part of the DNSName that should be redacted in the SubjectAlternativeName in the precertificate should be surrounded 
+by parentheses. For example, when entering DNSName "(top.secret).domain.se", the precertificate in the Certificate Transparency Log will have the DNSName 
+"(PRIVATE).domain.se" in its SubjectAlternativeName, but the certificate itself will have the DNSName "top.secret.domain.se" in its SubjectAlternativeName.
+EJBCA implements this feature according to RFC 6962.
+</p>
+
 </subsubsection>
 <subsubsection name="Cardnumber">
 <p>
@@ -1032,18 +1040,6 @@ Example:
 <note>
 Do not use a "Subset of Subject DN" when issuing CA certificates. That can have undesired consequences, such as colliding CAIds and inability to find CA certificates.
 </note>
-</subsubsection>
-<subsubsection name="Redacting DNS labels in SubjectAlternativeName">
-<p>
-If part of the DNS should be a secret, that part can be redacted and replaced by the String "(PRIVATE)" in the precertificate that will be published to the 
-Certificate Transparency Log.
-</p>
-<p> 
-When adding the end entity to EJBCA, the part of the DNSName that should be redacted in the SubjectAlternativeName in the precertificate should be surrounded 
-by parentheses. For example, when entering DNSName "(top.secret).domain.se", the precertificate in the Certificate Transparency Log will have the DNSName 
-"(PRIVATE).domain.se" in its SubjectAlternativeName, but the certificate itself will have the DNSName "top.secret.domain.se" in its SubjectAlternativeName.
-EJBCA implements this feature according to RFC 6962.
-</p>
 </subsubsection>
 
 </subsection>

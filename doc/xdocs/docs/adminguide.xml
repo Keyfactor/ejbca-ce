@@ -1794,6 +1794,12 @@ Otherwise a FAILURE is logged. If the <em>generation</em> of the pre-certificate
 <subsection name="Activating CT">
 <p>CT logs must be activated in your certificate profiles. See the <a href="userguide.html#Certificate%20Transparency%20(Enterprise%20only)">user guide</a>.</p>
 </subsection>
+<subsection name="Redacting DNS labels in SubjectAlternativeName">
+<p>
+In the SubjectAlternativeName extension, if part of the DNS should be a secret, that part can be redacted and replaced by the String "(PRIVATE)" in the 
+precertificate that will be published to the Certificate Transparency Log. See the <a href="userguide.html#Certificate%20Transparency%20(Enterprise%20only)">user guide</a>.
+</p>
+</subsection>
 </section>
 
 
