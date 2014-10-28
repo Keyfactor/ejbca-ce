@@ -35,6 +35,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -137,6 +138,47 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		getCertificateWithExtension(false);
 	}
 
+	@Test
+	public void test04SubjectAltNameExtensionTest() throws Exception {
+	       if (this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE) != 0) {
+	            this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
+	        }
+	        final int ctpid; {
+	            final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+	            profile.setUseCertificateTransparencyInCerts(true);
+	            this.certificateProfileSession.addCertificateProfile(intAdmin, CERTIFICATE_PROFILE, profile);
+	            ctpid = this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE);
+	        }
+	        if ( this.endEntityProfileSession.getEndEntityProfile(END_ENTITY_PROFILE)!=null ) {
+	            this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
+	        }
+	        {
+	            final EndEntityProfile profile = new EndEntityProfile(true);
+	            profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(ctpid));
+	            this.endEntityProfileSession.addEndEntityProfile(intAdmin, END_ENTITY_PROFILE, profile);
+	        }
+
+	       final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
+	                getAdminCAName(), "DNSName=(top.secret).domain.se", "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+	                UserDataVOWS.TOKEN_TYPE_USERGENERATED, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
+	        this.ejbcaraws.editUser(userData);
+	        
+	        
+	        final X509Certificate cert = getMyCertificate();
+	        assertNotNull(cert);
+	        assertEquals("dNSName=top.secret.domain.se", CertTools.getSubjectAlternativeName(cert));  
+	        
+	        // Check that the number-of-redacted-lables-extension was added
+	        byte[] extValue = cert.getExtensionValue("1.3.6.1.4.1.11129.2.4.6");
+	        assertNotNull("Number of redacted labels (1.3.6.1.4.1.11129.2.4.6) didn't get added", extValue);
+	        
+	        // Check that the number-of-redacted-lables-extension has the write value
+	        DEROctetString octs = ((DEROctetString) DEROctetString.fromByteArray(extValue));
+	        ASN1Sequence seq = (ASN1Sequence) DERSequence.fromByteArray(octs.getOctets());
+	        assertEquals(1, seq.size());
+	        assertEquals("2", seq.getObjectAt(0).toString());    
+	}
+	
 	@Test
 	public void test99cleanUpAdmins() {
 	    try {
