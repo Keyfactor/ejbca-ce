@@ -17,6 +17,7 @@ Improvement
 	[ECA-3843] - Create a link from basic access rules page to documentation
 	[ECA-3848] - Shift GlobalConfiguration* to CESeCore, make plugin friendly
 	[ECA-3860] - New call to get registered global configuration types
+	[ECA-3889] - Allow more than one IKB renewal per second
 
 New Feature
 	[ECA-3580] - Certificate Transparency: Private Domains
