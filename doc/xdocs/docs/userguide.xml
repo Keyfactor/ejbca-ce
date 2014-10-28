@@ -1033,7 +1033,7 @@ Example:
 Do not use a "Subset of Subject DN" when issuing CA certificates. That can have undesired consequences, such as colliding CAIds and inability to find CA certificates.
 </note>
 </subsubsection>
-<subsubsection name="Redacting DNS lables in SubjectAlternativeName">
+<subsubsection name="Redacting DNS labels in SubjectAlternativeName">
 <p>
 If part of the DNS should be a secret, that part can be redacted and replaced by the String "(PRIVATE)" in the precertificate that will be published to the 
 Certificate Transparency Log.
