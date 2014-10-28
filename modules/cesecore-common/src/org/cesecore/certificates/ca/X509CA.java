@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -919,8 +920,29 @@ public class X509CA extends CA implements Serializable {
         ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();
         try {
             for (ASN1ObjectIdentifier oid : oids) {
-                final Extension ext = exts.getExtension(oid);
-                addExtension(certbuilder, precertbuilder, ext);
+                final Extension extension = exts.getExtension(oid);
+                if(oid.equals(Extension.subjectAlternativeName)) { // subjectAlternativeName extension value needs special handling
+                    ExtensionsGenerator sanExtGen = getSubjectAltNameExtensionForCert(extension, precertbuilder!=null);
+                    Extensions sanExts = sanExtGen.generate();
+                    Extension eext = sanExts.getExtension(oid);
+                    certbuilder.addExtension(oid, eext.isCritical(), eext.getParsedValue()); // adding subjetAlternativeName extension to certbuilder
+                    if(precertbuilder != null) { // if a pre-certificate is to be published to a CTLog
+                        eext = getSubjectAltNameExtensionForCTCert(extension).generate().getExtension(oid);
+                        precertbuilder.addExtension(oid, eext.isCritical(), eext.getParsedValue()); // adding subjectAlternativeName extension to precertbuilder
+                        
+                        eext = sanExts.getExtension(new ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.4.6")); 
+                        if(eext != null) {
+                            certbuilder.addExtension(eext.getExtnId(), eext.isCritical(), eext.getParsedValue()); // adding nrOfRedactedLabels extension to certbuilder
+                        }
+                    }
+                } else { // if not a subjectAlternativeName extension, just add it to both certbuilder and precertbuilder 
+                    final boolean isCritical = extension.isCritical();
+                    final ASN1Encodable parsedValue = extension.getParsedValue();
+                    certbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+                    if (precertbuilder != null) {
+                        precertbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+                    }
+                }
             }
 
             // Add Certificate Transparency extension. It needs to access the certbuilder and
@@ -1082,27 +1104,79 @@ public class X509CA extends CA implements Serializable {
             NoSuchAlgorithmException {
         return generateCRL(cryptoToken, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
     }
+
+    /**
+     * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.
+     * 
+     * If the DNS values in the subjectAlternativeName extension contain parentheses to specify labels that should be redacted, the parentheses are removed and another extension 
+     * containing the number of redacted labels is added.
+     * 
+     * @param subAltNameExt
+     * @param publishToCT
+     * @return An extension generator containing the SubjectAlternativeName extension and an extension holding the number of redacted labels if the certificate is to be published 
+     * to a CTLog
+     * @throws IOException
+     */
+    private ExtensionsGenerator getSubjectAltNameExtensionForCert(Extension subAltNameExt, boolean publishToCT) throws IOException {
+        String subAltName = CertTools.getAltNameStringFromExtension(subAltNameExt);
+        List<String> dnsValues = CertTools.getPartsFromDN(subAltName, CertTools.DNS);
+        int[] nrOfRecactedLables = new int[dnsValues.size()];
+        boolean sanEdited = false;
+        int i = 0;
+        for(String dns : dnsValues) {
+            if(StringUtils.contains(dns, "(") && StringUtils.contains(dns, ")") ) { // if it contains parts that should be redacted
+                // Remove the parentheses from the SubjectAltName that will end up on the certificate
+                String certBuilderDNSValue = StringUtils.remove(dns, '(');
+                certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, ')');
+                subAltName = StringUtils.replace(subAltName, dns, certBuilderDNSValue);
+                sanEdited = true;
+                if(publishToCT) {
+                    String redactedLable = StringUtils.substring(dns, StringUtils.indexOf(dns, "("), StringUtils.lastIndexOf(dns, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses 
+                    nrOfRecactedLables[i] = StringUtils.countMatches(redactedLable, ".")+1;
+                }
+            }
+            i++;
+        }
+        ExtensionsGenerator gen = new ExtensionsGenerator();
+        gen.addExtension(Extension.subjectAlternativeName, subAltNameExt.isCritical(), CertTools.getGeneralNamesFromAltName(subAltName));
+        // If there actually are redacted parts, add the extension containing the number of redacted lables to the certificate 
+        if(publishToCT && sanEdited) {
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            for(int val : nrOfRecactedLables) {
+                v.add(new ASN1Integer(val));
+            }
+            ASN1Encodable seq = new DERSequence(v);
+            gen.addExtension(new ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.4.6"), false, seq);
+        }
+        
+        return gen;
+    }
     
     /**
-     * Adds the extension to certbuilder and to precertbuilder if it is not null. Special handling of SubjectAlternativeName extension.
-     * @param certbuilder
-     * @param precertbuilder
-     * @param extension
-     * @throws CertIOException
+     * Constructs the SubjectAlternativeName extension that will end up on the certificate published to a CTLog
+     * 
+     * If the DNS values in the subjectAlternativeName extension contain parentheses to specify labels that should be redacted, these labels will be replaced by the string "PRIVATE" 
+     * 
+     * @param subAltNameExt
+     * @returnAn extension generator containing the SubjectAlternativeName extension
+     * @throws IOException
      */
-    private void addExtension(X509v3CertificateBuilder certbuilder, final X509v3CertificateBuilder precertbuilder, Extension extension) throws CertIOException {
-        if(extension.getExtnId().equals(Extension.subjectAlternativeName)) {
-            CertTools.addSubjectAlternativeNameExtension(certbuilder, precertbuilder, extension);
-        } else {
-            final boolean isCritical = extension.isCritical();
-            final ASN1Encodable parsedValue = extension.getParsedValue();
-            certbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
-            if (precertbuilder != null) {
-                precertbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+    private ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException {
+        String subAltName = CertTools.getAltNameStringFromExtension(subAltNameExt);
+        
+        List<String> dnsValues = CertTools.getPartsFromDN(subAltName, CertTools.DNS);
+        for(String dns : dnsValues) {
+            if(StringUtils.contains(dns, "(") && StringUtils.contains(dns, ")") ) { // if it contains parts that should be redacted
+                String redactedLable = StringUtils.substring(dns, StringUtils.indexOf(dns, "("), StringUtils.lastIndexOf(dns, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses 
+                subAltName = StringUtils.replace(subAltName, redactedLable, "(PRIVATE)");
             }
         }
+        
+        ExtensionsGenerator gen = new ExtensionsGenerator();
+        gen.addExtension(Extension.subjectAlternativeName, subAltNameExt.isCritical(), CertTools.getGeneralNamesFromAltName(subAltName).getEncoded());
+        return gen;
     }
-
+    
     /**
      * Generate a CRL or a deltaCRL
      * 
