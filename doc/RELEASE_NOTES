@@ -14,7 +14,7 @@ For upgrade instructions, please see UPGRADE.
 EJBCA 6.2.4
 -----------
 This is a maintenance release introducing two new features, foremost of which are Private Domains for the Certificate Transparency (CT) Protocol and a change
-in the behavior of the OCSP default responder. All in all, 16 issues have been fixed.
+in the behavior of the OCSP default responder. All in all, 17 issues have been fixed.
 
 * Noteworthy changes:
 - The OCSP default responder is now configurable from the GUI. Old configurations in ocsp.properties will automatically be migrated, and the configuration
