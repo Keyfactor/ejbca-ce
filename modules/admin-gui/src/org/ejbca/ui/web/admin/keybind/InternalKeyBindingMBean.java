@@ -471,7 +471,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final String certificateId = internalKeyBindingSession.renewInternallyIssuedCertificate(authenticationToken, internalKeyBindingId,
                     endEntityInformation);
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage("New certificate with fingerprint " + certificateId + " has been issed."));
+                    new FacesMessage("New certificate with fingerprint " + certificateId + " has been issued."));
         } catch (AuthorizationDeniedException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         } catch (CertificateImportException e) {
