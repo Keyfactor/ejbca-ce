@@ -1,6 +1,7 @@
 EJBCA 6.2.4, 2014-10-
 ---
 Bug
+	[ECA-3633] - CMP response caPubs field contain entity certificate instead of CA certificate
 	[ECA-3657] - RA administrator, failure while Approvement
 	[ECA-3716] - Regression: Externally imported CAs appear in list of signers when creating a CA
 	[ECA-3814] - getcacert does not return CA Certificate
