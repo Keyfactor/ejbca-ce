@@ -71,7 +71,7 @@
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang-2.5.jar" sourcepath="/usr/lib/jvm/java-1.7.0-openjdk-amd64/src.zip"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-1.3.2.jar"/>
@@ -92,8 +92,8 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-149.jar" sourcepath="/home/aveen/workspace/bouncycastle/bcprov-jdk15on-149b01/src.zip"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-149.jar" sourcepath="/home/aveen/workspace/bouncycastle/bcpkix-jdk15on-149b01/src.zip"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-149.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-149.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
