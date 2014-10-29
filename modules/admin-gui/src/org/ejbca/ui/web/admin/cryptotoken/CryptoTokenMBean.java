@@ -259,6 +259,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
 
+    /** Workaround to cache the items used to render the page long enough for actions to be able to use them, but reload on every page view. */
+    public boolean isPageLoadResetTrigger() {
+        flushCaches();
+        return false;
+    }
+
     /** Force reload from underlying (cache) layer */
     private void flushCaches() {
         cryptoTokenGuiList = null;
