@@ -37,6 +37,7 @@ org.cesecore.keybind.InternalKeyBindingRules
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
+	<h:outputText value="" rendered="#{internalKeyBindingMBean.pageLoadResetTrigger}"/>
 	<h1>
 		<h:outputText value="#{web.text.INTERNALKEYBINDINGS}"/>
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Internal%20Key%20Bindings") %>

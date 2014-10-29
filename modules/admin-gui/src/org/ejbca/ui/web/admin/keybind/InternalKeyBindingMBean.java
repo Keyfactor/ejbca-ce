@@ -253,6 +253,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         return availableKeyBindingTypes;
     }
 
+    /** Workaround to cache the items used to render the page long enough for actions to be able to use them, but reload on every page view. */
+    public boolean isPageLoadResetTrigger() {
+        flushListCaches();
+        return false;
+    }
+
     private void flushListCaches() {
         internalKeyBindingGuiList = null;
     }
