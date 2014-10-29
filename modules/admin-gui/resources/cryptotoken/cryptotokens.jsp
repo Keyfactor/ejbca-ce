@@ -48,6 +48,7 @@ org.cesecore.authorization.control.CryptoTokenRules
    
 </head>
 <body>
+	<h:outputText value="" rendered="#{cryptoTokenMBean.pageLoadResetTrigger}"/>
 	<h1>
 		<h:outputText value="#{web.text.MANAGECRYPTOTOKENS}"/>
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %>
