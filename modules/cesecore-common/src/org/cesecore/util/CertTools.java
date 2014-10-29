@@ -2542,7 +2542,6 @@ public abstract class CertTools {
      * @param certificate cert to verify
      * @param trustedCertificates collection of trusted X509Certificate
      * @return true if verified OK
-     * @throws Exception if verification failed
      */
     public static boolean verifyWithTrustedCertificates(Certificate certificate, Collection< Collection<Certificate> > trustedCertificates) {
         

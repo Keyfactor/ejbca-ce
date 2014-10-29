@@ -253,8 +253,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
     
     @Override
-    public Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
-                    InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException {
+    public Collection< Collection<Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException {
         
         List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
         if(trustedReferences == null) {
@@ -267,7 +266,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // This is done by adding all CAs' certificate chains to trustedCerts
             List<Integer> allCAs = caSession.getAllCaIds();
             for(int caid : allCAs) {
-                final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caid);
+                final CAInfo caInfo = caSession.getCAInfoInternal(caid);
                 trustedCerts.add(caInfo.getCertificateChain());
             }
             
@@ -276,7 +275,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             }
         } else {
             for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
-                final CAInfo caInfo = caSession.getCAInfo(authenticationToken, trustedReference.getCaId());
+                final CAInfo caInfo = caSession.getCAInfoInternal(trustedReference.getCaId());
                 if (trustedReference.getCertificateSerialNumberDecimal()==null) {
                     // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
                     // CA certificate chain to be used for issuer verification
@@ -290,7 +289,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         ArrayList<Certificate> leafCertChain = new ArrayList<Certificate>();
                         leafCertChain.add(cert);
                         String issuer = CertTools.getIssuerDN(cert);
-                        CAInfo issuerInfo = caSession.getCAInfo(authenticationToken, issuer.hashCode());
+                        CAInfo issuerInfo = caSession.getCAInfoInternal(issuer.hashCode());
                         leafCertChain.addAll((ArrayList<Certificate>) issuerInfo.getCertificateChain());
                         trustedCerts.add(leafCertChain);                
                     } else {

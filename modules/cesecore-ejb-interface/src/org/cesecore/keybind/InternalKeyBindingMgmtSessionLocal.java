@@ -56,15 +56,19 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
     InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 
     /**
-     * Returns a collection of the trusted certificates defined in the specified InternalKeyBinding along with their issuers' certificate chains.
-     * If only trusted CAs are specified, all certificates issued by the specified CAs will be trusted.
+     * Returns a collection of the trusted certificates defined in internalKeyBinding along with their issuers' certificate chains.
+     * 
+     * - If the list of trusted certificates in internalKeyBinding contains certificate serial number(s), only the certificates with these specific serial numbers
+     *   are trusted
+     * - If only trusted CAs are specified in internalKeyBinding, all certificates issued by the specified CAs will be trusted.
+     * - If the list of trusted certificates in internalKeyBinding is empty, all certificates issued by all CAs known to this instance of EJBCA are trusted
+     * - If the list of trusted certificates in internalKeyBinding is null, no certificates will be trusted.
+     *
      * 
      * @param authenticationToken
      * @param internalKeyBinding
      * @return a collection of the trusted certificates along with their issuers' certificate chains or null if no trusted certificates or CAs are specified
      * @throws CADoesntExistsException
-     * @throws AuthorizationDeniedException
      */
-    Collection< Collection<Certificate> > getListOfTrustedCertificates(AuthenticationToken authenticationToken, 
-                    InternalKeyBinding internalKeyBinding) throws CADoesntExistsException, AuthorizationDeniedException;
+    Collection< Collection<Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException;
 }
