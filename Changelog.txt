@@ -1,10 +1,11 @@
-EJBCA 6.2.4, 2014-10-
+EJBCA 6.2.4, 2014-10-29
 ---
 Bug
 	[ECA-3633] - CMP response caPubs field contain entity certificate instead of CA certificate
 	[ECA-3657] - RA administrator, failure while Approvement
 	[ECA-3716] - Regression: Externally imported CAs appear in list of signers when creating a CA
 	[ECA-3718] - Fix using trusted certificates in Internal Key Binding	
+	[ECA-3776] - Prevent API call from setting InternalKeyBinding status to "active" if there is no referenced certificate	
 	[ECA-3814] - getcacert does not return CA Certificate
 	[ECA-3822] - CertSafePublisher.testConnection doesn't test URL properly
 	[ECA-3834] - CertSafePublisher does not work under JDK6
