@@ -359,6 +359,8 @@ public abstract class AlgorithmTools {
 	public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm) {
 		String encSigAlg = signatureAlgorithm;
 		if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA) ) {
+		    // Even though SHA384 is used for ECDSA, pay it safe and use SHA256 for RSA since we do not trust all PKCS#11 implementations
+		    // to be so new to support SHA384WithRSA
 			encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
 		} else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ) {
 			encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
