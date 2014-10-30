@@ -74,7 +74,7 @@ public abstract class AlgorithmTools {
 	/** Log4j instance */
 	private static final Logger log = Logger.getLogger(AlgorithmTools.class);
 
-	/** String used for an unkown keyspec in CA token properties */
+	/** String used for an unknown keyspec in CA token properties */
 	public static final String KEYSPEC_UNKNOWN = "unknown";
 
 	/** Signature algorithms supported by RSA keys */
@@ -106,7 +106,8 @@ public abstract class AlgorithmTools {
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+        SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+        SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
 		
 		SIG_ALGS_ECGOST3410 = new LinkedList<String>();
         SIG_ALGS_ECGOST3410.add(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
@@ -358,7 +359,9 @@ public abstract class AlgorithmTools {
 	 */
 	public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm) {
 		String encSigAlg = signatureAlgorithm;
-		if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA) ) {
+        if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA) ) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA) ) {
 		    // Even though SHA384 is used for ECDSA, pay it safe and use SHA256 for RSA since we do not trust all PKCS#11 implementations
 		    // to be so new to support SHA384WithRSA
 			encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
@@ -513,6 +516,8 @@ public abstract class AlgorithmTools {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;
             } else if (certSignatureAlgorithm.indexOf("384") != -1) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;
+            } else if (certSignatureAlgorithm.indexOf("512") != -1) {
+                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
             } else if (certSignatureAlgorithm.indexOf("ECDSA") != -1) {
             	// From x509cert.getSigAlgName(), SHA1withECDSA only returns name ECDSA
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
@@ -659,6 +664,10 @@ public abstract class AlgorithmTools {
         
         if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA384)) {
             return AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;   
+        }
+        
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA512)) {
+            return AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;   
         }
         // GOST3410
         if(isGost3410Enabled() && sigAlgOid.getId().equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {
