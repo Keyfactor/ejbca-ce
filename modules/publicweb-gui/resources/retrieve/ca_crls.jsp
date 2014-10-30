@@ -45,28 +45,28 @@
 
 		<hr />
 		<h2>CA: ${caName}</h2>
-		<p>The Certificate Revocation List is available in three ways:
+		<p>The Certificate Revocation List is available in two ways:</p>
 		<table>
-		<thead><tr><td>CRL</td><td>Delta CRL</td></tr></thead>
+		<thead><tr>
+			<th style="text-align: left;">CRL</th>
+			<th style="text-align: left;">Delta CRL</th>
+		</tr></thead>
 		<tbody>
 		<tr>
-		<td>
+		<td style="padding-right: 4em;">
 		<ul>
 		  	<li><a href="${der}">DER format</a></li> 
 		  	<li><a href="${pem}">PEM format</a></li> 
-		  	<li><a href="${moz}">Firefox direct import</a></li>
 		</ul>
 		</td>
 		<td>
 		<ul>
 		  	<li><a href="${derdelta}">DER format</a></li> 
 		  	<li><a href="${pemdelta}">PEM format</a></li> 
-		  	<li><a href="${mozdelta}">Firefox direct import</a></li>
 		</ul>
 		</td>
 		</tr>
 		</tbody>
 		</table>
-		</p>
 	</c:forEach>
 <%@ include file="footer.inc" %>
