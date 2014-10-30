@@ -34,5 +34,5 @@ public interface CustomServiceWorkerUiSupport {
      * @param languageResource A language resource where translatable keys can be looked up.
      * @return A list of properties in a format an UI can render nicely.
      */
-    public List<CustomServiceWorkerProperty> getCustomUiPropertyList(AuthenticationToken authenticationToken, Properties currentProperties, Map<String, String> languageResource);
+    List<CustomServiceWorkerProperty> getCustomUiPropertyList(AuthenticationToken authenticationToken, Properties currentProperties, Map<String, String> languageResource);
 }
