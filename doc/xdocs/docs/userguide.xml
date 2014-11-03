@@ -138,7 +138,7 @@ The shown SubjectKeyID column is a SHA1 over the public key.
 <li>A key pair can be tested by clicking "Test" for the specific key pair.</li>
 <li>A key pair's public key can be downloaded in PEM format by clicking "Download Public Key".</li>
 </ul>
-Please note that the show key specifications might not be supported by underlying PKCS#11 modules and
+Please note that the shown key specifications might not be supported by underlying PKCS#11 modules and
 an error will be shown when trying to use such a key specification.
 </p>
 </subsection>
