@@ -302,7 +302,7 @@ public final class EjbcaConfiguration {
         return getIntProperty("peerconnector.sync.concurrency", 12);
     }
 
-    /** @return the maximum number of updates to send in parallel when doing background synchronization of certificate data. */
+    /** @return the largest allowed incoming peer message that will be processed. */
     @Deprecated // EJBCA 6.3.0 safety for the new PeerConnector feature. Remove when default is considered stable.
     public static int getPeerIncomingMaxMessageSize() {
         return getIntProperty("peerconnector.incoming.maxmessagesize", 134217728);
