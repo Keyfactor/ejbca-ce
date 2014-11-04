@@ -146,7 +146,7 @@ public class P11Slot {
             log.debug("slotlabeltype: "+slotLabelType);
             log.debug("attributesFile: " +attributesFile);
             log.debug("id: "+id);
-        	log.debug("P11Slot.getInstance(): '"+slotLabel+"', '"+sharedLibrary+"', "+slotLabelType.toString()+", '"+attributesFile+"', "+id);
+        	log.debug("P11Slot.getInstance(): '"+slotLabel+"', '"+sharedLibrary+"', "+(slotLabelType == null ? "null" : slotLabelType.toString())+", '"+attributesFile+"', "+id);
         }
         return getInstance(new SlotDataParam(friendlyName, slotLabel, sharedLibrary, slotLabelType, attributesFile), token, id);
     }
