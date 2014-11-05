@@ -120,21 +120,21 @@ public class CAToken extends UpgradeableDataHashMap {
         int ret = CryptoToken.STATUS_OFFLINE;
         // If we have no key aliases, no point in continuing...
         try {
-        	if (this.keyStrings != null) {
-        		String aliases[] = this.keyStrings.getAliases();
+        	if (keyStrings != null) {
+        		final String aliases[] = keyStrings.getAliases();
         		int i = 0;
-        		// Loop that checks  if there all key aliases have keys
-        		while (aliases != null && i < aliases.length) {
-        			if (cryptoToken != null && cryptoToken.getKey(aliases[i]) != null) {
-        				i++;
-        			} else {
-        				if (log.isDebugEnabled()) {
-        					log.debug("Missing key for alias: "+aliases[i]);
-        				}
-        			}
+                // Loop that checks  if there all key aliases have keys
+        		for (final String alias : aliases) {
+        		    if (cryptoToken!=null && cryptoToken.getKey(alias)!=null) {
+        		        i++;
+        		    } else {
+        		        if (log.isDebugEnabled()) {
+        		            log.debug("Missing key for alias: "+alias);
+        		        }
+        		    }
         		}
         		// If we don't have any keys for the strings, or we don't have enough keys for the strings, no point in continuing...
-        		if (aliases != null && i >= aliases.length) {
+        		if (i >= aliases.length) {
         		    final String aliasTestKey = getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
         			PrivateKey privateKey;
         			PublicKey publicKey;
