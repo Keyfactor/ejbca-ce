@@ -25,6 +25,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -49,7 +50,9 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
@@ -129,6 +132,7 @@ public class OcspKeyRenewalTest {
     private static int authenticationKeyBindingId;
     private static X509Certificate clientSSLCertificate;
     private static int managementCaId = 0;
+    private static List<Integer> disabledAuthenticationKeyBindings = new ArrayList<Integer>();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -192,6 +196,19 @@ public class OcspKeyRenewalTest {
                 // Test relying on SSL will fail
             }
         }
+        // - Disable any existing AuthenticationKeyBinding.
+        final List<Integer> existingAuthenticationKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingIds(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
+        for (final Integer internalKeyBindingId : existingAuthenticationKeyBindings) {
+            final InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId);
+            if (InternalKeyBindingStatus.ACTIVE.equals(internalKeyBindingInfo.getStatus())) {
+                log.info("Temporarly disabling existing AuthenticationKeyBinding with id " + internalKeyBindingId + " for the duration of this test.");
+                final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+                internalKeyBinding.setStatus(InternalKeyBindingStatus.DISABLED);
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
+                disabledAuthenticationKeyBindings.add(Integer.valueOf(internalKeyBindingId));
+            }
+        }
+        // Create a new AuthenticationKeyBinding
         log.debug("SSL CA Id: " + managementCaId);
         if (managementCaId != 0) {
             clientSSLCertificate = OcspTestUtils.createClientSSLCertificate(authenticationToken, authenticationKeyBindingId, managementCaId);
@@ -291,6 +308,21 @@ public class OcspKeyRenewalTest {
         }
         cleanupCryptoToken(caEccName);
         
+        // Re-enable temporarly disabled AuthenticationKeyBindings
+        if (disabledAuthenticationKeyBindings!=null) {
+            for (final Integer internalKeyBindingId : disabledAuthenticationKeyBindings) {
+                try {
+                    log.info("Re-enabling existing AuthenticationKeyBinding with id " + internalKeyBindingId + " for the duration of this test.");
+                    final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+                    internalKeyBinding.setStatus(InternalKeyBindingStatus.ACTIVE);
+                    internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
+                } catch (InternalKeyBindingNameInUseException e) {
+                    log.error(e.getMessage(), e);
+                } catch (AuthorizationDeniedException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         
