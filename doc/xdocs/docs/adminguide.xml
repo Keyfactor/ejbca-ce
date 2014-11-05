@@ -2633,6 +2633,18 @@ This will ensure that all configured PKCS#11 slots are used regularly, preventin
 The occurance of such timeouts depend on the specific HSM used, neworking equipment etc. 
 </p>
 
+<p><b>Remote Internal Key Binding Updater</b></p>
+<p>
+The service periodically (with configured interval) connects to the configured remote system using a Peer Connector and checks expiration of visible, usable and
+enabled Internal Key Bindings' certificates.
+For renewal to work, the issuing CA has to be usable on the system where this service is running and the same end entity that was used to issue the
+previous certificate must still exist.
+<ul>
+<li>Time before certificate expires: How long before the current bound certificate expires it should be renewed.</li>
+<li>Renew key pair: Option to renew the key pair automatically before issuing a new certificate.</li>
+</ul>
+</p>
+
 </subsection>
 
 <subsection name="Writing Customized Services">
