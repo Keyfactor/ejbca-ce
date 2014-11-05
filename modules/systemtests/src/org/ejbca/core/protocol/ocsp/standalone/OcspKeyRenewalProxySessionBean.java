@@ -20,6 +20,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.jndi.JndiConstants;
@@ -27,17 +28,22 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 
 /**
+ * Proxy for making certain functions in OcspKeyRenewalSessionBean testable remotely.
+ * 
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspKeyRenewalProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessionRemote, OcspKeyRenewalProxySessionLocal {
 
+    private static final Logger log = Logger.getLogger(OcspKeyRenewalProxySessionBean.class);
+
     @EJB
     private OcspKeyRenewalSessionLocal ocspKeyRenewalSession; 
     
     @Override
     public void setTimerToFireInOneSecond() throws InterruptedException {
+        log.debug(">setTimerToFireInOneSecond");    // debug level is ok, since it will never run in production
         long oldValue = OcspConfiguration.getRekeyingUpdateTimeInSeconds();
         ConfigurationHolder.updateConfiguration(OcspConfiguration.REKEYING_UPDATE_TIME_IN_SECONDS, "1");
         ConfigurationHolder.updateConfiguration(OcspConfiguration.REKEYING_SAFETY_MARGIN_IN_SECONDS, Long.toString(Long.MAX_VALUE/1000));
@@ -49,12 +55,13 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
             ConfigurationHolder.updateConfiguration(OcspConfiguration.REKEYING_UPDATE_TIME_IN_SECONDS, Long.toString(oldValue));
             ocspKeyRenewalSession.startTimer();
         }
+        log.debug("<setTimerToFireInOneSecond");
     }
 
     @Override
     public void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
+        log.debug(">renewKeyStores invoked with signerSubjectDN '" + signerSubjectDN + "'.");    // debug level is ok, since it will never run in production
         ocspKeyRenewalSession.renewKeyStores(signerSubjectDN);
+        log.debug("<renewKeyStores");
     }
-    
 }
-
