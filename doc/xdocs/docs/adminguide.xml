@@ -2467,6 +2467,7 @@ certain amount of time after been registered, and expires the users possibility 
 <li>a 'Renew CA Service' that checks if CA certificates are about to expire and renews them.</li>
 <li>a 'Publisher queue process service' that retries failed publishing.</li>
 <li>a 'HSM Keepalive Service' that periodically tests crypto tokens to avoid connection timeouts.</li>
+<li>a 'Remote Internal Key Binding Updater' that automatically renews expiring OCSP signing certificates and keys at a connected VA.</li>
 </ul>
 It is also possible to easily write plug-ins for customized services.
 </p><p>
