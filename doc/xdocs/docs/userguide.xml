@@ -2052,8 +2052,8 @@ The AuthenticationKeyBinding is the EJBCA instance identity and consists of a cl
 one of the instance's <a href="userguide.html#Managing Crypto Tokens">Crypto Tokens</a>.
 Ensure that the AuthenticationKeyBinding is configured to trust the remote system's server SSL certificate or the connection
 will fail.
-AuthenticationKeyBinding settings are only read when a Peer Connector's connection pool is stared and if the client certificate
-is updated this will not take affect until a connection pool is <code>Reset</code>.
+AuthenticationKeyBinding settings are only read when a Peer Connector's connection pool is started and if the client certificate
+is updated this will not take effect until a connection pool is <code>Reset</code>.
 </p><p>
 For each configured Peer Connector, you can see the human readable name, connection end point and current connection status.
 You can <code>Ping</code> any of the remote systems to check connectivity and the result is the round-trip time from and to the
@@ -2078,7 +2078,7 @@ From the Remote Systems overview, click the <code>Add</code> button. Configure t
 <p>
 From the Remote Systems overview, click the <code>Edit</code> button for an existing Peer Connector.
 In the view of the Peer Connector you can modify and save the existing name, URL or state.
-In the Edit view, you additionally have buttons for cloning (<code>Clone</code>) or deleteing (<code>Delete</code>) the current object.
+In the Edit view, you additionally have buttons for cloning (<code>Clone</code>) or deleting (<code>Delete</code>) the current object.
 </p>
 </subsubsection>
 </subsection>
@@ -2112,7 +2112,7 @@ Once an EJBCA instance has been authorized to connect and manage another EJBCA i
 can be performed through the Admin GUI of the authorized instance.
 </p>
 <p>
-The administrator initating these operations needs to be authorized to the <code>/peer/view /peer/manage</code>
+The administrator initiating these operations needs to be authorized to the <code>/peer/view /peer/manage</code>
 access rules and additionally any relevant CA.
 </p>
 <subsubsection name="Publishing using Peer Connectors">
@@ -2147,8 +2147,8 @@ access rules to be able to check synchronzation data and push missing or outdate
 <subsubsection name="Renewal of remote Internal Key Bindings">
 <p>
 In a setup where an EJBCA CA instance (or a cluster) uses external EJBCA VA/OCSP responders, a CA delegates signing of OCSP responses
-to an OCSP singing certificate (configured as a OcspKeyBinding) at the VA.
-The OCSP singing certificate should be short lived and to make renewal easier, this is available as a remote management operation on
+to an OCSP signing certificate (configured as a OcspKeyBinding) at the VA.
+The OCSP signing certificate should be short-lived and to make renewal easier, this is available as a remote management operation on
 the CA.
 </p><p>
 In the overview of peer connectors, click <code>Manage</code> for the peer connector representing the VA and select the
