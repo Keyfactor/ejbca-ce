@@ -337,7 +337,7 @@ public final class EjbcaConfiguration {
                 ret = Integer.valueOf(value);
             }
         } catch (NumberFormatException e) {
-            log.error("Invalid value in "+defaultValue+", must be decimal number: " + e.getMessage());
+            log.error("Invalid value configured for '"+key+"', must be decimal number: " + e.getMessage());
         }
         return ret;
     }
@@ -351,7 +351,7 @@ public final class EjbcaConfiguration {
                 ret = Long.valueOf(value);
             }
         } catch (NumberFormatException e) {
-            log.error("Invalid value in "+defaultValue+", must be decimal number: " + e.getMessage());
+            log.error("Invalid value configured for '"+key+"', must be decimal number: " + e.getMessage());
         }
         return ret;
     }
