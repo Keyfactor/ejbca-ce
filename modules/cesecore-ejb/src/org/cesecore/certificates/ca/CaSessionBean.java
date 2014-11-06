@@ -719,12 +719,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 if (tokendata.get(CAToken.KEYSTORE)!=null) {
                     tokendata.remove(CAToken.KEYSTORE);
                     tokendata.remove(CAToken.CLASSPATH);
-                    log.info("Removed duplicate of upgraded CA's internal keystore for CA with id: " + caid);
+                    log.info("Removed duplicate of upgraded CA's internal keystore for CA '" + caName + "' with id: " + caid);
                     return true;
                 }
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("CA already has cryptoTokenId and will not have it's token split of to a different db table because db.keepinternalcakeystores=true: " + caid);
+                    log.debug("CA '" + caName + "' already has cryptoTokenId and will not have it's token split of to a different db table because db.keepinternalcakeystores=true: " + caid);
                 }
             }
             return false;
@@ -732,7 +732,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // Perform pre-upgrade of CATokenData to correct classpath changes (org.ejbca.core.model.ca.catoken.SoftCAToken)
         tokendata = (LinkedHashMap<String, String>) new CAToken(tokendata).saveData();
         data.put(CA.CATOKENDATA, tokendata);
-        log.info("Pulling CryptoToken out of CA with id " + caid + " into a separate database table.");
+        log.info("Pulling CryptoToken out of CA '" + caName + "' with id " + caid + " into a separate database table.");
         final String str = (String) tokendata.get(CAToken.KEYSTORE);
         byte[] keyStoreData = null;
         if (StringUtils.isNotEmpty(str)) {
@@ -754,15 +754,22 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (log.isDebugEnabled()) {
             log.debug("CA token classpath: " + classpath);
         }
+        // Upgrade the properties value
+        final Properties upgradedProperties = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(prop);
         // If it is an P11 we are using and the library and slot are the same as an existing CryptoToken we use that CryptoToken's id.
         int cryptoTokenId = 0;
         if (PKCS11CryptoToken.class.getName().equals(classpath)) {
-            for (Integer currentCryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
-                CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId.intValue());
-                if (StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY))
-                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY))
-                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE))
-                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE))) {
+            if (upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE)==null) {
+                log.error("Upgrade of CA '" + caName + "' failed due to failed upgrade of PKCS#11 CA token properties.");
+                return false;
+            }
+            for (final Integer currentCryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
+                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId.intValue());
+                final Properties cryptoTokenProperties = cryptoToken.getProperties();
+                if (StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY))
+                        && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY), cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY))
+                        && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE))
+                        && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE))) {
                     // The current CryptoToken point to the same HSM slot in the same way.. re-use this id!
                     cryptoTokenId = currentCryptoTokenId.intValue();
                     break;
@@ -772,25 +779,21 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (cryptoTokenId == 0) {
             final String cryptoTokenName = "Upgraded CA CryptoToken for " + caName;
             try {
-                //Upgrade the properties value
-                Properties upgradedProperties = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(prop);
                 cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, upgradedProperties, keyStoreData, caid, cryptoTokenName));
             } catch (CryptoTokenNameInUseException e) {
-                String msg = "Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.";
+                final String msg = "Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.";
                 log.info(msg, e);
                 throw new RuntimeException(msg, e);  // Since we have a constraint on CA names to be unique, this should never happen
             } catch (NoSuchSlotException e) {
-                String msg = "Slot as defined by " + prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE) + " could not be found.";
+                final String msg = "Slot as defined by " + upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE) + " for CA '" + caName + "' could not be found.";
                 log.error(msg, e);
                 throw new RuntimeException(msg, e);
             }
-                
         }
+        // Mark this CA as upgraded by setting a reference to the CryptoToken if the merge was successful
         tokendata.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
         // Note: We did not remove the keystore in the CA properties here, so old versions running in parallel will still work
+        log.info("CA '" + caName + "' with id " + caid + " is now using CryptoToken with cryptoTokenId " + cryptoTokenId);
         return true;
     }
-
- 
-   
 }
