@@ -21,7 +21,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.Collection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;

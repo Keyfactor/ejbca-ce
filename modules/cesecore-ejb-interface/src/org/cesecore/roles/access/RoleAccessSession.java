@@ -14,8 +14,6 @@ package org.cesecore.roles.access;
 
 import java.util.List;
 
-import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.roles.RoleData;
 
 /**

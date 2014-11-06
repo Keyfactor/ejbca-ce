@@ -20,7 +20,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.Collection;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x509.Extensions;
