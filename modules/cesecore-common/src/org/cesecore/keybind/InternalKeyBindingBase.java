@@ -173,9 +173,6 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
 
     @Override
     public void generateNextKeyPairAlias() {
-        if (getNextKeyPairAlias() != null) {
-            return;
-        }
         final String currentKeyPairAlias = getKeyPairAlias();
         final String nextKeyPairAlias = getNewAlias(currentKeyPairAlias);
         if (log.isDebugEnabled()) {

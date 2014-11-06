@@ -197,6 +197,7 @@ public interface InternalKeyBindingMgmtSession {
 
     /**
      * Creates a new key pair with the same key specification as the current and a new alias.
+     * If a nextKey reference already exists, it will be replaced with a reference to the new key.
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the unique identifier of the InternalKeyBinding
