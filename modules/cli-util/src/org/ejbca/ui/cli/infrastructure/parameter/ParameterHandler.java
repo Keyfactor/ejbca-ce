@@ -23,8 +23,6 @@ import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 
-import sun.security.krb5.internal.PAEncTSEnc;
-
 /**
  * Class for handling parameters in commands
  * 
