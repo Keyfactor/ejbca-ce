@@ -46,6 +46,7 @@ public abstract class CommandBase implements CliCommandPlugin {
         Parameter help = Parameter.createFlag(ParameterHandler.HELP_KEY, "");
         help.setAllowList(false);
         registerParameter(help);
+        registerParameter(Parameter.createFlag(ParameterHandler.VERBOSE_KEY, "Set this value for verbose output of parameter values."));
     }
 
     protected static OverwriteResponse getValueFoundResponse(OverwriteResponse defaultResponse) {
