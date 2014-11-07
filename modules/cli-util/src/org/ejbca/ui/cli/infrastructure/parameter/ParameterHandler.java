@@ -23,6 +23,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 
+import sun.security.krb5.internal.PAEncTSEnc;
+
 /**
  * Class for handling parameters in commands
  * 
@@ -32,6 +34,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 public class ParameterHandler {
 
     public static final String HELP_KEY = "--help";
+    public static final String VERBOSE_KEY = "--verbose";
 
     private static final Logger log = Logger.getLogger(ParameterHandler.class);
 
@@ -91,6 +94,7 @@ public class ParameterHandler {
     public ParameterContainer parseParameters(String... arguments) {
         ParameterContainer result = new ParameterContainer();
         List<String> argumentList = new ArrayList<String>();
+        boolean verbose = false;
         for (int i = 0; i < arguments.length; i++) {
             String argument = arguments[i];
             //Glue together any quotes that may be mismatched due to spaces
@@ -109,7 +113,11 @@ public class ParameterHandler {
                     }
                 }
             }
-            argumentList.add(argument);
+            if (argument.equals(VERBOSE_KEY)) {
+                verbose = true;
+            } else {
+                argumentList.add(argument);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("ARGUMENT: " + argument);
             }
@@ -169,13 +177,14 @@ public class ParameterHandler {
                     value = new String(System.console().readPassword());
                 } else {
                     throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
-                }
-                if (log.isDebugEnabled() && parameter.getParameterMode() != ParameterMode.PASSWORD) {
-                    if (!StringUtils.isEmpty(value)) {
-                        log.error("SETTING: " + parameterString + " as " + value);
-                    }
+                }                
+            }
+            if (verbose) {
+                if (!StringUtils.isEmpty(value) && (parameter == null || (parameter.getParameterMode() != ParameterMode.PASSWORD && parameter.getParameterMode() != ParameterMode.FLAG))) {
+                    log.error("SETTING: " + parameterString + " as " + value);
                 }
             }
+            
             //Lastly, strip any quotes 
             if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
                 value = value.substring(1, value.length() - 1);
