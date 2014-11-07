@@ -13,6 +13,9 @@
 package org.ejbca.ui.cli.infrastructure.parameter.enums;
 
 /**
+ * This enum connotes whether a CLI argument (of the form --caname foo) is allowed to stand without its associated switch and 
+ * be read implicitly. Standalone arguments will be read in the order they're declared, so care must be taken to avoid ambiguity.  
+ * 
  * @version $Id$
  *
  */
