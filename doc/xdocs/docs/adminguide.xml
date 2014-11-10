@@ -42,8 +42,13 @@ it will try to choose another and change any (end entity profile to certificate 
 The reason the id is kept is that there are references to the profile id from users belonging to the profile.
 </p><p>
 During import on a new EJBCA instance where CAs that are referenced from the profiles don't exist, a default CA has to be
-specified on command line. Two CAs are concidered identical in this context if they have the same subject DN.
-</p></section>
+specified on command line. Two CAs are considered identical in this context if they have the same subject DN.
+</p><p>
+It is also possible to import and export profiles in the AdminGUI in the 'End Entity Profiles' page and the 'Certificate 
+Profiles' page. The same limitations above apply even when exporting/importing through the GUI, but the profiles will be 
+imported from and exported into a zip file.
+</p>
+</section>
 
 <section name="Managing CAs">
 
