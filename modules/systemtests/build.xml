@@ -116,6 +116,8 @@
 		<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="interfaces.classpath" target="${java.target.version}">
 		</javac>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${build.interface.dir}" failonerror="false"/>
 	</target>
 
 	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb">
@@ -149,8 +151,6 @@
 		<copy file="${jboss-ejb-client.properties}" todir="${build.dir}" failonerror="false"/>
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
-		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
-		<copy file="${systemtests.properties.file}" todir="${build.test.dir}" failonerror="false"/>
 	</target>
 
 	<target name="assert-notinproduction">
