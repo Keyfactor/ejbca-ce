@@ -947,24 +947,32 @@ certificates (.p7c).
 
 <subsubsection name="Use LDAP DN order">
 <p>
-In a certificate the order of the CN components can be put in different order depending on wich standard you abide to.
-<br/>
+In a certificate the order of the DN components (CN,O,C etc) can be put in different order, in the binary encoded certificate.
+</p>
 <ul>
-<li>Ldap DN order (<a href="http://www.ietf.org/rfc/rfc2253.txt">RFC2253</a>): CN=Common Name, O=Organization, C=Country</li>
-<li>X.500 DN order: C=Country, O=Organization, CN=Common name</li>
+<li>last-to-first, forward (historically called LDAP DN Order in EJBCA): CN=Common Name, O=Organization, C=Country</li>
+<li>first-to-last, reverse order: C=Country, O=Organization, CN=Common name</li>
 </ul>
-In theory the order of the DN should not matter, because comparisons between DNs should be done on the RDN level. 
-In practice DN comparisons is often done using string comparisons, where the string value is depending on the order.
+<p>
+When using string representation of DNs, the <b>actual</b> order is commonly not displayed, but the tool used will display in the order it sees fit which might be the reverse of the real, binary, order.
+In order to see the real, binary, order an asn1 parsing tool, like OpenSSL, can be used. 
+In practice DN order can be important as comparisons is often done using string comparisons, where the string value may be depending on the order or not.
 </p>
 <p> 
-For historical reasons EJBCA uses Ldap DN order. Some applications do require X.500 DN order however and therefore EJBCA gives you the choice.
+The most common order is first-to-last (i.e. C,O,CN), but for historical reasons EJBCA uses last-to-first (CN,O,C). 
+Some applications do require first-to-last order however and therefore EJBCA gives you the choice (named as 'non LDAP DN order').
 There are two places in EJBCA where this can be configured:
+</p>
 <ul>
 <li>In the Certificate profile (Edit certificate profiles)</li>
 <li>In the CA configuration (Edit Certificate Authorities)</li>
 </ul>
+<p>
 The relationship between the settings is that they are both evaluated in a logical AND expression. 
-This means that if both are true the DN will have Ldap DN order, but if any one of them is false the DN will have X.500 order.
+This means that if both are true the DN will have last-to-first (LDAP) DN order, but if any one of them is false the DN will have X.500 order.
+</p>
+<p>
+For some references see <a href="http://www.ietf.org/rfc/rfc2253.txt">RFC2253</a> and <a href="http://www.ietf.org/rfc/rfc4514.txt">RFC4514</a>
 </p>
 </subsubsection>
 <subsubsection name="Extended Key Usage">
