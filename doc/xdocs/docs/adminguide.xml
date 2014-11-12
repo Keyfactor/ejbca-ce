@@ -1805,7 +1805,7 @@ In the SubjectAlternativeName extension, if part of the DNS should be a secret, 
 precertificate that will be published to the Certificate Transparency Log. See the <a href="userguide.html#Certificate%20Transparency%20(Enterprise%20only)">user guide</a>.
 </p>
 </subsection>
-<subsection name="Using an outgoing proxy server to send to CT logs ">
+<subsection name="Using an outgoing proxy server to send to CT logs">
 <p>
 For security reasons using an outgoing proxy server from the CA to the CT logs is a common request. The CT log function will make use of Java/JBoss proxy configurations.
 There are two ways to configure the proxy properties in JBoss:
