@@ -1805,6 +1805,32 @@ In the SubjectAlternativeName extension, if part of the DNS should be a secret, 
 precertificate that will be published to the Certificate Transparency Log. See the <a href="userguide.html#Certificate%20Transparency%20(Enterprise%20only)">user guide</a>.
 </p>
 </subsection>
+<subsection name="Using an outgoing proxy server to send to CT logs ">
+<p>
+For security reasons using an outgoing proxy server from the CA to the CT logs is a common request. The CT log function will make use of Java/JBoss proxy configurations.
+There are two ways to configure the proxy properties in JBoss:
+</p>
+<ul>
+<li>In standalone.sh append to JAVA_OPTS:</li>
+</ul>
+<source>
+-Dhttp.proxyHost=HostName/IPaddress
+-Dhttp.proxyPort=PortNumber
+-Dhttps.proxyHost=HostName/IPaddress
+-Dhttps.proxyPort=PortNumber
+</source>
+<ul>
+<li>In standalone.xml append to system-properties:</li>
+</ul>
+<source>
+&lt;property name="http.proxyHost" value="HostName/IPaddress"/>
+&lt;property name="http.proxyPort" value="PortNumber"/>
+&lt;property name="https.proxyHost" value="HostName/IPaddress"/>
+&lt;property name="https.proxyPort" value="PortNumber"/>
+</source>
+<p>
+Both ways works, but don't forget to reconfigure the proxy settings if you upgrade/change the JBoss instance.</p>
+</subsection>
 </section>
 
 
