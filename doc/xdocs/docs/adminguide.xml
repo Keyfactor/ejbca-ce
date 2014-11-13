@@ -1378,7 +1378,7 @@ If you are running on JBoss 5.x, make sure that you configured JBoss WS correctl
 <subsection name="Web Services authentication">
 <p>
 The Web Services interface requries client certificate authentication from administrators, in the same way as the admin GUI does.
-If you have a client certificate the works on the admin GUI you should also be able to use it for the web service interface. 
+If you have a client certificate that works on the admin GUI you should also be able to use it for the web service interface. 
 </p>
 </subsection>
 
