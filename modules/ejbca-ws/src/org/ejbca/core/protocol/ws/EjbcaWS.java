@@ -2341,11 +2341,11 @@ public class EjbcaWS implements IEjbcaWS {
             profile = certificateProfileSession.getCertificateProfile(profileId);
             type = "certificate";
         } else {
-            throw new EjbcaException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
+            throw new IllegalArgumentException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
         }
         
         if (profile == null) {
-            throw new EjbcaException("Error : Could not find " + type + " profile with ID '" + profileId + "' in the database.");
+            throw new IllegalArgumentException("Error : Could not find " + type + " profile with ID '" + profileId + "' in the database.");
         }
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
