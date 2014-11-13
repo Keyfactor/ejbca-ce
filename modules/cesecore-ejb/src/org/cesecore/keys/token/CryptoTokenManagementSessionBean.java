@@ -271,7 +271,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new AuthorizationDeniedException();
         }
         if (cryptoTokenSession.removeCryptoToken(cryptoTokenId)) {
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                     authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deleted CryptoToken with id " + cryptoTokenId);
         } else if (log.isDebugEnabled()) {
             log.debug("Crypto token with id " + cryptoTokenId + " does not exist and can not be deleted.");
@@ -297,7 +297,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.ACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.activate(authenticationCode);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Activated CryptoToken '" + cryptoToken.getTokenName()
                         + "' with id " + cryptoTokenId);
     }
@@ -308,7 +308,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.deactivate();
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deactivated CryptoToken '" + cryptoToken.getTokenName()
                         + "' with id " + cryptoTokenId);
     }
