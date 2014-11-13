@@ -69,6 +69,7 @@ public class ObjectFactory {
     private final static QName _CrmfRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "crmfRequestResponse");
     private final static QName _SoftTokenRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "softTokenRequestResponse");
     private final static QName _GetAvailableCertificateProfilesResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfilesResponse");
+    private final static QName _GetProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfileResponse");
     private final static QName _EditUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "editUserResponse");
     private final static QName _GetAvailableCAsInProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsInProfileResponse");
     private final static QName _NotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "NotFoundException");
@@ -93,6 +94,7 @@ public class ObjectFactory {
     private final static QName _SignRequestException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "SignRequestException");
     private final static QName _GetCertificateResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificateResponse");
     private final static QName _GetAvailableCertificateProfiles_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfiles");
+    private final static QName _GetProfile_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfile");
     private final static QName _IsAuthorizedResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorizedResponse");
     private final static QName _RevokeBackDateNotAllowedForProfileException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "RevokeBackDateNotAllowedForProfileException");
     private final static QName _AlreadyRevokedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AlreadyRevokedException");
@@ -141,6 +143,14 @@ public class ObjectFactory {
         return new GetAvailableCertificateProfiles();
     }
 
+    /**
+     * Create an instance of {@link GetProfile }
+     * 
+     */
+    public GetProfile createGetProfile() {
+        return new GetProfile();
+    }
+    
     /**
      * Create an instance of {@link GetCertificate }
      * 
@@ -515,6 +525,14 @@ public class ObjectFactory {
      */
     public GetAvailableCertificateProfilesResponse createGetAvailableCertificateProfilesResponse() {
         return new GetAvailableCertificateProfilesResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetProfileResponse }
+     * 
+     */
+    public GetProfileResponse createProfileResponse() {
+        return new GetProfileResponse();
     }
 
     /**
@@ -1441,6 +1459,15 @@ public class ObjectFactory {
     public JAXBElement<GetAvailableCertificateProfilesResponse> createGetAvailableCertificateProfilesResponse(GetAvailableCertificateProfilesResponse value) {
         return new JAXBElement<GetAvailableCertificateProfilesResponse>(_GetAvailableCertificateProfilesResponse_QNAME, GetAvailableCertificateProfilesResponse.class, null, value);
     }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetProfileResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfileResponse")
+    public JAXBElement<GetProfileResponse> createGetProfileResponse(GetProfileResponse value) {
+        return new JAXBElement<GetProfileResponse>(_GetProfileResponse_QNAME, GetProfileResponse.class, null, value);
+    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EditUserResponse }{@code >}}
@@ -1656,6 +1683,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCertificateProfiles")
     public JAXBElement<GetAvailableCertificateProfiles> createGetAvailableCertificateProfiles(GetAvailableCertificateProfiles value) {
         return new JAXBElement<GetAvailableCertificateProfiles>(_GetAvailableCertificateProfiles_QNAME, GetAvailableCertificateProfiles.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetProfile }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfile")
+    public JAXBElement<GetProfile> createGetProfile(GetProfile value) {
+        return new JAXBElement<GetProfile>(_GetProfile_QNAME, GetProfile.class, null, value);
     }
 
     /**

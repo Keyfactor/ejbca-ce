@@ -45,6 +45,8 @@ public class EJBCAWSRACommandFactory {
             return new FindUserCommand(args);
         }else if (args[0].equals("findcerts")) {
             return new FindCertsCommand(args);
+        }else if (args[0].equals("getprofile")) {
+            return new GetProfileCommand(args);
         }else if (args[0].equals("pkcs10req")) {
             return new PKCS10ReqCommand(args);
         } else if (args[0].equals("pkcs12req")) {
