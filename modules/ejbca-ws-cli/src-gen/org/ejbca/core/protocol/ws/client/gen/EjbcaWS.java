@@ -832,26 +832,6 @@ public interface EjbcaWS {
         int arg0)
         throws AuthorizationDeniedException_Exception, EjbcaException_Exception
     ;
-    
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns byte[]
-     * @throws AuthorizationDeniedException_Exception
-     * @throws EjbcaException_Exception
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getProfile", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetProfile")
-    @ResponseWrapper(localName = "getProfileResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetProfileResponse")
-    public byte[] getProfile(
-        @WebParam(name = "arg0", targetNamespace = "")
-        int arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        String arg1)
-        throws AuthorizationDeniedException_Exception, EjbcaException_Exception
-    ;
 
     /**
      * 
