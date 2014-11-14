@@ -880,23 +880,6 @@ public interface IEjbcaWS {
 			throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
-	 * Fetches the profile specified by profileId and profileType in XML format.
-     * 
-     * Authorization requirements:<pre>
-     * - /administrator
-     * - /endentityprofilesrules/&lt;end entity profile&gt;
-     * </pre>
-     * 
-     * @param profileId ID of the profile we want to retrieve.
-     * @param profileType The type of the profile we want to retriev. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
-     * @return a byte array contaning the specified profile in XML format 
-     * @throws EjbcaException if an error occured
-     * @throws AuthorizationDeniedException
-     */
-    abstract byte[] getProfile(int profileId, String profileType) 
-            throws EjbcaException, AuthorizationDeniedException;
-
-	/**
 	 * Generates a CRL for the given CA.
 	 * 
 	 * Authorization requirements:<pre>
