@@ -1,3 +1,20 @@
+EJBCA 6.2.5, 2014-11-14
+---
+Bug
+	[ECA-3901] - Possible NPE when debug is enabled
+	[ECA-3906] - Missing key in CryptoToken for mapped purpose in CAToken will hang healthcheck
+	[ECA-3907] - CAToken to CryptoToken upgrade failure
+	[ECA-3909] - InternalKeyBindingMgmtSessionBean.generateNextKeyPair fails if nextKey already exists
+
+Improvement
+	[ECA-3723] - Allow verbose preference for CLI
+	[ECA-3866] - JavaDoc CLI enums
+	[ECA-3905] - Add instructions how to import certificate profiles in GUI    
+	[ECA-3915] - External RA GUI browser enroll does not work with FF 33 and later
+
+New Feature
+	[ECA-3900] - Allow CT log publisher to use HTTP Proxy java system settings
+
 EJBCA 6.2.4, 2014-10-29
 ---
 Bug

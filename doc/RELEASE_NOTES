@@ -11,6 +11,18 @@ For upgrade instructions, please see UPGRADE.
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 
+EJBCA 6.2.5
+-----------
+This minor release mainly centers around a bug found in the upgrade procedure when automatically upgrading CATokens to modern CryptoTokens. Due to a bug in 4.0.x, 
+working CATokens could be created even with incorrect configurations, and these were then incorrectly processed. Since 6.2.5 the upgrade procedure will fail gracefully, 
+allowing administrators to fix the configuration before proceeding. 
+
+Also, the CT log publisher will now use the the java system settings for http_proxy, which were previously ignored.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*   SSLv3 is still available for use, but is considered vulnerable due to the POODLE exploit
+
 EJBCA 6.2.4
 -----------
 This is a maintenance release introducing two new features, foremost of which are Private Domains for the Certificate Transparency (CT) Protocol and a change
