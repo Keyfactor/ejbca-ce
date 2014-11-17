@@ -1132,25 +1132,11 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="externalra-client"/>
 	</target>
 
-	<target name="externalra-scep" depends="deprecated:check" description="Build the EJBCA External RA StandAlone SCEP application (Enterprise Only)">
-		<fail message="SCEP RA mode is not distributed with the Community version of EJBCA">
-			<condition>
-				<not>
-					<available file="${mod.externalra-scep.path}/build.xml" />
-		 		</not>
-			</condition>
-		</fail>	
+	<target name="externalra-scep" depends="deprecated:check" description="Build the EJBCA External RA StandAlone SCEP application.">
 		<ant dir="modules" target="externalra-scep"/>
 	</target>
 
-	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Only)" depends="externalra-scep,deprecated:check">
-		<fail message="SCEP RA mode is not distributed with the Community version of EJBCA">
-			<condition>
-				<not>
-			    	<available file="modules/externalra-scep/build.xml" />
-			    </not>
-			</condition>
-		</fail>	
+	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application." depends="externalra-scep,deprecated:check">
 		<antcall target="jee:deploy-scep-war" />
 	</target>
 
