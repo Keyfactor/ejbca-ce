@@ -26,7 +26,7 @@
 
 <hr />
 
-<c:set var="hasOptions" value="${applybean.multipleKeyLengthsAvailable || applybean.certificateProfileListShown || applybean.openVPNInstallerConfigured}" />
+<c:set var="hasOptions" value="${applybean.numberOfLengthsAvailable > 1 || applybean.certificateProfileListShown || applybean.openVPNInstallerConfigured}" />
 
 
 <!-- Information text -->
@@ -56,14 +56,17 @@
 	<input name="password" type="hidden" value="<c:out value="${password}" />">
 	<input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
 	
-	<c:if test="${applybean.multipleKeyLengthsAvailable}">
+	<c:if test="${applybean.numberOfLengthsAvailable > 1}">
     	<label for="keylength">Key length:</label>
             <select name="keylength" id="keylength" size="1">
     			<c:forEach var="keylength" items="${availablekeylengths}">
     				<option value="${keylength}">${keylength} bits</option>
     			</c:forEach>
             </select>
-        <br />
+        <br/>
+    </c:if>
+	<c:if test="${applybean.numberOfLengthsAvailable == 1}">
+    	<input name="keylength" type="hidden" value="${availablekeylengths[0]}" />
     </c:if>
     
     <c:if test="${applybean.certificateProfileListShown}">

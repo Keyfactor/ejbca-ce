@@ -43,6 +43,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -220,8 +221,7 @@ public class RequestInstance {
     }
 
     
-    void doPost(HttpServletRequest request, HttpServletResponse response)
-	throws IOException, ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ServletDebug debug = new ServletDebug(request, response);
 		boolean usekeyrecovery = false;
 
@@ -515,7 +515,7 @@ public class RequestInstance {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
 		} catch (DecoderException de) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
-		} catch (org.cesecore.certificates.certificate.IllegalKeyException e) {
+		} catch (IllegalKeyException e) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidkey", e.getMessage());
 		} catch (CryptoTokenOfflineException ctoe) {
 		    String ctoeMsg = ctoe.getMessage();
