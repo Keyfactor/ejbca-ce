@@ -88,6 +88,7 @@
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
 		<antcall target="ctclean"/>
+		<antcall target="certsafeclean"/>
 		<antcall target="peerconnectorclean"/>
 		<delete failonerror="false">
 			<fileset dir="${modules.basedir}/dist" includes="*" />
