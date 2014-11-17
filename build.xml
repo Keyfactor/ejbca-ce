@@ -628,10 +628,10 @@
            	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
-                <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
-                <sourcepath location="${ejbca.home}/modules/cesecore-ejb/src"/>
-                <sourcepath location="${ejbca.home}/modules/cesecore-ejb-interface/src"/>
-                <sourcepath location="${ejbca.home}/modules/cesecore-entity/src"/>
+            <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
+            <sourcepath location="${ejbca.home}/modules/cesecore-ejb/src"/>
+            <sourcepath location="${ejbca.home}/modules/cesecore-ejb-interface/src"/>
+            <sourcepath location="${ejbca.home}/modules/cesecore-entity/src"/>
         </javadoc>
     	<echo message=""/>
     	<dirname file="${apidoc}/index.html" property="javadoc.dir"/>
@@ -1089,11 +1089,11 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-cmp-tcp" />
     </target>
 	
-    <target name="cmpTcpProxy" depends="deprecated:check" description="Builds a CMP TCP proxy.">
+    <target name="cmpTcpProxy" depends="deprecated:check" description="Builds a CMP TCP proxy. (Enterprise only)">
     	<ant dir="modules" target="cmpTcpProxy" />
     </target>
 	
-    <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy.">
+    <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy. (Enterprise only)">
     	<ant dir="modules" target="cmpHttpProxy" />
     </target>
 	
@@ -1132,12 +1132,26 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="externalra-client"/>
 	</target>
 
-	<target name="externalra-scep" depends="deprecated:check" description="Build the EJBCA External RA StandAlone SCEP application">
-    	<ant dir="modules" target="externalra-scep"/>
+	<target name="externalra-scep" depends="deprecated:check" description="Build the EJBCA External RA StandAlone SCEP application (Enterprise Only)">
+		<fail message="SCEP RA mode is not distributed with the Community version of EJBCA">
+			<condition>
+				<not>
+					<available file="${mod.externalra-scep.path}/build.xml" />
+		 		</not>
+			</condition>
+		</fail>	
+		<ant dir="modules" target="externalra-scep"/>
 	</target>
 
-	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application" depends="externalra-scep,deprecated:check">
-        <antcall target="jee:deploy-scep-war" />
+	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Only)" depends="externalra-scep,deprecated:check">
+		<fail message="SCEP RA mode is not distributed with the Community version of EJBCA">
+			<condition>
+				<not>
+			    	<available file="modules/externalra-scep/build.xml" />
+			    </not>
+			</condition>
+		</fail>	
+		<antcall target="jee:deploy-scep-war" />
 	</target>
 
 	<target name="externalra-gui" depends="deprecated:check" description="Build the EJBCA External RA StandAlone GUI application">
