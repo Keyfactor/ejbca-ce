@@ -39,11 +39,10 @@ org.cesecore.authorization.control.AuditLogRules
 
 <h1><h:outputText value="#{web.text.AUDITHEADER}" /></h1>
 
-<%
-	//TODO: Fix translation keys.
-%>
-
 <div id="home" class="app">
+
+	<%-- Audit log: CONDITIONS --%>
+
 	<h:outputText value="#{web.text.NO_SEARCHABLE_AUDIT}" rendered="#{auditor.device == null}"/>
 	<h:form id="search" rendered="#{auditor.device != null}">
 	<h:outputLabel for="device" value="Audit Log Device" rendered="#{auditor.oneLogDevice == false}"/>
@@ -54,6 +53,7 @@ org.cesecore.authorization.control.AuditLogRules
 	<h:outputLabel rendered="false" for="sortOrder" value="Order"/>
 	<h:selectOneMenu rendered="false" id="sortOrder" value="#{auditor.sortOrder}"><f:selectItems value="#{auditor.sortOrders}" /></h:selectOneMenu>
  	--%>
+
 	<p>
    	<h:dataTable value="#{auditor.conditions}" var="condition" captionClass="listCaption" headerClass="listHeader" styleClass="grid" rowClasses="a">
 		<f:facet name="caption"><h:outputText value="#{web.text.CONDITIONS_CURRENT}"/></f:facet>
@@ -64,7 +64,7 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="footer">
 			<h:panelGroup>
 				<h:selectOneMenu rendered="#{auditor.conditionToAdd == null}" id="conditionColumn" value="#{auditor.conditionColumn}"><f:selectItems value="#{auditor.columns}"/></h:selectOneMenu>
-				<h:commandButton rendered="#{auditor.conditionToAdd == null}" action="#{auditor.newCondition}" styleClass="commandLink" value="#{web.text.CONDITIONS_NEW}"/>
+				<h:commandButton rendered="#{auditor.conditionToAdd == null}" action="#{auditor.newCondition}" styleClass="commandLink" value="➕ #{web.text.CONDITIONS_NEW}"/>
 				<h:outputText rendered="#{auditor.conditionToAdd != null}" value="#{auditor.nameFromColumn[(auditor.conditionToAdd.column)]}"></h:outputText>
 			</h:panelGroup>
 			</f:facet>
@@ -101,17 +101,37 @@ org.cesecore.authorization.control.AuditLogRules
 		</h:column>
 	</h:dataTable>
 	</p>
+
+	<%-- Audit log: Conditions bar --%>
 	<h:panelGroup>
-		<h:commandButton rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditions}" styleClass="commandLink" value="#{web.text.CONDITIONS_CLEAR}"/>
-		<h:selectBooleanCheckbox immediate="true" value="#{auditor.automaticReload}"/><h:outputText value="#{web.text.AUDIT_AUTORELOAD}"/>
+		<h:commandButton rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditions}" styleClass="commandLink remove" value="❌ #{web.text.CONDITIONS_CLEAR}"/>
+		<h:selectBooleanCheckbox immediate="true" value="#{auditor.automaticReload}"/><h:outputText value=" #{web.text.AUDIT_AUTORELOAD}"/>
 	</h:panelGroup>
 	</h:form>
+
+	<hr />
+
+
+	<%-- Audit log: RESULTS --%>
+
 	<h:form id="search2" rendered="#{auditor.device != null}">
+
+	<%-- Audit log: Export bar --%>
 	<p>
-		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="#{web.text.FIRST}"/>
-		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>
-		<h:commandButton action="#{auditor.reload}" styleClass="commandLink" value="#{web.text.RELOAD}"/>
-		<h:commandButton disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT}"/>
+		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="⬇ #{web.text.AUDIT_DOWNLOAD}"/>
+		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResultsCms}" styleClass="commandLink" value="⬇ #{web.text.AUDIT_DOWNLOADASCMS}"/>
+		<h:outputLabel for="signedByCa" value="#{web.text.AUDIT_DOWNLOADASCMSCA} : "/>
+		<h:selectOneMenu disabled="#{empty auditor.results}" id="signedByCa" value="#{auditor.cmsSigningCa}">
+			<f:selectItems value="#{auditor.cmsSigningCas}" />
+		</h:selectOneMenu>
+	</p>
+
+	<%-- Audit log: Navigation bar --%>
+	<p>
+		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value=" #{web.text.FIRST}"/>
+		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value=" #{web.text.PREVIOUS}"/>
+		<h:commandButton disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT} "/>
+		<h:commandButton action="#{auditor.reload}" styleClass="commandLink reload" value="⟲ #{web.text.RELOAD}"/>
 		<%-- 
 		<h:outputLabel rendered="false" for="startIndex" value="Results start at index"/>
 		<h:inputText rendered="false" id="startIndex" value="#{auditor.startIndex}" styleClass="noBorder numberInputBig"><f:convertNumber type="number"/></h:inputText>
@@ -120,22 +140,18 @@ org.cesecore.authorization.control.AuditLogRules
 		<h:outputText rendered="false" value="Displaying results #{auditor.startIndex} - #{auditor.startIndex + auditor.maxResults - 1}."/>
 		<h:outputText rendered="false" value="Ordered by #{auditor.nameFromColumn[(auditor.sortColumn)]}, asc=#{auditor.sortOrder}."/>
 		 --%>
+		&nbsp;
 		<h:outputText value="#{web.text.AUDIT_DISPRESULTS} "/>
 		<h:inputText id="startIndex2" value="#{auditor.startIndex}" styleClass="numberInputBig"><f:convertNumber type="number"/></h:inputText>
 		<h:outputText value=" #{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
-		<h:outputLabel for="maxResults" value="#{web.text.ENTRIESPERPAGE} "/>
+		&nbsp;
+		<h:outputLabel for="maxResults" value="#{web.text.ENTRIESPERPAGE} : "/>
 		<h:inputText id="maxResults" value="#{auditor.maxResults}" styleClass="numberInputSmall"><f:convertNumber type="number"/></h:inputText>
-
-		<br />
-		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOAD}"/>
-		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResultsCms}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOADASCMS}"/>
-		<h:outputLabel for="signedByCa" value="#{web.text.AUDIT_DOWNLOADASCMSCA} "/>
-		<h:selectOneMenu disabled="#{empty auditor.results}" id="signedByCa" value="#{auditor.cmsSigningCa}">
-			<f:selectItems value="#{auditor.cmsSigningCas}" />
-		</h:selectOneMenu>
 	</p>
+
 	<%/* Note! h:messages requires that auditor.results has been fetched at least ones to display error messages from that method. */%>
 	<p><h:messages layout="table" styleClass="alert"/></p>
+
 	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionClass="listCaption" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
 		<f:facet name="caption">
 			<h:panelGroup>
@@ -267,11 +283,14 @@ org.cesecore.authorization.control.AuditLogRules
 			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] <= 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 		</h:column>
 	</h:dataTable>
+
+	<%-- Audit log: Navigation bar --%>
 	<p>
-		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="First"/>
-		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>
-		<h:commandButton rendered="#{not empty auditor.results}" action="#{auditor.reload}" styleClass="commandLink" value="#{web.text.RELOAD}"/>
-		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT}"/>
+		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value=" #{web.text.FIRST}"/>
+		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value=" #{web.text.PREVIOUS}"/>
+		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT} "/>
+		<h:commandButton rendered="#{not empty auditor.results}" action="#{auditor.reload}" styleClass="commandLink reload" value="⟲ #{web.text.RELOAD}"/>
+		&nbsp;
 		<h:outputText rendered="#{not empty auditor.results}" value="#{web.text.AUDIT_DISPRESULTS} #{auditor.startIndex} #{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
 	</p>
 	</h:form >

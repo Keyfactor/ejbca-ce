@@ -804,8 +804,8 @@ table#config tr td:first-child {
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
 
-.listCaption { text-align: left; background-color: #5B8CCD; color: #FFF; }
-.listHeader { color: #777; font-size: 1.2em; font-weight: bold; text-align: left; }
+.listCaption { font-weight: bold; font-size: 1.2em; text-align: left; background-color: #5B8CCD; color: #FFF; padding-left: .25em; }
+.listHeader { color: #777; font-size: 1.1em; font-weight: bold; text-align: left; }
 
 /* --- Table: List/Actions */
 
@@ -931,6 +931,9 @@ body.popup {
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
 .commandButton { font-size: 9pt; vertical-align: bottom; margin-left: .5em; margin-right: .5em; }
+
+.commandLink.reload { color: #4B842E; }
+.commandLink.remove { color: #A21C15; }
 
 select option.lightgreen { background-color: #80FF80; }
 select option.lightyellow { background-color: #FFFFB3; }
