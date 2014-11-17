@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.pub;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,16 +39,19 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  *
  * @version $Id$
  */
-public class ApplyBean implements java.io.Serializable {
+public class ApplyBean implements Serializable {
     /**
 	 * Version number for serialization
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Logging tool
-	 */
 	private static final Logger log = Logger.getLogger(ApplyBean.class);
+	
+    private boolean initialized;
+    private AuthenticationToken administrator;
+    private String username = "";
+    private EndEntityInformation endEntityInformation = null;
+    private String browser = "unknown";
 	
 	private EjbLocalHelper ejbLocalHelper;
 	
@@ -270,12 +274,7 @@ public class ApplyBean implements java.io.Serializable {
     public String getBrowser() {
         return browser;
     }
-    
-    private boolean initialized;
-    private AuthenticationToken administrator;
-    private String username = "";
-    private EndEntityInformation endEntityInformation = null;
-    private String browser = "unknown";
+
     
     //--------------------------------------------------------------
     // Convenience methods used from JSTL.
@@ -354,10 +353,11 @@ public class ApplyBean implements java.io.Serializable {
      * @return true if there's more than one key length, or if no available key lengths could be found.
      * @throws Exception
      */
-    public boolean isMultipleKeyLengthsAvailable() throws Exception {
+    public int getNumberOfLengthsAvailable() throws Exception {
         int[] keylengths = getAvailableBitLengths();
-        return keylengths == null || keylengths.length != 1; 
+        return keylengths == null ? 0 : keylengths.length; 
     }
+    
 	
 
     /**
