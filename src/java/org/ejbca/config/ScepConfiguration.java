@@ -13,6 +13,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public class ScepConfiguration extends ConfigurationBase implements Serializable {
     
     
