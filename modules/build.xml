@@ -61,7 +61,7 @@
 		<ant antfile="${mod.ejbca-xkms.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<antcall target="externalrascepclean" />
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -93,6 +93,15 @@
 			<fileset dir="${modules.basedir}/dist" includes="*" />
 		</delete>
 	</target>
+	
+	 <condition property="externalrascep.exists">
+	    	<available file="${mod.externalra-scep.path}/build.xml" />
+	    </condition>
+	<target name="externalrascepclean" if="${externalrascep.exists}">
+		<echo message="Cleaning statedump"/>
+		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
     <condition property="statedump.exists">
     	<available file="${mod.statedump.path}/build.xml" />
     </condition>
