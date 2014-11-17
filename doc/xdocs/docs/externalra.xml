@@ -175,7 +175,7 @@ back to the SCEP RA Server. When the certificate reaches the SCEP RA Server, it 
 the SCEP certificate response the next time the SCEP client polls the SCEP RA Server. This
 feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
 </p>
-<subsection name="Configuring the SCEP RA Server on the external RA host (Enterprise Only)">
+<subsection name="Configuring the SCEP RA Server on the external RA host">
 <p>
 The SCEP RA Server is the module installed on the external RA server. This module receives SCEP
 requests from SCEP clients and uses the External RA API to get the CA to process the SCEP requests.
