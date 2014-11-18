@@ -22,11 +22,6 @@
 			<c:param name="format" value="PEM" />
 			<c:param name="issuer" value="${caDN}" />
 		</c:url>
-		<c:url var="moz" value="../publicweb/webdist/certdist" >
-			<c:param name="cmd" value="crl" />
-			<c:param name="issuer" value="${caDN}" />
-			<c:param name="moz" value="y" />
-		</c:url>
 		
 		<c:url var="derdelta" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="deltacrl" />
@@ -36,11 +31,6 @@
 			<c:param name="cmd" value="deltacrl" />
 			<c:param name="format" value="PEM" />
 			<c:param name="issuer" value="${caDN}" />
-		</c:url>
-		<c:url var="mozdelta" value="../publicweb/webdist/certdist" >
-			<c:param name="cmd" value="deltacrl" />
-			<c:param name="issuer" value="${caDN}" />
-			<c:param name="moz" value="y" />
 		</c:url>
 
 		<hr />
