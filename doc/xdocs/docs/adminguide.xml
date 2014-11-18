@@ -2667,7 +2667,7 @@ The occurance of such timeouts depend on the specific HSM used, neworking equipm
 
 <p><b>Remote Internal Key Binding Updater</b></p>
 <p>
-The service periodically (with configured interval) connects to the configured remote system using a Peer Connector and checks expiration of visible, usable and
+The service periodically (with configured interval) connects to the configured peer using a Peer Connector and checks expiration of visible, usable and
 enabled Internal Key Bindings' certificates.
 For renewal to work, the issuing CA has to be usable on the system where this service is running and the same end entity that was used to issue the
 previous certificate must still exist.
