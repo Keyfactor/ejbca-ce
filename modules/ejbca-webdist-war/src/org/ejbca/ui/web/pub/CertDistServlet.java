@@ -104,6 +104,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
+    /* @Deprecated since EJBCA 6.3.0. MOZILLA_PROPERTY can be removed in EJBCA 6.4 or 6.5 */
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
     private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
@@ -179,6 +180,7 @@ public class CertDistServlet extends HttpServlet {
                 String dn = CertTools.getIssuerDN(x509crl);
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
+                // moz is only kept for backwards compatibility, can be removed in EJBCA 6.4 or 6.5
                 String moz = req.getParameter(MOZILLA_PROPERTY);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 if (command.equalsIgnoreCase(COMMAND_DELTACRL)) {
