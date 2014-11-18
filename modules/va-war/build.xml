@@ -13,7 +13,7 @@
 	<property name="build-certstore-va.dir" location="${this.dir}/build-certstore-va"/>
 	<property name="build-crlstore.dir" location="${this.dir}/build-crlstore"/>
 	<property name="build-crlstore-va.dir" location="${this.dir}/build-crlstore-va"/>
-	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src.war.dir" location="${this.dir}/src-war"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile-common.classpath">
@@ -85,7 +85,7 @@
         	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
         	<include name="org/ejbca/core/protocol/ocsp/*.java"/>
         	<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
-			<src path="${src.dir}"/>
+			<src path="${src.war.dir}"/>
         </javac>
 		<antcall target="extensions-build"/>
 	</target>
@@ -94,7 +94,7 @@
 		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
-			<src path="${src.dir}"/>
+			<src path="${src.war.dir}"/>
 		</javac>
 	</target>
 	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile-external-deps" if="crlstore.enabled.if.defined">
@@ -102,7 +102,7 @@
 		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
-			<src path="${src.dir}"/>
+			<src path="${src.war.dir}"/>
 		</javac>
 	</target>
 
