@@ -55,7 +55,7 @@
 	<classpathentry kind="src" path="modules/systemtests/src-test"/>
 	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
-	<classpathentry kind="src" path="modules/va-war/src"/>
+	<classpathentry kind="src" path="modules/va-war/src-war"/>
 	<classpathentry kind="src" path="modules/validationtool/src"/>
 	<classpathentry kind="src" path="modules/validationtool/test"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>
