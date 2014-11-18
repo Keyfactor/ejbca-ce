@@ -108,7 +108,7 @@ If you select (as type) to use a PKCS#11 Crypto Token additional fields are disp
 <li>PKCS#11 Reference: PKCS#11 slot number, index or label.</li>
 <li>PCKS#11 Attribute File: If required, this is a PKCS#11 attribute file configured as available in conf/web.properties. This should only be required for non common HSMs.</li>
 </ul>
-The PKCS#11 properties above are described in more technical detail in the <a href="adminguide.html#Hardware Security Modules (HSM)">AdminGuide's HSM</a> section.
+The PKCS#11 properties above are described in more technical detail in the <a href="adminguide.html#Hardware Security Modules (HSM)">Adminguide's HSM</a> section.
 A unique Crypto Token identifier will be generated when the token is created.
 </p>
 </subsection>
@@ -695,7 +695,7 @@ regards to DN-contents, extensions etc.
 </subsection>
 
 <subsection name="Import/Export Certificate Profiles">
-<p>It is possible to import and export certificate profiles in the AdminGUI.</p>
+<p>It is possible to import and export certificate profiles in the Admin GUI.</p>
 <subsubsection name="Export Certificate Profiles">
 <p>
 Every non-fixed certificate profile is exported to the specified local directory as an xml file inside a zip file named "certprofiles.zip". 
@@ -1088,7 +1088,7 @@ You should previously have created the certificate profile for SSL servers in th
 </subsection>
 
 <subsection name="Import/Export End Entity Profiles">
-<p>It is possible to import and export end entity profiles in the AdminGUI.</p>
+<p>It is possible to import and export end entity profiles in the Admin GUI.</p>
 <subsubsection name="Export End Entity Profiles">
 <p>
 Every non-fixed end entity profile is exported to the specified local directory as an xml file inside a zip file named "entityprofiles.zip". 
@@ -2032,7 +2032,7 @@ for an example of how this is used.
 <p>
 An EJBCA instance can be both target and initiator of remote operations from another EJBCA instance.
 Connections are made using dual authenticated HTTPS.
-This is similar to how you use a client certificate to authenticate to the AdminGUI and then manage an EJBCA instance,
+This is similar to how you use a client certificate to authenticate to the Admin GUI and then manage an EJBCA instance,
 but in this case the configured administrator is another EJBCA instace.
 </p><p>
 Normally the instance with higher security requirements (e.g. an EJBCA acting as CA) initates connections to a system with
