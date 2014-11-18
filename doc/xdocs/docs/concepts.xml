@@ -108,7 +108,7 @@ properties can be used to specify how long an OCSP response should be valid.
 </subsection>
 <subsection name="Peer Connector">
 <p>
-A Peer Connector is a representation of a remote (EJBCA or EJBCA compatible) system and can be used for automated management of the remote system.
+A Peer Connector is a representation of a remote (EJBCA or EJBCA compatible) peer system and can be used for automated management of the remote system.
 A proprietary protocol is used over a dual authenticated HTTPS channel (where the client certificate keys can be stored in an HSM).
 </p>
 <p>

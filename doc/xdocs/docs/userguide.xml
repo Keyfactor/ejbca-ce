@@ -2028,7 +2028,7 @@ for an example of how this is used.
 </subsection>
 </section>
 
-<section name="Managing Remote Systems">
+<section name="Managing EJBCA Peer Systems">
 <p>
 An EJBCA instance can be both target and initiator of remote operations from another EJBCA instance.
 Connections are made using dual authenticated HTTPS.
@@ -2038,16 +2038,16 @@ but in this case the configured administrator is another EJBCA instace.
 Normally the instance with higher security requirements (e.g. an EJBCA acting as CA) initates connections to a system with
 lower security requirements (e.g. an EJBCA acting as VA). 
 </p><p>
-In the Remote Systems overview you can:
+In the Peer Systems overview you can:
 <ul>
 <li>Modify global settings like enabling or disabling incoming connections.</li>
-<li>See a list of configured known remote systems that this instance can connect to (<i>Peer Connectors</i>) and their current connection status.</li>
+<li>See a list of configured known EJBCA Peer Systems that this instance can connect to (<i>Peer Connectors</i>) and their current connection status.</li>
 <li>See a list of systems that have connected to this instance recently (<i>Incoming Connections</i>).</li>
 </ul>
 </p><p>
 Additionally there are links to the relevant authentication settings for outgoing connections (AuthenticationKeyBinding) and incoming connections (Administrator Role).
 </p>
-<subsection name="Setting up Peer Connectors for outgoing connections">
+<subsection name="Setting up Peer Connectors for Outgoing Connections">
 <p>
 Outgoing connections are allowed by default and can be disabled by administrators authorized to <code>/peer/modify</code> recursive.
 </p><p>
@@ -2055,36 +2055,36 @@ A <a href="concepts.html#Peer Connector">Peer Connector</a> is a representation 
 by other components like Publishers and Services.
 Each Peer Connector maintains a pool of outgoing re-usable (HTTP Keep-Alive) connections and new connections are only created when needed.
 </p><p>
-To authenticate to the remote system, you need to configure an <a href="#AuthenticationKeyBinding">AuthenticationKeyBinding</a>.
+To authenticate to a peer, you need to configure an <a href="#AuthenticationKeyBinding">AuthenticationKeyBinding</a>.
 The AuthenticationKeyBinding is the EJBCA instance identity and consists of a client SSL X509 certificate and a key pair in
 one of the instance's <a href="userguide.html#Managing Crypto Tokens">Crypto Tokens</a>.
-Ensure that the AuthenticationKeyBinding is configured to trust the remote system's server SSL certificate or the connection
+Ensure that the AuthenticationKeyBinding is configured to trust the peer's server SSL certificate or the connection
 will fail.
 AuthenticationKeyBinding settings are only read when a Peer Connector's connection pool is started and if the client certificate
 is updated this will not take effect until a connection pool is <code>Reset</code>.
 </p><p>
 For each configured Peer Connector, you can see the human readable name, connection end point and current connection status.
-You can <code>Ping</code> any of the remote systems to check connectivity and the result is the round-trip time from and to the
+You can <code>Ping</code> any of the peers to check connectivity and the result is the round-trip time from and to the
 application over the secure connection (giving a more accurate view of the actual round trip time than a network ping using the ICMP protocol).
 </p><p>
-Only the first connection to a remote system using the same client certificate will be subject to a full authentication check
+Only the first connection to a peer using the same client certificate will be subject to a full authentication check
 and subsequent requests will share the same credential.
 This means that an initial <code>Ping</code> request to a peer system will be significantly slower than the next one.
 </p>
 <subsubsection name="Adding a Peer Connector">
 <p>
 Outgoing connections must be allowed to be able to add a new Peer Connector.
-From the Remote Systems overview, click the <code>Add</code> button. Configure the following fields and click <code>Create</code>.
+From the Peer Systems overview, click the <code>Add</code> button. Configure the following fields and click <code>Create</code>.
 <ul>
-<li>Name: Your name for the remote system.</li>
-<li>URL: The target end point where the remote system is listening. Normally you only need to change the hostname of the URL.</li>
-<li>Enabled: If a Peer Connector is enabled connections to the remote system are allowed to be created when needed.</li>
+<li>Name: Your name for the peer.</li>
+<li>URL: The target end point where the peer is listening. Normally you only need to change the hostname of the URL.</li>
+<li>Enabled: If a Peer Connector is enabled connections to the peer are allowed to be created when needed.</li>
 </ul>
 </p>
 </subsubsection>
 <subsubsection name="Edit, Clone or Delete a Peer Connector">
 <p>
-From the Remote Systems overview, click the <code>Edit</code> button for an existing Peer Connector.
+From the Peer Systems overview, click the <code>Edit</code> button for an existing Peer Connector.
 In the view of the Peer Connector you can modify and save the existing name, URL or state.
 In the Edit view, you additionally have buttons for cloning (<code>Clone</code>) or deleting (<code>Delete</code>) the current object.
 </p>
@@ -2114,9 +2114,9 @@ the created Administrator Role can be edited just like any other Administrator R
 </p>
 </subsubsection>
 </subsection>
-<subsection name="Management operations for a remote system">
+<subsection name="Management operations for an EJBCA Peer System">
 <p>
-Once an EJBCA instance has been authorized to connect and manage another EJBCA instance, operations on the remote system
+Once an EJBCA instance has been authorized to connect and manage another EJBCA instance, operations on the peer
 can be performed through the Admin GUI of the authorized instance.
 </p>
 <p>
@@ -2125,7 +2125,7 @@ access rules and additionally any relevant CA.
 </p>
 <subsubsection name="Publishing using Peer Connectors">
 <p>
-<a href="adminguide.html#LDAP and Publishers">Publishers</a> are used to propagate certificate or CRL information to a remote system.
+<a href="adminguide.html#LDAP and Publishers">Publishers</a> are used to propagate certificate or CRL information to a peer system.
 The PeerPublisher implementation allows this information to be pushed to a configured Peer Connector.
 </p>
 <p>
@@ -2143,7 +2143,7 @@ a new VA is connected the current state of all previously issued certificates ne
 In the overview of peer connectors, click <code>Manage</code> for the peer connector representing the VA and select the
 <code>Certificate Data Synchronization</code> tab.
 Configure the relevant subset of information to synchronize and click <code>Start</code> to initate the synchronzation as a background task.
-The progress can be followed either in this view or in the remote system overview.
+The progress can be followed either in this view or in the Peer Systems overview.
 </p><p>
 Note that the subset of revocation information to send affects how database queries are performed.
 Depending on your database it might be faster to only synchronize everything or only one subset of data at the time.
