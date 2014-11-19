@@ -25,5 +25,5 @@ public interface IAdminCommand {
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
-    public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException;
+    void execute() throws IllegalAdminCommandException, ErrorAdminCommandException;
 }
