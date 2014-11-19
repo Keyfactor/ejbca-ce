@@ -5,6 +5,7 @@
 	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src-test"/>
+	<classpathentry kind="src" path="modules/certificatestore/src"/>
 	<classpathentry kind="src" path="modules/certsafe/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src"/>
 	<classpathentry kind="src" path="modules/cesecore-ejb-interface/src"/>
@@ -15,6 +16,7 @@
 	<classpathentry kind="src" path="modules/cli-util/src-test"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
+	<classpathentry kind="src" path="modules/crlstore/src"/>
 	<classpathentry kind="src" path="modules/ct/src"/>
 	<classpathentry kind="src" path="modules/ct/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>

@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="va-war" default="ejbca-build">
-    <description>
-            Build file for the OCSP Web components
-    </description>
 
 	<dirname property="this.dir" file="${ant.file.va-war}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<import file="../build-properties.xml"/>
+	<import file="../build-helpers.xml"/>
 	
 	<property name="build-status.dir" location="${this.dir}/build-status"/>
 	<property name="build-status-va.dir" location="${this.dir}/build-status-va"/>
-	<property name="build-certstore.dir" location="${this.dir}/build-certstore"/>
-	<property name="build-certstore-va.dir" location="${this.dir}/build-certstore-va"/>
-	<property name="build-crlstore.dir" location="${this.dir}/build-crlstore"/>
-	<property name="build-crlstore-va.dir" location="${this.dir}/build-crlstore-va"/>
 	<property name="src.war.dir" location="${this.dir}/src-war"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
@@ -39,25 +33,14 @@
     <target name="clean" description="Clean up this module">
 		<delete dir="${build-status.dir}" />
 		<delete dir="${build-status-va.dir}" />
-    	<delete dir="${build-certstore.dir}" />
-    	<delete dir="${build-certstore-va.dir}" />
-    	<delete dir="${build-crlstore.dir}" />
-    	<delete dir="${build-crlstore-va.dir}" />
     	<delete file="${mod.va-war.war}" />
     </target>
 	<condition property="ocsp.enabled.if.defined"><istrue value="${ocsp.enabled}"/></condition>
-	<condition property="certstore.enabled.if.defined"><istrue value="${certstore.enabled}"/></condition>
-	<condition property="crlstore.enabled.if.defined"><istrue value="${crlstore.enabled}"/></condition>
 
-	<target name="ejbca-build" description="Build this module" depends="ejbca-status.war, ejbca-certstore.war, ejbca-crlstore.war"/>
+
+	<target name="ejbca-build" description="Build this module" depends="ejbca-status.war"/>
 	<target name="ejbca-status.war" depends="ejbca-compile" if="ocsp.enabled.if.defined">
 		<war destfile="${mod.status.war}" webxml="${resources.dir}/WEB-INF/web-status-ejbca.xml" basedir="${build-status.dir}"/>
-	</target>
-	<target name="ejbca-certstore.war" depends="ejbca-compile" if="certstore.enabled.if.defined">
-		<war destfile="${mod.certstore.war}" webxml="${resources.dir}/WEB-INF/web-certstore-ejbca.xml" basedir="${build-certstore.dir}"/>
-	</target>
-	<target name="ejbca-crlstore.war" depends="ejbca-compile" if="crlstore.enabled.if.defined">
-		<war destfile="${mod.crlstore.war}" webxml="${resources.dir}/WEB-INF/web-crlstore-ejbca.xml" basedir="${build-crlstore.dir}"/>
 	</target>
 
 	<condition property="use.ocsp.extensionclass">
@@ -76,7 +59,7 @@
 		</jar>
 	</target>
 	
-	<target name="ejbca-compile" depends="ejbca-status-compile, ejbca-certstore-compile, ejbca-crlstore-compile, use-ocsp-extensionclass"/>
+	<target name="ejbca-compile" depends="ejbca-status-compile, use-ocsp-extensionclass"/>
 	<target name="ejbca-common-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
 	<target name="ejbca-status-compile" depends="ejbca-common-compile-external-deps" if="ocsp.enabled.if.defined">
     	<mkdir dir="${build-status.dir}/WEB-INF/classes" />
@@ -88,22 +71,6 @@
 			<src path="${src.war.dir}"/>
         </javac>
 		<antcall target="extensions-build"/>
-	</target>
-	<target name="ejbca-certstore-compile" depends="ejbca-common-compile-external-deps" if="certstore.enabled.if.defined">
-    	<mkdir dir="${build-certstore.dir}/WEB-INF/classes" />
-		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
-			classpathref="compile-ejbca.classpath">
-        	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
-			<src path="${src.war.dir}"/>
-		</javac>
-	</target>
-	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile-external-deps" if="crlstore.enabled.if.defined">
-    	<mkdir dir="${build-crlstore.dir}/WEB-INF/classes" />
-		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
-			classpathref="compile-ejbca.classpath">
-        	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
-			<src path="${src.war.dir}"/>
-		</javac>
 	</target>
 
 </project>
