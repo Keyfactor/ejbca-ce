@@ -83,7 +83,7 @@
             <src path="${mod.ejbca-ws-cli.path}/src" />
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-entity.path}/src" />
-            <src path="${mod.va-war.path}/src-war" />
+            <src path="${mod.va.path}/src-war" />
         	
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
