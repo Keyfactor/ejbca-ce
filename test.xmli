@@ -2,8 +2,8 @@
 <project name="ejbcatest" basedir=".">
 
     <target name="test:run" description="run both stand-alone JUnit test cases and system test" depends="deleteDirectories">
-    	<antcall target="test:runsa" inheritrefs="true"/>
-    	<antcall target="test:runsys" inheritrefs="true"/>
+    	<antcall target="test:runsa" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
+    	<antcall target="test:runsys" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
     	<antcall target="createreport"/>
     </target>
 
@@ -19,12 +19,13 @@
     </target>
 
 	<target name="evaluateAggregate">
-		<condition property="aggregate.test.results" value="true"  else="">
+		<condition property="aggregate.test.results" value="true">
     		<equals arg1="${aggregate.results}" arg2="true"/>
     	</condition>
 	</target>
 
 	<target name="deleteDirectories" depends="evaluateAggregate" unless="${aggregate.test.results}" > 
+		<echo message="Deleting old test results."/>
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
     	<delete dir="${reports.dir}" />
     	<mkdir dir="${reports.dir}" />
