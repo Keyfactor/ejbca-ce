@@ -15,7 +15,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
@@ -32,10 +32,10 @@ public class GenerateToken {
 	private EndEntityAccessSession endEntityAccessSession;
 	private EndEntityManagementSession endEntityManagementSession;
 	private CaSession caSession;
-	private KeyRecoverySessionLocal keyRecoverySession;
+	private KeyRecoverySession keyRecoverySession;
 	private SignSession signSession;
 	
-    public GenerateToken(EndEntityAuthenticationSession authenticationSession, EndEntityAccessSession endEntityAccessSession, EndEntityManagementSession endEntityManagementSession, CaSession caSession, KeyRecoverySessionLocal keyRecoverySession, SignSession signSession) {
+    public GenerateToken(EndEntityAuthenticationSession authenticationSession, EndEntityAccessSession endEntityAccessSession, EndEntityManagementSession endEntityManagementSession, CaSession caSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
     	this.authenticationSession = authenticationSession;
     	this.endEntityAccessSession = endEntityAccessSession;
     	this.endEntityManagementSession = endEntityManagementSession;
@@ -86,6 +86,7 @@ public class GenerateToken {
                 }
     			keyRecoverySession.unmarkUser(administrator,username);
     		}
+    		caid = keyData.getIssuerDN().hashCode(); // always use the CA of the certificate 
     	} else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new keys for user: "+ username);

@@ -20,10 +20,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
+import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -38,8 +40,10 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -53,13 +57,17 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.util.GenerateToken;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -76,16 +84,21 @@ public class KeyRecoveryTest extends CaTestCase {
     private static final String user = genRandomUserName();
 
     private static final String KEYRECOVERY_ROLE = "KEYRECOVERYROLE";
+    private static final String KEYRECOVERY_EEP = "TEST_KEYRECOVERY_EEP";
+    private static final String TEST_EMAIL = "test@test.se";
 
     private static final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private static final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private static final EndEntityAuthenticationSessionRemote endEntityAuthSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private static final EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private static final EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
 
     private AuthenticationToken admin;
 
@@ -139,10 +152,9 @@ public class KeyRecoveryTest extends CaTestCase {
         try {
             KeyPair keypair1 = null;
             try {
-                String email = "test@test.se";
                 if (!endEntityManagementSession.existsUser(user)) {
                     keypair1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-                    endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false,
+                    endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false,
                             SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
                             getTestCAId());
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", keypair1.getPublic());
@@ -240,6 +252,88 @@ public class KeyRecoveryTest extends CaTestCase {
             internalCertStoreSession.removeCertificate(fp2);
             endEntityManagementSession.deleteUser(internalAdmin, user);
             log.trace("<test04RemoveKeyPairAndEntity()");
+        }
+    }
+    
+    /**
+     * Test that uses CertificateRequestSession for key recovery.
+     * During the test the end-entity CA is changed, which should not cause any problems.
+     */
+    @Test
+    public void testRecoveryUsingCertificateRequestSession() throws Exception {
+        log.trace(">testRecoveryWithChangedCA");
+        final String testuser = genRandomUserName();
+        final String TESTCA1 = "TESTKEYRECCA1";
+        final String TESTCA2 = "TESTKEYRECCA2";
+        X509Certificate usercert = null;
+        String fp1 = null;
+        try {
+            // Create two CAs
+            createTestCA(TESTCA1);
+            createTestCA(TESTCA2);
+            final int caId1 = caSession.getCAInfo(internalAdmin, TESTCA1).getCAId();
+            final int caId2 = caSession.getCAInfo(internalAdmin, TESTCA2).getCAId();
+            
+            // Create a new end-entity profile with key recovery enabled with the "reuse old certificate" option
+            final Collection<Integer> availcas = new ArrayList<Integer>();
+            availcas.add(caId1);
+            availcas.add(caId2);
+            final EndEntityProfile eeprofile = new EndEntityProfile();
+            eeprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
+            eeprofile.setReUseKeyRecoveredCertificate(true);
+            eeprofile.setAvailableCAs(availcas);
+            endEntityProfileSession.addEndEntityProfile(internalAdmin, KEYRECOVERY_EEP, eeprofile);
+            final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(KEYRECOVERY_EEP);
+            
+            // Create an end entity which is initially using CA 1
+            EndEntityInformation eeinfo = new EndEntityInformation(testuser, "CN=TEST_KEYREC_CACHANGE" + new Random(),
+                    caId1, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+            eeinfo.setPassword("foo123");
+            endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
+            endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
+            
+            // Issue a certifiate + keystore
+            eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
+            assertNotNull("Could not find test user", testuser);
+            eeinfo.setPassword("foo123");
+            final GenerateToken tgen1 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
+            final KeyStore ks1 = tgen1.generateOrKeyRecoverToken(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, false, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            usercert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(testuser).get(0);
+            fp1 = CertTools.getFingerprintAsString(usercert);
+            assertNotNull("Could not find user's certificate in keystore", ks1.getCertificateAlias(usercert));
+            
+            // Now change the CA of the end-entity the CA 2
+            eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
+            assertNotNull("Could not find test user", testuser);
+            eeinfo.setCAId(caId2);
+            endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
+            endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
+            
+            // Now try to perform key recovery
+            assertTrue("markAsRecoverable failed", keyRecoverySession.markAsRecoverable(internalAdmin, usercert, eeProfileId));
+            final GenerateToken tgen2 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
+            final KeyStore ks2 = tgen2.generateOrKeyRecoverToken(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, false, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(testuser));
+            
+            // Certificate should not have changed
+            assertNotNull("Could not find user's certificate in key-recovered keystore", ks2.getCertificateAlias(usercert));
+        } finally {
+            if (usercert != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, usercert);
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(usercert));
+            }
+            if (fp1 != null) {
+                internalCertStoreSession.removeCertificate(fp1);
+            }
+            if (endEntityManagementSession.existsUser(testuser)) {
+                endEntityManagementSession.deleteUser(internalAdmin, testuser);
+            }
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, KEYRECOVERY_EEP);
+            removeOldCa(TESTCA1);
+            removeOldCa(TESTCA2);
+            log.trace("<testRecoveryWithChangedCA");
         }
     }
 }
