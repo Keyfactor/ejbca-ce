@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.protocol;
+package org.ejbca.web.protocol;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -34,6 +34,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.ui.web.protocol.RFC4387URL;
+import org.ejbca.ui.web.protocol.StoreServletBase;
 import org.ejbca.util.HTMLTools;
 
 /** 

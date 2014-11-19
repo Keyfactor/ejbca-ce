@@ -84,10 +84,12 @@
     <property name="mod.clearcache-war.war" location="${mod.dist.path}/clearcache.war" />
     <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
-    <property name="mod.va-war.path" location="${mod.path}/va-war" />
+    <property name="mod.va.path" location="${mod.path}/va-war" />
     <property name="mod.status.war" location="${mod.dist.path}/status.war" />
     <property name="mod.certstore.war" location="${mod.dist.path}/certstore.war" />
+    <property name="mod.cerstore.path" location="${mod.path}/certificatestore" />
     <property name="mod.crlstore.war" location="${mod.dist.path}/crlstore.war" />
+    <property name="mod.crlstore.path" location="${mod.path}/crlstore" />
     <property name="mod.renew-war.path" location="${mod.path}/ejbca-renew-war" />
     <property name="mod.renew-war.war" location="${mod.dist.path}/renew.war" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />

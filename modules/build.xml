@@ -72,7 +72,9 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.va-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.va.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -404,8 +406,16 @@
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA OCSP WAR">
-		<ant antfile="${mod.va-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="va-ejbca-war" depends="ejbca-common-web">
+		<ant antfile="${mod.va.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
+	
+	<target name="certstore-war" depends="ejbca-common-web">
+		<ant antfile="${mod.cerstore.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
+			
+	<target name="crlstore-war" depends="ejbca-common-web">
+		<ant antfile="${mod.crlstore.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
 	<target name="renew-war" depends="ejbca-common-web" description="Build the Renew WAR">
@@ -441,7 +451,7 @@
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, peerconnector, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct, certsafe"/>
+	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, peerconnector, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct, certsafe, certstore-war, crlstore-war"/>
 
 	<target name="ct" depends="ejbca-ejb-interface, cesecore-common, cesecore-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>

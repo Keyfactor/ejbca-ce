@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="crlstore" default="ejbca-build">
+
+	<dirname property="this.dir" file="${ant.file.crlstore}"/>	
+	
+	<import file="../build-properties.xml"/>
+	<import file="../build-helpers.xml"/>
+	
+	<property name="build-crlstore.dir" location="${this.dir}/build-crlstore"/>
+	<property name="build-crlstore-va.dir" location="${this.dir}/build-crlstore-va"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="src.crlstore.dir" location="${this.dir}/src"/>
+
+	<path id="compile-common.classpath">
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.mail.classpath"/>
+	</path>
+
+	<path id="compile-ejbca.classpath">
+		<path refid="compile-common.classpath"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+        <path location="${mod.cesecore-entity.lib}"/>
+        <path location="${mod.cesecore-common.lib}"/>
+        <path location="${mod.cesecore-ejb-interface.lib}"/>
+	</path>
+
+    <target name="clean" description="Clean up this module">
+    	<delete dir="${build-crlstore.dir}" />
+    	<delete dir="${build-crlstore-va.dir}" />
+    </target>
+	<condition property="crlstore.enabled.if.defined"><istrue value="${crlstore.enabled}"/></condition>
+
+	<target name="ejbca-build" description="Build this module" depends="ejbca-crlstore.war"/>
+	<target name="ejbca-crlstore.war" depends="ejbca-compile" if="crlstore.enabled.if.defined">
+		<war destfile="${mod.crlstore.war}" webxml="${resources.dir}/WEB-INF/web-crlstore-ejbca.xml" basedir="${build-crlstore.dir}"/>
+	</target>
+
+	
+	<target name="ejbca-compile" depends="ejbca-crlstore-compile"/>
+	<target name="ejbca-common-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile-external-deps" if="crlstore.enabled.if.defined">
+    	<mkdir dir="${build-crlstore.dir}/WEB-INF/classes" />
+		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+			classpathref="compile-ejbca.classpath">
+        	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
+			<src path="${src.crlstore.dir}"/>
+		</javac>
+	</target>
+
+</project>

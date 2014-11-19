@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="certificatestore" default="ejbca-build">
+
+	<dirname property="this.dir" file="${ant.file.certificatestore}"/>	
+
+	<import file="../build-properties.xml"/>
+	<import file="../build-helpers.xml"/>
+	
+	<property name="build-certstore.dir" location="${this.dir}/build-certstore"/>
+	<property name="build-certstore-va.dir" location="${this.dir}/build-certstore-va"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="src.certstore.dir" location="${this.dir}/src"/>
+
+
+	<path id="compile-common.classpath">
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.mail.classpath"/>
+	</path>
+
+	<path id="compile-ejbca.classpath">
+		<path refid="compile-common.classpath"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+        <path location="${mod.cesecore-entity.lib}"/>
+        <path location="${mod.cesecore-common.lib}"/>
+        <path location="${mod.cesecore-ejb-interface.lib}"/>
+	</path>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build-status.dir}" />
+		<delete dir="${build-status-va.dir}" />
+    	<delete dir="${build-certstore.dir}" />
+    	<delete dir="${build-certstore-va.dir}" />
+    	<delete dir="${build-crlstore.dir}" />
+    	<delete dir="${build-crlstore-va.dir}" />
+    	<delete file="${mod.va-war.war}" />
+    </target>
+	
+	<condition property="certstore.enabled.if.defined"><istrue value="${certstore.enabled}"/></condition>
+
+	<target name="ejbca-build" depends="certstore.war">    	
+		<echo message="certstore_foo: ${certstore.enabled}"/>
+	</target>
+	<target name="certstore.war" depends="ejbca-certstore-compile" if="certstore.enabled.if.defined">
+		<war destfile="${mod.certstore.war}" webxml="${resources.dir}/WEB-INF/web-certstore-ejbca.xml" basedir="${build-certstore.dir}"/>
+	</target>
+	
+	<target name="ejbca-common-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+	<target name="ejbca-certstore-compile" depends="ejbca-common-compile-external-deps" if="certstore.enabled.if.defined">
+		<mkdir dir="${build-certstore.dir}/WEB-INF/classes" />
+		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+			classpathref="compile-ejbca.classpath">
+        	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
+			<src path="${src.certstore.dir}"/>
+		</javac>
+	</target>
+</project>
