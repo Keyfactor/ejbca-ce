@@ -296,6 +296,7 @@
 		<!-- Dependencies from VA WAR and Appserver Extensions -->
 		<include name="org/cesecore/util/log/SaferAppenderListener.java"/>
 		<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*.java"/>
+		<include name="org/ejbca/util/JDBCUtil.java"/>
 		<!-- Tool used to tidy up JavaDoc and make generated WS client classes usable. -->
 		<include name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
 		<!-- For backwards compatiblitiy, replaced by classes in CESeCore -->
