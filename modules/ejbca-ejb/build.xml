@@ -374,6 +374,7 @@
 		<include name="org/ejbca/core/protocol/certificatestore/CertStore.java"/>
 		<include name="org/ejbca/core/protocol/certificatestore/ICertStore.java"/>
 		<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/>
+		<include name="org/ejbca/ui/web/protocol/StoreServletBase.java"/>
 		<!-- Dependecies from HC WAR -->
 		<include name="org/ejbca/ui/web/pub/cluster/IHealthCheck.java"/>
 		<include name="org/ejbca/ui/web/pub/cluster/CommonHealthCheck.java"/>

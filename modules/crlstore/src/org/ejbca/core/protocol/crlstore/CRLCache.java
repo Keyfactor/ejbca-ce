@@ -28,7 +28,7 @@ import org.cesecore.util.CertTools;
 
 /**
  * See {@link ICRLCache} to see what this is.
- * @author lars
+ *
  * @version $Id$
  */
 class CRLCache implements ICRLCache {
