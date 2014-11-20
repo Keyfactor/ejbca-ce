@@ -77,9 +77,9 @@ public class CertificateProfileTest {
         assertEquals(0, policies.size());
         assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
         final int[] availablebitlen = prof.getAvailableBitLengths();
-        assertEquals(11, availablebitlen.length);
+        assertEquals(15, availablebitlen.length);
         assertEquals(0, availablebitlen[0]);
-        assertEquals(8192, availablebitlen[10]);
+        assertEquals(8192, availablebitlen[14]);
         assertEquals(0, prof.getMinimumAvailableBitLength());
         assertEquals(8192, prof.getMaximumAvailableBitLength());
         assertEquals(true, prof.getUseKeyUsage());
