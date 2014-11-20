@@ -489,6 +489,13 @@ $ java -jar target/jscepcli-1.0-SNAPSHOT-exe.jar --ca-identifier ManagementCA --
 <p>
 EJBCA has been confirmed to work with MobileIron MDM system.
 </p>
+<p>
+Mobile Iron always use the CA identifier 'MobileIronSCEP' in all SCEP request. 
+SCEP request from MobileIron always start with "operation=GetCACaps&amp;message=MobileIronSCEP". 
+Therefore the CAs name have to be set to 'MobilIronSCEP' to make it work.
+<br></br>
+Beside that RA and CA mode works perfectly with MobilIronMDM. 
+</p>
 </subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
