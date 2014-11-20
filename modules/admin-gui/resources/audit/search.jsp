@@ -128,9 +128,9 @@ org.cesecore.authorization.control.AuditLogRules
 
 	<%-- Audit log: Navigation bar --%>
 	<p>
-		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value=" #{web.text.FIRST}"/>
-		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value=" #{web.text.PREVIOUS}"/>
-		<h:commandButton disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT} "/>
+		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="◾ #{web.text.FIRST}"/>
+		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="◄ #{web.text.PREVIOUS}"/>
+		<h:commandButton disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT} ►"/>
 		<h:commandButton action="#{auditor.reload}" styleClass="commandLink reload" value="⟲ #{web.text.RELOAD}"/>
 		<%-- 
 		<h:outputLabel rendered="false" for="startIndex" value="Results start at index"/>
@@ -286,9 +286,9 @@ org.cesecore.authorization.control.AuditLogRules
 
 	<%-- Audit log: Navigation bar --%>
 	<p>
-		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value=" #{web.text.FIRST}"/>
-		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value=" #{web.text.PREVIOUS}"/>
-		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT} "/>
+		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="◾ #{web.text.FIRST}"/>
+		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="◄ #{web.text.PREVIOUS}"/>
+		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT} ►"/>
 		<h:commandButton rendered="#{not empty auditor.results}" action="#{auditor.reload}" styleClass="commandLink reload" value="⟲ #{web.text.RELOAD}"/>
 		&nbsp;
 		<h:outputText rendered="#{not empty auditor.results}" value="#{web.text.AUDIT_DISPRESULTS} #{auditor.startIndex} #{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
