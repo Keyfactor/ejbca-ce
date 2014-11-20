@@ -31,6 +31,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
@@ -236,6 +237,96 @@ public class IntegratedOcspResponseTest {
         assertNull("No response object for this unsigned error response.", basicOcspResponse);
 
     }
+    
+    /**
+     * Tests with nonexistingisrevoked
+     */
+    @Test
+    public void testNonExistingIsRevoked() throws Exception {
+        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_REVOKED);
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "true");
+        try {
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+
+        // An OCSP request
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+
+        OCSPReq req = gen.build();
+
+        // Now remove the certificate
+        internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+                    auditLogger, transactionLogger).getOcspResponse();
+            assertNotNull("OCSP responder replied null", responseBytes);
+
+            OCSPResp response = new OCSPResp(responseBytes);
+            assertEquals("Response status not zero.", response.getStatus(), 0);
+            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            assertTrue("OCSP response was not signed correctly.",
+                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+            SingleResp[] singleResponses = basicOcspResponse.getResponses();
+
+            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+            assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+                    .getSerialNumber());
+
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+                    auditLogger, transactionLogger).getOcspResponse();
+            assertNotNull("OCSP responder replied null", responseBytes);
+
+            response = new OCSPResp(responseBytes);
+            assertEquals("Response status not zero.", response.getStatus(), 0);
+            basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            assertTrue("OCSP response was not signed correctly.",
+                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+            singleResponses = basicOcspResponse.getResponses();
+
+            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+            assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+                    .getSerialNumber());
+
+            // Assert that status is revoked
+            CertificateStatus status = singleResponses[0].getCertStatus();
+            assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
+            
+            // Set ocsp.nonexistingisgood=true, veryify that answer comes out okay.
+            String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
+            try {
+                responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+                        auditLogger, transactionLogger).getOcspResponse();
+                assertNotNull("OCSP responder replied null", responseBytes);
+
+                response = new OCSPResp(responseBytes);
+                assertEquals("Response status not zero.", response.getStatus(), 0);
+                basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+                assertTrue("OCSP response was not signed correctly.",
+                        basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+                singleResponses = basicOcspResponse.getResponses();
+
+                assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+                assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+                        .getSerialNumber());
+                assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+            } finally {
+                cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+            }
+        } finally {
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_REVOKED, originalValue);
+        }
+
+    }
+
 
     @Test
     public void testGetOcspResponseWithOcspCertificate() throws Exception {
