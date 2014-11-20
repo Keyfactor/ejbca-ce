@@ -581,6 +581,8 @@
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 			<fileset dir="${ejbca.home}" includes="conf/extendedkeyusage.properties"/>
 		</copy>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
 	</target>
 
 	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class">

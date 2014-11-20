@@ -37,6 +37,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -49,7 +50,7 @@ import org.cesecore.util.StringTools;
 public abstract class CATokenTestBase {
 
     private static final Logger log = Logger.getLogger(CATokenTestBase.class);
-	public static final String TOKEN_PIN = "userpin1";
+	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin("userpin1");
 
 	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
 	NoSuchAlgorithmException, CertificateException, IOException,
