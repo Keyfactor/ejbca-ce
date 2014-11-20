@@ -13,8 +13,12 @@
 package org.cesecore.keys.token;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
 /**
  * @version $Id$
@@ -23,7 +27,16 @@ import org.apache.log4j.Logger;
 public class PKCS11TestUtils {
 
     private static final Logger log = Logger.getLogger(PKCS11TestUtils.class);
-    
+
+    private static final String PROPERTYFILE = "/systemtests.properties";
+    private static Properties properties = null;
+
+    public static final String PKCS11_LIBRARY = "pkcs11.library";
+    public static final String PKCS11_SLOT_PIN = "pkcs11.slotpin";
+    public static final String PKCS11_SECURITY_PROVIDER = "pkcs11.provider";
+    public static final String PKCS11_SLOT_TYPE = "pkcs11.slottype"; 
+    public static final String PKCS11_SLOT_VALUE = "pkcs11.slottypevalue"; 
+
     private static final String UTIMACO_PKCS11_LINUX_LIB = "/etc/utimaco/libcs2_pkcs11.so";
     private static final String UTIMACO_PKCS11_WINDOWS_LIB = "C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll";
     private static final String LUNASA_PKCS11_LINUX_LIB = "/usr/lunasa/lib/libCryptoki2_64.so";
@@ -57,6 +70,8 @@ public class PKCS11TestUtils {
         } else if (protectServerWindows.exists()) {
             ret = "SunPKCS11-cryptoki.dll-slot1";
         }
+        // Override auto-detected properties if configuration exists
+        ret = getSystemTestsProperties().getProperty(PKCS11_SECURITY_PROVIDER, ret);
         if (log.isDebugEnabled()) {
             log.debug("getHSMProvider: "+ret);
         }
@@ -90,9 +105,57 @@ public class PKCS11TestUtils {
         } else if (protectServerWindows.exists()) {
             ret = protectServerWindows.getAbsolutePath();
         }
+        // Override auto-detected properties if configuration exists
+        ret = getSystemTestsProperties().getProperty(PKCS11_LIBRARY, ret);
         if (log.isDebugEnabled()) {
             log.debug("getHSMLibrary: "+ret);
         }
         return ret;
+    }
+
+    public static String getPkcs11SlotValue(final String defaultValue) {
+        final String ret = getSystemTestsProperties().getProperty(PKCS11_SLOT_VALUE, defaultValue);
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_SLOT_VALUE: "+ret);
+        }
+        return ret;
+    }
+
+    public static Pkcs11SlotLabelType getPkcs11SlotType(final String defaultValue) {
+        final Pkcs11SlotLabelType ret = Pkcs11SlotLabelType.getFromKey(getSystemTestsProperties().getProperty(PKCS11_SLOT_TYPE, defaultValue));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_SLOT_TYPE: "+ret.getKey());
+        }
+        return ret;
+    }
+
+    public static String getPkcs11SlotPin(String defaultValue) {
+        final String ret = getSystemTestsProperties().getProperty(PKCS11_SLOT_PIN, defaultValue);
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_SLOT_PIN: "+ret);
+        }
+        return ret;
+    }
+
+    /** @return properties defined in systemtests.properties for override of non-default environments. See also org.cesecore.SystemTestsConfiguration. */
+    private static Properties getSystemTestsProperties() {
+        if (properties==null) {
+            properties = new Properties();
+            try {
+                final InputStream is = PKCS11TestUtils.class.getResourceAsStream(PROPERTYFILE);
+                if (is!=null) {
+                    properties.load(is);
+                    is.close();
+                }
+            } catch (IOException e) {
+                log.warn(e.getMessage());
+            }
+            if (properties.isEmpty()) {
+                log.info(PROPERTYFILE + " was not detected. Defaults will be used.");
+            } else {
+                log.info(PROPERTYFILE + " was detected.");
+            }
+        }
+        return properties;
     }
 }

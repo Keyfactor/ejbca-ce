@@ -53,7 +53,7 @@ import org.cesecore.util.CertTools;
  */
 public abstract class CryptoTokenTestBase {
 
-    public static final String tokenpin = "userpin1";
+    public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin("userpin1");
 
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -141,28 +141,30 @@ public abstract class CryptoTokenTestBase {
                 } catch (CryptoTokenOfflineException e) {
                     // NOPMD
                 }
-                // the other keys should still be there
-                priv = cryptoToken.getPrivateKey("rsatest00002");
-                pub = cryptoToken.getPublicKey("rsatest00002");
-                KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-                assertEquals(2048, KeyTools.getKeyLength(pub));
-                String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
-                assertEquals(newkeyhash, newkeyhash2);
+                try {
+                    // the other keys should still be there
+                    priv = cryptoToken.getPrivateKey("rsatest00002");
+                    pub = cryptoToken.getPublicKey("rsatest00002");
+                    KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+                    assertEquals(2048, KeyTools.getKeyLength(pub));
+                    String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
+                    assertEquals(newkeyhash, newkeyhash2);
 
-                // Create keys using AlgorithmParameterSpec
-                AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
-                cryptoToken.generateKeyPair(paramspec, "rsatest00003");
-                priv = cryptoToken.getPrivateKey("rsatest00003");
-                pub = cryptoToken.getPublicKey("rsatest00003");
-                KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-                assertEquals(2048, KeyTools.getKeyLength(pub));
-                String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
-                // Make sure it's not the same key
-                assertFalse(newkeyhash2.equals(newkeyhash3));
-
-                // Clean up and delete our generated keys
-                cryptoToken.deleteEntry("rsatest00002");
-                cryptoToken.deleteEntry("rsatest00003");
+                    // Create keys using AlgorithmParameterSpec
+                    AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
+                    cryptoToken.generateKeyPair(paramspec, "rsatest00003");
+                    priv = cryptoToken.getPrivateKey("rsatest00003");
+                    pub = cryptoToken.getPublicKey("rsatest00003");
+                    KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+                    assertEquals(2048, KeyTools.getKeyLength(pub));
+                    String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
+                    // Make sure it's not the same key
+                    assertFalse(newkeyhash2.equals(newkeyhash3));
+                } finally {
+                    // Clean up and delete our generated keys
+                    cryptoToken.deleteEntry("rsatest00002");
+                    cryptoToken.deleteEntry("rsatest00003");
+                }
             }
 
     protected void doCryptoTokenDSA(CryptoToken cryptoToken) throws KeyStoreException,
