@@ -133,7 +133,7 @@ public class GenerateToken {
     		cert.verify(cacert.getPublicKey());
     	} catch (GeneralSecurityException se) {
     		throw new Exception("Generated certificate does not verify using CA-certificate, issuerDN: "+CertTools.getIssuerDN(cert)+", subjectDN: "+CertTools.getSubjectDN(cert)+
-    				"caIssuerDN: "+CertTools.getIssuerDN(cacert)+", caSubjectDN: "+CertTools.getSubjectDN(cacert));
+    				", caIssuerDN: "+CertTools.getIssuerDN(cacert)+", caSubjectDN: "+CertTools.getSubjectDN(cacert));
     	}
     	if (savekeys) {
             // Save generated keys to database.
