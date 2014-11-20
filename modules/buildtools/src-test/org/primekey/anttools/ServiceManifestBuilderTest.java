@@ -33,6 +33,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +46,7 @@ import org.junit.Test;
  */
 public class ServiceManifestBuilderTest {
 
+    private static final Logger log = Logger.getLogger(ServiceManifestBuilderTest.class);
     private static final String DUMMY_PACKAGE = "org.foo.bar";
     private static final String FIRST_DUMMY_INTERFACE_NAME = "FirstDummyInterface";
     private static final String SECOND_DUMMY_INTERFACE_NAME = "SecondDummyInterface";
@@ -54,6 +56,7 @@ public class ServiceManifestBuilderTest {
 
     @Before
     public void setup() throws IOException {
+        log.trace(">setup");
         //Create a temporary file directory that we'll add to the classpath
         temporaryFileDirectory = ServiceManifestBuilder.createTempDirectory();
         temporarySourceDirectory = ServiceManifestBuilder.createTempDirectory(temporaryFileDirectory);
@@ -83,8 +86,10 @@ public class ServiceManifestBuilderTest {
         final List<String> options = Arrays.asList("-d", temporarySourceDirectory.toString());
         CompilationTask task = javac.getTask(null, null, null, options, null, compilationUnits);
         if (!task.call()) {
+            log.error("Compilation of test classes failed, can't continue");
             throw new RuntimeException("Compilation of test classes failed, can't continue");
         }
+        log.trace("<setup");
     }
 
     @After
@@ -143,12 +148,14 @@ public class ServiceManifestBuilderTest {
 
     @Test
     public void testMainMethod() throws IOException {
+        log.info(">testMainMethod");
         File jarFile = File.createTempFile("tmp", ".jar", temporaryFileDirectory);
         try {
             //Now, let's make a jar out of our dummy classes. 
             ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile, null);
             String[] args = {jarFile.getAbsolutePath(), DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME};
-            ServiceManifestBuilder.main(args);
+            final int exitCode = ServiceManifestBuilder.mainInternal(args);
+            assertEquals("Process exited with non-zero error level.", 0, exitCode);
             JarFile result = new JarFile(jarFile);
             try {
                 assertTrue("Manifest file was not created.",
@@ -159,8 +166,13 @@ public class ServiceManifestBuilderTest {
                 }
             }
         } finally {
-            jarFile.delete();
+            try {
+                jarFile.delete();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
+        log.info("<testMainMethod");
     }
 
 }
