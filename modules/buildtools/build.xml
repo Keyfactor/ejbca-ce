@@ -34,10 +34,12 @@
         	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="lib.junit.classpath"/>
+        		<path refid="lib.log4j.classpath"/>
                 <path location="${buildtools.build.dir}" />
         		<path location="${buildtools.build-test.dir}" />
         	</classpath>
     	</javac>
+		<copy file="${log4j.test.file}" tofile="${buildtools.build-test.dir}/log4j.xml" failonerror="true"/>
     </target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
@@ -45,6 +47,7 @@
 		<junit printsummary="yes" haltonfailure="no" dir="${buildtools.build-test.dir}">
 			<classpath>
                 <path refid="lib.junit.classpath"/>
+        		<path refid="lib.log4j.classpath"/>
                 <path location="${buildtools.build.dir}" />
 				<path location="${buildtools.build-test.dir}" />
 				<pathelement path="${clover.jar}"/>
