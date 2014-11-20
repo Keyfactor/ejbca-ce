@@ -40,7 +40,7 @@ public class CryptoTokenGenerateCommand extends BaseCryptoTokenCommand {
         registerParameter(new Parameter(KEY_PAIR_ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key pair alias"));
         registerParameter(new Parameter(KEY_SPECIFICATION_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Key specification"));
+                ParameterMode.ARGUMENT, "Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145"));
     }
 
     @Override
