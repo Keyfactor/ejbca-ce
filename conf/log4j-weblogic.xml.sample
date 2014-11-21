@@ -50,6 +50,30 @@
         </layout>           
      </appender>
 
+    <!-- Sample loggers using SaferDailyRollingFileAppender. Replace the above with these if using. -->
+	<appender name="OcspTransactionLogger" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
+     	<errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
+        <param name="File" value="logs/ocsp-transactions.log" />
+		<param name="Append" value="true" />
+		<param name="Threshold" value="DEBUG"/>	
+		<param name="DatePattern" value="'.'yyyy-MM-dd_HH" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%m%n" />
+		</layout>
+	</appender>
+
+	<appender name="OcspAuditLogger" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
+		<errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
+        <param name="File" value="logs/ocsp-audit.log" />
+        <param name="Append" value="true" />
+        <param name="Threshold" value="DEBUG"/>
+        <param name="DatePattern" value="'.'yyyy-MM-dd" />
+        <layout class="org.apache.log4j.PatternLayout">
+        	<param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+    --> 
+
 	<category name="org.cesecore.certificates.ocsp.logging.TransactionLogger" additivity="false">
 		<priority value="DEBUG"/>
 		<appender-ref ref="TransactionLogger"/>

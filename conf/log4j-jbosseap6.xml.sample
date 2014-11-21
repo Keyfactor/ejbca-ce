@@ -3,7 +3,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
 	<appender name="EJBCAFILE" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/jboss/jboss-eap-6.1/standalone/log/ejbca.log" />
+		<param name="File" value="${jboss.server.log.dir}/ejbca.log" />
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
         <!--
@@ -15,30 +15,48 @@
      </appender>
 
 	<appender name="OcspTransactionLogger" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/jboss/jboss-eap-6.1/standalone/log/ocsp-transactions.log" />
+		<param name="File" value="${jboss.server.log.dir}/transaction.log" />
 		<param name="Threshold" value="DEBUG"/>
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
-        <!--
-        <param name="MaxBackupIndex" value="0" />
-        -->
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%m %n"/>
+            <param name="ConversionPattern" value="%m%n"/>
         </layout>           
      </appender>
 
 	<appender name="OcspAuditLogger" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/jboss/jboss-eap-6.1/standalone/log/ocsp-audit.log" />
+		<param name="File" value="${jboss.server.log.dir}/audit.log" />
 		<param name="Threshold" value="DEBUG"/>
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
-        <!--
-        <param name="MaxBackupIndex" value="0" />
-        -->
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%m %n"/>
+            <param name="ConversionPattern" value="%m%n"/>
         </layout>           
      </appender>
+     
+    <!-- Sample loggers using SaferDailyRollingFileAppender. Replace the above with these if using. -->
+	<appender name="OcspTransactionLogger" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
+     	<errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
+		<param name="File" value="${jboss.server.log.dir}/transaction.log" />
+		<param name="Append" value="true" />
+		<param name="Threshold" value="DEBUG"/>	
+		<param name="DatePattern" value="'.'yyyy-MM-dd_HH" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%m%n" />
+		</layout>
+	</appender>
+
+	<appender name="OcspAuditLogger" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
+		<errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
+        <param name="File" value="${jboss.server.log.dir}/audit.log" />
+        <param name="Append" value="true" />
+        <param name="Threshold" value="DEBUG"/>
+        <param name="DatePattern" value="'.'yyyy-MM-dd" />
+        <layout class="org.apache.log4j.PatternLayout">
+        	<param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+    --> 
 
 	<category name="org.cesecore.certificates.ocsp.logging.TransactionLogger" additivity="false">
 		<priority value="DEBUG"/>
@@ -49,6 +67,7 @@
 		<priority value="DEBUG"/>
 		<appender-ref ref="OcspAuditLogger"/>
 	</category>
+	
 	
 	<!-- DEBUG is enabled by default from the root category in the end -->
 	<!--
