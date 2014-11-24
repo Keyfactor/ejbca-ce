@@ -1991,7 +1991,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             try {
                 ejbcaraws.getProfile(profileid, "cp");
             } catch(EjbcaException_Exception e) {
-                String expectedmsg = "Error : Could not find certificate profile with ID '" + profileid + " in the database.";
+                String expectedmsg = "Error : Could not find certificate profile with ID '" + profileid + "' in the database.";
                 assertEquals(expectedmsg, e.getMessage());
             }
         
@@ -2037,7 +2037,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             ejbcaraws.getProfile(profileid, "eep");
         } catch(EjbcaException_Exception e) {
-            String expectedmsg = "Error : Could not find end entity profile with ID '" + profileid + " in the database.";
+            String expectedmsg = "Error : Could not find end entity profile with ID '" + profileid + "' in the database.";
             assertEquals(expectedmsg, e.getMessage());
         }
         
