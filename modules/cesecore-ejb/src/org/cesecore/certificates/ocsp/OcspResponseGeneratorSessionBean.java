@@ -160,6 +160,7 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
@@ -1065,8 +1066,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }         
                 if (ocspSigningCacheEntry != null) {
                     // This will be the issuer DN of the signing certificate, whether an OCSP responder or an internal CA  
-                    String issuerNameDn = X500Name.getInstance(
-                            ocspSigningCacheEntry.getFullCertificateChain().get(0).getIssuerX500Principal().getEncoded()).toString();
+                    String issuerNameDn = CertTools.getIssuerDN(ocspSigningCacheEntry.getFullCertificateChain().get(0));
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, issuerNameDn);
                 } else { 
                     /*
