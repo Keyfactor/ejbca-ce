@@ -50,7 +50,7 @@
         </layout>           
     </appender>
     
-    <!-- Sample loggers using SaferDailyRollingFileAppender. Replace the above with these if using. -->
+    <!-- Sample loggers using SaferDailyRollingFileAppender. Replace the above with these if using. 
 	<appender name="OcspTransactionLogger" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
      	<errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
         <param name="File" value="/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/logs/ocsp-transactions.log" />
