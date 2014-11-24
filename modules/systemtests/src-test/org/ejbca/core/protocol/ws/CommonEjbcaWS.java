@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -1961,6 +1962,123 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         log.trace("<getAuthorizedEndEntityProfiles");
     }
 
+    protected void getEndEntityProfileFromID() throws Exception {
+
+        String profilename = "TESTPROFILEFORGETPROFILECOMMAND";
+        
+        if(endEntityProfileSession.getEndEntityProfile(profilename) != null) {
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profilename);
+        }
+        if(certificateProfileSession.getCertificateProfile(profilename) != null) {
+            certificateProfileSession.removeCertificateProfile(intAdmin, profilename);
+        }
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.setPrinterName("TestPrinter");
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
+        profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
+        endEntityProfileSession.addEndEntityProfile(intAdmin, profilename, profile);
+        int profileid = endEntityProfileSession.getEndEntityProfileId(profilename);
+
+        try {
+            try {
+                ejbcaraws.getProfile(profileid, "ccp");
+            } catch(EjbcaException_Exception e) {
+                String expectedmsg = "Unknown profile type 'ccp'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles";
+                assertEquals(expectedmsg, e.getMessage());
+            }
+        
+            try {
+                ejbcaraws.getProfile(profileid, "cp");
+            } catch(EjbcaException_Exception e) {
+                String expectedmsg = "Error : Could not find certificate profile with ID '" + profileid + " in the database.";
+                assertEquals(expectedmsg, e.getMessage());
+            }
+        
+            byte[] profilebytes = ejbcaraws.getProfile(profileid, "eep");
+            java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(profilebytes));
+            final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
+            decoder.close();
+        
+            // Check that the default data are different from the data in the profile we want to retrieve
+            profile = new EndEntityProfile();
+            assertFalse(StringUtils.equals("TestPrinter", profile.getPrinterName()));
+            assertFalse(profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        
+            // Load the data from the retrieved profile and verify that the data is correct
+            profile.loadData(h);
+            assertEquals("TestPrinter", profile.getPrinterName());
+            assertTrue(profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+
+        } finally {
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profilename);
+        }
+
+    } // test52GetProfileFromID
+    
+    protected void getCertificateProfileFromID() throws Exception {
+
+        String profilename = "TESTPROFILEFORGETPROFILECOMMAND";
+        
+        if(endEntityProfileSession.getEndEntityProfile(profilename) != null) {
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profilename);
+        }
+        if(certificateProfileSession.getCertificateProfile(profilename) != null) {
+            certificateProfileSession.removeCertificateProfile(intAdmin, profilename);
+        }
+        CertificateProfile profile = new CertificateProfile();
+        profile.setAllowValidityOverride(true);
+        profile.setAllowExtensionOverride(true);
+        certificateProfileSession.addCertificateProfile(intAdmin, profilename, profile);
+        int profileid = certificateProfileSession.getCertificateProfileId(profilename);
+
+        try {
+        
+        try {
+            ejbcaraws.getProfile(profileid, "eep");
+        } catch(EjbcaException_Exception e) {
+            String expectedmsg = "Error : Could not find end entity profile with ID '" + profileid + " in the database.";
+            assertEquals(expectedmsg, e.getMessage());
+        }
+        
+        byte[] profilebytes = ejbcaraws.getProfile(profileid, "cp");
+        java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(profilebytes));
+        final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
+        decoder.close();
+        
+        // Check that the default data are different from the data in the profile we want to retrieve
+        profile = new CertificateProfile();
+        assertFalse(profile.getAllowValidityOverride());
+        assertFalse(profile.getAllowExtensionOverride());
+        
+        // Load the data from the retrieved profile and verify that the data is correct
+        profile.loadData(h);
+        assertTrue(profile.getAllowValidityOverride());
+        assertTrue(profile.getAllowExtensionOverride());
+
+        } finally {
+            certificateProfileSession.removeCertificateProfile(intAdmin, profilename);
+        }
+
+    } // test52GetProfileFromID
+
+    protected void getAvailableCAsInProfile() throws Exception {
+
+        int id = endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY");
+        log.info("id: " + id);
+        // First try to get something that does not exist, it should return array with size 0, not throw an exception
+        List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(000222);
+        assertEquals(0, cas.size());
+        // Now find the real one instead
+        cas = ejbcaraws.getAvailableCAsInProfile(id);
+        assertNotNull(cas);
+        // This profile only has ALLCAS available, so this list will be empty
+        assertTrue(cas.size() == 0);
+
+        // TODO: make a test that actually returns something
+
+    } // test24GetAvailableCAsInProfile
+    
     protected void getAvailableCertificateProfiles() throws Exception {
 
         int id = endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY");
@@ -1980,23 +2098,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertEquals(1, n.getId());
         assertEquals("ENDUSER", n.getName());
     } // test23GetAvailableCertificateProfiles
-
-    protected void getAvailableCAsInProfile() throws Exception {
-
-        int id = endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY");
-        log.info("id: " + id);
-        // First try to get something that does not exist, it should return array with size 0, not throw an exception
-        List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(000222);
-        assertEquals(0, cas.size());
-        // Now find the real one instead
-        cas = ejbcaraws.getAvailableCAsInProfile(id);
-        assertNotNull(cas);
-        // This profile only has ALLCAS available, so this list will be empty
-        assertTrue(cas.size() == 0);
-
-        // TODO: make a test that actually returns something
-
-    } // test24GetAvailableCAsInProfile
 
     protected void createAndGetCRL() throws Exception {
         String caname = getAdminCAName();

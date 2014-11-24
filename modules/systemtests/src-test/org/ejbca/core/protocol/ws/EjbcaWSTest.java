@@ -783,6 +783,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         UserDataVOWS user = ejbcaraws.findUser(criteria).get(0);
         assertEquals("stored cardnumber ws", "1234fa", user.getCardNumber());
     }
+    
+    @Test
+    public void test52GetProfileFromID() throws Exception {
+        getEndEntityProfileFromID();
+        getCertificateProfileFromID();
+    }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         String userName = "wsSpecialChars" + secureRandom.nextLong();
