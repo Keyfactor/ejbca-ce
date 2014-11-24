@@ -335,19 +335,21 @@ public class X509CAInfo extends CAInfo{
         this.authorityInformationAccess = authorityInformationAccess;
     }
     
+    /** @return a list of encoded names of the permitted names in issued certificates */
     public List<String> getNameConstraintsPermitted() {
         return nameConstraintsPermitted;
     }
     
-    public void setNameConstraintsPermittedNames(List<String> encodedNames) {
+    public void setNameConstraintsPermitted(List<String> encodedNames) {
         nameConstraintsPermitted = encodedNames;
     }
     
+    /** @return a list of encoded names of the forbidden names in issued certificates */
     public List<String> getNameConstraintsExcluded() {
         return nameConstraintsExcluded;
     }
     
-    public void setNameConstraintsExcludedNames(List<String> encodedNames) {
+    public void setNameConstraintsExcluded(List<String> encodedNames) {
         nameConstraintsExcluded = encodedNames;
     }
 
