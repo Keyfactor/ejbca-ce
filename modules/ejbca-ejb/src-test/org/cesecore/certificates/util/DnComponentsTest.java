@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.junit.Test;
 
@@ -31,8 +32,11 @@ public class DnComponentsTest {
     @Test
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects(true);
-        assertEquals(28, s.length);
+        assertEquals(31, s.length);
         int i = 0;
+        assertEquals("jurisdictioncountry", s[i++]);
+        assertEquals("jurisdictionstate", s[i++]);
+        assertEquals("jurisdictionlocality", s[i++]);
         assertEquals("street", s[i++]);
         assertEquals("pseudonym", s[i++]);
         assertEquals("telephonenumber", s[i++]);
@@ -52,7 +56,10 @@ public class DnComponentsTest {
         assertEquals("c", s[i]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(28, s1.length);
+        assertEquals(31, s1.length);
+        assertEquals("jurisdictioncountry", s1[30]);
+        assertEquals("jurisdictionstate", s1[29]);
+        assertEquals("jurisdictionlocality", s1[28]);
         assertEquals("street", s1[27]);
         assertEquals("telephonenumber", s1[25]);
         assertEquals("businesscategory", s1[23]);
@@ -66,16 +73,21 @@ public class DnComponentsTest {
         assertEquals("c", s1[0]);
 
         String[] s2 = DnComponents.getDnObjects(true);
-        assertEquals(28, s2.length);
-        assertEquals("businesscategory", s2[4]);
-        assertEquals("postalcode", s2[5]);
-        assertEquals("unstructuredaddress", s2[6]);
-        assertEquals("unstructuredname", s2[7]);
-        assertEquals("uid", s2[12]);
-        assertEquals("cn", s2[13]);
-        assertEquals("t", s2[21]);
-        assertEquals("c", s2[27]);
+        assertEquals(31, s2.length);
+        assertEquals("businesscategory", s2[7]);
+        assertEquals("postalcode", s2[8]);
+        assertEquals("unstructuredaddress", s2[9]);
+        assertEquals("unstructuredname", s2[10]);
+        assertEquals("uid", s2[15]);
+        assertEquals("cn", s2[16]);
+        assertEquals("t", s2[24]);
+        assertEquals("c", s2[30]);
 
+        assertEquals("2.5.4.6", DnComponents.getOid("c").toString());
+        assertEquals("1.3.6.1.4.1.311.60.2.1.3", DnComponents.getOid("jurisdictioncountry").toString());
+        
+        assertEquals("JURISDICTIONLOCALITY=", DnComponents.getDnExtractorFieldFromDnId(103));
+        assertEquals("CN=",DnComponents.getDnExtractorFieldFromDnId(2));
     }
 
     @Test
@@ -98,6 +110,22 @@ public class DnComponentsTest {
         assertEquals(BCStyle.SURNAME, oids1[3]);
         assertEquals(BCStyle.C, oids1[4]);
         assertEquals("CN=oid,Name=name,SN=12345,SURNAME=Json,C=se", dn1);
+
+        String dn2 = CertTools.stringToBCDNString("jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se");
+        final X500Name name2 = CertTools.stringToBcX500Name(dn2);
+        ASN1ObjectIdentifier[] oids2 = name2.getAttributeTypes();
+        assertEquals(CeSecoreNameStyle.JURISDICTION_COUNTRY, oids2[0]);
+        assertEquals(CeSecoreNameStyle.JURISDICTION_STATE, oids2[1]);
+        assertEquals(CeSecoreNameStyle.JURISDICTION_LOCALITY, oids2[2]);
+        assertEquals(CeSecoreNameStyle.UnstructuredAddress, oids2[3]);
+        assertEquals(CeSecoreNameStyle.UnstructuredName, oids2[4]);
+        assertEquals(BCStyle.CN, oids2[5]);
+        assertEquals(BCStyle.NAME, oids2[6]);
+        assertEquals(BCStyle.SERIALNUMBER, oids2[7]);
+        assertEquals(BCStyle.SURNAME, oids2[8]);
+        assertEquals(BCStyle.C, oids2[9]);
+        assertEquals("JurisdictionCountry=SE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,unstructuredAddress=1.2.3.4,unstructuredName=foo.bar.com,CN=oid,Name=name,SN=12345,SURNAME=Json,C=se", dn2);
+
     }
 
 }
