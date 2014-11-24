@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -104,6 +106,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -2321,6 +2324,45 @@ public class EjbcaWS implements IEjbcaWS {
         }
 		return ejbhelper.convertTreeMapToArray(ret);
 	}
+    
+    @Override
+    public byte[] getProfile(int profileId, String profileType) throws EjbcaException, AuthorizationDeniedException {
+        final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+        final AuthenticationToken admin = ejbhelper.getAdmin();
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        logAdminName(admin,logger);
+        
+        UpgradeableDataHashMap profile = null;
+        String type = "";
+        if(StringUtils.equalsIgnoreCase(profileType, "eep")) {
+            profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
+            type = "end entity";
+        } else if(StringUtils.equalsIgnoreCase(profileType, "cp")) {
+            profile = certificateProfileSession.getCertificateProfile(profileId);
+            type = "certificate";
+        } else {
+            throw new EjbcaException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
+        }
+        
+        if (profile == null) {
+            throw new EjbcaException("Error : Could not find " + type + " profile with ID '" + profileId + " in the database.");
+        }
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLEncoder encoder = new XMLEncoder(baos);
+        encoder.writeObject(profile.saveData());
+        encoder.close();
+        byte[] ba = baos.toByteArray();
+        try {
+            baos.close();
+        } catch (IOException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+        return ba;
+    }
     
 	@Override
 	public void createCRL(String caname) throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException, CryptoTokenOfflineException, CAOfflineException{
