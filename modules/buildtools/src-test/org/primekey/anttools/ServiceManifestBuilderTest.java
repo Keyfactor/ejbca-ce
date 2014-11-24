@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.jar.JarFile;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
@@ -149,29 +148,11 @@ public class ServiceManifestBuilderTest {
     @Test
     public void testMainMethod() throws IOException {
         log.info(">testMainMethod");
-        File jarFile = File.createTempFile("tmp", ".jar", temporaryFileDirectory);
-        try {
-            //Now, let's make a jar out of our dummy classes. 
-            ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile, null);
-            String[] args = {jarFile.getAbsolutePath(), DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME};
-            final int exitCode = ServiceManifestBuilder.mainInternal(args);
-            assertEquals("Process exited with non-zero error level.", 0, exitCode);
-            JarFile result = new JarFile(jarFile);
-            try {
-                assertTrue("Manifest file was not created.",
-                        result.getEntry("/META-INF/services/" + DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME) != null);
-            } finally {
-                if (result != null) {
-                    result.close();
-                }
-            }
-        } finally {
-            try {
-                jarFile.delete();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        String[] args = { temporarySourceDirectory.getAbsolutePath(), DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME };
+        final int exitCode = ServiceManifestBuilder.mainInternal(args);
+        assertEquals("Process exited with non-zero error level.", 0, exitCode);
+        assertTrue("Manifest file was not created.", new File(temporarySourceDirectory, "/META-INF/services/" + DUMMY_PACKAGE + "."
+                + FIRST_DUMMY_INTERFACE_NAME).exists());
         log.info("<testMainMethod");
     }
 
