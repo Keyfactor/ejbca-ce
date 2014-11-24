@@ -79,13 +79,16 @@ public class DnComponents {
         oids.put("pseudonym", CeSecoreNameStyle.PSEUDONYM);
         oids.put("street", CeSecoreNameStyle.STREET);
         oids.put("name", CeSecoreNameStyle.NAME);
+        oids.put("jurisdictionlocality", CeSecoreNameStyle.JURISDICTION_LOCALITY);
+        oids.put("jurisdictionstate", CeSecoreNameStyle.JURISDICTION_STATE);
+        oids.put("jurisdictioncountry", CeSecoreNameStyle.JURISDICTION_COUNTRY);
         
     }
     /** Default values used when constructing DN strings that are put in the database
      * 
      */
     private static String[] dNObjectsForward = {
-        "street", "pseudonym", "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname",
+        "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "street", "pseudonym", "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     // Default values    
@@ -300,7 +303,7 @@ public class DnComponents {
 
     /**
      * Returns the dnObjects (forward or reverse). 
-     * ldaproder = true is the default order in EJBCA. 
+     * ldaporder = true is the default order in EJBCA. 
      */
     public static String[]getDnObjects(boolean ldaporder) {
         if (ldaporder) {

@@ -744,8 +744,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue(userName);
         List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas != null);
-        assertTrue(userdatas.size() == 1);
+        assertNotNull(userdatas);
+        assertEquals(1, userdatas.size());
         userdatas.get(0).setTokenType(null);
         userdatas.get(0).setPassword(null);
         userdatas.get(0).setClearPwd(true);
@@ -832,6 +832,31 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
         }
 
+        // Make a test with EV TLS DN components
+        try {
+            final UserDataVOWS userData2 = getUserData(CA1_WSTESTUSER1);
+            userData2.setUsername("EVTLSEJBCAWSTEST");
+            userData2.setSubjectDN("CN=EVTLSEJBCAWSTEST,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna");
+            try {
+                certificateResponse = ejbcaraws.certificateRequest(userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            } catch (EjbcaException_Exception e) {
+                errorCode = e.getFaultInfo().getErrorCode();
+                log.info(errorCode.getInternalErrorCode(), e);
+                assertNotNull("error code should not be null", errorCode);
+                fail("certificate request with EV TLS DN components failed with error code "+errorCode.getInternalErrorCode());
+            }
+            // Verify that the response is of the right type
+            assertNotNull(certificateResponse);
+            assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+            // Verify that the certificate in the response has the same Subject DN
+            // as in the request.
+            cert = certificateResponse.getCertificate();
+            assertNotNull(cert);
+            assertEquals("JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=EVTLSEJBCAWSTEST", CertTools.getSubjectDN(cert));
+        } finally {
+            // Clean up immediately
+            endEntityManagementSession.deleteUser(admin, "EVTLSEJBCAWSTEST");
+        }
     }
 
     protected void enforcementOfUniquePublicKeys() throws Exception {
