@@ -113,7 +113,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
         if (validatedProperties == null) {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        final InternalKeyBindingStatus status = InternalKeyBindingStatus.valueOf(parameters.get(STATUS_KEY));
+        final InternalKeyBindingStatus status = InternalKeyBindingStatus.valueOf(parameters.get(STATUS_KEY).toUpperCase());
         final String certificateId = "null".equalsIgnoreCase(parameters.get(CERTIFICATE_FINGERPRINT_KEY)) ? null : parameters
                 .get(CERTIFICATE_FINGERPRINT_KEY);
         final Integer cryptoTokenId = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).getIdFromName(
