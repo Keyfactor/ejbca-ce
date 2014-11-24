@@ -16,6 +16,10 @@
 		<os family="unix" />
 	</condition>
 
+    <condition property="tlsprotocol" value="TLSv1" else="TLSv1,TLSv1.1,TLSv1.2">
+        <equals arg1="${ant.java.version}" arg2="1.6" />
+    </condition>
+    
     <condition property="jboss7">
 		<or>
         	<equals arg1="${appserver.subtype}" arg2="jboss7" />
@@ -376,7 +380,7 @@
         </target>
 
         <target name="jee:web-configureJBoss7SSL" depends="jee:check" unless="web.nosslconfigure">
-            <echo message="Setting-up SSL web configuration for JBoss 7." />
+            <echo message="Setting-up TLS web configuration for JBoss 7. Protocols allowed '${tlsprotocol}'." />
             <!-- Set-up the private port which requires client certificate -->
             <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="${httpserver.privhttps}",interface="httpspriv")' />
             <jboss:adm arg="/subsystem=web/connector=httpspriv:add(protocol=HTTP/1.1, scheme=https, socket-binding=httpspriv, secure=true)" />
@@ -386,12 +390,14 @@
             <jboss:adm arg="/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=verify-client, value=true)" />
             <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=ca-certificate-password, value="${java.trustpassword}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=ca-certificate-file, value="${jboss.server.home.dir}/${truststore.file}")' />
+            <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=protocol, value="${tlsprotocol}")' />
             <!-- Set-up the public SSL port which doesn't require the client certificate. -->
             <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="${httpserver.pubhttps}",interface="httpspub")' />
             <jboss:adm arg="/subsystem=web/connector=httpspub:add(protocol=HTTP/1.1, scheme=https, socket-binding=httpspub, secure=true)" />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:add(key-alias="${httpsserver.hostname}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=password, value="${httpsserver.password}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=certificate-key-file, value="${jboss.server.home.dir}/${keystore.file}")' />
+            <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=protocol, value="${tlsprotocol}")' />
         	<!-- If the server is not so fast, we have to wait a little before we can reload, otherwise it will be bad -->
 			<jboss:admwaitreload/>
             <jboss:adm arg=":reload" />
