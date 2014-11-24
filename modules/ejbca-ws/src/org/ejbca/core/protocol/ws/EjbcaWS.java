@@ -2345,7 +2345,7 @@ public class EjbcaWS implements IEjbcaWS {
         }
         
         if (profile == null) {
-            throw new EjbcaException("Error : Could not find " + type + " profile with ID '" + profileId + " in the database.");
+            throw new EjbcaException("Error : Could not find " + type + " profile with ID '" + profileId + "' in the database.");
         }
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
