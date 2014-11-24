@@ -12,10 +12,7 @@
  *************************************************************************/
 package org.primekey.anttools;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
@@ -24,9 +21,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 /**
  * This class is a tool for adding a manifest file for a given interface to the META-INF/services directory of a JAR. It
@@ -63,15 +57,14 @@ public class ServiceManifestBuilder {
             final String TAB = "     ";
             StringBuffer out = new StringBuffer();
             out.append("DESCRIPTION:\n");
-            out.append(TAB + "This command line tool inserts service manifest files into a given JAR archive or directory.\n");
+            out.append(TAB + "This command line tool inserts service manifest files into a given directory.\n");
             out.append(TAB + "It uses the following two arguments (without flags):\n");
-            out.append(TAB + "(1) Path to an archive/directory\n");
+            out.append(TAB + "(1) Path to a directory\n");
             out.append(TAB + "(2) A semicolon separated list of interfaces\n");
             out.append(TAB + "(3) (OPTIONAL) Temporary working directory, only applicable (but not required) when writing to jar. "
                     + "Will use system default if left blank.\n");
             out.append("\n");
             out.append("EXAMPLES:\n");
-            out.append(TAB + "/usr/ejbca/foo.jar com.foo.bar.InterfaceAlpha\n");
             out.append(TAB + "/usr/ejbca/modules/ejbca-ejb-cli/build/ com.foo.bar.InterfaceAlpha;com.bar.foo.InterfaceBeta /var/tmp/ \n");
             out.append("\n");
             out.append("WARNING: Adding a service manifest to a JAR with a file manifest is unstable at the moment.");
@@ -117,29 +110,6 @@ public class ServiceManifestBuilder {
     }
 
     /**
-     * This method will write an entire directory to the given jar file.
-     * 
-     * @param source file or directory to write to the jar file. 
-     * @param jarFile file to be written to
-     * @param manifest JAR manifest of the old file. null if none existed.
-     * @throws IOException 
-     */
-    public static void writeFileStructuretoJar(final File source, final File jarFile, Manifest manifest) throws IOException {
-        JarOutputStream jarOutputStream;
-        if (manifest != null) {
-            jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile), manifest);
-        } else {
-            jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile));
-        }
-        try {
-            addToJar(source, source, jarOutputStream);
-        } finally {
-            jarOutputStream.close();
-        }
-
-    }
-
-    /**
      * Recursively deletes a file. If file is a directory, then it will delete all files and subdirectories contained.
      * 
      * @param file the file to delete
@@ -171,44 +141,6 @@ public class ServiceManifestBuilder {
         }
         return temp;
     }
-
-    private static void addToJar(final File baseDir, final File source, final JarOutputStream jarOutputStream) throws IOException {
-        String name = source.getPath().substring(baseDir.getPath().length()).replace("\\", "/");
-        if (source.isDirectory()) {
-            //Zip specification allows only slashes
-            if (!name.isEmpty()) {
-                //Zip specification also demands that all paths end with '/'
-                if (!name.endsWith("/"))
-                    name += "/";
-                JarEntry entry = new JarEntry(name);
-                entry.setTime(source.lastModified());
-                jarOutputStream.putNextEntry(entry);
-                jarOutputStream.closeEntry();
-            }
-            for (File subSource : source.listFiles()) {
-                addToJar(baseDir, subSource, jarOutputStream);
-            }
-        } else {
-            JarEntry entry = new JarEntry(name);
-            entry.setTime(source.lastModified());
-            jarOutputStream.putNextEntry(entry);
-            BufferedInputStream in = new BufferedInputStream(new FileInputStream(source));
-            try {
-                byte[] buffer = new byte[1024];
-                while (true) {
-                    int count = in.read(buffer);
-                    if (count == -1)
-                        break;
-                    jarOutputStream.write(buffer, 0, count);
-                }
-                jarOutputStream.closeEntry();
-            } finally {
-                in.close();
-            }
-        }
-    }
-
-
    
 
     /**
