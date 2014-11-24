@@ -33,6 +33,22 @@ public class CeSecoreNameStyle extends BCStyle {
     public static final X500NameStyle INSTANCE = new CeSecoreNameStyle();
 
     /**
+     * EV TLS jurisdictionCountry.
+     * https://cabforum.org/wp-content/uploads/EV-V1_5_2Libre.pdf
+     */
+    public static final ASN1ObjectIdentifier JURISDICTION_COUNTRY = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.3");
+    /**
+     * EV TLS jurisdictionState.
+     * https://cabforum.org/wp-content/uploads/EV-V1_5_2Libre.pdf
+     */
+    public static final ASN1ObjectIdentifier JURISDICTION_STATE = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.2");
+    /**
+     * EV TLS jurisdictionLocality.
+     * https://cabforum.org/wp-content/uploads/EV-V1_5_2Libre.pdf
+     */
+    public static final ASN1ObjectIdentifier JURISDICTION_LOCALITY = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.1");
+
+    /**
      * default look up table translating OID values into their common symbols following
      * the convention in RFC 2253 with a few extras
      */
@@ -81,6 +97,9 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(BUSINESS_CATEGORY, "BusinessCategory");
         DefaultSymbols.put(TELEPHONE_NUMBER, "TelephoneNumber");
         DefaultSymbols.put(NAME, "Name");
+        DefaultSymbols.put(JURISDICTION_LOCALITY, "JurisdictionLocality");
+        DefaultSymbols.put(JURISDICTION_STATE, "JurisdictionState");
+        DefaultSymbols.put(JURISDICTION_COUNTRY, "JurisdictionCountry");
 
         DefaultLookUp.put("c", C);
         DefaultLookUp.put("o", O);
@@ -116,6 +135,9 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("businesscategory", BUSINESS_CATEGORY);
         DefaultLookUp.put("telephonenumber", TELEPHONE_NUMBER);
         DefaultLookUp.put("name", NAME);
+        DefaultLookUp.put("jurisdictionlocality", JURISDICTION_LOCALITY);
+        DefaultLookUp.put("jurisdictionstate", JURISDICTION_STATE);
+        DefaultLookUp.put("jurisdictioncountry", JURISDICTION_COUNTRY);
 
         DefaultStringStringLookUp.put("C", C.getId());
         DefaultStringStringLookUp.put("O", O.getId());
@@ -151,6 +173,9 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("BUSINESSCATEGORY", BUSINESS_CATEGORY.getId());
         DefaultStringStringLookUp.put("TELEPHONENUMBER", TELEPHONE_NUMBER.getId());
         DefaultStringStringLookUp.put("NAME", NAME.getId());
+        DefaultStringStringLookUp.put("JURISDICTIONLOCALITY", JURISDICTION_LOCALITY.getId());
+        DefaultStringStringLookUp.put("JURISDICTIONSTATE", JURISDICTION_STATE.getId());
+        DefaultStringStringLookUp.put("JURISDICTIONCOUNTRY", JURISDICTION_COUNTRY.getId());
     }
 
     /**

@@ -653,6 +653,11 @@ public class CertToolsTest {
         
         String dn27 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\\"";
         assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"", CertTools.stringToBCDNString(dn27));
+
+        String dn28 = CertTools.stringToBCDNString("jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se");
+        assertEquals("JurisdictionCountry=SE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,unstructuredAddress=1.2.3.4,unstructuredName=foo.bar.com,CN=oid,Name=name,SN=12345,SURNAME=Json,C=se",
+                CertTools.stringToBCDNString(dn28));
+
     }
 
     @Test
