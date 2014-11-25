@@ -93,7 +93,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 String issuerDn = "n/a";
                 String serialNumber = "n/a";
                 if (certificateInfo != null) {
-                    issuerDn = "\"" + certificateInfo.getIssuerDN() + "\"";
+                    issuerDn = "\"" + certificateInfo.getIssuerDN() + "\",";
                     serialNumber = certificateInfo.getSerialNumber().toString(16).toUpperCase();
                 }
                 sb.append(", ").append(issuerDn).append(" ").append(serialNumber);
@@ -113,7 +113,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                         .values();
                 for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
                     sb.append("\n\t").append(property.getName()).append('=').append(property.getValue());
-                    sb.append(" [").append(property.getType().getSimpleName()).append(", ").append(property.getDefaultValue()).append("],");
+                    sb.append(" [").append(property.getType().getSimpleName()).append(", default=").append(property.getDefaultValue()).append("],");
                 }
                 if (properties.size() > 0) {
                     sb.deleteCharAt(sb.length() - 1);
