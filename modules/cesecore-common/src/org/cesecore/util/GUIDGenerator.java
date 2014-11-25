@@ -55,7 +55,10 @@ public class GUIDGenerator {
         }
 
         final String hashcode = hexFormat(System.identityHashCode(o), 8);
-        long timeNow = System.currentTimeMillis();
+        // Use a combination of milliseconds and nanoseconds:
+        // - milliseconds is not good enough for the test case (which makes a lot of calls in a quick succession).
+        // - nanoseconds is also not good enough since some of the low-order bits may be always zero (how many is system and JDK dependent).
+        long timeNow = System.currentTimeMillis() ^ System.nanoTime();
         int timeLow = (int) timeNow & 0xFFFFFFFF;
         int node = seeder.nextInt();
         final StringBuilder guid = new StringBuilder(32);
