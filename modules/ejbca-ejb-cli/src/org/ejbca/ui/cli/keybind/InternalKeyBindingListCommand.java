@@ -90,7 +90,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 sb.append(" (").append(internalKeyBinding.getId()).append(')');
                 sb.append(", ").append(internalKeyBinding.getStatus().name());
                 final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(internalKeyBinding.getCertificateId());
-                String issuerDn = "n/a";
+                String issuerDn = "n/a,";
                 String serialNumber = "n/a";
                 if (certificateInfo != null) {
                     issuerDn = "\"" + certificateInfo.getIssuerDN() + "\",";
