@@ -69,7 +69,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(" + SoftCryptoToken.class.getSimpleName() + ") Set to true|false to allow|disallow private key export."));
         //PKCS#11
         registerParameter(new Parameter(PKCS11_LIB_KEY, "Library Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "("
-                + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 library file."));
+                + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 library file. Required if type is " + PKCS11CryptoToken.class.getSimpleName()));
         registerParameter(new Parameter(SLOT_REFERENCE_TYPE_KEY, "Slot Reference Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "(" + PKCS11CryptoToken.class.getSimpleName() + ") Slot Reference Type."));
         registerParameter(new Parameter(SLOT_REFERENCE_KEY, "Slot Reference", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -104,9 +104,14 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         } else if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
             className = PKCS11CryptoToken.class.getName();
             // Parse library file
-            if (!new File(parameters.get(PKCS11_LIB_KEY)).exists()) {
+            String pkcs11LibFilename = parameters.get(PKCS11_LIB_KEY);
+            if(null == pkcs11LibFilename) {
+                getLogger().info("You need to specify a PKCS#11 library file.");
+                return CommandResult.CLI_FAILURE;
+            }
+            if (!new File(pkcs11LibFilename).exists()) {
                 getLogger().info("PKCS#11 library file " + parameters.get(PKCS11_LIB_KEY) + " does not exist!");
-                return CommandResult.FUNCTIONAL_FAILURE;
+                return CommandResult.CLI_FAILURE;
             }
             cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, parameters.get(PKCS11_LIB_KEY));
             Pkcs11SlotLabelType labelType = Pkcs11SlotLabelType.getFromKey(parameters.get(SLOT_REFERENCE_TYPE_KEY));
