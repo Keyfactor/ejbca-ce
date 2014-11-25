@@ -87,6 +87,10 @@ org.cesecore.authorization.control.CryptoTokenRules
 			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.statusImg}" styleClass="statusIcon"/>
 		</h:column>
 		<h:column>
+   			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_AUTO}"/></f:facet>
+			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.autoActivationYesImg}" styleClass="statusIcon" rendered="#{cryptoTokenGuiInfo.autoActivation}"/>
+		</h:column>
+		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_REFDHEAD}"/></f:facet>
 			<h:outputText value="#{web.text.CRYPTOTOKEN_UNUSED}" rendered="#{!cryptoTokenGuiInfo.referenced}"/>
 			<h:outputText value="#{web.text.CRYPTOTOKEN_REFD}" rendered="#{cryptoTokenGuiInfo.referenced}"/>
