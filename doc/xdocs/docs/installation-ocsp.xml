@@ -311,8 +311,8 @@ If the URL is not defined, the re-keying won't be enabled.
 OCSP responder acts as a registration authority when renewing keys with the EJBCA CA.
 The OCSP responder uses an AuthenticationKeyBinding for SSL client authentication to the CA's web-service.
 </p><p>
-Since OCSP responder is acting as a registration authority, its certificate for authenticating to the EJBCA CA
-web-service must have the key usage set to "Digital Signature" and extended key usage set to "Client Authentication".
+Since OCSP responder is acting as a registration authority, its certificate for authenticating (in the AuthenticationKeyBinding) to the EJBCA CA
+web-service must have the key usage set to "Digital Signature" and "keyEncipherment" and extended key usage set to "Client Authentication".
 It is also necessary to set-up the appropriate access rules on the CA side (either by creating a new RA role, or using
 an existing one).
 The role for the OCSP responder should have the right to view and edit the end entities (at least for all of the CA's
