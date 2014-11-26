@@ -123,7 +123,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         certificateStoreSession = localHelper.getCertificateStoreSession();
 
         // Extract system properties
-        urlstr = (properties.getProperty(certSafeUrlPropertyName)).trim();
+        urlstr = (properties.getProperty(certSafeUrlPropertyName));
         authKeyBindingName = properties.getProperty(certSafeAuthKeyBindingPropertyName);
         timeout = properties.containsKey(certSafeConnectionTimeOutPropertyName)? 
                         Integer.parseInt(properties.getProperty(certSafeConnectionTimeOutPropertyName)) : 
@@ -146,8 +146,8 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
     } // init  
     
     private URL getURL() throws MalformedURLException {
-        if(url==null) {
-            url = new URL(urlstr);
+        if((url==null) && (urlstr!=null)) {
+            url = new URL(urlstr.trim());
         }
         return url;
     }
