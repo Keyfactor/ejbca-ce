@@ -15,6 +15,7 @@ package org.ejbca.ui.web.pub.cluster;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,10 +155,17 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
         final HttpURLConnection con = getHttpURLConnection(httpReqPath);
         int ret = con.getResponseCode();
         log.debug("HTTP response code: "+ret+". Response message: "+con.getResponseMessage());
-        final InputStream is = con.getInputStream();
-        final String retStr = (is != null ? Streams.asString(is) : "");
-        log.debug("Return String: "+retStr);
+        if (ret != 200) {
+            final InputStream errStream = con.getErrorStream();
+            if (errStream != null) {
+                final String errStr = Streams.asString(errStream);
+                log.error("HTTP response error message:\n"+errStr);
+            }
+            fail("Got HTTP error response "+ret+". See ERROR log message.");
+        }
         assertEquals("Response code", 200, ret);
+        String retStr = Streams.asString(con.getInputStream());
+        log.debug("Return String: "+retStr);
         assertEquals("ALLOK", retStr);
         con.disconnect();
 
