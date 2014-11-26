@@ -993,6 +993,10 @@ public class EjbcaWebBean implements Serializable {
         }
         
         EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
+        if(p == null) {
+            return new HashSet<String>();
+        }
+        
         ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
         Set<String> cas = new HashSet<String>();
         Iterator<String> itr = caids.iterator();
@@ -1015,6 +1019,10 @@ public class EjbcaWebBean implements Serializable {
         }
         
         EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
+        if(p == null) {
+            return new HashSet<String>();
+        }
+        
         ArrayList<String> cpids = (ArrayList<String>) p.getAvailableCertificateProfileIds();
         Set<String> cps = new HashSet<String>();
         Iterator<String> itr = cpids.iterator();
