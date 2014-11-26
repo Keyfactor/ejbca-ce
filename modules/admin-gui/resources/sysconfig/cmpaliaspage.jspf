@@ -73,6 +73,14 @@ function checkallfields() {
         ok = false;
     }
     
+    var eepoptions = document.cmpconfiguration.<%= LIST_CMPEEPROFILES %>;
+    for (var i = 0; i < eepoptions.length; i++) {
+       if((eepoptions[i].selected==true) && (eepoptions[i].value=="-1") ) {
+			alert('<%= ejbcawebbean.getText("CMPERROREEPNOTFOUND") %>');
+    	    ok = false;
+       }
+    }
+    
     return ok;
 }
 
@@ -414,15 +422,17 @@ function checkallfields() {
         <select name="<%= LIST_CMPEEPROFILES %>" onchange="reload()" >
           <% String defeep = cmpConfigClone.getRAEEProfile(alias); %>
           <% ceep = defeep; %>
+          <% boolean eepselected = false; %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
-          <% if("KeyId".equals(defeep)) { %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
+          <% if("KeyId".equals(defeep)) { eepselected=true; %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <% java.util.Iterator eeps = ejbcawebbean.getAuthorizedEEProfileNames().iterator();
              while(eeps.hasNext()){
             	String eep = (String) eeps.next(); 
-          %>   <option <% if(eep.equals(defeep)){ %> selected <% } %>
+          %>   <option <% if(eep.equals(defeep)){ eepselected=true; %> selected <% } %>
                   value='<c:out value="<%= eep%>"/>'><c:out value="<%= eep %>"/></option>
           <% } %>
+          <% if(!eepselected) { %> <option selected value='<c:out value="-1"/>'><c:out value="Non-existing End Entity profile: "/><c:out value="<%= defeep %>"/></option> <% } %>
         </select>
         <noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;

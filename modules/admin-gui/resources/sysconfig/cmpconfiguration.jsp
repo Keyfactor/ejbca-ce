@@ -476,6 +476,10 @@
     				                if (authmodule.size() == 0) {
                                         throw new ParameterException(ejbcawebbean.getText("CMPNOAUTHMODULE"));
                                     }
+    				                
+    				                if (cmpConfigClone.getRAEEProfile(alias).equals("-1")) {
+    				                	throw new ParameterException(ejbcawebbean.getText("CMPERROREEPNOTFOUND"));
+    				                }
     				        		ejbcawebbean.updateCmpConfigFromClone(alias);
     				           		ejbcawebbean.saveCMPConfiguration();
     			        	   		includefile="cmpaliasespage.jspf";
