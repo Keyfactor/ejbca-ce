@@ -68,6 +68,38 @@ To get debug level logging instead of INFO.
 The part 'additivity=false' configures the logging so that the EJBCA log only goes to ejbca.log and not to server.log. 
 If you remove this part the EJBCA log will go both to ejbca.log and server.log.
 
+
+Debug logging a single class or package
+---------------------------------------
+Sometimes it is helpful to be able to debug a single class. The following example for JBoss EAP 6 will show DEBUG
+events for classes from the package "org.cesecore.certificates.util" and the class
+"org.ejbca.core.model.ra.raadmin.EndEntityProfile", but INFO for all other classes to the CONSOLE.
+
+        <subsystem xmlns="urn:jboss:domain:logging:1.1">
+            <console-handler name="CONSOLE">
+                <level name="DEBUG"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+            </console-handler>
+            ...
+            <logger category="org.ejbca.core.model.ra.raadmin.EndEntityProfile">
+                <level name="DEBUG"/>
+            </logger>
+            <logger category="org.cesecore.certificates.util">
+                <level name="DEBUG"/>
+            </logger>
+            ...
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </root-logger>
+       </subsystem>
+
+
 Log4j logging in other application servers
 ==========================================
 For applications servers that does not come with Log4J, you must provide you own log4j
