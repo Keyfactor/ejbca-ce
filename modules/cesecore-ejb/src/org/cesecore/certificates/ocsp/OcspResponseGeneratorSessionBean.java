@@ -77,7 +77,6 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -160,7 +159,6 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
@@ -1197,7 +1195,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 + status.certificateProfileId);
                     }
                     
-                    infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
+                    infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
                     log.info(infoMsg);
                     OCSPResponseItem respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if(addArchiveCutoff) {
@@ -1207,9 +1205,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     responseList.add(respItem);
                     transactionLogger.writeln();
                 } else {
+                    // If we've ended up here it's because the signer certificate was revoked. 
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
-                    infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), caCertificateSubjectDn);
+                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumber(caCertificate), CertTools.getSubjectDN(caCertificate));
                     log.info(infoMsg);
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
                     transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
