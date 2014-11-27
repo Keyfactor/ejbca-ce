@@ -99,6 +99,8 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -134,6 +136,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private  final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -819,6 +822,61 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     }
     
     /**
+     * Request signature requirement: A certificate issued by a our test CA with the certificate's serialnumber.
+     * Request signature:             By the required certificate, which happens to be revoked. 
+     * Expected outcome:              UNAUTHORIZED
+     */
+    @Test
+    public void testSpecificSignerSignatureRequiredRevokedSignatureCert() throws Exception {
+        //Create a special issuer.
+        X509CA signatureIssuerCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken,
+                "CN=RevokedSignatureIssuer");
+        int cryptoTokenId = signatureIssuerCa.getCAToken().getCryptoTokenId();
+        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", "1024");
+        X509Certificate signerIssuerCaCertificate = (X509Certificate) signatureIssuerCa.getCACertificate();
+        //Store the CA Certificate.
+        certificateStoreSession.storeCertificate(authenticationToken, signerIssuerCaCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
+        final String signatureRequired = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
+
+        try {
+            final String ocspAuthenticationUsername = Thread.currentThread().getStackTrace()[1].getMethodName();
+            final KeyPair ocspAuthenticationKeyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            final X509Certificate ocspAuthenticationCertificate = issueOcspAuthenticationCertificate(signatureIssuerCa.getCAId(),
+                    ocspAuthenticationUsername, ocspAuthenticationKeyPair.getPublic());
+
+            try {
+                //Now delete the original CA, making this test completely standalone.
+                OcspTestUtils.deleteCa(authenticationToken, x509ca);
+                activateKeyBinding(internalKeyBindingId);
+                // Configure the OcspKeyBinding to require a signature
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken,
+                        internalKeyBindingId);
+                ocspKeyBinding.setRequireTrustedSignature(true);
+                // Trust signatures from our test CA and the certificate serial number from our auth cert
+                addTrustEntry(ocspKeyBinding, x509ca.getCAId(), ocspAuthenticationCertificate.getSerialNumber());
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
+                internalCertificateStoreSession.reloadCaCertificateCache();
+                // Try to send a signed OCSP requests
+                final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
+                        (X509Certificate) x509ca.getCACertificate() , ocspSigningCertificate.getSerialNumber());
+                certificateStoreSession.setRevokeStatus(authenticationToken, ocspAuthenticationCertificate,
+                        RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+                final OCSPResp ocspResponseSigned = sendRequest(ocspRequestSigned);
+                assertEquals("We expected an 'UNAUTHORIZED' status code: ", OCSPResp.UNAUTHORIZED, ocspResponseSigned.getStatus());
+             //   validateSuccessfulResponse((BasicOCSPResp) ocspResponseSigned.getResponseObject(), ocspSigningCertificate.getPublicKey());
+            } finally {
+                internalCertificateStoreSession.removeCertificate(ocspAuthenticationCertificate);
+            }
+        } finally {
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, signatureRequired);
+            OcspTestUtils.deleteCa(authenticationToken, signatureIssuerCa);
+        }
+    }
+    
+    /**
      * Request signature requirement: Multiple options.
      * Request signature:             By a known certificate issued by our test CA, not matching any of the configured trust entries.
      * Expected outcome:              6 (OCSPResp.UNAUTHORIZED)
@@ -1010,7 +1068,16 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
     }
     
-    /** Build an OCSP request, that will optionally be signed if authentication parameters are specified */
+    /**
+     * Build an OCSP request, that will optionally be signed if authentication parameters are specified
+     * 
+     * @param ocspAuthenticationCertificate signing certificate
+     * @param ocspAuthenticationPrivateKey private key to sign with
+     * @param caCertificate issuer of the queried certificate
+     * @param certificateSerialnumber serial number of the certificate to be queried
+     * @return
+     * @throws Exception
+     */
     private OCSPReq buildOcspRequest(final X509Certificate ocspAuthenticationCertificate, final PrivateKey ocspAuthenticationPrivateKey,
             final X509Certificate caCertificate, final BigInteger certificateSerialnumber) throws Exception {
         final OCSPReqBuilder ocspReqBuilder = new OCSPReqBuilder();
@@ -1029,10 +1096,14 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             return ocspReqBuilder.build();
         }
     }
+    
+    private X509Certificate issueOcspAuthenticationCertificate(final String username, final PublicKey publicKey) throws Exception  {
+        return issueOcspAuthenticationCertificate(x509ca.getCAId(), username, publicKey);
+    }
 
     /** Issue a plain end user certificate from the test CA for the provided public key */
-    private X509Certificate issueOcspAuthenticationCertificate(final String username, final PublicKey publicKey) throws Exception {
-        final EndEntityInformation user = new EndEntityInformation(username, "CN="+username, x509ca.getCAId(), null, null,
+    private X509Certificate issueOcspAuthenticationCertificate(final int caid, final String username, final PublicKey publicKey) throws Exception {
+        final EndEntityInformation user = new EndEntityInformation(username, "CN="+username, caid, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
