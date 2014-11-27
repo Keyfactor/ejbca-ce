@@ -893,7 +893,7 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException if an error occured
 	 * @throws AuthorizationDeniedException
 	 */
-	public abstract byte[] getProfile(int profileId, String profileType)
+	abstract byte[] getProfile(int profileId, String profileType)
                  throws EjbcaException, AuthorizationDeniedException;
 	
 	/**
