@@ -340,7 +340,9 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
+            if (cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, signKeyAlias)) {
+                cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
+            }
             CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
     		caSession.removeCA(roleMgmgToken, ca.getCAId());
     		internalCertStoreSession.removeCertificate(cert);
@@ -523,7 +525,9 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            cryptoTokenManagementSession.removeKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
+            if (cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, signKeyAlias)) {
+                cryptoTokenManagementSession.removeKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
+            }
             CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
             caSession.removeCA(authenticationToken, ca.getCAId());
             internalCertStoreSession.removeCertificate(cert);
