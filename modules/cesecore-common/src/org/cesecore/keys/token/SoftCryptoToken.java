@@ -277,7 +277,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
             try {
                 cont.deleteEntry(alias);
-                String msg = intres.getLocalizedMessage("token.deleteentry", getId(), alias);
+                String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
                 log.info(msg);
             } catch (KeyStoreException e) { // NOPMD
                 // P12 keystore throws when the alias can not be found, in contrary to PKCS#11 keystores
