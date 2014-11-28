@@ -15,6 +15,7 @@ package org.cesecore.util;
 import java.io.IOException;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -65,6 +66,10 @@ public class PrintableStringNameStyle extends CeSecoreNameStyle {
         else if (oid.equals(CeSecoreNameStyle.EmailAddress) || oid.equals(CeSecoreNameStyle.DC))
         {
             return new DERIA5String(value);
+        }
+        else if (oid.equals(DATE_OF_BIRTH))  // accept time string as well as # (for compatibility)
+        {
+            return new ASN1GeneralizedTime(value);
         }
         else if (canBePrintable(value))  
         {
