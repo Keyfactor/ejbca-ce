@@ -63,7 +63,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -81,13 +80,10 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
 
     private static final String USER_NAME = "RevokeEndEntityCommandTest_user1";
     private static final String[] HAPPY_PATH_REVOKE_ONHOLD_ARGS = { USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
-    private static final String[] HAPPY_PATH_REVOKE_PERMANENT_ARGS = { USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) };
-    private static final String[] HAPPY_PATH_UNREVOKE_ARGS = { USER_NAME };
 
     private int caid = getTestCAId();
 
     private RevokeEndEntityCommand command0;
-    private UnRevokeEndEntityCommand command1;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RevokeEndEntityCommandTest"));
 
     private EndEntityManagementSessionRemote eeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -100,7 +96,6 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
     public void setUp() throws Exception {
         super.setUp();
         command0 = new RevokeEndEntityCommand();
-        command1 = new UnRevokeEndEntityCommand();
     }
 
     @After
@@ -152,38 +147,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             assertEquals(EndEntityConstants.STATUS_REVOKED, eei.getStatus());
             info = certificateStoreSession.getCertificateInfo(fingerprint);
             assertEquals(CertificateConstants.CERT_REVOKED, info.getStatus());
-            assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, info.getRevocationReason());
-
-            // Now unrevoke, will not change status of user, only of the certificate
-            assertEquals(CommandResult.SUCCESS, command1.execute(HAPPY_PATH_UNREVOKE_ARGS));
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
-            assertEquals(1, col.size());
-            eei = col.iterator().next();
-            assertEquals(EndEntityConstants.STATUS_REVOKED, eei.getStatus());
-            info = certificateStoreSession.getCertificateInfo(fingerprint);
-            assertEquals(CertificateConstants.CERT_ACTIVE, info.getStatus());
-            assertEquals(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, info.getRevocationReason());
-
-            // Revoke again, permanently
-            command0.execute(HAPPY_PATH_REVOKE_PERMANENT_ARGS);
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
-            assertEquals(1, col.size());
-            eei = col.iterator().next();
-            assertEquals(EndEntityConstants.STATUS_REVOKED, eei.getStatus());
-            info = certificateStoreSession.getCertificateInfo(fingerprint);
-            assertEquals(CertificateConstants.CERT_REVOKED, info.getStatus());
-            assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, info.getRevocationReason());
-
-            // Unrevokation will not do anything now
-            command1.execute(HAPPY_PATH_UNREVOKE_ARGS);
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
-            assertEquals(1, col.size());
-            eei = col.iterator().next();
-            assertEquals(EndEntityConstants.STATUS_REVOKED, eei.getStatus());
-            info = certificateStoreSession.getCertificateInfo(fingerprint);
-            assertEquals(CertificateConstants.CERT_REVOKED, info.getStatus());
-            assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, info.getRevocationReason());
-            
+            assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, info.getRevocationReason());            
         } finally {
             /// remove the user's certificate from database
             internalCertStoreSession.removeCertificate(fingerprint);
