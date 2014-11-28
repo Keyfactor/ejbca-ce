@@ -12,20 +12,37 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ra;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.Date;
 
+import javax.ejb.FinderException;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -36,6 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -46,6 +64,9 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,6 +104,15 @@ public class UnRevokeEndEntityCommandTest {
     private static X509CA x509ca = null;
     private Certificate certificate;
 
+    private final EndEntityInformation userdata;
+    
+    {
+        userdata = new EndEntityInformation(TESTCLASS_NAME, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null, EndEntityConstants.STATUS_NEW,
+                new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+        userdata.setPassword("foo123");
+    }
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -100,22 +130,11 @@ public class UnRevokeEndEntityCommandTest {
 
     @Before
     public void setup() throws Exception {
-        final EndEntityInformation userdata = new EndEntityInformation(TESTCLASS_NAME, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
-                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
-        userdata.setPassword("foo123");
+
         endEntityManagementSession.addUser(authenticationToken, userdata, true);
         if (null == endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)) {
             throw new RuntimeException("Could not create end entity.");
-        }
-        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
-        certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, signSession.fetchCertGenParams()).getCertificate();
-        certificateStoreSession.setRevokeStatus(authenticationToken, certificate, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                END_ENTITY_SUBJECT_DN);
-        if (!certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumber(certificate))) {
-            throw new RuntimeException("Certificate was not revoked, can't continue test.");
-        }
+        }    
     }
 
     @After
@@ -129,10 +148,50 @@ public class UnRevokeEndEntityCommandTest {
     }
 
     @Test
-    public void testUnrevokeEndEntity() throws AuthorizationDeniedException {
+    public void testUnrevokeEndEntity() throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, FinderException, WaitingForApprovalException, InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
+        certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class,
+                signSession.fetchCertGenParams()).getCertificate();
+        endEntityManagementSession.revokeUser(authenticationToken, TESTCLASS_NAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        if (!certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumber(certificate))) {
+            throw new RuntimeException("Certificate was not revoked, can't continue test.");
+        }
         final String args[] = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertFalse("Certificate was not unrevoked.",
                 certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumber(certificate)));
+        assertEquals("End entity was not set to generated.", EndEntityConstants.STATUS_GENERATED,
+                endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getStatus());
     }
+    
+    //Test unrevoking an end entity with a reason other than hold
+    @Test
+    public void testUnrevokeEndEntityNotSetToHold() throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, FinderException, WaitingForApprovalException, InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
+        certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class,
+                signSession.fetchCertGenParams()).getCertificate();
+        endEntityManagementSession.revokeUser(authenticationToken, TESTCLASS_NAME, RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE);
+        if (!certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumber(certificate))) {
+            throw new RuntimeException("Certificate was not revoked, can't continue test.");
+        }
+        final String args[] = new String[] { TESTCLASS_NAME };
+        command.execute(args);
+        assertTrue("Certificate was incorrectly unrevoked.",
+                certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumber(certificate)));
+        assertEquals("End entity was not kept revoked.", EndEntityConstants.STATUS_REVOKED,
+                endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getStatus());
+    }
+    
+    //Rest unrevoking an ungenerated end entity
+    @Test
+    public void testUnrevokeEndEntityWithoutCertificates() throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, FinderException, WaitingForApprovalException {
+        endEntityManagementSession.revokeUser(authenticationToken, TESTCLASS_NAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        final String args[] = new String[] { TESTCLASS_NAME };
+        command.execute(args);
+        assertEquals("End entity was not set to new.", EndEntityConstants.STATUS_NEW,
+                endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getStatus());
+    }
+    
 }
