@@ -1116,6 +1116,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
                 if (!signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
                     // Check if cert is revoked
+                    // (i.e serialNumber asked for (subject serialNo) and issuerDN of subject cert, i.e. ca-certificates subjectDN).
                     final CertificateStatus status = certificateStoreSession.getStatus(caCertificateSubjectDn, certId.getSerialNumber());
                     // If we have an OcspKeyBinding configured for this request, we override the default value
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
