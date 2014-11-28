@@ -351,7 +351,7 @@ public class OcspKeyRenewalTest {
             log.debug("Cleaned up end-entity "+info.getUsername()+" with DN "+info.getDN());
         }
         
-        // Re-enable temporarly disabled AuthenticationKeyBindings
+        // Re-enable temporarily disabled AuthenticationKeyBindings
         if (disabledAuthenticationKeyBindings!=null) {
             for (final Integer internalKeyBindingId : disabledAuthenticationKeyBindings) {
                 try {
@@ -483,7 +483,7 @@ public class OcspKeyRenewalTest {
         }
         ocspKeyRenewalProxySession.setTimerToFireInOneSecond();
         //Race condition, the WS object takes about two years to materialize
-        Thread.sleep(3000);
+        Thread.sleep(10000);
         //Timer should have fired, and we should see some new stuff.
 
         // Check that back-end InternalKeyBinding has been updated

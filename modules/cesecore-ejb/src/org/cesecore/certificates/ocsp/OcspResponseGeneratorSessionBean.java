@@ -241,10 +241,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (log.isDebugEnabled() && (CardKeyHolder.getInstance().getCardKeys() == null)) {
                 log.debug(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
             }
-            // Populate OcspSigningCache
+            GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            OcspSigningCache.INSTANCE.stagingStart();
             try {
-                GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-                OcspSigningCache.INSTANCE.stagingStart();
+                // Populate OcspSigningCache
                 // Add all potential CA's as OCSP responders to the staging area
                 for (final Integer caId : caSession.getAllCaIds()) {
                     final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
