@@ -84,10 +84,16 @@ public class DnComponentsTest {
         assertEquals("c", s2[30]);
 
         assertEquals("2.5.4.6", DnComponents.getOid("c").toString());
+        assertEquals("2.5.4.3", DnComponents.getOid("cn").toString());
         assertEquals("1.3.6.1.4.1.311.60.2.1.3", DnComponents.getOid("jurisdictioncountry").toString());
+        assertEquals("1.3.6.1.4.1.311.60.2.1.2", DnComponents.getOid("jurisdictionstate").toString());
+        assertEquals("1.3.6.1.4.1.311.60.2.1.1", DnComponents.getOid("jurisdictionlocality").toString());
         
         assertEquals("JURISDICTIONLOCALITY=", DnComponents.getDnExtractorFieldFromDnId(103));
+        assertEquals("JURISDICTIONSTATE=", DnComponents.getDnExtractorFieldFromDnId(104));
+        assertEquals("JURISDICTIONCOUNTRY=", DnComponents.getDnExtractorFieldFromDnId(105));
         assertEquals("CN=",DnComponents.getDnExtractorFieldFromDnId(2));
+        assertEquals("C=",DnComponents.getDnExtractorFieldFromDnId(13));
     }
 
     @Test
