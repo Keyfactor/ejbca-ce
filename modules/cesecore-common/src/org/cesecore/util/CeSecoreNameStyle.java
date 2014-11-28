@@ -15,7 +15,9 @@ package org.cesecore.util;
 
 import java.util.Hashtable;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -220,6 +222,15 @@ public class CeSecoreNameStyle extends BCStyle {
     
     public String toString(X500Name name) {
         return buildString(DefaultSymbols, name);
+    }
+
+    @Override
+    public ASN1Encodable stringToValue(ASN1ObjectIdentifier oid, String value) {
+        // JurisdictionCountry is not included in BC (at least up to and including 1.49), and must be PrintableString
+        if (oid.equals(CeSecoreNameStyle.JURISDICTION_COUNTRY)) {
+            return new DERPrintableString(value);
+        }
+        return super.stringToValue(oid, value);
     }
 
 }

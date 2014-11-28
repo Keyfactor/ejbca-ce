@@ -47,6 +47,7 @@ import javax.security.auth.x500.X500Principal;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -98,6 +99,7 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
@@ -666,28 +668,41 @@ public class X509CATest {
     @Test
     public void testPrintableString() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
-        final X509CA testCa = createTestCA(cryptoToken, "CN=foo");
+        final String caDN = "CN=foo CA,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
+        final X509CA testCa = createTestCA(cryptoToken, caDN);
         assertFalse("\"Use Printable String\" should be turned off by default", testCa.getUsePrintableStringSubjectDN());
         
         Certificate cert = testCa.getCACertificate();
-        assertTrue("Certificate DN was not UTF-8 encoded by default.", getValueFromDN(cert) instanceof DERUTF8String);
+        assertTrue("Certificate CN was not UTF-8 encoded by default.", getValueFromDN(cert, X509ObjectIdentifiers.commonName) instanceof DERUTF8String);
+        assertTrue("Certificate C was not PrintableString encoded.", getValueFromDN(cert, X509ObjectIdentifiers.countryName) instanceof DERPrintableString); // C is always PrintableString
         
         // Test generation by calling generateCertificate directly
-        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", "CN=foo", testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        final String subjectDN = "CN=foo subject,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
+        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null);
-        assertTrue("Certificate DN was not UTF-8 encoded by default.", getValueFromDN(cert) instanceof DERUTF8String);
+        assertTrue("Certificate CN was not UTF-8 encoded by default.", getValueFromDN(cert, X509ObjectIdentifiers.commonName) instanceof DERUTF8String);
+        assertTrue("Certificate O was not UTF-8 encoded by default.", getValueFromDN(cert, X509ObjectIdentifiers.organization) instanceof DERUTF8String);
+        assertTrue("Certificate JurisdictionState was not UTF-8 encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_STATE) instanceof DERUTF8String);
+        assertTrue("Certificate JurisdictionLocality was not UTF-8 encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_LOCALITY) instanceof DERUTF8String);
+        assertTrue("Certificate C was not PrintableString encoded.", getValueFromDN(cert, X509ObjectIdentifiers.countryName) instanceof DERPrintableString); // C is always PrintableString
+        assertTrue("Certificate JurisdictionCountry was not PrintableString encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_COUNTRY) instanceof DERPrintableString); // C is always PrintableString
         
         // Now generate a new certificate with a PrintableString-encoded DN
         testCa.setUsePrintableStringSubjectDN(true);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null);
-        assertTrue("Certificate DN was not encoded as PrintableString.", getValueFromDN(cert) instanceof DERPrintableString);
+        assertTrue("Certificate CN was not encoded as PrintableString.", getValueFromDN(cert, X509ObjectIdentifiers.commonName) instanceof DERPrintableString);
+        assertTrue("Certificate O was not encoded as PrintableString.", getValueFromDN(cert, X509ObjectIdentifiers.organization) instanceof DERPrintableString);
+        assertTrue("Certificate JurisdictionState was not encoded as PrintableString.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_STATE) instanceof DERPrintableString);
+        assertTrue("Certificate JurisdictionLocality was not encoded as PrintableString.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_LOCALITY) instanceof DERPrintableString);
+        assertTrue("Certificate C was not PrintableString encoded.", getValueFromDN(cert, X509ObjectIdentifiers.countryName) instanceof DERPrintableString); // C is always PrintableString
+        assertTrue("Certificate JurisdictionCountry was not PrintableString encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_COUNTRY) instanceof DERPrintableString); // C is always PrintableString
     }
     
-    private static ASN1Encodable getValueFromDN(Certificate cert) {
+    private static ASN1Encodable getValueFromDN(Certificate cert, ASN1ObjectIdentifier oid) {
         final X500Principal principal = ((X509Certificate)cert).getSubjectX500Principal();
         final X500Name xname = X500Name.getInstance(principal.getEncoded());
-        final RDN rdn = xname.getRDNs(X509ObjectIdentifiers.commonName)[0];
+        final RDN rdn = xname.getRDNs(oid)[0];
         return rdn.getTypesAndValues()[0].getValue();
     }
 
