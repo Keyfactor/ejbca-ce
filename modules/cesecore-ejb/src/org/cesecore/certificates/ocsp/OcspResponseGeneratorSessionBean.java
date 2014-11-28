@@ -1196,7 +1196,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 + status.certificateProfileId);
                     }
                     
-                    infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
+                    infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
                     log.info(infoMsg);
                     OCSPResponseItem respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if(addArchiveCutoff) {
