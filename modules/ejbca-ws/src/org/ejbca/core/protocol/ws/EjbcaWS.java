@@ -2334,18 +2334,21 @@ public class EjbcaWS implements IEjbcaWS {
         
         UpgradeableDataHashMap profile = null;
         String type = "";
+        ErrorCode errCode = null;
         if(StringUtils.equalsIgnoreCase(profileType, "eep")) {
             profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
             type = "end entity";
+            errCode = ErrorCode.EE_PROFILE_NOT_EXISTS;
         } else if(StringUtils.equalsIgnoreCase(profileType, "cp")) {
             profile = certificateProfileSession.getCertificateProfile(profileId);
             type = "certificate";
+            errCode = ErrorCode.CERT_PROFILE_NOT_EXISTS;
         } else {
             throw new UnknownProfileTypeException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
         }
         
         if (profile == null) {
-            throw new EjbcaException("Error : Could not find " + type + " profile with ID '" + profileId + "' in the database.");
+            throw new EjbcaException(errCode, "Error : Could not find " + type + " profile with ID '" + profileId + "' in the database.");
         }
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
