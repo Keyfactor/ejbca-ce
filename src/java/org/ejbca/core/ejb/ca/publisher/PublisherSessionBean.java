@@ -369,6 +369,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace("<addPublisher()");
         }
     }
+    
+    @Override
+    public void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException, AuthorizationDeniedException {
+        final BasePublisher publisher = constructPublisher(((Integer) (data.get(BasePublisher.TYPE))).intValue());
+        publisher.setPublisherId(id);
+        publisher.setName(name);
+        publisher.loadData(data);
+        addPublisher(admin, id, name, publisher);
+    }
 
     private void addPublisherInternal(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException,
             PublisherExistsException {
@@ -587,6 +596,32 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         return ret;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public String getPublisherName(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException {
+        final String name = getPublisherName(id);
+        authorizedToEditPublisher(admin, name);
+        if (name == null) {
+            throw new PublisherDoesntExistsException("Publisher with id "+id+" doesn't exist");
+        }
+        return name;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException {
+        if (log.isTraceEnabled()) {
+            log.trace(">getPublisherData(id: " + id + ")");
+        }
+        
+        final BasePublisher pub = getPublisher(id);
+        if (pub == null) {
+            throw new PublisherDoesntExistsException("Publisher with id "+id+" doesn't exist");
+        }
+        authorizedToEditPublisher(admin, pub.getName());
+        return (Map<?, ?>)pub.saveData();
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -698,28 +733,29 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             // Handle Base64 encoded string values
             HashMap<?, ?> data = new Base64GetHashMap(h);
 
-            switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
-            case PublisherConst.TYPE_LDAPPUBLISHER:
-                publisher = new LdapPublisher();
-                break;
-            case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
-                publisher = new LdapSearchPublisher();
-                break;
-            case PublisherConst.TYPE_ADPUBLISHER:
-                publisher = new ActiveDirectoryPublisher();
-                break;
-            case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
-                publisher = new CustomPublisherContainer();
-                break;
-            case PublisherConst.TYPE_VAPUBLISHER:
-                publisher = new ValidationAuthorityPublisher();
-                break;
-            }
+            publisher = constructPublisher(((Integer) (data.get(BasePublisher.TYPE))).intValue());
             publisher.setPublisherId(pData.getId());
             publisher.setName(pData.getName());
             publisher.loadData(data);
         }
         return publisher;
+    }
+    
+    private BasePublisher constructPublisher(final int publisherType) {
+        switch (publisherType) {
+        case PublisherConst.TYPE_LDAPPUBLISHER:
+            return new LdapPublisher();
+        case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
+            return new LdapSearchPublisher();
+        case PublisherConst.TYPE_ADPUBLISHER:
+            return new ActiveDirectoryPublisher();
+        case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
+            return new CustomPublisherContainer();
+        case PublisherConst.TYPE_VAPUBLISHER:
+            return new ValidationAuthorityPublisher();
+        default:
+            throw new IllegalStateException("Invalid or unimplemented publisher type "+publisherType);
+        }
     }
 
     private void authorizedToEditPublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
