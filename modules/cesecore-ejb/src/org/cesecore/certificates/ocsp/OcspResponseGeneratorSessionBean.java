@@ -1209,7 +1209,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // If we've ended up here it's because the signer certificate was revoked. 
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
-                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumber(caCertificate), CertTools.getSubjectDN(caCertificate));
+                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumber(caCertificate).toString(16), CertTools.getSubjectDN(caCertificate));
                     log.info(infoMsg);
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
                     transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
