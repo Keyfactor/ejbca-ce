@@ -840,6 +840,7 @@ public interface EjbcaWS {
      *     returns byte[]
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
+     * @throws UnknownProfileTypeException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -850,7 +851,7 @@ public interface EjbcaWS {
             int arg0,
             @WebParam(name = "arg1", targetNamespace = "")
             String arg1)
-            throws AuthorizationDeniedException_Exception, EjbcaException_Exception
+            throws AuthorizationDeniedException_Exception, EjbcaException_Exception, UnknownProfileTypeException_Exception
     ;
 
     /**

@@ -167,6 +167,7 @@ import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileE
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
+import org.ejbca.core.protocol.ws.client.gen.UnknownProfileTypeException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
@@ -1986,7 +1987,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             try {
                 ejbcaraws.getProfile(profileid, "ccp");
-            } catch(EjbcaException_Exception e) {
+            } catch(UnknownProfileTypeException_Exception e) {
                 String expectedmsg = "Unknown profile type 'ccp'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles";
                 assertEquals(expectedmsg, e.getMessage());
             }

@@ -100,6 +100,7 @@ public class ObjectFactory {
     private final static QName _AlreadyRevokedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AlreadyRevokedException");
     private final static QName _CvcRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "cvcRequest");
     private final static QName _DateNotValidException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "DateNotValidException");
+    private final static QName _UnknownProfileTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnknownProfileTypeException");
     private final static QName _CertificateExpiredException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CertificateExpiredException");
     private final static QName _CaRenewCertRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caRenewCertRequest");
     private final static QName _IsAuthorized_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorized");
@@ -453,6 +454,14 @@ public class ObjectFactory {
      */
     public DateNotValidException createDateNotValidException() {
         return new DateNotValidException();
+    }
+    
+    /**
+     * Create an instance of {@link UnknownProfileTypeException }
+     * 
+     */
+    public UnknownProfileTypeException createUnknownProfileTypeException() {
+        return new UnknownProfileTypeException();
     }
 
     /**
@@ -1737,6 +1746,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "DateNotValidException")
     public JAXBElement<DateNotValidException> createDateNotValidException(DateNotValidException value) {
         return new JAXBElement<DateNotValidException>(_DateNotValidException_QNAME, DateNotValidException.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link UnknownProfileTypeException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnknownProfileTypeException")
+    public JAXBElement<UnknownProfileTypeException> createUnknownProfileTypeException(UnknownProfileTypeException value) {
+        return new JAXBElement<UnknownProfileTypeException>(_UnknownProfileTypeException_QNAME, UnknownProfileTypeException.class, null, value);
     }
 
     /**
