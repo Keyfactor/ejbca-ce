@@ -2326,7 +2326,7 @@ public class EjbcaWS implements IEjbcaWS {
 	}
     
     @Override
-    public byte[] getProfile(int profileId, String profileType) throws EjbcaException, AuthorizationDeniedException {
+    public byte[] getProfile(int profileId, String profileType) throws AuthorizationDeniedException, EjbcaException, UnknownProfileTypeException {
         final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
         final AuthenticationToken admin = ejbhelper.getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2341,7 +2341,7 @@ public class EjbcaWS implements IEjbcaWS {
             profile = certificateProfileSession.getCertificateProfile(profileId);
             type = "certificate";
         } else {
-            throw new EjbcaException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
+            throw new UnknownProfileTypeException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
         }
         
         if (profile == null) {

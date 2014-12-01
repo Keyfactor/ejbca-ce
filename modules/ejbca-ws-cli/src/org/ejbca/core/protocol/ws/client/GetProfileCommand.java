@@ -13,7 +13,10 @@
 
 package org.ejbca.core.protocol.ws.client;
 
+import java.io.File;
 import java.io.FileOutputStream;
+
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -39,8 +42,22 @@ public class GetProfileCommand extends EJBCAWSRABaseCommand implements IAdminCom
            }
 
            int profileid = Integer.parseInt(args[ARG_PROFILE_ID]);
+           
+           // Read and validate the profile type
            String profiletype = args[ARG_PROFILE_TYPE];
+           if(!StringUtils.equalsIgnoreCase(profiletype, "eep") && !StringUtils.equalsIgnoreCase(profiletype, "cp")) {
+               getPrintStream().println("Error: Unknown profile type. Accepted types are 'eep' for end entity profiles and 'cp' for certificate profiles.");
+               return;
+           }
+           
+           // Read and verify that the path is to a directory
            String directory = args[ARG_DESTINATION_DIRECTORY];
+           File dir = new File(directory);
+           if(!dir.exists() || !dir.isDirectory()) {
+               getPrintStream().println("Error: The specified directory is either not a directory or it does not exist");
+               return;
+           }
+
 
            byte[] profile;
            try {
@@ -56,6 +73,8 @@ public class GetProfileCommand extends EJBCAWSRABaseCommand implements IAdminCom
            } catch (EjbcaException_Exception e) {
                getPrintStream().println("Error : " + e.getMessage());
            }
+       } catch (NumberFormatException e) {
+           getPrintStream().println("Error: The profileID should be a number");
        } catch (Exception e) {
            throw new ErrorAdminCommandException(e);
        }

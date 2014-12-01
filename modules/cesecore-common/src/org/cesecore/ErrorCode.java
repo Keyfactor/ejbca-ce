@@ -79,6 +79,7 @@ public class ErrorCode implements Serializable {
     private static final String _INTERNAL_KEY_BINDING_NAME_IN_USE = "INTERNAL_KEY_BINDING_NAME_IN_USE"; // An InternalKeyBinding with the name already exists
     private static final String _CERTIFICATE_IMPORT = "CERTIFICATE_IMPORT"; // Failure during import of a certificate
     private static final String _NAMECONSTRAINT_VIOLATION = "NAMECONSTRAINT_VIOLATION"; // End-entity does not satisfy name constraints of CA
+    private static final String _UNKNOWN_PROFILE_TYPE = "UNKNOWN_PROFILE_TYPE"; // The profile type is neither end entity profile nor certificate profile
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -172,6 +173,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode INTERNAL_KEY_BINDING_NAME_IN_USE = new ErrorCode(_INTERNAL_KEY_BINDING_NAME_IN_USE);
     public static final ErrorCode CERTIFICATE_IMPORT = new ErrorCode(_CERTIFICATE_IMPORT);
     public static final ErrorCode NAMECONSTRAINT_VIOLATION = new ErrorCode(_NAMECONSTRAINT_VIOLATION);
+    public static final ErrorCode UNKNOWN_PROFILE_TYPE = new ErrorCode(_UNKNOWN_PROFILE_TYPE);
 
 
     /** Get the internal error code. */
