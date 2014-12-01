@@ -37,6 +37,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.DateNotValidException;
+import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
@@ -892,9 +893,10 @@ public interface IEjbcaWS {
 	 * @return a byte array contaning the specified profile in XML format
 	 * @throws EjbcaException if an error occured
 	 * @throws AuthorizationDeniedException
+	 * @throws UnknownProfileTypeException
 	 */
 	abstract byte[] getProfile(int profileId, String profileType)
-                 throws EjbcaException, AuthorizationDeniedException;
+                 throws EjbcaException, AuthorizationDeniedException, UnknownProfileTypeException;
 	
 	/**
 	 * Generates a CRL for the given CA.
