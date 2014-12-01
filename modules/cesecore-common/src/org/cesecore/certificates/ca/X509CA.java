@@ -1071,11 +1071,11 @@ public class X509CA extends CA implements Serializable {
                 }
             }
             final Principal issuerDN = cert.getIssuerX500Principal();
-            final Principal subjectDN = cacert.getSubjectX500Principal();
-            if ((issuerDN != null) && (subjectDN != null)) {
-                final boolean eq = issuerDN.equals(subjectDN);
+            final Principal caSubjectDN = cacert.getSubjectX500Principal();
+            if ((issuerDN != null) && (caSubjectDN != null)) {
+                final boolean eq = issuerDN.equals(caSubjectDN);
                 if (!eq) {
-                	final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), subjectDN.getName());
+                	final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), caSubjectDN.getName());
                     log.error(msg);
                     throw new CertificateCreateException(msg);
                 }
