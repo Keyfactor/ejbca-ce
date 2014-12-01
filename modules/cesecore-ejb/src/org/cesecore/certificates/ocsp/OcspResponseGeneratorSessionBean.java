@@ -1209,7 +1209,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // If we've ended up here it's because the signer certificate was revoked. 
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
-                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumber(caCertificate).toString(16), CertTools.getSubjectDN(caCertificate));
+                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate), CertTools.getSubjectDN(caCertificate));
                     log.info(infoMsg);
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
                     transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
@@ -1925,8 +1925,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                     final String subjectDn = CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0));
-                    final String serialNumber = CertTools.getSerialNumber(ocspSigningCacheEntry.getOcspSigningCertificate()).toString(16);
-                    final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", subjectDn, serialNumber);
+                    final String serialNumberForLog = CertTools.getSerialNumberAsString(ocspSigningCacheEntry.getOcspSigningCertificate());
+                    final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", subjectDn, serialNumberForLog);
                     final PrivateKey privateKey = ocspSigningCacheEntry.getPrivateKey();
                     if (privateKey == null) {
                         sb.append('\n').append(errMsg);
