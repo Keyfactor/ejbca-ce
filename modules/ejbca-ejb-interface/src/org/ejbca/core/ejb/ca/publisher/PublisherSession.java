@@ -14,12 +14,14 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 
@@ -41,10 +43,31 @@ public interface PublisherSession {
      *         not exist. Uses cache to get the object as quickly as possible.
      */
     BasePublisher getPublisher(String name);
+    
+    /**
+     * @return the name of the publisher with the given id.
+     * @throws PublisherDoesntExistsException if there's no publisher with the given id.
+     */
+    String getPublisherName(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException;
+    
+    /**
+     * @return the data hashmap of the publisher with the given id.
+     * @throws PublisherDoesntExistsException if there's no publisher with the given id.
+     */
+    Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException;
 
     /** Adds publisher data. 
      * @throws AuthorizationDeniedException */
     void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
+
+    /**
+     * Adds a publisher to the database. Used where it's not possible to pass a BasePublisher object,
+     * such as in the CLI tools (e.g. statedump).
+     * 
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     */
+    void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException, AuthorizationDeniedException;
 
     /** Updates publisher data. 
      * @throws AuthorizationDeniedException */
