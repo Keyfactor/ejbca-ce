@@ -124,6 +124,8 @@
     <property name="mod.appserver-ext.path" location="${mod.path}/appserver-ext" />
     <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
     <property name="mod.jbosslog4jsafer.lib" location="${mod.dist.path}/jbosslog4jsafer.jar" />
+	<property name="mod.scep-ra.path" location="${mod.path}/scep-ra" />
+	<property name="mod.scep-ra.lib" location="${mod.dist.path}/scep-ra.jar" />
 	<property name="mod.statedump.dist" location="${ejbca.dist.path}/statedump" />
 	<property name="mod.statedump.lib" location="${mod.statedump.dist}/statedump.jar" />
 	<property name="mod.statedump.path" location="${mod.path}/statedump" />

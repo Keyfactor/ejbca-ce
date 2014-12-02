@@ -1,5 +1,5 @@
 #####
-# Configuration file for default values for the stand-alone SCEP RA Server
+# Configuration file for default values for the stand-alone SCEP RA Server (Enterprise only)
 # Configure as you please, but all values must be set to something.
 #
 # Default values (that you enter here) is built into the application and deployed

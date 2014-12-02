@@ -386,7 +386,7 @@ The most common errors should be wrong username/password or wrong status (not NE
 </p>
 </subsubsection>
 
-<subsubsection name="RA mode">
+<subsubsection name="RA Mode (Enterprise Edition only)">
 <p>
 EJBCA does also successfully recieve SCEP 'PKCSReq' requests when a user is to be created (or edited). A certificate is returned immediately in
 a proper SCEP reply message. 
