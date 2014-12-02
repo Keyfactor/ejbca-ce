@@ -100,6 +100,7 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -2333,22 +2334,20 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
         
         UpgradeableDataHashMap profile = null;
-        String type = "";
-        ErrorCode errCode = null;
         if(StringUtils.equalsIgnoreCase(profileType, "eep")) {
             profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-            type = "end entity";
-            errCode = ErrorCode.EE_PROFILE_NOT_EXISTS;
+            if(profile == null) {
+                throw EjbcaWSHelper.getEjbcaException(new EndEntityProfileNotFoundException("Could not find end entity profile with ID '" + profileId + "' in the database."), 
+                                                null, ErrorCode.EE_PROFILE_NOT_EXISTS, null);
+            }
         } else if(StringUtils.equalsIgnoreCase(profileType, "cp")) {
             profile = certificateProfileSession.getCertificateProfile(profileId);
-            type = "certificate";
-            errCode = ErrorCode.CERT_PROFILE_NOT_EXISTS;
+            if(profile == null) {
+                throw EjbcaWSHelper.getEjbcaException(new CertificateProfileDoesNotExistException("Could not find certificate profile with ID '" + profileId + "' in the database."), 
+                        null, ErrorCode.CERT_PROFILE_NOT_EXISTS, null);
+            }
         } else {
             throw new UnknownProfileTypeException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
-        }
-        
-        if (profile == null) {
-            throw new EjbcaException(errCode, "Error : Could not find " + type + " profile with ID '" + profileId + "' in the database.");
         }
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
