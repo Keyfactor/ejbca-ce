@@ -921,18 +921,6 @@ public class EjbcaWebBean implements Serializable {
     }
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     //**********************
     //     CMP
     //**********************
@@ -1047,4 +1035,5 @@ public class EjbcaWebBean implements Serializable {
         }
         return peerConnectorPresent.booleanValue();
     }
+    
 }
