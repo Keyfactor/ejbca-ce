@@ -53,8 +53,10 @@ public class ScepRaModeExtension implements ScepPlugin {
 
     private static final Logger log = Logger.getLogger(ScepRaModeExtension.class);
 
+    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
 
-    public boolean performOperation(AuthenticationToken admin, EjbLocalHelper ejbLocalHelper, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias) {
+
+    public boolean performOperation(AuthenticationToken admin, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias) {
 
         final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
         final CertificateProfileSessionLocal certProfileSession = ejbLocalHelper.getCertificateProfileSession();
