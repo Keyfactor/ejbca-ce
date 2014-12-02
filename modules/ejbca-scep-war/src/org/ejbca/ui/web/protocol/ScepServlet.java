@@ -61,7 +61,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.core.protocol.scep.ScepResponseMessage;
 import org.ejbca.ui.web.RequestHelper;
@@ -112,7 +111,6 @@ public class ScepServlet extends HttpServlet {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
 
-    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     
     private static final String DEFAULT_SCEP_ALIAS = "scep";
 
@@ -199,26 +197,25 @@ public class ScepServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws java.io.IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">SCEP doGet()");
 
-            log.debug("query string=" + request.getQueryString());
+        log.debug("query string=" + request.getQueryString());
 
-            // These are mandatory in SCEP GET
-            /*
-             GET /cgi-bin/pkiclient.exe?operation=PKIOperation&message=MIAGCSqGSIb3D
-             QEHA6CAMIACAQAxgDCBzAIBADB2MGIxETAPBgNVBAcTCE ......AAAAAA== 
-             */
-            String operation = request.getParameter("operation");
-            String message = request.getParameter("message");
-            // Some clients don't url encode the + sign in the request. Message is only used to PKIOperations
-            if (message != null && operation != null && operation.equals("PKIOperation")) {
-            	message = message.replace(' ', '+');
-            }
-            
-            service(operation, message, request.getRemoteAddr(), response, request.getPathInfo());
-            
+        // These are mandatory in SCEP GET
+        /*
+         GET /cgi-bin/pkiclient.exe?operation=PKIOperation&message=MIAGCSqGSIb3D
+         QEHA6CAMIACAQAxgDCBzAIBADB2MGIxETAPBgNVBAcTCE ......AAAAAA== 
+         */
+        String operation = request.getParameter("operation");
+        String message = request.getParameter("message");
+        // Some clients don't url encode the + sign in the request. Message is only used to PKIOperations
+        if (message != null && operation != null && operation.equals("PKIOperation")) {
+            message = message.replace(' ', '+');
+        }
+
+        service(operation, message, request.getRemoteAddr(), response, request.getPathInfo());
+
         log.trace("<SCEP doGet()");
     } // doGet
 
@@ -466,7 +463,7 @@ public class ScepServlet extends HttpServlet {
                         log.debug("SCEP is operating in RA mode: " + ramode);
                     }             
                     ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
-                    if (!scepRaModeExtension.performOperation(administrator, ejbLocalHelper, reqmsg, scepConfig, alias)) {
+                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
                         String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
                         log.error(errmsg);
                         return null;
