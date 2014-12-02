@@ -141,8 +141,8 @@
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-jdk6-git20140205.jar"/>
-	<classpathentry kind="lib" path="lib/ct/httpclient-4.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/ct/httpcore-4.3.jar"/>
+	<classpathentry kind="lib" path="lib/ct/httpclient-4.3.6.jar"/>
+	<classpathentry kind="lib" path="lib/ct/httpcore-4.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-2.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/ct/json-simple-1.1.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
