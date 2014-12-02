@@ -110,6 +110,7 @@ import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -152,7 +153,17 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private int internalKeyBindingId;
     private int cryptoTokenId;
     private X509Certificate ocspSigningCertificate;
-    private X509Certificate caCertificate;    
+    private X509Certificate caCertificate;   
+    private static String originalDefaultResponder;
+    
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        originalDefaultResponder = ocspConfiguration.getOcspDefaultResponderReference();
+
+    }
+    
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
@@ -186,6 +197,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         }
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
+        //Make sure default responder is restored
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setOcspDefaultResponderReference(originalDefaultResponder);
+        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
     }
 
     /** Tests the basic case of a standalone OCSP installation, i.e where this is a classic VA */
