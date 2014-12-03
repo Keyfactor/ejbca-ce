@@ -290,7 +290,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (caCertificateChain.size() > 0) {
-                                OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, privateKey,
+                                OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, null, privateKey,
                                         signatureProviderName, null));
                             } else {
                                 log.warn("CA with ID " + caId
@@ -302,7 +302,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
                             //Add an entry with just a chain and nothing else
-                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, null, null, null, null));
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, null, null, null, null));
                             
                         }
                     } catch (CADoesntExistsException e) {
@@ -381,7 +381,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isDebugEnabled()) {
             log.debug("Adding OcspKeyBinding "+ocspKeyBinding.getId()+", "+ocspKeyBinding.getName());
         }
-        return new OcspSigningCacheEntry(caCertificateChain, ocspSigningCertificate, privateKey, signatureProviderName, ocspKeyBinding);
+        return new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, ocspSigningCertificate, privateKey, signatureProviderName, ocspKeyBinding);
     }
     
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
@@ -1110,7 +1110,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                  */
                 final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
                 // Check if the cacert (or the default responderid) is revoked
-                X509Certificate caCertificate = ocspSigningCacheEntry.getCaCertificateChain().get(0);
+                X509Certificate caCertificate = ocspSigningCacheEntry.getIssuerCaCertificate();
                 final CertificateStatus signerIssuerCertStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate),
                         CertTools.getSerialNumber(caCertificate));
                 final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
