@@ -85,24 +85,23 @@ public enum OcspSigningCache {
     public void stagingCommit(final String defaultResponderSubjectDn) {
         OcspSigningCacheEntry defaultResponderCacheEntry = null;
         for (final OcspSigningCacheEntry entry : staging.values()) {
-            if (entry.getOcspSigningCertificate() == null) {
-                final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
-                if (CertTools.getSubjectDN(signingCertificate).equals(defaultResponderSubjectDn)) {
-                    defaultResponderCacheEntry = entry;
-                    if (!loggedDefaultResponder) {
-                        log.info("Setting CA with DN "
-                                + defaultResponderSubjectDn + " as default OCSP responder.");
-                        loggedDefaultResponder = true; // we should only log this once, unless status changes
-                    }
-                    break;
-                }
-            } else {
+            if (entry.getOcspSigningCertificate() != null) {
                 final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
                 if (CertTools.getIssuerDN(signingCertificate).equals(defaultResponderSubjectDn)) {
                     defaultResponderCacheEntry = entry;
                     if (!loggedDefaultResponder) {
-                        log.info("Setting keybinding with ID" + entry.getOcspKeyBinding().getId() + " and DN "
-                                + defaultResponderSubjectDn + " as default OCSP responder.");
+                        log.info("Setting keybinding with ID" + entry.getOcspKeyBinding().getId() + " and DN " + defaultResponderSubjectDn
+                                + " as default OCSP responder.");
+                        loggedDefaultResponder = true; // we should only log this once, unless status changes
+                    }
+                    break;
+                }
+            } else if (entry.getCaCertificateChain() != null && !entry.getCaCertificateChain().isEmpty()) {
+                final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
+                if (CertTools.getSubjectDN(signingCertificate).equals(defaultResponderSubjectDn)) {
+                    defaultResponderCacheEntry = entry;
+                    if (!loggedDefaultResponder) {
+                        log.info("Setting CA with DN " + defaultResponderSubjectDn + " as default OCSP responder.");
                         loggedDefaultResponder = true; // we should only log this once, unless status changes
                     }
                     break;
