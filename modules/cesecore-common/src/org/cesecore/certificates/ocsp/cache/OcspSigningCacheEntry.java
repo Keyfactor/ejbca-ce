@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.util.CertTools;
 
 /**
  * Hold information needed for creating an OCSP response without database lookups.
@@ -34,23 +35,24 @@ public class OcspSigningCacheEntry {
     private final transient PrivateKey privateKey;
     private final String signatureProviderName;
     private final OcspKeyBinding ocspKeyBinding;
+    private final X509Certificate issuerCaCertificate;
 
-    public OcspSigningCacheEntry(List<X509Certificate> caCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
+    public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
             String signatureProviderName, OcspKeyBinding ocspKeyBinding) {
-        this.caCertificateChain = caCertificateChain;
+        this.caCertificateChain = signingCaCertificateChain;
         this.ocspSigningCertificate = ocspSigningCertificate;
         if (ocspSigningCertificate == null) {
-            fullCertificateChain = caCertificateChain;
+            fullCertificateChain = signingCaCertificateChain;
         } else {
             fullCertificateChain = new ArrayList<X509Certificate>();
             fullCertificateChain.add(ocspSigningCertificate);
-            fullCertificateChain.addAll(caCertificateChain);
+            fullCertificateChain.addAll(signingCaCertificateChain);
         }
         this.privateKey = privateKey;
         this.signatureProviderName = signatureProviderName;
         this.ocspKeyBinding = ocspKeyBinding;
-        final X509Certificate lowestLevelCaCertificate = caCertificateChain.get(0);
-        this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(lowestLevelCaCertificate);
+        this.issuerCaCertificate = issuerCaCertificate;
+        this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(issuerCaCertificate);
     }
 
     public List<CertificateID> getCertificateID() { return certificateID; }
@@ -67,4 +69,8 @@ public class OcspSigningCacheEntry {
     public boolean isUsingSeparateOcspSigningCertificate() { return ocspSigningCertificate != null; }
     
     public boolean isPlaceholder() { return privateKey == null; }
+
+    public X509Certificate getIssuerCaCertificate() {
+        return issuerCaCertificate;
+    }
 }

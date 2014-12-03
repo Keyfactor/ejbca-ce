@@ -46,7 +46,7 @@ public class OcspResponseGeneratorTestSessionBean implements
     @Override
     public void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
             String signatureProviderName, InternalKeyBinding ocspKeyBinding) {
-        OcspSigningCacheEntry ocspSigningCacheEntry = new OcspSigningCacheEntry(caCertificateChain, ocspSigningCertificate, privateKey,
+        OcspSigningCacheEntry ocspSigningCacheEntry = new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, ocspSigningCertificate, privateKey,
                 signatureProviderName, (OcspKeyBinding) ocspKeyBinding);
         try {
             OcspSigningCache.INSTANCE.stagingStart();

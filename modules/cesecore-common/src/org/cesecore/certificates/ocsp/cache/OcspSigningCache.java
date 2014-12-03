@@ -133,7 +133,7 @@ public enum OcspSigningCache {
             //If entry has been created without a private key, replace it with the default responder.
             if (entry.isPlaceholder()) {
                 if (defaultResponderCacheEntry != null) {
-                    entry = new OcspSigningCacheEntry(entry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
+                    entry = new OcspSigningCacheEntry(entry.getIssuerCaCertificate(), defaultResponderCacheEntry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
                             defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
                             defaultResponderCacheEntry.getOcspKeyBinding());
                     modifiedEntries.put(key, entry);
