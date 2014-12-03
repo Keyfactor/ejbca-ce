@@ -302,7 +302,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
                             //Add an entry with just a chain and nothing else
-                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, null, null, null, null));
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), null, null, null, null, null));
                             
                         }
                     } catch (CADoesntExistsException e) {
