@@ -1,3 +1,34 @@
+EJBCA 6.2.6, 2014-12-03
+---
+Bug
+	[ECA-3608] - EJB CLI cryptotoken create command issues
+	[ECA-3828] - Regression: HttpMethodsTest and WebdistHttpTest test failures
+	[ECA-3862] - Security Issue
+	[ECA-3931] - Key recovery fails when user data has changed CA
+	[ECA-3933] - Symmetric keys in crypto token's HSM slot prevent listing of slot keys
+	[ECA-3935] - Regression: Wrong key length used when creating keystore from public web
+	[ECA-3936] - Extra space at end of line in transaction log.
+	[ECA-3937] - Result of stand-alone JUnit tests are discarded during ant test:run
+	[ECA-3943] - Fix ServiceManifestBuilderTest
+	[ECA-3944] - superadmin.cn value lacks quotes in cli.xml
+	[ECA-3948] - OCSP log values ISSUER_NAME_DN and SIGN_ISSUER_NAME_DN contain SERIALNUMBER= instead of SN=
+	[ECA-3958] - Cannot create new CertSafe publisher
+	[ECA-3969] - Default OCSP responder is not used for external CAs without OCSP key binding
+	[ECA-3972] - PKCS#11 keys aren't extractable when they should be
+
+Improvement
+	[ECA-3916] - WS: Return the EndEntity/Certificate profile of a specific profile ID
+	[ECA-3927] - Make systemtests.properties available to peer module and PKCS#11 system tests
+	[ECA-3938] - Add a regression test for ocsp.nonexistingisrevoked
+	[ECA-3942] - Improve logging of ServiceManifestBuilderTest failures
+	[ECA-3954] - Improve the properties output of InternalKeyBindingListCommand to show default property values
+	[ECA-3956] - OCSP response if the requested certificate is revoked is identical in logs to case where issuer of signing cert is revoked.
+	[ECA-3967] - Update httpclient and httpcore to latest version
+
+New Feature
+	[ECA-3939] - Add EV Certificate specific DN components
+
+
 EJBCA 6.2.5, 2014-11-14
 ---
 Bug
@@ -433,7 +464,7 @@ Task
 EJBCA 6.0.0, 2013-11-08
 ---
 
-** Bug
+Bug
 	[ECA-1015] - A ' is valid in an email address - but gets stripped by EJBCA.
 	[ECA-1640] - Sample code for advanced custom extension missing some arguments
 	[ECA-1947] - LDAPPublisher have problems with comma in DN
@@ -554,7 +585,7 @@ EJBCA 6.0.0, 2013-11-08
 	[ECA-3294] - Security issue
 	[ECA-3300] - OCSP Transaction Logger outputs a newline between each log entry
 
-** Improvement
+Improvement
 	[ECA-519] - Move configuration file from bin/ to conf/
 	[ECA-786] - Email notification cannot be edited correctly
 	[ECA-1010] - Simplify installation procedure
@@ -656,13 +687,13 @@ EJBCA 6.0.0, 2013-11-08
 	[ECA-3263] - Allow AnyCA to be the only selected available CA in EEPs
 	[ECA-3285] - Datasources should have validate-on-match=true in order to reconnect from failures
 
-** Master Ticket
+Master Ticket
 	[ECA-3049] - Optimize trunk
 	[ECA-3116] - Possibility to Export/Import all CA configurations (a.k.a "The Great Dump")
 	[ECA-3252] - CMP log fixes for CC test plan
 	[ECA-3261] - Master ticket for OCSP log tickets 
 
-** New Feature
+New Feature
 	[ECA-862] - Command for ascii/XML dump of CA installation
 	[ECA-1866] - WS-API to get last CRL for a CA
 	[ECA-1998] - Support for GOST R digital signature and hash algorithms
@@ -685,7 +716,7 @@ EJBCA 6.0.0, 2013-11-08
 	[ECA-3095] - HSM slot label. Resolve existent issues from ECA-3071, add support for GUI/CLI/Upgrade
 	[ECA-3128] - Add support for slot labels to ca init command, database protection and ocsp
 
-** Task
+Task
 	[ECA-2296] - Master Issue: Look over authorization in all session beans.
 	[ECA-2298] - Master issue: Unify all names in EJBCA
 	[ECA-2317] - Migrate OCSP functionality from CESeCore to EJBCA
@@ -758,7 +789,7 @@ EJBCA 6.0.0, 2013-11-08
 	[ECA-3241] - Eliminate deprecated values from ocsp.properties as far as possible and remove them from all but upgrade code.
 	[ECA-3291] - Access rules unclear
 
-** Technical task
+Technical task
 	[ECA-3152] - Possibility to Export/Import all CryptoTokens
 	[ECA-3153] - Possibility to Export/Import all CAs
 	[ECA-3154] - Possibility to Export/Import all Certificate Profiles
@@ -900,7 +931,7 @@ Bug
 
 EJBCA 5.0.6, 2012-10-15
 ---
-** Bug
+Bug
 	[ECA-2695] - Creating a CA via the CLI doesn't update the ca cache.
 	[ECA-2704] - Error in usage text for 'ejbca.sh ra listusers'
 	[ECA-2712] - Some properties in ejbca.properties are never read
@@ -926,7 +957,7 @@ EJBCA 5.0.6, 2012-10-15
 	[ECA-2799] - Improve RFC 4387 feature documentation
 	[ECA-2809] - Unable to use "modified" at the "Search End Entities" page.
 
-** Improvement
+Improvement
 	[ECA-1696] - CertTools.getCertsFromPEM(*) should declare it returns a List as the order of certificates are important
 	[ECA-2183] - There is a code which will be never executed for external SCEP
 	[ECA-2656] - Unable to receive certificates from external CA that has invalid algorithm id parameters
@@ -935,13 +966,13 @@ EJBCA 5.0.6, 2012-10-15
 	[ECA-2776] - Disable jasper compilation in default build
 
 
-** New Feature
+New Feature
 	[ECA-2727] - Self-registration with admin approval
 	[ECA-2740] - Ant target for renewing application server keystore
 	[ECA-2747] - Extended Key Usage for WiFi EAP authentication
 	[ECA-2788] - Support CertHash extension in OCSP responder
 
-** Task
+Task
 	[ECA-2716] - Remove unused properties
 
 
@@ -1370,15 +1401,15 @@ Improvement
 
 EJBCA 4.0.9, 2012-02-13
 ---
-** Bug
+Bug
 	[ECA-2574] - Minor XSS issue
 
 EJBCA 4.0.8, 2012-02-09
 ---
-** New Feature
+New Feature
 	[ECA-2539] - CMP: Get KeyUpdateRequest working even in RA mode 
 
-** Bug
+Bug
 	[ECA-2261] - SenderKeyID does not need to be set in a CMP request
 	[ECA-2476] - null pointer when trying to recover lost HSM in external OCSP
 	[ECA-2482] - Minor XSS issues
@@ -1387,7 +1418,7 @@ EJBCA 4.0.8, 2012-02-09
 	[ECA-2552] - CMP: Skip verifying CertificateConfirmationRequest if not required
 	[ECA-2567] - CMP: Should use EjbRemoteHelper in CrmfRARequestTest
 
-** Improvement
+Improvement
 	[ECA-1978] - Certificate Profile form improved
 	[ECA-2094] - Edit CA form improved
 	[ECA-2454] - Improve all table layout (rows: header, sections, footer)
@@ -1396,7 +1427,7 @@ EJBCA 4.0.8, 2012-02-09
 	[ECA-2501] - More efficient CRL download
 	[ECA-2518] - Add link to Help page for ECDSA keys
 
-** Task
+Task
 	[ECA-2157] - Clean up CSS code
 
 EJBCA 4.0.7, 2011-12-25

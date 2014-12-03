@@ -11,6 +11,28 @@ For upgrade instructions, please see UPGRADE.
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 
+EJBCA 6.2.6
+-----------
+EJBCA 6.2.6 is a maintenance release, primarily fixing two major issues and quite a few smaller ones.
+
+* Noteworthy changes:
+- The OCSP default responder behavior introduced in 6.2.4 was buggy when CAs were set as the default responder. 
+	https://jira.primekey.se/browse/ECA-3969
+- Saving symmetric keys in a crypto token cause the GUI page to crash
+	https://jira.primekey.se/browse/ECA-3933 
+- A bug causing CertSafe publisher creation was fixed
+	https://jira.primekey.se/browse/ECA-3958
+- For certificate profiles only specifying a single keylength, the default keylength was used instead
+	https://jira.primekey.se/browse/ECA-3935
+- SSLv3 protocol has been disabled for use in JBoss7 due to the POODLE vulnerability
+	https://jira.primekey.se/browse/ECA-3862
+
+All in all, 23 issues have been fixed in this release.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	ant install is known to fail on Windows machines running JDK >= 7.21 https://jira.primekey.se/browse/ECA-3602 
+
 EJBCA 6.2.5
 -----------
 This minor release mainly centers around a bug found in the upgrade procedure when automatically upgrading CATokens to modern CryptoTokens. Due to a bug in 4.0.x, 
