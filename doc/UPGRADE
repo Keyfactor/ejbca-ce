@@ -29,26 +29,6 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
-NOTE: In EJBCA 6.1.2, the SCEP configuration handling has been rewritten. SCEP configurations are no 
-longer read from conf/scep.properties file, instead, SCEP configurations will be set through the command 
-line (execute './bin/ejbca.sh config scep' from EJBCA home directory for command line documentation). 
-If you do use SCEP, you need to upload your old scep.properties file to EJBCA after upgrad. You can do 
-that by executing the following command in EJBCA home directory:
-	        ./bin/ejbca.sh config scep uploadfile conf/scep.properties scep
-The new URL will be:
-			http://HOST:PORT/ejbca/publicweb/apply/scep/CONFIGURATION_ALIAS/pkiclient.exe
-
-It you use the URL:
-			http://HOST:PORT/ejbca/publicweb/apply/scep/noca/pkiclient.exe
-or the URL:
-			http://HOST:PORT/ejbca/publicweb/apply/scep/ra/noca/pkiclient.exe
-You need to set the property 'ALIAS.includeca' to 'false' in the command line by executing the following
-from EJBCA home directory:
-			./bin/ejbca.sh config scep updatealias ALIAS includeca false
-			
-			
-NOTE: If you are using External RA, please note that the name of the scep.properties file has been changed to 
-scepra.properties 
 
 From EJBCA 6.2.x to EJBCA 6.2.4
 -------------------------------
@@ -61,13 +41,33 @@ Default behavior of the default responder has been modified to automatically rep
 keybindings. Be aware that this may cause unexpected behavior in the case of where an inactivated (due to responder certificate being 
 revoked or expiring) keybinding exists, and that keybinding has a different behavior in regards to unknown certificates than the default responder. 
 
-From EJBCA 6.1.x up to EJBCA 6.2.3
+From EJBCA 6.1.2 up to EJBCA 6.2.3
 -------------------------------
 There are no database upgrades to perform to 6.2.3
 
 From EJBCA 6.1.x to EJBCA 6.1.x
 -------------------------------
 See the procedure, and notes, for upgrading from 6.0.x to 6.0.x.
+
+In EJBCA 6.1.2, the SCEP configuration handling has been rewritten. SCEP configurations are no 
+longer read from conf/scep.properties file, instead, SCEP configurations will be set through the command 
+line (execute './bin/ejbca.sh config scep' from EJBCA home directory for command line documentation). 
+If you do use SCEP, you need to upload your old scep.properties file to EJBCA after upgrade. You can do 
+that by executing the following command in EJBCA home directory:
+	        ./bin/ejbca.sh config scep uploadfile conf/scep.properties scep
+The new URL will be:
+			http://HOST:PORT/ejbca/publicweb/apply/scep/CONFIGURATION_ALIAS/pkiclient.exe
+
+It you use the URL:
+			http://HOST:PORT/ejbca/publicweb/apply/scep/noca/pkiclient.exe
+or the URL:
+			http://HOST:PORT/ejbca/publicweb/apply/scep/ra/noca/pkiclient.exe
+You need to set the property 'ALIAS.includeca' to 'false' in the command line by executing the following
+from EJBCA home directory:
+			./bin/ejbca.sh config scep updatealias ALIAS includeca false
+
+If you are using External RA, please note that the name of the scep.properties file has been changed to 
+scepra.properties 
  
 From EJBCA 6.0.x to EJBCA 6.1.x
 -------------------------------
