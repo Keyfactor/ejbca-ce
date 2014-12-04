@@ -36,7 +36,11 @@ public class DnFieldExtractorTest {
     	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
-    	assertEquals(29,i.size());
+        if (DnComponents.enterpriseMappingsExist()) {
+            assertEquals(29, i.size());
+        } else {
+            assertEquals(26, i.size());
+        }
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
     	cn = extractor.getField(DNFieldExtractor.CN, 1);
