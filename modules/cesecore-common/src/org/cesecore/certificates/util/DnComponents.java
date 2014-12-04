@@ -358,18 +358,32 @@ public class DnComponents {
      *
      */
     private static void loadMappings() {
+        loadProfileMappingsFromFile("/profilemappings.prope rties");
+        loadProfileMappingsFromFile("/profilemappings_enterp rise.properties");
+    }
+    
+    public static boolean enterpriseMappingsExist() {
+        return obj.getClass().getResourceAsStream("/profilemappings_enterprise.properties") != null;
+    }
+    
+    /**
+     * Reads properties from a properties file. Fails nicely if file wasn't found. 
+     * 
+     * @param propertiesFile
+     */
+    private static void loadProfileMappingsFromFile(String propertiesFile) {
         // Read the file to an array of lines 
         String line;
 
         BufferedReader in = null;
         InputStreamReader inf = null;
         try {
-            InputStream is = obj.getClass().getResourceAsStream("/profilemappings.properties");
+            InputStream is = obj.getClass().getResourceAsStream(propertiesFile);
             if (is != null) {
                 inf = new InputStreamReader(is);
                 in = new BufferedReader(inf);
                 if (!in.ready()) {
-                    throw new IOException();
+                    throw new IOException("Couldn't read " + propertiesFile);
                 }
                 String[] splits = null;
                 int lines = 0;
@@ -435,9 +449,13 @@ public class DnComponents {
                     }
                 }
                 in.close();
+                if(log.isDebugEnabled()) {
                 log.debug("Read profile maps with " + lines + " lines.");
+                }
             } else {
-                throw new IOException("Input stream for /profilemappings.properties is null");
+                if(log.isDebugEnabled()) {
+                    log.debug("Properties file " + propertiesFile + " was not found.");
+                }
             }
         } catch (IOException e) {
             log.error("Can not load profile mappings: ", e);
@@ -452,7 +470,6 @@ public class DnComponents {
             } catch (IOException e) {
             }
         }
-
     }
 
     /**
