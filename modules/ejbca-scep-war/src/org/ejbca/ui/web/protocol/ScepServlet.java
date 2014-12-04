@@ -54,6 +54,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -110,6 +111,8 @@ public class ScepServlet extends HttpServlet {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
+    @EJB
+    private EjbBridgeSessionLocal ejbBridgeSession;
 
     
     private static final String DEFAULT_SCEP_ALIAS = "scep";
@@ -463,7 +466,7 @@ public class ScepServlet extends HttpServlet {
                         log.debug("SCEP is operating in RA mode: " + ramode);
                     }             
                     ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
-                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
+                    if (!scepRaModeExtension.performOperation(administrator, ejbBridgeSession, reqmsg, scepConfig, alias)) {
                         String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
                         log.error(errmsg);
                         return null;
