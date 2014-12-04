@@ -358,8 +358,8 @@ public class DnComponents {
      *
      */
     private static void loadMappings() {
-        loadProfileMappingsFromFile("/profilemappings.prope rties");
-        loadProfileMappingsFromFile("/profilemappings_enterp rise.properties");
+        loadProfileMappingsFromFile("/profilemappings.properties");
+        loadProfileMappingsFromFile("/profilemappings_enterprise.properties");
     }
     
     public static boolean enterpriseMappingsExist() {
