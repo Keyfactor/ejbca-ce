@@ -40,6 +40,13 @@
         </web-resource-collection>
         <auth-constraint />
     </security-constraint> 
+    
+    <ejb-local-ref>
+        <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
+        <ejb-ref-name>EjbBridgeSession</ejb-ref-name>
+        <local>org.ejbca.core.ejb.EjbBridgeSessionLocal</local>
+        <ejb-link>EjbBridgeSessionBean</ejb-link>
+    </ejb-local-ref>
 
 <!--
   <ejb-local-ref id="EJBLocalRef_1">
