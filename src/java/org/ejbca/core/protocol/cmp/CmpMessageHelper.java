@@ -182,13 +182,13 @@ public class CmpMessageHelper {
         // Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
         ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(digestAlg, key.getAlgorithm());
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Selected signature alg oid: " + oid.getId());
+            LOG.debug("Selected signature alg oid: " + oid.getId()+", key algorithm: "+key.getAlgorithm());
         }
         // According to PKCS#1 AlgorithmIdentifier for RSA-PKCS#1 has null Parameters, this means a DER Null (asn.1 encoding of null), not Java null.
         // For the RSA signature algorithms specified above RFC3447 states "...the parameters MUST be present and MUST be NULL."
         PKIHeaderBuilder headerBuilder = getHeaderBuilder(pKIMessage.getHeader());
         AlgorithmIdentifier pAlg = null;
-        if (key instanceof RSAPrivateKey) {
+        if ("RSA".equalsIgnoreCase(key.getAlgorithm())) {
             pAlg = new AlgorithmIdentifier(oid, DERNull.INSTANCE);
         } else {
             pAlg = new AlgorithmIdentifier(oid);
