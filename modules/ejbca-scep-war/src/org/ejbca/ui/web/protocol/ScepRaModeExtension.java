@@ -32,13 +32,13 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.ScepConfiguration;
-import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -53,13 +53,15 @@ public class ScepRaModeExtension implements ScepPlugin {
 
     private static final Logger log = Logger.getLogger(ScepRaModeExtension.class);
 
-    public boolean performOperation(AuthenticationToken admin, EjbBridgeSessionLocal ejbBridgeSession, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias) {
+    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
 
-        final CaSessionLocal caSession = ejbBridgeSession.getCaSession();
-        final CertificateProfileSessionLocal certProfileSession = ejbBridgeSession.getCertificateProfileSession();
-        final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbBridgeSession.getCryptoTokenManagementSession();
-        final EndEntityProfileSessionLocal endEntityProfileSession = ejbBridgeSession.getEndEntityProfileSession();
-        final EndEntityManagementSessionLocal endEntityManagementSession = ejbBridgeSession.getEndEntityManagementSession();
+    public boolean performOperation(AuthenticationToken admin, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias) {
+
+        final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
+        final CertificateProfileSessionLocal certProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
+        final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+        final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
         final ScepConfiguration scepConfiguration = scepConfig;
          final String configAlias = alias;
 
