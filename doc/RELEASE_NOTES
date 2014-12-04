@@ -192,7 +192,7 @@ well as improvements for Key Recovery.
 - Improvements to Key Recovery enabling encryption key rollover and providing more information about encryption keys.
 - Windows build/install is now working.
 - ManagementCA created during a default install now uses SHA256WithRSA.
-- EJBCA now compiles (deployment/running not supported however) on WildFly 8 and Glasshish 4, also using Java 8.
+- EJBCA now compiles (deployment/running not supported however) on WildFly 8 and Glassfish 4, also using Java 8.
 - EJBCA can now use certificate serial number longer than 64 bits.
 - Minor improvements and fixes to make life easier for everyone.
 
@@ -274,7 +274,7 @@ This is a maintenance release with bug fixes and improvements. In all 13 issues 
 
 * Noteworthy changes:
 - Improve statedump command (Enterprise).
-- Fix bug causing OCSP healthcheck to always reyturn error.
+- Fix bug causing OCSP healthcheck to always return error.
 - Minor security fix and improvement.
 
 Read the full Changelog for details.
@@ -579,7 +579,7 @@ For upgrade instructions, please see UPGRADE
 
 EJBCA 4.0.16
 ------------
-This is a maintenance release containing a new feature and two ug fixes. In all 3 issues have been resolved.
+This is a maintenance release containing a new feature and two bug fixes. In all 3 issues have been resolved.
 
 * Noteworthy changes: 
 - Possibility to store the Base64 certificate data in a separate table.
