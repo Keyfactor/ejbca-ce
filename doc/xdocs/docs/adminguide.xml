@@ -371,7 +371,9 @@ The following CA capabilities are supported:
 <li>SHA-1</li>
 </ul>
 </p>
-<subsection name="Client mode">
+</subsection>
+<subsection name="Operation Modes">
+<subsubsection name="Client mode">
 <p>
 In client mode EJBCA receives a SCEP 'PKCSReq' requests and sends back the certifificate/CRL immediately in a proper SCEP reply message.
 The SCEP client will send messages directly to the CA, encrypted with the CAs certificate and the CA will authenticate/authorize the 
@@ -385,9 +387,9 @@ authenticating the request in EJBCA. Create the SCEP  request with a challengePa
 </p><p>
 The most common errors should be wrong username/password or wrong status (not NEW) on the user in EJBCA.
 </p>
-</subsection>
+</subsubsection>
 
-<subsection name="RA Mode (Enterprise Edition only)">
+<subsubsection name="RA Mode (Enterprise Edition only)">
 <p>
 in RA mode EJBCA recieves SCEP 'PKCSReq' requests when a user is to be created (or edited). A certificate is returned immediately in
 a proper SCEP reply message. The RA is authenticated/authorized based on configuration.
@@ -400,9 +402,9 @@ the different parameters through the command line is available when executing th
 <source>
 ./bin/ejbca.sh config scep updatealias --help
 </source>
-</subsection>
+</subsubsection>
 
-<subsection name="External RA SCEP Server">
+<subsubsection name="External RA SCEP Server">
 <p>
 EJBCA supports the SCEP 'polling' RA model using the <a href="externalra.html">External RA API</a>.
 Using this, a SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
@@ -410,11 +412,12 @@ When the request is processed by the CA, which fetches the pkcs10 request from t
 When the certificate is complete on the External RA, the RA sends back the SCEP certificate response the next time the SCEP client
 polls the RA. This feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
 </p>
-</subsection>
+</subsubsection>
 <p>
 EJBCA will not send back proper SCEP error messages in all cases of failure. The error messages are not completely implemented, although most of them are implemented.
 </p>
 </subsection>
+
 <subsection name="Tested devices">
 <subsubsection name="Cisco ISE">
 <p>
