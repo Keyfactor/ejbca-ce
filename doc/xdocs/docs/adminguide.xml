@@ -371,25 +371,26 @@ The following CA capabilities are supported:
 <li>SHA-1</li>
 </ul>
 </p>
-<subsubsection name="CA mode">
+<subsection name="Client mode">
 <p>
-EJBCA does successfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
-EJBCA (standard) does not support the 'polling' model, EJBCA uses the direct CA method, where a request is granted or denied immediately.
-The SCEP client will send messages directly to the CA, encrypted with the CAs certificate.
+In client mode EJBCA receives a SCEP 'PKCSReq' requests and sends back the certifificate/CRL immediately in a proper SCEP reply message.
+The SCEP client will send messages directly to the CA, encrypted with the CAs certificate and the CA will authenticate/authorize the 
+request based on username and enrollment code of an end entity pre-created in EJBCA.
+This mode does not support the 'polling' model, EJBCA uses the direct CA method, where a request is granted or denied immediately.
 </p><p>
-The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
-authenticating the request in EJBCA. Create the Scep request with a CN matching the username registered in EJBCA.
-The challengePassword in the PKCS#10 request, which is part of the Scep request, will be used as the 'password' when 
-authenticating the request in EJBCA. Create the Scep request with a challengePassword matching the password registered in EJBCA.
+The CN part of the DN in the PKCS#10 request, which is part of the SCEP request, will be used as the 'username' when 
+authenticating the request in EJBCA. Create the SCEP request with a CN matching the username registered in EJBCA.
+The challengePassword in the PKCS#10 request, which is part of the SCEP request, will be used as the 'password' when 
+authenticating the request in EJBCA. Create the SCEP  request with a challengePassword matching the password registered in EJBCA.
 </p><p>
 The most common errors should be wrong username/password or wrong status (not NEW) on the user in EJBCA.
 </p>
-</subsubsection>
+</subsection>
 
-<subsubsection name="RA Mode (Enterprise Edition only)">
+<subsection name="RA Mode (Enterprise Edition only)">
 <p>
-EJBCA does also successfully recieve SCEP 'PKCSReq' requests when a user is to be created (or edited). A certificate is returned immediately in
-a proper SCEP reply message. 
+in RA mode EJBCA recieves SCEP 'PKCSReq' requests when a user is to be created (or edited). A certificate is returned immediately in
+a proper SCEP reply message. The RA is authenticated/authorized based on configuration.
 </p>
 <p>
 For this mode to work, the property 'ALIAS.operationmode' in the command line or 'Operational mode' in the AdminGUI has to be set to 'ra'. 
@@ -399,17 +400,17 @@ the different parameters through the command line is available when executing th
 <source>
 ./bin/ejbca.sh config scep updatealias --help
 </source>
-</subsubsection>
+</subsection>
 
-<subsubsection name="RA mode (ExtRA API 3.4.2)">
+<subsection name="External RA SCEP Server">
 <p>
 EJBCA supports the SCEP 'polling' RA model using the <a href="externalra.html">External RA API</a>.
-Using this, an SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
+Using this, a SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
 When the request is processed by the CA, which fetches the pkcs10 request from the External RA, the certificate is sent back to the External RA. 
 When the certificate is complete on the External RA, the RA sends back the SCEP certificate response the next time the SCEP client
 polls the RA. This feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
 </p>
-</subsubsection>
+</subsection>
 <p>
 EJBCA will not send back proper SCEP error messages in all cases of failure. The error messages are not completely implemented, although most of them are implemented.
 </p>
