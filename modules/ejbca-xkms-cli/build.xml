@@ -40,6 +40,7 @@
             </manifest>
         	<fileset dir="${build.dir}" includes="**"/>
         	<fileset file="${profilemappings.properties.file}"/>
+            <fileset file="${profilemappings_enterprise.properties.file}"/>
     	</jar>
     </target>
 

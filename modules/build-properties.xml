@@ -153,6 +153,7 @@
     <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
     -->
     <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
+    <property name="profilemappings_enterprise.properties.file" location="${ejbca.home}/src/java/profilemappings_enterprise.properties" />
     <property name="log4j.test.file" location="${mod.common.path}/resources/log4j-test.xml" />
     <property name="log4j.cli.file" location="${mod.common.path}/resources/log4j-cli.xml" />
     <property name="internal.properties.file" location="${ejbca.home}/src/internal.properties" />

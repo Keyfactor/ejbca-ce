@@ -1212,6 +1212,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
             <fileset dir="src/java">
                 <include name="certextensions.properties"/>
                 <include name="profilemappings.properties"/>
+                <include name="profilemappings_enterprise.properties"/>
             </fileset>
         </copy>
         <copy todir="../cesecore/src/main/resources/intresources" overwrite="true">

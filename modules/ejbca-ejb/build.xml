@@ -502,6 +502,7 @@
 			    <include name="META-INF/services/org.ejbca.core.model.ca.publisher.ICustomPublisher"/> <!-- for GeneralPurposeCustomPublisher, etc. -->
 				<include name="dncomponents.properties"/>
 				<include name="profilemappings.properties"/>
+                <include name="profilemappings_enterprise.properties"/>
 				<include name="certextensions.properties"/>
 				<include name="defaultvalues.properties"/>
 			</fileset>
