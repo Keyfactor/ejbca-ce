@@ -183,15 +183,5 @@ public class UnRevokeEndEntityCommandTest {
         assertEquals("End entity was not kept revoked.", EndEntityConstants.STATUS_REVOKED,
                 endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getStatus());
     }
-    
-    //Rest unrevoking an ungenerated end entity
-    @Test
-    public void testUnrevokeEndEntityWithoutCertificates() throws AuthorizationDeniedException, CertificateRevokeException, ApprovalException, AlreadyRevokedException, FinderException, WaitingForApprovalException {
-        endEntityManagementSession.revokeUser(authenticationToken, TESTCLASS_NAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        final String args[] = new String[] { TESTCLASS_NAME };
-        command.execute(args);
-        assertEquals("End entity was not set to new.", EndEntityConstants.STATUS_NEW,
-                endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getStatus());
-    }
-    
+       
 }
