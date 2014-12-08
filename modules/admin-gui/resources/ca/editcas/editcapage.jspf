@@ -1607,7 +1607,13 @@ function checkallfields(){
     </tr>
     <% } %>   
 
-    <%  final int cryptoTokenId = catoken==null ? currentCryptoTokenId : catoken.getCryptoTokenId();
+    <%
+        final int cryptoTokenId = catoken==null ? currentCryptoTokenId : catoken.getCryptoTokenId();
+        // Cache the lookup/iteration over all the keys in the CryptoToken
+        List<String> availableCryptoTokenAliases = null;
+        if (!isexternal && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId)) {
+            availableCryptoTokenAliases = cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam);
+        }
         if (editca && !isexternal && !waitingresponse && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId) && cainfo.getSignedBy()!=CAInfo.SIGNEDBYEXTERNALCA) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>"> 
@@ -1620,7 +1626,7 @@ function checkallfields(){
                         <td>
                             <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_RENEW %>" size="1">
                                 <option value="" ><c:out value="<%= ejbcawebbean.getText(\"RENEWCA_USINGKEYSEQUENCE\") %>"/></option>
-                            <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
+                            <%  for (final String alias : availableCryptoTokenAliases) {
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
                             %>
@@ -1691,7 +1697,7 @@ function checkallfields(){
                         <td>
                             <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_MAKEREQUEST %>" size="1">
                                 <option value="" ><c:out value="<%= ejbcawebbean.getText(\"RENEWCA_USINGKEYSEQUENCE\") %>"/></option>
-                        <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
+                        <%  for (final String alias : availableCryptoTokenAliases) {
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
                         %>
@@ -1721,7 +1727,7 @@ function checkallfields(){
                         <td><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CAKEY") %></td>
                         <td>
                             <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_RECEIVEREQ %>" size="1">
-                        <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
+                        <%  for (final String alias : availableCryptoTokenAliases) {
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
                                 %>
