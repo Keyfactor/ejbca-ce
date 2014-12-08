@@ -105,43 +105,39 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
             // Find all user certs
             List<Certificate> certificates = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
                     .findCertificatesByUsername(username);
-            try {
-                if (!certificates.isEmpty()) {
-                    for (Certificate cert : certificates) {
-                        BigInteger serialNumber = CertTools.getSerialNumber(cert);
-                        String issuerDN = CertTools.getIssuerDN(cert);
-                        if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(issuerDN, serialNumber).revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
-                            foundCertificateOnHold = true;
-                            try {
-                                endEntityManagementSession.revokeCert(getAuthenticationToken(), serialNumber, issuerDN.toString(),
-                                        RevokedCertInfo.NOT_REVOKED);
-                            } catch (AlreadyRevokedException e) {
-                                getLogger().error("ERROR: The end entity was already reactivated while the request executed.");
-                            } catch (ApprovalException e) {
-                                getLogger().error("ERROR: Reactivation already requested.");
-                            } catch (WaitingForApprovalException e) {
-                                getLogger().info("ERROR: Reactivation request has been sent for approval.");
-                            }
+           
+                for (Certificate cert : certificates) {
+                    BigInteger serialNumber = CertTools.getSerialNumber(cert);
+                    String issuerDN = CertTools.getIssuerDN(cert);
+                    if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(issuerDN, serialNumber).revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+                        foundCertificateOnHold = true;
+                        try {
+                            endEntityManagementSession.revokeCert(getAuthenticationToken(), serialNumber, issuerDN.toString(),
+                                    RevokedCertInfo.NOT_REVOKED);
+                        } catch (AlreadyRevokedException e) {
+                            getLogger().error("ERROR: The end entity was already reactivated while the request executed.");
+                        } catch (ApprovalException e) {
+                            getLogger().error("ERROR: Reactivation already requested.");
+                        } catch (WaitingForApprovalException e) {
+                            getLogger().info("ERROR: Reactivation request has been sent for approval.");
                         }
                     }
-                    if (!foundCertificateOnHold) {
-                        getLogger().error("No certificates with status 'On hold' were found for this end entity.");
-                    } else {
+                }
+                if (!foundCertificateOnHold) {
+                    getLogger().error("No certificates with status 'On hold' were found for this end entity. Status is unchanged.");
+                } else {
+                    try {
                         //Certificates were found and unrevoked. Set status to generates
                         endEntityManagementSession.setUserStatus(getAuthenticationToken(), username, EndEntityConstants.STATUS_GENERATED);
                         getLogger().info("Setting status of end entity '" + username + "' to GENERATED (40).");
-                    }
-                } else {
-                    //End entity was revoked, but had no certificates. Set it to new instead. 
-                    endEntityManagementSession.setUserStatus(getAuthenticationToken(), username, EndEntityConstants.STATUS_NEW);
-                    getLogger().info("No certifictaes were found for end entity '" + username + "'. Setting status to NEW (10).");
-                }
 
-            } catch (ApprovalException e) {
-                getLogger().error("ERROR: Reactivation already requested.");
-            } catch (WaitingForApprovalException e) {
-                getLogger().info("ERROR: Reactivation request has been sent for approval.");
-            }
+                    } catch (ApprovalException e) {
+                        getLogger().error("ERROR: End entity reactivation already requested.");
+                    } catch (WaitingForApprovalException e) {
+                        getLogger().info("End entity reactivation request has been sent for approval.");
+                    }
+                }
+         
         } catch (AuthorizationDeniedException e) {
             getLogger().error("Not authorized to reactivate end entity.");
             return CommandResult.AUTHORIZATION_FAILURE;
@@ -154,16 +150,14 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Reactivates an end entity's certificates if the revocation reason of certificates is 'on hold'. ";
+        return "Reactivates an end entity's certificates if the revocation reason of certificates is 'on hold', and unrevokes the end entity. ";
     }
 
     @Override
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription()
-                + "Does not change status of the end entity itself. "
-                + "A user's certificate can unly be unrevoked if the revocation reason is certificate_hold. "
-                + " The user status on the user itself is not changed, it is still revoked. Use setendentitystatus command to change status of a user.");
+                + "A user's certificate can unly be unrevoked if the revocation reason is certificate_hold. If any such certificates were found, status will automatically be set to 40 (generated) after this command is run.");
         return sb.toString();
     }
 
