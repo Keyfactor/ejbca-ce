@@ -153,27 +153,26 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
 	    final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
-	    for (final Integer caId : caSession.getAuthorizedCaIds(authenticationToken)) {
-	        try {
-                final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue(), null, true);
-                final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
-                if (sortMap.get(cryptoTokenId)==null) {
-                    // Perhaps not authorized to view the CryptoToken used by the CA, but we implicitly
-                    // allow this in the current context since we are authorized to the CA.
-                    final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId.intValue());
-                    if (cryptoTokenInfo==null) {
-                        sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
-                    } else {
-                        final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
-                        final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
-                        sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
-                    }
+        for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
+            final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
+            if (sortMap.get(cryptoTokenId) == null) {
+                // Perhaps not authorized to view the CryptoToken used by the CA, but we implicitly
+                // allow this in the current context since we are authorized to the CA.
+                final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId.intValue());
+                if (cryptoTokenInfo == null) {
+                    sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
+                } else {
+                    final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken,
+                            CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
+                    final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken,
+                            CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
+                    sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
                 }
-                sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
-            } catch (CADoesntExistsException e) {
-                throw new RuntimeException("Authorized CA Id does no longer exist.");
             }
-	    }
+            sortMap.get(cryptoTokenId).add(
+                    new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
+
+        }
         final TokenAndCaActivationGuiInfo[] tokenAndCasArray = sortMap.values().toArray(new TokenAndCaActivationGuiInfo[0]);
         // Sort array by CryptoToken name
         Arrays.sort(tokenAndCasArray, new Comparator<TokenAndCaActivationGuiInfo>() {
