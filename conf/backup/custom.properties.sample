@@ -1,0 +1,2 @@
+# Default location of customized changes to merge. 
+#customejbca.home=${ejbca.home}/../ejbca-custom

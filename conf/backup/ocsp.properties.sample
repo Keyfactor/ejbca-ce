@@ -1,0 +1,282 @@
+# ------------ OCSP responder configuration ---------------------
+# These configurations are used both for EJBCA and the Validation Authority (VA).
+#
+# These values are used for OCSP responses signed by a CA and as defaults for delegated OCSP signing by OcspKeyBindings.
+# Certificate Profile or URL specific configuration here will still override the configured values of an OcspKeyBinding.
+
+# OCSP servlet enabled. If false there will be no servlet.
+# Default is true.
+#ocsp.enabled=false
+
+# Context root (the path in the URL)
+# Default is '/${app.name}/publicweb/status'
+#ocsp.contextroot=/status
+
+# DEPRECATED VALUE
+# Deprecated since 6.2.4. The current value will be used to perform upgrade at first startup, and may be removed afterwards. 
+#
+# Specifies the subject of a certificate which is used to identify the 
+# responder which will generate responses when no real CA can be found from the request. 
+# This is used to generate 'unknown' responses when a request is received for a certificate 
+# that is not signed by any CA on this server. Recommended to use same as ca.dn.
+#
+# For the internal OCSP responder this is the subject DN of the CA to use for signing
+# For an external OCSP responder this is the issuer DN of the OCSP responders certificate to use for signing, i.e. the CAs subject DN.
+ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
+
+# If set to false the OCSP responses will only contain the signature certificate (if ocsp.includesignercertinresponse is set to 'true'), 
+# and not the whole certificate chain of the OCSP responder.
+# Default true.
+#ocsp.includecertchain=true
+
+# If set to false, the  OCSP response will not contain the signing certificate.
+# Default true 
+#ocsp.includesignercert=true
+
+# Defines the ResponderID type as defined in RFC2560. Set to name for the Name type and keyhash for the KeyHash type.
+# Possible values: name, keyhash
+# Default: keyhash 
+#ocsp.responderidtype=keyhash
+
+# Specifies which signature algorithms should be used on OCSP responses. You can specify several algorithm
+# separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and
+# if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 
+# DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
+#
+# Default: SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
+#ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
+
+# The interval on which the the OCSP signing certificates are updated in seconds.
+# If set to 0 or negative these certificate are never updated.
+# Default: 300
+#ocsp.signingCertsValidTime=0
+
+# When a signing certificate is about to expire a WARN message could be written to log4j each time the key of the certificate is used.
+# This property defines when this message is started to be written.
+# The property is set to the number of seconds before the expiration that the WARN message starts to be written.
+# If set to 0 the warning is disabled.
+# Default: 604800 (1 week)
+#ocsp.warningBeforeExpirationTime=10000
+
+# If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+# will be treated as not revoked. Default (when value is false) is to treat is as "unknown". Since the OCSP responders database normally contains all issued certificate
+# this gives sensible values (in line with RFC6960) to "ok", "revoked" and "unknown" certificates.
+# Setting this value to true is useful if you want an External OCSP responder database to only contain revoked certificates, and not
+# all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database. 
+# If both 'ocsp.nonexistingisgood' and 'ocsp.nonexistingisrevoked' are set to 'true', the responder will answer "ok".
+#
+# Default: false
+#ocsp.nonexistingisgood=false
+
+# The value of 'ocsp.nonexistingisgood=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=false' is numbered from 1 and up. It may be any numbers.
+# Here follows an example of 2:
+#ocsp.nonexistingisgood.uri.1=.*/thisEndingIsGood$
+#ocsp.nonexistingisgood.uri.2=^http://good.myhost.nu:8080/.*
+
+# The value of 'ocsp.nonexistingisgood=true' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=true' is numbered from 1 and up. It may be any numbers.
+# Here follows an example of 2:
+#ocsp.nonexistingisbad.uri.1=.*/thisEndingIsBad$
+#ocsp.nonexistingisbad.uri.2=^http://bad.myhost.nu:8080/.*
+
+# If true a certificate that does not exist in the database, but is issued by a CA the responder handles,
+# will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970 (compliant with RFC6960). 
+# Default (when this value and value of "Non existing is good" are false) is to treat it as "unknown".
+# If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
+#
+# Default: false
+#ocsp.nonexistingisrevoked=false
+
+# The value of 'ocsp.nonexistingisrevoked=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisrevoked=false' is numbered from 1 and up. It may be any numbers.
+# Here follows an example of 2:
+#ocsp.nonexistingisrevoked.uri.1=.*/thisEndingIsRevoked$
+#ocsp.nonexistingisrevoked.uri.2=^http://revoked.myhost.nu:8080/.*
+
+# An OCSP responder MAY choose to retain revocation information beyond a certificate's expiration.  The date obtained by subtracting this
+# retention interval value from the producedAt time in a response is defined as the certificate's "archive cutoff" date.
+# To illustrate, if a server is operated with a 7-year retention interval policy and status was produced at time t1, then the value
+# for ArchiveCutoff in the response would be (t1 - 7 years).
+#
+# OCSP-enabled applications would use an OCSP archive cutoff date to contribute to a proof that a digital signature was (or was not)
+# reliable on the date it was produced even if the certificate needed to validate the signature has long since expired
+# The value of this configuration should be set to the number of seconds of this retention interval. To disable the archive cutoff extension, 
+# the value of this configuration should be set to '-1'
+#
+# Default: 31536000 (1 year)
+#ocsp.expiredcert.retentionperiod = 31536000
+#ocsp.expiredcert.retentionperiod = -1
+
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
+# Default: 0
+#ocsp.untilNextUpdate = 0
+
+# You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
+# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
+# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
+#ocsp.999.untilNextUpdate = 50
+
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
+# If this configuration is set, its value will override the global value in case of certificate with a revoked status..
+# Default: 0
+#ocsp.revoked.untilNextUpdate = 0
+
+# You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
+# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
+# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
+# If this configuration is set, its value will override the global value in case of certificate with a revoked status..
+#ocsp.999.revoked.untilNextUpdate = 50
+
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
+# Ignored if untilNextUpdate is disabled. 0 = disable.
+# Note that for responses of certificates with unknown status, the HTTP response header "Cache-control" will not contain the max age, but 
+# "no-cache, must-revalidate" instead. That is to prevent caching of unknown status.
+# Default: 30
+#ocsp.maxAge = 30
+
+# You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
+# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
+# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
+#ocsp.999.maxAge = 100
+
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
+# Ignored if untilNextUpdate is disabled. 0 = disable.
+# Note that for responses of certificates with unknown status, the HTTP response header "Cache-control" will not contain the max age, but 
+# "no-cache, must-revalidate" instead. That is to prevent caching of unknown status.
+# If this configuration is set, its value will override the global value in case of certificate with a revoked status.
+# Default: 30
+#ocsp.revoked.maxAge = 30
+
+# You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
+# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
+# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
+# If this configuration is set, its value will override the global value in case of certificate with a revoked status.
+#ocsp.999.revoked.maxAge = 100
+
+# Specifies OCSP extension oids that will result in a call to an extension class, 
+# separate multiple entries with ';'
+# For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
+# Leave out if you do not know what this is.
+# Example value: 2.16.578.1.16.3.2 (Unid)
+# Example value: *1.3.36.8.3.13 (CertHash)
+# Default: nothing 
+#ocsp.extensionoid=
+
+# Specifies classes implementing OCSP extensions matching oids above, 
+# separate multiple entries with ;"
+# Leave out if you do not know what this is.
+# Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+# Example value: org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension
+# Default: nothing
+#ocsp.extensionclass=
+
+# Datasource for Unid-Fnr mapping OCSP extension. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.uniddatsource=
+
+# Directory containing certificates of trusted entities allowed to query for Fnrs. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.unidtrustdir=
+
+# File containing the CA-certificate, in PEM format, that signed the trusted clients. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.unidcacert=
+
+# Specifies if the OCSP-responder should require signed requests or not.
+# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
+#
+# Default: false
+#ocsp.signaturerequired=false
+
+# Timeout setting for the Global OCSP configuration cache. Once the cache has timed out it will be reread from the 
+# database.
+#
+# Default: 30000ms 
+#ocspconfigurationcache.cachetime=30000
+
+#------------------- Re-keying used by external OCSP responder------------------------------
+# When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
+# A certificate for the new key will be fetched by WS from EJBCA.
+# You also need to configure an AuthenticationKeyBinding as client SSL credential. (It will be created for you
+# during upgrade to EJBCA 6.0.0 where a client SSL keystore existed previously.)
+
+# Password for rekeying via the servlet. 
+# Default: null
+#ocsp.rekeying.trigging.password=
+
+# URL to webservice from which the certificate for a newly generated OCSP responder key should be fetched.
+# The automatic re-keying feature is disabled if this property is not defined.
+# Default: null
+#ocsp.rekeying.wsurl = https://milton:8443/ejbca/ejbcaws/ejbcaws
+
+# Specifies how often the signing certificates should be checked. Default value is 3600 seconds, but consider lowering this value if signing certificates are expected
+# to be valid less than 24h 
+#ocsp.rekeying.update.time.in.seconds=
+
+# Specifies how much safety margin a certificate should have before it's updated, i.e when it should be considered a candidate for renewal. The effective
+# validity time for a signing certificate is it's actual validity minus this value. Timer will output warnings if this value is less than the update time.
+#
+# The default for this value is 24h 
+#ocsp.rekeying.safety.margin.in.seconds=
+
+# Limits what hosts may request a manual rekeying via web service. Multiple hosts may be separated with a semicolon. 
+# Default: 127.0.0.1
+#ocsp.rekeying.trigging.hosts=
+
+#------------------- OCSP Logging settings -------------
+# Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
+# Specifies if transaction logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
+# Change below to true if you want transaction information to be logged
+#
+# See the OCSP installation guide for more details on the transaction and audit logging.
+#
+# Default: false
+#ocsp.trx-log = true
+
+# Configure how time of logging in auditlog will be output
+# Default: yyyy-MM-dd:HH:mm:ss:z
+#ocsp.log-date = yyyy-MM-dd:HH:mm:ss:z
+
+# Configure which time zone will be used for logging
+# Default: GMT
+#ocsp.log-timezone = GMT
+
+# A pattern for use with ocsp.trx-log-order to replace constants with values during logging
+# Default: \\$\\{(.+?)\\}
+#ocsp.trx-log-pattern = \\$\\{(.+?)\\}
+
+# Use ocsp.trx-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
+# See OCSP Installation guide for documentation of all parameters.
+# Default: ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
+#ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${PROCESS_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
+
+# Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
+# change ocsp.audit-log to true of you want audit logging turned on
+# Default: false
+#ocsp.audit-log = true
+
+# A pattern for use with ocsp.audit-order to replace constants with values during logging
+# Default: \\$\\{(.+?)\\}
+#ocsp.audit-log-pattern = \\$\\{(.+?)\\}
+
+# Use ocsp.audit-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
+# See OCSP Installation guide for documentation of all parameters.
+# Default: ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
+#ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";REPLY TIME:${REPLY_TIME};\nTIME TO PROCESS:${PROCESS_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
+
+# Set to true if you want transactions to be aborted when logging fails
+# This option needs other configuration changes as well, see  "Safer Log4j Logging" in the OCSP install guide for more information
+# Default: false
+#ocsp.log-safer = true

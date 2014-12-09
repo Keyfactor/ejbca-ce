@@ -1,0 +1,246 @@
+# ------------ Web GUI configuration ---------------------
+# When upgrading, the important options are:
+# - httpsserver.password
+
+# If you prefer to manually configure the web settings for your application
+# server, you should uncomment this property. Enabling this option will prevent
+# the 'ant web-configure' command from making any changes to the configuration
+# of your application server (in terms of web settings, like paths etc).
+# Can not be set to false, commented away means that web will be configured.
+#web.noconfigure=true
+
+# If you enable this option, the 'ant web-configure' command will not set-up the
+# SSL access on your application server. This is normally desired for the OCSP
+# responder or Validation Authority (unless you want to run them over https as
+# well). Normally, in case of a CA build you should _not_ enable this option
+# (otherwise you won't have access to the administration web interface). If you
+# wish to use the Unid functionality on the OCSP responder, make sure to also
+# have a look at the 'Configuring TLS on the Unid lookup server' how-to.
+# Can not be set to false, commented away means that web will be configured.
+# web.nosslconfigure=true
+
+# Password for java trust keystore (p12/truststore.jks). Default is changeit
+# This truststore will contain the CA-certificate after running 'ant javatruststore'
+# Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default ManagementCA
+java.trustpassword=changeit
+
+# The CN and DN of the super administrator.
+# Comment out if you want 'ant install' to prompt for this.
+superadmin.cn=SuperAdmin
+# Note that superadmin.dn must start with the same CN as in superadmin.cn.
+# example:  superadmin.dn=CN=${superadmin.cn},O=EJBCA Sample,C=SE
+superadmin.dn=CN=${superadmin.cn}
+
+# The password used to protect the generated super administrator P12 keystore (to be imported in browser).
+# Choose a good password here.
+superadmin.password=ejbca
+
+# Set this to false if you want to fetch the certificate from the EJBCA public web pages, instead of
+# importing the P12-keystore. This can be used to put the initial superadmin-certificate on a smart card.
+superadmin.batch=true
+
+# The password used to protect the web servers SSL keystore. Default is serverpwd
+# Choose a good password here.
+# If upgrading from EJBCA 3.1, enter here the password found in 
+#   $JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml
+#   under the section about 'HTTPS Connector...', the password is in attribute 'keystorePass=...'.
+httpsserver.password=serverpwd
+
+# The CA servers DNS host name, must exist on client using the admin GUI.
+httpsserver.hostname=localhost
+
+# The Distinguished Name of the SSL server certificate used by the administrative web gui.
+# The CN part should match your host's DNS name to avoid browser warnings.
+httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
+
+# The Alternative Name (certificate extension) of the SSL server certificate used by the administrative web gui.
+# The dnsName part should match your hosts DNS name (and the CN above) to avoid browser warnings.
+# Set automatically, so no need to change this property unless you want something exotic.
+#httpsserver.an=dnsName=${httpsserver.hostname}
+
+# The public port JBoss will listen to http on
+# Default 8080
+#httpserver.pubhttp=8080
+
+# The public port JBoss will listen to https on, no client cert required
+# Default 8442
+#httpserver.pubhttps=8442
+
+# The private port JBoss will listen to https on, client cert required
+# Default 8443
+#httpserver.privhttps=8443
+
+# The private port exposed externally, i.e. if you run an Apache proxy in front of JBoss
+# the port may be 443 instead.
+# Default same as httpserver.privhttps
+#httpserver.external.privhttps=443
+ 
+# The fully qualified domain name (FQDN) of the front-end, e.g. an Apache proxy
+#   In order to build absolute URL, the server name is got from the web client request.
+#   But with an Apache proxy, via ProxyPass directive, the server name is 'localhost'.
+# Use:
+#   - empty: without Apache proxy, or with Apache proxy via AJP (not with ProxyPass)
+#   - ${httpsserver.hostname}: when an Apache proxy is used on the same server than EJBCA
+#   - any FQDN: when an Apache proxy with a ProxyPass directive is used (on any server)
+# Default: (empty)
+#httpserver.external.fqdn=
+#httpserver.external.fqdn=${httpsserver.hostname}
+ 
+# The interfaces JBoss will bind to. E.g. 127.0.0.1 will only allow connections from localhost.
+# You can also specify ${jboss.bind.address} to use JBoss configuration which interface to listen on.
+# Default 0.0.0.0
+#httpsserver.bindaddress.pubhttp=0.0.0.0
+#httpsserver.bindaddress.pubhttps=0.0.0.0
+#httpsserver.bindaddress.privhttps=0.0.0.0
+
+# Defines the available languages by ISO 639-1 language codes separated with a comma (example: en,zh).
+# If you are not sure that you know how to add a new language (languagefile.xx.properties, etc.), 
+# we suggest you stick with the default the first time you install if you wan't to add your own language.
+# Otherwise you may not be able to log in to the Admin GUI.
+# Default: en,bs,de,es,fr,it,ja,pt,sv,uk,zh
+#web.availablelanguages=en,bs,de,es,fr,it,ja,pt,sv,uk,zh
+
+# Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
+# Default: UTF-8
+#web.contentencoding=UTF-8
+
+# The language configuration that should be used internally for logging, exceptions and approval
+# notifications has been moved to ejbca.properties from EJBCA 3.10.
+
+# Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
+# be displayed for the administrators. If false only non-sensitive information is displayed.
+# Values should be "true" or "false".
+# Default = true
+#hardtoken.diplaysensitiveinfo=true
+
+# Show links to the EJBCA documentation. The links can either point to internally deployed
+# documentation on the server or any exteral location like ejbca.org.
+# Default = internal
+#web.docbaseuri=disabled
+#web.docbaseuri=internal
+#web.docbaseuri=http://www.ejbca.org
+
+# Require administrator certificates to be available in database for revocation
+# checks. Set this to false, if you want to be able to use admin certificates
+# issued by external CAs.
+# Default: true
+#web.reqcertindb=true
+
+# Allow users to self-register on public web, by entering their information.
+# This creates an approval request for the admin.
+# Default = false
+#web.selfreg.enabled=false
+
+# Certificate types to make available for the user
+#web.selfreg.defaultcerttype=1
+#web.selfreg.certtypes.1.description=User certificate
+#web.selfreg.certtypes.1.eeprofile=SOMEPROFILE
+#web.selfreg.certtypes.1.certprofile=ENDUSER
+
+# Optional: Instead of asking the user for a username, EJBCA can generate
+# the username from a field in the subject DN
+#web.selfreg.certtypes.1.usernamemapping=CN
+
+# Deploy the request browser certificate renewal web application and show a 
+# link to it from the EJBCA public web.
+# Default = false
+#web.renewalenabled=false
+
+# Wether it should be possible to manually specify a custom class name in
+# the admin web (e.g. for a custom Publisher or Service), or if the choice
+# of class should be constrained to auto-detected classes only.
+# If you are using classes made for EJBCA 5.0 or earlier you must enable
+# this option, or wrap them in a "service" JAR file (see the Admin Guide).
+# Default = false
+#web.manualclasspathsenabled=true
+
+# Presentation of the an exception on the web error page.
+#
+# General error message to be presented to the user when an exception occur.
+# Default: An exception has occurred
+#web.errorpage.notification=An exception has occurred.
+#
+# Print the stacktrace of the exception
+# Default: true
+#web.errorpage.stacktrace=false
+
+# Custom Servlet filter for emulation of client certificate authentication to the Admin GUI
+# using a Tomcat Valve or similar proxy.
+# Default is false.
+#web.enableproxiedauth=true
+
+# Whether the remote IP address should be logged during administrator login.
+# This works as expected when using an Apache AJP proxy, but if a reverse proxy
+# server is running in front of EJBCA then the address of the proxy will be logged.
+# In that case the web.log.adminforwardingip can be used in addition to this.
+#
+# If you want this information to be included in the webservice transaction log,
+# you should add ${ADMIN_FORWARDED_IP} to the "ejbcaws.trx-log-order" property instead.
+# 
+# Default: true
+#web.log.adminremoteip=true
+
+# Whether the IP address seen at the proxy (from the HTTP header "X-Forwarded-For")
+# should be logged. This information can only be trusted if the request
+# is known to come from a trusted proxy server.
+#
+# If you want this information to be included in the webservice transaction log,
+# you should add ${ADMIN_FORWARDED_IP} to the "ejbcaws.trx-log-order" property instead.
+#
+# Default: false
+#web.log.adminforwardedip=true
+
+# Available PKCS#11 CryptoToken libraries and their display names
+# If a library file's presence is not detected it will not show up in the Admin GUI.
+# Default values (see src/java/defaultvalues.properties for most up to date values):
+#cryptotoken.p11.lib.10.name=SafeNet ProtectServer Gold Emulator
+#cryptotoken.p11.lib.10.file=/opt/ETcpsdk/lib/linux-x86_64/libctsw.so
+#cryptotoken.p11.lib.11.name=SafeNet ProtectServer Gold
+#cryptotoken.p11.lib.11.file=/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
+#cryptotoken.p11.lib.20.name=SafeNet Luna SA
+#cryptotoken.p11.lib.20.file=/usr/lunasa/lib/libCryptoki2_64.so
+#cryptotoken.p11.lib.21.name=SafeNet Luna PCI
+#cryptotoken.p11.lib.21.file=/usr/lunapci/lib/libCryptoki2_64.so
+#cryptotoken.p11.lib.22.name=SafeNet Luna PCI
+#cryptotoken.p11.lib.22.file=/Program Files/LunaPCI/cryptoki.dll
+#cryptotoken.p11.lib.30.name=Utimaco
+#cryptotoken.p11.lib.30.file=/opt/utimaco/p11/libcs2_pkcs11.so
+#cryptotoken.p11.lib.31.name=Utimaco
+#cryptotoken.p11.lib.31.file=/opt/Utimaco/Software/PKCS11/lib/Linux-x86-64/libcs2_pkcs11.so
+#cryptotoken.p11.lib.32.name=Utimaco
+#cryptotoken.p11.lib.32.file=/etc/utimaco/libcs2_pkcs11.so
+#cryptotoken.p11.lib.33.name=Utimaco
+#cryptotoken.p11.lib.33.file=C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll
+#cryptotoken.p11.lib.40.name=nCipher
+#cryptotoken.p11.lib.40.file=/opt/nfast/toolkits/pkcs11/libcknfast.so
+#cryptotoken.p11.lib.50.name=ARX CoSign
+#cryptotoken.p11.lib.50.file=C:/windows/system32/sadaptor.dll
+#cryptotoken.p11.lib.60.name=OpenSC
+#cryptotoken.p11.lib.60.file=/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so
+#cryptotoken.p11.lib.61.name=OpenSC
+#cryptotoken.p11.lib.61.file=/usr/lib/i386-linux-gnu/opensc-pkcs11.so
+#cryptotoken.p11.lib.62.name=OpenSC
+#cryptotoken.p11.lib.62.file=/usr/local/lib/opensc-pkcs11.so
+#cryptotoken.p11.lib.63.name=OpenSC
+#cryptotoken.p11.lib.63.file=C:/Windows/system32/opensc-pkcs11.dll
+#
+# You can add your own values with an available number, or override numbers from defaults...
+#cryptotoken.p11.lib.255.name=P11 Proxy
+#cryptotoken.p11.lib.255.file=/home/user/local/p11proxy/dist/p11proxy.so
+#
+# If you would like to restrict the accessible slots, you can use the following property:
+# (you can use ranges, and if you omit the low or high number it means "no limit")
+#cryptotoken.p11.lib.30.slotlist=1-100
+#cryptotoken.p11.lib.30.slotlist=0,1,65537
+#cryptotoken.p11.lib.30.slotlist=i1-i
+# To change the default slot (e.g. if you have disabled access to slot 0)
+#cryptotoken.p11.defaultslot=1
+#cryptotoken.p11.defaultslot=i1
+
+# Available PKCS#11 CryptoToken attribute files and their display names
+# Use if the default PKCS#11 attributes are not good for the PKCS#11 module and if needs specific attributes 
+#cryptotoken.p11.attr.0.name=
+#cryptotoken.p11.attr.0.file=
+#...
+#cryptotoken.p11.attr.255.name=
+#cryptotoken.p11.attr.255.file=

@@ -1,0 +1,33 @@
+# $Id: systemtests.properties.sample 19235 2014-06-23 14:25:24Z mikekushner $
+#
+# Configuration file for running the system tests on a less standard setup (e.g. when using a proxy in front of EJBCA)
+#
+
+# Resolvable target hostname or IP of the external interface of EJBCA
+# Normally this overrides "127.0.0.1" or "localhost" in the tests.
+#target.hostname=192.168.5.181
+
+# Target http port of the external interface of EJBCA
+# Normally this overrides "8080" in the tests.
+#target.port.http=80
+
+# Target (dual authenticated) https port of the external interface of EJBCA
+# Normally this overrides "8443" in the tests.
+#target.port.https=443
+
+# Full path to the PKCS#11 library 
+#pkcs11.library=/opt/p11proxy/p11proxy.so 
+
+# The security provider the specified library and slot results in 
+#pkcs11.provider=SunPKCS11-p11proxy.so-slot1 
+
+# By which methods we usually prefer to reference a slot. 
+# Must be one of SLOT_NUMBER, SLOT_INDEX or SLOT_LABEL 
+#pkcs11.slottype=SLOT_NUMBER 
+
+# The value of the slot type
+#pkcs11.slottypevalue=1 
+
+
+# The PIN of the slot referenced by the pkcs11.slottypevalue.* properties. 
+#pkcs11.slotpin=userpin1 

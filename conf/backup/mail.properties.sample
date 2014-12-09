@@ -1,0 +1,52 @@
+# ------------ Mail configuration ---------------------
+
+# Used to send notification email from the RA.
+# See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
+# It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
+
+# Note that in JBoss 5.1.0 there is a bug so that only one mail configuration can be used.
+# Whatever mail configuration we deploy in ${jboss.server.dir}/deploy/ejbca-mail-service.xml 
+# is overridden by the default configuration in ${jboss.server.dir}/deploy/mail-service.xml.
+# The solution is to delete the file ${jboss.server.dir}/deploy/mail-service.xml.
+
+# The JNDI-name used to send email notifications from EJBCA.
+# Not that this differs between different application servers, see installation for 
+# instructions for your appserver. The default works for JBoss.
+# For Weblogic use 'mail/EJbcaMail'.
+#
+# Default: java:/EjbcaMail
+#mail.jndi-name=java:/EjbcaMail
+#mail.jndi-name=mail/EjbcaMail
+
+# user/password to connect to server for sending email notifications from EJBCA.
+# Default: ejbca_user, primekey
+#mail.user=ejbca_user
+#mail.password=
+
+# SMTP server for sending mail.
+# Default: localhost
+#mail.smtp.host=localhost
+
+# SMTP server port.
+# Default: 25
+#mail.smtp.port=25
+
+# Use SMTP authentication if you smtp host requires it
+# Default: false
+#mail.smtp.auth=false
+
+# Switch connection to a TLS-protected connection (if supported by server) before login.
+# Default: false
+#mail.smtp.starttls.enable=false
+
+# Email address used to send emails.
+# Default: ejbca-donotreply@domain.com
+#mail.from=ejbca-donotreply@domain.com
+
+# JavaMail debug info.
+# Default: false
+#mail.debug=false
+
+# Content encoding for the email message body.
+# Default: UTF-8
+#mail.contentencoding=UTF-8

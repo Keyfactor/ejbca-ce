@@ -1,0 +1,38 @@
+#------------------- Validation Authority(VA) publisher db configuration------------------------------
+# All these "ocsp-database.*" properties is used to configure the connection to the database that the
+# ValidationAuthorityPublisher will publish to. Please read the VA web-docs for information.
+# If no ValidationAuthorityPublisher will be used these properties should not be configured.
+# Note that the VA responder itself uses the configuration options database.*.
+#
+# Configure these options if you are configuring EJBCA that will publish certificates to a VA.
+
+# Note: The naming ocsp-data* of the properties has a historical reason, before the VA only contained an OCSP responder.
+# The property names are kept for backward compatibility. 
+
+# jndi name of the datasource to use in deployment descriptors of ejbs.
+#ocsp-datasource.jndi-name=OcspDS
+
+# Database connection url.
+# This is the URL used to connect to the database, used to configure a new datasource in JBoss.
+#ocsp-database.url=jdbc:mysql://127.0.0.1:3306/ejbca
+#ocsp-database.url=jdbc:postgresql://127.0.0.1/ejbca
+#ocsp-database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
+#ocsp-database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
+#ocsp-database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
+
+# JDBC driver classname.
+# The JEE server needs to be configured with the appropriate JDBC driver for the selected database
+#ocsp-database.driver=org.mariadb.jdbc.Driver
+#ocsp-database.driver=com.mysql.jdbc.Driver
+#ocsp-database.driver=org.postgresql.Driver
+#ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
+#ocsp-database.driver=oracle.jdbc.driver.OracleDriver
+#ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
+#ocsp-database.driver=com.ibm.db2.jcc.DB2Driver
+
+# Database username.
+#ocsp-database.username=ocsp
+
+# Database password.
+#ocsp-database.password=ocsp
+
