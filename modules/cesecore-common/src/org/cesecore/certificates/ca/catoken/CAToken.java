@@ -84,8 +84,7 @@ public class CAToken extends UpgradeableDataHashMap {
 
     public CAToken(final int cryptoTokenId, final Properties caTokenProperties) {
         super();
-        this.cryptoTokenId = cryptoTokenId;
-        data.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
+        setCryptoTokenId(cryptoTokenId);
         internalInit(caTokenProperties);
     }
 
@@ -198,6 +197,11 @@ public class CAToken extends UpgradeableDataHashMap {
     /** @return the reference to the CA's CryptoToken */
     public int getCryptoTokenId() {
         return cryptoTokenId;
+    }
+    /** Set the reference to the CA's CryptoToken. Use with care! */
+    public void setCryptoTokenId(final int cryptoTokenId) {
+        this.cryptoTokenId = cryptoTokenId;
+        data.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
     }
 
     /** Set a property and update underlying Map */
