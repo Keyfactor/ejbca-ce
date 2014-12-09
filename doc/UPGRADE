@@ -280,7 +280,7 @@ In EJBCA 6.0.0, the CMP configuration handling has been rewritten. CMP configura
 configurations can be set either in the admin GUI or in the command line (execute './bin/ejbca.sh config cmp' from EJBCA home directory for command 
 line documentation). If you do use CMP, you can upload your old cmp.properties file by executing the following command in EJBCA home directory:
 
-$ ./bin/ejbca.sh config cmp uploadfile conf/cmp.properties cmp
+$ ./bin/ejbca.sh config cmp uploadfile --file conf/cmp.properties --alias cmp
 
 In the adminGUI -> CMP Configuration, you will see the alias 'cmp' among the list of CMP alias. This alias will contain all your old CMP 
 configurations (except for one, see next note) and should be used to manage your CMP configurations in the future.
