@@ -288,6 +288,7 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: " + dn);
         }
+        log.info(">stringToBcX500Name: " + dn);
         if (dn == null) {
             return null;
         }
@@ -338,7 +339,8 @@ public abstract class CertTools {
                     endPosition--;
                 }
                 String currentValue = dn.substring(currentStartPosition, endPosition + 1);
-                // Unescape value since the nameBuilder will double each escape
+                log.info("RDN value: "+currentValue);
+                // Unescape value (except escaped #) since the nameBuilder will double each escape
                 currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
                 try {
                     // -- First search the OID by name in declared OID's
@@ -347,6 +349,7 @@ public abstract class CertTools {
                     if (oid == null) {
                         oid = new ASN1ObjectIdentifier(currentPartName);
                     }
+                    log.info("RDN value: "+currentValue);
                     nameBuilder.addRDN(oid, currentValue);
                 } catch (IllegalArgumentException e) {
                     // If it is not an OID we will ignore it
@@ -361,6 +364,7 @@ public abstract class CertTools {
                 escapeNext = false;
             } else {
                 if (!quoted && current == '\\') {
+                    log.info("Current is escape: "+current);
                     // This escape character is not escaped itself, so the next one should be
                     escapeNext = true;
                 }
@@ -375,12 +379,13 @@ public abstract class CertTools {
         return orderedX500Name;
     }
 
-    /** Removes any unescaped '\' character from the provided StringBuilder. Assumes that esacping quotes have been stripped. */
+    /** Removes any unescaped '\' character from the provided StringBuilder. Assumes that escaping quotes have been stripped. 
+     * Special treatment of the # sign, which if not escaped will be treated as hex encoded DER value by BC. */
     private static StringBuilder unescapeValue(final StringBuilder sb) {
         boolean esq = false;
         int index = 0;
-        while (index < sb.length()) {
-            if (!esq && sb.charAt(index) == '\\') {
+        while (index < (sb.length()-1)) {
+            if (!esq && sb.charAt(index) == '\\' && sb.charAt(index+1) != '#') {
                 esq = true;
                 sb.deleteCharAt(index);
             } else {
