@@ -288,7 +288,6 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: " + dn);
         }
-        log.info(">stringToBcX500Name: " + dn);
         if (dn == null) {
             return null;
         }
@@ -339,7 +338,6 @@ public abstract class CertTools {
                     endPosition--;
                 }
                 String currentValue = dn.substring(currentStartPosition, endPosition + 1);
-                log.info("RDN value: "+currentValue);
                 // Unescape value (except escaped #) since the nameBuilder will double each escape
                 currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
                 try {
@@ -349,7 +347,6 @@ public abstract class CertTools {
                     if (oid == null) {
                         oid = new ASN1ObjectIdentifier(currentPartName);
                     }
-                    log.info("RDN value: "+currentValue);
                     nameBuilder.addRDN(oid, currentValue);
                 } catch (IllegalArgumentException e) {
                     // If it is not an OID we will ignore it
@@ -364,7 +361,6 @@ public abstract class CertTools {
                 escapeNext = false;
             } else {
                 if (!quoted && current == '\\') {
-                    log.info("Current is escape: "+current);
                     // This escape character is not escaped itself, so the next one should be
                     escapeNext = true;
                 }
