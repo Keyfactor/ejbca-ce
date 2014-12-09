@@ -1,5 +1,0 @@
-
-# Websphere properites
-# Check up port numer in admin console Servers->Application servers->server1->ports->BOOTSTRAP_ADDRESS
-java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory
-java.naming.provider.url=corbaloc:iiop:127.0.0.1:2809
