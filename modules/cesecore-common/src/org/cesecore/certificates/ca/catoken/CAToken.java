@@ -121,45 +121,56 @@ public class CAToken extends UpgradeableDataHashMap {
         try {
         	if (keyStrings != null) {
         		final String aliases[] = keyStrings.getAliases();
+                final String aliasTestKey = getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
         		int i = 0;
                 // Loop that checks  if there all key aliases have keys
-        		for (final String alias : aliases) {
-        		    if (cryptoToken!=null && cryptoToken.getKey(alias)!=null) {
-        		        i++;
-        		    } else {
-        		        if (log.isDebugEnabled()) {
-        		            log.debug("Missing key for alias: "+alias);
-        		        }
-        		    }
+        		if (cryptoToken!=null) {
+                    final HashMap<String, PrivateKey> aliasMap = new HashMap<String, PrivateKey>();
+                    for (final String alias : aliases) {
+                        PrivateKey privateKey = aliasMap.get(alias);
+                        if (privateKey==null) {
+                            try {
+                                privateKey = cryptoToken.getPrivateKey(alias);
+                                // Cache lookup to avoid having to retrieve the same key when used for multiple purposes
+                                if (privateKey!=null) {
+                                    aliasMap.put(alias, privateKey);
+                                }
+                            } catch (CryptoTokenOfflineException e) {
+                                privateKey = null;
+                            }
+                        }
+                        if (privateKey==null) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Missing private key for alias: "+alias);
+                            }
+                        }
+                        i++;
+                        if (alias.equals(aliasTestKey)) {
+                            PublicKey publicKey;
+                            try {
+                                publicKey = cryptoToken.getPublicKey(aliasTestKey);
+                            } catch (CryptoTokenOfflineException e) {
+                                publicKey = null;
+                            }
+                            if (publicKey == null) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Missing public key for alias: "+alias);
+                                }
+                            }
+                            // Check that that the testkey is usable by doing a test signature.
+                            try {
+                                if (caTokenSignTest) {
+                                    cryptoToken.testKeyPair(alias, publicKey, privateKey);
+                                }
+                                // If we can test the testkey, we are finally active!
+                                ret = CryptoToken.STATUS_ACTIVE;
+                            } catch (Throwable th) { // NOPMD: we need to catch _everything_ when dealing with HSMs
+                                log.error(intres.getLocalizedMessage("token.activationtestfail", cryptoToken.getId()), th);
+                            }
+                        }
+                    }
         		}
-        		// If we don't have any keys for the strings, or we don't have enough keys for the strings, no point in continuing...
-        		if (i >= aliases.length) {
-        		    final String aliasTestKey = getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
-        			PrivateKey privateKey;
-        			PublicKey publicKey;
-        			try {
-        				privateKey = cryptoToken.getPrivateKey(aliasTestKey);
-        				publicKey = cryptoToken.getPublicKey(aliasTestKey);
-        			} catch (CryptoTokenOfflineException e) {
-        				privateKey = null;
-        				publicKey = null;
-        				if (log.isDebugEnabled()) {
-        					log.debug("no test key defined");
-        				}
-        			}
-        			if (privateKey != null && publicKey != null) {
-        				// Check that that the testkey is usable by doing a test signature.
-        				try {
-        				    if (caTokenSignTest) {
-                                cryptoToken.testKeyPair(aliasTestKey);
-        				    }
-        					// If we can test the testkey, we are finally active!
-        					ret = CryptoToken.STATUS_ACTIVE;
-        				} catch (Throwable th) { // NOPMD: we need to catch _everything_ when dealing with HSMs
-        					log.error(intres.getLocalizedMessage("token.activationtestfail", cryptoToken.getId()), th);
-        				}
-        			}
-        		} else {
+                if (i < aliases.length) {
         			if (log.isDebugEnabled()) {
         				StringBuilder builder = new StringBuilder();
         				for (int j = 0; j < aliases.length; j++) {

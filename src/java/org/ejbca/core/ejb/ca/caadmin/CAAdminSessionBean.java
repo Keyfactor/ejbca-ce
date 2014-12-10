@@ -2861,13 +2861,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isDebugEnabled()) {
             log.debug("CaTokenSignTest: " + caTokenSignTest);
         }
+        final HashMap<Integer, CryptoToken> cryptoTokenMap = new HashMap<Integer, CryptoToken>();
         for (final Integer caid : caSession.getAllCaIds()) {
             try {
                 final CAInfo cainfo = caSession.getCAInfoInternal(caid.intValue());
                 if (cainfo.getStatus() == CAConstants.CA_ACTIVE && cainfo.getIncludeInHealthCheck()) {
                     // Verify that the CA's mapped keys exist and optionally that the test-key is usable
-                    final int tokenstatus = cainfo.getCAToken().getTokenStatus(caTokenSignTest,
-                            cryptoTokenSession.getCryptoToken(cainfo.getCAToken().getCryptoTokenId()));
+                    final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+                    CryptoToken cryptoToken = cryptoTokenMap.get(Integer.valueOf(cryptoTokenId));
+                    if (cryptoToken == null) {
+                        cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+                        if (cryptoToken != null) {
+                            // Cache crypto token lookup locally since multiple CA might use the same and milliseconds count here
+                            cryptoTokenMap.put(Integer.valueOf(cryptoTokenId), cryptoToken);
+                        }
+                    }
+                    final int tokenstatus = cainfo.getCAToken().getTokenStatus(caTokenSignTest, cryptoToken);
                     if (tokenstatus == CryptoToken.STATUS_OFFLINE) {
                         sb.append("\nCA: Error CA Token is disconnected, CA Name : ").append(cainfo.getName());
                         log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());

@@ -196,6 +196,10 @@ public class CachedCryptoToken implements CryptoToken {
     public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
         wrappedCryptoToken.testKeyPair(alias);
     }
+    @Override
+    public void testKeyPair(String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException {
+        wrappedCryptoToken.testKeyPair(alias, publicKey, privateKey);
+    }
 
     @Override
     public List<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException {
