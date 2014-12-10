@@ -238,6 +238,17 @@ public interface CryptoToken extends Serializable {
      */
     void testKeyPair(String alias) throws InvalidKeyException, CryptoTokenOfflineException; // NOPMD:this is not a junit test
 
+    /** Testing a keypair to see that it is usable
+    *
+    * @param alias the alias of the key pair to test
+    * @param publicKey the public key of the key pair
+    * @param privateKey the private key of the key pair
+    * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the 
+    * signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
+    * @throws CryptoTokenOfflineException if the crypto token is offline
+    */
+    void testKeyPair(final String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException;
+
     /**
      * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
      *
