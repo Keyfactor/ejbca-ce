@@ -252,6 +252,12 @@ public class PublicCryptoToken implements CryptoToken {
     }
 
     @Override
+    public void testKeyPair(String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException {
+        // be positive.. NOT!
+        throw new InvalidKeyException("Implementation does not contain any private keys to use for test.");
+    }
+
+    @Override
     public String getTokenName() {
         return tokenName;
     }
