@@ -50,6 +50,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -158,6 +159,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
             UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
                     + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
+            defaultCliUserData.setStatus(EndEntityConstants.STATUS_GENERATED);
             entityManager.persist(defaultCliUserData);
         } else {
             log.debug("AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' already exists in " + SUPERADMIN_ROLE + ".");            
