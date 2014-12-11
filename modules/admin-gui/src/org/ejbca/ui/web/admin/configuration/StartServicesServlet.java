@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.FinderException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -50,6 +51,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
@@ -57,6 +60,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -64,9 +68,13 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
@@ -98,7 +106,11 @@ public class StartServicesServlet extends HttpServlet {
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
-    
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+
     @Resource
     private UserTransaction tx;
     
@@ -316,6 +328,24 @@ public class StartServicesServlet extends HttpServlet {
         ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
+        // Verify that the EJB CLI user (if present) cannot be used to generate certificates
+        final String cliUsername = EjbcaConfiguration.getCliDefaultUser();
+        try {
+            final EndEntityInformation defaultCliUser = endEntityAccessSession.findUser(admin, cliUsername);
+            if (defaultCliUser!=null && defaultCliUser.getStatus()==EndEntityConstants.STATUS_NEW) {
+                try {
+                    endEntityManagementSession.setUserStatus(admin, cliUsername, EndEntityConstants.STATUS_GENERATED);
+                } catch (ApprovalException e) {
+                    log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
+                } catch (FinderException e) {
+                    log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
+                } catch (WaitingForApprovalException e) {
+                    log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
+                }
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.warn("Unable to check if the EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please check and correct the status manually. Failed with: " + e.getMessage());
+        }
     }
 
     /** Method that checks if we have an integrity protected security audit device configured, and in that case logs the configuration startup 
