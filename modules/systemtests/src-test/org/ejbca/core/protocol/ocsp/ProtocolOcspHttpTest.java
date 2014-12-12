@@ -1002,7 +1002,7 @@ Content-Type: text/html; charset=iso-8859-1
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue(response.getResponses()[0].getCertStatus() instanceof UnknownStatus); 
-        Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
+        Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9"));
         assertNull("Wrong extension sent with reply", responseExtension);
         
         final Map<String,String> map = new HashMap<String, String>();
@@ -1015,7 +1015,7 @@ Content-Type: text/html; charset=iso-8859-1
         response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue(response.getResponses()[0].getCertStatus() instanceof RevokedStatus); 
-        responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
+        responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9"));
         assertNotNull("No extension sent with reply", responseExtension);
         assertEquals(DERNull.INSTANCE, responseExtension.getParsedValue());
     }
@@ -1230,7 +1230,7 @@ Content-Type: text/html; charset=iso-8859-1
         algVec.add(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         ASN1Sequence algSeq = new DERSequence(algVec);
         ExtensionsGenerator extgen = new ExtensionsGenerator();
-        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".8"), false, algSeq);
+        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, algSeq);
         Extensions exts = extgen.generate();
         assertNotNull(exts);
         
@@ -1253,7 +1253,7 @@ Content-Type: text/html; charset=iso-8859-1
         algSeq = new DERSequence(algVec);
         
         extgen = new ExtensionsGenerator();
-        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".8"), false, algSeq);
+        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, algSeq);
         exts = extgen.generate();
         assertNotNull(exts);
         

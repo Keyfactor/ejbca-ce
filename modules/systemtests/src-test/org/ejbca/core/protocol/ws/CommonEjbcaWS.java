@@ -80,6 +80,7 @@ import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -734,8 +735,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Verify that the PKCS#7 response contains a certificate
         CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(pkcs7Response.getData()));
         assertNotNull(cmsSignedData);
-        CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection", "BC");
-        assertTrue(certStore.getCertificates(null).size() == 1);
+        Store certStore = cmsSignedData.getCertificates();
+        assertTrue(certStore.getMatches(null).size() == 1);
         return null;
     }
 
@@ -1704,8 +1705,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
         assertTrue(cmsSignedData != null);
 
-        CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection", "BC");
-        assertTrue(certStore.getCertificates(null).size() == 1);
+        Store certStore = cmsSignedData.getCertificates();
+        assertTrue(certStore.getMatches(null).size() == 1);
 
     }
 

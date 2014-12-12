@@ -45,6 +45,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
@@ -316,10 +317,10 @@ public class OcspJunitHelper {
 			assertTrue("Status is not Unknown: "+statusClassName, status instanceof UnknownStatus);
 			break;
 		case Good:
-			if ( status!=org.bouncycastle.ocsp.CertificateStatus.GOOD ) {
-				log.debug("Certificate status: " + status.getClass().getName());
-			}
-			assertEquals("Status is not Good, was: " + statusClassName +".", org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
+            if (status != CertificateStatus.GOOD) {
+                log.debug("Certificate status: " + status.getClass().getName());
+            }
+			assertEquals("Status is not Good, was: " + statusClassName +".", CertificateStatus.GOOD, status);
 			break;
 		case Revoked:
 			assertTrue("Status is not Revoked: "+statusClassName, status instanceof RevokedStatus);

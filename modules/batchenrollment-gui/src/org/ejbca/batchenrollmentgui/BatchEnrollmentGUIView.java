@@ -36,6 +36,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -44,7 +45,6 @@ import java.security.cert.CertPathBuilder;
 import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -89,12 +89,17 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.Store;
+import org.bouncycastle.x509.X509CertStoreSelector;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -379,6 +384,8 @@ public class BatchEnrollmentGUIView extends FrameView {
                                         LOG.error("Parsing URL", ex);
                                     } catch (IOException ex) {
                                         LOG.error("Parsing URL", ex);
+                                    } catch (CertificateException e) {
+                                        LOG.error("Error reading certificate.", e);
                                     }
                                 }
                                 dtde.dropComplete(true);
@@ -834,10 +841,15 @@ public class BatchEnrollmentGUIView extends FrameView {
             JOptionPane.showMessageDialog(getFrame(),
                     "File not found:\n" + ex.getMessage(), "Add request",
                     JOptionPane.ERROR_MESSAGE);
+        } catch(CertificateException e) {
+            JOptionPane.showMessageDialog(getFrame(),
+                    "Error reading certificate.\n" + e.getMessage(), "Add request",
+                    JOptionPane.ERROR_MESSAGE);
+            LOG.error("Error reading certificate.", e);
         }
     }
 
-    private void addRequest(final InputStream inStream, final File inFile) {
+    private void addRequest(final InputStream inStream, final File inFile) throws CertificateException {
 
         final ByteArrayOutputStream bout = new ByteArrayOutputStream();
         BufferedInputStream in = null;
@@ -921,8 +933,9 @@ public class BatchEnrollmentGUIView extends FrameView {
         return title + ".pem";
     }
 
+    @SuppressWarnings("unchecked")
     private static CMSValidationResult validateCMS(final CMSSignedData signedData,
-            final Collection<Certificate> trustedCerts) {
+            final Collection<Certificate> trustedCerts) throws CertificateException {
 
         final CMSValidationResult result = new CMSValidationResult();
 
@@ -939,9 +952,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                 result.setContent((byte[]) content);
             }
 
-            CertStore certs = signedData.getCertificatesAndCRLs("Collection",
-                    "BC");
-
+            Store certs = signedData.getCertificates();
             SignerInformationStore  signers = signedData.getSignerInfos();
             for (Object o : signers.getSigners()) {
                 if (o instanceof SignerInformation) {
@@ -951,90 +962,62 @@ public class BatchEnrollmentGUIView extends FrameView {
                         LOG.debug("*** SIGNATURE: " + "\n" + si.getSID());
                     }
                     
-                    final Collection<? extends Certificate> signerCerts;
-                    try {
-                        JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();
-                        signerCerts = certs.getCertificates(conv.getCertSelector(si.getSID()));
+                    final Collection<X509CertificateHolder> signerCerts;
+                   
+                    JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();
+                    signerCerts = certs.getMatches(X509CertStoreSelector.getInstance(conv.getCertSelector(si.getSID())));
 
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("signerCerts: " + signerCerts);
-                        }
-
-                        for (Certificate signerCert : signerCerts) {
-                            final X509Certificate signerX509Cert =
-                                    (X509Certificate) signerCert;
-                            boolean consistent = si.verify(signerCert
-                                    .getPublicKey(), "BC");
-
-                            if (consistent) {
-
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug(
-                                        (consistent ? "Consistent"
-                                            : "Inconsistent")
-                                        + " signature from " +
-                                        signerX509Cert
-                                        .getSubjectDN()
-                                        + " issued by "
-                                        + ((X509Certificate) signerCert)
-                                        .getIssuerDN());
-                                }
-
-                                result.setValidSignature(consistent);
-
-                                try {
-                                    final List<X509Certificate> signerChain =
-                                        validateChain((X509Certificate) signerCert,
-                                        certs, trustedCerts);
-
-                                    result.setValidChain(true);
-                                    result.setSignerChain(signerChain);
-
-                                   JOptionPane.showMessageDialog(null,
-                                   "Found valid signature from \"" + signerX509Cert
-                                    .getSubjectDN() + "\"", "Signature check",
-                                    JOptionPane.INFORMATION_MESSAGE);
-
-                                } catch (CertPathBuilderException ex) {
-                                    result.setError(ex.getMessage());
-                                    JOptionPane.showMessageDialog(null,
-                                   "Error: Certificate path:\n" + ex.getMessage(),
-                                            "Signature check",
-                                    JOptionPane.ERROR_MESSAGE);
-                                } catch (CertPathValidatorException ex) {
-                                    result.setError(ex.getMessage());
-                                    JOptionPane.showMessageDialog(null,
-                                    "Error: Certificate validation:\n"
-                                            + ex.getMessage(),
-                                            "Signature check",
-                                    JOptionPane.ERROR_MESSAGE);
-                                } catch (InvalidAlgorithmParameterException ex) {
-                                    result.setError(ex.getMessage());
-                                    JOptionPane.showMessageDialog(null,
-                                        ex.getMessage(), "Signature check",
-                                    JOptionPane.ERROR_MESSAGE);
-                                } catch (NoSuchAlgorithmException ex) {
-                                    result.setError(ex.getMessage());
-                                    JOptionPane.showMessageDialog(null,
-                                        ex.getMessage(), "Signature check",
-                                    JOptionPane.ERROR_MESSAGE);
-                                }
-                            } else {
-                                result.setError("Inconsistent signature!");
-                               JOptionPane.showMessageDialog(null,
-                                   "Error: Inconsisten signature!",
-                                   "Signature check",
-                                   JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-
-                    } catch (CertStoreException ex) {
-                        result.setError(ex.getMessage());
-                        result.setError(ex.getMessage());
-                                    JOptionPane.showMessageDialog(null,
-                                        ex.getMessage(), "Certificate check",
-                                    JOptionPane.ERROR_MESSAGE);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("signerCerts: " + signerCerts);
                     }
+                    JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
+                    for (X509CertificateHolder signerCert : signerCerts) {
+                        final X509Certificate signerX509Cert = jcaX509CertificateConverter.getCertificate(signerCert);
+                        boolean consistent = si.verify(signerX509Cert.getPublicKey(), "BC");
+
+                        if (consistent) {
+
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug((consistent ? "Consistent" : "Inconsistent") + " signature from " + signerX509Cert.getSubjectDN()
+                                        + " issued by " + signerX509Cert.getIssuerDN());
+                            }
+
+                            result.setValidSignature(consistent);
+
+                            try {
+                                final List<X509Certificate> signerChain = validateChain(signerX509Cert, certs, trustedCerts);
+
+                                result.setValidChain(true);
+                                result.setSignerChain(signerChain);
+
+                                JOptionPane.showMessageDialog(null, "Found valid signature from \"" + signerX509Cert.getSubjectDN() + "\"",
+                                        "Signature check", JOptionPane.INFORMATION_MESSAGE);
+
+                            } catch (CertPathBuilderException ex) {
+                                result.setError(ex.getMessage());
+                                JOptionPane.showMessageDialog(null, "Error: Certificate path:\n" + ex.getMessage(), "Signature check",
+                                        JOptionPane.ERROR_MESSAGE);
+                            } catch (CertPathValidatorException ex) {
+                                result.setError(ex.getMessage());
+                                JOptionPane.showMessageDialog(null, "Error: Certificate validation:\n" + ex.getMessage(), "Signature check",
+                                        JOptionPane.ERROR_MESSAGE);
+                            } catch (InvalidAlgorithmParameterException ex) {
+                                result.setError(ex.getMessage());
+                                JOptionPane.showMessageDialog(null, ex.getMessage(), "Signature check", JOptionPane.ERROR_MESSAGE);
+                            } catch (NoSuchAlgorithmException ex) {
+                                result.setError(ex.getMessage());
+                                JOptionPane.showMessageDialog(null, ex.getMessage(), "Signature check", JOptionPane.ERROR_MESSAGE);
+                            } catch (GeneralSecurityException e) {
+                                //Crappy catch-all, but not much to do due to underlying BC-code
+                                result.setError(e.getMessage());
+                                JOptionPane.showMessageDialog(null, e.getMessage(), "Error: Certificate validation:\n", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } else {
+                            result.setError("Inconsistent signature!");
+                            JOptionPane.showMessageDialog(null, "Error: Inconsisten signature!", "Signature check", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+       
                 }
             }
 
@@ -1051,7 +1034,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         return result;
     }
 
-    private static List<X509Certificate> validateChain(X509Certificate signerCert, CertStore certs, Collection<Certificate> trustedCerts) throws CertPathBuilderException, CertPathValidatorException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    private static List<X509Certificate> validateChain(X509Certificate signerCert, Store certs, Collection<Certificate> trustedCerts) throws GeneralSecurityException {
 
         final Set<TrustAnchor> anchors
                 = new HashSet<TrustAnchor>();
@@ -1066,8 +1049,10 @@ public class BatchEnrollmentGUIView extends FrameView {
         targetConstraints.setCertificate(signerCert);
         PKIXBuilderParameters cpbParams =
             new PKIXBuilderParameters(anchors, targetConstraints);
-
-        cpbParams.addCertStore(certs);
+        JcaCertStoreBuilder jcaCertStoreBuilder = new JcaCertStoreBuilder();
+        jcaCertStoreBuilder.addCertificates(certs);
+        
+        cpbParams.addCertStore(jcaCertStoreBuilder.build());
         cpbParams.setRevocationEnabled(false);
 
         // Build path
@@ -1080,14 +1065,9 @@ public class BatchEnrollmentGUIView extends FrameView {
         final PKIXParameters params = new PKIXParameters(anchors);
         params.setSigProvider("BC");
         params.setRevocationEnabled(false);
-//                X509CertSelector targetCertConstraints = new X509CertSelector();
-//                targetCertConstraints.setKeyUsage(keyUsage)
-//                params.setTargetCertConstraints(targetCertConstraints);
 
         PKIXCertPathValidatorResult result =
             (PKIXCertPathValidatorResult) cpv.validate(certPath, params);
-//                PolicyNode policyTree = result.getPolicyTree();
-//                PublicKey subjectPublicKey = result.getPublicKey();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found trust anchor: " + result.getTrustAnchor());
         }

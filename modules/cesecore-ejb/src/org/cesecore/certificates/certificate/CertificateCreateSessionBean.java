@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -221,6 +222,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         } catch (NoSuchAlgorithmException e) {
             throw new CertificateCreateException(e);
         } catch (NoSuchProviderException e) {
+            throw new CertificateCreateException(e);
+        } catch(CertificateEncodingException e) {
+            throw new CertificateCreateException(e);
+        } catch (CRLException e) {
             throw new CertificateCreateException(e);
         }
 

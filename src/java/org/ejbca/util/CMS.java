@@ -20,28 +20,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.CMSAttributes;
 import org.bouncycastle.asn1.cms.Time;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
 import org.bouncycastle.cms.CMSSignedDataParser;
 import org.bouncycastle.cms.CMSSignedDataStreamGenerator;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.cesecore.certificates.util.AlgorithmTools;
 
 /**
  * CMS utils.
- * @author Lars Silven
  * @version $Id$
  *
  */
@@ -70,7 +77,7 @@ public class CMS {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
-        edGen.addKeyTransRecipient(cert.getPublicKey(), "hej".getBytes() );
+        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator("hej".getBytes(), cert.getPublicKey()));
         final OutputStream out = edGen.open(bos, symmAlgOid, "BC");
         fromInToOut(bis, out);
         bos.close();
@@ -107,11 +114,17 @@ public class CMS {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         final CMSSignedDataStreamGenerator gen = new CMSSignedDataStreamGenerator();
-        final String digest = CMSSignedGenerator.DIGEST_SHA256;
-        if ( cert!=null ) {
-            gen.addSigner(key, cert, digest, providerName);
+        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+        JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+        ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, key.getAlgorithm());
+
+        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
+        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setSecureRandom(new SecureRandom());
+        ContentSigner contentSigner = signerBuilder.build(key);
+        if ( cert!=null ) {      
+            gen.addSignerInfoGenerator(builder.build(contentSigner, cert));          
         } else {
-            gen.addSigner(key, "hej".getBytes(), digest, providerName);
+            gen.addSignerInfoGenerator(builder.build(contentSigner, "hej".getBytes()));          
         }
         final OutputStream out = gen.open(bos, true);
         fromInToOut(bis, out);

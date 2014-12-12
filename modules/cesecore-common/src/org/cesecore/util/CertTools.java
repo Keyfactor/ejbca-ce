@@ -116,7 +116,9 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -1661,8 +1663,8 @@ public abstract class CertTools {
                 ASN1InputStream aAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
                 try {
                     SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) sAsn1InputStream.readObject());
-                    SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
-
+                    X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
+                    SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
                     SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) aAsn1InputStream.readObject());
                     AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
 
@@ -3602,11 +3604,27 @@ public abstract class CertTools {
      * @return the result
      * @throws CertificateEncodingException if there is a problem extracting the certificate information.
      */
-    public static final JcaX509CertificateHolder[] convertCertificateChainToCertificateHolderChain(X509Certificate[] certificateChain)
+    public static final JcaX509CertificateHolder[] convertToX509CertificateHolder(X509Certificate[] certificateChain)
             throws CertificateEncodingException {
         final JcaX509CertificateHolder[] certificateHolderChain = new JcaX509CertificateHolder[certificateChain.length];
         for (int i = 0; i < certificateChain.length; ++i) {
             certificateHolderChain[i] = new JcaX509CertificateHolder(certificateChain[i]);
+        }
+        return certificateHolderChain;
+    }
+    
+    /**
+     * Converts a X509Certificate chain into a JcaX509CertificateHolder chain.
+     * 
+     * @param certificateChain input chain to be converted
+     * @return the result
+     * @throws CertificateEncodingException if there is a problem extracting the certificate information.
+     */
+    public static final List<JcaX509CertificateHolder> convertToX509CertificateHolder(List<X509Certificate> certificateChain)
+            throws CertificateEncodingException {
+        final List<JcaX509CertificateHolder> certificateHolderChain = new ArrayList<JcaX509CertificateHolder>();
+        for (X509Certificate certificate : certificateChain) {
+            certificateHolderChain.add( new JcaX509CertificateHolder(certificate));
         }
         return certificateHolderChain;
     }

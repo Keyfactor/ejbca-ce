@@ -54,7 +54,9 @@ import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -297,7 +299,8 @@ public class WebAuthenticationProviderSessionBeanTest {
                 ASN1InputStream apkiAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
                 try {
                     SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) spkiAsn1InputStream.readObject());
-                    SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
+                    X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
+                    SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
                     SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) apkiAsn1InputStream.readObject());
                     AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
                     certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);

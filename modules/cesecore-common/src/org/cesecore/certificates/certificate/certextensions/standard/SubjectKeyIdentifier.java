@@ -21,6 +21,8 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509ExtensionUtils;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -46,12 +48,13 @@ public class SubjectKeyIdentifier extends StandardCertificateExtension {
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         SubjectPublicKeyInfo spki;
-		try {
-			spki = new SubjectPublicKeyInfo(
-                (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(userPublicKey.getEncoded())).readObject());
-		} catch (IOException e) {
-			throw new CertificateExtensionException("IOException parsing user public key: "+e.getMessage(), e);
-		}
-		return new org.bouncycastle.asn1.x509.SubjectKeyIdentifier(spki);
-	}	
+        try {
+            spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(userPublicKey.getEncoded())).readObject());
+        } catch (IOException e) {
+            throw new CertificateExtensionException("IOException parsing user public key: " + e.getMessage(), e);
+        }
+
+        X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
+        return x509ExtensionUtils.createSubjectKeyIdentifier(spki);
+    }
 }

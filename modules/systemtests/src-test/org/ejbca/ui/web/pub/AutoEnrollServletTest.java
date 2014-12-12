@@ -23,16 +23,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.cert.CertStore;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
+import org.bouncycastle.util.Store;
+import org.bouncycastle.x509.X509CertStoreSelector;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -41,6 +43,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -251,19 +254,21 @@ public class AutoEnrollServletTest {
 		byte[] responseData = Base64.decode(response.getBytes());
 		X509Certificate returnCertificate= null;
 		CMSSignedData p7b = new CMSSignedData(responseData);
-		CertStore certStore = p7b.getCertificatesAndCRLs("Collection", "BC");
+		Store certStore = p7b.getCertificates();
 		SignerInformationStore  signers = p7b.getSignerInfos();
 		@SuppressWarnings("unchecked")
         Iterator<SignerInformation> iter = signers.getSigners().iterator();
+		JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
 		while (iter.hasNext())
 		{
 			SignerInformation signer = iter.next();
-			JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();
-			X509Certificate caCert = (X509Certificate) certStore.getCertificates(conv.getCertSelector(signer.getSID())).iterator().next();
-			Iterator<? extends Certificate> iter2 = certStore.getCertificates(null).iterator();
+			JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();			
+			X509Certificate caCert = jcaX509CertificateConverter.getCertificate((X509CertificateHolder) certStore.getMatches(X509CertStoreSelector.getInstance(conv.getCertSelector(signer.getSID()))).iterator().next());
+			@SuppressWarnings("unchecked")
+            Iterator<X509CertificateHolder> iter2 = certStore.getMatches(null).iterator();
 			if (iter2.hasNext()) {
-				X509Certificate cert = (X509Certificate)iter2.next();
-				if (!caCert.getSubjectDN().getName().equals(cert.getSubjectDN().getName())) {
+				X509Certificate cert = jcaX509CertificateConverter.getCertificate(iter2.next());
+				if (!CertTools.getSubjectDN(caCert).equals(CertTools.getSubjectDN(cert))) {
 					returnCertificate = cert;
 				}
 			}

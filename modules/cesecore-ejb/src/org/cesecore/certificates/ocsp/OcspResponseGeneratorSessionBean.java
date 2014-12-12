@@ -512,7 +512,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         PublicKey pk = signerCert.getPublicKey();
         
         // Start with the preferred signature algorithm in the OCSP request
-        Extension sigAlgExt = req.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".8"));
+        Extension sigAlgExt = req.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"));
         if(sigAlgExt != null) {
             ASN1Sequence sigalgs = ASN1Sequence.getInstance(sigAlgExt.getParsedValue());
             for(int i=0; i<sigalgs.size(); i++) { 
@@ -1257,7 +1257,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             
             if(addExtendedRevokedExtension) { 
                 // id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
-                final ASN1ObjectIdentifier extendedRevokedOID = new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9");
+                final ASN1ObjectIdentifier extendedRevokedOID = new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9");
                 try {
                     responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
                 } catch (IOException e) {
