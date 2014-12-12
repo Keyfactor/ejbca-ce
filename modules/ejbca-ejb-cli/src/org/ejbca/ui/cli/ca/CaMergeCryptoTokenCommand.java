@@ -44,11 +44,11 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
 
     private static final Logger log = Logger.getLogger(CaMergeCryptoTokenCommand.class);
     private static final String CA_NAME_KEY = "--caname";
-    private static final String FORCE_KEY = "--force";
+    private static final String EXECUTE_KEY = "--execute";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The name of the CA."));
-        registerParameter(Parameter.createFlag(FORCE_KEY, "Make the change instead of displaying what would change."));
+        registerParameter(Parameter.createFlag(EXECUTE_KEY, "Make the change instead of displaying what would change."));
     }
 
 
@@ -62,7 +62,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
         log.trace(">execute()");
         CryptoProviderTools.installBCProvider(); // need this for CVC certificate
         final String caName = parameters.get(CA_NAME_KEY);
-        final boolean force = parameters.containsKey(FORCE_KEY);
+        final boolean force = parameters.containsKey(EXECUTE_KEY);
         try {
             final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -129,7 +129,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             if (force) {
                 log.info("Modified referenced CryptoToken for " + mergeCount + " CAs.");
             } else {
-                log.info("Will modify referenced CryptoToken for " + mergeCount + " CAs if --force option is used.");
+                log.info("Will modify referenced CryptoToken for " + mergeCount + " CAs if '" + EXECUTE_KEY + "' option is used.");
             }
             log.trace("<execute()");          
         } catch (AuthorizationDeniedException e) {
@@ -147,7 +147,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Merges multiple CAs that reference the PKCS#11 slot to reference the same Crypto Token.";
+        return "Merge all CA's sharing a PKCS#11 slot to use the same Crypto Token";
     }
 
     @Override
@@ -155,7 +155,8 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
         return getCommandDescription()
                 + "\n\n"
                 + "The specified CA's Crypto Token will be the one referenced by other CAs that have the same HSM configuration.\n\n"
-                + "The default behavior is to only show what would have changed since this command is potentially very dangerous."
+                + "The default behavior is to only show what would have changed since this command is potentially very dangerous.\n"
+                + "Use the " + EXECUTE_KEY + " switch to execute modifications."
                 + "\n\n" + getCaList();
     }
 
