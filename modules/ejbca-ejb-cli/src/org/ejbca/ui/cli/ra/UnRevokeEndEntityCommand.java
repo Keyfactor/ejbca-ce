@@ -95,10 +95,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
             log.error("ERROR: No such end entity: " + username);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
-            log.error("ERROR: End entity '" + username + "' is not revoked.");
-            return CommandResult.FUNCTIONAL_FAILURE;
-        }
+
         // Unrevoke user's certificates
         try {
             boolean foundCertificateOnHold = false;
