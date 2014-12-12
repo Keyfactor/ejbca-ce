@@ -141,7 +141,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         endEntityProfileSession.removeEndEntityProfile(ADMIN, EEPROFILE_NAME);
         final EndEntityProfile endEntityProfile = new EndEntityProfile();
         endEntityProfile.addField(DnComponents.ORGANIZATION);
-        endEntityProfile.addField(DnComponents.ORGANIZATIONUNIT);
+        endEntityProfile.addField(DnComponents.ORGANIZATIONALUNIT);
         endEntityProfile.addField(DnComponents.COUNTRY);
         endEntityProfile.addField(DnComponents.RFC822NAME);
         endEntityProfile.addField(DnComponents.UPN);
