@@ -20,13 +20,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -175,7 +175,7 @@ public class CmsCAServiceTest extends CaTestCase {
         }
         Store store = csd.getCertificates();
         @SuppressWarnings("unchecked")
-        Collection<? extends Certificate> certs = store.getMatches(null);
+        Collection<X509CertificateHolder> certs = store.getMatches(null);
         assertEquals(2, certs.size());
 
         CMSProcessable cp = csd.getSignedContent();
