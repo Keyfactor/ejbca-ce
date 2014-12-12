@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -246,9 +245,11 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                     log.error("ERROR: Unclassified general import error has occurred, file: " + filename);
                     performImportStatus = STATUS_GENERALIMPORTERROR;
                     if (!resumeOnError) {
+                        log.error("foo", e);
                         throw e;
+                        
                     } else {
-                        log.error(e.getMessage());
+                        log.error(e.getMessage(), e);
                     }
                 }
 
@@ -316,7 +317,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         // Certificate has expired, but we are obviously keeping it for archival purposes
         if (CertTools.getNotAfter(certificate).compareTo(now) < 0) {
             status = CertificateConstants.CERT_ARCHIVED;
-        }
+        }/*
         if (!cacert.getSubjectX500Principal().equals(certificate.getIssuerX500Principal())) {
             log.error("ERROR: The certificates issuer subject DN does not match with the specified CA's subject, file: " + filename);
             return STATUS_CAMISMATCH;
@@ -326,7 +327,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         } catch (GeneralSecurityException gse) {
             log.error("ERROR: The certificate's signature does not validate against the specified CA, file: " + filename);
             return STATUS_CAMISMATCH;
-        }
+        }*/
         log.debug("Loading/updating user " + username);
         // Check if username already exists.
         EndEntityInformation userdata = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(

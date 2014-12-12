@@ -653,21 +653,10 @@ public class CertToolsTest {
         
         String dn27 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\\"";
         assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"", CertTools.stringToBCDNString(dn27));
-        String dn27_1 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\";
-        assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\\", CertTools.stringToBCDNString(dn27_1));
 
         String dn28 = "jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se";
         assertEquals("JurisdictionCountry=SE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,unstructuredAddress=1.2.3.4,unstructuredName=foo.bar.com,CN=oid,Name=name,SN=12345,SURNAME=Json,C=se",
                 CertTools.stringToBCDNString(dn28));
-        
-        String dn29 = "CN=hexencoded SN,SN=1234";
-        assertEquals("CN=hexencoded SN,SN=1234", CertTools.stringToBCDNString(dn29));
-        String dn30 = "CN=hexencoded SN,SN=\\#CNJB";
-        assertEquals("CN=hexencoded SN,SN=\\#CNJB", CertTools.stringToBCDNString(dn30));
-        DERUTF8String str = new DERUTF8String("foo");
-        String hex = new String(Hex.encode(str.getEncoded()));
-        String dn31 = "CN=hexencoded SN,SN=#"+hex;
-        assertEquals("CN=hexencoded SN,SN=foo", CertTools.stringToBCDNString(dn31));
 
     }
 
@@ -1841,6 +1830,5 @@ public class CertToolsTest {
             CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
             fail(message);
         } catch (IllegalNameException e) { /* NOPMD expected */ }
-    }
-
+    }    
 }

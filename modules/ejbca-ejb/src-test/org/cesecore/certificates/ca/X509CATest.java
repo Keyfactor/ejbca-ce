@@ -29,7 +29,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
@@ -77,6 +76,8 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -134,6 +135,7 @@ public class X509CATest {
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 	
+    @SuppressWarnings("unchecked")
     private void doTestX509CABasicOperations(String algName) throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN);
@@ -143,14 +145,14 @@ public class X509CATest {
         byte[] p7 = x509ca.createPKCS7(cryptoToken, cacert, true);
         assertNotNull(p7);
         CMSSignedData s = new CMSSignedData(p7);
-        CertStore certstore = s.getCertificatesAndCRLs("Collection","BC");
-        Collection<?> certs = certstore.getCertificates(null);
+        Store certstore = s.getCertificates();
+        Collection<X509Certificate> certs = certstore.getMatches(null);
         assertEquals(2, certs.size());
         p7 = x509ca.createPKCS7(cryptoToken, cacert, false);
         assertNotNull(p7);
         s = new CMSSignedData(p7);
-        certstore = s.getCertificatesAndCRLs("Collection","BC");
-        certs = certstore.getCertificates(null);
+        certstore = s.getCertificates();
+        certs = certstore.getMatches(null);
         assertEquals(1, certs.size());
         
 		// Create a certificate request (will be pkcs10)

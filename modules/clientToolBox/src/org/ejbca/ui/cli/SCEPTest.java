@@ -53,6 +53,9 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
@@ -64,6 +67,7 @@ import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.CertTools;
@@ -144,18 +148,20 @@ class SCEPTest extends ClientToolBox {
                     return false;
                 }
                 final CMSSignedData s = new CMSSignedData(con.getInputStream());
-                final CertStore certstore = s.getCertificatesAndCRLs("Collection","BC");
-                final Collection<?> certs = certstore.getCertificates(null);
+                final Store certstore = s.getCertificates();
+                @SuppressWarnings("unchecked")
+                final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
                 // Length two if the Scep RA server is signed directly by a Root CA
                 // Length three if the Scep RA server is signed by a CA which is signed by a Root CA
-                final Iterator<?> it = certs.iterator();
+                final Iterator<X509CertificateHolder> it = certs.iterator();
                 if ( this.sessionData.certchain!=null && this.sessionData.certchain.length!=certs.size() ) {
                     StressTest.this.performanceTest.getLog().error("Length of received certificate chain "+certs.size()+" but should be "+this.sessionData.certchain.length);
                     return false;
                 }
+                JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
                 final X509Certificate tmp[] = new X509Certificate[certs.size()];
                 for (int i=0; it.hasNext(); i++ ) {
-                    tmp[i] = (X509Certificate)it.next();
+                    tmp[i] = jcaX509CertificateConverter.getCertificate(it.next());
                     if ( this.sessionData.certchain==null ) {
                         StressTest.this.performanceTest.getLog().info("Cert "+i+" "+tmp[i].getSubjectDN());
                     } else if ( !tmp[i].equals(this.sessionData.certchain[i]) ) {
@@ -514,10 +520,11 @@ class SCEPTest extends ClientToolBox {
             	// This is yet another CMS signed data
             	final CMSSignedData sd = new CMSSignedData(decBytes);
             	// Get certificates from the signed data
-            	final CertStore certstore = sd.getCertificatesAndCRLs("Collection","BC");
+            	final Store certstore = sd.getCertificates();
             	if (crlRep) {
             		// We got a reply with a requested CRL
-            		final Collection<?> crls = certstore.getCRLs(null);
+            		@SuppressWarnings("unchecked")
+                    final Collection<X509CRLHolder> crls = sd.getCRLs().getMatches(null);
             		if ( crls.size() != 1 ) {
             			StressTest.this.performanceTest.getLog().error("CRLS should be 1: "+crls.size());
             			return false;
@@ -540,7 +547,8 @@ class SCEPTest extends ClientToolBox {
             		return true;
             	}
             	// We got a reply with a requested certificate 
-            	final Collection<?> certs = certstore.getCertificates(null);
+            	@SuppressWarnings("unchecked")
+                final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
             	//System.out.println("Got certificate reply with certchain of length: "+certs.size());
             	// EJBCA returns the issued cert and the CA cert (cisco vpn client requires that the ca cert is included)
             	final X509Certificate usercert;

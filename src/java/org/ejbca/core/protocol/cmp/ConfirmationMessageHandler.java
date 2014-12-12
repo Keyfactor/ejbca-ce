@@ -16,6 +16,8 @@ package org.ejbca.core.protocol.cmp;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.CRLException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
@@ -112,7 +114,11 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 				LOG.error("Exception during CMP processing: ", e);			
 			} catch (NoSuchProviderException e) {
 				LOG.error("Exception during CMP processing: ", e);			
-			} 							
+			} catch (CertificateEncodingException e) {
+			    LOG.error("Exception during CMP processing: ", e);      
+            } catch (CRLException e) {
+                LOG.error("Exception during CMP processing: ", e);      
+            } 							
 		} else {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Cmp1999 - Not creating a PKI confirm message response");
