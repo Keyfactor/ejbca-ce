@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +33,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.util.Store;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -173,8 +173,9 @@ public class CmsCAServiceTest extends CaTestCase {
             assertNotNull(issuer);
             assertEquals("CN=TEST", issuer.toString());
         }
-        CertStore store = csd.getCertificatesAndCRLs("Collection", "BC");
-        Collection<? extends Certificate> certs = store.getCertificates(null);
+        Store store = csd.getCertificates();
+        @SuppressWarnings("unchecked")
+        Collection<? extends Certificate> certs = store.getMatches(null);
         assertEquals(2, certs.size());
 
         CMSProcessable cp = csd.getSignedContent();

@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
@@ -69,7 +70,7 @@ public interface ResponseMessage extends Serializable {
      * 
      * @throws CertificateEncodingException if encoding of certificate fails. 
      */
-    public byte[] getResponseMessage() throws CertificateEncodingException;
+    byte[] getResponseMessage() throws CertificateEncodingException;
 
     /**
      * Sets the status of the response message.
@@ -83,7 +84,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @return status status of the response.
      */
-    public ResponseStatus getStatus();
+     ResponseStatus getStatus();
 
     /**
      * Sets info about reason for failure.
@@ -97,7 +98,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @return failInfo reason for failure.
      */
-    public FailInfo getFailInfo();
+    FailInfo getFailInfo();
 
     /**
      * Sets clear text info about reason for failure.
@@ -111,7 +112,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @return failText description about failure.
      */
-    public String getFailText();
+    String getFailText();
 
     /**
      * Create encrypts and creates signatures as needed to produce a complete response message.  If
@@ -125,10 +126,12 @@ public interface ResponseMessage extends Serializable {
      * @throws NoSuchProviderException if there is an error with the Provider.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
      *         algorithm.
+     * @throws CertificateEncodingException  if there is a problem extracting the certificate information.
+     * @throws CRLException if there is a problem extracting the CRL information
      *
      */
-    public boolean create()
-            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
+    boolean create()
+            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateEncodingException, CRLException;
 
     /**
      * indicates if this message needs recipients public and private key to sign. If this returns
@@ -136,7 +139,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @return True if public and private key is needed.
      */
-    public boolean requireSignKeyInfo();
+    boolean requireSignKeyInfo();
 
     /**
      * Sets the public and private key needed to sign the message. Must be set if

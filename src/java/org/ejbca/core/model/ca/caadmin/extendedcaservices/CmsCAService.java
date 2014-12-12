@@ -13,19 +13,18 @@
 
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.cert.CertStore;
-import java.security.cert.CertStoreException;
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +34,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
@@ -43,11 +45,17 @@ import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -63,6 +71,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -73,7 +82,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /** Handles and maintains the CA-part of the CMS message functionality.
- *  The service have it's own certificate used for signing and encryption 
+ *  The service has its own certificate used for signing and encryption 
  * 
  * @version $Id$
  */
@@ -137,7 +146,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			try {
 				m_log.debug("Loading CMS keystore");
 				final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-				keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) this.data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
+				keystore.load(new ByteArrayInputStream(Base64.decode(((String) this.data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
 				m_log.debug("Finished loading CMS keystore");
 				this.privKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
 				// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
@@ -243,22 +252,32 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		final CmsCAServiceRequest serviceReq = (CmsCAServiceRequest)request;
 		// Create the signed data
 		final CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
-		try {
-			byte[] resp = serviceReq.getDoc();
-			// Add our signer info and sign the message
-			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_SIGN) != 0) {
-				final CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certificatechain), "BC");
-				gen1.addCertificatesAndCRLs(certs);
-				gen1.addSigner(privKey, signerCert, CMSSignedGenerator.DIGEST_SHA1);
-				final CMSProcessable msg = new CMSProcessableByteArray(resp);
-				final CMSSignedData s = gen1.generate(msg, true, "BC");
-				resp = s.getEncoded();
-			}
-			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0) {
-				CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-				edGen.addKeyTransRecipient(getCMSCertificate());
-				CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp),CMSEnvelopedDataGenerator.DES_EDE3_CBC,"BC");
-				resp = ed.getEncoded();
+        try {
+            byte[] resp = serviceReq.getDoc();
+            // Add our signer info and sign the message
+            if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_SIGN) != 0) {
+                List<X509Certificate> x509CertChain = new ArrayList<X509Certificate>();
+                for(Certificate certificate : certificatechain) {
+                    x509CertChain.add((X509Certificate) certificate);
+                }
+                
+                gen1.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(x509CertChain)));
+                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+                JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+                ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, privKey.getAlgorithm());
+                String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
+                JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setSecureRandom(new SecureRandom());
+                ContentSigner contentSigner = signerBuilder.build(privKey);
+                gen1.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
+                final CMSProcessable msg = new CMSProcessableByteArray(resp);
+                final CMSSignedData s = gen1.generate(msg, true, "BC");
+                resp = s.getEncoded();
+            }
+            if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0) {
+                CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+                edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(getCMSCertificate()));
+                CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp), CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
+                resp = ed.getEncoded();
 			}
 			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0) {
 				final CMSEnvelopedData ed = new CMSEnvelopedData(resp);
@@ -276,25 +295,25 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				}
 			}
 			returnval = new CmsCAServiceResponse(resp);
-		} catch (InvalidAlgorithmParameterException e) {
-        	m_log.error("Error in CmsCAService", e);
-        	throw new ExtendedCAServiceRequestException(e);
-        } catch (NoSuchAlgorithmException e) {
+		}catch (NoSuchAlgorithmException e) {
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);
         } catch (NoSuchProviderException e) {
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);
-        } catch (CertStoreException e) {
-        	m_log.error("Error in CmsCAService", e);
-        	throw new ExtendedCAServiceRequestException(e);
-		} catch (CMSException e) {
+        } catch (CMSException e) {
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);
 		} catch (IOException e) {
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);
-		}
+		} catch(OperatorCreationException e) {
+		    m_log.error("Error in CmsCAService", e);
+            throw new ExtendedCAServiceRequestException(e);
+		} catch (CertificateEncodingException e) {
+		    m_log.error("Error in CmsCAService", e);
+            throw new ExtendedCAServiceRequestException(e);
+        }
 		m_log.trace("<extendedService");		  		
 		return returnval;
 	}

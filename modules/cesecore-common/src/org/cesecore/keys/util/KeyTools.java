@@ -78,6 +78,8 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509ExtensionUtils;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
@@ -889,7 +891,8 @@ public final class KeyTools {
                         altKeyAsn1InputStream.close();
                     }
                 }
-                return new SubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
+                X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
+                return x509ExtensionUtils.createSubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
             } finally {
                 pubKeyAsn1InputStream.close();
             }

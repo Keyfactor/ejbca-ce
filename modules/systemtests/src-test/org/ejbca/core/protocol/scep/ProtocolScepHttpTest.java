@@ -38,7 +38,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
-import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
@@ -61,6 +60,10 @@ import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
@@ -72,6 +75,7 @@ import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.Store;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -764,37 +768,37 @@ public class ProtocolScepHttpTest {
             final byte[] content = (byte[]) sp.getContent();
             final CMSEnvelopedData ed = new CMSEnvelopedData(content);
             final RecipientInformationStore recipients = ed.getRecipientInfos();
-            CertStore certstore;
-            {
-                @SuppressWarnings("unchecked")
-                Collection<RecipientInformation> c = recipients.getRecipients();
-                assertEquals(c.size(), 1);
-                Iterator<RecipientInformation> it = c.iterator();
-                byte[] decBytes = null;
-                RecipientInformation recipient = it.next();
-                decBytes = recipient.getContent(key1.getPrivate(), "BC");
-                // This is yet another CMS signed data
-                CMSSignedData sd = new CMSSignedData(decBytes);
-                // Get certificates from the signed data
-                certstore = sd.getCertificatesAndCRLs("Collection", "BC");
-            }
+            Store certstore;
+
+            @SuppressWarnings("unchecked")
+            Collection<RecipientInformation> c = recipients.getRecipients();
+            assertEquals(c.size(), 1);
+            Iterator<RecipientInformation> riIterator = c.iterator();
+            byte[] decBytes = null;
+            RecipientInformation recipient = riIterator.next();
+            decBytes = recipient.getContent(key1.getPrivate(), "BC");
+            // This is yet another CMS signed data
+            CMSSignedData sd = new CMSSignedData(decBytes);
+            // Get certificates from the signed data
+            certstore = sd.getCertificates();
+
             if (crlRep) {
                 // We got a reply with a requested CRL
                 @SuppressWarnings("unchecked")
-                final Collection<X509CRL> crls = (Collection<X509CRL>) certstore.getCRLs(null);
+                final Collection<X509CRLHolder> crls = (Collection<X509CRLHolder>) sd.getCRLs().getMatches(null);
                 assertEquals(crls.size(), 1);
-                final Iterator<X509CRL> it = crls.iterator();
+                final Iterator<X509CRLHolder> it = crls.iterator();
                 // CRL is first (and only)
-                final X509CRL retCrl = it.next();
+                final X509CRL retCrl = new JcaX509CRLConverter().getCRL(it.next());
                 log.info("Got CRL with DN: " + retCrl.getIssuerDN().getName());
 
                 // check the returned CRL
-                assertEquals(cacert.getSubjectDN().getName(), retCrl.getIssuerDN().getName());
+                assertEquals(CertTools.getSubjectDN(cacert), CertTools.getIssuerDN(retCrl));
                 retCrl.verify(cacert.getPublicKey());
             } else {
                 // We got a reply with a requested certificate
                 @SuppressWarnings("unchecked")
-                final Collection<X509Certificate> certs = (Collection<X509Certificate>) certstore.getCertificates(null);
+                final Collection<X509CertificateHolder> certs = (Collection<X509CertificateHolder>) certstore.getMatches(null);
                 // EJBCA returns the issued cert and the CA cert (cisco vpn
                 // client requires that the ca cert is included)
                 if (noca) {
@@ -802,12 +806,13 @@ public class ProtocolScepHttpTest {
                 } else {
                     assertEquals(certs.size(), 2);
                 }
-                final Iterator<X509Certificate> it = certs.iterator();
+                final Iterator<X509CertificateHolder> it = certs.iterator();
                 // Issued certificate must be first
                 boolean verified = false;
                 boolean gotcacert = false;
+                JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
                 while (it.hasNext()) {
-                    X509Certificate retcert = it.next();
+                    X509Certificate retcert = jcaX509CertificateConverter.getCertificate(it.next());
                     log.info("Got cert with DN: " + retcert.getSubjectDN().getName());
 
                     // check the returned certificate
@@ -815,13 +820,13 @@ public class ProtocolScepHttpTest {
                     if (CertTools.stringToBCDNString(userDN).equals(subjectdn)) {
                         // issued certificate
                         assertEquals(CertTools.stringToBCDNString(userDN), subjectdn);
-                        assertEquals(cacert.getSubjectDN().getName(), retcert.getIssuerDN().getName());
+                        assertEquals(CertTools.getSubjectDN(cacert), CertTools.getIssuerDN(retcert));
                         retcert.verify(cacert.getPublicKey());
                         assertTrue(checkKeys(key1.getPrivate(), retcert.getPublicKey()));
                         verified = true;
                     } else {
                         // ca certificate
-                        assertEquals(cacert.getSubjectDN().getName(), retcert.getSubjectDN().getName());
+                        assertEquals(CertTools.getSubjectDN(cacert), CertTools.getSubjectDN(retcert));
                         gotcacert = true;
                     }
                 }

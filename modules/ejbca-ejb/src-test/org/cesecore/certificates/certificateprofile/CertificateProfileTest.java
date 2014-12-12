@@ -590,6 +590,7 @@ public class CertificateProfileTest {
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
     } 
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void test11CertificatePolicyClassUpgrade() throws Exception {
         CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);

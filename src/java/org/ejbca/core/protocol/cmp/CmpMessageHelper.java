@@ -28,7 +28,6 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -75,14 +74,12 @@ import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
-import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
-import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -197,12 +194,11 @@ public class CmpMessageHelper {
         // Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
         // we use BC classes to translate it into a signature algorithm name instead
         PKIHeader head = headerBuilder.build();
-
-        final String sigAlg = new BasicOCSPResp(new BasicOCSPResponse(null, new AlgorithmIdentifier(oid), null, null)).getSignatureAlgName();
+        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Signing CMP message with signature alg: " + sigAlg);
+            LOG.debug("Signing CMP message with signature alg: " + signatureAlgorithmName);
         }
-        Signature sig = Signature.getInstance(sigAlg, provider);
+        Signature sig = Signature.getInstance(signatureAlgorithmName, provider);
         sig.initSign(key);
         sig.update(CmpMessageHelper.getProtectedBytes(head, pKIMessage.getBody()));
 

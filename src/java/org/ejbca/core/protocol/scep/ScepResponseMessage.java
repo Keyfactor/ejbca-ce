@@ -20,17 +20,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
-import java.security.cert.CertStore;
+import java.security.cert.CRLException;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
-import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -40,6 +41,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.cert.jcajce.JcaX509CRLHolder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -49,6 +51,7 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.CollectionStore;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
@@ -219,8 +222,8 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        boolean ret = false;
+    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateEncodingException, CRLException {
+       boolean ret = false;
         try {
             if (status.equals(ResponseStatus.SUCCESS)) {
                 log.debug("Creating a STATUS_OK message.");
@@ -244,34 +247,31 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
-                ArrayList<Object> certList = new ArrayList<Object>();
-                if (crl != null) {
-                    log.debug("Adding CRL to response message (inner signer)");
-                    certList.add(crl);
-                } else if (cert != null) {
+                List<X509Certificate> certList = new ArrayList<X509Certificate>();
+                if (cert != null) {
                     log.debug("Adding certificates to response message");
-                    certList.add(cert);
+                    certList.add((X509Certificate) cert);
                     // Add the CA cert, it's optional but Cisco VPN client complains if it isn't there
                     if (includeCACert) {
                     	if (caCert != null) {
                     		// If we have an explicit CAcertificate
                     		log.debug("Including explicitly set CA certificate in SCEP response.");
-                    		certList.add(caCert);
+                    		certList.add((X509Certificate) caCert);
                     	} else {
                     		// If we don't have an explicit caCert, we think that the signCert is the CA cert
                     		// If we have an explicit caCert, the signCert is probably the RA certificate, and we don't include that one
                     		log.debug("Including message signer certificate in SCEP response.");
-                    		certList.add(signCertChain.iterator().next());
+                    		certList.add((X509Certificate) signCertChain.iterator().next());
                     	}
                     }
                 }
-                CertStore certs = CertStore.getInstance("Collection",
-                        new CollectionCertStoreParameters(certList), BouncyCastleProvider.PROVIDER_NAME);
-
                 // Create the signed CMS message to be contained inside the envelope
                 // this message does not contain any message, and no signerInfo
                 CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-                gen.addCertificatesAndCRLs(certs);
+                gen.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(certList)));
+                if(crl != null) {
+                    gen.addCRL(new JcaX509CRLHolder((X509CRL) crl));
+                }
                 CMSSignedData s = gen.generate(null, false, BouncyCastleProvider.PROVIDER_NAME);
 
                 // Envelope the CMS message
@@ -371,10 +371,6 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             if (responseMessage != null) {
                 ret = true;
             }
-        } catch (InvalidAlgorithmParameterException e) {
-            log.error("Error creating CertStore: ", e);
-        } catch (CertStoreException e) {
-            log.error("Error creating CertStore: ", e);
         } catch (CMSException e) {
             log.error("Error creating CMS message: ", e);
         }

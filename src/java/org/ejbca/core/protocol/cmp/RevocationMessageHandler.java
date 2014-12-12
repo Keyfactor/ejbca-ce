@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.CRLException;
+import java.security.cert.CertificateEncodingException;
 
 import javax.ejb.FinderException;
 
@@ -295,7 +297,13 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		} catch (NoSuchProviderException e) {
 		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
 		    LOG.error(errMsg, e);			
-		} 						
+		} catch (CertificateEncodingException e) {
+		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+            LOG.error(errMsg, e);   
+        } catch (CRLException e) {
+            String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+            LOG.error(errMsg, e);   
+        } 						
 		
 		return resp;
 	}  

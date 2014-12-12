@@ -218,7 +218,7 @@ public class OCSPUnidClient {
         final OCSPReq req;
         if ( this.signKey!=null ) {
             final X509Certificate localCertChain[] = this.certChain!=null ? this.certChain : new X509Certificate[] {(X509Certificate)cacert};
-            final JcaX509CertificateHolder[] certificateHolderChain = CertTools.convertCertificateChainToCertificateHolderChain(localCertChain);
+            final JcaX509CertificateHolder[] certificateHolderChain = CertTools.convertToX509CertificateHolder(localCertChain);
             gen.setRequestorName(certificateHolderChain[0].getSubject());
             req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(this.signKey), 20480), certificateHolderChain);
         } else {
