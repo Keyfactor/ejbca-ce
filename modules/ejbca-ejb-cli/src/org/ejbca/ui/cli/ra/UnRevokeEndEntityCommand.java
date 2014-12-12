@@ -102,7 +102,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
             // Find all user certs
             List<Certificate> certificates = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
                     .findCertificatesByUsername(username);
-           
+            if (certificates != null) {
                 for (Certificate cert : certificates) {
                     BigInteger serialNumber = CertTools.getSerialNumber(cert);
                     String issuerDN = CertTools.getIssuerDN(cert);
@@ -120,21 +120,21 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
                         }
                     }
                 }
-                if (!foundCertificateOnHold) {
-                    getLogger().error("No certificates with status 'On hold' were found for this end entity. Status is unchanged.");
-                } else {
-                    try {
-                        //Certificates were found and unrevoked. Set status to generates
-                        endEntityManagementSession.setUserStatus(getAuthenticationToken(), username, EndEntityConstants.STATUS_GENERATED);
-                        getLogger().info("Setting status of end entity '" + username + "' to GENERATED (40).");
+            }
+            if (!foundCertificateOnHold) {
+                getLogger().error("No certificates with status 'On hold' were found for this end entity. Status is unchanged.");
+            } else {
+                try {
+                    //Certificates were found and unrevoked. Set status to generates
+                    endEntityManagementSession.setUserStatus(getAuthenticationToken(), username, EndEntityConstants.STATUS_GENERATED);
+                    getLogger().info("Setting status of end entity '" + username + "' to GENERATED (40).");
 
-                    } catch (ApprovalException e) {
-                        getLogger().error("ERROR: End entity reactivation already requested.");
-                    } catch (WaitingForApprovalException e) {
-                        getLogger().info("End entity reactivation request has been sent for approval.");
-                    }
+                } catch (ApprovalException e) {
+                    getLogger().error("ERROR: End entity reactivation already requested.");
+                } catch (WaitingForApprovalException e) {
+                    getLogger().info("End entity reactivation request has been sent for approval.");
                 }
-         
+            }
         } catch (AuthorizationDeniedException e) {
             getLogger().error("Not authorized to reactivate end entity.");
             return CommandResult.AUTHORIZATION_FAILURE;
