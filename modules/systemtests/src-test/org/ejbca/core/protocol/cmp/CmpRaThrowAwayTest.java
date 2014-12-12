@@ -302,8 +302,9 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         certTemplate.setSubject(subjectX500Name);
         final byte[] bytes = keyPair.getPublic().getEncoded();
         final ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-        final org.bouncycastle.asn1.ASN1InputStream dIn = new org.bouncycastle.asn1.ASN1InputStream(bIn);
-        final org.bouncycastle.asn1.x509.SubjectPublicKeyInfo keyInfo = new org.bouncycastle.asn1.x509.SubjectPublicKeyInfo((org.bouncycastle.asn1.ASN1Sequence)dIn.readObject());
+        final org.bouncycastle.asn1.ASN1InputStream asn1InputStream = new org.bouncycastle.asn1.ASN1InputStream(bIn);
+        final org.bouncycastle.asn1.x509.SubjectPublicKeyInfo keyInfo = new org.bouncycastle.asn1.x509.SubjectPublicKeyInfo((org.bouncycastle.asn1.ASN1Sequence)asn1InputStream.readObject());
+        asn1InputStream.close();
         certTemplate.setPublicKey(keyInfo);
         // Request a custom certificate serial number
         certTemplate.setSerialNumber(new ASN1Integer(new BigInteger(serialNumber, 16)));
