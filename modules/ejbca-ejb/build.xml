@@ -464,7 +464,7 @@
         		<exclude name="**/META-INF/**"/>
         	</fileset>
         	-->
-			<zipfileset prefix="META-INF" dir="${resources.dir}" includes="${include-ejb-jar-xml} weblogic-ejb-jar.xml ibm-ejb-jar-bnd.xml jboss.xml"/>
+			<zipfileset prefix="META-INF" dir="${resources.dir}" includes="${include-ejb-jar-xml} weblogic-ejb-jar.xml ibm-ejb-jar-bnd.xml jboss.xml jboss-ejb3.xml"/>
 		</jar>
 		<condition property="generate-stubs" value="true">
 			<equals arg1="websphere" arg2="${appserver.type}"/>
