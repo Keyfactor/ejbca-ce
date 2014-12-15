@@ -118,7 +118,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			    LOG.error("Exception during CMP processing: ", e);      
             } catch (CRLException e) {
                 LOG.error("Exception during CMP processing: ", e);      
-            } 							
+            } 						
 		} else {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Cmp1999 - Not creating a PKI confirm message response");

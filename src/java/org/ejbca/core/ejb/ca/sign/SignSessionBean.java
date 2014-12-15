@@ -368,8 +368,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
            log.error("There was a problem extracting the certificate information.", e);
         } catch (CRLException e) {
             log.error("There was a problem extracting the CRL information.", e);
-
-        }
+        } 
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage)");
         }
