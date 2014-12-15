@@ -55,6 +55,7 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.AccessDescription;
@@ -81,13 +82,14 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.operator.BufferingContentSigner;
@@ -516,7 +518,7 @@ public class X509CA extends CA implements Serializable {
             throw new SignRequestSignatureException("Could not encode certificate", e);
         } 
         try {
-            CMSProcessable msg = new CMSProcessableByteArray("EJBCA".getBytes());
+            CMSTypedData msg = new CMSProcessableByteArray("EJBCA".getBytes());
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             if (privateKey == null) {
@@ -531,7 +533,7 @@ public class X509CA extends CA implements Serializable {
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
                 log.debug("createPKCS7: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
-                s = gen.generate(msg, true, cryptoToken.getSignProviderName());
+                s = gen.generate(msg, true);
             } else {
                 String msg1 = "CA Token does not exist!";
                 log.debug(msg);
@@ -1537,7 +1539,8 @@ public class X509CA extends CA implements Serializable {
         final PublicKey pk = cryptoToken.getPublicKey(alias);
         byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
-        ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
+        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC);
+        ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), jceCMSContentEncryptorBuilder.build());
         log.info("Encrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }
@@ -1579,7 +1582,8 @@ public class X509CA extends CA implements Serializable {
         final PublicKey pk = cryptoToken.getPublicKey(keyAlias);
         byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
-        ed = edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
+        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC);
+        ed = edGen.generate(new CMSProcessableByteArray(data), jceCMSContentEncryptorBuilder.build());
         log.info("Encrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }
