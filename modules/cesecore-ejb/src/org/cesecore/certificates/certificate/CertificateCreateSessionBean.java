@@ -227,7 +227,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             throw new CertificateCreateException(e);
         } catch (CRLException e) {
             throw new CertificateCreateException(e);
-        }
+        } 
 
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage, CA)");

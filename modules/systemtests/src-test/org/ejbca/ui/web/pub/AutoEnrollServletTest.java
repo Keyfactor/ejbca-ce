@@ -154,18 +154,21 @@ public class AutoEnrollServletTest {
 		log.trace(">test01TestUserRequest");
 		String remoteUser = "AETester@COMPANY.LOCAL";
 		X509Certificate cert = doRequest(remoteUser, CERTREQ_USER2_TEMPLATE); // "User"
-		assertTrue("Returned certificate with wrong CN", ("CN=AETester".equals(cert.getSubjectDN().getName())));
-		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
-		boolean isExtendedKeyUsageCritical = false;
-		Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
-		while (i.hasNext()) {
-			if ("2.5.29.37".equals(i.next())) {
-				isExtendedKeyUsageCritical = true;
-			}
-		}
-		assertTrue(isExtendedKeyUsageCritical);
-		assertEquals("OK", getStatus(remoteUser, "User"));
-		cleanUp("AETester", "Autoenroll-User");
+        try {
+            assertTrue("Returned certificate with wrong CN", ("CN=AETester".equals(cert.getSubjectDN().getName())));
+            assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
+            boolean isExtendedKeyUsageCritical = false;
+            Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
+            while (i.hasNext()) {
+                if ("2.5.29.37".equals(i.next())) {
+                    isExtendedKeyUsageCritical = true;
+                }
+            }
+            assertTrue(isExtendedKeyUsageCritical);
+            assertEquals("OK", getStatus(remoteUser, "User"));
+        } finally {
+            cleanUp("AETester", "Autoenroll-User");
+        }
 		assertEquals("NO_SUCH_USER", getStatus(remoteUser, "User"));
 		log.trace("<test01TestUserRequest");
 	}
@@ -174,22 +177,25 @@ public class AutoEnrollServletTest {
 	 * Test if a User-template certificate request is handled ok. 
 	 */
 	@Test
-	public void test02TestMachineRequest() throws Exception {
-		log.trace(">test02TestMachineRequest");
-		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
-		X509Certificate cert = doRequest(remoteUser, CERTREQ_MACHINE_TEMPLATE); // "Machine"
-		// Expecting the $-sign to be removed
-		assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
-		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
-		boolean isExtendedKeyUsageCritical = false;
-		Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
-		while (i.hasNext()) {
-			if ("2.5.29.37".equals(i.next())) {
-				isExtendedKeyUsageCritical = true;
-			}
-		}
-		assertTrue(isExtendedKeyUsageCritical);
-		cleanUp("TESTSRV-1", "Autoenroll-Machine");
+    public void test02TestMachineRequest() throws Exception {
+        log.trace(">test02TestMachineRequest");
+        String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";
+        X509Certificate cert = doRequest(remoteUser, CERTREQ_MACHINE_TEMPLATE); // "Machine"
+        try {
+            // Expecting the $-sign to be removed
+            assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
+            assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
+            boolean isExtendedKeyUsageCritical = false;
+            Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
+            while (i.hasNext()) {
+                if ("2.5.29.37".equals(i.next())) {
+                    isExtendedKeyUsageCritical = true;
+                }
+            }
+            assertTrue(isExtendedKeyUsageCritical);
+        } finally {
+            cleanUp("TESTSRV-1", "Autoenroll-Machine");
+        }
 		log.trace("<test02TestMachineRequest");
 	}
 
@@ -197,24 +203,27 @@ public class AutoEnrollServletTest {
 	 * Test if a DomainController-template certificate request is handled ok. 
 	 */
 	@Test
-	public void test03TestDomainControllerRequest() throws Exception {
-		log.trace(">test03TestDomainControllerRequest");
-		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
-		X509Certificate cert = doRequest(remoteUser, CERTREQ_DOMAIN_CONTROLLER_TEMPLATE); // "DomainController"
-		// Expecting the $-sign to be removed
-		assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
-		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
-		boolean isExtendedKeyUsageCritical = false;
-		Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
-		while (i.hasNext()) {
-			if ("2.5.29.37".equals(i.next())) {
-				isExtendedKeyUsageCritical = true;
-			}
-		}
-		assertTrue(isExtendedKeyUsageCritical);
-		cleanUp("TESTSRV-1", "Autoenroll-DomainController");
-		log.trace("<test03TestDomainControllerRequest");
-	}
+    public void test03TestDomainControllerRequest() throws Exception {
+        log.trace(">test03TestDomainControllerRequest");
+        String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";
+        X509Certificate cert = doRequest(remoteUser, CERTREQ_DOMAIN_CONTROLLER_TEMPLATE); // "DomainController"
+        try {
+            // Expecting the $-sign to be removed
+            assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
+            assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
+            boolean isExtendedKeyUsageCritical = false;
+            Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
+            while (i.hasNext()) {
+                if ("2.5.29.37".equals(i.next())) {
+                    isExtendedKeyUsageCritical = true;
+                }
+            }
+            assertTrue(isExtendedKeyUsageCritical);
+        } finally {
+            cleanUp("TESTSRV-1", "Autoenroll-DomainController");
+        }
+        log.trace("<test03TestDomainControllerRequest");
+    }
 
 	/**
 	 * Test if a SmartcardLogon-template certificate request is handled ok. 

@@ -305,7 +305,7 @@ public class RequestInstance {
 				int id = certificateProfileSession.getCertificateProfileId(certprofile);
 				// Change the value if there exists a certprofile with the requested name, and it is not the same as 
 				// the one already registered to be used by default
-				if ( (id > 0) ) {
+                if (id > 0) {
 					if (id != certificateProfileId) {
 						// Check if it is in allowed profiles in the entity profile
 						Collection<String> c = endEntityProfile.getAvailableCertificateProfileIds();
