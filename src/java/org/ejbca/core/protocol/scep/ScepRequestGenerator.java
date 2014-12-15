@@ -43,6 +43,8 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -182,15 +184,16 @@ public class ScepRequestGenerator {
         return msg;
     }
     
-    private CMSEnvelopedData envelope(CMSProcessable envThis) throws NoSuchAlgorithmException, NoSuchProviderException, CMSException, CertificateEncodingException {
+    private CMSEnvelopedData envelope(CMSTypedData envThis) throws NoSuchAlgorithmException, NoSuchProviderException, CMSException, CertificateEncodingException {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
         // Envelope the CMS message
         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cacert));
-        CMSEnvelopedData ed = edGen.generate(envThis, SMIMECapability.dES_CBC.getId(), "BC");
+        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC);
+        CMSEnvelopedData ed = edGen.generate(envThis, jceCMSContentEncryptorBuilder.build());
         return ed;
     }
 
-    private CMSSignedData sign(CMSProcessable signThis, String messageType, String transactionId) throws NoSuchAlgorithmException,
+    private CMSSignedData sign(CMSTypedData signThis, String messageType, String transactionId) throws NoSuchAlgorithmException,
             NoSuchProviderException, CMSException, IOException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException {
         CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
@@ -231,7 +234,7 @@ public class ScepRequestGenerator {
         gen1.addSigner(keys.getPrivate(), cert, digestOid,
                 new AttributeTable(attributes), null);
         // The signed data to be enveloped
-        CMSSignedData s = gen1.generate(signThis, true, "BC");
+        CMSSignedData s = gen1.generate(signThis, true);
         return s;
     }
 
@@ -243,7 +246,7 @@ public class ScepRequestGenerator {
         //
         CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes));
         log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
-        CMSProcessable msg = new CMSProcessableByteArray(ed.getEncoded());
+        CMSTypedData msg = new CMSProcessableByteArray(ed.getEncoded());
         //
         // Create the outer signed data
         //

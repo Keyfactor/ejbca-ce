@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
@@ -35,20 +33,20 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.operator.ContentSigner;
@@ -269,14 +267,15 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
                 JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setSecureRandom(new SecureRandom());
                 ContentSigner contentSigner = signerBuilder.build(privKey);
                 gen1.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
-                final CMSProcessable msg = new CMSProcessableByteArray(resp);
-                final CMSSignedData s = gen1.generate(msg, true, "BC");
+                final CMSTypedData msg = new CMSProcessableByteArray(resp);
+                final CMSSignedData s = gen1.generate(msg, true);
                 resp = s.getEncoded();
             }
             if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0) {
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(getCMSCertificate()));
-                CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp), CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC");
+                JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(PKCSObjectIdentifiers.des_EDE3_CBC);
+                CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp), jceCMSContentEncryptorBuilder.build());
                 resp = ed.getEncoded();
 			}
 			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0) {
@@ -295,12 +294,6 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				}
 			}
 			returnval = new CmsCAServiceResponse(resp);
-		}catch (NoSuchAlgorithmException e) {
-        	m_log.error("Error in CmsCAService", e);
-        	throw new ExtendedCAServiceRequestException(e);
-        } catch (NoSuchProviderException e) {
-        	m_log.error("Error in CmsCAService", e);
-        	throw new ExtendedCAServiceRequestException(e);
         } catch (CMSException e) {
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);

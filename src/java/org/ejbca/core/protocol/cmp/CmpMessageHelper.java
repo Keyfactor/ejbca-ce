@@ -92,7 +92,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
 /**
  * Helper class to create different standard parts of CMP messages
  * 
- * @author tomas
  * @version $Id$
  */
 public class CmpMessageHelper {
