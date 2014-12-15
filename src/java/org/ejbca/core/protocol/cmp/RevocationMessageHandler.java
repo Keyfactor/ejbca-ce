@@ -303,7 +303,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         } catch (CRLException e) {
             String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
             LOG.error(errMsg, e);   
-        } 						
+        }  						
 		
 		return resp;
 	}  
