@@ -20,13 +20,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.CMSAttributes;
 import org.bouncycastle.asn1.cms.Time;
@@ -34,6 +32,7 @@ import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
 import org.bouncycastle.cms.CMSSignedDataParser;
 import org.bouncycastle.cms.CMSSignedDataStreamGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerId;
@@ -115,10 +114,9 @@ public class CMS {
         final CMSSignedDataStreamGenerator gen = new CMSSignedDataStreamGenerator();
         JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
         JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-        ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, key.getAlgorithm());
-
-        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
-        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setSecureRandom(new SecureRandom());
+        final String digest = CMSSignedGenerator.DIGEST_SHA256;
+        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digest, key.getAlgorithm());
+        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
         ContentSigner contentSigner = signerBuilder.build(key);
         if ( cert!=null ) {      
             gen.addSignerInfoGenerator(builder.build(contentSigner, cert));          
