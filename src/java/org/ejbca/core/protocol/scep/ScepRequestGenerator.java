@@ -38,24 +38,28 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.DefaultSignedAttributeTableGenerator;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /** Class used to generate SCEP messages. Used for SCEP clients and testing
  * 
- * @author tomas
  * @version $Id$
  */
 public class ScepRequestGenerator {
@@ -85,7 +89,7 @@ public class ScepRequestGenerator {
         this.keys = myKeys;
     }
     public void setDigestOid(String oid) {
-    	digestOid = oid;
+        digestOid = oid;
     }
     /** Base 64 encode senderNonce
      */
@@ -231,8 +235,18 @@ public class ScepRequestGenerator {
         ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
         certList.add(cert);
         gen1.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(certList)));
-        gen1.addSigner(keys.getPrivate(), cert, digestOid,
-                new AttributeTable(attributes), null);
+       
+        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestOid, keys.getPrivate().getAlgorithm());
+        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
+        try {
+            ContentSigner contentSigner = signerBuilder.build(keys.getPrivate());
+            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+            JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+            builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
+            gen1.addSignerInfoGenerator(builder.build(contentSigner, cert));
+        } catch (OperatorCreationException e) {
+            throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
+        }
         // The signed data to be enveloped
         CMSSignedData s = gen1.generate(signThis, true);
         return s;
