@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
@@ -36,20 +35,21 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.cert.jcajce.JcaX509CRLHolder;
+import org.bouncycastle.cms.CMSAbsentContent;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
-import org.bouncycastle.cms.SimpleAttributeTableGenerator;
+import org.bouncycastle.cms.DefaultSignedAttributeTableGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -124,10 +124,13 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     private transient boolean includeCACert = true;
 
     /** Default digest algorithm for SCEP response message, can be overridden */
-    private transient String digestAlg = CMSSignedGenerator.DIGEST_MD5;
+    private transient String digestAlg = CMSSignedDataGenerator.DIGEST_MD5;
     
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
+    
+    /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
+    private transient String provider = BouncyCastleProvider.PROVIDER_NAME;
     
     @Override
     public CertificateData getCertificateData() {
@@ -274,19 +277,20 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 if(crl != null) {
                     gen.addCRL(new JcaX509CRLHolder((X509CRL) crl));
                 }
-                CMSSignedData s = gen.generate(null, false);
+
+                CMSSignedData s = gen.generate(new CMSAbsentContent(), false);
 
                 // Envelope the CMS message
                 if (recipientKeyInfo != null) {
                     try {
                         X509Certificate rec = (X509Certificate)CertTools.getCertfromByteArray(recipientKeyInfo);
                         log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
-                        edGen.addKeyTransRecipient(rec);
+                        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec));
                     } catch (CertificateParsingException e) {
                         throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
                     }
                 } else {
-                    edGen.addKeyTransRecipient((X509Certificate) cert);
+                    edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate) cert));
                 }
                 try {
                     JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC);
@@ -363,13 +367,14 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             // Add our signer info and sign the message
             Certificate cacert = signCertChain.iterator().next();
             log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(cacert));
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(PKCSObjectIdentifiers.md5WithRSAEncryption);
-            JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setSecureRandom(new SecureRandom());
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
+            JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
             try {
                 ContentSigner contentSigner = signerBuilder.build(signKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+                calculatorProviderBuilder.setProvider(provider);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-                builder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(new AttributeTable(attributes)));
+                builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
                 gen1.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) cacert));
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
@@ -400,7 +405,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String prov) {
         this.signCertChain = certs;
         this.signKey = key;
-
+        if (prov != null) {
+            this.provider = prov;
+        }     
     }
 
     @Override

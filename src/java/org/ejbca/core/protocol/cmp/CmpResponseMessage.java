@@ -105,7 +105,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private String transactionId = null;
 
     /** Default digest algorithm for CMP response message, can be overridden */
-    private String digestAlg = CMSSignedGenerator.DIGEST_SHA1;
+    private String digest  = CMSSignedGenerator.DIGEST_SHA1;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
     private String provider = BouncyCastleProvider.PROVIDER_NAME;
 
@@ -318,10 +318,10 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
                         pbeIterationCount);
             } else {
-                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
+                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digest));
                 PKIHeader header = myPKIHeader.build();
                 myPKIMessage = new PKIMessage(header, myPKIBody);                        
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digest, provider);
             }
             
             ret = true;
@@ -377,9 +377,9 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setPreferredDigestAlg(String digest) {
-        if(StringUtils.isNotEmpty(digest)) { 
-            this.digestAlg = digest;
+    public void setPreferredDigestAlg(String digest){
+        if(!StringUtils.isEmpty(digest)) { 
+            this.digest = digest;
         }
     }
 

@@ -610,6 +610,10 @@ public abstract class AlgorithmTools {
         return oid;
     }
     
+    public static String getAlgorithmNameFromDigestAndKey(final String digestAlg, final String keyAlg) {
+        return getAlgorithmNameFromOID(getSignAlgOidFromDigestAndKey(digestAlg, keyAlg));
+    }
+    
     public static boolean isGost3410Enabled() {
         return CesecoreConfiguration.getOidGost3410() != null;
     }
@@ -634,6 +638,11 @@ public abstract class AlgorithmTools {
      * @return The name of the algorithm corresponding sigAlgOid or null if the algorithm is not recognized.
      */
     public static String getAlgorithmNameFromOID(ASN1ObjectIdentifier sigAlgOid) {
+       
+        if(sigAlgOid.equals(PKCSObjectIdentifiers.md5WithRSAEncryption)) {
+            return AlgorithmConstants.SIGALG_MD5_WITH_RSA;
+        }
+        
         if(sigAlgOid.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption)) {
             return AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         }

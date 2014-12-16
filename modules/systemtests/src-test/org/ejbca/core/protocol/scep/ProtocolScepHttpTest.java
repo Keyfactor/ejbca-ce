@@ -74,7 +74,9 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -689,9 +691,9 @@ public class ProtocolScepHttpTest {
     }
 
     private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca)
-            throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException,
-            SignatureException, CRLException {
-        //
+            throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
+            SignatureException, CertificateException {
+
         // Parse response message
         //
         CMSSignedData s = new CMSSignedData(retMsg);
@@ -708,7 +710,9 @@ public class ProtocolScepHttpTest {
         // Check that the signer is the expected CA
         assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuer().toString()));
         // Verify the signature
-        boolean ret = signerInfo.verify(cacert.getPublicKey(), "BC");
+        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+        boolean ret = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(cacert.getPublicKey()));
         assertTrue(ret);
         // Get authenticated attributes
         AttributeTable tab = signerInfo.getSignedAttributes();

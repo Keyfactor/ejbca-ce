@@ -18,6 +18,7 @@ package org.cesecore.certificates.util;
  */
 public final class AlgorithmConstants {
 
+    public static final String SIGALG_MD5_WITH_RSA             = "MD5WithRSA";
     public static final String SIGALG_SHA1_WITH_RSA            = "SHA1WithRSA";
     public static final String SIGALG_SHA256_WITH_RSA          = "SHA256WithRSA";
     public static final String SIGALG_SHA384_WITH_RSA          = "SHA384WithRSA";
@@ -37,8 +38,10 @@ public final class AlgorithmConstants {
      * Signature algorithms available to choose from.
      * Call AlgorithmTools.isSigAlgEnabled() to determine if a given sigalg is enabled and should be shown in the UI.
      */
-    public static final String[] AVAILABLE_SIGALGS = {SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA, SIGALG_SHA384_WITH_RSA, SIGALG_SHA512_WITH_RSA, SIGALG_SHA256_WITH_RSA_AND_MGF1, SIGALG_SHA1_WITH_ECDSA, SIGALG_SHA224_WITH_ECDSA, SIGALG_SHA256_WITH_ECDSA, SIGALG_SHA384_WITH_ECDSA, SIGALG_SHA512_WITH_ECDSA, SIGALG_SHA1_WITH_DSA, SIGALG_GOST3411_WITH_ECGOST3410, SIGALG_GOST3411_WITH_DSTU4145};
-    
+    public static final String[] AVAILABLE_SIGALGS = { SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA, SIGALG_SHA384_WITH_RSA, SIGALG_SHA512_WITH_RSA,
+            SIGALG_SHA256_WITH_RSA_AND_MGF1, SIGALG_SHA1_WITH_ECDSA, SIGALG_SHA224_WITH_ECDSA, SIGALG_SHA256_WITH_ECDSA, SIGALG_SHA384_WITH_ECDSA,
+            SIGALG_SHA512_WITH_ECDSA, SIGALG_SHA1_WITH_DSA, SIGALG_GOST3411_WITH_ECGOST3410, SIGALG_GOST3411_WITH_DSTU4145 };
+  
     public static final String KEYALGORITHM_RSA         = "RSA";
     public static final String KEYALGORITHM_EC          = "EC";
     public static final String KEYALGORITHM_ECDSA       = "ECDSA"; //The same as "EC", just named differently sometimes. "EC" and "ECDSA" should be handled in the same way
