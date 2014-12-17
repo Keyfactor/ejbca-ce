@@ -245,7 +245,6 @@ public interface CryptoToken extends Serializable {
     * @param privateKey the private key of the key pair
     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the 
     * signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
-    * @throws CryptoTokenOfflineException if the crypto token is offline
     */
     void testKeyPair(final String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException;
 
