@@ -13,21 +13,51 @@
   By default, each CA can sign OCSP responses out of the box using the CA key pair.
   See 'OCSP Architecture' to determine if you also need an external OCSP responder.
   </p><p>
-  Installing the external OCSP responder together with EJBCA requires configuration on the CA and installation of the 
-  external OCSP responder EJBCA instance(s).
-  </p><p>
   If you are not using the responder with EJBCA you can skip the section about building and configuring EJBCA.
   </p>
   <subsection name="Building and configuring the Responder">
 <p>
-You should first read the <a href="installation-va.html">Standalone VA installation</a> that specifies the general configuration for a VA.
-</p><p>
-All default options for the OCSP responders OCSP behavior is set in conf/ocsp.properties and conf/va.properties. All options are documented in this file.
+After finishing installing the VA as instructed in <a href="installation-va.html">Standalone VA installation</a>, continue with the following steps to complete the installations:
 </p>
-<p>You may also want to configure conf/cesecore.properties for "Secure audit log configuration", i.e. if you want to log to database or file. 
-The database audit log is only used for security events, i.e. access control and configuration change events when using the GUI or CLI.</p>
-</subsection>
-<subsection name="Responder signing keys">
+<p><b>5. On the EJBCA VA</b> - Accessing the Admin GUI</p>
+<p>
+The OCSP responder have the same Admin GUI as the CA, so you can manage all your Crypto Tokens and Key Bindings using the Admin GUI (or the CLI see below).
+In an OCSP responder you normally only use a few functions of the Admin GUI, although all of them are available.
+The important functions for an OCSP responder are:
+</p>
+<ul>
+<li>Crypto Tokens</li>
+<li>Internal Key Bindings</li>
+</ul>
+<p>In order to access the Admin GUI there are a few pre-requisites:</p>
+<ul>
+<li>TLS keystores available as p12/tomcat.jks and p12/truststore.jks (copies from the EJBCA CA), to be deployed with deploy-keystore and web-configure (may require configuration 
+of keystore password in conf/web.properties).</li>
+<li>A Management CA certificate imported (the certificate of the CA that issues administrator certificates).</li>
+<li>Administrators configured with access rules.</li>
+</ul>
+<p>
+If you only want to set up a super administrator, the initial super administrator access rule is automatically set up during initial startup (see database tables AdminGroupData and AccessRulesData).
+You can run the following commands to import a Management CA certificate and add a SuperAdmin, that has a certificate with "CN=SuperAdmin" issued from this CA (this will create a record in database table AdminEntityData).
+</p>
+<source>
+bin/ejbca.sh ca importcacert ManagementCA /home/user/adminca1.pem
+bin/ejbca.sh roles addadmin "Super Administrator Role" ManagementCA WITH_COMMONNAME TYPE_EQUALCASE SuperAdmin
+</source>
+<note>
+If you do not want to import the administrator certificate into EJBCA you can configure "web.reqcertindb=false" in conf/web.properties, otherwise the administrator certificate must be present in the database
+(can be imported using the CLI). 
+</note>
+
+<p><b>6. On the EJBCA CA</b> - Create the OCSP responder CA</p>
+<p>
+If the CA that is meant to be the OCSP responder  does not already exist, create it now. All certificate profiles for certificates that should 
+be available to the OCSP responder should reference this publisher. To configure this you must be a super administrator.
+</p>
+<p><b>7. On the EJBCA VA</b> - Set up the responder signing keys</p>
+<p>
+If you haven't done that already, import the CA that is meant to be the OCSP responder from the EJBCA CA.
+</p>
 <p>
 The keys used to sign the OCSP response are referenced through Crypto Tokens (that could be either soft or HSM/PKCS#11 based).
 There should be one key for each CA, and the each CA the responder answers for an OCSP signing certificate must be issued.
@@ -50,33 +80,6 @@ You should then create a user for each CA using this certificate profile. Use th
 <note>
 The OCSP responders certificate(s) AND the CA certificate(s) need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
-</note>
-</subsection>
-<subsection name="Accessing the Admin GUI">
-<p>
-The OCSP responder have the same Admin GUI as the CA, so you can manage all your Crypto Tokens and Key Bindings using the Admin GUI (or the CLI see below).
-In an OCSP responder you normally only use a few functions of the Admin GUI, although all of them are available.
-The important functions for an OCSP responder are:
-</p>
-<ul>
-<li>Crypto Tokens</li>
-<li>Internal Key Bindings</li>
-</ul>
-<p>In order to access the Admin GUI there are a few pre-requisites:</p>
-<ul>
-<li>TLS keystores available as p12/tomcat.jks and p12/truststore.jks, to be deployed with deploy-keystore and web-configure (may require configuration of keystore password in conf/web.properties).</li>
-<li>A Management CA certificate imported (the certificate of the CA that issues administrator certificates).</li>
-<li>Administrators configured with access rules.</li>
-</ul>
-<p>If you only want to set up a super administrator, the initial super administrator access rule is automatically set up during initial startup (see database tables AdminGroupData and AccessRulesData).
-You can run the following commands to import a Management CA certificate and add a SuperAdmin, that has a certificate with "CN=SuperAdmin" issued from this CA (this will create a record in database table AdminEntityData).</p>
-<source>
-bin/ejbca.sh ca importcacert ManagementCA /home/user/adminca1.pem
-bin/ejbca.sh roles addadmin "Super Administrator Role" ManagementCA WITH_COMMONNAME TYPE_EQUALCASE SuperAdmin
-</source>
-<note>
-If you do not want to import the administrator certificate into EJBCA you can configure "web.reqcertindb=false" in conf/web.properties, otherwise the administrator certificate must be present in the database
-(can be imported using the CLI). 
 </note>
 </subsection>
 <subsection name="Workflow for setting up a new OCSP signer">

@@ -5,81 +5,81 @@
   </properties>
 <body>
 <section name="Standalone VA Installation">
-  <subsection name="Building and configuring the EJBCA CA">
-  <p>
-The EJBCA CA should be configured the same when installing a VA as for any other installation, in addition to setting preferences
-for the VA database in conf/va-publisher.properties. 
-The VA database is the master database for standalone VA installations and where the master CA will 
-publish certificates when they are issued or revoked. 
-  </p><p>
-The deploy command (ant deploy, or deploy-datasource) sets up a data source, <b>java:/OcspDS</b>, in JBoss (on the CA). If you use another application server 
-you must set up this data source manually. The VA data source should be not be involved in transactions
-(a <i>no-tx-datasource</i> in JBoss), and it should have autocommit (should be default in JBoss).
-  </p><p>
-Once EJBCA is been started you have to add a new publisher to the main CA server (not the VA). As a super administrator you add this publisher
-on the "Edit Publishers" page in the Admin GUI. Use publisher type "Validation Authority Publisher" The settings for this publisher are as follows: 
-  </p>
-<ul>
-<li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS. 
-This must be a non-tx/jta=false data source (see <a href="installation.html#JBoss">Installation</a> for instruction how to create this manually if needed).</li>
-<li>'Store certificate at the Validation Authority' - stores the complete certificate on the VA. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
-There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. 
-On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate. A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this enabled.
-</li>
-<li>'Publish only revoked certificates' - If checked only revoked certificate are stored on the VA. The OCSP responder of the VA must have the 'nonexistingisgood' (conf/ocsp.properties) enabled if only revoked certificates are published.
-A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this disabled.</li>
-<li>'Store CRL at the Validation Authority' - should be set if the CRL store service of the VA should be used for a CA (only has a meaning for publishers used on a 'Edit Certificate Authorities' page).
-In order to use this option you must also check 'Store certificate at the Validation Authority', and you must not check 'Publish only revoked certificates'. This is because the CA certificate(s) must also be stored in the VA when CRLs are stored there.</li>
-</ul>
-  <p>
-All certificate profiles for certificates that should be available to the OCSP responder should
-reference this publisher. To configure this you must be a super administrator.
-  </p><p>
-All CAs that publish certificates and CRLs to the VA should
-have a reference to this publisher. To configure this you must be a super administrator.
-  </p><p>
-Once the above is complete, all issed and revoked certificates with a profile that references a ValidationAuthorityPublisher should be published 
-to the VA database.
-It's important to verify that publishing succeeds and to synchronize the databases again should it fail. 
-See <a href="#Error%20handling">Error handling</a> below.
-  </p>
-  </subsection>
-  <subsection name="Building and configuring the EJBCA VA">
-  <p>
-A Validation Authority installation is at first glance identical to a standard CA installation, but only a subset of services is activated in order 
-to function as merely a VA. This means that an EJBCA installation could in practice be used as both its own CA and as a VA for 
-another CA at the same time. 
-  </p>
-  <note> 
-This is a radical change from EJBCA 5.0.x and previous versions, where the VA was defined as a subset of EJBCA at compile time. This design choice 
-has since then been reconsidered in order to allow better code reuse,
-flexibility, audit trail of management operations and (optional) administration through the AdminGUI.
-  </note>
-  <p>
-The VA is configured using the same configuration files as EJBCA. Files of special interest to a installation acting as a VA are
-va.properties, ocsp.properties, crlstore.properties and certstore.properties.
-  </p><p>
-For the certificate and CRL store service the sample file should be enough to understand how to set it up.
-For the OCSP responder service there is separate <a href="installation-ocsp.html">setup instructions</a> for the Standalone OCSP installation.
-  </p>
-  <p>
-The validation authority is built and deployed in the way as a CA installation with (deploy-keystore and web-configure steps is not required if you have disabled SSL, with web.nosslconfigure, in web.properties):
-  </p>
+<p><b>1. On the EJBCA VA </b> - Configure the VA</p>
+<p>
+A Validation Authority installation is at first glance identical to a standard CA installation, but only a subset 
+of services is activated in order to function as merely a VA. This means that an EJBCA installation could in practice 
+be used as both its own CA and as a VA for another CA at the same time. 
+</p>
+<p>
+The VA is configured using the same configuration files as EJBCA. Files that are of special interest to an installation 
+acting as a VA are va.properties, ocsp.properties, crlstore.properties and certstore.properties.  For the certificate and 
+CRL store service the sample file should be enough to understand how to set it up. For the OCSP responder, all default 
+options for the OCSP behavior is set in conf/ocsp.properties and conf/va.properties. All options are documented in these files. 
+In case of OCSP responder, you may also want to configure conf/cesecore.properties for "Secure audit log configuration", 
+i.e. if you want to log to database or file. The database audit log is only used for security events, i.e. access control 
+and configuration change events when using the GUI or CLI.
+</p>
+<p><b>2. On the EJBCA VA</b> - Build the VA</p>
+<p>
+The VA is build in the same way as the CA. So after starting JBoss, run the following command from EJBCA home directory:
+</p>
+<source>ant deploy</source> 
+<p>
+If you have not disabled SSL (by setting 'web.nosslconfigure' in web.properties file), you will need to copy tomcat.jks and 
+truststore.jks from EJBCA_HOME/p12 directory on the CA to the EJBCA_HOME/p12 directory on the VA (You might need to configure 
+web.properties to use the right passwords). Then, from EJBCA home directory, run the following commands:
+</p>
 <source>
-ant deploy
-ant deploy-keystore
+ant deplpy-keystore
 ant web-configure
 </source>
-  <p>
-on the VA server.
-  </p>
+<p><b>3. On the EJBCA CA</b> - Configure va-publisher.properties</p>
+<p>
+The EJBCA CA should be configured the same when installing a VA as for any other installation with the addition of setting preferences 
+for the VA database in conf/va-publisher.properties. The VA database is the master database for the standalone VA installations and where 
+the master CA will publish certificates when they are issued or revoked. 
+</p>
+<p>
+In the case of the VA being an OCSP responder, the data source 'java:/OcspDS' should be set in JBoss. The VA data source should not be 
+involved in transactions (a no-tx-datasource in JBoss), and it should have autocommit (should be default in JBoss). See 
+<a href="installation.html#JBoss">Installation</a> for instruction on how to create this data source if needed.
+</p>
+<p><b>4. On the EJBCA CA</b> - Add a va-publisher</p>
+<p>
+Add a new publisher to the main CA server (not the VA). As a super administrator, you add this publisher on the "Edit Publishers" page 
+in the Admin GUI. Use publisher type "Validation Authority Publisher" The settings for this publisher are as follows:
+<ul>
+    <li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if 
+    ocsp-datasource.jndi-name=OcspDS. This must be a non-tx/jta=false data source (see Installation for instruction how to create this 
+    manually if needed).</li>
+    <li>'Store certificate at the Validation Authority' - stores the complete certificate on the VA. If this is unchecked only the 
+    information needed to answer OCSP requests are stored, but not the certificate itself. There are good reasons not to publish the whole 
+    certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. On the other hand some OCSP 
+    Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate. A publisher for 
+    CA certificates (used on a 'Edit Certificate Authorities' page) must have this enabled.</li>
+    <li>'Publish only revoked certificates' - If checked only revoked certificate are stored on the VA. The OCSP responder of the VA must 
+    have the 'nonexistingisgood' (conf/ocsp.properties) enabled if only revoked certificates are published. A publisher for CA certificates 
+    (used on a 'Edit Certificate Authorities' page) must have this disabled.</li>
+    <li>'Store CRL at the Validation Authority' - should be set if the CRL store service of the VA should be used for a CA (only has a 
+    meaning for publishers used on a 'Edit Certificate Authorities' page). In order to use this option you must also check 'Store certificate 
+    at the Validation Authority', and you must not check 'Publish only revoked certificates'. This is because the CA certificate(s) must also 
+    be stored in the VA when CRLs are stored there.</li>
+</ul>
+</p>
+<p>
+All CAs that publish certificates and CRLs to the VA should have a reference to this publisher. To configure this you must be a super administrator.
+</p>
+<p>
+If the VA is a certificate or a CRL store service, the installation of the VA is complete. If the VA is an OCSP responder, continue the installation 
+by following the steps described in <a href="installation-ocsp.html">OCSP installation</a>. 
+</p>
 
-<subsubsection name="Responder database">
+<subsection name="VA database">
 <p>
 Certificate revocation information for the VA services must be present in the database of the instance acting as VA/OCSP responder.
 If the issuing CA and VA instances of EJBCA uses different databases, 'Publisher's are used to push real-time information from the CA to the VA database.
 </p>
-</subsubsection>
 </subsection>
 </section>
 
