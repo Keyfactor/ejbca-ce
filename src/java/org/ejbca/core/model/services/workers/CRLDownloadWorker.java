@@ -209,16 +209,16 @@ public class CRLDownloadWorker extends BaseWorker {
             }
             // If the CRL is newer than the last known or there wasn't any old one, loop through it
             if (newCrl.getRevokedCertificates()==null) {
-                log.info("No revoked certificates in CRL for CA '" + caInfo.getName() + "'");
+                log.info("No revoked certificates in " + (isDeltaCrl?"delta":"full") + " CRL for CA '" + caInfo.getName() + "'");
             } else {
                 final Set<X509CRLEntry> crlEntries = new HashSet<X509CRLEntry>();
                 crlEntries.addAll(newCrl.getRevokedCertificates());
-                if (log.isTraceEnabled()) {
-                    log.info("Downloaded CRL contains " + crlEntries.size() + " entries.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Downloaded CRL contains " + crlEntries.size() + " entries.");
                 }
                 if (lastCrlOfSameType != null && lastCrlOfSameType.getRevokedCertificates()!=null) {
-                    if (log.isTraceEnabled()) {
-                        log.info("Last known CRL contains " + lastCrlOfSameType.getRevokedCertificates().size() + " entries.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Last known CRL contains " + lastCrlOfSameType.getRevokedCertificates().size() + " entries.");
                     }
                     // Remove all entries that were processed last time
                     crlEntries.removeAll(lastCrlOfSameType.getRevokedCertificates());
@@ -232,23 +232,23 @@ public class CRLDownloadWorker extends BaseWorker {
                     if (crlEntry.getCertificateIssuer()!=null) {
                         final String entryIssuerDn = CertTools.stringToBCDNString(crlEntry.getCertificateIssuer().getName());
                         if (!issuerDn.equals(entryIssuerDn)) {
-                            log.info("CA's subjectDN does not match CRL entry's issuerDn '"+entryIssuerDn+"' and entry with serialNumber " + serialNumber + " will be ignored.");
+                            log.warn("CA's subjectDN does not match CRL entry's issuerDn '"+entryIssuerDn+"' and entry with serialNumber " + serialNumber + " will be ignored.");
                         }
                     }
                     // Store as much as possible about what we know about the certificate and its status (which is limited) in the database
                     certificateStoreSession.updateLimitedCertificateDataStatus(getAdmin(), caInfo.getCAId(), issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
                 }
-                // Calculate the CRL Number
-                final int newCrlNumber;
-                if (downloadedCrlNumber==0) {
-                    final int lastCrlNumber = crlStoreSession.getLastCRLNumber(issuerDn, isDeltaCrl);
-                    newCrlNumber = lastCrlNumber+1;
-                } else {
-                    newCrlNumber = downloadedCrlNumber;
-                }
-                // Last of all, store the CRL if the creation of database entries were successful
-                crlStoreSession.storeCRL(admin, crlBytesNew, caFingerprint, newCrlNumber, issuerDn, newCrl.getThisUpdate(), newCrl.getNextUpdate(), isDeltaCrl?1:-1);
             }
+            // Calculate (make up) the CRL Number if the number was not present
+            final int newCrlNumber;
+            if (downloadedCrlNumber==0) {
+                final int lastCrlNumber = crlStoreSession.getLastCRLNumber(issuerDn, isDeltaCrl);
+                newCrlNumber = lastCrlNumber+1;
+            } else {
+                newCrlNumber = downloadedCrlNumber;
+            }
+            // Last of all, store the CRL if there were no errors during creation of database entries
+            crlStoreSession.storeCRL(admin, crlBytesNew, caFingerprint, newCrlNumber, issuerDn, newCrl.getThisUpdate(), newCrl.getNextUpdate(), isDeltaCrl?1:-1);
         }
         return newCrl;
     }
