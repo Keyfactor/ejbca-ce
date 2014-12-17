@@ -188,6 +188,9 @@ public class NameConstraint extends StandardCertificateExtension {
             } catch (UnknownHostException e) {
                 throw new CertificateExtensionException("Failed to parse IP address in name constraint: "+str, e);
             }
+        } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)$")) {
+            // IP address without netmask. This is not a valid DNS name, so catch it here.
+            throw new CertificateExtensionException("Name constraint entry with IP address is missing a netmask: "+str+". Use /32 to match only this address.");
         } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
             // DNS name (it can start with a ".", this means "all subdomains")
             return "dNSName:"+str;
