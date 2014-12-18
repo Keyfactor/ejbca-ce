@@ -74,7 +74,6 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.ocsp.CertID;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
@@ -234,8 +233,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     	if (log.isTraceEnabled()) {
     		log.trace(">reloadOcspSigningCache");
     	}
-    	Map<CertificateID, X509Certificate> revokedSigningCertificates = new HashMap<CertificateID, X509Certificate>();
-        Map<CertificateID, X509Certificate> expiredSigningCertificates = new HashMap<CertificateID, X509Certificate>();
         // Cancel any waiting timers
         cancelTimers();
         try {      
