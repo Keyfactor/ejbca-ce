@@ -24,12 +24,12 @@ import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREnumerated;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevDetails;
@@ -159,7 +159,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    LOG.debug("Succeeded in parsing the novosec generated request.");
 		}
 		final CertTemplate ct = rd.getCertDetails();
-		final DERInteger serno = ct.getSerialNumber();
+		final ASN1Integer serno = ct.getSerialNumber();
 		final X500Name issuer = ct.getIssuer();
 		// Get the revocation reason. 
 		// For CMPv1 this can be a simple DERBitString or it can be a requested CRL Entry Extension
@@ -186,7 +186,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        try {
 		            final ASN1InputStream ai = new ASN1InputStream(ext.getExtnValue().getOctets());
 		            final ASN1Primitive obj = ai.readObject();
-		            final DEREnumerated crlreason = DEREnumerated.getInstance(obj);
+		            final ASN1Enumerated crlreason = ASN1Enumerated.getInstance(obj);
 		            // RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code
 		            reason = crlreason.getValue().intValue();
 		            if (LOG.isDebugEnabled()) {

@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.ca.CAOfflineException;

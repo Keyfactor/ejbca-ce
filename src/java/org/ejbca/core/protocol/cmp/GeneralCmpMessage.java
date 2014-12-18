@@ -13,7 +13,7 @@
 package org.ejbca.core.protocol.cmp;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cmp.CertConfirmContent;
 import org.bouncycastle.asn1.cmp.CertStatus;
@@ -98,7 +98,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			    log.debug("Succeeded in parsing the novosec generated request.");
 			}
 			final CertTemplate ct = rd.getCertDetails();
-			final DERInteger serno = ct.getSerialNumber();
+			final ASN1Integer serno = ct.getSerialNumber();
 			final X500Name issuer = ct.getIssuer();
 			if ( (serno != null) && (issuer != null) ) {
 				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));

@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
@@ -107,7 +107,7 @@ public class CrlExtensions {
         if (crlEntry.hasExtensions()) {
             final byte[] extensionValue = crlEntry.getExtensionValue(Extension.reasonCode.getId());
             try {
-                final DEREnumerated reasonCodeExtension = DEREnumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionValue));
+                final ASN1Enumerated reasonCodeExtension = ASN1Enumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionValue));
                 if (reasonCodeExtension!=null) {
                     reasonCode = reasonCodeExtension.getValue().intValue();
                 }

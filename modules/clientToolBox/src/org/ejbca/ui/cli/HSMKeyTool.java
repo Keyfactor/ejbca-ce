@@ -315,7 +315,7 @@ public class HSMKeyTool extends ClientToolBox {
                     // We have a symmAlg as last parameter
                     symmAlgOid = args[7];
                 }
-                System.err.println("Using symmstric encryption algorithm: "+symmAlgOid);
+                System.err.println("Using symmetric encryption algorithm: "+symmAlgOid);
                 final X509Certificate cert = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
                 CMS.encrypt(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert, symmAlgOid);
             } else {

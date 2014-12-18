@@ -33,10 +33,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -104,11 +104,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
      * we can restore the PKIMessage after serialization/deserialization. */
     private byte[] pkimsgbytes = null;
     private transient CertReqMsg req = null;
-
-    /** Private key used for signing/encrypting response, if needed */
-    private PrivateKey responsePrivateKey;
-    /** Security provider used for the responsePrivateKey */
-    private String responseProvider = "BC";
 
     /** Because CertReqMsg is not serializable we may need to encode/decode bytes if the object is lost during deserialization. */
     private CertReqMsg getReq() {
@@ -324,7 +319,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         BigInteger ret = null;
         final CertRequest request = getReq().getCertReq();
         final CertTemplate templ = request.getCertTemplate();
-        final DERInteger serno = templ.getSerialNumber();
+        final ASN1Integer serno = templ.getSerialNumber();
         if (serno != null) {
             ret = serno.getValue();
         }
@@ -583,9 +578,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
-        this.responsePrivateKey = key;
-        if (provider != null) {
-            this.responseProvider = provider;
+        //These values are never used for this type of message
+        if(log.isDebugEnabled()) {
+            log.debug("Key and provider were set for a CrmfRequestMessage. These values are not used and will be ignored.");
         }
     }
 

@@ -237,9 +237,8 @@ public class ScepRequestGenerator {
         gen1.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(certList)));
        
         String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestOid, keys.getPrivate().getAlgorithm());
-        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
         try {
-            ContentSigner contentSigner = signerBuilder.build(keys.getPrivate());
+            ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).build(keys.getPrivate());
             JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
             JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
             builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
