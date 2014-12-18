@@ -18,13 +18,13 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.Key;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.CMSAttributes;
 import org.bouncycastle.asn1.cms.Time;
@@ -37,7 +37,10 @@ import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.bc.BcCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
@@ -74,9 +77,10 @@ public class CMS {
     public static void encrypt(final InputStream is, final OutputStream os, final X509Certificate cert, final String symmAlgOid) throws Exception {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
-        final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
+        final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator(); 
         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator("hej".getBytes(), cert.getPublicKey()));
-        final OutputStream out = edGen.open(bos, symmAlgOid, "BC");
+        BcCMSContentEncryptorBuilder bcCMSContentEncryptorBuilder = new BcCMSContentEncryptorBuilder(new  ASN1ObjectIdentifier(symmAlgOid));
+        final OutputStream out = edGen.open(bos, bcCMSContentEncryptorBuilder.build());
         fromInToOut(bis, out);
         bos.close();
         os.close();
@@ -88,14 +92,15 @@ public class CMS {
      * @param providerName the provider that should do the decryption
      * @throws Exception
      */
-    public static void decrypt(final InputStream is, OutputStream os, Key key, String providerName) throws Exception  {
+    public static void decrypt(final InputStream is, OutputStream os, PrivateKey key, String providerName) throws Exception  {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         @SuppressWarnings("unchecked")
         final Iterator<RecipientInformation>  it = new CMSEnvelopedDataParser(bis).getRecipientInfos().getRecipients().iterator();
         if (it.hasNext()) {
-            final RecipientInformation recipient = it.next();
-            final CMSTypedStream recData = recipient.getContentStream(key, providerName);
+            final RecipientInformation recipientInformation = it.next();
+            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key);
+            final CMSTypedStream recData = recipientInformation.getContentStream(rec);
             final InputStream ris = recData.getContentStream();
             fromInToOut(ris, bos);
         }
@@ -116,8 +121,7 @@ public class CMS {
         JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
         final String digest = CMSSignedGenerator.DIGEST_SHA256;
         String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digest, key.getAlgorithm());
-        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
-        ContentSigner contentSigner = signerBuilder.build(key);
+        ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(providerName).build(key);
         if ( cert!=null ) {      
             gen.addSignerInfoGenerator(builder.build(contentSigner, cert));          
         } else {
@@ -165,7 +169,9 @@ public class CMS {
         final SignerId id = signerInfo.getSID();
         boolean result = false;
         try {
-            result = signerInfo.verify(cert, "BC");
+            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+            JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+            result = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(cert.getPublicKey()));
         } catch ( Throwable t ) { // NOPMD
             log.debug("Exception when verifying", t);
         }
