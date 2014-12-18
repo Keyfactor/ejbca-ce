@@ -75,6 +75,8 @@ import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
@@ -780,7 +782,9 @@ public class ProtocolScepHttpTest {
             Iterator<RecipientInformation> riIterator = c.iterator();
             byte[] decBytes = null;
             RecipientInformation recipient = riIterator.next();
-            decBytes = recipient.getContent(key1.getPrivate(), "BC");
+            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key1.getPrivate());
+            rec.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            decBytes = recipient.getContent(rec);
             // This is yet another CMS signed data
             CMSSignedData sd = new CMSSignedData(decBytes);
             // Get certificates from the signed data

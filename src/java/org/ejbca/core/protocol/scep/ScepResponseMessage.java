@@ -368,11 +368,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             Certificate cacert = signCertChain.iterator().next();
             log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(cacert));
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
-            JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
             try {
-                ContentSigner contentSigner = signerBuilder.build(signKey);
+                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(signKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
-                calculatorProviderBuilder.setProvider(provider);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
                 gen1.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) cacert));

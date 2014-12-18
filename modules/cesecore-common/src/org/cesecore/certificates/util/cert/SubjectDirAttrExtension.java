@@ -22,6 +22,7 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -93,7 +94,7 @@ public class SubjectDirAttrExtension extends CertTools {
 	        	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
-	        		DERGeneralizedTime time = DERGeneralizedTime.getInstance(set.getObjectAt(0));
+	        		ASN1GeneralizedTime time = ASN1GeneralizedTime.getInstance(set.getObjectAt(0));
 	        		Date date = time.getDate();
 	        		String dateStr = dateF.format(date);
 	        		result += prefix + "dateOfBirth="+dateStr; 

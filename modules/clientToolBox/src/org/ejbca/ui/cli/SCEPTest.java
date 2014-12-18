@@ -65,7 +65,12 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -358,10 +363,13 @@ class SCEPTest extends ClientToolBox {
 
 
             /** Method verifying various parts of the SCEP response message 
+             * @throws OperatorCreationException 
              * 
              */
-            private boolean checkScepResponse(byte[] retMsg, String senderNonce, String transId, boolean crlRep, String digestOid, boolean noca, ResponseStatus expectedResponseStatus, String userDN, boolean[] keyUsage) throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException, IOException {
-            	//
+            private boolean checkScepResponse(byte[] retMsg, String senderNonce, String transId, boolean crlRep, String digestOid, boolean noca,
+                    ResponseStatus expectedResponseStatus, String userDN, boolean[] keyUsage) throws CMSException, NoSuchProviderException,
+                    NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException,
+                    IOException, OperatorCreationException {
             	// Parse response message
             	//
             	CMSSignedData s = new CMSSignedData(retMsg);
@@ -387,9 +395,10 @@ class SCEPTest extends ClientToolBox {
             		StressTest.this.performanceTest.getLog().error("Issuers does not match: "+raCertIssuer+", "+sinfoIssuer);
             		return false;
             	}
-
-            	// Verify the signature
-            	boolean ret = signerInfo.verify(this.sessionData.certchain[0].getPublicKey(), "BC");
+                // Verify the signature
+            	JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+                JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+                boolean ret = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(this.sessionData.certchain[0].getPublicKey()));
             	if ( !ret ) {
             		StressTest.this.performanceTest.getLog().error("Can not verify signerInfo");
             		return false;
@@ -515,7 +524,9 @@ class SCEPTest extends ClientToolBox {
             		final Iterator<?> it = c.iterator();
             		recipient = (RecipientInformation) it.next();
             	}
-            	final byte decBytes[] = recipient.getContent(StressTest.this.keyPair.getPrivate(), "BC");
+                JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(StressTest.this.keyPair.getPrivate());
+                rec.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                final byte decBytes[] = recipient.getContent(rec);
             	// This is yet another CMS signed data
             	final CMSSignedData sd = new CMSSignedData(decBytes);
             	// Get certificates from the signed data

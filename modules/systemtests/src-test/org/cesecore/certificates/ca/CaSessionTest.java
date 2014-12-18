@@ -50,7 +50,9 @@ public class CaSessionTest extends RoleUsingTestCase {
     @AfterClass
     public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
         try {
-            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+            if (testx509ca != null) {
+                CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+            }
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();

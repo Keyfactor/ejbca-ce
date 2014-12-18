@@ -39,7 +39,6 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathBuilder;
 import java.security.cert.CertPathBuilderException;
@@ -95,7 +94,10 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.x509.X509CertStoreSelector;
@@ -939,7 +941,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         final CMSValidationResult result = new CMSValidationResult();
 
         try {
-            final ContentInfo ci = signedData.getContentInfo();
+            final ContentInfo ci = signedData.toASN1Structure();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("ci.content: " + ci.getContent() + "\n"
                     + "signedContent: " + signedData.getSignedContent());
@@ -972,8 +974,12 @@ public class BatchEnrollmentGUIView extends FrameView {
                     JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
                     for (X509CertificateHolder signerCert : signerCerts) {
                         final X509Certificate signerX509Cert = jcaX509CertificateConverter.getCertificate(signerCert);
-                        boolean consistent = si.verify(signerX509Cert.getPublicKey(), "BC");
-
+                        
+                        // Verify the signature
+                        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+                        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder;
+                        jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+                        boolean consistent = si.verify(jcaSignerInfoVerifierBuilder.build(signerX509Cert.getPublicKey()));
                         if (consistent) {
 
                             if (LOG.isDebugEnabled()) {
@@ -1020,13 +1026,10 @@ public class BatchEnrollmentGUIView extends FrameView {
                 }
             }
 
-        } catch (NoSuchAlgorithmException ex) {
-            result.setError(ex.getMessage());
-            LOG.error("Parsing and validating CMS", ex);
-        } catch (NoSuchProviderException ex) {
-            result.setError(ex.getMessage());
-            LOG.error("Parsing and validating CMS", ex);
         } catch (CMSException ex) {
+            result.setError(ex.getMessage());
+            LOG.error("Parsing and validating CMS", ex);
+        } catch (OperatorCreationException ex) {
             result.setError(ex.getMessage());
             LOG.error("Parsing and validating CMS", ex);
         }
