@@ -95,7 +95,7 @@ public interface CaSession {
      List<Integer> getAuthorizedCaIds(AuthenticationToken admin);
      
      /**
-      * Method returning info objects for  all CA's available to the system, i.e. not 
+      * Method returning info objects for  all active CA's available to the system, i.e. not 
       * having status "external" or "waiting for certificate response" and that the
       * administrator is authorized to, 
       * 
@@ -106,7 +106,7 @@ public interface CaSession {
       * @return a List<Integer> of available CA id's
       */
      List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken);
-    
+     
     /**
      * Method returning names of all CA's available to the system that the
      * administrator is authorized to i.e. not having status "external" or

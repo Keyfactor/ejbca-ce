@@ -45,6 +45,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -307,7 +308,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             }
         }
         for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
-            if (caInfo.getCAType() == CAInfo.CATYPE_X509) {
+            if (caInfo.getCAType() == CAInfo.CATYPE_X509 && caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 //Checking actual certificate, because CA subject DN does not have to be CA certificate subject DN
                 final String caSubjectDn = CertTools.getSubjectDN(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0));
                 if (!internalkeybindingSet.contains(caSubjectDn)) {
