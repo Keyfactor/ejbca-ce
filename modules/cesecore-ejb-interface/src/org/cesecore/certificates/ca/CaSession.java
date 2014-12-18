@@ -96,7 +96,7 @@ public interface CaSession {
      
      /**
       * Method returning info objects for  all active CA's available to the system, i.e. not 
-      * having status "external" or "waiting for certificate response" and that the
+      * having status "external", uninitialized or "waiting for certificate response" and that the
       * administrator is authorized to, 
       * 
       * Does not log access control to all CAs it checks, because this does not 
