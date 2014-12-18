@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -117,7 +118,7 @@ public class SetDefaultOcspResponderCommand extends EjbcaCliUserCommandBase {
         List<String[]> caContents = new ArrayList<String[]>();     
         for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(getAuthenticationToken())) {
             final String caSubjectDn = CertTools.getSubjectDN(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0));
-            if (caInfo.getCAType() == CAInfo.CATYPE_X509 && !knownDNs.contains(caSubjectDn)) {
+            if (caInfo.getCAType() == CAInfo.CATYPE_X509 && !knownDNs.contains(caSubjectDn) && caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 caContents.add(new String[] { caInfo.getName(), caSubjectDn});
             }
         }

@@ -152,26 +152,22 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private String authenticationcode;
 
 	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
-	    final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
-        for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
-            final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
-            if (sortMap.get(cryptoTokenId) == null) {
-                // Perhaps not authorized to view the CryptoToken used by the CA, but we implicitly
-                // allow this in the current context since we are authorized to the CA.
-                final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId.intValue());
-                if (cryptoTokenInfo == null) {
-                    sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
-                } else {
-                    final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken,
-                            CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
-                    final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken,
-                            CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
-                    sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
+        final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
+        for (final CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
+                final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
+                if (sortMap.get(cryptoTokenId)==null) {
+                    // Perhaps not authorized to view the CryptoToken used by the CA, but we implicitly
+                    // allow this in the current context since we are authorized to the CA.
+                    final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId.intValue());
+                    if (cryptoTokenInfo==null) {
+                        sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
+                    } else {
+                        final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
+                        final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
+                        sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
+                    }
                 }
-            }
-            sortMap.get(cryptoTokenId).add(
-                    new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
-
+                sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
         }
         final TokenAndCaActivationGuiInfo[] tokenAndCasArray = sortMap.values().toArray(new TokenAndCaActivationGuiInfo[0]);
         // Sort array by CryptoToken name
@@ -182,24 +178,24 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
             }
         });
         final List<TokenAndCaActivationGuiComboInfo> retValues = new ArrayList<TokenAndCaActivationGuiComboInfo>();
-	    for (final TokenAndCaActivationGuiInfo value : tokenAndCasArray) {
-	        boolean first = true;
-	        final CaActivationGuiInfo[] casArray = value.getCas().toArray(new CaActivationGuiInfo[0]);
-	        // Sort array by CA name
-	        Arrays.sort(casArray, new Comparator<CaActivationGuiInfo>() {
-	            @Override
-	            public int compare(CaActivationGuiInfo o1, CaActivationGuiInfo o2) {
-	                return o1.getName().compareToIgnoreCase(o2.getName());
-	            }
-	        });
-	        for (final CaActivationGuiInfo value2 : casArray) {
-	            retValues.add(new TokenAndCaActivationGuiComboInfo(value, value2, first));
-	            first = false;
-	        }
-	    }
-	    authorizedTokensAndCas = retValues;
-	    return retValues;
-	}
+        for (final TokenAndCaActivationGuiInfo value : tokenAndCasArray) {
+            boolean first = true;
+            final CaActivationGuiInfo[] casArray = value.getCas().toArray(new CaActivationGuiInfo[0]);
+            // Sort array by CA name
+            Arrays.sort(casArray, new Comparator<CaActivationGuiInfo>() {
+                @Override
+                public int compare(CaActivationGuiInfo o1, CaActivationGuiInfo o2) {
+                    return o1.getName().compareToIgnoreCase(o2.getName());
+                }
+            });
+            for (final CaActivationGuiInfo value2 : casArray) {
+                retValues.add(new TokenAndCaActivationGuiComboInfo(value, value2, first));
+                first = false;
+            }
+        }
+        authorizedTokensAndCas = retValues;
+        return retValues;
+    }
 
 	/**
 	 * Tries to activate CryptoTokens (once for each), if authentication code is present and activation is requested.

@@ -426,7 +426,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         return returnval;
     }
-
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken) {
@@ -438,13 +438,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             } catch (CADoesntExistsException e) {
                 throw new IllegalStateException("CA with ID " + caId + " was not found in spite if just being retrieved.");
             }
-            if ( caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+            if ( caInfo.getStatus() != CAConstants.CA_EXTERNAL 
+                    && caInfo.getStatus() != CAConstants.CA_UNINITIALIZED 
+                    && caInfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE ) {
                 result.add(caInfo);
             }
         }
         return result;
-    }
-    
+    }    
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
