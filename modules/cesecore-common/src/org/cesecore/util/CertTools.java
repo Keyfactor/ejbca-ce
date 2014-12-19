@@ -574,9 +574,9 @@ public abstract class CertTools {
      * The default ordering is: "CN=Tomas, O=PrimeKey, C=SE" (dNObjectsForward ordering in EJBCA) a dn or form "C=SE, O=PrimeKey, CN=Tomas" is
      * reversed.
      * 
+     * If the string has only one component (e.g. "CN=example.com") then this method returns false.
      * 
      * @param dn String containing DN to be checked, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
-     * 
      * @return true if the DN is believed to be in reversed order, false otherwise
      */
     public static boolean isDNReversed(String dn) {
@@ -618,6 +618,19 @@ public abstract class CertTools {
          */
         return ret;
     } // isDNReversed
+    
+    /**
+     * Checks if a DN has at least two components. Then the DN can be in either LDAP or X500 order.
+     * Otherwise it's not possible to determine the order.
+     */
+    public static boolean dnHasMultipleComponents(String dn) {
+        final X509NameTokenizer xt = new X509NameTokenizer(dn);
+        if (xt.hasMoreTokens()) {
+            xt.nextToken();
+            return xt.hasMoreTokens();
+        }
+        return false;
+    }
 
     /**
      * Gets a specified part of a DN. Specifically the first occurrence it the DN contains several instances of a part (i.e. cn=x, cn=y returns x).
@@ -3674,7 +3687,8 @@ public abstract class CertTools {
                     validator.checkPermitted(dngn);
                     validator.checkExcluded(dngn);
                 } catch (PKIXNameConstraintValidatorException e) {
-                    final boolean isLdapOrder = !isDNReversed(subjectDNName.toString());
+                    final String dnStr = subjectDNName.toString();
+                    final boolean isLdapOrder = dnHasMultipleComponents(dnStr) && !isDNReversed(dnStr);
                     if (isLdapOrder) {
                         final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
                         throw new IllegalNameException(msg);
