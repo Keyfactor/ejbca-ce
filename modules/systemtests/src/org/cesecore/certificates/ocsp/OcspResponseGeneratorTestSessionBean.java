@@ -22,6 +22,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
@@ -44,9 +45,9 @@ public class OcspResponseGeneratorTestSessionBean implements
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     
     @Override
-    public void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
+    public void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, CertificateStatus certificateStatus, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
             String signatureProviderName, InternalKeyBinding ocspKeyBinding) {
-        OcspSigningCacheEntry ocspSigningCacheEntry = new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, ocspSigningCertificate, privateKey,
+        OcspSigningCacheEntry ocspSigningCacheEntry = new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
                 signatureProviderName, (OcspKeyBinding) ocspKeyBinding);
         try {
             OcspSigningCache.INSTANCE.stagingStart();

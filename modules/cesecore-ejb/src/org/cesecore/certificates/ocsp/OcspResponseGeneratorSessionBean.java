@@ -117,6 +117,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStatusHolder;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -290,7 +291,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (caCertificateChain.size() > 0) {
                                 X509Certificate caCertificate = caCertificateChain.get(0);
-                                OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, null, privateKey,
+                                CertificateStatus caCertificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate), CertTools.getSerialNumber(caCertificate));
+                                OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
                                         signatureProviderName, null));
                                 // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
                                 // signing will still fail even if the signing cert is valid. 
@@ -313,9 +315,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             for (final Certificate certificate : caInfo.getCertificateChain()) {
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
+                            CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
+                                    CertTools.getSerialNumber(caCertificateChain.get(0)));
                             //Add an entry with just a chain and nothing else
-                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), null, null, null, null, null));
-                            
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, null, null,
+                                    null, null, null));
+  
                         }
                     } catch (CADoesntExistsException e) {
                         // Should only happen if the CA was deleted between the getAvailableCAs and the last one
@@ -405,7 +410,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isDebugEnabled()) {
             log.debug("Adding OcspKeyBinding "+ocspKeyBinding.getId()+", "+ocspKeyBinding.getName());
         }
-        return new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateChain, ocspSigningCertificate, privateKey, signatureProviderName, ocspKeyBinding);
+        CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
+                CertTools.getSerialNumber(caCertificateChain.get(0)));
+        return new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
+                signatureProviderName, ocspKeyBinding);
     }
     
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
@@ -1098,8 +1106,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                      * We will sign the response with the CA that issued the last certificate(certId) in the request. If the issuing CA is not available on 
                      * this server, we sign the response with the default responderId (from params in web.xml). We have to look up the ca-certificate for 
                      * each certId in the request though, as we will check for revocation on the ca-cert as well when checking for revocation on the certId.
-                     */
-                    
+                     */                
                     // We could not find certificate for this request so get certificate for default responder
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
                     if (ocspSigningCacheEntry != null) {
@@ -1126,22 +1133,42 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                 }
-                /*
-                 * Implement logic according to chapter 2.7 in RFC2560
-                 * 
-                 * 2.7 CA Key Compromise If an OCSP responder knows that a particular CA's private key has been compromised, it MAY return the revoked
-                 * state for all certificates issued by that CA.
-                 */
+      
                 final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
                 // Check if the cacert (or the default responderid) is revoked
                 X509Certificate caCertificate = ocspSigningCacheEntry.getIssuerCaCertificate();
-                final CertificateStatus signerIssuerCertStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate),
-                        CertTools.getSerialNumber(caCertificate));
+                final CertificateStatus signerIssuerCertStatus = ocspSigningCacheEntry.getIssuerCaCertificateStatus();
                 final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
-                if (!signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
-                    // Check if cert is revoked
-                    // (i.e serialNumber asked for (subject serialNo) and issuerDN of subject cert, i.e. ca-certificates subjectDN).
-                    final CertificateStatus status = certificateStoreSession.getStatus(caCertificateSubjectDn, certId.getSerialNumber());
+                CertificateStatusHolder certificateStatusHolder = null;
+                if (signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
+                    /*
+                     * According to chapter 2.7 in RFC2560:
+                     * 
+                     * 2.7 CA Key Compromise If an OCSP responder knows that a particular CA's private key has been compromised, it MAY return the revoked
+                     * state for all certificates issued by that CA.
+                     */
+                    // If we've ended up here it's because the signer issuer certificate was revoked. 
+                    certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
+                            CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
+                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate),
+                            CertTools.getSubjectDN(caCertificate));
+                    log.info(infoMsg);
+                    responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
+                    transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
+                    transactionLogger.writeln();
+                } else {
+                    /**
+                     * Here is the actual check for the status of the sought certificate (easy to miss). Here we grab just the status if there aren't
+                     * any OIDs defined (default case), but if there are we'll probably need the certificate as well. If that's the case, we'll grab
+                     * the certificate in the same transaction.
+                     */
+                    final CertificateStatus status;
+                    if (extensionOids.isEmpty()) {
+                        status = certificateStoreSession.getStatus(caCertificateSubjectDn, certId.getSerialNumber());
+                    } else {
+                        certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(caCertificateSubjectDn, certId.getSerialNumber());
+                        status = certificateStatusHolder.getCertificateStatus();
+                    }
                     // If we have an OcspKeyBinding configured for this request, we override the default value
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                         nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
@@ -1229,15 +1256,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     responseList.add(respItem);
                     transactionLogger.writeln();
-                } else {
-                    // If we've ended up here it's because the signer certificate was revoked. 
-                    certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
-                            CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
-                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate), CertTools.getSubjectDN(caCertificate));
-                    log.info(infoMsg);
-                    responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
-                    transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
-                    transactionLogger.writeln();
                 }
                 for (String oidstr : extensionOids) {
                     boolean useAlways = false;
@@ -1259,9 +1277,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         OCSPExtension extObj = OcspExtensionsCache.INSTANCE.getExtensions().get(oidstr);
                         if (extObj != null) {
                             // Find the certificate from the certId
-                            X509Certificate cert = null;
-                            cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(caCertificateSubjectDn, certId.getSerialNumber());
-                            if (cert != null) {
+                            if(certificateStatusHolder != null && certificateStatusHolder.getCertificate() != null) {
+                                X509Certificate cert = (X509Certificate) certificateStatusHolder.getCertificate();
                                 // Call the OCSP extension
                                 Map<ASN1ObjectIdentifier, Extension> retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert,
                                         certStatus);
