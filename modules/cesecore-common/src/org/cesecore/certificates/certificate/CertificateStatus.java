@@ -37,8 +37,8 @@ public class CertificateStatus implements Serializable {
     public final int revocationReason;
     public final int certificateProfileId;
     
-    public CertificateStatus(String s, int certProfileId) {
-        this.name = s;
+    public CertificateStatus(String name, int certProfileId) {
+        this.name = name;
         this.revocationDate = new Date(-1L);
         this.revocationReason = RevokedCertInfo.NOT_REVOKED;
         this.certificateProfileId = certProfileId;
