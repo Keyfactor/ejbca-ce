@@ -1513,7 +1513,7 @@ Example generating a certificate from a PKCS10 request:
                                                               null,
                                                               CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
-  X509Certificate cert = certenv.getCertificate (); 		
+  X509Certificate cert = certenv.getCertificate(); 		
 </source>
 <p>
 Example checking the revocation status of a certificate:
