@@ -295,15 +295,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
                                         signatureProviderName, null));
                                 // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
-                                // signing will still fail even if the signing cert is valid. 
-                                if (certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate), CertTools.getSerialNumber(caCertificate))
-                                        .equals(CertificateStatus.REVOKED)) {
-                                    log.warn("Active CA with subject DN " + CertTools.getSubjectDN(caCertificate) + " and serial number "
+                                // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
+                                if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
+                                    log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
                                             + CertTools.getSerialNumber(caCertificate) + " has a revoked certificate.");
                                 }
                                 //Check if CA cert is expired
                                 if (!CertTools.isCertificateValid(caCertificate)) {
-                                    log.warn("Active CA with subject DN " + CertTools.getSubjectDN(caCertificate) + " and serial number "
+                                    log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
                                             + CertTools.getSerialNumber(caCertificate) + " has an expired certificate.");
                                 }
                             } else {
@@ -317,6 +316,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
                                     CertTools.getSerialNumber(caCertificateChain.get(0)));
+                            // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
+                            // signing will still fail even if the signing cert is valid. 
+                            if (certificateStatus.equals(CertificateStatus.REVOKED)) {
+                                log.warn("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
+                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate.");
+                            }
+                            //Check if CA cert is expired
+                            if (!CertTools.isCertificateValid(caCertificateChain.get(0))) {
+                                log.warn("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
+                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate.");
+                            }
                             //Add an entry with just a chain and nothing else
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, null, null,
                                     null, null, null));
@@ -348,12 +358,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     //Make the same check as above 
                     if (certificateStoreSession.getStatus(CertTools.getIssuerDN(ocspSigningCertificate), CertTools.getSerialNumber(ocspSigningCertificate))
                             .equals(CertificateStatus.REVOKED)) {
-                        log.warn("OCSP Responder certificate with subject DN " + CertTools.getSubjectDN(ocspSigningCertificate) + " and serial number "
+                        log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate) + "' and serial number "
                                 + CertTools.getSerialNumber(ocspSigningCertificate) + " is revoked.");
                     }
                     //Check if signing cert is expired
                     if (!CertTools.isCertificateValid(ocspSigningCertificate)) {
-                        log.warn("OCSP Responder certificate with subject DN " + CertTools.getSubjectDN(ocspSigningCertificate) + " and serial number "
+                        log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate) + "' and serial number "
                                 + CertTools.getSerialNumber(ocspSigningCertificate) + " is expired.");
                     }
                     
