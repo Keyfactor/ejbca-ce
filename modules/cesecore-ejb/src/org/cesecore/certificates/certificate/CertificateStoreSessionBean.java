@@ -442,11 +442,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));
             log.error(msg);
         }
-        Iterator<CertificateData> iter = coll.iterator();
         Certificate cert = null;
         // There are several certs, we will try to find the latest issued one
-        while (iter.hasNext()) {
-            cert = iter.next().getCertificate(this.entityManager);
+        for(CertificateData certificateData : coll) {
+            cert = certificateData.getCertificate(this.entityManager);
             if (ret != null) {
                 if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(ret))) {
                     // cert is never than ret
@@ -908,9 +907,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 final String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));
                 log.error(msg);
             }
-            Iterator<CertificateData> iter = coll.iterator();
-            if (iter.hasNext()) {
-                final CertificateData data = iter.next();
+           
+            for(CertificateData data : coll) {
                 final CertificateStatus result = getCertificateStatus(data);
                 if (log.isTraceEnabled()) {
                     log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
@@ -924,6 +922,31 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             throw new EJBException(e);
         }
         return CertificateStatus.NOT_AVAILABLE;
+    }
+
+    @Override
+    public CertificateStatusHolder getCertificateAndStatus(String issuerDN, BigInteger serno) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getCertificateAndStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        }
+        // First make a DN in our well-known format
+        final String dn = CertTools.stringToBCDNString(issuerDN);
+        Collection<CertificateData> collection = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+        if (collection.size() > 1) {
+            final String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));
+            log.error(msg);
+        }     
+        for (CertificateData data : collection) {
+            final CertificateStatus result = getCertificateStatus(data);
+            if (log.isTraceEnabled()) {
+                log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
+            }
+            return new CertificateStatusHolder(data.getCertificate(entityManager), result);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getCertificateAndStatus() did not find certificate with dn " + dn + " and serno " + serno.toString(16));
+        }
+        return new CertificateStatusHolder(null, CertificateStatus.NOT_AVAILABLE);
     }
 
     /**

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.cert.ocsp.CertificateID;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 
 /**
@@ -35,10 +36,12 @@ public class OcspSigningCacheEntry {
     private final String signatureProviderName;
     private final OcspKeyBinding ocspKeyBinding;
     private final X509Certificate issuerCaCertificate;
+    private final CertificateStatus issuerCaCertificateStatus;
 
-    public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
+    public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
+            List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
             String signatureProviderName, OcspKeyBinding ocspKeyBinding) {
-        this.caCertificateChain = signingCaCertificateChain;
+      this.caCertificateChain = signingCaCertificateChain;
         this.ocspSigningCertificate = ocspSigningCertificate;
         if (ocspSigningCertificate == null) {
             fullCertificateChain = signingCaCertificateChain;
@@ -52,6 +55,7 @@ public class OcspSigningCacheEntry {
         this.ocspKeyBinding = ocspKeyBinding;
         this.issuerCaCertificate = issuerCaCertificate;
         this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(issuerCaCertificate);
+        this.issuerCaCertificateStatus = issuerCaCertificateStatus;
     }
 
     public List<CertificateID> getCertificateID() { return certificateID; }
@@ -67,6 +71,10 @@ public class OcspSigningCacheEntry {
      * */
     public boolean isUsingSeparateOcspSigningCertificate() { return ocspSigningCertificate != null; }
     
+    public CertificateStatus getIssuerCaCertificateStatus() {
+        return issuerCaCertificateStatus;
+    }
+
     public boolean isPlaceholder() { return privateKey == null; }
 
     public X509Certificate getIssuerCaCertificate() {

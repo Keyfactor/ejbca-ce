@@ -340,6 +340,16 @@ public interface CertificateStoreSession {
     CertificateStatus getStatus(String issuerDN, BigInteger serno);
 
     /**
+     * Performs the same operation as getStatus, but returns a richer object which also contains the certificate, in order to save on database 
+     * lookups when both objects are required. Issuer + serial number are always unique. 
+     * 
+     * @param issuerDN the issuer of the sought certificate
+     * @param serno the serial number of the sought certificate
+     * @return a {@link CertificateStatusHolder} object containing the status and the sought certificate.
+     */
+    CertificateStatusHolder getCertificateAndStatus(String issuerDN, BigInteger serno);
+    
+    /**
      * Update the status of a cert in the database.
      * @param fingerprint
      * @param status one of CertificateConstants.CERT_...
