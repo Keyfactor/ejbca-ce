@@ -10,6 +10,19 @@ For upgrade instructions, please see UPGRADE.
 
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	ant install is known to fail on Windows machines running JDK >= 7.21 https://jira.primekey.se/browse/ECA-3602 
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though. https://jira.primekey.se/browse/ECA-4022 
+
+EJBCA 6.2.7
+-----------
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	ant install is known to fail on Windows machines running JDK >= 7.21 https://jira.primekey.se/browse/ECA-3602 
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though. https://jira.primekey.se/browse/ECA-4022 
 
 EJBCA 6.2.6
 -----------
