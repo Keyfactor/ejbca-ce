@@ -7,22 +7,22 @@
 <section name="Standalone VA Installation">
 <p><b>1. On the EJBCA VA </b> - Configure the VA</p>
 <p>
-A Validation Authority installation is at first glance identical to a standard CA installation, but only a subset 
-of services is activated in order to function as merely a VA. This means that an EJBCA installation could in practice 
+A Validation Authority installation is at first glance identical to a standard CA installation, but only a subset of 
+services need to be activated for it to function as a VA. This means that an EJBCA installation could in practice 
 be used as both its own CA and as a VA for another CA at the same time. 
 </p>
 <p>
 The VA is configured using the same configuration files as EJBCA. Files that are of special interest to an installation 
-acting as a VA are va.properties, ocsp.properties, crlstore.properties and certstore.properties.  For the certificate and 
-CRL store service the sample file should be enough to understand how to set it up. For the OCSP responder, all default 
-options for the OCSP behavior is set in conf/ocsp.properties and conf/va.properties. All options are documented in these files. 
-In case of OCSP responder, you may also want to configure conf/cesecore.properties for "Secure audit log configuration", 
+acting as a VA are va.properties, ocsp.properties, crlstore.properties and certstore.properties. For the certificate and 
+CRL store services, the sample file should be enough to understand how to set the VA up. For the OCSP responder, all default 
+options for the OCSP behavior are set in the conf/ocsp.properties and conf/va.properties files and the AdminGUI (or the command line). 
+In the OCSP responder case, you may also want to configure conf/cesecore.properties for "Secure audit log configuration", 
 i.e. if you want to log to database or file. The database audit log is only used for security events, i.e. access control 
 and configuration change events when using the GUI or CLI.
 </p>
 <p><b>2. On the EJBCA VA</b> - Build the VA</p>
 <p>
-The VA is build in the same way as the CA. So after starting JBoss, run the following command from EJBCA home directory:
+The VA is built in the same way as the CA. So after starting JBoss, run the following command from EJBCA home directory:
 </p>
 <source>ant deploy</source> 
 <p>
@@ -31,7 +31,7 @@ truststore.jks from EJBCA_HOME/p12 directory on the CA to the EJBCA_HOME/p12 dir
 web.properties to use the right passwords). Then, from EJBCA home directory, run the following commands:
 </p>
 <source>
-ant deplpy-keystore
+ant deploy-keystore
 ant web-configure
 </source>
 <p><b>3. On the EJBCA CA</b> - Configure va-publisher.properties</p>
