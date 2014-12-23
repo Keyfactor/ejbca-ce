@@ -4,7 +4,7 @@
 %>
 
 
-<h1><%= ejbcawebbean.getText("MANAGEUSERDATASOURCES") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEUSERDATASOURCES") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Framework%20for%20External%20User%20Data%20Sources") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#userdatasources"%>")'>
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
