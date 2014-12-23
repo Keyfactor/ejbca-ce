@@ -1946,7 +1946,7 @@ All Internal Key Bindings share the following properties:
 </ul>
 <subsection name="Actions">
 <p>
-From the overview page the following actions are avilable:
+From the overview page the following actions are available:
 </p>
 <ul>
 <li>Enable/Disable: Marks the Internal Key Binding as Active/Disabled. Only Active ones will be used and processed
