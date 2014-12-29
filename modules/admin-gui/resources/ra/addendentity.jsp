@@ -8,7 +8,7 @@
                  javax.ejb.CreateException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils,
                  org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
-                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint" %>
+                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.CertificateExtensionException" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -606,32 +606,36 @@
 				}
 				newuser.setExtendedInformation(ei);
 			}
-			if( oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0) ) {
-                ExtendedInformation ei = newuser.getExtendedInformation();
-                if (ei == null) {
-                    ei = new ExtendedInformation();
+			try {
+    			if( oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0) ) {
+                    ExtendedInformation ei = newuser.getExtendedInformation();
+                    if (ei == null) {
+                        ei = new ExtendedInformation();
+                    }
+                    value = request.getParameter(TEXTAREA_NC_PERMITTED);
+                    if ( value!=null && !value.trim().isEmpty() ) {
+                        ei.setNameConstraintsPermitted(NameConstraint.parseNameConstraintsList(value));
+                    } else {
+                        ei.setNameConstraintsPermitted(null);
+                    }
+                    newuser.setExtendedInformation(ei);
                 }
-                value = request.getParameter(TEXTAREA_NC_PERMITTED);
-                if ( value!=null && !value.trim().isEmpty() ) {
-                    ei.setNameConstraintsPermitted(NameConstraint.parseNameConstraintsList(value));
-                } else {
-                    ei.setNameConstraintsPermitted(null);
+                if( oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0) ) {
+                    ExtendedInformation ei = newuser.getExtendedInformation();
+                    if (ei == null) {
+                        ei = new ExtendedInformation();
+                    }
+                    value = request.getParameter(TEXTAREA_NC_EXCLUDED);
+                    if ( value!=null && !value.trim().isEmpty() ) {
+                        ei.setNameConstraintsExcluded(NameConstraint.parseNameConstraintsList(value));
+                    } else {
+                        ei.setNameConstraintsExcluded(null);
+                    }
+                    newuser.setExtendedInformation(ei);
                 }
-                newuser.setExtendedInformation(ei);
-            }
-            if( oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0) ) {
-                ExtendedInformation ei = newuser.getExtendedInformation();
-                if (ei == null) {
-                    ei = new ExtendedInformation();
-                }
-                value = request.getParameter(TEXTAREA_NC_EXCLUDED);
-                if ( value!=null && !value.trim().isEmpty() ) {
-                    ei.setNameConstraintsExcluded(NameConstraint.parseNameConstraintsList(value));
-                } else {
-                    ei.setNameConstraintsExcluded(null);
-                }
-                newuser.setExtendedInformation(ei);
-            }
+			} catch (CertificateExtensionException e) {
+			    approvalmessage = e.getMessage();
+			}
            
            // See if user already exists
            if(rabean.userExist(newuser.getUsername())){
@@ -640,7 +644,8 @@
            } else{
      if( request.getParameter(BUTTON_RELOAD) != null ){
       useoldprofile = true;   
-     }else{
+     }else if (approvalmessage == null){
+       // No error. Go ahead an add user
        try{
          rabean.addUser(newuser); 
          useradded=true;
