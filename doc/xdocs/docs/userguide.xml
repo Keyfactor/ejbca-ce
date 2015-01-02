@@ -2263,6 +2263,13 @@ use the button <b>Add...</b> to browse for the files.</li>
 the resulting certificate.</li>
 <li>Click the button <b>Enroll</b>.</li>
 </ol>
+<p>
+Note: The GUI can guess which end entity the request belongs to if the file name
+contains the name of an existing end entity. For instance if the request files 
+are named user1-00002.csr, user2-00002.csr and user3-00002.csr" and there exists
+end entities in EJBCA user1, user2 and user3 then they will already be
+selected.
+</p>
 </subsection>
 <subsection name="Signed requests">
 <p>
