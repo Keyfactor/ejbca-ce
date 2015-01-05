@@ -30,16 +30,16 @@ Note: There's predefined CA & SUBCA certificate profiles for creating the CA's c
 EJBCA use cert profile to create a cert.
 
 4.create CA role
-system functions->edit administrator privileges->add role
+System Functions->Administrator Roles->Add
 A CA role will bind to a CA created before, which will issue their certs.
 
 5.Add CA administrators to the role
-system functions->edit administrator privileges->edit administrators
+System Functions->Administrator Roles->Administrators
 All users in EJBCA is distinguished by it's cert, pick up a field and it's value to identify a particular user, the cert of this user will be issued later.
 It's important to import the CA's cert into JRE's trusted cert store for the cert of the CA administrator to be accepted.
 
 6.edit access rules, choose the role & CA to manage
-system functions->edit administrator privileges->edit administrators->edit access rules
+System Functions->Administrator Roles->Access Rules
 specify the role of this group, and the CA this group will manage.
 The roles can be: CA administrators, RA administrators, supervisors, Super Administrators
 and the rights this group has: rights to end entity, the end entity profile can use, and whether can issue hard token.
@@ -47,7 +47,7 @@ and the rights this group has: rights to end entity, the end entity profile can 
 In order to issue a cert, certificate profile and end entity profile is needed. It is so called "design a cert".
 
 7.create certificate profile for CA administrators
-CA functions->Edit Certificate Profiles
+CA functions->Certificate Profiles
 1).design a cert
 2).bind a certificate profile to a CA
 3).bind a certificate profile to a publisher
