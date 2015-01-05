@@ -1354,7 +1354,7 @@ and keystore password) by the users password.
 <p>
 If the server generates the keys and a certificate request (CSR) for you, select token type "User generated".
 You can use the public enrollment web pages (http://127.0.0.1:8080/ejbca/) to paste the request and receive the certificate.
-This function is under "Certificate Enrollment->manually for a server".
+This function is under "Create Certificate from CSR".
 </p>
 <p>
 It is also possible to use openssl to transform a PKCS12 file to PEM-
@@ -1407,7 +1407,7 @@ You should previously have created the certificate profile and end entity profil
 <li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
 <li>Under "CA" you should not be able to choose anything but the default "ManagementCA".</li>
 <li>Under "Token", choose "P12".</li>
-<li>Press "Add End Entity".</li>
+<li>Press "Add".</li>
 <li>Goto "Public Web" and then  "Create Keystore".</li>
 <li>Enter the username, testsrv.domain.com, and password for the user you created, and press "OK".</li>
 <li>Choose "Key length" "1024".</li> 
@@ -1432,7 +1432,7 @@ You should previously have created the certificate profile and end entity profil
 <li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
 <li>Under "CA" you should not be able to choose anything but the default "ManagementCA".</li>
 <li>Under "Token", choose "User Generated".</li>
-<li>Press "Add End Entity".</li>
+<li>Press "Add".</li>
 <li>Goto "Public Web" and then  "Create Certificate from CSR".</li>
 <li>Enter the username, testsrv.domain.com, and password for the user you created. Note that the password field is called "enrollment code" here. Paste the CSR from the server and press "OK".</li>
 <li>A new certificate will be generated so you can download it to your desktop.</li>
@@ -1514,7 +1514,7 @@ How to automate that is more advanced and can be done in many ways, suitable for
 An EJBCA Administrator is identified by information in the client SSL
 certificate. The information is validated in the following steps:
 <ol>
-<li>During the SSL handshake with the application server, the issuer of the
+<li>During the TLS handshake with the application server, the issuer of the
 client certificate is verified with a list of trusted CA certificates known as
 the 'truststore'.</li>
 <li>EJBCA verfies that the client certificate exists in the database and that
@@ -1547,7 +1547,7 @@ truststore is in use</li>
 <li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
  - Import CA Certificate.." or use the CLI</li>
 <li>Add the Administrator to the desired role under "Admin GUI
- - Edit Administrator Privileges"</li>
+ - Administrator Roles"</li>
 <li>To allow administrators to log in when their certificates are not present in the EJBCA database you have to set 
 web.reqcertindb=false in conf/web.properties.</li>
 </ol>
@@ -1724,7 +1724,7 @@ Issue the following new end entity based on the new end entity profile.
 <p>
 The RAadmin shall have access to add/list/edit end entites. To create a new role: 
 <ul>
-<li>Choose "Edit Administrator Privileges" in the left frame.</li>
+<li>Choose "Administrator Roles" in the left frame.</li>
 <li>Press "Add".</li>
 <li>Choose a name for your new administrator group, "RAAdministratorRole".</li>
 <li>When the group is created, press "Access Rules".</li>
@@ -1740,7 +1740,7 @@ The RAadmin shall have access to add/list/edit end entites. To create a new role
 <ul>
 <li>Choose "Search/Edit End Entities" and select your newly created end entity, choose "View Certificates".</li>
 <li>Copy the value of "Certificate Serial Number", e.g. "5F003A0113F507F9".</li>
-<li>Go to "Edit Administrator Privileges", press "Administrators" under "RAAdministratorRole".</li>
+<li>Go to "Administrator Roles", press "Administrators" under "RAAdministratorRole".</li>
 <li>Choose the CA that the administrator belongs to, "ManagementCA".</li>
 <li>Paste the text from "Certificate Serial Number" in the "Match value".</li>
 <li>Press "Add"</li> 
@@ -1770,16 +1770,16 @@ While Roles can be named at the user's discretion, Rules represent the resource 
 </th><th style="background:#cccccc;">Description
 </th></tr>
 <tr>
-<td style="width:80px;" align="center"><code>RULE_NOTUSED</code>
+<td style="width:80px;" align="center"><code>Unused</code>
 </td><td>This explicitly declares that a <i>Role</i> does not have a rule for this resource.
 </td></tr>
 <tr>
-<td style="width:80px;" align="center"><code>RULE_ACCEPT</code>
-</td><td>Access is granted for this resource. If set to be recursive, <code>RULE_ACCEPT</code> will also be default for any rules of type <code>RULE_NOTUSED</code> deriving this rule.
+<td style="width:80px;" align="center"><code>Accept</code>
+</td><td>Access is granted for this resource. If set to be recursive, <code>Accept</code> will also be default for any rules of type <code>Unused</code> deriving this rule.
 </td></tr>
 <tr>
-<td style="width:80px;" align="center"><code>RULE_DECLINE</code>
-</td><td>Access is denied for this resource. Will trump any recursive <code>RULE_ACCEPT</code> rules previously encountered.
+<td style="width:80px;" align="center"><code>Decline</code>
+</td><td>Access is denied for this resource. Will trump any recursive <code>Accept</code> rules previously encountered.
 </td></tr></table>
 </p> 
 </subsubsection>
@@ -1788,8 +1788,8 @@ While Roles can be named at the user's discretion, Rules represent the resource 
 Resources are created according to a hierarchical structure, much like a file tree. A typical resource could be
 <code>/ca_functionality/create_certificate</code>
 which consists of three subresources: the root /, its child ca_functionality and the end node create_certificate. If desired, a Rule could be applied to any one of these. Access to the end resource (create_certificate) 
-can be granted by either giving it the value RULE_ACCEPT or setting RULE_ACCEPT for any of its parents nodes and setting them as recursive. 
-Access can be denied by setting access to it or any of its parents as RULE_DECLINE or using RULE_NOTUSED the whole way down. 
+can be granted by either giving it the value Accept or setting Accept for any of its parents nodes and setting them as recursive. 
+Access can be denied by setting access to it or any of its parents as Decline or using Unused the whole way down. 
 This is further illustrated by the following figure: 
 </p>
 <p>
