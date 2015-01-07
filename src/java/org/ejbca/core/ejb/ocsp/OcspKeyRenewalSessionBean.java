@@ -196,7 +196,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
                     }
                 }
             }
-            if (matched.length() < 1) {
+            if (matched.length() < 1 && target != null) {
                 log.error(intres.getLocalizedMessage("ocsp.rekey.triggered.dn.not.existing", target.getName(), unMatched));
                 return;
             }
