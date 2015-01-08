@@ -120,7 +120,7 @@ public interface ResponseMessage extends Serializable {
      * called the response message can be retrieved with getResponseMessage();
      *
      * @return True if signature/encryption was successful, false if it failed, request should not
-     *         be sent back i failed.
+     *         be sent back it failed.
      *
      * @throws InvalidKeyException If the key used for signing/encryption is invalid.
      * @throws NoSuchProviderException if there is an error with the Provider.

@@ -37,6 +37,7 @@ import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.SystemTestsConfiguration;
@@ -204,9 +205,9 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             chain[0] = new JcaX509CertificateHolder(ocspTestCert);
             chain[1] = new JcaX509CertificateHolder(cacert);
             gen.setRequestorName(chain[0].getSubject());
-            OCSPReq req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), 20480), chain);
-
-
+            OCSPReq req = gen.build(
+                    new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(
+                            keys.getPrivate()), 20480), chain);
             // Send the request and receive a singleResponse
             SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SUCCESSFUL, 200);
             assertEquals("Number of of SingResps should be 1.", 1, singleResps.length);

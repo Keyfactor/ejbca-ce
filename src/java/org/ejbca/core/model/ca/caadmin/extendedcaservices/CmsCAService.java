@@ -235,9 +235,10 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		}
 	}
 
-	@Override
-	public ExtendedCAServiceResponse extendedService(final CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
-		m_log.trace(">extendedService");
+    @Override
+    public ExtendedCAServiceResponse extendedService(final CryptoToken cryptoToken, final ExtendedCAServiceRequest request)
+            throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+        m_log.trace(">extendedService");
 		if (!(request instanceof CmsCAServiceRequest)) {
 			throw new IllegalExtendedCAServiceRequestException();            
 		}
@@ -261,11 +262,11 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
                 }
                 
                 gen1.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(x509CertChain)));
-                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privKey.getAlgorithm());
                 String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
-                JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName);
+                JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 ContentSigner contentSigner = signerBuilder.build(privKey);
                 gen1.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
                 final CMSTypedData msg = new CMSProcessableByteArray(resp);
@@ -274,8 +275,8 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
             }
             if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0) {
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-                edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(getCMSCertificate()));
-                JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(PKCSObjectIdentifiers.des_EDE3_CBC);
+                edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(getCMSCertificate()).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+                JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(PKCSObjectIdentifiers.des_EDE3_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp), jceCMSContentEncryptorBuilder.build());
                 resp = ed.getEncoded();
 			}
@@ -288,9 +289,9 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				if (recipient != null) {
 	                JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(this.privKey);
 	                // Provider for decrypting the symmetric key 
-	                rec.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+	                rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
+	                rec.setProvider(cryptoToken.getSignProviderName());
 	                // We can use a different provider for decrypting the content, for example of we used a PKCS#11 provider above we could use the BC provider below
-	                //rec.setContentProvider("BC"); 
 	                resp = recipient.getContent(rec);
 				}
 			}

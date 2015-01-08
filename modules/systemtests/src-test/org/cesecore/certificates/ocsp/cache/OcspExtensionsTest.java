@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -89,7 +90,8 @@ public class OcspExtensionsTest {
         final String certDn = "CN=TEST,SN=4711";
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(certDn, false), new BigInteger(serno).abs(),
                 firstDate, lastDate, CertTools.stringToBcX500Name(certDn, false), pkinfo);
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").build(caKeyPair.getPrivate()), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
+                BouncyCastleProvider.PROVIDER_NAME).build(caKeyPair.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         certificate = CertTools.getCertfromByteArray(certHolder.getEncoded());
         fileOutputStream = new FileOutputStream(trustedCertificateFile);

@@ -73,6 +73,7 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -216,11 +217,12 @@ public class OCSPUnidClient {
             gen.setRequestExtensions(this.extensions);        	
         }
         final OCSPReq req;
-        if ( this.signKey!=null ) {
-            final X509Certificate localCertChain[] = this.certChain!=null ? this.certChain : new X509Certificate[] {(X509Certificate)cacert};
+        if (this.signKey != null) {
+            final X509Certificate localCertChain[] = this.certChain != null ? this.certChain : new X509Certificate[] { (X509Certificate) cacert };
             final JcaX509CertificateHolder[] certificateHolderChain = CertTools.convertToX509CertificateHolder(localCertChain);
             gen.setRequestorName(certificateHolderChain[0].getSubject());
-            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(this.signKey), 20480), certificateHolderChain);
+            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .build(this.signKey), 20480), certificateHolderChain);
         } else {
             req = gen.build();
         }

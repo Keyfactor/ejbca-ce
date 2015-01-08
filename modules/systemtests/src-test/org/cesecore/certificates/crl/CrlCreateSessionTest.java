@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -227,7 +228,8 @@ public class CrlCreateSessionTest {
             X509KeyUsage ku = new X509KeyUsage(X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign);
             certbuilder.addExtension(Extension.keyUsage, true, ku);
             
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider("BC").build(rootcakp.getPrivate()), 20480);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(
+                    BouncyCastleProvider.PROVIDER_NAME).build(rootcakp.getPrivate()), 20480);
             final X509CertificateHolder certHolder = certbuilder.build(signer);
             final X509Certificate subcacert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded(), "BC");
             

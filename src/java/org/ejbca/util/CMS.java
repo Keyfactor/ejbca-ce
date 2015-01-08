@@ -42,6 +42,7 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -100,6 +101,8 @@ public class CMS {
         if (it.hasNext()) {
             final RecipientInformation recipientInformation = it.next();
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key);
+            rec.setProvider(providerName);
+            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
             final CMSTypedStream recData = recipientInformation.getContentStream(rec);
             final InputStream ris = recData.getContentStream();
             fromInToOut(ris, bos);
@@ -117,7 +120,7 @@ public class CMS {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         final CMSSignedDataStreamGenerator gen = new CMSSignedDataStreamGenerator();
-        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
         JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
         final String digest = CMSSignedGenerator.DIGEST_SHA256;
         String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digest, key.getAlgorithm());
@@ -169,8 +172,8 @@ public class CMS {
         final SignerId id = signerInfo.getSID();
         boolean result = false;
         try {
-            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
-            JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
             result = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(cert.getPublicKey()));
         } catch ( Throwable t ) { // NOPMD
             log.debug("Exception when verifying", t);
