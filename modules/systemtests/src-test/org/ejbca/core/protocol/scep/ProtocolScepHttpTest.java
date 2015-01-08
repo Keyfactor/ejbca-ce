@@ -580,7 +580,7 @@ public class ProtocolScepHttpTest {
         // user.
         changeScepUser(userName2, userDN1);
 
-        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2, key2);
+        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2, key2, BouncyCastleProvider.PROVIDER_NAME);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
         String returnMessageString = new String(retMsg);      
@@ -664,14 +664,14 @@ public class ProtocolScepHttpTest {
     private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException,
             IllegalStateException, OperatorCreationException, CertificateException {
-        return genScepRequest(makeCrlReq, digestoid, userDN, key1);
+        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair key) throws InvalidKeyException,
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair key, String signatureProvider) throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
-            IOException, CMSException, IllegalStateException, OperatorCreationException, CertificateException {
+            IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
-        gen.setKeys(key);
+        gen.setKeys(key, signatureProvider);
         gen.setDigestOid(digestoid);
         byte[] msgBytes = null;
         // Create a transactionId
@@ -712,8 +712,8 @@ public class ProtocolScepHttpTest {
         // Check that the signer is the expected CA
         assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuer().toString()));
         // Verify the signature
-        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
-        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
         boolean ret = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(cacert.getPublicKey()));
         assertTrue(ret);
         // Get authenticated attributes
@@ -783,7 +783,7 @@ public class ProtocolScepHttpTest {
             byte[] decBytes = null;
             RecipientInformation recipient = riIterator.next();
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key1.getPrivate());
-            rec.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
             decBytes = recipient.getContent(rec);
             // This is yet another CMS signed data
             CMSSignedData sd = new CMSSignedData(decBytes);

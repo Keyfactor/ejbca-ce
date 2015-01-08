@@ -235,7 +235,7 @@ class SCEPTest extends ClientToolBox {
             	
                 // Generate the SCEP GetCert request
                 final ScepRequestGenerator gen = new ScepRequestGenerator();                
-                gen.setKeys(StressTest.this.keyPair);
+                gen.setKeys(StressTest.this.keyPair, BouncyCastleProvider.PROVIDER_NAME);
                 gen.setDigestOid(CMSSignedGenerator.DIGEST_SHA1);
                 final int keyUsagelength = 9;
                 final boolean keyUsage[] = new boolean[keyUsagelength];
@@ -279,7 +279,7 @@ class SCEPTest extends ClientToolBox {
                 	//System.out.println("Waiting 5 secs...");
                 	Thread.sleep(5000); // wait 5 seconds between polls
                 	// Generate a SCEP GerCertInitial message
-                    gen.setKeys(StressTest.this.keyPair);
+                    gen.setKeys(StressTest.this.keyPair, BouncyCastleProvider.PROVIDER_NAME);
                     gen.setDigestOid(CMSSignedGenerator.DIGEST_SHA1);
                     final byte[] msgBytes = gen.generateGetCertInitial(userDN, transactionId, this.sessionData.certchain[0]);                    
                     // Get some valuable things to verify later on
@@ -396,8 +396,8 @@ class SCEPTest extends ClientToolBox {
             		return false;
             	}
                 // Verify the signature
-            	JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
-                JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+            	JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 boolean ret = signerInfo.verify(jcaSignerInfoVerifierBuilder.build(this.sessionData.certchain[0].getPublicKey()));
             	if ( !ret ) {
             		StressTest.this.performanceTest.getLog().error("Can not verify signerInfo");
@@ -526,6 +526,7 @@ class SCEPTest extends ClientToolBox {
             	}
                 JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(StressTest.this.keyPair.getPrivate());
                 rec.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
                 final byte decBytes[] = recipient.getContent(rec);
             	// This is yet another CMS signed data
             	final CMSSignedData sd = new CMSSignedData(decBytes);

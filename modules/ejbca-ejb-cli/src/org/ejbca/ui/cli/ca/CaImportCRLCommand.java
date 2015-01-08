@@ -35,6 +35,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -160,7 +161,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         final Date notAfter = new Date(time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10); // 10 years of life
                         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(X500Name.getInstance(cacert
                                 .getSubjectX500Principal().getEncoded()), serialNr, time, notAfter, dnName, pkinfo);
-                        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(key_pair
+                        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(key_pair
                                 .getPrivate()), 20480);
                         final X509CertificateHolder certHolder = certbuilder.build(signer);
                         final X509Certificate certificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());

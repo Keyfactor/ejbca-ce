@@ -96,6 +96,7 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -936,7 +937,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 
     @SuppressWarnings("unchecked")
     private static CMSValidationResult validateCMS(final CMSSignedData signedData,
-            final Collection<Certificate> trustedCerts) throws CertificateException {
+            final Collection<Certificate> trustedCerts) {
 
         final CMSValidationResult result = new CMSValidationResult();
 
@@ -976,9 +977,9 @@ public class BatchEnrollmentGUIView extends FrameView {
                         final X509Certificate signerX509Cert = jcaX509CertificateConverter.getCertificate(signerCert);
                         
                         // Verify the signature
-                        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
-                        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder;
-                        jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build());
+                        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(
+                                calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
                         boolean consistent = si.verify(jcaSignerInfoVerifierBuilder.build(signerX509Cert.getPublicKey()));
                         if (consistent) {
 
@@ -1030,6 +1031,9 @@ public class BatchEnrollmentGUIView extends FrameView {
             result.setError(ex.getMessage());
             LOG.error("Parsing and validating CMS", ex);
         } catch (OperatorCreationException ex) {
+            result.setError(ex.getMessage());
+            LOG.error("Parsing and validating CMS", ex);
+        } catch (CertificateException ex) {
             result.setError(ex.getMessage());
             LOG.error("Parsing and validating CMS", ex);
         }

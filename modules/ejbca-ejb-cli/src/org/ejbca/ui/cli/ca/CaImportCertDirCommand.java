@@ -246,9 +246,8 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                     log.error("ERROR: Unclassified general import error has occurred, file: " + filename);
                     performImportStatus = STATUS_GENERALIMPORTERROR;
                     if (!resumeOnError) {
-                        log.error("foo", e);
-                        throw e;
-                        
+                        log.error(e);
+                        throw e;      
                     } else {
                         log.error(e.getMessage());
                     }
