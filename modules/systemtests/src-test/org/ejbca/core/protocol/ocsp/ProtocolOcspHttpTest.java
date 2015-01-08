@@ -90,6 +90,7 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -388,7 +389,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             chain[0] = new JcaX509CertificateHolder(ocspTestCert);
             chain[1] = new JcaX509CertificateHolder(cacert);
             gen.setRequestorName(chain[0].getSubject());
-            OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(keys.getPrivate()), chain);
+            OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(keys.getPrivate()), chain);
 
             // First test with a signed OCSP request that can be verified
             Collection<Certificate> cacerts = new ArrayList<Certificate>();
@@ -1002,6 +1003,7 @@ Content-Type: text/html; charset=iso-8859-1
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue(response.getResponses()[0].getCertStatus() instanceof UnknownStatus); 
+        // RFC 6960: id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
         Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9"));
         assertNull("Wrong extension sent with reply", responseExtension);
         
@@ -1230,6 +1232,7 @@ Content-Type: text/html; charset=iso-8859-1
         algVec.add(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         ASN1Sequence algSeq = new DERSequence(algVec);
         ExtensionsGenerator extgen = new ExtensionsGenerator();
+        // RFC 6960: id-pkix-ocsp-pref-sig-algs   OBJECT IDENTIFIER ::= { id-pkix-ocsp 8 } 
         extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, algSeq);
         Extensions exts = extgen.generate();
         assertNotNull(exts);

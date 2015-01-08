@@ -79,6 +79,12 @@ import org.ejbca.ui.web.CertificateResponseType;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public class RequestInstance {
 
 	private static final Logger log = Logger.getLogger(RequestInstance.class);

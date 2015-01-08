@@ -285,15 +285,15 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                     try {
                         X509Certificate rec = (X509Certificate)CertTools.getCertfromByteArray(recipientKeyInfo);
                         log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
-                        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec));
+                        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                     } catch (CertificateParsingException e) {
                         throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
                     }
                 } else {
-                    edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate) cert));
+                    edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate) cert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                 }
                 try {
-                    JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC);
+                    JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
                     CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()), jceCMSContentEncryptorBuilder.build());
                     if (log.isDebugEnabled()) {
                         log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
@@ -370,7 +370,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
             try {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(signKey);
-                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder();
+                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
                 gen1.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) cacert));

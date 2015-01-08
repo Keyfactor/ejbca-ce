@@ -55,6 +55,7 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -384,7 +385,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             }
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(privateKey);
             rec.setProvider(jceProvider); // Use the crypto token provides for asymmetric key operations
-            rec.setContentProvider("BC"); // Use BC for the symmetric key operations
+            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME); // Use BC for the symmetric key operations
             decBytes = recipient.getContent(rec);
             break;
         }
