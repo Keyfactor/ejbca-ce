@@ -314,11 +314,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             for (final Certificate certificate : caInfo.getCertificateChain()) {
                                 caCertificateChain.add((X509Certificate) certificate);
                             }
-                            CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
+                            CertificateStatus caCertificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
                                     CertTools.getSerialNumber(caCertificateChain.get(0)));
                             // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. 
-                            if (certificateStatus.equals(CertificateStatus.REVOKED)) {
+                            if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
                                 log.warn("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                         + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate.");
                             }
@@ -328,7 +328,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                         + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate.");
                             }
                             //Add an entry with just a chain and nothing else
-                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, null, null,
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                     null, null, null));
   
                         }
