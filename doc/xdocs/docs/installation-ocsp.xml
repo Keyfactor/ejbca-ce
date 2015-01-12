@@ -84,6 +84,7 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 </subsection>
 <subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
+<subsubsection name="Using va-publisher.properties">
 <ul>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
@@ -95,8 +96,24 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Enable" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
+</subsubsection>
+<subsubsection name="Using EJBCA Peer System (Enterprise feature only)">
+<p>These instructions assumes that there already is a Peer System already set up connecting the VA and the VA machines, that the connection is already tested 
+and that there is already a remote identity representing the CA among the "Incoming Connections" in the VA's Peer Systems. For set up of Peer Systems see 
+<a href="userguide.html#Managing EJBCA Peer Systems">Managing EJBCA Peer Systems</a>.</p>
+<ul>
+<li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
+<li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the Crypto Token and key pair.</li>
+<li>Go to AdminGUI of OCSP -> Peer Systems -> Click on "Modify Authorization" for the peer connector representing the CA and set access rules for the newly 
+created OcspKeyBinding ("view only" or "Renew certificate").</li>
+<li>Go to AdminGUI of OCSP -> Peer Systems -> Click "Manage" for the peer connector representing the CA -> Remote Key Bindings, fill in the credentials for 
+an OCSP signing certificate in the newly created OcspKeyBinding and click "Issue Signing Certificate".</li>  
+</ul>
+</subsubsection>
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
+<subsubsection name="Using va-publisher.properties">
 <ul>
 <li>[Optional] Go to AdminGUI of OCSP -> Internal Key Bindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
@@ -106,6 +123,13 @@ by matching the key pair with the certificate.</li>
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Enable" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
+</subsubsection>
+<subsubsection name="Using EJBCA Peer System (Enterprise feature only)">
+<ul>
+<li>Go to AdminGUI of OCSP -> Peer Systems -> Click "Manage" for the peer connector representing the CA -> Remote Key Bindings -> Click "Renew" 
+for your OcspKeyBinding.</li>
+</ul>
+</subsubsection>
 </subsection>
 <subsection name="Using the CLI">
 <p>
