@@ -1005,7 +1005,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	        throw new UserDoesntFullfillEndEntityProfile("Key Recoverable is required, but can't be used for User Generated Tokens.");
     	    }
     		if (getValue(KEYRECOVERABLE,0).equals(TRUE) && !keyrecoverable) {
-    			throw new UserDoesntFullfillEndEntityProfile("Key Recoverable is required for this End Entity Profiles.");
+    			throw new UserDoesntFullfillEndEntityProfile("Key Recoverable is required for this End Entity Profile.");
     		}
     		if (getValue(KEYRECOVERABLE,0).equals(FALSE) && keyrecoverable) {
     			throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be set in current end entity profile.");
