@@ -280,7 +280,7 @@ There are, at least, two ways to have EJBCA automatically create updated CRLs.
 In the Admin GUI you can go to 'Edit Services' and add a new service. Edit the service and select the 'CRL Updater'
 worker and the interval you want to use. Don't forget to set the service to 'Active'.
 <br/>
-This service will check if the current CRL is outdated at select inervals, and will generate a new one if it has expired.
+This service will check, at the selected interval, if it is required to regenerate the current CRL (due to being expired or within the expiration threshold), and will generate a new one if needed.
 </p>
 </subsection>
 <subsection name="Cron job">
