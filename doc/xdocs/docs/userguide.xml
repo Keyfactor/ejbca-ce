@@ -2142,7 +2142,7 @@ a new VA is connected the current state of all previously issued certificates ne
 </p><p>
 In the overview of peer connectors, click <code>Manage</code> for the peer connector representing the VA and select the
 <code>Certificate Data Synchronization</code> tab.
-Configure the relevant subset of information to synchronize and click <code>Start</code> to initate the synchronzation as a background task.
+Configure the relevant subset of information to synchronize and click <code>Start</code> to initiate the synchronization as a background task.
 The progress can be followed either in this view or in the Peer Systems overview.
 </p><p>
 Note that the subset of revocation information to send affects how database queries are performed.
