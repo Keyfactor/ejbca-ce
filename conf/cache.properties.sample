@@ -94,8 +94,8 @@
 #globalconfiguration.cachetime=157680000000
 #globalconfiguration.cachetime=-1
 
-# Set to a value for caching calls to update authorization tree, i.e. load access rules and admin groups. This means that for access rules to be updated
-# the cache time expires, an roles are modified or server restart is done, or flushAuthorizationCache is called on AuthorizationSessionBean.
+# Set to a value for caching calls to update authorization tree, i.e. load access rules and admin groups. This means that access rules will be cached until
+# the cache time expires, cache is reset by modifying roles or server restart is done, or flushAuthorizationCache is called on AuthorizationSessionBean.
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if access rules has been edited on another node, so the configuration must be edited on all nodes, 
 # or nodes caches flushed after editing on one node.
