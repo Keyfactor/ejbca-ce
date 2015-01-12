@@ -5,7 +5,7 @@
   </properties>
 <body>
 <section name="Standalone VA Installation">
-<p><b>1. On the EJBCA VA </b> - Configure the VA</p>
+<subsection name="1. On the EJBCA VA - Configure the VA">
 <p>
 A Validation Authority installation is at first glance identical to a standard CA installation, but only a subset of 
 services need to be activated for it to function as a VA. This means that an EJBCA installation could in practice 
@@ -20,7 +20,8 @@ In the OCSP responder case, you may also want to configure conf/cesecore.propert
 i.e. if you want to log to database or file. The database audit log is only used for security events, i.e. access control 
 and configuration change events when using the GUI or CLI.
 </p>
-<p><b>2. On the EJBCA VA</b> - Build the VA</p>
+</subsection>
+<subsection name="2. On the EJBCA VA - Build the VA">
 <p>
 The VA is built in the same way as the CA. So after starting JBoss, run the following command from EJBCA home directory:
 </p>
@@ -34,7 +35,9 @@ web.properties to use the right passwords). Then, from EJBCA home directory, run
 ant deploy-keystore
 ant web-configure
 </source>
-<p><b>3. On the EJBCA CA</b> - Configure va-publisher.properties</p>
+</subsection>
+<subsection name="3. On the EJBCA CA - Data Synchronization">
+<subsubsection name="a. Using va-publisher.properties">
 <p>
 The EJBCA CA should be configured the same when installing a VA as for any other installation with the addition of setting preferences 
 for the VA database in conf/va-publisher.properties. The VA database is the master database for the standalone VA installations and where 
@@ -45,10 +48,33 @@ In the case of the VA being an OCSP responder, the data source 'java:/OcspDS' sh
 involved in transactions (a no-tx-datasource in JBoss), and it should have autocommit (should be default in JBoss). See 
 <a href="installation.html#JBoss">Installation</a> for instruction on how to create this data source if needed.
 </p>
-<p><b>4. On the EJBCA CA</b> - Add a va-publisher</p>
+</subsubsection>
+<subsubsection name="b. Using EJBCA Peer System (Enterprise feature only)">
 <p>
-Add a new publisher to the main CA server (not the VA). As a super administrator, you add this publisher on the "Edit Publishers" page 
-in the Admin GUI. Use publisher type "Validation Authority Publisher" The settings for this publisher are as follows:
+Instead of configuring va-publisher.properties, it is possible to publish certificates' data through a peer connector. For instruction 
+on how to set up an outgoing peer connector see <a href="userguide.html#Managing EJBCA Peer Systems">Managing EJBCA Peer Systems</a>.
+</p>
+<p>
+When using a peer connector, information about newly issued certificates and revocation updates are normally sent using a (Peer)Publisher, 
+but the first time a new VA is connected the current state of all previously issued certificates needs to be pushed to the VA.
+<ul>
+    <li>In the Admin GUI, go to <code>Peer Systems</code></li>
+    <li>Click <code>Manage</code> for the peer connector representing the VA and select the <code>Certificate Data Synchronization</code> tab</li>
+    <li>Configure the relevant subset of information to synchronize and click Start to initiate the synchronization as a background task. The 
+    progress can be followed either in this view or in the Peer Systems overview.</li>
+</ul>
+The connecting system needs to be authorized to the <code>/peerincoming /peerpublish/readcert /peerpublish/writecert /ca/[CAName]</code> access 
+rules to be able to check synchronzation data and push missing or outdated certificate entries. 
+</p>
+</subsubsection>
+</subsection>
+<subsection name="4. On the EJBCA CA - Add a va-publisher">
+<p>
+Add a new publisher to the main CA server (not the VA). All CAs that publish certificates and CRLs to the VA should have a reference to this 
+publisher. To configure this you must be a super administrator.</p>
+<p>This publisher is added on the "Edit Publishers" page in the Admin GUI.</p>
+<subsubsection name="a. Using va-publisher.properties">
+<p>Use publisher type "Validation Authority Publisher". The settings for this publisher are as follows:
 <ul>
     <li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if 
     ocsp-datasource.jndi-name=OcspDS. This must be a non-tx/jta=false data source (see Installation for instruction how to create this 
@@ -67,22 +93,25 @@ in the Admin GUI. Use publisher type "Validation Authority Publisher" The settin
     be stored in the VA when CRLs are stored there.</li>
 </ul>
 </p>
+</subsubsection>
+<subsubsection name="b. Using EJBCA Peer System (Enterprise feature only)">
 <p>
-All CAs that publish certificates and CRLs to the VA should have a reference to this publisher. To configure this you must be a super administrator.
+Use publisher type "Validation Authority Peer Publisher". Choose the Peer System that represents the VA and check which data that should be published 
+to the VA (See above for description of some of these options).
 </p>
+</subsubsection>
+</subsection>
 <p>
 If the VA is a certificate or a CRL store service, the installation of the VA is complete. If the VA is an OCSP responder, continue the installation 
 by following the steps described in <a href="installation-ocsp.html">OCSP installation</a>. 
 </p>
-
-<subsection name="VA database">
+</section>
+<section name="VA database">
 <p>
 Certificate revocation information for the VA services must be present in the database of the instance acting as VA/OCSP responder.
-If the issuing CA and VA instances of EJBCA uses different databases, 'Publisher's are used to push real-time information from the CA to the VA database.
+If the issuing CA and VA instances of EJBCA uses different databases, Publishers are used to push real-time information from the CA to the VA database.
 </p>
-</subsection>
 </section>
-
 <section name="Error handling">
 <p>
 If there is an error publishing to the VA database, the VA/OCSP Responder will be out of sync with the CA.
