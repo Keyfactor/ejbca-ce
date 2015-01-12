@@ -2334,7 +2334,7 @@ gives his approval or reject the action.
 </p><p>
 
 Approvals are configured for each CA, in the 'Edit Certificate Authorities' page and for each certificate profile in 
-the 'Edit Certificate Profiles' page. 
+the 'Certificate Profiles' page. 
 Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
 'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'. 'Revoke End Entity',
 'Revoke Certificate', 'Revoke Token' and 'Reactivate Certificate' are covered by setting 'Revocation'. 
