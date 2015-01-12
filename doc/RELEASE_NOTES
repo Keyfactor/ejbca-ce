@@ -16,6 +16,10 @@ For upgrade instructions, please see UPGRADE.
 EJBCA 6.2.7
 -----------
 
+Behavior of OCSP responder has been changed slightly in order to improve performance. Status of the OCSP responder certificate's issuer was in previous versions 
+checked for every signing while not it is cached, meaning that a revoked issuer CA will appear active until the OCSP signing cache has either timed out or been reloaded. 
+If unsure how long the timeout is set for, check the value ocsp.signingCertsValidTime in ocsp.properties.
+
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 

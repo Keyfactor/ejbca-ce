@@ -29,6 +29,11 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.2.x to EJBCA 6.2.7
+-------------------------------
+Behavior of OCSP responder has been changed slightly in order to improve performance. Status of the OCSP responder certificate's issuer was in previous versions 
+checked for every signing while not it is cached, meaning that a revoked issuer CA will appear active until the OCSP signing cache has either timed out or been reloaded. 
+If unsure how long the timeout is set for, check the value ocsp.signingCertsValidTime in ocsp.properties.
 
 From EJBCA 6.2.x to EJBCA 6.2.4
 -------------------------------
