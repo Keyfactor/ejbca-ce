@@ -51,24 +51,23 @@ involved in transactions (a no-tx-datasource in JBoss), and it should have autoc
 </subsubsection>
 <subsubsection name="b. Using EJBCA Peer System (Enterprise feature only)">
 <p>
-Instead of configuring va-publisher.properties, it is possible to publish certificates' data through a peer connector. For instruction 
+Instead of configuring va-publisher.properties, it is possible to publish certificate data through a peer connector. For instruction 
 on how to set up an outgoing peer connector see <a href="userguide.html#Managing EJBCA Peer Systems">Managing EJBCA Peer Systems</a>.
 </p>
 <p>
-When using a peer connector, information about newly issued certificates and revocation updates are normally sent using a (Peer)Publisher, 
-but the first time a new VA is connected the current state of all previously issued certificates needs to be pushed to the VA.
-<ul>
+When setting up a new Peer System, all previously issued certificates need to be pushed to the VA. To do this, use the following procedure:
+<ol>
     <li>In the Admin GUI, go to <code>Peer Systems</code></li>
     <li>Click <code>Manage</code> for the peer connector representing the VA and select the <code>Certificate Data Synchronization</code> tab</li>
     <li>Configure the relevant subset of information to synchronize and click Start to initiate the synchronization as a background task. The 
     progress can be followed either in this view or in the Peer Systems overview.</li>
-</ul>
+</ol>
 The connecting system needs to be authorized to the <code>/peerincoming /peerpublish/readcert /peerpublish/writecert /ca/[CAName]</code> access 
 rules to be able to check synchronzation data and push missing or outdated certificate entries. 
 </p>
 </subsubsection>
 </subsection>
-<subsection name="4. On the EJBCA CA - Add a va-publisher">
+<subsection name="4. On the EJBCA CA - Add a Publisher">
 <p>
 Add a new publisher to the main CA server (not the VA). All CAs that publish certificates and CRLs to the VA should have a reference to this 
 publisher. To configure this you must be a super administrator.</p>
