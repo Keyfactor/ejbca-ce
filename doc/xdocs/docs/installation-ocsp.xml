@@ -21,7 +21,7 @@ After finishing installing the VA as instructed in <a href="installation-va.html
 </p>
 <p><b>5. On the EJBCA VA</b> - Accessing the Admin GUI</p>
 <p>
-The OCSP responder have the same Admin GUI as the CA, so you can manage all your Crypto Tokens and Key Bindings using the Admin GUI (or the CLI see below).
+The OCSP responder has the same Admin GUI as the CA, so you can manage all your Crypto Tokens and Key Bindings using the Admin GUI (or the CLI see below).
 In an OCSP responder you normally only use a few functions of the Admin GUI, although all of them are available.
 The important functions for an OCSP responder are:
 </p>
