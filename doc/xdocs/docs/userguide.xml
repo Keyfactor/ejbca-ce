@@ -688,8 +688,8 @@ regards to DN-contents, extensions etc.
 </ul> 
 <p>Another way of creating a new Certificate Profile is to use an existing profile as template:</p>
 <ul>
-<li>In the list of certificate profiles, select the filed profile SERVER.</li>
-<li>Enter a name for your end entity certificate profile e.g. "SSLServerCertificateProfile", and press "Use selected as template".</li>
+<li>In the list of certificate profiles, click on "clone" the fixed profile SERVER.</li>
+<li>Enter a name for your end entity certificate profile e.g. "SSLServerCertificateProfile", and press "Create from template".</li>
 <li>Press "Save"</li>
 </ul> 
 </subsection>
@@ -1684,11 +1684,9 @@ The administrators certificates will be issued by a CA called ManagementCA
 <p>
 <ul>
 <li>Under "CA Functions" -> "Certificate Profiles"</li>
-<li>Enter a name for your end entity certificate profile e.g. "AdministratorEndEntityCertificateProfile"</li>
-<li>Select "ENDUSER"</li>
-<li>Press "Use Selected as Template"</li>
-<li>Select "AdministratorEndEntityCertificateProfile"</li>
-<li>Press "Edit Certificate Profile"</li>
+<li>Click on "Clone" for the profile named "ENDUSER"</li>
+<li>Enter "AdministratorEndEntityCertificateProfile" as the new name and click on "Create from Template".</li>
+<li>Press "Edit" for the new profile</li>
 <li>Under "Validity" enter 365d (1 year validity).</li>
 <li>Under "Key usage", choose "Digital Signature" and "Key encipherment (ctrl-click to select multiple).</li>
 <li>Un-check "Allow Key Usage Override".</li>
