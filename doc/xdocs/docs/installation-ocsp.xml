@@ -30,12 +30,12 @@ The important functions for an OCSP responder are:
 <li>Internal Key Bindings</li>
 </ul>
 <p>In order to access the Admin GUI there are a few pre-requisites:</p>
-<ul>
+<ol>
 <li>TLS keystores available as p12/tomcat.jks and p12/truststore.jks (copies from the EJBCA CA), to be deployed with deploy-keystore and web-configure (may require configuration 
 of keystore password in conf/web.properties).</li>
 <li>A Management CA certificate imported (the certificate of the CA that issues administrator certificates).</li>
 <li>Administrators configured with access rules.</li>
-</ul>
+</ol>
 <p>
 If you only want to set up a super administrator, the initial super administrator access rule is automatically set up during initial startup (see database tables AdminGroupData and AccessRulesData).
 You can run the following commands to import a Management CA certificate and add a SuperAdmin, that has a certificate with "CN=SuperAdmin" issued from this CA (this will create a record in database table AdminEntityData).
@@ -85,7 +85,7 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 <subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
 <subsubsection name="Using VA Publisher">
-<ul>
+<ol>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the Crypto Token and key pair.</li>
@@ -95,13 +95,13 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Enable" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
-</ul>
+</ol>
 </subsubsection>
 <subsubsection name="Using EJBCA Peer System (Enterprise feature only)">
 <p>These instructions assume that there already is a Peer System connecting the CA and the VA machines, that the connection is already tested 
 and that there is already a remote identity representing the CA among the "Incoming Connections" in the VA's Peer Systems. For setup of Peer Systems see 
 <a href="userguide.html#Managing EJBCA Peer Systems">Managing EJBCA Peer Systems</a>.</p>
-<ul>
+<ol>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings -> OcspKeyBindings tab and create a new OcspKeyBinding that references the Crypto Token and key pair.</li>
@@ -109,12 +109,12 @@ and that there is already a remote identity representing the CA among the "Incom
 created OcspKeyBinding ("view only" or "Renew certificate").</li>
 <li>Go to AdminGUI of OCSP -> Peer Systems -> Click "Manage" for the peer connector representing the CA -> Remote Key Bindings, fill in the credentials for 
 an OCSP signing certificate in the newly created OcspKeyBinding and click "Issue Signing Certificate".</li>  
-</ul>
+</ol>
 </subsubsection>
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
 <subsubsection name="Using VA Publisher">
-<ul>
+<ol>
 <li>[Optional] Go to AdminGUI of OCSP -> Internal Key Bindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
@@ -122,13 +122,13 @@ an OCSP signing certificate in the newly created OcspKeyBinding and click "Issue
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Enable" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
-</ul>
+</ol>
 </subsubsection>
 <subsubsection name="Using EJBCA Peer System (Enterprise feature only)">
-<ul>
+<ol>
 <li>Go to AdminGUI of OCSP -> Peer Systems -> Click "Manage" for the peer connector representing the CA -> Remote Key Bindings -> Click "Renew" 
 for your OcspKeyBinding.</li>
-</ul>
+</ol>
 </subsubsection>
 </subsection>
 <subsection name="Using the CLI">
@@ -181,13 +181,13 @@ bin/ejbca.sh ocsp setdefaultresponder &lt;DN&gt;
 <subsection name="A CLI example for setting up a responder">
 <p>In this sample scenario we have a CA (can be off line), and we will set up an OCSP responder using the CLI that answers for this CA. This example starts when you have a basic installed EJBCA instance that you can use CLI commands on (no CA needed).</p>
 <p>The order of events are as the workflow above, with an extra step of importing the CA certificate:
-<ul>
+<ol>
 <li>Import the CA certificate (of OCSP_CA) as an 'External CA' in the OCSP responder.</li>
 <li>Create a Crypto Token and generate the OCSP responders signing key.</li>
 <li>Create an OCSP Key Binding, which is the configuration of the OCSP responder answering queries.</li>
 <li>Generate a CSR for the OCSP Key Binding, sending the CSR to the External CA and getting a signed OCSP signer certificate back.</li>
 <li>Import the OCSP signer certificate and activate the OCSP Key Binding.</li>
-</ul>
+</ol>
 </p>
 <p>Lets start the commands...our External CA is this example we call OCSP_CA and it has DN 'CN=OCSP_CA'.</p>
 <source>
