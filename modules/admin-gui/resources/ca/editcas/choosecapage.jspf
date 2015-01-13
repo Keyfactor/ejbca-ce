@@ -122,15 +122,18 @@
             <td width="5%" align="center">
               &nbsp;
             </td>
+                <% try{
+        	if(ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource())) {  %>
             <td width="25%" align="left">
               <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
-            </td>
+            </td>       
             <td width="25%" align="left">
               <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA_KEYSTORE")+"..." %>">
-            </td>
+            </td>           
             <td width="25%" align="right">
               <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCA_CERTIFICATE")+"..." %>">
             </td>
+            <% } }catch(AuthorizationDeniedException e){} %>
           </tr>
         </table> 
       </td>
@@ -144,6 +147,8 @@
         <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("CREATEAUTHCSR") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20a%20roll-over%20certificate%20(NewWithOld)") %>
       </td>
     </tr>
+        <% try{
+        if(ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource())) {  %>
     <tr> 
       <td width="100%"><h3><%= ejbcawebbean.getText("ADDCA") %></h3></td>
     </tr>
@@ -154,6 +159,9 @@
         <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAME") %>"><br />
       </td>
     </tr>
+    <%     }  
+   		}catch(AuthorizationDeniedException e){} 
+	%>
   </table>
 
 </form>

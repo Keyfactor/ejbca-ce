@@ -1069,7 +1069,8 @@ public class CAInterfaceBean implements Serializable {
         return null;
 	}
 
-	public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm, boolean isEditingCA) throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
+    public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm, boolean isEditingCA)
+            throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
 	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<Entry<String, String>>();
         if (!isEditingCA && accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             // Add a quick setup option for key generation (not visible when editing an uninitialized CA)
