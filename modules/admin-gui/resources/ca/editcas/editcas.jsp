@@ -225,7 +225,7 @@ java.security.InvalidAlgorithmParameterException
   boolean  catokenauthfailed    = false;
   String errormessage = null;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource());
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAFUNCTIONALITY.resource());
   cabean.initialize(ejbcawebbean);
   CADataHandler cadatahandler = cabean.getCADataHandler();
 
