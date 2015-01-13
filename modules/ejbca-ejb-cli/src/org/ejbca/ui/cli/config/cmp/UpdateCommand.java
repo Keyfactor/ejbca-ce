@@ -47,9 +47,9 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         registerParameter(new Parameter(ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The alias of the configuration to update."));
         registerParameter(new Parameter(KEY_KEY, "Key", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The alias of the configuration to update."));
+                "The key of the configuration to update (alias not included)."));
         registerParameter(new Parameter(VALUE_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The alias of the configuration to update."));
+                "The new value of the configuration to update."));
     }
 
     @Override
@@ -107,11 +107,11 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         sb.append("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + " - possible values: true | false" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_OPERATIONMODE + " - possible values: client | ra" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_AUTHENTICATIONMODULE
-                + " - possible values: RegTokenPwd | DnPartPwd | HMAC | EndEntityCertificate | a combination of those methods" + "\n");
+                + " - possible values: RegTokenPwd | DnPartPwd | HMAC | EndEntityCertificate | a combination of those methods separated by ';'" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS + " - possible values: See documentation in Admin Guid" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT
                 + " - possible values: DN | any SubjectDN attribut tex. CN, OU, UID...etc" + "\n");
-        sb.append("    " + CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO + " - possible values: true | false");
+        sb.append("    " + CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO + " - possible values: true | false" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME + " - possible values: DN | RANDOM | USERNAME | FIXED" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS + " - possible values: See documentation in Admin Guid" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RA_NAMEGENERATIONPREFIX + " - possible values: ${RANDOM} | any alphanumeric string" + "\n");
@@ -136,7 +136,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         sb.append("    " + CmpConfiguration.CONFIG_RACANAME + " - possible values: ProfileDefault | " + existingCas + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + " - possible values: signature | pbe" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE + " - possible values: true | false" + "\n");
-        sb.append("    " + CmpConfiguration.CONFIG_VENDORCA + " - possible values: the name of the external CA" + "\n");
+        sb.append("    " + CmpConfiguration.CONFIG_VENDORCA + " - possible values: the name of the external CA. Several CAs can be specified by separating them with ';'" + "\n");
         sb.append("    "
                 + CmpConfiguration.CONFIG_RACERT_PATH
                 + " - possible values: the path to the catalogue where the certificate that will be used to authenticate NestedMessageContent are stored."
