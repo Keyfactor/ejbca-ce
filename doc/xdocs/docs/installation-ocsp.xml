@@ -65,7 +65,7 @@ There should be one key for each CA, and the each CA the responder answers for a
 The certificate profile could be the same for all issued OCSP signing certificates.
 </p><p>
 To issue OCSP signer certificate from EJBCA you define a new certificate profile and use 'OCSPSIGNER (FIXED)' as template
-(use selected as template). This certificate profile is like a normal end entity profile but with the following key usages:
+(clone). This certificate profile is like a normal end entity profile but with the following key usages:
 </p>
 <source>
 - Key Usage: Digital Signature
