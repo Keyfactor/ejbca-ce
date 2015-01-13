@@ -84,7 +84,7 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 </subsection>
 <subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
-<subsubsection name="Using va-publisher.properties">
+<subsubsection name="Using VA Publisher">
 <ul>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
@@ -113,7 +113,7 @@ an OCSP signing certificate in the newly created OcspKeyBinding and click "Issue
 </subsubsection>
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
-<subsubsection name="Using va-publisher.properties">
+<subsubsection name="Using VA Publisher">
 <ul>
 <li>[Optional] Go to AdminGUI of OCSP -> Internal Key Bindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
