@@ -1,3 +1,35 @@
+EJBCA 6.2.7, 2015-01-14
+---
+Bug
+	[ECA-3902] - Update EJBCA  user guide documentation
+	[ECA-3973] - OCSP key renewal for all keys leads to NPE when logging
+	[ECA-3977] - Regression: CMP algorithmId lacking DERNull when using PKCS#11
+	[ECA-3978] - End entities aren't sorted in statedump output
+	[ECA-3983] - External CAs turn up on the "CA Activation" list.
+	[ECA-3991] - CertTools.stringToBcX500Name fails for sn=#foo
+	[ECA-3994] - ejbca-db-cli copy command does not work due to invalid temp files
+	[ECA-3995] - Upgrade documentation for CMP has wrong ordering of arguments
+	[ECA-4000] - Potential security issue without known exploit 
+	[ECA-4007] - "Certification Authorities" and "Publishers" missing from admin menu with access rule /ca_functionality (recursive, accept)
+	[ECA-4009] - Post upgrade fails when old admin groups don't exist
+	[ECA-4014] - CRL Downloader doesn't store empty CRLs
+	[ECA-4019] - Wrong error message for Name Constraint violations with short subject DNs
+
+Improvement
+	[ECA-3798] - Statedump: Incorrect number of end entity profiles are logged as exported
+	[ECA-3970] - Log in OCSPResponder when revoked OCSP certificates are read to the cache
+	[ECA-3984] - Debug log HTTP response body on CT log error
+	[ECA-3985] - Edit CA page load is slow with many keys in referenced Crypto Token
+	[ECA-3986] - Optimize CAToken.getTokenStatus
+	[ECA-3989] - Allow recovery from a bad upgrade of CA Tokens to CryptoTokens
+	[ECA-3992] - Remove critical BC warnings in order to upgrade BouncyCastle to version 1.51
+	[ECA-4008] - Port adjustable transaction timeouts to JBoss 7 / EAP 6
+	[ECA-4017] - Remove database lookups that can be read from cache
+	[ECA-4024] - Add a [?] link from the User Data Sources page to the admin guide
+
+New Feature
+	[ECA-4006] - Add test for legacy subject encoding with override enabled via CMP
+
 EJBCA 6.2.6, 2014-12-03
 ---
 Bug

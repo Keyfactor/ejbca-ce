@@ -8,13 +8,21 @@ This is a major release with new features, bug fixes and improvements. All in al
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
--  Known issues:
+-  A selection of known issues:
+    *   External RA GUI cannot handle SubCA certificates with critical CDP https://jira.primekey.se/browse/ECA-2138
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	ant install is known to fail on Windows machines running JDK >= 7.21 https://jira.primekey.se/browse/ECA-3602 
+	*   Wrong CA key used when decrypting SCEP requests https://jira.primekey.se/browse/ECA-3807'	
+	*   Importing an externally produced certificate with empty DN fields fails https://jira.primekey.se/browse/ECA-4018
 	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though. https://jira.primekey.se/browse/ECA-4022 
 
 EJBCA 6.2.7
 -----------
+This, the first release of 2015, is a minor release primarily geared towards optimization and stabilization of the 6.2 branch. We have primarily
+optimized GUI behavior in regard to cryptotokens referencing many keys, as well as sorted out some documentation issues. QA procedures have also
+been revised and improved, which is the "known issues" list below is longer than in previous releases.
+
+All in all, 24 issues have been fixed or implemented for this release. 
 
 Behavior of OCSP responder has been changed slightly in order to improve performance. Status of the OCSP signing certificate's CA is now only checked when the cache
 is reloaded, instead of at every request. If unsure how long the timeout is set for, check the value ocsp.signingCertsValidTime in ocsp.properties.
@@ -22,9 +30,12 @@ is reloaded, instead of at every request. If unsure how long the timeout is set 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
--  Known issues:
+-  A selection of known issues:
+    *   External RA GUI cannot handle SubCA certificates with critical CDP https://jira.primekey.se/browse/ECA-2138
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	ant install is known to fail on Windows machines running JDK >= 7.21 https://jira.primekey.se/browse/ECA-3602 
+	*   Wrong CA key used when decrypting SCEP requests https://jira.primekey.se/browse/ECA-3807
+	*   Importing an externally produced certificate with empty DN fields fails https://jira.primekey.se/browse/ECA-4018
 	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though. https://jira.primekey.se/browse/ECA-4022 
 
 EJBCA 6.2.6
