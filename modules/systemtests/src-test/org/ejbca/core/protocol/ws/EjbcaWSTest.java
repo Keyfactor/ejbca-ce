@@ -846,10 +846,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C\\=SE,ST=Sthlm/,OU=OU2,O=PrimeKey,JurisdictionCountry=SE\\+SN\\=12345,BusinessCategory=Private Organization");
     }
 
+    /* This is apparently allowed but puts the system in a world of pain, since other functions are not adapted to handle an empty subjectDN
     @Test
-    public void test59CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+    public void test59CertificateRequestWithoutDnOverrideFromEndEntityInformation() throws Exception {
         try {
-            testCertificateRequestWithEeiDnOverride(true, true, "", "");
+            testCertificateRequestWithEeiDnOverride(false, true, "", "");
             fail("Was able to provide an empty subjectDN.");
         } catch (EjbcaException_Exception e) {
             log.error(e.getMessage(), e);
@@ -857,7 +858,27 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test60SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+    public void test60CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        try {
+            testCertificateRequestWithEeiDnOverride(true, true, "", "");
+            fail("Was able to provide an empty subjectDN.");
+        } catch (EjbcaException_Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+    */
+    @Test
+    public void test61SoftTokenRequestWithoutDnOverrideFromEndEntityInformation() throws Exception {
+        try {
+            testCertificateRequestWithEeiDnOverride(false, false, "", "");
+            fail("Was able to provide an empty subjectDN.");
+        } catch (EjbcaException_Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void test62SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
         try {
             testCertificateRequestWithEeiDnOverride(true, false, "", "");
             fail("Was able to provide an empty subjectDN.");

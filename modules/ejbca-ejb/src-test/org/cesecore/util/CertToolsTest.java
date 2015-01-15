@@ -1744,6 +1744,13 @@ public class CertToolsTest {
         assertEquals("CN=f\\,", result.toString());
     }
 
+    @Test
+    public void testStringToBcX500WithEmpty() {
+        // Legacy behavior
+        X500Name result = CertTools.stringToBcX500Name("");
+        assertNotNull(result);    
+        assertEquals("", result.toString());
+    }
  
     @Test
     public void testStringToBcX500WithEscapedComma() {
