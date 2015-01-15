@@ -764,7 +764,24 @@ public class X509CA extends CA implements Serializable {
                 log.debug("Using X509Name from request instead of user's registered.");
             }
         } else {
-            subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder);
+            final ExtendedInformation ei = subject.getExtendedinformation();
+            if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
+                final String stripped = StringTools.strip(ei.getRawSubjectDn());
+                final String escapedPluses = CertTools.handleUnescapedPlus(stripped);
+                final String emptiesRemoved = DNFieldsUtil.removeAllEmpties(escapedPluses);
+                final X500Name subjectDNNameFromEei = CertTools.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
+                if (subjectDNNameFromEei.toString().length()>0) {
+                    subjectDNName = subjectDNNameFromEei;
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using X500Name from end entity information instead of user's registered subject DN fields.");
+                        log.debug("ExtendedInformation.getRawSubjectDn(): " + ei.getRawSubjectDn() + " will use: " + CeSecoreNameStyle.INSTANCE.toString(subjectDNName));
+                    }
+                } else {
+                    subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder);
+                }
+            } else {
+                subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder);
+            }
         }
         // Make sure the DN does not contain dangerous characters
         if (StringTools.hasStripChars(subjectDNName.toString())) {

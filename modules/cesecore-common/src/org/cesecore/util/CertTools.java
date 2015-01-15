@@ -287,8 +287,18 @@ public abstract class CertTools {
      * @throws IllegalArgumentException if DN is not valid
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder) {
+        final X500Name x500Name = stringToUnorderedX500Name(dn, nameStyle);
+        // -- Reorder fields
+        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, nameStyle);
         if (log.isTraceEnabled()) {
-            log.trace(">stringToBcX500Name: " + dn);
+            log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
+        }
+        return orderedX500Name;
+    }
+
+    public static X500Name stringToUnorderedX500Name(String dn, final X500NameStyle nameStyle) {
+        if (log.isTraceEnabled()) {
+            log.trace(">stringToUnorderedX500Name: " + dn);
         }
         if (dn == null) {
             return null;
@@ -369,12 +379,10 @@ public abstract class CertTools {
             }
         }
         final X500Name x500Name = nameBuilder.build();
-        // -- Reorder fields
-        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, nameStyle);
         if (log.isTraceEnabled()) {
-            log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
-        }     
-        return orderedX500Name;
+            log.trace(">stringToUnorderedX500Name: x500Name=" + x500Name.toString());
+        }
+        return x500Name;
     }
 
     /** Removes any unescaped '\' character from the provided StringBuilder. Assumes that escaping quotes have been stripped. 
@@ -417,7 +425,7 @@ public abstract class CertTools {
      * BC (version 1.45) did not support multi-valued RelativeDistinguishedName, and automatically escaped them instead.
      * Even though it is now (BC 1.49b15) supported, we want to keep ecaping '+' chars and warn that this might not be supported in the future.
      */
-    private static String handleUnescapedPlus(final String dn) {
+    public static String handleUnescapedPlus(final String dn) {
         if (dn == null) {
             return dn;
         }

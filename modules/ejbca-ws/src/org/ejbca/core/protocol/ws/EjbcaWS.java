@@ -106,6 +106,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -176,6 +177,7 @@ import org.ejbca.core.protocol.ws.logger.TransactionLogger;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
+import org.ejbca.core.protocol.ws.objects.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
@@ -2453,10 +2455,11 @@ public class EjbcaWS implements IEjbcaWS {
 	    	if (log.isDebugEnabled()) {
 	    		log.debug("CertReq for user '" + userdata.getUsername() + "'.");
 	    	}
-	        setUserDataVOWS (userdata);
+	        setUserDataVOWS(userdata);
 	    	final EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	    	final AuthenticationToken admin = ejbcawshelper.getAdmin(false);
 	    	logAdminName(admin,logger);
+            enrichUserDataWithRawSubjectDn(userdata);
 	        final EndEntityInformation endEntityInformation = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
 	        if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
@@ -2522,6 +2525,14 @@ public class EjbcaWS implements IEjbcaWS {
         }
 	}
 
+    /** Add the raw subject DN as requested (used if we allow override from request End Entity Information) */
+    private void enrichUserDataWithRawSubjectDn(final UserDataVOWS userdata) {
+        if (userdata.getExtendedInformation()==null) {
+            userdata.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        }
+        userdata.getExtendedInformation().add(new ExtendedInformationWS(ExtendedInformation.RAWSUBJECTDN, userdata.getSubjectDN()));
+    }
+
     @Override
 	public KeyStore softTokenRequest(UserDataVOWS userdata, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
@@ -2534,6 +2545,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    	final EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	    	final AuthenticationToken admin = ejbcawshelper.getAdmin(false);
 	    	logAdminName(admin,logger);
+            enrichUserDataWithRawSubjectDn(userdata);
 	        final EndEntityInformation endEntityInformation = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        final boolean createJKS = userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
 	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, endEntityInformation, hardTokenSN, keyspec, keyalg, createJKS);

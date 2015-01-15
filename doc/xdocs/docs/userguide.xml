@@ -765,16 +765,39 @@ normally an RA through CMP or WebService.
 Currently this only works for extensions in CRMF (CMP) requests.
 </p>
 </subsubsection>
-<subsubsection name="Allow subject DN override">
+<subsubsection name="Allow subject DN override by CSR">
 <p>
 If subject DN override is allowed, the X509 subject DN extension created in a certificate can come directly from the 
-request sent by the user. This is instead of the normal way where the user's registered DN is used.
+CSR in the request sent by the user. This is instead of the normal way where the user's registered DN is used.
 <br/>
 Using this option certificates with very strange DNs, or with DNs in very specific orders can be created.
 </p>
 <p>
 This option should only be used when you know that the request comes from a very trusted source. Such a trusted source is  
 normally an RA through CMP or webservice.
+</p>
+</subsubsection>
+<subsubsection name="Allow subject DN override by End Entity Information">
+<p>
+If subject DN override is allowed, the X509 subject DN extension created in a certificate can come directly from the 
+request meta information sent by the user. This is instead of the normal way where the user's registered DN is used.
+<br/>
+Using this option certificates with very specific ordering of subject DN fields can be created.
+<br/>
+<ul>
+  <li>The provided subject will still have black-listed characters and white spaces removed.</li>
+  <li>'+' will be escaped, since we don't support multivalued RDNs yet.</li>
+  <li>RDNs with empty attribute values will be removed.</li>
+  <li>Names have to comply with the CeSecore naming style (e.g. SURNAME=... instead of SN=..).</li>
+</ul>
+</p>
+<p>
+This option should only be used when you know that the request comes from a very trusted source (RA) over EJBCA's web service
+"certificateRequest" call.
+In this case the SubjectDN of the UserDataVOWS object will be used without modification.
+</p>
+<p>
+In the case that "Allow subject DN override by CSR" is also specified, the CSR's subject DN will be when present.
 </p>
 </subsubsection>
 <subsubsection name="Allow certificate serial number override">
