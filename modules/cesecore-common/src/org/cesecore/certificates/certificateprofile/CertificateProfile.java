@@ -141,6 +141,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
     protected static final String ALLOWEXTENSIONOVERRIDE = "allowextensionoverride";
     protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
+    protected static final String ALLOWDNOVERRIDEBYEEI = "allowdnoverridebyeei";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
@@ -316,6 +317,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAllowExtensionOverride(false);
 
         setAllowDNOverride(false);
+        setAllowDNOverrideByEndEntityInformation(false);
 
         setUseBasicConstraints(true);
         setBasicConstraintsCritical(true);
@@ -607,8 +609,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * If DN override is allowed, the X509 subject DN extension created in a certificate can come directly from the request sent by the user. This is
-     * instead of the normal way where the user's registered DN is used.
+     * If DN override by End Entity Information is allowed, the X509 subject DN extension created in a certificate can
+     * come directly from the CSR in the request sent by the user. This is instead of the normal way where the user's
+     * registered DN is used.
      */
     public boolean getAllowDNOverride() {
         Object d = data.get(ALLOWDNOVERRIDE);
@@ -621,6 +624,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** @see #getAllowDNOverride() */
     public void setAllowDNOverride(boolean allowdnoverride) {
         data.put(ALLOWDNOVERRIDE, Boolean.valueOf(allowdnoverride));
+    }
+
+    /**
+     * If DN override by End Entity Information is allowed, the X509 subject DN extension created in a certificate can
+     * come directly from the request meta information sent by the user. This is instead of the normal way where the
+     * user's registered DN is used.
+     */
+    public boolean getAllowDNOverrideByEndEntityInformation() {
+        Object d = data.get(ALLOWDNOVERRIDEBYEEI);
+        if (d == null) {
+            return false;
+        }
+        return ((Boolean) d).booleanValue();
+    }
+
+    /** @see #getAllowDNOverrideByEndEntityInformation() */
+    public void setAllowDNOverrideByEndEntityInformation(final boolean value) {
+        data.put(ALLOWDNOVERRIDEBYEEI, Boolean.valueOf(value));
     }
 
     /**

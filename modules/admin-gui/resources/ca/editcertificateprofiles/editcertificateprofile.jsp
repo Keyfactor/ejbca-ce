@@ -145,12 +145,21 @@
 		</h:panelGroup>
 
 		<h:panelGroup>
-			<h:outputLabel for="checkallowdnoverridegroup" value="#{web.text.ALLOWDNOVERRIDE}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20subject%20DN%20override") %>
+			<h:outputLabel for="checkallowdnoverridegroup" value="#{web.text.ALLOWDNOVERRIDECSR}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20fields") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowdnoverridegroup">
 			<h:selectBooleanCheckbox id="checkallowdnoverride" value="#{certProfileBean.certificateProfile.allowDNOverride}"/>
 			<h:outputLabel for="checkallowdnoverride" value="#{web.text.ALLOW} "/>
+		</h:panelGroup>
+
+		<h:panelGroup>
+			<h:outputLabel for="checkallowdnoverrideeeigroup" value="#{web.text.ALLOWDNOVERRIDEEEI}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20fields") %>
+		</h:panelGroup>
+		<h:panelGroup id="checkallowdnoverrideeeigroup">
+			<h:selectBooleanCheckbox id="checkallowdnoverrideeei" value="#{certProfileBean.certificateProfile.allowDNOverrideByEndEntityInformation}"/>
+			<h:outputLabel for="checkallowdnoverrideeei" value="#{web.text.ALLOW} "/>
 		</h:panelGroup>
 
 		<h:outputLabel for="checkallowkeyusageoverridegroup" value="#{web.text.ALLOWKEYUSAGEOVERRIDE}"/>

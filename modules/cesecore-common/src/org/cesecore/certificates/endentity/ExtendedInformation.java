@@ -86,6 +86,9 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
     public  static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
 
+    /** The subject DN exactly as requested in the UserDataVOWS object. */
+    public static final String RAWSUBJECTDN = "RAWSUBJECTDN";
+
     /** The counter is a counter for how many failed login attempts that can be performed before the userstatus is changed to GENERATED */
     private static final String REMAININGLOGINATTEMPTS = "remainingloginattempts";
 
@@ -273,7 +276,16 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             data.put(NAMECONSTRAINTS_EXCLUDED, StringUtils.join(encodedNames, ';'));
         }
     }
-    
+
+    /** @return the subject DN exactly as requested (via WS ) */
+    public String getRawSubjectDn() {
+        final String value = (String) data.get(RAWSUBJECTDN);
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        return value;
+    }
+
     /**
      * Gets generic string data from the ExtendedInformation map.
      */
@@ -452,5 +464,4 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private void setType(int type) {
         data.put(TYPE, type);
     }
-
 }
