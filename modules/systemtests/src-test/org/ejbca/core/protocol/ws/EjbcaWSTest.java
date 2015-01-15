@@ -866,7 +866,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             log.error(e.getMessage(), e);
         }
     }
-    */
+
     @Test
     public void test61SoftTokenRequestWithoutDnOverrideFromEndEntityInformation() throws Exception {
         try {
@@ -886,6 +886,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             log.error(e.getMessage(), e);
         }
     }
+    */
 
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
