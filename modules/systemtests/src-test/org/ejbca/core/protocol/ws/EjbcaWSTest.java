@@ -32,6 +32,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -44,6 +45,8 @@ import java.util.TimeZone;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CaTestUtils;
 import org.cesecore.ErrorCode;
@@ -70,6 +73,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
@@ -83,9 +87,11 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -790,6 +796,134 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         getCertificateProfileFromID();
     }
 
+    @Test
+    public void test53CertificateRequestWithoutDnOverrideFromEndEntityInformation() throws Exception {
+        final long rnd = Math.abs(secureRandom.nextLong());
+        testCertificateRequestWithEeiDnOverride(false, true,
+                "L=locality,OU=OU1,JURISDICTIONLOCALITY=jlocality,CN=rox" + rnd + ".primekey.se,C=SE,ST=Sthlm,OU=OU2,O=PrimeKey,JURISDICTIONCOUNTRY=SE,SN=12345,BUSINESSCATEGORY=Private Organization",
+                "JurisdictionCountry=SE,JurisdictionLocality=jlocality,BusinessCategory=Private Organization,CN=rox" + rnd + ".primekey.se,SN=12345,OU=OU2,OU=OU1,O=PrimeKey,L=locality,ST=Sthlm,C=SE");
+    }
+
+    @Test
+    public void test54SoftTokenRequestWithoutDnOverrideFromEndEntityInformation() throws Exception {
+        final long rnd = Math.abs(secureRandom.nextLong());
+        testCertificateRequestWithEeiDnOverride(false, false,
+                "L=locality,OU=OU1,JURISDICTIONLOCALITY=jlocality,CN=rox" + rnd + ".primekey.se,C=SE,ST=Sthlm,OU=OU2,O=PrimeKey,JURISDICTIONCOUNTRY=SE,SN=12345,BUSINESSCATEGORY=Private Organization",
+                "JurisdictionCountry=SE,JurisdictionLocality=jlocality,BusinessCategory=Private Organization,CN=rox" + rnd + ".primekey.se,SN=12345,OU=OU2,OU=OU1,O=PrimeKey,L=locality,ST=Sthlm,C=SE");
+    }
+
+    @Test
+    public void test55CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        final long rnd = Math.abs(secureRandom.nextLong());
+        testCertificateRequestWithEeiDnOverride(true, true,
+                "L=locality,OU=OU1,JURISDICTIONLOCALITY=jlocality,CN=rox" + rnd + ".primekey.se,C=SE,ST=Sthlm,OU=OU2,O=PrimeKey,JURISDICTIONCOUNTRY=SE,SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se,C=SE,ST=Sthlm,OU=OU2,O=PrimeKey,JurisdictionCountry=SE,SN=12345,BusinessCategory=Private Organization");
+    }
+
+    @Test
+    public void test56SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        final long rnd = Math.abs(secureRandom.nextLong());
+        testCertificateRequestWithEeiDnOverride(true, false,
+                "L=locality,OU=OU1,JURISDICTIONLOCALITY=jlocality,CN=rox" + rnd + ".primekey.se,C=SE,ST=Sthlm,OU=OU2,O=PrimeKey,JURISDICTIONCOUNTRY=SE,SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se,C=SE,ST=Sthlm,OU=OU2,O=PrimeKey,JurisdictionCountry=SE,SN=12345,BusinessCategory=Private Organization");
+    }
+
+    @Test
+    public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        final long rnd = Math.abs(secureRandom.nextLong());
+        testCertificateRequestWithEeiDnOverride(true, true,
+                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C\\=SE,ST=Sthlm/,OU=OU2,O=PrimeKey,JurisdictionCountry=SE\\+SN\\=12345,BusinessCategory=Private Organization");
+    }
+
+    @Test
+    public void test58SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
+        final long rnd = Math.abs(secureRandom.nextLong());
+        testCertificateRequestWithEeiDnOverride(true, false,
+                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C\\=SE,ST=Sthlm/,OU=OU2,O=PrimeKey,JurisdictionCountry=SE\\+SN\\=12345,BusinessCategory=Private Organization");
+    }
+
+    @Test
+    public void test59CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        try {
+            testCertificateRequestWithEeiDnOverride(true, true, "", "");
+            fail("Was able to provide an empty subjectDN.");
+        } catch (EjbcaException_Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void test60SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
+        try {
+            testCertificateRequestWithEeiDnOverride(true, false, "", "");
+            fail("Was able to provide an empty subjectDN.");
+        } catch (EjbcaException_Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
+        if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
+            certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
+        }
+        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile.setAllowDNOverrideByEndEntityInformation(allowDNOverrideByEndEntityInformation);
+        certificateProfileSession.addCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME, profile);
+        try {
+            String userName = "eeiDnOverride" + secureRandom.nextLong();
+            final UserDataVOWS userData = new UserDataVOWS();
+            userData.setUsername(userName);
+            userData.setPassword(PASSWORD);
+            userData.setClearPwd(true);
+            userData.setSubjectDN(requestedSubjectDN);
+            userData.setCaName(getAdminCAName());
+            userData.setEmail(null);
+            userData.setSubjectAltName(null);
+            userData.setStatus(UserDataVOWS.STATUS_NEW);
+            userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+            userData.setEndEntityProfileName("EMPTY");
+            userData.setCertificateProfileName(WS_TEST_CERTIFICATE_PROFILE_NAME);
+            final X509Certificate cert;
+            if (useCsr) {
+                KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+                        keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+                final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
+                CertificateResponse response = ejbcaraws.certificateRequest(userData, csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                cert = response.getCertificate();
+            } else {
+                KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
+                assertNotNull(keyStore);
+                Enumeration<String> en = keyStore.aliases();
+                String alias = en.nextElement();
+                if(!keyStore.isKeyEntry(alias)) {
+                    alias = en.nextElement();
+                }
+                cert = (X509Certificate) keyStore.getCertificate(alias);
+            }
+            final List<Certificate> certificates = Arrays.asList(new Certificate[] {cert});
+            log.info(certificates.size() + " certs.\n" + new String(CertTools.getPemFromCertificateChain(certificates)));
+            X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+            String resultingSubjectDN = CeSecoreNameStyle.INSTANCE.toString(x500name);
+            log.debug("x500name:           " + resultingSubjectDN);
+            assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);
+            try {
+                endEntityManagementSession.deleteUser(intAdmin, userName);
+            } catch (NotFoundException e) {
+                // Ignore
+            }
+        } finally {
+            if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
+                certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
+            }
+        }
+    }
+
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         String userName = "wsSpecialChars" + secureRandom.nextLong();
         final UserDataVOWS userData = new UserDataVOWS();
@@ -818,6 +952,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String resultingSubjectDN = cert.getSubjectDN().toString();
         assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
                 resultingSubjectDN);
+        try {
+            endEntityManagementSession.deleteUser(intAdmin, userName);
+        } catch (NotFoundException e) {
+            // Ignore
+        }
     }
 
     /**
