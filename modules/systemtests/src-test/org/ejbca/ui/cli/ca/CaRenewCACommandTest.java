@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -82,16 +83,17 @@ public class CaRenewCACommandTest extends CaTestCase {
         final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         
-        assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
+        assertFalse("Serial number of CA certificate did not change.", orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
         
         final byte[] orgkey = orgCert.getPublicKey().getEncoded();
         final byte[] samekey = newcertsamekeys.getPublicKey().getEncoded();
-        assertTrue("same key", Arrays.equals(orgkey, samekey));
+        assertTrue("CA certificate was not issued with the same key pair.", Arrays.equals(orgkey, samekey));
+        assertFalse("CA Certificate did not change.", CertTools.getFingerprintAsString(orgCert).equals(CertTools.getFingerprintAsString(newcertsamekeys)));
         
-        // The new certificate should have a validity greater than the old cert
-        assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter()
+        // The new certificate should have a validity greater than or equal to the old cert (could be issued the same second)
+        assertFalse("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter()
         		+ " orgcert.getNotAfter: "+orgCert.getNotAfter(), 
-        		newcertsamekeys.getNotAfter().after(orgCert.getNotAfter()));
+        		newcertsamekeys.getNotAfter().before(orgCert.getNotAfter()));
         
         LOG.trace("<test01renewCAwithSameKeys()");
     }
