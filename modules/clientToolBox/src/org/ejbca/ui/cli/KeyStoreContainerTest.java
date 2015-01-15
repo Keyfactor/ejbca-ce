@@ -13,7 +13,6 @@
 package org.ejbca.ui.cli;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -264,49 +263,42 @@ class KeyStoreContainerTest {
             return "crypto";
         }
     }
-    static private class Data {
-        private final InputStream is;
-        private Data() {
-            InputStream tmp;
-            try {
-                tmp = new FileInputStream("./testData");
-            } catch (FileNotFoundException e) {
-                tmp = new ByteArrayInputStream("Lillan gick on the roaden ut.".getBytes());
+
+    static private abstract class TestData {
+        private static final byte[] STATIC_TEST_DATA = "Lillan gick on the roaden ut.".getBytes();
+        private static final String FILENAME = "./testData";
+
+        private static Boolean testFileAvailable = null;
+
+        /** Load the provided signature with test data from either a file or a hard coded short String. */
+        public static void updateWithTestData(final Signature signature) throws Exception {
+            InputStream is = null;
+            if (testFileAvailable==null || testFileAvailable.booleanValue()) {
+                try {
+                    is = new FileInputStream(FILENAME);
+                    testFileAvailable = Boolean.TRUE;
+                } catch (FileNotFoundException e) {
+                    // Apparently it never existed or has been removed during the test
+                    testFileAvailable = Boolean.FALSE;
+                }
             }
-            this.is = tmp;
-        }
-        @Override
-        protected void finalize() throws Throwable {
-            this.is.close();
-            super.finalize();
-        }
-        private byte[] getBytes() throws Exception {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            while( true ) {
-                final byte buffer[] = new byte[0x400];
-                final int length = this.is.read(buffer);
-                if (length<0) {
-                    break;// eof
+            if (is==null) {
+                // Update the signer with hard coded test data, since no file was available
+                signature.update(Arrays.copyOf(STATIC_TEST_DATA, STATIC_TEST_DATA.length));
+            } else {
+                // Load the found file with test data into the signer
+                final byte buffer[] = new byte[16*1024];
+                int length;
+                while ((length = is.read(buffer))!=-1) {
+                    if (length>0) {
+                        signature.update(buffer, 0, length);
+                    }
                 }
-                if (buffer.length==0) {
-                    continue; // no data no eof, try again
-                }
-                baos.write(buffer, 0, length);
-                break; // we got some data return
-            }
-            return baos.toByteArray();
-        }
-        public static void update(Signature signature) throws Exception {
-            final Data data = new Data();
-            while( true ) {
-                final byte bytes[] = data.getBytes();
-                if ( bytes.length<1 ){
-                    break;
-                }
-                signature.update( bytes );
+                is.close();
             }
         }
     }
+
     class Sign implements Test {
         private final String sigAlgName;
         private byte signBA[];
@@ -332,7 +324,7 @@ class KeyStoreContainerTest {
         public void prepare() throws Exception {
             this.signature = Signature.getInstance(this.sigAlgName, KeyStoreContainerTest.this.providerName);
             this.signature.initSign( KeyStoreContainerTest.this.keyPair.getPrivate() );
-            Data.update(this.signature);
+            TestData.updateWithTestData(this.signature);
         }
         @Override
         public void doOperation() throws Exception {
@@ -343,7 +335,7 @@ class KeyStoreContainerTest {
 
             final Signature verifySignature = Signature.getInstance(this.sigAlgName);
             verifySignature.initVerify(KeyStoreContainerTest.this.keyPair.getPublic());
-            Data.update(verifySignature);
+            TestData.updateWithTestData(verifySignature);
             this.result = verifySignature.verify(this.signBA);
             return this.result;
         }
