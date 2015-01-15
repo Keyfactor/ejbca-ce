@@ -288,6 +288,9 @@ public abstract class CertTools {
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder) {
         final X500Name x500Name = stringToUnorderedX500Name(dn, nameStyle);
+        if (x500Name==null) {
+            return null;
+        }
         // -- Reorder fields
         final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, nameStyle);
         if (log.isTraceEnabled()) {
