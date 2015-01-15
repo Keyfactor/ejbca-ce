@@ -29,6 +29,14 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.2.x up to EJBCA 6.3.0
+-------------------------------
+EJBCA 6.3.0 introduces one new table, PeerData. This table is automatically created at deployment to the appserver.  
+If you prefer to do the database upgrade manually, see src/upgrade for SQL scripts for your specific database.
+
+Certain features have been shifted from the Community to Enterprise version of EJBCA, among these are SCEP RA Mode, CMP Proxy and EV Certificate 
+specific DN fields. If you are running community and require these features, please contact a sales representative. 
+
 From EJBCA 6.2.x to EJBCA 6.2.7
 -------------------------------
 Behavior of OCSP responder has been changed slightly in order to improve performance. Status of the OCSP signing certificate's CA is now only checked when the cache
