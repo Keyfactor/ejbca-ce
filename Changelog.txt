@@ -1,3 +1,120 @@
+EJBCA 6.3.0, 2015-01-14
+Bug
+	[ECA-2478] - UnrevokeEndEntity unrevokes cert but not user
+	[ECA-3528] - GUI: Some messages not localized in Admin Web
+	[ECA-3590] - Cache the slot list
+	[ECA-3598] - Fix handling of invalid ZIP contents when importing certificate profiles
+	[ECA-3599] - Fix handling of invalid ZIP contents when importing end entity profiles 
+	[ECA-3609] - Name constraints properties are duplicated in CLI editca command
+	[ECA-3631] - database valid connection sql for VA publisher is taken from database.properties instead of va-publisher.properties
+	[ECA-3634] - OCSP does not audit and transaction log UNAUTHORIZED messages
+	[ECA-3656] - Forbidden characters can be allowed
+	[ECA-3719] - GUI: Publisher page usability
+	[ECA-3745] - Some language have not the standard language code
+	[ECA-3797] - Statedump incorrectly tries to export full BasePublisher object
+	[ECA-3804] - httpsserver.an (altname) is ipaddress 127.0.0.1 by default, and no dnsName matching CN
+	[ECA-3813] - GUIDGeneratorTest fails intermittently 
+	[ECA-3841] - JAR file used by CT should be rebuilt for JDK6
+	[ECA-3849] - Admin must be authorized to all CAs to import keybinding certificate
+	[ECA-3855] - Loading saved CMP configuration referencing a deleted EEP results in NPE
+	[ECA-3892] - GUI: A lot of event messages not set in "View Log"
+	[ECA-3908] - Allow OcspKeyRenewalTest to run predictably on system with existing AuthenticationKeyBindings
+	[ECA-3949] - Status parameter in "keybind create" command shouldn't be case sensitive
+	[ECA-3960] - CaPKCS11SessionTest fails and never recovers if test is aborted
+	[ECA-3968] - Sort and count peer connectors correctly in statedump
+	[ECA-3993] - ejbca-db-cli does not work due to PeerConnector
+	[ECA-4003] - "CRL Updater" service doesn't update the CRL
+	[ECA-4012] - Reject IP addresses in dNSName name constraints
+	[ECA-4032] - Regression: Key Recoverable not set in EE when activated and required in profile
+
+Improvement
+	[ECA-2272] - Refactoring some DN attributes and Alternative names naming
+	[ECA-2340] - GUI: Audit Log usability
+	[ECA-2576] - New key sizes available in certificate profiles
+	[ECA-3043] - Document SameRequestRateLimiter better
+	[ECA-3256] - Split the va-war module into its logical parts
+	[ECA-3412] - Rework VA/OCSP documentation
+	[ECA-3414] - Clean up Exception handling in SignSessionBean
+	[ECA-3601] - Enterprise feature
+	[ECA-3654] - Enterprise feature
+	[ECA-3674] - Allow certificate validity before current date using end entity ExtendedInformation
+	[ECA-3720] - GUI: Certificate Profile page usability
+	[ECA-3726] - Make CertSafe implement CustomPublisherUiSupport
+	[ECA-3746] - GUI: Displaying the language name in configuration sections
+	[ECA-3753] - Add OpenSC PKCS#11 to default crypto token library path 
+	[ECA-3769] - CryptoToken usage should also include internal key bindings
+	[ECA-3773] - Add NIST PIV Card Authentication extended key usage
+	[ECA-3809] - Improve the message for signed SubCAs regarding the need of *.pem or *chain.pem
+	[ECA-3824] - CertSafePublisher should use a dropdown pane for setting authentication keybindings
+	[ECA-3854] - Optimize Language tool
+	[ECA-3869] - Sort key aliases by name in InternalKeyBinding edit view
+	[ECA-3874] - RSA 4096 keys pre-selected in Crypto Token form
+	[ECA-3891] - GUI: Firefox CRLs direct import removed
+	[ECA-3930] - CryptoTokenManager: Add a column for auto-activation status.
+	[ECA-3955] - Add some missing OCSP system tests
+	[ECA-4051] - Correct documentation of CLI command when updating a CMP alias
+
+Master Ticket
+	[ECA-3144] - Improved sub system integration (EJBCA Peer Systems)
+		[ECA-3652] - Create PeerMessage datatype, ORM and CRUD beans
+		[ECA-3653] - Create basic JSF pages for Peer mgmt		
+		[ECA-3659] - Connect GUI with CRUD
+		[ECA-3671] - Add auth checks to CRUD bean
+		[ECA-3694] - Milestone: Make PingMessage work from a PeerConnector created in the GUI
+		[ECA-3699] - Outgoing TLS configuration as part AuthenticationKeyBinding	
+		[ECA-3700] - Rename peerconnector-common to *-ejb and move common classes under ear/lib/..jar	
+		[ECA-3702] - Basic publishing to peer system
+		[ECA-3704] - Framework for making custom publisher configuration nicer
+		[ECA-3710] - Do parallel publishing when the same thing is published to multiple targets
+		[ECA-3711] - Changes to publishing API for efficient publishing of full CertificateData (and Base64CertData)
+		[ECA-3712] - Efficient resynchronization of data between CA and Peer VA
+		[ECA-3715] - Requested capabilities should be saved when creating peer connector
+		[ECA-3722] - Create CLI support for PeerConnector
+		[ECA-3742] - Publish the same updateTime that is used in the CA's database 
+		[ECA-3751] - Manual renewal of OcspKeyBinding at peer
+		[ECA-3752] - Behavioral configuration for PeerConnectors		
+		[ECA-3756] - Make InternalKeyBinding access rules configurable
+		[ECA-3757] - Minor PeerConnector refactoring and documentation
+		[ECA-3759] - Service for automatic renewal of remote key bindings
+		[ECA-3762] - Documentation: Create a security model for PeerConnectors 
+		[ECA-3770] - PeerConnector GUI improvements
+		[ECA-3775] - Forbid start and return error when background task with same id exist
+		[ECA-3777] - ListPeersCommand improvements
+		[ECA-3778] - Drop concept of capabilities and use regular access rules framework
+		[ECA-3781] - Improve peer message format
+		[ECA-3782] - Stop connection pool and prevent start when peer connector is disabled or URL changes
+		[ECA-3784] - More fine grained access rules for peer connectors
+		[ECA-3785] - Disable plain http connections for peers
+		[ECA-3786] - Shorten peer connector Servlet URL
+		[ECA-3787] - Option for synchronization dry run
+		[ECA-3803] - Peer connector system tests
+		[ECA-3805] - Propagation of peer connection errors to UI
+		[ECA-3806] - CLI for generic peer connection settings
+		[ECA-3810] - Minor PeerConnector GUI improvements
+		[ECA-3811] - Lookup authentication token at pool startup
+		[ECA-3825] - Allow one AuthenticationKeyBinding to be used per Peer Connector
+		[ECA-3833] - JEE5 support for enterprise edition only SSBs
+		[ECA-3839] - Use one connection pool per outgoing id instead of URL
+		[ECA-3840] - Cache PeerOutgoingInformation objects
+		[ECA-3846] - More fine grained errors than UnknownMessageTypeResponse without information leakage
+		[ECA-3850] - Use separate GlobalConfiguration for peer connections
+		[ECA-3867] - Correct peer module license headers
+		[ECA-3876] - Statedump support for peer connectors and configuration
+		[ECA-3881] - Improve error message when peer responds with an unknown or broken message
+		[ECA-3882] - PeerConnector: Ugly errors when using illegal characters in URL
+		[ECA-3898] - Adjust logging of handled failures during peer publishing
+		[ECA-3899] - Show mismatched access rules for incoming peer authorization instead of fixing it
+		[ECA-3923] - Handle additional server side certificate end entity alias from PeerConnectionsTest
+		[ECA-3928] - Rename Remote Systems menu item to "Peer System"	
+
+New Feature
+	[ECA-3705] - Create a plugin interface for rules 
+	[ECA-3800] - get the certificate of an ocsp keybinding
+	[ECA-3885] - New signature algorithm SHA512withECDSA
+
+Task
+	[ECA-3962] - EJBCA Enterprise feature
+
 EJBCA 6.2.7, 2015-01-14
 ---
 Bug

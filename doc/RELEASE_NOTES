@@ -1,8 +1,17 @@
 EJBCA 6.3.0
 -----------
-This is a major release with new features, bug fixes and improvements. All in all, xy issues have been fixed.
+EJBCA 6.3.0 introduces a powerful new feature for Enterprise and Appliance users: the EJBCA Peer System protocol. The purpose is to allow secure 
+communication over TLS between peered installations of EJBCA, doing away with the need of direct database publishing in order to propagate 
+certificates and certificate information. This means that direct and synchronous communication is now possible between a Certificate Authorities and 
+their associated Verification Authorities, also enabling verification of synchronization status and health.
+
+EJBCA Peers System represents a step forward in how setup up complex multi-system installations, and we have great hopes for what we will be able to 
+make possible in EJBCA in the future. 
+
+This is a major release with new features, bug fixes and improvements. All in all, 106 issues have been fixed.
 
 * Noteworthy changes:
+- Introduction of the EJBCA Peer System protocol
 - Fully localized in French, thanks to David Carella of Linagora.
 
 Read the full Changelog for details.
