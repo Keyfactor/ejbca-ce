@@ -797,7 +797,7 @@ This option should only be used when you know that the request comes from a very
 In this case the SubjectDN of the UserDataVOWS object will be used without modification.
 </p>
 <p>
-In the case that "Allow subject DN override by CSR" is also specified, the CSR's subject DN will be when present.
+In the case that "Allow subject DN override by CSR" is also specified, the CSR's subject DN will be used when present.
 </p>
 </subsubsection>
 <subsubsection name="Allow certificate serial number override">
