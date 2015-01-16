@@ -723,7 +723,11 @@ public class X509CA extends CA implements Serializable {
             // Or a custom serial number defined in the end entity object
             final ExtendedInformation ei = subject.getExtendedinformation();
             if (certProfile.getAllowCertSerialNumberOverride()) {
-                serno = (ei != null ? ei.certificateSerialNumber() : SernoGeneratorRandom.instance().getSerno());
+                if (ei != null && ei.certificateSerialNumber()!=null) {
+                    serno = ei.certificateSerialNumber();
+                } else {
+                    serno = SernoGeneratorRandom.instance().getSerno();
+                }
             } else {
                 serno = SernoGeneratorRandom.instance().getSerno();
                 if ((ei != null) && (ei.certificateSerialNumber() != null)) {
