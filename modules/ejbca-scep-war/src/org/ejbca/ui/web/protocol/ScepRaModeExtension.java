@@ -22,6 +22,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -59,6 +60,7 @@ public class ScepRaModeExtension implements ScepPlugin {
 
         final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
         final CertificateProfileSessionLocal certProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
         final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
         final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
         final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
@@ -66,7 +68,7 @@ public class ScepRaModeExtension implements ScepPlugin {
          final String configAlias = alias;
 
         // Try to find the CA name from the issuerDN in the request. If we can't find it, we use the default
-        String issuerDN = CertTools.stringToBCDNString(reqmsg.getIssuerDN());
+        String issuerDN = certificateStoreSession.getCADnFromRequest(reqmsg);
         String caName = null;
         try {
             caName = caSession.getCAInfoInternal(issuerDN.hashCode()).getName();
