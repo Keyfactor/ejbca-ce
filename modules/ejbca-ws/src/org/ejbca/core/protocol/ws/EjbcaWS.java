@@ -1530,14 +1530,14 @@ public class EjbcaWS implements IEjbcaWS {
             rules.add(StandardRules.CAACCESS.resource() + significantcAInfo.getCAId());
             if (overwriteExistingSN) {
                 rules.add(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
-                rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.REVOKE_RIGHTS);
+                rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.REVOKE_END_ENTITY);
             }
             if (userExists) {
                 rules.add(AccessRulesConstants.REGULAR_EDITENDENTITY);
-                rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.EDIT_RIGHTS);
+                rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.EDIT_END_ENTITY);
             } else {
                 rules.add(AccessRulesConstants.REGULAR_CREATEENDENTITY);
-                rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.CREATE_RIGHTS);
+                rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.CREATE_END_ENTITY);
             }
             String[] rulesArray = rules.toArray(new String[rules.size()]);
             if (!authorizationSession.isAuthorizedNoLogging(admin, rulesArray)) {

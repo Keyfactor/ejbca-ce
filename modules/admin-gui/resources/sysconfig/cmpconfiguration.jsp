@@ -115,7 +115,7 @@
   
   boolean issuperadministrator = false;
   try{
-    issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
+    issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION);
   }catch(AuthorizationDeniedException ade){}   
 
 %>
