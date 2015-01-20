@@ -20,14 +20,14 @@ import org.cesecore.authorization.control.StandardRules;
  */
 public abstract class AccessRulesConstants {
 
-    // Available end entity profile authorization rules.
-    public static final String VIEW_RIGHTS                                = "/view_end_entity";
-    public static final String EDIT_RIGHTS                                = "/edit_end_entity";
-    public static final String CREATE_RIGHTS                              = "/create_end_entity";
-    public static final String DELETE_RIGHTS                              = "/delete_end_entity";
-    public static final String REVOKE_RIGHTS                              = "/revoke_end_entity";
-    public static final String HISTORY_RIGHTS                             = "/view_end_entity_history";
-    public static final String APPROVAL_RIGHTS                            = "/approve_end_entity";
+    // Available end entity authorization rules.
+    public static final String VIEW_END_ENTITY = "/view_end_entity";
+    public static final String EDIT_END_ENTITY = "/edit_end_entity";
+    public static final String CREATE_END_ENTITY = "/create_end_entity";
+    public static final String DELETE_END_ENTITY = "/delete_end_entity";
+    public static final String REVOKE_END_ENTITY = "/revoke_end_entity";
+    public static final String VIEW_END_ENTITY_HISTORY = "/view_end_entity_history";
+    public static final String APPROVE_END_ENTITY = "/approve_end_entity";
 
     public static final String HARDTOKEN_RIGHTS                           = "/view_hardtoken";
     public static final String HARDTOKEN_PUKDATA_RIGHTS                   = "/view_hardtoken/puk_data";
@@ -35,7 +35,7 @@ public abstract class AccessRulesConstants {
     public static final String  KEYRECOVERY_RIGHTS                        = "/keyrecovery";    
     
     // Endings used in profile authorization.
-    public static final String[] ENDENTITYPROFILE_ENDINGS = {VIEW_RIGHTS,EDIT_RIGHTS,CREATE_RIGHTS,DELETE_RIGHTS,REVOKE_RIGHTS,HISTORY_RIGHTS,APPROVAL_RIGHTS};
+    public static final String[] ENDENTITYPROFILE_ENDINGS = {VIEW_END_ENTITY,EDIT_END_ENTITY,CREATE_END_ENTITY,DELETE_END_ENTITY,REVOKE_END_ENTITY,VIEW_END_ENTITY_HISTORY,APPROVE_END_ENTITY};
     
     // Name of end entity profile prefix directory in authorization module.
     public static final String ENDENTITYPROFILEBASE                       = "/endentityprofilesrules";
@@ -69,17 +69,17 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_RAFUNCTIONALITY                    = "/ra_functionality";
     public static final String REGULAR_EDITENDENTITYPROFILES              = "/ra_functionality/edit_end_entity_profiles";
     public static final String REGULAR_EDITUSERDATASOURCES                = "/ra_functionality/edit_user_data_sources";
-    public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality"+APPROVAL_RIGHTS;
+    public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality"+APPROVE_END_ENTITY;
     // REGULAR_REVOKEENDENTITY is used when revoking the certificate of a user
-    public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality"+REVOKE_RIGHTS;    
+    public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality"+REVOKE_END_ENTITY;    
     // The rules below seem to be for rights to certificates, and ae mostly used from WS for token certificates and CMP for token certificates
     // You can question if these are valid and right?
     // Some of them are unused if you check references here, but admin GUI contains directly the string /ra_functionality instead, just to make things hard
-    public static final String REGULAR_VIEWENDENTITY                      = "/ra_functionality"+VIEW_RIGHTS; // Unused, but exists as "raw" string
-    public static final String REGULAR_CREATEENDENTITY                    = "/ra_functionality"+CREATE_RIGHTS;
-    public static final String REGULAR_EDITENDENTITY                      = "/ra_functionality"+EDIT_RIGHTS ;
-    public static final String REGULAR_DELETEENDENTITY                    = "/ra_functionality"+DELETE_RIGHTS; // Unused, but exists as "raw" string
-    public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality"+HISTORY_RIGHTS; // Unused, but exists as "raw" string
+    public static final String REGULAR_VIEWENDENTITY                      = "/ra_functionality"+VIEW_END_ENTITY; // Unused, but exists as "raw" string
+    public static final String REGULAR_CREATEENDENTITY                    = "/ra_functionality"+CREATE_END_ENTITY;
+    public static final String REGULAR_EDITENDENTITY                      = "/ra_functionality"+EDIT_END_ENTITY ;
+    public static final String REGULAR_DELETEENDENTITY                    = "/ra_functionality"+DELETE_END_ENTITY; // Unused, but exists as "raw" string
+    public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality"+VIEW_END_ENTITY_HISTORY; // Unused, but exists as "raw" string
 
     public static final String REGULAR_SYSTEMFUNCTIONALITY                = StandardRules.SYSTEMFUNCTIONALITY.resource(); // Unused but the "raw" string /system_functionality is present in admin GUI pages
     public static final String REGULAR_EDITSYSTEMCONFIGURATION            = StandardRules.SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration";

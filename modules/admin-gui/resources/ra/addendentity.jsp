@@ -142,10 +142,10 @@
   boolean useoldprofile            = false;
   boolean usehardtokenissuers      = false;
   boolean usekeyrecovery           = false;
-  boolean issuperadministrator     = false;
+  boolean isAuthorized     = false;
 
   try{
-    issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
+    isAuthorized = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_RAFUNCTIONALITY + "/" + AccessRulesConstants.VIEW_END_ENTITY);
   }catch(AuthorizationDeniedException ade){}   
 
  
@@ -747,7 +747,7 @@
       Map availablecas = null;
       Collection authcas = null;
 
-      if(issuperadministrator) {
+      if(isAuthorized) {
         if(profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
           authcas = ejbcawebbean.getAuthorizedCAIds();
         } else {
@@ -857,7 +857,7 @@ function isKeyRecoveryPossible(){
 
   
 
-  <% if(issuperadministrator){ %>
+  <% if(isAuthorized){ %>
   var availablecas = new Array(<%= authcas.size()%>);
  
   var CANAME       = 0;

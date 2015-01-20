@@ -134,7 +134,7 @@ public class RAAuthorization implements Serializable {
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
     	Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
-      	Collection<Integer> result = this.complexAccessControlSession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, profileIds);     	
+      	Collection<Integer> result = this.complexAccessControlSession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_END_ENTITY, profileIds);     	
       	result.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator<Integer> iter = result.iterator();
       	                    
@@ -167,14 +167,14 @@ public class RAAuthorization implements Serializable {
     
 	public TreeMap<String, Integer> getCreateAuthorizedEndEntityProfileNames() {
 		if(authcreateprofilenames == null){
-			authcreateprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.CREATE_RIGHTS);
+			authcreateprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
 		}
 		return authcreateprofilenames;  
 	}
 	      
 	public TreeMap<String, Integer> getViewAuthorizedEndEntityProfileNames(){
 	  if(authviewprofilenames == null){
-	  	  authviewprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.VIEW_RIGHTS);
+	  	  authviewprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
 	  }
 	  return authviewprofilenames;
 	}

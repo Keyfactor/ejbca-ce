@@ -165,7 +165,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         for (final UserData data : result) {
             if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
-                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
+                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_END_ENTITY)) {
                     continue;
                 }
             }
@@ -186,7 +186,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (data != null) {
             if (( (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
-                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
+                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_END_ENTITY)) {
                     if (requestedUsername == null) {
                         final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()), admin.toString());
                         throw new AuthorizationDeniedException(msg);
@@ -214,7 +214,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     private boolean authorizedToEndEntityProfile(AuthenticationToken admin, int profileid, String rights) {
         boolean returnval = false;
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
-                && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
+                && (rights.equals(AccessRulesConstants.CREATE_END_ENTITY) || rights.equals(AccessRulesConstants.EDIT_END_ENTITY))) {
             if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
                 returnval = true;
             } else {

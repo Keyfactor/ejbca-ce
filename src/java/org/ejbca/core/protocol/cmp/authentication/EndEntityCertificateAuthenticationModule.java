@@ -476,14 +476,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         final int tagnr = msg.getBody().getType();
         if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) || (tagnr == CmpPKIBodyConstants.KEYUPDATEREQUEST) ) {
         
-            if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_RIGHTS)) {
+            if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_END_ENTITY)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Admin " + admin.toString() + " was not authorized to resource " + StandardRules.ROLE_ROOT);
                 }
                 return false;
             }
             
-            if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.EDIT_RIGHTS)) {
+            if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.EDIT_END_ENTITY)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Admin " + admin.toString() + " was not authorized to resource " + StandardRules.ROLE_ROOT);
                 }
@@ -498,7 +498,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         } else if(tagnr == CmpPKIBodyConstants.REVOCATIONREQUEST) {
             
-            if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.REVOKE_RIGHTS)) {
+            if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.REVOKE_END_ENTITY)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Administrator " + username + " is not authorized to revoke.");
                 }
@@ -526,7 +526,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      */
     private boolean authorizedToEndEntityProfile(AuthenticationToken admin, int profileid, String rights) {
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
-                && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
+                && (rights.equals(AccessRulesConstants.CREATE_END_ENTITY) || rights.equals(AccessRulesConstants.EDIT_END_ENTITY))) {
 
             return authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         } else {

@@ -116,31 +116,31 @@ public class BasicAccessRuleSetDecoder implements Serializable {
         for (Integer next : currentendentityrules) {
             if (next == BasicAccessRuleSet.ENDENTITY_VIEW) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.VIEW_RIGHTS);
+                endentityrules.add(AccessRulesConstants.VIEW_END_ENTITY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_VIEWHISTORY) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.HISTORY_RIGHTS);
+                endentityrules.add(AccessRulesConstants.VIEW_END_ENTITY_HISTORY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.HARDTOKEN_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_CREATE) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.CREATE_RIGHTS);
+                endentityrules.add(AccessRulesConstants.CREATE_END_ENTITY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_DELETE) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.DELETE_RIGHTS);
+                endentityrules.add(AccessRulesConstants.DELETE_END_ENTITY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_EDIT) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.EDIT_RIGHTS);
+                endentityrules.add(AccessRulesConstants.EDIT_END_ENTITY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_REVOKE) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_REVOKEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.REVOKE_RIGHTS);
+                endentityrules.add(AccessRulesConstants.REVOKE_END_ENTITY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_KEYRECOVER) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.KEYRECOVERY_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_APPROVE) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-                endentityrules.add(AccessRulesConstants.APPROVAL_RIGHTS);
+                endentityrules.add(AccessRulesConstants.APPROVE_END_ENTITY);
             } else if (next == BasicAccessRuleSet.ENDENTITY_VIEWPUK) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWPUKS, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);

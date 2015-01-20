@@ -283,24 +283,24 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                         if (endentityrules.get(profileid) != null) {
                             currentval = ((Integer) endentityrules.get(profileid)).intValue();
                         }
-                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_RIGHTS)) {
+                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_END_ENTITY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_VIEW;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HISTORY_RIGHTS)) {
+                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_END_ENTITY_HISTORY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_VIEWHISTORY;
                         } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HARDTOKEN_RIGHTS)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.CREATE_RIGHTS)) {
+                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.CREATE_END_ENTITY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_CREATE;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.DELETE_RIGHTS)) {
+                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.DELETE_END_ENTITY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_DELETE;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.EDIT_RIGHTS)) {
+                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.EDIT_END_ENTITY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_EDIT;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.REVOKE_RIGHTS)) {
+                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.REVOKE_END_ENTITY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_REVOKE;
                         } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.KEYRECOVERY_RIGHTS)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_KEYRECOVER;
                         }
-                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.APPROVAL_RIGHTS)) {
+                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.APPROVE_END_ENTITY)) {
                             currentval += BasicAccessRuleSet.ENDENTITY_APPROVE;
                         }
                         if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {

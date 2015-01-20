@@ -207,7 +207,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private boolean authorizedToEndEntityProfile(final AuthenticationToken admin, final int profileid, final String rights) {
         final boolean returnval;
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
-                && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
+                && (rights.equals(AccessRulesConstants.CREATE_END_ENTITY) || rights.equals(AccessRulesConstants.EDIT_END_ENTITY))) {
             returnval = authorizationSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource());
         } else {
             returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
@@ -281,7 +281,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to add user.
-            assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.CREATE_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.CREATE_END_ENTITY, caid);
         }
         
         final String originalDN = endEntity.getDN();
@@ -517,7 +517,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
-            assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.EDIT_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
         try {
             FieldValidator.validate(endEntityInformation, endEntityProfileId, endEntityProfileSession.getEndEntityProfileName(endEntityProfileId));
@@ -751,7 +751,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             caIdLog = String.valueOf(caid);
             assertAuthorizedToCA(admin, caid);
             if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-                assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
+                assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_END_ENTITY, caid);
             }
         } else {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
@@ -1053,7 +1053,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int caid = data.getCaId();
         assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
         setUserStatus(admin, data, status);
     }
@@ -1164,7 +1164,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw ufe;
             }
             // Check if administrator is authorized to edit user.
-            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
         assertAuthorizedToCA(admin, caid);
         try {
@@ -1235,7 +1235,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int caid = data.getCaId();
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
-            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
         assertAuthorizedToCA(admin, caid);
         try {
@@ -1264,7 +1264,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int caid = data.getCaId();
         assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_END_ENTITY, caid);
         }
         try {
             if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
@@ -1308,7 +1308,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int caid = userData.getCaId();
         assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-            assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
+            assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_END_ENTITY, caid);
         }
 
         if ((userData.getStatus() == EndEntityConstants.STATUS_REVOKED) && ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) ){
@@ -1427,7 +1427,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (endEntityProfileId != -1) {
             // We can only perform this check if we have a trail of what eep was used..
             if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-                assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.REVOKE_RIGHTS, caid);
+                assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.REVOKE_END_ENTITY, caid);
             }
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
