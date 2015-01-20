@@ -357,7 +357,7 @@ public class RAInterfaceBean implements Serializable {
     	UserView userview = null;
     	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
     	if (this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-    		if (!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_RIGHTS, false)) {
+    		if (!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_END_ENTITY, false)) {
     			throw new AuthorizationDeniedException("Not authorized to edit user.");
     		}
     	}
@@ -461,12 +461,12 @@ public class RAInterfaceBean implements Serializable {
 
     public boolean isAuthorizedToViewUserHistory(String username) throws AuthorizationDeniedException {
     	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-    	return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.HISTORY_RIGHTS, false);
+    	return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.VIEW_END_ENTITY_HISTORY, false);
     }
     
     public boolean isAuthorizedToEditUser(String username) throws AuthorizationDeniedException {
     	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-        return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_RIGHTS, false);
+        return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_END_ENTITY, false);
     }
 
     /** Method to resort filtered user data. */
@@ -705,7 +705,7 @@ public class RAInterfaceBean implements Serializable {
             String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(cert));
             if (this.endEntityAccessSession.findUser(administrator, username) != null) {
                 int endentityprofileid = this.endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
-                this.endEntityAuthorization(administrator, endentityprofileid, AccessRulesConstants.VIEW_RIGHTS, true);
+                this.endEntityAuthorization(administrator, endentityprofileid, AccessRulesConstants.VIEW_END_ENTITY, true);
             }
             CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
             if (revinfo != null) {
@@ -735,11 +735,11 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public boolean authorizedToEditUser(int profileid) {
-    	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.EDIT_RIGHTS, false);
+    	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.EDIT_END_ENTITY, false);
     }
 
     public boolean authorizedToViewHistory(int profileid) {
-    	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.HISTORY_RIGHTS, false);
+    	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.VIEW_END_ENTITY_HISTORY, false);
     }
 
     public boolean authorizedToViewHardToken(String username) throws AuthorizationDeniedException {
@@ -765,7 +765,7 @@ public class RAInterfaceBean implements Serializable {
     	}
     	int profileid = data.getEndEntityProfileId();
     	if (informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-    		returnval= endEntityAuthorization(administrator, profileid, AccessRulesConstants.REVOKE_RIGHTS, false);
+    		returnval= endEntityAuthorization(administrator, profileid, AccessRulesConstants.REVOKE_END_ENTITY, false);
     	} else {
     		returnval=true;
     	}

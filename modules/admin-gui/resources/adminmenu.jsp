@@ -5,6 +5,7 @@
 org.cesecore.authorization.AuthorizationDeniedException,
 org.cesecore.authorization.control.AuditLogRules,
 org.cesecore.authorization.control.CryptoTokenRules,
+org.cesecore.authorization.control.StandardRules,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
 org.cesecore.keybind.InternalKeyBindingRules
@@ -90,7 +91,7 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
-    final String SERVICES_RESOURCE                      = "/super_administrator";
+    final String SERVICES_RESOURCE                      = StandardRules.ROLE_ROOT.resource();
     final String PEERCONNECTOR_RESOURCE_VIEW            = AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW;
  %>
 <%  

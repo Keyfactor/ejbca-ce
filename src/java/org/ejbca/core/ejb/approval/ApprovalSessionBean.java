@@ -265,9 +265,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                         .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
                     if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
-                            + AccessRulesConstants.APPROVAL_RIGHTS)) {
+                            + AccessRulesConstants.APPROVE_END_ENTITY)) {
                         final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                                AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid() + AccessRulesConstants.APPROVAL_RIGHTS,
+                                AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid() + AccessRulesConstants.APPROVE_END_ENTITY,
                                 null);
                         throw new AuthorizationDeniedException(msg);
                     }
