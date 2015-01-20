@@ -111,7 +111,7 @@ public interface CertificateStoreSession {
      * @return Collection of Certificates (java.security.cert.Certificate) in no
      *         specified order or an empty Collection.
      */
-    Collection<Certificate> findCertificatesBySubject(String subjectDN);
+    List<Certificate> findCertificatesBySubject(String subjectDN);
 
     /**
      * Finds certificates  expiring within a specified time and that has

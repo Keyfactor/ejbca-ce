@@ -355,7 +355,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Collection<Certificate> findCertificatesBySubject(String subjectDN) {
+    public List<Certificate> findCertificatesBySubject(String subjectDN) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesBySubject(), dn='" + subjectDN + "'");
         }
@@ -365,7 +365,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isDebugEnabled()) {
             log.debug("Looking for cert with (transformed)DN: " + dn);
         }
-        Collection<Certificate> ret = new ArrayList<Certificate>();
+        List<Certificate> ret = new ArrayList<Certificate>();
         for (CertificateData certificate : CertificateData.findBySubjectDN(entityManager, dn)) {
             ret.add(certificate.getCertificate(this.entityManager));
         }
