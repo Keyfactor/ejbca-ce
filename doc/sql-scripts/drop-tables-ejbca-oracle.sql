@@ -21,6 +21,7 @@ drop table HardTokenIssuerData cascade constraints;
 drop table HardTokenProfileData cascade constraints;
 drop table HardTokenPropertyData cascade constraints;
 drop table KeyRecoveryData cascade constraints;
+drop table PeerData cascade constraints;
 drop table PublisherData cascade constraints;
 drop table PublisherQueueData cascade constraints;
 drop table ServiceData cascade constraints;
