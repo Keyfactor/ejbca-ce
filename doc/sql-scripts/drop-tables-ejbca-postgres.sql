@@ -23,6 +23,7 @@ drop table if exists HardTokenIssuerData cascade;
 drop table if exists HardTokenProfileData cascade;
 drop table if exists HardTokenPropertyData cascade;
 drop table if exists KeyRecoveryData cascade;
+drop table if exists PeerData cascade;
 drop table if exists PublisherData cascade;
 drop table if exists PublisherQueueData cascade;
 drop table if exists ServiceData cascade;
