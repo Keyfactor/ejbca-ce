@@ -21,6 +21,7 @@ drop table HardTokenIssuerData;
 drop table HardTokenProfileData;
 drop table HardTokenPropertyData;
 drop table KeyRecoveryData;
+drop table PeerData;
 drop table PublisherData;
 drop table PublisherQueueData;
 drop table ServiceData;

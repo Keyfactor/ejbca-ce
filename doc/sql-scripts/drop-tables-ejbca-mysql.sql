@@ -23,6 +23,7 @@ drop table if exists HardTokenIssuerData;
 drop table if exists HardTokenProfileData;
 drop table if exists HardTokenPropertyData;
 drop table if exists KeyRecoveryData;
+drop table if exists PeerData;
 drop table if exists PublisherData;
 drop table if exists PublisherQueueData;
 drop table if exists ServiceData;
