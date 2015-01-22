@@ -176,6 +176,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     /** Max size of a request is 100000 bytes */
     private static final int MAX_REQUEST_SIZE = 100000;
+    /** Timer identifiers */
+    private static final int TIMERID_OCSPSIGNINGCACHE = 1;
 
     private static final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
 
@@ -219,9 +221,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void initTimers() {
         // Reload OCSP signing cache, and cancel/create timers if there are no timers or if the cache is empty (probably a fresh startup)
-        if ((timerService.getTimers().size() == 0) || (OcspSigningCache.INSTANCE.getEntries().isEmpty())){
+        if (getTimerCount(TIMERID_OCSPSIGNINGCACHE)==0 || OcspSigningCache.INSTANCE.getEntries().isEmpty()){
             reloadOcspSigningCache();
         } else {
             log.info("Not initing OCSP reload timers, there are already some.");
@@ -234,8 +237,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     	if (log.isTraceEnabled()) {
     		log.trace(">reloadOcspSigningCache");
     	}
-        // Cancel any waiting timers
-        cancelTimers();
+        // Cancel any waiting timers of this type
+        cancelTimers(TIMERID_OCSPSIGNINGCACHE);
         try {      
          // Verify card key holder
             if (log.isDebugEnabled() && (CardKeyHolder.getInstance().getCardKeys() == null)) {
@@ -378,11 +381,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } finally {
                 OcspSigningCache.INSTANCE.stagingRelease();
             }
-            
         } finally {
-            // Schedule a new timer
-            addTimer(OcspConfiguration.getSigningCertsValidTimeInMilliseconds(), OcspSigningCache.INSTANCE.hashCode());
-            
+            // Schedule a new timer of this type
+            addTimer(OcspConfiguration.getSigningCertsValidTimeInMilliseconds(), TIMERID_OCSPSIGNINGCACHE);
         }
     }
 
@@ -698,31 +699,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.debug("Incoming OCSP request is signed : " + ocspRequest.isSigned());
         }
         if (ocspRequest.isSigned()) {
-            X509Certificate signercert = checkRequestSignature(remoteAddress, ocspRequest);
-            String signercertIssuerName = CertTools.getIssuerDN(signercert);
-            BigInteger signercertSerNo = CertTools.getSerialNumber(signercert);
-            String signercertSubjectName = CertTools.getSubjectDN(signercert);
+            final X509Certificate signercert = checkRequestSignature(remoteAddress, ocspRequest);
+            final String signercertIssuerName = CertTools.getIssuerDN(signercert);
+            final BigInteger signercertSerNo = CertTools.getSerialNumber(signercert);
+            final String signercertSubjectName = CertTools.getSubjectDN(signercert);
 
             transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
             transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, signercert.getSerialNumber().toByteArray());
             transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
             transactionLogger.paramPut(PatternLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
             // Check if we have configured request verification using the old property file way..
-            if (OcspConfiguration.getEnforceRequestSigning()) {
-                // If it verifies OK, check if it is revoked
-                final CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(signercert),
-                        CertTools.getSerialNumber(signercert));
-                /*
-                 * If rci == null it means the certificate does not exist in database, we then treat it as ok, because it may be so that only revoked
-                 * certificates is in the (external) OCSP database.
-                 */
-                if (status.equals(CertificateStatus.REVOKED)) {
-                    String serno = signercertSerNo.toString(16);
-                    String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
-                    log.info(infoMsg);
-                    throw new SignRequestSignatureException(infoMsg);
-                }
-            }
+            boolean enforceRequestSigning = OcspConfiguration.getEnforceRequestSigning();
             // Next, check if there is an OcspKeyBinding where signing is required and configured for this request
             // In the case where multiple requests are bundled together they all must be trusting the signer
             for (final Req req : ocspRequest.getRequestList()) {
@@ -742,6 +729,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.trace("OcspKeyBinding " + ocspKeyBinding.getId() + ", RequireTrustedSignature: " + ocspKeyBinding.getRequireTrustedSignature());
                     }
                     if (ocspKeyBinding.getRequireTrustedSignature()) {
+                        enforceRequestSigning = true;
                         boolean isTrusted = false;
                         final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = ocspKeyBinding.getTrustedCertificateReferences();
                         if (trustedCertificateReferences.isEmpty()) {
@@ -783,6 +771,20 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
             }
+            if (enforceRequestSigning) {
+                // If it verifies OK, check if it is revoked
+                final CertificateStatus status = certificateStoreSession.getStatus(signercertIssuerName, signercertSerNo);
+                /*
+                 * If rci == null it means the certificate does not exist in database, we then treat it as ok, because it may be so that only revoked
+                 * certificates is in the (external) OCSP database.
+                 */
+                if (status.equals(CertificateStatus.REVOKED)) {
+                    String serno = signercertSerNo.toString(16);
+                    String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
+                    log.info(infoMsg);
+                    throw new SignRequestSignatureException(infoMsg);
+                }
+            }
         } else {
             if (OcspConfiguration.getEnforceRequestSigning()) {
                 // Signature required
@@ -822,41 +824,23 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     private X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req) throws SignRequestException, SignRequestSignatureException,
             CertificateException, NoSuchAlgorithmException {
-        X509Certificate signercert = null; // To be returned
-        if (!req.isSigned()) {
-            String infoMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
-            log.info(infoMsg);
-            throw new SignRequestException(infoMsg);
-        }
+        X509Certificate signercert = null;
         // Get all certificates embedded in the request (probably a certificate chain)
         try {
-            X509CertificateHolder[] certs = req.getCerts();                
-            // Set, as a try, the signer to be the first certificate, so we have a name to log...
+            final X509CertificateHolder[] certs = req.getCerts();
             String signerSubjectDn = null;
-            if (certs.length > 0) {
-                signerSubjectDn = CertTools.getSubjectDN(certificateConverter.getCertificate(certs[0]));
-            }
             // We must find a certificate to verify the signature with...
             boolean verifyOK = false;
-            for (int i = 0; i < certs.length; i++) {
+            for (int i=0; i<certs.length; i++) {
                 final X509Certificate certificate = certificateConverter.getCertificate(certs[i]);
                 try {
                     if (req.isSignatureValid(new JcaContentVerifierProviderBuilder().build(certificate.getPublicKey()))) {
                         signercert = certificate; // if the request signature verifies by this certificate, this is the signer cert 
                         signerSubjectDn = CertTools.getSubjectDN(signercert);
-                        String signerissuer = CertTools.getIssuerDN(signercert);
-                        String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signerSubjectDn);
-                        log.info(infoMsg);
+                        log.info(intres.getLocalizedMessage("ocsp.infosigner", signerSubjectDn));
                         verifyOK = true;
-                        /*
-                         * Also check that the signer certificate can be verified by one of the CA-certificates that we answer for
-                         */
-                        if(CaCertificateCache.INSTANCE.isCacheExpired()) {
-                            certificateStoreSession.reloadCaCertificateCache();
-                        }
+                        // Check that the signer certificate can be verified by one of the CA-certificates that we answer for
                         final X509Certificate signerca = CaCertificateCache.INSTANCE.findLatestBySubjectDN(HashID.getFromIssuerDN(signercert));
-                        String subject = signerSubjectDn;
-                        String issuer = signerissuer;
                         if (signerca != null) {
                             try {
                                 signercert.verify(signerca.getPublicKey());
@@ -864,32 +848,35 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 if (log.isDebugEnabled()) {
                                     log.debug("Checking validity. Now: " + now + ", signerNotAfter: " + signercert.getNotAfter());
                                 }
-                                // First check validity of the signer cert
-                                CertTools.checkValidity(signercert, now);
-                                // Move the error message string to the CA cert when checking validity of the CA
-                                subject = CertTools.getSubjectDN(signerca);
-                                issuer = CertTools.getIssuerDN(signerca);
-                                CertTools.checkValidity(signerca, now);
+                                try {
+                                    // Check validity of the request signing certificate
+                                    CertTools.checkValidity(signercert, now);
+                                } catch (CertificateNotYetValidException e) {
+                                    log.info(intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", signerSubjectDn, CertTools.getIssuerDN(signercert), e.getMessage()));
+                                    verifyOK = false;
+                                } catch (CertificateExpiredException e) {
+                                    log.info(intres.getLocalizedMessage("ocsp.infosigner.certexpired", signerSubjectDn, CertTools.getIssuerDN(signercert), e.getMessage()));
+                                    verifyOK = false;
+                                }
+                                try {
+                                    // Check validity of the CA certificate
+                                    CertTools.checkValidity(signerca, now);
+                                } catch (CertificateNotYetValidException e) {
+                                    log.info(intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", CertTools.getSubjectDN(signerca), CertTools.getIssuerDN(signerca), e.getMessage()));
+                                    verifyOK = false;
+                                } catch (CertificateExpiredException e) {
+                                    log.info(intres.getLocalizedMessage("ocsp.infosigner.certexpired", CertTools.getSubjectDN(signerca), CertTools.getIssuerDN(signerca), e.getMessage()));
+                                    verifyOK = false;
+                                }
                             } catch (SignatureException e) {
-                                infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
-                                log.info(infoMsg);
+                                log.info(intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", signerSubjectDn, CertTools.getIssuerDN(signercert), e.getMessage()));
                                 verifyOK = false;
                             } catch (InvalidKeyException e) {
-                                infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
-                                log.info(infoMsg);
-                                verifyOK = false;
-                            } catch (CertificateNotYetValidException e) {
-                                infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", subject, issuer, e.getMessage());
-                                log.info(infoMsg);
-                                verifyOK = false;
-                            } catch (CertificateExpiredException e) {
-                                infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certexpired", subject, issuer, e.getMessage());
-                                log.info(infoMsg);
+                                log.info(intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", signerSubjectDn, CertTools.getIssuerDN(signercert), e.getMessage()));
                                 verifyOK = false;
                             }
                         } else {
-                            infoMsg = intres.getLocalizedMessage("ocsp.infosigner.nocacert", signerSubjectDn, signerissuer);
-                            log.info(infoMsg);
+                            log.info(intres.getLocalizedMessage("ocsp.infosigner.nocacert", signerSubjectDn, CertTools.getIssuerDN(signercert)));
                             verifyOK = false;
                         }
                         break;
@@ -900,6 +887,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
             if (!verifyOK) {
+                if (signerSubjectDn == null && certs.length > 0) {
+                    signerSubjectDn = CertTools.getSubjectDN(certificateConverter.getCertificate(certs[0]));
+                }
                 String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signerSubjectDn);
                 log.info(errMsg);
                 throw new SignRequestSignatureException(errMsg);
@@ -987,17 +977,40 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method
     // should not be run from within a transaction.
-    private void cancelTimers() {
+    private void cancelTimers(final int id) {
         if (log.isTraceEnabled()) {
             log.trace(">cancelTimers");
         }
-        Collection<Timer> timers = timerService.getTimers();
-        for (Timer timer : timers) {
-            timer.cancel();
+        @SuppressWarnings("unchecked")
+        final Collection<Timer> timers = timerService.getTimers();
+        for (final Timer timer : timers) {
+            final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+            if (currentTimerId==id) {
+                timer.cancel();
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<cancelTimers, timers canceled: " + timers.size());
         }
+    }
+
+    private int getTimerCount(final int id) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getTimerCount");
+        }
+        int count = 0;
+        @SuppressWarnings("unchecked")
+        final Collection<Timer> timers = timerService.getTimers();
+        for (final Timer timer : timers) {
+            final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+            if (currentTimerId==id) {
+                count++;
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getTimerCount, timers: " + count);
+        }
+        return count;
     }
 
     /**

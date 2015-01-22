@@ -217,14 +217,6 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 	}
 	
-	/** Method that checks if the certificate cache has expired, and in that case reloads it
-	 */
-	protected void checkCacheExpired() {
-        if(this.certCache.isCacheExpired()) {
-            certificateStoreSession.reloadCaCertificateCache();
-        }
-	}
-
 	/**
 	 * Print info and download URL of a certificate or CRL.
 	 * @param cert
@@ -266,7 +258,6 @@ public abstract class StoreServletBase extends HttpServlet {
 		writer.flush();
 	}
 	private void printInfo(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-	    checkCacheExpired();
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
 		printInfo(this.certCache.getRootCertificates(), "", pw, req.getRequestURL().toString());

@@ -2791,6 +2791,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // If we don't have it in the database, store it setting
                 // certificateProfileId = 0 and tag = null
                 certificateStoreSession.storeCertificate(admin, cert, name, cafp, CertificateConstants.CERT_ACTIVE, type, profileId, tag, updateTime);
+                certificateStoreSession.reloadCaCertificateCache();
             } else {
                 updateTime = ci.getUpdateTime().getTime();
                 profileId = ci.getCertificateProfileId();

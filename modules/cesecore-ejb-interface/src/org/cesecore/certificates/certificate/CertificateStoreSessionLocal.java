@@ -173,8 +173,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
        
-    /**
-     * Reloads the cache containing CA certificates
-     */
+    /** Reloads the cache containing CA certificates */
     void reloadCaCertificateCache();
+    
+    /** Invoked from timer. Reloads the cache containing CA certificates and additionally sets a new timeout. */
+    void reloadCaCertificateCacheAndSetTimeout();
+
+    /** Initialize all timers and related operations used by this bean. */
+    void initTimers();
 }
