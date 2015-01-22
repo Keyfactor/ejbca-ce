@@ -40,6 +40,9 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
@@ -64,6 +67,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -82,6 +86,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private final static Logger log = Logger.getLogger(CertificateStoreSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final int TIMERID_CACERTIFICATECACHE = 1;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -94,6 +99,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Resource
     private SessionContext sessionContext;
     private CertificateStoreSessionLocal certificateStoreSession;
+    /* When the sessionContext is injected, the timerService should be looked up.
+     * This is due to the Glassfish EJB verifier complaining. 
+     */
+    private TimerService timerService;
 
     /** Default create for SessionBean without any creation Arguments. */
     @PostConstruct
@@ -103,6 +112,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // to call isUniqueCertificateSerialNumberIndex we want to do it on the real bean in order to get
         // the transaction setting (NOT_SUPPORTED) which suspends the active transaction and makes the check outside the transaction
         certificateStoreSession = sessionContext.getBusinessObject(CertificateStoreSessionLocal.class);
+        timerService = sessionContext.getTimerService();
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void initTimers() {
+        // Reload CA certificate cache cache, and cancel/create timers if there are no timers or if the cache is empty (probably a fresh startup)
+        if (getTimerCount(TIMERID_CACERTIFICATECACHE)==0 || CaCertificateCache.INSTANCE.isCacheExpired()){
+        	reloadCaCertificateCacheAndSetTimeout();
+        } else {
+            log.info("Not initing CaCertificateCache reload timers, there are already some.");
+        }
     }
 
     @Override
@@ -1244,12 +1265,91 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS) 
-    public void reloadCaCertificateCache(){
+    public void reloadCaCertificateCache() {
+        log.info("Reloading CA certificate cache.");
         Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
                 CertificateConstants.CERTTYPE_ROOTCA, null);
         CaCertificateCache.INSTANCE.loadCertificates(certs);
     }
-    
+
+    /**
+     * When a timer expires, this method will update
+     * 
+     * According to JSR 220 FR (18.2.2), this method may not throw any exceptions.
+     * 
+     * @param timer The timer whose expiration caused this notification.
+     */
+    @Timeout
+    /* Glassfish 2.1.1:
+     * "Timeout method ....timeoutHandler(javax.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
+     * JBoss 5.1.0.GA: We cannot mix timer updates with our EJBCA DataSource transactions. 
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void timeoutHandler(Timer timer) {
+        if (log.isTraceEnabled()) {
+            log.trace(">timeoutHandler: " + timer.getInfo().toString());
+        }
+        if (timer.getInfo() instanceof Integer) {
+            final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+            if (currentTimerId==TIMERID_CACERTIFICATECACHE) {
+            	reloadCaCertificateCacheAndSetTimeout();
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<timeoutHandler");
+        }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void reloadCaCertificateCacheAndSetTimeout() {
+        if (log.isTraceEnabled()) {
+            log.trace(">timeOutReloadCaCertificateCache");
+        }
+        // Cancel any waiting timers of this type
+        @SuppressWarnings("unchecked")
+        final Collection<Timer> timers = timerService.getTimers();
+        for (final Timer timer : timers) {
+            if (timer.getInfo() instanceof Integer) {
+                final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+                if (currentTimerId==TIMERID_CACERTIFICATECACHE) {
+                    timer.cancel();
+                }
+            }
+        }
+        try {      
+            certificateStoreSession.reloadCaCertificateCache();
+        } finally {
+            // Schedule a new timer of this type
+            final long interval = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
+            if (interval > 0) {
+                timerService.createTimer(interval, Integer.valueOf(TIMERID_CACERTIFICATECACHE));
+            }
+        }
+    }
+
+    /** @return the number of timers where TimerInfo is an Integer and hold the specified value */
+    private int getTimerCount(final int id) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getTimerCount");
+        }
+        int count = 0;
+        @SuppressWarnings("unchecked")
+        final Collection<Timer> timers = timerService.getTimers();
+        for (final Timer timer : timers) {
+            if (timer.getInfo() instanceof Integer) {
+                final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+                if (currentTimerId==id) {
+                    count++;
+                }
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getTimerCount, timers: " + count);
+        }
+        return count;
+    }
+
     /** @return a limited CertificateData object based on the information we have */
     private CertificateData createLimitedCertificateData(final AuthenticationToken admin, final String limitedFingerprint, final String issuerDn, final BigInteger serialNumber,
             final Date revocationDate, final int reasonCode, final String caFingerprint) {
