@@ -48,9 +48,7 @@ public interface OcspResponseGeneratorSession {
             X509Certificate[] requestCertificates, String remoteAddress, String remoteHost, StringBuffer requestUrl, AuditLogger auditLogger,
             TransactionLogger transactionLogger) throws MalformedRequestException, OCSPException;
     
-    /**
-     * Reloads the chache of OCSP signers.
-     */
+    /** Reloads the cache of OCSP signers. */
     void reloadOcspSigningCache();
 
 }

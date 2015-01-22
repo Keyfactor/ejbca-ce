@@ -19,7 +19,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,7 +41,7 @@ import org.cesecore.util.CertTools;
 public enum CaCertificateCache  {
     INSTANCE;
     
-	private static final Logger log = Logger.getLogger(CaCertificateCache.class);
+	private final Logger log = Logger.getLogger(CaCertificateCache.class);
 
     /** Mapping from subjectDN to key in the certs HashMap. */
     private Map<Integer, X509Certificate> certsFromSubjectDN = new HashMap<Integer, X509Certificate>();
@@ -53,24 +52,20 @@ public enum CaCertificateCache  {
     /** All root certificates. */
     private Set<X509Certificate> rootCertificates = new HashSet<X509Certificate>();
 
-	/** The interval in milliseconds on which new OCSP signing certs are loaded. */
-	private  final int validTime = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
-
 	/** Cache time counter, set and used by loadCertificates */
 	private long certValidTo = 0;
 
-    public X509Certificate findLatestBySubjectDN(HashID id) {
-        X509Certificate ret = this.certsFromSubjectDN.get(id.getKey());
-        if ((ret == null) && log.isDebugEnabled()) {
+    public X509Certificate findLatestBySubjectDN(final HashID id) {
+        final X509Certificate ret = certsFromSubjectDN.get(id.getKey());
+        if (ret==null && log.isDebugEnabled()) {
             log.debug("Certificate not found from SubjectDN HashId in certsFromSubjectDN map. HashID=" + id.getB64());
         }
         return ret;
-
 	}
-	
-	public X509Certificate[] findLatestByIssuerDN(HashID id) {	    
-        final Set<X509Certificate> sCert = this.certsFromIssuerDN.get(id.getKey());
-        if (sCert == null || sCert.size() < 1) {
+
+	public X509Certificate[] findLatestByIssuerDN(final HashID id) {	    
+        final Set<X509Certificate> sCert = certsFromIssuerDN.get(id.getKey());
+        if (sCert == null || sCert.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("Certificate not found from IssuerDN HashId in certsFromIssuerDN map. HashID=" + id.getB64());
             }
@@ -81,19 +76,19 @@ public enum CaCertificateCache  {
     }
 
     public X509Certificate[] getRootCertificates() {
-        return this.rootCertificates.toArray(new X509Certificate[0]);
+        return rootCertificates.toArray(new X509Certificate[0]);
     }
 
-    public X509Certificate findBySubjectKeyIdentifier(HashID id) {
-        X509Certificate ret = this.certsFromSubjectKeyIdentifier.get(id.getKey());
-        if ((ret == null) && log.isDebugEnabled()) {
+    public X509Certificate findBySubjectKeyIdentifier(final HashID id) {
+        final X509Certificate ret = certsFromSubjectKeyIdentifier.get(id.getKey());
+        if (ret==null && log.isDebugEnabled()) {
             log.debug("Certificate not found from SubjectKeyIdentifier HashId in certsFromSubjectKeyIdentifier map. HashID=" + id.getB64());
         }
         return ret;
     }
 
     public boolean isCacheExpired() {
-        return this.certValidTo < new Date().getTime();
+        return certValidTo < System.currentTimeMillis();
     }
 
 	/** Loads CA certificates but holds a cache so it's reloaded only every five minutes (configurable).
@@ -186,12 +181,10 @@ public enum CaCertificateCache  {
             log.debug(sw);
         }
         //Replace the old caches
-        this.certsFromSubjectKeyIdentifier = newCertsFromSubjectKeyIdentifier;
-        this.certsFromIssuerDN = newCertsFromIssuerDN;
-        this.certsFromSubjectDN = newCertsFromSubjectDN;
-        this.rootCertificates = newRootCertificates;
-        this.certValidTo  = new Date().getTime() + this.validTime;
-
+        certsFromSubjectKeyIdentifier = newCertsFromSubjectKeyIdentifier;
+        certsFromIssuerDN = newCertsFromIssuerDN;
+        certsFromSubjectDN = newCertsFromSubjectDN;
+        rootCertificates = newRootCertificates;
+        certValidTo = System.currentTimeMillis() + OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
     }
-    
 }
