@@ -167,14 +167,14 @@ public class RAAuthorization implements Serializable {
     
 	public TreeMap<String, Integer> getCreateAuthorizedEndEntityProfileNames() {
 		if(authcreateprofilenames == null){
-			authcreateprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
+			authcreateprofilenames = getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
 		}
 		return authcreateprofilenames;  
 	}
 	      
 	public TreeMap<String, Integer> getViewAuthorizedEndEntityProfileNames(){
 	  if(authviewprofilenames == null){
-	  	  authviewprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
+	  	  authviewprofilenames = getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
 	  }
 	  return authviewprofilenames;
 	}
@@ -196,7 +196,7 @@ public class RAAuthorization implements Serializable {
     }
     
     
-	public TreeMap<String, Integer> authEndEntityProfileNames(String rights) {
+	private TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(String rights) {
 		final TreeMap<String, Integer> returnval = new TreeMap<String, Integer>();
 		final Map<Integer, String> profilemap = this.endEntityProfileSession.getEndEntityProfileIdToNameMap();
 		for (final Integer next : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin)) {
