@@ -29,6 +29,11 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.2.x to EJBCA 6.2.8
+-------------------------------
+A very minor change has been made to how the "EMPTY" (default) End Entity Profile is handled. Previous versions required root access (access to "/" in the admin rules tree) to use this 
+profile, but since we since a few versions back generate rights for this profile like any other, those are now used instead. 
+
 From EJBCA 6.2.x up to EJBCA 6.3.0
 -------------------------------
 EJBCA 6.3.0 introduces one new table, PeerData. This table is automatically created at deployment to the appserver.  
