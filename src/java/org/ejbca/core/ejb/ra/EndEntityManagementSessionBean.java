@@ -95,7 +95,6 @@ import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
@@ -205,14 +204,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     private boolean authorizedToEndEntityProfile(final AuthenticationToken admin, final int profileid, final String rights) {
-        final boolean returnval;
-        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
-                && (rights.equals(AccessRulesConstants.CREATE_END_ENTITY) || rights.equals(AccessRulesConstants.EDIT_END_ENTITY))) {
-            returnval = authorizationSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource());
-        } else {
-            returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
-        }
-        return returnval;
+        return  authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     }
 
     /** Checks EEP authorization and logs an official error if not and throws and AuthorizationDeniedException. 
