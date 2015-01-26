@@ -254,4 +254,9 @@ public abstract class PatternLogger implements Serializable {
             getLogger().debug(output); // Finally output the log row to the logging device
         }
     }
+
+    /** @return true if this logger is enabled */
+    public boolean isEnabled() {
+        return doLogging;
+    }
 }
