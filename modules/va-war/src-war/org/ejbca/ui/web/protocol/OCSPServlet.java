@@ -223,14 +223,17 @@ public class OCSPServlet extends HttpServlet {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
-        try {    
-            auditLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
-            auditLogger.paramPut(PatternLogger.SESSION_ID, this.sessionID);
-            auditLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
-            transactionLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
-            transactionLogger.paramPut(PatternLogger.SESSION_ID, this.sessionID);
-            transactionLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
-            
+        try {
+            if (auditLogger.isEnabled()) {
+                auditLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
+                auditLogger.paramPut(PatternLogger.SESSION_ID, sessionID);
+                auditLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
+            }
+            if (transactionLogger.isEnabled()) {
+                transactionLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
+                transactionLogger.paramPut(PatternLogger.SESSION_ID, sessionID);
+                transactionLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
+            }
             OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
             OcspResponseInformation ocspResponseInformation = null;
             try {
@@ -239,8 +242,12 @@ public class OCSPServlet extends HttpServlet {
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
                         requestBytes, requestCertificates, remoteAddress, remoteHost, requestUrl, auditLogger, transactionLogger);
             } catch (MalformedRequestException e) {
-                transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
-                auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+                if (transactionLogger.isEnabled()) {
+                    transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+                }
+                if (auditLogger.isEnabled()) {
+                    auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+                }
                 String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
                 log.info(errMsg);
                 if (log.isDebugEnabled()) {
@@ -248,12 +255,20 @@ public class OCSPServlet extends HttpServlet {
                 }
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
-                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
-                transactionLogger.writeln();
-                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+                if (transactionLogger.isEnabled()) {
+                    transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+                    transactionLogger.writeln();
+                }
+                if (auditLogger.isEnabled()) {
+                    auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+                }
             } catch (Throwable e) { // NOPMD, we really want to catch everything here to return internal error on unexpected errors
-                transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
-                auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+                if (transactionLogger.isEnabled()) {
+                    transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+                }
+                if (auditLogger.isEnabled()) {
+                    auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+                }
                 final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
                 log.info(errMsg);
                 if (log.isDebugEnabled()) {
@@ -261,9 +276,13 @@ public class OCSPServlet extends HttpServlet {
                 }
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
-                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
-                transactionLogger.writeln();
-                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
+                if (transactionLogger.isEnabled()) {
+                    transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
+                    transactionLogger.writeln();
+                }
+                if (auditLogger.isEnabled()) {
+                    auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
+                }
             }
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");
