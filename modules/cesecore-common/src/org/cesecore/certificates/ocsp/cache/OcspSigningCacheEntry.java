@@ -37,6 +37,7 @@ public class OcspSigningCacheEntry {
     private final OcspKeyBinding ocspKeyBinding;
     private final X509Certificate issuerCaCertificate;
     private final CertificateStatus issuerCaCertificateStatus;
+    private boolean responseSignatureVerified = false;
 
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
@@ -79,5 +80,16 @@ public class OcspSigningCacheEntry {
 
     public X509Certificate getIssuerCaCertificate() {
         return issuerCaCertificate;
+    }
+
+    /** @return false for the first thread that invokes this method (a caller that gets a false return value should verify the response signature) */
+    public boolean checkResponseSignatureVerified() {
+        // There is a small race condition here, so multiple callers might get a "false" return value, but since this
+        // is a hot-path we don't want the overhead of synchronization for a large majority of the invocations
+        if (responseSignatureVerified) {
+            return true;
+        }
+        responseSignatureVerified = true;
+        return false;
     }
 }

@@ -502,9 +502,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             
             // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
-            final BasicOCSPResp ocspresp = generateBasicOcspResp(req, exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry.getPrivateKey(),
-                    ocspSigningCacheEntry.getSignatureProviderName(), chain, respIdType, producedAt);
-
+            final BasicOCSPResp ocspresp = generateBasicOcspResp(req, exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry,
+                    chain, respIdType, producedAt);
             if (log.isDebugEnabled()) {
                 Collection<X509Certificate> coll = Arrays.asList(chain);
                 log.debug("Cert chain for OCSP signing is of size " + coll.size());
@@ -1514,11 +1513,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private BasicOCSPResp generateBasicOcspResp(OCSPReq ocspRequest, Extensions exts, List<OCSPResponseItem> responses, String sigAlg,
-                        X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType, 
+                        X509Certificate signerCert, OcspSigningCacheEntry ocspSigningCacheEntry, X509Certificate[] chain, int respIdType, 
                         Date producedAt) throws NotSupportedException, OCSPException, NoSuchProviderException, CryptoTokenOfflineException {
+        final PrivateKey signerKey = ocspSigningCacheEntry.getPrivateKey();
+        final String provider = ocspSigningCacheEntry.getSignatureProviderName();
         BasicOCSPResp returnval = null;
-        BasicOCSPRespBuilder basicRes = null;
-        basicRes = createOcspResponseGenerator(ocspRequest, signerCert, respIdType);
+        BasicOCSPRespBuilder basicRes = createOcspResponseGenerator(ocspRequest, signerCert, respIdType);
         if (responses != null) {
             for (OCSPResponseItem item : responses) {
                 basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), item.getExtensions());
@@ -1565,20 +1565,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.error("Response responderId does not match signer certificate responderId!");
             throw new OcspFailureException("Response responderId does not match signer certificate responderId!");
         }
-        boolean verify;
-        try {
-            verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
-        } catch (OperatorCreationException e) {
-            // Very fatal error
-            throw new EJBException("Can not create Jca content signer: ", e);
-        }
-        if (verify) {
-            if (log.isDebugEnabled()) {
-                log.debug("The OCSP response is verifying.");
+        if (!ocspSigningCacheEntry.checkResponseSignatureVerified()) {
+            // We only check the response signature the first time for each OcspSigningCacheEntry to detect a misbehaving HSM.
+            // The client is still responsible for validating the signature, see RFC 6960 Section 3.2.2
+            boolean verify;
+            try {
+                verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
+            } catch (OperatorCreationException e) {
+                // Very fatal error
+                throw new EJBException("Can not create Jca content signer: ", e);
             }
-        } else {
-            log.error("The response is NOT verifying! Attempted to sign using " + CertTools.getSubjectDN(signerCert) + " but signature was not valid.");
-            throw new OcspFailureException("Attempted to sign using " + CertTools.getSubjectDN(signerCert) + " but signature was not valid.");
+            if (verify) {
+                if (log.isDebugEnabled()) {
+                    log.debug("The OCSP response is verifying.");
+                }
+            } else {
+                log.error("The response is NOT verifying! Attempted to sign using " + CertTools.getSubjectDN(signerCert) + " but signature was not valid.");
+                throw new OcspFailureException("Attempted to sign using " + CertTools.getSubjectDN(signerCert) + " but signature was not valid.");
+            }
         }
         return returnval;
     }
