@@ -82,7 +82,7 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
             // CESeCore.FAU_STG.4.1: The TSF shall prevent audited events, except those taken by the Auditable and no other actions if the audit trail is full.
             // So even if we failed to produce a proper audit trail for these events, we swallow the exception here to allow the operation to continue.
             if (!eventType.equals(EventTypes.LOG_VERIFY) && !eventType.equals(EventTypes.LOG_EXPORT) && !eventType.equals(EventTypes.LOG_DELETE) && !eventType.equals(EventTypes.LOG_SIGN)  && !eventType.equals(EventTypes.LOG_MANAGEMENT_CHANGE)) {
-                throw new AuditRecordStorageException("Failed to write audit log to a least one device.");
+                throw new AuditRecordStorageException("Failed to write audit log to at least one device.");
             }
         }
     }
