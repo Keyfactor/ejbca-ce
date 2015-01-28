@@ -59,6 +59,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -71,6 +72,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -1216,7 +1218,8 @@ Content-Type: text/html; charset=iso-8859-1
      * @throws Exception
     */
     @Test
-    public void testSigAlgExtension() throws Exception {
+    @Deprecated // This test verifies legacy behavior from EJBCA 6.1.0 and should be removed when we no longer need to support it
+    public void testSigAlgExtensionLegacy() throws Exception {
         loadUserCert(this.caid);
         
         // Try sending a request where the preferred signature algorithm in the extension is expected to be used to sign the response.
@@ -1269,6 +1272,99 @@ Content-Type: text/html; charset=iso-8859-1
         response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response.getSignatureAlgOID());
+    }
+
+    /** This test tests that the OCSP response contains is signed by the preferred signature algorithm specified in the request. */
+    /* Example of the ASN.1 dump (with friendly names from the RFC added ) of what the extensions should look like.
+     * 
+     * Note that we have left out the optional
+     *  PreferredSignatureAlgorithm.pubKeyAlgIdentifier
+     * and
+     *  AlgorithmIdentifier.parameters
+     *  
+     *               ...
+     *  75  48:     requestExtensions [2] {
+     *  77  46:       Extensions ::= SEQUENCE {
+     *  79  44:         Extension ::= SEQUENCE {
+     *  81   9:           extnID OBJECT IDENTIFIER '1 3 6 1 5 5 7 48 1 8'
+     *  92  31:           extnValue OCTET STRING, encapsulates {
+     *  94  29:             PreferredSignatureAlgorithms ::= SEQUENCE {
+     *  96  12:               PreferredSignatureAlgorithm ::= SEQUENCE {
+     *  98  10:                 sigIdentifier AlgorithmIdentifier ::= SEQUENCE {
+     * 100   8:                   algorithm OBJECT IDENTIFIER
+     *        :                     ecdsaWithSHA256 (1 2 840 10045 4 3 2)
+     *        :                   }
+     *        :                 }
+     * 110  13:               PreferredSignatureAlgorithm ::= SEQUENCE {
+     * 112  11:                 sigIdentifier AlgorithmIdentifier ::= SEQUENCE {
+     * 114   9:                   algorithm OBJECT IDENTIFIER
+     *        :                     sha1WithRSAEncryption (1 2 840 113549 1 1 5)
+     *        :                   }
+     *        :                 ...
+     */
+    @Test
+    public void testSigAlgExtension() throws Exception {
+        log.trace(">testSigAlgExtensionNew");
+        loadUserCert(caid);
+        // Try sending a request where the preferred signature algorithm in the extension is expected to be used to sign the response.
+        // set ocsp configuration
+        final Map<String,String> map = new HashMap<String, String>();
+        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        helper.alterConfig(map);
+        final ASN1Sequence preferredSignatureAlgorithms = getPreferredSignatureAlgorithms(X9ObjectIdentifiers.ecdsa_with_SHA256, PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        final ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+        // RFC 6960: id-pkix-ocsp-pref-sig-algs   OBJECT IDENTIFIER ::= { id-pkix-ocsp 8 } 
+        extensionsGenerator.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, preferredSignatureAlgorithms);
+        final Extensions extensions = extensionsGenerator.generate();
+        assertNotNull(extensions);
+        final OCSPReqBuilder ocspReqBuilder = new OCSPReqBuilder();
+        ocspReqBuilder.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        ocspReqBuilder.setRequestExtensions(extensions);
+        final OCSPReq ocspRequest = ocspReqBuilder.build();
+        assertTrue(ocspRequest.hasExtensions());
+        log.debug("base64 encoded request: " + new String(Base64.encode(ocspRequest.getEncoded(), false)));
+        final BasicOCSPResp response1 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+        assertNotNull("Could not retrieve response, test could not continue.", response1);
+        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response1.getSignatureAlgOID());
+    }
+
+    /** Test with a preferred signature algorithm specified in the request that is incompatible with the singing key. */
+    @Test
+    public void testSigAlgExtensionMismatch() throws Exception {
+        log.trace(">testSigAlgExtensionNewMismatch");
+        loadUserCert(caid);
+        final Map<String,String> map = new HashMap<String, String>();
+        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        helper.alterConfig(map);
+        // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but 
+        // the configured algorithm is. Expected a response signed using the first configured algorithm
+        final ASN1Sequence preferredSignatureAlgorithms = getPreferredSignatureAlgorithms(X9ObjectIdentifiers.ecdsa_with_SHA256);
+        final ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+        extensionsGenerator.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, preferredSignatureAlgorithms);
+        final Extensions extensions = extensionsGenerator.generate();
+        assertNotNull(extensions);
+        final OCSPReqBuilder ocspReqBuilder = new OCSPReqBuilder();
+        ocspReqBuilder.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        ocspReqBuilder.setRequestExtensions(extensions);
+        final OCSPReq ocspRequest = ocspReqBuilder.build();
+        assertTrue(ocspRequest.hasExtensions());
+        log.debug("base64 encoded request: " + new String(Base64.encode(ocspRequest.getEncoded(), false)));
+        final BasicOCSPResp response2 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+        assertNotNull("Could not retrieve response, test could not continue.", response2);
+        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response2.getSignatureAlgOID());
+    }
+
+    /** @return a RFC 6960 PreferredSignatureAlgorithms object. */
+    private ASN1Sequence getPreferredSignatureAlgorithms(final ASN1ObjectIdentifier...algorithmOids) {
+        final ASN1Encodable[] asn1Encodables = new ASN1Encodable[algorithmOids.length];
+        for (int i=0; i<algorithmOids.length; i++) {
+            // PreferredSignatureAlgorithm ::= SEQUENCE { sigIdentifier AlgorithmIdentifier, pubKeyAlgIdentifier SMIMECapability OPTIONAL } 
+            final ASN1Sequence preferredSignatureAlgorithm = new DERSequence(new ASN1Encodable[] { new AlgorithmIdentifier(algorithmOids[i]) });
+            asn1Encodables[i] = preferredSignatureAlgorithm;
+        }
+        // PreferredSignatureAlgorithms ::= SEQUENCE OF PreferredSignatureAlgorithm 
+        final ASN1Sequence preferredSignatureAlgorithms = new DERSequence(asn1Encodables);
+        return preferredSignatureAlgorithms;
     }
 
     /**
