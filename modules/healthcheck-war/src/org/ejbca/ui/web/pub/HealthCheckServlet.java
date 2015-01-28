@@ -188,11 +188,22 @@ public class HealthCheckServlet extends HttpServlet {
         sb.append(healthCheckSession.getDatabaseStatus());
         if (sb.length()==0) { 
             if (log.isDebugEnabled()) {
-                log.debug("Checking JVM memory.");
+                log.debug("Checking JVM heap memory.");
             }
-            if (minfreememory >= Runtime.getRuntime().freeMemory()) {
+            // Memory still not allocated by the JVM + available memory of what is allocated by the JVM
+            final long maxAllocation = Runtime.getRuntime().maxMemory();
+            // The total amount of memory allocated to the JVM.
+            final long currentlyAllocation = Runtime.getRuntime().totalMemory();
+            // Available memory of what is allocated by the JVM
+            final long freeAllocated = Runtime.getRuntime().freeMemory();
+            // Memory still not allocated by the JVM + available memory of what is allocated by the JVM
+            final long currentFreeMemory = maxAllocation - currentlyAllocation + freeAllocated;
+            if (log.isDebugEnabled()) {
+                log.debug((100L*(maxAllocation-currentFreeMemory)/maxAllocation)+"% of the " + (maxAllocation/1024L) + " KiB heap is currently used.");
+            }
+            if (minfreememory >= currentFreeMemory) {
                 sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));    
-            }       
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Checking CAs.");
             }
