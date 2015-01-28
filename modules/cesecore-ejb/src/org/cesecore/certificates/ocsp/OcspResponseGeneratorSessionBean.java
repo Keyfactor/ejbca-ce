@@ -66,6 +66,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -74,6 +75,7 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -556,16 +558,28 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         String sigAlg = null;
         PublicKey pk = signerCert.getPublicKey();
         // Start with the preferred signature algorithm in the OCSP request
-        Extension sigAlgExt = req.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"));
-        if (sigAlgExt != null) {
-            ASN1Sequence sigalgs = ASN1Sequence.getInstance(sigAlgExt.getParsedValue());
-            for (int i=0; i<sigalgs.size(); i++) { 
-                ASN1ObjectIdentifier sa = (ASN1ObjectIdentifier) sigalgs.getObjectAt(i);
-                if (sa != null) {
-                    sigAlg = AlgorithmTools.getAlgorithmNameFromOID(sa);
+        final Extension preferredSigAlgExtension = req.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"));
+        if (preferredSigAlgExtension != null) {
+            final ASN1Sequence preferredSignatureAlgorithms = ASN1Sequence.getInstance(preferredSigAlgExtension.getParsedValue());
+            for (int i=0; i<preferredSignatureAlgorithms.size(); i++) {
+                final ASN1Encodable asn1Encodable = preferredSignatureAlgorithms.getObjectAt(i);
+                final ASN1ObjectIdentifier algorithmOid;
+                if (asn1Encodable instanceof ASN1ObjectIdentifier) {
+                    // Handle client requests that were adapted to EJBCA 6.1.0's implementation
+                    log.info("OCSP request's PreferredSignatureAlgorithms did not contain an PreferredSignatureAlgorithm, but instead an algorithm OID."
+                            + " This will not be supported in a future versions of EJBCA.");
+                    algorithmOid = (ASN1ObjectIdentifier) asn1Encodable;
+                } else {
+                    // Handle client requests that provide a proper AlgorithmIdentifier as specified in RFC 6960 + RFC 5280
+                    final ASN1Sequence preferredSignatureAlgorithm = ASN1Sequence.getInstance(asn1Encodable);
+                    final AlgorithmIdentifier algorithmIdentifier = AlgorithmIdentifier.getInstance(preferredSignatureAlgorithm.getObjectAt(0));
+                    algorithmOid = algorithmIdentifier.getAlgorithm();
+                }
+                if (algorithmOid != null) {
+                    sigAlg = AlgorithmTools.getAlgorithmNameFromOID(algorithmOid);
                     if (sigAlg!=null && OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                         if (log.isDebugEnabled()) {
-                            log.debug("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
+                            log.debug("Using OCSP response signature algorithm extracted from OCSP request extension. " + algorithmOid);
                         }
                         return sigAlg;
                     }
