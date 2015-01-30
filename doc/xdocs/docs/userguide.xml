@@ -762,7 +762,7 @@ This option should only be used when you know that the request comes from a very
 normally an RA through CMP or WebService.
 </p>
 <p>
-Currently this only works for extensions in CRMF (CMP) requests.
+Currently this works for extensions in CRMF (CMP) requests and extensions embedded as a pkcs_9_at_extensionRequest in PKCS#10 requests.
 </p>
 </subsubsection>
 <subsubsection name="Allow subject DN override by CSR">
