@@ -14,6 +14,7 @@ package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateExpiredException;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -176,6 +177,26 @@ public interface IEjbcaWS {
 	 */
 	public abstract List<Certificate> getLastCertChain(String username) 
 	throws AuthorizationDeniedException, EjbcaException;
+	
+	/**
+	 * Creates a new crypto token
+	 * 
+	 * @param tokenName The name of the crypto token
+	 * @param tokenType The type of the crypto token. Available types: SoftCryptoToken, PKCS11CryptoToken
+	 * @param activationPin Pin code for the crypto token
+	 * @param autoActivate Set to true|false to allow|disallow whether crypto token should be autoactivated or not
+	 * @param exportKey (SoftCryptoToken) Set to true|false to allow|disallow private key export
+	 * @param pkcs11LibFilename (PKCS11CryptoToken) PKCS#11 library file. Required if type is PKCS11CryptoToken
+	 * @param pkcs11SlotLabelType (PKCS11CryptoToken) Slot Reference Type: SLOT_LABEL, SLOT_INDEX, SLOT_NUMBER, SUN_FILE
+	 * @param pkcs11SlotPropertyValue (PKCS11CryptoToken) Slot reference
+	 * @param PKCS11AttributeData (Not implemented yet) (PKCS11CryptoToken) The attribute data of the PKCS11CryptoToken. The 
+	 * value of this argument will be ignored for now but still has to be set. 
+	 * @throws EjbcaException
+	 * @throws AuthorizationDeniedException
+	 */
+	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
+            String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
+            Map<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException;	
 	
 	/**
 	 *  Generates a certificate for a user.

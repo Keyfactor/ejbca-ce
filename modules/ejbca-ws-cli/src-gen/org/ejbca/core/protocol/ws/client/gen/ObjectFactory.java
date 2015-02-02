@@ -6,7 +6,6 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 
-
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
@@ -128,7 +127,14 @@ public class ObjectFactory {
     private final static QName _CreateCRL_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRL");
     private final static QName _CaRenewCertRequestResponseReturn_QNAME = new QName("", "return");
     private final static QName _CaCertResponseArg1_QNAME = new QName("", "arg1");
+    private final static QName _CreateCryptoToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoToken");
+    private final static QName _CreateCryptoTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoTokenResponse");
+    private final static QName _PKCS11LibraryFileNotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PKCS11LibraryFileNotFoundException");
+    private final static QName _PKCS11SlotDataInvalidException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PKCS11SlotDataInvalidException");
+    private final static QName _UnsupportedCryptoTokenTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnsupportedCryptoTokenTypeException");
 
+
+    
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
      * 
@@ -1062,6 +1068,46 @@ public class ObjectFactory {
      */
     public GetPublisherQueueLengthResponse createGetPublisherQueueLengthResponse() {
         return new GetPublisherQueueLengthResponse();
+    }
+    
+    /**
+     * Create an instance of {@link CreateCryptoToken }
+     *
+     */
+    public CreateCryptoToken createCreateCryptoToken() {
+        return new CreateCryptoToken();
+    }
+    
+    /**
+     * Create an instance of {@link CreateCryptoTokenResponse }
+     *
+     */
+    public CreateCryptoTokenResponse createCreateCryptoTokenResponse() {
+        return new CreateCryptoTokenResponse();
+    }
+    
+    /**
+     * Create an instance of {@link PKCS11LibraryFileNotFoundException }
+     *
+     */
+    public PKCS11LibraryFileNotFoundException createPKCS11LibraryFileNotFoundException() {
+        return new PKCS11LibraryFileNotFoundException();
+    }
+    
+    /**
+     * Create an instance of {@link PKCS11LibraryFileNotFoundException }
+     *
+     */
+    public PKCS11SlotDataInvalidException createPKCS11SlotDataInvalidException() {
+        return new PKCS11SlotDataInvalidException();
+    }
+    
+    /**
+     * Create an instance of {@link UnsupportedCryptoTokenTypeException }
+     *
+     */
+    public UnsupportedCryptoTokenTypeException createUnsupportedCryptoTokenTypeException() {
+        return new UnsupportedCryptoTokenTypeException();
     }
 
     /**
@@ -1998,6 +2044,51 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponse.class)
     public JAXBElement<byte[]> createCaCertResponseArg1(byte[] value) {
         return new JAXBElement<byte[]>(_CaCertResponseArg1_QNAME, byte[].class, CaCertResponse.class, ((byte[]) value));
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoToken }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoToken")
+    public JAXBElement<CreateCryptoToken> createCreateCryptoToken(CreateCryptoToken value) {
+        return new JAXBElement<CreateCryptoToken>(_CreateCryptoToken_QNAME, CreateCryptoToken.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoTokenResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoTokenResponse")
+    public JAXBElement<CreateCryptoTokenResponse> createCreateCryptoTokenResponse(CreateCryptoTokenResponse value) {
+        return new JAXBElement<CreateCryptoTokenResponse>(_CreateCryptoTokenResponse_QNAME, CreateCryptoTokenResponse.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link PKCS11LibraryFileNotFoundException }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "PKCS11LibraryFileNotFoundException")
+    public JAXBElement<PKCS11LibraryFileNotFoundException> createPKCS11LibraryFileNotFoundException(PKCS11LibraryFileNotFoundException value) {
+        return new JAXBElement<PKCS11LibraryFileNotFoundException>(_PKCS11LibraryFileNotFoundException_QNAME, PKCS11LibraryFileNotFoundException.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link PKCS11SlotDataInvalidException }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "PKCS11SlotDataInvalidException")
+    public JAXBElement<PKCS11SlotDataInvalidException> createPKCS11SlotDataInvalidException(PKCS11SlotDataInvalidException value) {
+        return new JAXBElement<PKCS11SlotDataInvalidException>(_PKCS11SlotDataInvalidException_QNAME, PKCS11SlotDataInvalidException.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link UnsupportedCryptoTokenTypeException }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnsupportedCryptoTokenTypeException")
+    public JAXBElement<UnsupportedCryptoTokenTypeException> createUnsupportedCryptoTokenTypeException(UnsupportedCryptoTokenTypeException value) {
+        return new JAXBElement<UnsupportedCryptoTokenTypeException>(_UnsupportedCryptoTokenTypeException_QNAME, UnsupportedCryptoTokenTypeException.class, null, value);
     }
 
 }

@@ -2,6 +2,8 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.List;
+import java.util.Map;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -1006,5 +1008,44 @@ public interface EjbcaWS {
         String arg0)
         throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception
     ;
+   
+    /**
+     * @param arg0
+     * @param arg1
+     * @param arg2
+     * @param arg3
+     * @param arg4
+     * @param arg5
+     * @param arg6
+     * @param arg7
+     * @param arg8
+     * @throws EjbcaException_Exception
+     * @throws AuthorizationDeniedException_Exception
+     */
+   @WebMethod
+   @RequestWrapper(localName = "createCryptoToken", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCryptoToken")
+   @ResponseWrapper(localName = "createCryptoTokenResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCryptoTokenResponse")
+   public void createCryptoToken(
+           @WebParam(name = "arg0", targetNamespace = "")
+           String arg0,
+           @WebParam(name = "arg1", targetNamespace = "")
+           String arg1,
+           @WebParam(name = "arg2", targetNamespace = "")
+           String arg2,
+           @WebParam(name = "arg3", targetNamespace = "")
+           boolean arg3,
+           @WebParam(name = "arg4", targetNamespace = "")
+           boolean arg4,
+           @WebParam(name = "arg5", targetNamespace = "")
+           String arg5,
+           @WebParam(name = "arg6", targetNamespace = "")
+           String arg6,
+           @WebParam(name = "arg7", targetNamespace = "")
+           String arg7,
+           @WebParam(name = "arg8", targetNamespace = "")
+           Map<String, String> arg8)
+           throws AuthorizationDeniedException_Exception, EjbcaException_Exception
+   ;
 
+   
 }
