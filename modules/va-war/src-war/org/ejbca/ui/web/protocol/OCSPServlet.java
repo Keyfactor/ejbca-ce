@@ -18,7 +18,6 @@ import java.net.URLDecoder;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -30,11 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.cert.ocsp.BasicOCSPResp;
-import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.bouncycastle.cert.ocsp.SingleResp;
-import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseInformation;
@@ -69,6 +64,7 @@ public class OCSPServlet extends HttpServlet {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
     private final String sessionID = GUIDGenerator.generateGUID(this);
+    private enum HttpMethod { GET, POST, OTHER};
     
     @EJB
     private OcspResponseGeneratorSessionLocal integratedOcspResponseGeneratorSession;
@@ -161,8 +157,7 @@ public class OCSPServlet extends HttpServlet {
                 }
                 return;
             }
-            
-            processOcspRequest(request, response);
+            processOcspRequest(request, response, HttpMethod.GET);
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<doGet()");
@@ -178,7 +173,7 @@ public class OCSPServlet extends HttpServlet {
         try {
             final String contentType = request.getHeader("Content-Type");
             if (contentType != null && contentType.equalsIgnoreCase("application/ocsp-request")) {
-                processOcspRequest(request, response);
+                processOcspRequest(request, response, HttpMethod.POST);
                 return;
             }
             final String remoteAddr = request.getRemoteAddr();
@@ -214,7 +209,7 @@ public class OCSPServlet extends HttpServlet {
         }
     }
 
-    private void processOcspRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+    private void processOcspRequest(HttpServletRequest request, HttpServletResponse response, final HttpMethod httpMethod) throws ServletException {
         final String remoteAddress = request.getRemoteAddr();
         final String remoteHost = request.getRemoteHost();
         final StringBuffer requestUrl = request.getRequestURL();
@@ -237,7 +232,7 @@ public class OCSPServlet extends HttpServlet {
             OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
             OcspResponseInformation ocspResponseInformation = null;
             try {
-                byte[] requestBytes = checkAndGetRequestBytes(request);
+                byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
                 X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
                         requestBytes, requestCertificates, remoteAddress, remoteHost, requestUrl, auditLogger, transactionLogger);
@@ -287,7 +282,13 @@ public class OCSPServlet extends HttpServlet {
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");
             response.setContentLength(ocspResponseBytes.length);
-            addRfc5019CacheHeaders(request, response, ocspResponseInformation);
+            if (HttpMethod.GET.equals(httpMethod)) {
+                addRfc5019CacheHeaders(request, response, ocspResponseInformation);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Will not add RFC 5019 cache headers: \"clients MUST use the GET method (to enable OCSP response caching)\"");
+                }
+            }
             response.getOutputStream().write(ocspResponseBytes);
             response.getOutputStream().flush();
         } catch (Exception e) {
@@ -306,23 +307,18 @@ public class OCSPServlet extends HttpServlet {
      */
     private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OcspResponseInformation ocspResponseInformation) 
                 throws IOException, org.bouncycastle.cert.ocsp.OCSPException {
-        if (ocspResponseInformation.getMaxAge() <= 0) {
-            log.debug("Will not add RFC 5019 cache headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
-            return;
-        }
-        if (!"GET".equalsIgnoreCase(request.getMethod())) {
-            log.debug("Will not add RFC 5019 cache headers: \"clients MUST use the GET method (to enable OCSP response caching)\"");
-            return;
-        }
-      
-        if(!ocspResponseInformation.shouldAddCacheHeaders()) {
+        if (!ocspResponseInformation.shouldAddCacheHeaders()) {
             return;
         } 
-
-        long now = new Date().getTime();
-        long thisUpdate = ocspResponseInformation.getThisUpdate();
-        long nextUpdate = ocspResponseInformation.getNextUpdate();
-  
+        if (ocspResponseInformation.getMaxAge() <= 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("Will not add RFC 5019 cache headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
+            }
+            return;
+        }
+        final long now = System.currentTimeMillis();
+        final long thisUpdate = ocspResponseInformation.getThisUpdate();
+        final long nextUpdate = ocspResponseInformation.getNextUpdate();
         // RFC 5019 6.2: Date: The date and time at which the OCSP server generated the HTTP response.
         // On JBoss AS the "Date"-header is cached for 1 second, so this value will be overwritten and off by up to a second 
         response.setDateHeader("Date", now);
@@ -332,22 +328,19 @@ public class OCSPServlet extends HttpServlet {
         response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
         // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
         response.setHeader("ETag", "\"" + ocspResponseInformation.getResponseHeader() + "\"");
-        
-        OCSPResp resp = new OCSPResp(ocspResponseInformation.getOcspResponse());
-        SingleResp[] singleRespones = ((BasicOCSPResp) resp.getResponseObject()).getResponses();
-        if(singleRespones[0].getCertStatus() instanceof UnknownStatus) {
+        if (ocspResponseInformation.isExplicitNoCache()) {
             // Note that using no-cache here is not conforming to RFC5019, but with more recent CABForum discussions it seems RFC5019 will not
             // be followed, or will be changed. (See ECA-3289)
             response.setHeader("Cache-Control", "no-cache, must-revalidate"); //HTTP 1.1
             response.setHeader("Pragma", "no-cache"); //HTTP 1.0 
         } else {
-            // Max age is retrieved in millisecons, but it must be in seconds in the cache-control header
+            // Max age is retrieved in milliseconds, but it must be in seconds in the cache-control header
             long maxAge = ocspResponseInformation.getMaxAge();
             if (maxAge >= (nextUpdate - thisUpdate)) {
                 maxAge = nextUpdate - thisUpdate - 1;
                 log.warn(intres.getLocalizedMessage("ocsp.shrinkmaxage", maxAge));
             } 
-            response.setHeader("Cache-Control", "max-age=" + (maxAge / 1000) + ",public,no-transform,must-revalidate");
+            response.setHeader("Cache-Control", "max-age=" + (maxAge / 1000L) + ",public,no-transform,must-revalidate");
         }
     }
 
@@ -361,15 +354,13 @@ public class OCSPServlet extends HttpServlet {
      * @throws IOException In case there is no stream to read
      * @throws MalformedRequestException 
      */
-    private byte[] checkAndGetRequestBytes(HttpServletRequest request) throws IOException, MalformedRequestException {
+    private byte[] checkAndGetRequestBytes(HttpServletRequest request, HttpMethod httpMethod) throws IOException, MalformedRequestException {
         final byte[] ret;
         // Get the request data
-        String method = request.getMethod();
-        String remoteAddress = request.getRemoteAddr();
         final int n = request.getContentLength();
         // Expect n might be -1 for HTTP GET requests
         if (log.isDebugEnabled()) {
-            log.debug(">checkAndGetRequestBytes. Received " + method + " request with content length: " + n + " from " + remoteAddress);
+            log.debug(">checkAndGetRequestBytes. Received " + httpMethod.name() + " request with content length: " + n + " from " + request.getRemoteAddr());
         }
         if (n > LimitLengthASN1Reader.MAX_REQUEST_SIZE) {
             String msg = intres.getLocalizedMessage("ocsp.toolarge", LimitLengthASN1Reader.MAX_REQUEST_SIZE, n);
@@ -378,7 +369,7 @@ public class OCSPServlet extends HttpServlet {
         }
         // So we passed basic tests, now we can read the bytes, but still keep an eye on the size
         // we can not fully trust the sent content length.
-        if (StringUtils.equals(method, "POST")) {
+        if (HttpMethod.POST.equals(httpMethod)) {
             final ServletInputStream in = request.getInputStream(); // ServletInputStream does not have to be closed, container handles this
             LimitLengthASN1Reader limitLengthASN1Reader = new LimitLengthASN1Reader(in, n);
             try {
@@ -392,7 +383,7 @@ public class OCSPServlet extends HttpServlet {
             } finally {
                 limitLengthASN1Reader.close();
             }
-        } else if (StringUtils.equals(method, "GET")) {
+        } else if (HttpMethod.GET.equals(httpMethod)) {
             // GET request
             final StringBuffer url = request.getRequestURL();
             // RFC2560 A.1.1 says that request longer than 255 bytes SHOULD be sent by POST, we support GET for longer requests anyway.
@@ -439,13 +430,13 @@ public class OCSPServlet extends HttpServlet {
             }
         } else {
             // Strange, an unknown method
-            String msg = intres.getLocalizedMessage("ocsp.unknownmethod", method);
+            String msg = intres.getLocalizedMessage("ocsp.unknownmethod", request.getMethod());
             log.info(msg);
             throw new MalformedRequestException(msg);
         }
         // Make a final check that we actually received something
-        if ((ret == null) || (ret.length == 0)) {
-            String msg = intres.getLocalizedMessage("ocsp.emptyreq", remoteAddress);
+        if (ret==null || ret.length==0) {
+            String msg = intres.getLocalizedMessage("ocsp.emptyreq", request.getRemoteAddr());
             log.info(msg);
             throw new MalformedRequestException(msg);
         }
