@@ -83,6 +83,8 @@ public class EJBCAWSRACommandFactory {
             return new CvcPrintCommand(args);
         } else if (args[0].equals("cvcpem")) {
             return new CvcPemCommand(args);
+        } else if (args[0].equals("createcryptotoken")) {
+            return new CreateCryptoTokenCommand(args);
 	    }
         
         else {
