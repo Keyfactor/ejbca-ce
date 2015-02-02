@@ -1216,7 +1216,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
                     }
                     // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                    if (OcspConfiguration.isUntilNextUpdateConfigured(status.certificateProfileId)) {
+                    if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
+                            OcspConfiguration.isUntilNextUpdateConfigured(status.certificateProfileId)) {
                         nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
                     }
                     // If we have an OcspKeyBinding configured for this request, we override the default value
@@ -1224,7 +1225,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
                     }
                     // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                    if (OcspConfiguration.isMaxAgeConfigured(status.certificateProfileId)) {
+                    if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
+                            OcspConfiguration.isMaxAgeConfigured(status.certificateProfileId)) {
                         maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
                     }
 
@@ -1274,11 +1276,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                         }
                         // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                        if (OcspConfiguration.isRevokedUntilNextUpdateConfigured(status.certificateProfileId)) {
+                        if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
+                                OcspConfiguration.isRevokedUntilNextUpdateConfigured(status.certificateProfileId)) {
                             nextUpdate = OcspConfiguration.getRevokedUntilNextUpdate(status.certificateProfileId);
                         }
                         // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                        if (OcspConfiguration.isRevokedMaxAgeConfigured(status.certificateProfileId)) {
+                        if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
+                                OcspConfiguration.isRevokedMaxAgeConfigured(status.certificateProfileId)) {
                             maxAge = OcspConfiguration.getRevokedMaxAge(status.certificateProfileId);
                         }
                     } else {
