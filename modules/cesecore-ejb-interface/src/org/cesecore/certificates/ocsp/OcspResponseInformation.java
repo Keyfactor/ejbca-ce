@@ -24,6 +24,7 @@ import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
@@ -41,6 +42,7 @@ public class OcspResponseInformation implements Serializable {
     private final byte[] ocspResponse;
     private final long maxAge;
     private boolean addCacheHeaders = true;
+    private boolean explicitNoCache = false;
     private Long nextUpdate = null;
     private Long thisUpdate = null;
     private String responseHeader = null;
@@ -66,7 +68,8 @@ public class OcspResponseInformation implements Serializable {
             }
             addCacheHeaders = false;
         } else {
-            SingleResp[] singleRespones = ((BasicOCSPResp)ocspResponse.getResponseObject()).getResponses();
+            final BasicOCSPResp basicOCSPResp = (BasicOCSPResp)ocspResponse.getResponseObject();
+            final SingleResp[] singleRespones = basicOCSPResp.getResponses();
             if (singleRespones.length != 1) {
                 if (log.isDebugEnabled()) {
                     log.debug("Will not add RFC 5019 cache headers: reponse contains multiple embedded responses.");
@@ -77,8 +80,7 @@ public class OcspResponseInformation implements Serializable {
                     log.debug("Will not add RFC 5019 cache headers: nextUpdate isn't set.");
                 }
                 addCacheHeaders = false;
-            } else if ( ((BasicOCSPResp)ocspResponse.getResponseObject()).hasExtensions() 
-                    && (((BasicOCSPResp)ocspResponse.getResponseObject()).getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) ) {
+            } else if (basicOCSPResp.hasExtensions() && basicOCSPResp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Will not add RFC 5019 cache headers: response contains a nonce.");
                 }
@@ -93,6 +95,9 @@ public class OcspResponseInformation implements Serializable {
                 } catch (NoSuchAlgorithmException e) {
                     throw new OcspFailureException("SHA-1 was not an available algorithm for MessageDigester", e);
                 }
+            }
+            if (addCacheHeaders && singleRespones[0].getCertStatus() instanceof UnknownStatus) {
+                explicitNoCache = true;
             }
         }
     }
@@ -121,4 +126,8 @@ public class OcspResponseInformation implements Serializable {
         return responseHeader;
     }
 
+    /** @return true if we explicitly should state that the response should not be cached. */
+    public boolean isExplicitNoCache() {
+        return explicitNoCache;
+    }
 }
