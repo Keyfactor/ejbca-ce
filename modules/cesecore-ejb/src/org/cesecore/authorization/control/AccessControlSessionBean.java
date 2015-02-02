@@ -172,11 +172,13 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         if (accessTreeCache == null) {
             ret = true;
         } else if (accessTreeCache.needsUpdate()) {
-            ret = accessTreeUpdateSession.getAccessTreeUpdateData().updateNeccessary(accessTreeCache.getAccessTreeUpdateNumber());
-            // we don't want to run the above query often
+            // Only one thread needs to check if there are database changes from other nodes and
+            // if there isn't any change, we don't need to check this for another "cachetime"
+            accessTreeCache.setLastUpdateToNow();
+            ret = accessTreeUpdateSession.getAccessTreeUpdateNumber() > accessTreeCache.getAccessTreeUpdateNumber();
         }
         if (log.isTraceEnabled()) {
-            log.trace("updateNeccessary: " + false);
+            log.trace("updateNeccessary: " + ret);
         }
         return ret;
     }
@@ -188,16 +190,13 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         if (log.isTraceEnabled()) {
             log.trace(">updateAuthorizationTree");
         }
-        final int authorizationtreeupdatenumber = accessTreeUpdateSession.getAccessTreeUpdateData().getAccessTreeUpdateNumber();
+        final int authorizationtreeupdatenumber = accessTreeUpdateSession.getAccessTreeUpdateNumber();
         if (accessTreeCache == null) {
             accessTreeCache = new AccessTreeCache();
         }
-
         accessTreeCache.updateAccessTree(roleAccessSession.getAllRoles(), authorizationtreeupdatenumber);
         if (log.isTraceEnabled()) {
             log.trace("<updateAuthorizationTree");
         }
-
     }
-
 }

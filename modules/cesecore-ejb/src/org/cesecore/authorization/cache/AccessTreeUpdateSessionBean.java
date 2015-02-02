@@ -36,52 +36,35 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
 
     private static final Logger LOG = Logger.getLogger(AccessTreeUpdateSessionBean.class);
 
-    /** Internal localization of logs and errors */
-    private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
-
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    /**
-     * Cache this local bean, because it will cause many many database lookups otherwise
-     */
-    private AccessTreeUpdateData authTreeData = null;
-
-    /**
-     * Returns a reference to the AuthorizationTreeUpdateData
-     */
-    public AccessTreeUpdateData getAccessTreeUpdateData() {
-        if (authTreeData == null) {
-            authTreeData = findByPrimaryKey(AccessTreeUpdateData.AUTHORIZATIONTREEUPDATEDATA);
-            if (authTreeData == null) {
-                try {
-                    final AccessTreeUpdateData temp = new AccessTreeUpdateData();
-                    entityManager.persist(temp);
-                    authTreeData = temp;
-                } catch (Exception e) {
-                    final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorcreateauthtree");
-                    LOG.error(msg, e);
-                    throw new EJBException(e);
-                }
-            }
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)    // We don't modify the database in this call
+    public int getAccessTreeUpdateNumber() {
+        final AccessTreeUpdateData accessTreeUpdateData = entityManager.find(AccessTreeUpdateData.class, AccessTreeUpdateData.AUTHORIZATIONTREEUPDATEDATA);
+        if (accessTreeUpdateData==null) {
+            // No update has yet been persisted, so we return the default value
+            return AccessTreeUpdateData.DEFAULTACCESSTREEUPDATENUMBER;
         }
-        return authTreeData;
+        return accessTreeUpdateData.getAccessTreeUpdateNumber();
     }
 
-    /**
-     * Method incrementing the authorization tree update number and thereby signaling to other beans that they should reconstruct their access trees.
-     */
+    @Override
     public void signalForAccessTreeUpdate() {
-        getAccessTreeUpdateData().incrementAccessTreeUpdateNumber();
+        AccessTreeUpdateData accessTreeUpdateData = entityManager.find(AccessTreeUpdateData.class, AccessTreeUpdateData.AUTHORIZATIONTREEUPDATEDATA);
+        if (accessTreeUpdateData==null) {
+            // We need to create the database row and incremented the value directly since this is an call to update it
+            try {
+                accessTreeUpdateData = new AccessTreeUpdateData();
+                accessTreeUpdateData.setAccessTreeUpdateNumber(AccessTreeUpdateData.DEFAULTACCESSTREEUPDATENUMBER+1);
+                entityManager.persist(accessTreeUpdateData);
+            } catch (Exception e) {
+                LOG.error(InternalResources.getInstance().getLocalizedMessage("authorization.errorcreateauthtree"), e);
+                throw new EJBException(e);
+            }
+        } else {
+            accessTreeUpdateData.setAccessTreeUpdateNumber(accessTreeUpdateData.getAccessTreeUpdateNumber() + 1);
+        }
     }
-
-    /**
-     * Finds a AccessTreeUpdateData object by its primary key. Note that this object will not be in context.
-     * 
-     * @return the found entity instance or null if the entity does not exist.
-     */
-    private AccessTreeUpdateData findByPrimaryKey(final Integer primaryKey) {
-        return entityManager.find(AccessTreeUpdateData.class, primaryKey);
-    }
-
 }

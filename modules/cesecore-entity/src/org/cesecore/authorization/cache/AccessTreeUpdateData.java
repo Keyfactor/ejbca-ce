@@ -32,12 +32,13 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * @version $Id$
  */
 @Entity
-@Table(name = "AccessTreeUpdateData")
+@Table(name = "AuthorizationTreeUpdateData")
 public class AccessTreeUpdateData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 778158550351189295L;
 
     public static final Integer AUTHORIZATIONTREEUPDATEDATA = Integer.valueOf(1);
+    public static final int DEFAULTACCESSTREEUPDATENUMBER = 0;
 
     private Integer primaryKey;
     private int accessTreeUpdateNumber;
@@ -46,7 +47,7 @@ public class AccessTreeUpdateData extends ProtectedData implements Serializable 
 
     public AccessTreeUpdateData() {
         setPrimaryKey(AUTHORIZATIONTREEUPDATEDATA);
-        setAccessTreeUpdateNumber(0);
+        setAccessTreeUpdateNumber(DEFAULTACCESSTREEUPDATENUMBER);
     }
 
     // @Id @Column
@@ -90,25 +91,6 @@ public class AccessTreeUpdateData extends ProtectedData implements Serializable 
 	@Override
     public void setRowProtection(final String rowProtection) {
         this.rowProtection = rowProtection;
-    }
-
-    /**
-     * Method used check if a reconstruction of authorization tree is needed in the authorization beans. It is used to avoid desyncronisation of
-     * authorization structures in a distributed environment.
-     * 
-     * @param currentAccessTreeUpdatenumber
-     *            indicates which accessTreeUpdateNumber is currently used.
-     * @return true if update is needed.
-     */
-    public boolean updateNeccessary(final int currentAccessTreeUpdatenumber) {
-        return getAccessTreeUpdateNumber() != currentAccessTreeUpdatenumber;
-    }
-
-    /**
-     * Method incrementing the accessTreeUpdateNumber and thereby signaling to other beans that they should reconstruct their accesstrees.
-     */
-    public void incrementAccessTreeUpdateNumber() {
-        setAccessTreeUpdateNumber(getAccessTreeUpdateNumber() + 1);
     }
 
 	//

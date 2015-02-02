@@ -21,14 +21,15 @@ import javax.ejb.Local;
 public interface AccessTreeUpdateSessionLocal {
 
     /**
-     * Returns a reference to the AuthorizationTreeUpdateData
-     */
-    AccessTreeUpdateData getAccessTreeUpdateData();
-    
-    /**
      * Method incrementing the authorization tree update number and thereby
      * signaling to other beans that they should reconstruct their access trees.
      */
-    public void signalForAccessTreeUpdate();
+    void signalForAccessTreeUpdate();
+    
+    /**
+     * Method returning the newest authorizationtreeupdatenumber.
+     * Should be checked when the access tree cache has expired to avoid rebuilding the tree if there are no database changes. 
+     */
+    int getAccessTreeUpdateNumber();
 
 }
