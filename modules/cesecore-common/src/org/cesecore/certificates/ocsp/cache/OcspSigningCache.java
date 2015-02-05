@@ -135,7 +135,7 @@ public enum OcspSigningCache {
                     entry = new OcspSigningCacheEntry(entry.getIssuerCaCertificate(), entry.getIssuerCaCertificateStatus(),
                             defaultResponderCacheEntry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
                             defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
-                            defaultResponderCacheEntry.getOcspKeyBinding());
+                            defaultResponderCacheEntry.getOcspKeyBinding(), defaultResponderCacheEntry.getResponderIdType());
                     modifiedEntries.put(key, entry);
                 } else {
                     //If no default responder is defined, remove placeholder. 
