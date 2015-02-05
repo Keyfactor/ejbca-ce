@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.ws;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -69,6 +70,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -91,7 +94,6 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -887,7 +889,37 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
     }
     */
-
+    
+    @Test
+    public void test70CreateSoftCryptoToken() throws Exception {
+        //createSoftCryptoToken();
+        String ctname = "NewTestCryptoTokenThroughWS";
+        Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+        if(ctid != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        }
+        
+        try {
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, false, null, null, null, null);
+            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+            assertNotNull("Creating a new SoftCryptoToken failed", ctid);
+            CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
+            assertEquals("SoftCryptoToken", token.getType());
+            assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
+            assertTrue(token.isActive());
+            cryptoTokenManagementSession.deactivate(intAdmin, ctid.intValue());
+            assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
+            cryptoTokenManagementSession.activate(intAdmin, ctid.intValue(), "1234".toCharArray());
+            assertTrue(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        } finally {
+            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+            if(ctid != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+            }
+        }
+    }
+     
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
