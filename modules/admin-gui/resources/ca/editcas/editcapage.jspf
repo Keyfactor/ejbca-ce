@@ -37,6 +37,7 @@
   boolean revokable = true;
   boolean signbyexternal = false;
   boolean isexternal = false;
+  boolean isRevoked = false;
   boolean waitingresponse = false;  
   boolean isUninitialized = false;
   
@@ -53,6 +54,7 @@
     }
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
+    isRevoked = cainfo.getStatus() == CAConstants.CA_REVOKED || cadatahandler.isCARevoked(cainfo);
     revokable = cainfo.getStatus() != CAConstants.CA_REVOKED  && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
     waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
     isUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
@@ -1614,7 +1616,7 @@ function checkallfields(){
         if (!isexternal && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId)) {
             availableCryptoTokenAliases = cabean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam);
         }
-        if (editca && !isexternal && !waitingresponse && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId) && cainfo.getSignedBy()!=CAInfo.SIGNEDBYEXTERNALCA) { %>
+        if (editca && !isexternal && !waitingresponse && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId) && cainfo.getSignedBy()!=CAInfo.SIGNEDBYEXTERNALCA && !isRevoked) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>"> 
         <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Renewing%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
