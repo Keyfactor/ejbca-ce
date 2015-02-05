@@ -12,14 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.ejb.Remote;
-
-import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.keybind.InternalKeyBinding;
 
 /**
  * @version $Id$
@@ -30,7 +26,4 @@ public interface OcspResponseGeneratorTestSessionRemote {
     void reloadOcspSigningCache();
 
     List<X509Certificate> getCacheOcspCertificates();
-
-    void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, CertificateStatus certificateStatus, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
-            String signatureProviderName, InternalKeyBinding ocspKeyBinding);
 }

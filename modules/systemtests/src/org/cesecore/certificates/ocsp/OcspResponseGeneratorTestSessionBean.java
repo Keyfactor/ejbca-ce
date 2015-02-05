@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +21,9 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keybind.InternalKeyBinding;
-import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.util.CertTools;
 
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean
@@ -43,20 +38,6 @@ public class OcspResponseGeneratorTestSessionBean implements
 
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
-    
-    @Override
-    public void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, CertificateStatus certificateStatus, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
-            String signatureProviderName, InternalKeyBinding ocspKeyBinding) {
-        OcspSigningCacheEntry ocspSigningCacheEntry = new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
-                signatureProviderName, (OcspKeyBinding) ocspKeyBinding);
-        try {
-            OcspSigningCache.INSTANCE.stagingStart();
-            OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
-            OcspSigningCache.INSTANCE.stagingCommit(CertTools.getIssuerDN(ocspSigningCertificate));
-        } finally {
-            OcspSigningCache.INSTANCE.stagingRelease();
-        }
-    }
     
     @Override
     public List<X509Certificate> getCacheOcspCertificates() {

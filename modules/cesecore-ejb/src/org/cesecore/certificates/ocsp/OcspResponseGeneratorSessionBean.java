@@ -37,7 +37,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -91,11 +90,8 @@ import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.Req;
-import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
-import org.bouncycastle.cert.ocsp.jcajce.JcaBasicOCSPRespBuilder;
-import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -126,7 +122,6 @@ import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.CryptoProviderException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
-import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.keys.CardKeys;
@@ -295,7 +290,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 X509Certificate caCertificate = caCertificateChain.get(0);
                                 CertificateStatus caCertificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate), CertTools.getSerialNumber(caCertificate));
                                 OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
-                                        signatureProviderName, null));
+                                        signatureProviderName, null, OcspConfiguration.getResponderIdType()));
                                 // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
                                 // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
                                 if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
@@ -331,7 +326,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             //Add an entry with just a chain and nothing else
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
-                                    null, null, null));
+                                    null, null, null, OcspConfiguration.getResponderIdType()));
   
                         }
                     } catch (CADoesntExistsException e) {
@@ -422,8 +417,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         CertificateStatus certificateStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificateChain.get(0)),
                 CertTools.getSerialNumber(caCertificateChain.get(0)));
+        final int respIdType;
+        if (ResponderIdType.NAME.equals(ocspKeyBinding.getResponderIdType())) {
+            respIdType = OcspConfiguration.RESPONDERIDTYPE_NAME;
+        } else {
+            respIdType = OcspConfiguration.RESPONDERIDTYPE_KEYHASH;
+        }
         return new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
-                signatureProviderName, ocspKeyBinding);
+                signatureProviderName, ocspKeyBinding, respIdType);
     }
     
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
@@ -478,61 +479,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null); // RFC 2560: responseBytes are not set on error.
     }
 
-    private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 
-            final OcspSigningCacheEntry ocspSigningCacheEntry, Date producedAt) throws CryptoTokenOfflineException {
-        final X509Certificate[] certChain = ocspSigningCacheEntry.getFullCertificateChain().toArray(new X509Certificate[0]);
-        final X509Certificate signerCert = certChain[0];
-        if(!CertTools.isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-            log.warn("Signing with non OCSP certificate (no 'OCSP Signing' Extended Key Usage) bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
-        }
-
-        final String sigAlg = getSigAlg(req, ocspSigningCacheEntry, signerCert);
-        if (log.isDebugEnabled()) {
-            log.debug("Signing algorithm: " + sigAlg);
-        }
-        
-        final X509Certificate[] chain = getResponseCertChain(certChain, ocspSigningCacheEntry);
-        if(log.isDebugEnabled()) {
-            log.debug("The response certificate chain contains " + chain.length + " certificates");
-        }
-        
-        try {
-            int respIdType = OcspConfiguration.getResponderIdType();
-            // If we have an OcspKeyBinding we use this configuration to override the default
-            if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-                if (ResponderIdType.NAME.equals(ocspSigningCacheEntry.getOcspKeyBinding().getResponderIdType())) {
-                    respIdType = OcspConfiguration.RESPONDERIDTYPE_NAME;
-                } else {
-                    respIdType = OcspConfiguration.RESPONDERIDTYPE_KEYHASH;
-                }
-            }
-            
-            // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
-            final BasicOCSPResp ocspresp = generateBasicOcspResp(req, exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry,
-                    chain, respIdType, producedAt);
-            if (log.isDebugEnabled()) {
-                Collection<X509Certificate> coll = Arrays.asList(chain);
-                log.debug("Cert chain for OCSP signing is of size " + coll.size());
-            }
-
-            if (CertTools.isCertificateValid(signerCert)) {
-                return ocspresp;
-            } else {
-                throw new OcspFailureException("Response was not validly signed.");
-            }
-        } catch (OCSPException ocspe) {
-            throw new OcspFailureException(ocspe);
-        } catch (NoSuchProviderException nspe) {
-            throw new OcspFailureException(nspe);
-        } catch (NotSupportedException e) {
-            log.info("OCSP Request type not supported: ", e);
-            throw new OcspFailureException(e);
-        } catch (IllegalArgumentException e) {
-            log.error("IllegalArgumentException: ", e);
-            throw new OcspFailureException(e);
-        }
-    }
-    
     /**
      * Select the preferred OCSP response sigAlg according to RFC6960 Section 4.4.7 in the following order:
      * 
@@ -614,54 +560,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.debug("Using configured signature algorithm to sign OCSP response. " + sigAlg);
         }
         return sigAlg;
-    }
-
-    /**
-     * This method construct the certificate chain that will be included in the OCSP response according to the following rules:
-     * - If includeSignCert && includeChain --> include entire chain except for the root CA certificate
-     * - If includeSignCert && !includeChain --> include only the signing certificate whatever it is (even if it was a root CA cert)
-     * - If !includingSignCert --> not including any certificate or chain no matter what value includeChain has. The value of the 
-     *   certificate chain  will then be an empty array.
-     *   
-     * @param certChain
-     * @param ocspSigningCacheEntry
-     * @return the certificate chain that will be included in the OCSP response
-     */
-    private X509Certificate[] getResponseCertChain(X509Certificate[] certChain, final OcspSigningCacheEntry ocspSigningCacheEntry) {
-        X509Certificate[] chain;
-        boolean includeSignCert = OcspConfiguration.getIncludeSignCert();
-        boolean includeChain = OcspConfiguration.getIncludeCertChain();
-        // If we have an OcspKeyBinding we use this configuration to override the default
-        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-            includeSignCert = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeSignCert();
-            includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
-        }
-        if(log.isDebugEnabled()) {
-            log.debug("Include signing cert: " + includeSignCert);
-            log.debug("Include chain: " + includeChain);
-        }
-        if(includeSignCert) {
-            if (includeChain) {
-                if(certChain.length > 1) { // certChain contained more than the root cert
-                    //create a new array containing all the certs in certChain except for the root cert
-                    chain = new X509Certificate[certChain.length-1];
-                    for(int i=0; i<chain.length; i++) {
-                        chain[i] = certChain[i];
-                    }
-                } else { // certChain contains only the root cert
-                    chain = certChain;
-                }
-            } else { // only the signing cert should be included in the OCSP response and not the entire cert chain
-                chain = new X509Certificate[1];
-                chain[0] = certChain[0];
-            }
-        } else {
-            if(log.isDebugEnabled()) {
-                log.debug("OCSP signing certificate is not included in the response");
-            }
-            chain = new X509Certificate[0];
-        }
-        return chain;
     }
 
     /**
@@ -910,16 +808,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return signercert;
     }
     
-    private BasicOCSPRespBuilder createOcspResponseGenerator(OCSPReq req, X509Certificate respondercert, int respIdType) throws OCSPException,
-            NotSupportedException {
+    private void assertAcceptableResponseExtension(OCSPReq req) throws OcspFailureException {
         if (null == req) {
             throw new IllegalArgumentException();
-        }
-        BasicOCSPRespBuilder res = null;
-        if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
-            res = new BasicOCSPRespBuilder(new JcaRespID(respondercert.getSubjectX500Principal()));
-        } else {
-            res = new JcaBasicOCSPRespBuilder(respondercert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());
         }
         if (req.hasExtensions()) {
             final Extension acceptableResponsesExtension = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
@@ -941,11 +832,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
                 if (!supportsResponseType) {
-                    throw new NotSupportedException("Required response type not supported, this responder only supports id-pkix-ocsp-basic.");
+                    final String msg = "Required response type not supported, this responder only supports id-pkix-ocsp-basic.";
+                    log.info("OCSP Request type not supported: " + msg);
+                    throw new OcspFailureException(msg);
                 }
             }
         }
-        return res;
     }
 
     /**
@@ -1582,13 +1474,42 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return ocspSigningCacheEntry;
     }
     
-    private BasicOCSPResp generateBasicOcspResp(OCSPReq ocspRequest, Extensions exts, List<OCSPResponseItem> responses, String sigAlg,
-                        X509Certificate signerCert, OcspSigningCacheEntry ocspSigningCacheEntry, X509Certificate[] chain, int respIdType, 
-                        Date producedAt) throws NotSupportedException, OCSPException, NoSuchProviderException, CryptoTokenOfflineException {
+    private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 
+            final OcspSigningCacheEntry ocspSigningCacheEntry, Date producedAt) throws CryptoTokenOfflineException {
+        assertAcceptableResponseExtension(req);
+        if (!ocspSigningCacheEntry.isSigningCertificateForOcspSigning()) {
+            log.warn("Signing with non OCSP certificate (no 'OCSP Signing' Extended Key Usage) bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
+        }
+        final X509Certificate signerCert = ocspSigningCacheEntry.getSigningCertificate();
+        final String sigAlg = getSigAlg(req, ocspSigningCacheEntry, signerCert);
+        if (log.isDebugEnabled()) {
+            log.debug("Signing algorithm: " + sigAlg);
+        }
+        try {
+            // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
+            final BasicOCSPResp ocspresp = generateBasicOcspResp(exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry, producedAt);
+            if (CertTools.isCertificateValid(signerCert)) {
+                return ocspresp;
+            } else {
+                throw new OcspFailureException("Response was not validly signed.");
+            }
+        } catch (OCSPException ocspe) {
+            throw new OcspFailureException(ocspe);
+        } catch (NoSuchProviderException nspe) {
+            throw new OcspFailureException(nspe);
+        } catch (IllegalArgumentException e) {
+            log.error("IllegalArgumentException: ", e);
+            throw new OcspFailureException(e);
+        }
+    }
+    
+    private BasicOCSPResp generateBasicOcspResp(Extensions exts, List<OCSPResponseItem> responses, String sigAlg,
+                        X509Certificate signerCert, OcspSigningCacheEntry ocspSigningCacheEntry, Date producedAt)
+                                throws OCSPException, NoSuchProviderException, CryptoTokenOfflineException {
         final PrivateKey signerKey = ocspSigningCacheEntry.getPrivateKey();
         final String provider = ocspSigningCacheEntry.getSignatureProviderName();
         BasicOCSPResp returnval = null;
-        BasicOCSPRespBuilder basicRes = createOcspResponseGenerator(ocspRequest, signerCert, respIdType);
+        BasicOCSPRespBuilder basicRes = new BasicOCSPRespBuilder(ocspSigningCacheEntry.getRespId());
         if (responses != null) {
             for (OCSPResponseItem item : responses) {
                 basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), item.getExtensions());
@@ -1600,6 +1521,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (oids.hasMoreElements()) {
                 basicRes.setResponseExtensions(exts);
             }
+        }
+        final X509Certificate[] chain = ocspSigningCacheEntry.getResponseCertChain();
+        if (log.isDebugEnabled()) {
+            log.debug("The response certificate chain contains " + chain.length + " certificates");
         }
         /*
          * The below code breaks the EJB standard by creating its own thread pool and creating a single thread (of the HsmResponseThread 
@@ -1625,13 +1550,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isDebugEnabled()) {
             log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
         }
-        RespID respId = null;
-        if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
-            respId = new JcaRespID(signerCert.getSubjectX500Principal());
-        } else {
-            respId = new JcaRespID(signerCert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());
-        }
-        if (!returnval.getResponderId().equals(respId)) {
+        if (!returnval.getResponderId().equals(ocspSigningCacheEntry.getRespId())) {
             log.error("Response responderId does not match signer certificate responderId!");
             throw new OcspFailureException("Response responderId does not match signer certificate responderId!");
         }
