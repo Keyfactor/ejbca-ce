@@ -492,7 +492,7 @@ public class EjbcaWS implements IEjbcaWS {
 	@Override
 	public void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
             String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
-            Map<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException  {                    
+            HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException  {                    
                     
         final String className;
         final Properties cryptoTokenProperties = new Properties();

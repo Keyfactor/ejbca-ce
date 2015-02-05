@@ -13,8 +13,8 @@
 package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateExpiredException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -196,7 +196,7 @@ public interface IEjbcaWS {
 	 */
 	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
             String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
-            Map<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException;	
+            HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
 	 *  Generates a certificate for a user.
