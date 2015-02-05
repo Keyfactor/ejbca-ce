@@ -1,6 +1,6 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}Map<String, String>"/>
+ *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}HashMap<String, String>"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -56,7 +56,7 @@ public class CreateCryptoToken {
    protected String arg5;
    protected String arg6;
    protected String arg7;
-   protected Map<String, String> arg8;
+   protected HashMap<String, String> arg8;
    
    /**
     * Gets the value of the arg0 property.
@@ -190,7 +190,7 @@ public class CreateCryptoToken {
     * Gets the value of the arg8 property.
     * 
     */
-   public Map<String, String> getArg8() {
+   public HashMap<String, String> getArg8() {
        return arg8;
    }
 
@@ -198,7 +198,7 @@ public class CreateCryptoToken {
     * Sets the value of the arg8 property.
     * 
     */
-   public void setArg8(Map<String, String> value) {
+   public void setArg8(HashMap<String, String> value) {
        this.arg8 = value;
    }
 

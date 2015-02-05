@@ -1,8 +1,8 @@
 
 package org.ejbca.core.protocol.ws.client.gen;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -1043,7 +1043,7 @@ public interface EjbcaWS {
            @WebParam(name = "arg7", targetNamespace = "")
            String arg7,
            @WebParam(name = "arg8", targetNamespace = "")
-           Map<String, String> arg8)
+           HashMap<String, String> arg8)
            throws AuthorizationDeniedException_Exception, EjbcaException_Exception
    ;
 
