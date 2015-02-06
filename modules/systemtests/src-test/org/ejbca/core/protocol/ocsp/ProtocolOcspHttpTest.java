@@ -1374,18 +1374,18 @@ Content-Type: text/html; charset=iso-8859-1
      */
     @Test
     public void testSignCertNotIncludedInResponse() throws Exception {
-    
         loadUserCert(this.caid);
-        
         // set OCSP configuration
         Map<String,String> map = new HashMap<String, String>();
         map.put(OcspConfiguration.INCLUDE_SIGNING_CERT, "false");
-        this.helper.alterConfig(map);
-        
+        helper.alterConfig(map);
+        // This setting is part of the OCSP signing cache so a reload of the cache is required
+        helper.reloadKeys();
+        // Build the OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber() ), null);
         OCSPReq req = gen.build();
-        
+        // Send and verify the OCSP request
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200, false, cacert);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue("Response does contain certificates", response.getCerts().length == 0);
