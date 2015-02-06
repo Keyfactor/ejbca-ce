@@ -195,4 +195,11 @@ public final class ConcurrentCache<K,V> {
         }
     }
     
+    /**
+     * Removes all entries in the cache
+     */
+    public void clear() {
+        cache.clear();
+    }
+    
 }
