@@ -77,5 +77,10 @@ public interface CertificateTransparency {
      * Returns true if the given certificate has an SCT extension with at least one entry. 
      */
     boolean hasSCTs(Certificate cert);
+
+    /**
+     * Clears the URL availability status cache.
+     */
+    void clearCaches();
     
 }
