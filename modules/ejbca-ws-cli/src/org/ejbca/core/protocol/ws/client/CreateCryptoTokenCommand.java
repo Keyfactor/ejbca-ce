@@ -72,7 +72,7 @@ public class CreateCryptoTokenCommand extends EJBCAWSRABaseCommand implements IA
        getPrintStream().println("Usage : createcryptotoken <TOKEN_NAME> <TOKEN_TYPE> <ACTIVATION_PIN> <ENABLE_AUTO_ACTIVATION> <ENABLE_EXPORT_KEYS> " +
        		"[ <PKCS11_LIBRARY_FILE> <SLOT_REFERENCE_TYPE> <SLOT_REFERENCE_VALUE> <PKCS11_ATTRIBUTE_DATA> ]");
        getPrintStream().println();
-       getPrintStream().print("TOKEN_NAME : The name of the crypto token.");
+       getPrintStream().println("TOKEN_NAME : The name of the crypto token.");
        getPrintStream().println("TOKEN_TYPE : Available types: SoftCryptoToken, PKCS11CryptoToken");
        getPrintStream().println("ACTIVATION_PIN : Pin code for the crypto token.");
        getPrintStream().println("ENABLE_AUTO_ACTIVATION : Set to true|false to allow|disallow whether crypto token should be autoactivated or not.");

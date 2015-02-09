@@ -73,6 +73,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.util.Base64;
@@ -911,7 +912,32 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
             cryptoTokenManagementSession.activate(intAdmin, ctid.intValue(), "1234".toCharArray());
             assertTrue(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
+        } finally {
+            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+            if(ctid != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+            }
+        }
+    }
+    
+    @Test
+    public void test71GenerateCryptoTokenKeys() throws Exception {
+        String ctname = "NewTestCryptoTokenThroughWS";
+        Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+        if(ctid != null) {
             cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        }
+        
+        try {
+            String keyAlias = "testWSGeneratedKeys";
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, true, null, null, null, null);
+            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            List<String> keyAliases = cryptoTokenManagementSession.getKeyPairAliases(intAdmin, ctid.intValue());
+            assertTrue(keyAliases.contains(keyAlias));
+            KeyPairInfo keyInfo = cryptoTokenManagementSession.getKeyPairInfo(intAdmin, ctid.intValue(), keyAlias);
+            assertEquals("RSA", keyInfo.getKeyAlgorithm());
+            assertEquals("1024", keyInfo.getKeySpecification());
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             if(ctid != null) {

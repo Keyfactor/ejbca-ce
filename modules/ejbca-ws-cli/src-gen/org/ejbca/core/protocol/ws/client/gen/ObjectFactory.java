@@ -132,6 +132,8 @@ public class ObjectFactory {
     private final static QName _PKCS11LibraryFileNotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PKCS11LibraryFileNotFoundException");
     private final static QName _PKCS11SlotDataInvalidException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PKCS11SlotDataInvalidException");
     private final static QName _UnsupportedCryptoTokenTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnsupportedCryptoTokenTypeException");
+    private final static QName _GenerateCryptoTokenKeys_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeys");
+    private final static QName _GenerateCryptoTokenKeysResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeysResponse");
 
 
     
@@ -1108,6 +1110,22 @@ public class ObjectFactory {
      */
     public UnsupportedCryptoTokenTypeException createUnsupportedCryptoTokenTypeException() {
         return new UnsupportedCryptoTokenTypeException();
+    }
+    
+    /**
+     * Create an instance of {@link GenerateCryptoTokenKeys }
+     *
+     */
+    public GenerateCryptoTokenKeys createGenerateCryptoTokenKeys() {
+        return new GenerateCryptoTokenKeys();
+    }
+    
+    /**
+     * Create an instance of {@link GenerateCryptoTokenKeysResponse }
+     *
+     */
+    public GenerateCryptoTokenKeysResponse createGenerateCryptoTokenKeysResponse() {
+        return new GenerateCryptoTokenKeysResponse();
     }
 
     /**
@@ -2089,6 +2107,24 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnsupportedCryptoTokenTypeException")
     public JAXBElement<UnsupportedCryptoTokenTypeException> createUnsupportedCryptoTokenTypeException(UnsupportedCryptoTokenTypeException value) {
         return new JAXBElement<UnsupportedCryptoTokenTypeException>(_UnsupportedCryptoTokenTypeException_QNAME, UnsupportedCryptoTokenTypeException.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoToken }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeys")
+    public JAXBElement<GenerateCryptoTokenKeys> createGenerateCryptoTokenKeys(GenerateCryptoTokenKeys value) {
+        return new JAXBElement<GenerateCryptoTokenKeys>(_GenerateCryptoTokenKeys_QNAME, GenerateCryptoTokenKeys.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoTokenKeysResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeysResponse")
+    public JAXBElement<GenerateCryptoTokenKeysResponse> createGenerateCryptoTokenKeysResponse(GenerateCryptoTokenKeysResponse value) {
+        return new JAXBElement<GenerateCryptoTokenKeysResponse>(_GenerateCryptoTokenKeysResponse_QNAME, GenerateCryptoTokenKeysResponse.class, null, value);
     }
 
 }
