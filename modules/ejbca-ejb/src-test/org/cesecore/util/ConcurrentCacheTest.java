@@ -98,13 +98,15 @@ public final class ConcurrentCacheTest {
     }
     
     @Test(timeout=6000)
-    public void xtestRandomMultiThreaded() throws InterruptedException {
+    public void testRandomMultiThreaded() throws InterruptedException {
         log.trace(">testRandomMultiThreaded");
         // This tests outputs as LOT of debug/trace messages. JUnit even runs out of heap space if those are enabled.
         Logger.getRootLogger().setLevel(Level.INFO);
         Logger.getLogger(ConcurrentCache.class).setLevel(Level.INFO);
         try {
             final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+            cache.setMaxEntries(20);
+            cache.setCleanupInterval(100); // To stress the system a bit more
             
             final Thread[] threads = new Thread[NUM_RANDOM_THREADS];
             final CacheTestRunner[] runners = new CacheTestRunner[NUM_RANDOM_THREADS];
@@ -135,7 +137,11 @@ public final class ConcurrentCacheTest {
                 }
             }
             
+            long timeout = System.currentTimeMillis() + 2000; // if a thread stops for more than 2 s in cleanup() then that's a problem by itself
             for (int i = 0; i < threads.length; i++) {
+                if (threads[i].isAlive() && System.currentTimeMillis() < timeout) {
+                    threads[i].join(2000);
+                }
                 assertFalse("Thread "+i+" was still alive", threads[i].isAlive());
             }
         } finally {
@@ -145,6 +151,65 @@ public final class ConcurrentCacheTest {
             Logger.getRootLogger().setLevel(Level.TRACE);
             Logger.getLogger(ConcurrentCache.class).setLevel(Level.TRACE);
             log.trace("<testRandomMultiThreaded");
+        }
+    }
+    
+    private static final int MAXENTRIES = 1000000;
+    private static final int OVERSHOOT = MAXENTRIES+(MAXENTRIES/2)+1; // overshoot by 50%
+    private static final int MIN_ENTRIES_AFTER_CLEANUP = MAXENTRIES - (MAXENTRIES/4); // 75% of maxentries
+    
+    @Test
+    public void testMaxEntries() throws Exception {
+        log.trace(">testMaxEntries");
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+        cache.setMaxEntries(MAXENTRIES);
+        cache.setCleanupInterval(100);
+        ConcurrentCache<String,Integer>.Entry entry;
+        
+        try {
+            Logger.getLogger(ConcurrentCache.class).setLevel(Level.INFO);
+            // Create initial entries
+            log.debug("Creating initial entries");
+            for (int i = 0; i < MAXENTRIES; i++) {
+                entry = cache.openCacheEntry(String.valueOf(i), 1);
+                assertNotNull("openCacheEntry timed out", entry);
+                assertFalse("isInCache should return false for non-existent entry", entry.isInCache());
+                entry.putValue(i);
+                entry.setCacheValidity(60*1000);
+                entry.close();
+            }
+            
+            cache.checkNumberOfEntries(MAXENTRIES, MAXENTRIES);
+            
+            // Add some more. Cleanup is guaranteed to run if we overshoot by 50%
+            log.debug("Creating more entries (to overshoot the limit)");
+            for (int i = MAXENTRIES; i <= OVERSHOOT; i++) {
+                entry = cache.openCacheEntry(String.valueOf(i), 1);
+                assertNotNull("openCacheEntry timed out", entry);
+                assertFalse("isInCache should return false for non-existent entry", entry.isInCache());
+                entry.putValue(i);
+                entry.setCacheValidity(60*1000);
+                entry.close();
+            }
+            
+            log.debug("Sleeping to allow for cleanup to run again");
+            Thread.sleep(100);
+            
+            // Access the cache once more to trigger a cleanup
+            entry = cache.openCacheEntry(String.valueOf("x"), 1);
+            assertNotNull("openCacheEntry timed out", entry);
+            assertFalse("isInCache should return false for non-existent entry", entry.isInCache());
+            entry.putValue(-123456);
+            entry.setCacheValidity(60*1000);
+            entry.close();
+            
+            log.debug("Done creating entries");
+            
+            // Cleanup should have run now
+            cache.checkNumberOfEntries(MIN_ENTRIES_AFTER_CLEANUP, MAXENTRIES-1);
+        } finally {
+            Logger.getLogger(ConcurrentCache.class).setLevel(Level.TRACE);
+            log.trace("<testMaxEntries");
         }
     }
     
