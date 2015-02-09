@@ -562,6 +562,29 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
         }   
 	}
+	
+	@Override
+	public void generateCryptoTokenKeys(String cryptoTokenName, String keyPairAlias, String keySpecification) 
+	        throws AuthorizationDeniedException, EjbcaException {
+	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
+	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	    Integer ctokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+	    try {
+	        cryptoTokenManagementSession.createKeyPair(ejbhelper.getAdmin(), ctokenId, keyPairAlias, keySpecification);
+	        log.info("Key pair generated successfully.");
+	    } catch (AuthorizationDeniedException e) {
+	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+	        throw e;
+	    } catch (CryptoTokenOfflineException e) {
+	        log.info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
+	    } catch (InvalidKeyException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.INVALID_KEY, Level.INFO);
+	    } catch (InvalidAlgorithmParameterException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.INVALID_KEY_SPEC, Level.INFO);
+	    }
+	}
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#crmfRequest(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
