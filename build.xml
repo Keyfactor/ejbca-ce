@@ -558,7 +558,7 @@
 		 that forces u to also generate WARs in a very medieval way. I hope they have a good reason.
 		 -->
 		<condition property="generate-ws-wars-extension" value="cmd" else="sh"><os family="windows"/></condition>
-		<exec executable="${appserver.home}/bin/endptEnabler.${generate-ws-wars-extension}">
+		<exec executable="${appserverhome}/bin/endptEnabler.${generate-ws-wars-extension}">
 			<arg line="-v -p ${ejbca.home}/src/appserver/websphere7/webservicegen.properties ${caear}"/>
 		</exec>
 		<!--
@@ -568,7 +568,7 @@
 		 This small tool will generate the stubs and put them in the EJB interface file, since this is available wherever
 		 remote EJB invocation takes place.
 		 -->
-		<exec executable="${appserver.home}/bin/createEJBStubs.${generate-ws-wars-extension}">
+		<exec executable="${appserverhome}/bin/createEJBStubs.${generate-ws-wars-extension}">
 			<arg line="${caear} -verbose" />
 		</exec>
 		<!-- Now when WebSphere is done we can finally add the BC libraries again. -->
