@@ -1047,5 +1047,24 @@ public interface EjbcaWS {
            throws AuthorizationDeniedException_Exception, EjbcaException_Exception
    ;
 
+   /**
+    * @param arg0
+    * @param arg1
+    * @param arg2
+    * @throws EjbcaException_Exception
+    * @throws AuthorizationDeniedException_Exception
+    */
+  @WebMethod
+  @RequestWrapper(localName = "generateCryptoTokenKeys", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GenerateCryptoTokenKeys")
+  @ResponseWrapper(localName = "generateCryptoTokenKeysResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GenerateCryptoTokenKeysResponse")
+  public void generateCryptoTokenKeys(
+          @WebParam(name = "arg0", targetNamespace = "")
+          String arg0,
+          @WebParam(name = "arg1", targetNamespace = "")
+          String arg1,
+          @WebParam(name = "arg2", targetNamespace = "")
+          String arg2)
+          throws AuthorizationDeniedException_Exception, EjbcaException_Exception
+  ;
    
 }

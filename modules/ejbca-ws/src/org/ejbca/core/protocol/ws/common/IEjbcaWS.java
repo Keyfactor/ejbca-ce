@@ -199,6 +199,16 @@ public interface IEjbcaWS {
             HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
+	 * @param cryptoTokenName The name of the crypto token
+     * @param keyPairAlias Key pair alias
+     * @param keyPairSpecification Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException
+     */
+	abstract void generateCryptoTokenKeys(String cryptoTokenName, String keyPairAlias, String keySpecification) 
+            throws AuthorizationDeniedException, EjbcaException;
+	
+	/**
 	 *  Generates a certificate for a user.
 	 * 
 	 *  Works the same as pkcs10Request.
