@@ -2,8 +2,12 @@ package org.cesecore.util;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -111,6 +115,13 @@ public final class ConcurrentCache<K,V> {
     private final ConcurrentHashMap<K,InternalEntry<V>> cache = new ConcurrentHashMap<K,InternalEntry<V>>();
     private final ConcurrentMap<K,Object> semaphores = new ConcurrentHashMap<K,Object>();
     
+    private long maxEntries;
+    private AtomicLong numEntries = new AtomicLong(0);
+    private final ConcurrentHashMap<K,Boolean> pendingRemoval = new ConcurrentHashMap<K,Boolean>(); // always contains Boolean.TRUE
+    private final Lock isCleaning = new ReentrantLock();
+    private long lastCleanup = 0;
+    private long cleanupInterval = 1000;
+    
     /**
      * "Opens" a cache entry. If the entry already exists, then an Entry that
      * maps to the existing entry is returned. Otherwise, a semaphore is used
@@ -129,6 +140,9 @@ public final class ConcurrentCache<K,V> {
      */
     public Entry openCacheEntry(final K key, final long timeout) {
         final long timeAtEntry = System.currentTimeMillis();
+        if (maxEntries != 0) {
+            pendingRemoval.remove(key); // always mark as used
+        }
         
         // Fast path if cached
         InternalEntry<V> entry = cache.get(key);
@@ -139,11 +153,15 @@ public final class ConcurrentCache<K,V> {
                 log.debug("Found valid entry in cache for key "+key);
                 log.trace("<ConcurrentCacheMap.openCacheEntry");
             }
+            cleanupIfNeeded();
             return new Entry(key, entry);
-        } else if (log.isDebugEnabled()) {
-            if (entry != null) {
+        } else if (entry != null) {
+            if (log.isDebugEnabled()) {
                 log.debug("Cache entry has expired "+key);
-            } else {
+            }
+            numEntries.decrementAndGet();
+        } else {
+            if (log.isDebugEnabled()) {
                 log.debug("Entry was not present in cache "+key);
             }
         }
@@ -154,6 +172,8 @@ public final class ConcurrentCache<K,V> {
         final Object theirSemaphore = semaphores.putIfAbsent(key, ourSemaphore);
         if (theirSemaphore == null) {
             // We were first
+            numEntries.incrementAndGet();
+            cleanupIfHighlyNeeded();
             return new Entry(key, null, ourSemaphore);
         }
         
@@ -161,6 +181,7 @@ public final class ConcurrentCache<K,V> {
         try {
             synchronized (theirSemaphore) {
                 if (!cache.containsKey(key)) {
+                    cleanupIfNeeded();
                     theirSemaphore.wait(timeout);
                     while (!cache.containsKey(key) && System.currentTimeMillis() < timeAtEntry+timeout) {
                         theirSemaphore.wait(timeout/10+1);
@@ -181,16 +202,107 @@ public final class ConcurrentCache<K,V> {
     }
     
     /**
-     * Manually removes expired entries.
+     * Sets the desired maximum number of entries in the cache. This is not a
+     * strict limit, and the cache may temporarily exceed this number.
+     * 
+     * The default is zero, which means "no limit".
      */
-    public void cleanup() {
-        final long now = System.currentTimeMillis();
-        //for (Map.Entry<K,InternalEntry<V>> mapEntry : cache.entrySet()) {
-        final Iterator<Map.Entry<K,InternalEntry<V>>> iter = cache.entrySet().iterator();
-        while (iter.hasNext()) {
-            final Map.Entry<K,InternalEntry<V>> mapEntry = iter.next();
-            if (mapEntry.getValue().expire <= now) {
-                iter.remove();
+    public void setMaxEntries(long maxEntries) {
+        this.maxEntries = maxEntries;
+    }
+    
+    /** @see setMaxEntries */
+    public long getMaxEntries() {
+        return maxEntries;
+    }
+    
+    /**
+     * Sets the minimum time in milliseconds between two cleanup runs.
+     * 
+     * The default is 1000 (= 1 second).
+     */
+    public void setCleanupInterval(long milliseconds) {
+        cleanupInterval = milliseconds;
+    }
+    
+    /** @see setCleanupInterval */
+    public long getCleanupInterval() {
+        return cleanupInterval;
+    }
+    
+    private void cleanupIfNeeded() {
+        if (maxEntries != 0 && numEntries.get() > maxEntries) {
+            cleanup();
+        }
+    }
+    
+    private void cleanupIfHighlyNeeded() {
+        // More than 1.5 times the limit 
+        if (maxEntries != 0 && 2*numEntries.get() > 3*maxEntries) {
+            cleanup();
+        }
+    }
+    
+    /** Used internally for testing. */
+    void checkNumberOfEntries(long min, long max) {
+        long a = numEntries.get();
+        long b = cache.size();
+        if (a != b) {
+            throw new IllegalStateException("cache.size() and numEntries does not match ("+a+" and "+b+")");
+        }
+        if (a < min) {
+            throw new IllegalStateException("number of entries ("+a+") is less than minimum ("+min+").");
+        }
+        if (a > max) {
+            throw new IllegalStateException("number of entries ("+a+") is greater than maximum ("+max+").");
+        }
+    }
+    
+    /**
+     * Removes expired entries, and randomly selected entries that have not been used since the last call.
+     */
+    private void cleanup() {
+        final long startTime = System.currentTimeMillis();
+        if (startTime < lastCleanup+cleanupInterval || !isCleaning.tryLock()) {
+            return;
+        }
+        try {
+            final float ratioToRemove;
+            final Random random;
+            if (maxEntries == 0) {
+                ratioToRemove = 0;
+                random = null;
+            } else {
+                // Remove a bit extra
+                ratioToRemove = Math.max(0.0F, 1.0F-0.8F*(float)maxEntries/(float)numEntries.get());
+                
+                // Remove items that have not been accessed since they were last marked as "pending removal"
+                for (K key : pendingRemoval.keySet()) {
+                    cache.remove(key);
+                    numEntries.decrementAndGet();
+                }
+                pendingRemoval.clear();
+                random = new Random(System.nanoTime());
+            }
+            
+            final long now = System.currentTimeMillis();
+            final Iterator<Map.Entry<K,InternalEntry<V>>> iter = cache.entrySet().iterator();
+            while (iter.hasNext()) {
+                final Map.Entry<K,InternalEntry<V>> mapEntry = iter.next();
+                if (mapEntry.getValue().expire <= now) {
+                    iter.remove();
+                    numEntries.decrementAndGet();
+                } else if (maxEntries != 0 && random.nextFloat() < ratioToRemove) {
+                    pendingRemoval.put(mapEntry.getKey(), Boolean.TRUE);
+                }
+            }
+        } finally {
+            isCleaning.unlock();
+            
+            final long endTime = System.currentTimeMillis();
+            lastCleanup = endTime;
+            if (log.isDebugEnabled()) {
+                log.debug("Clean up took "+(endTime - startTime)+" ms");
             }
         }
     }
@@ -200,6 +312,9 @@ public final class ConcurrentCache<K,V> {
      */
     public void clear() {
         cache.clear();
+        numEntries.set(0);
+        pendingRemoval.clear();
+        lastCleanup = 0;
     }
     
 }
