@@ -1,6 +1,16 @@
     <project name="jboss" basedir=".." default="jee:deploy" xmlns:jboss="jboss">
 	<property environment="env"/>
 
+    <!-- ============================================================================================ -->
+    <!-- We replace "\" with "/" if OS is windows and set the new path to appserver.home.win variable -->	
+    <!-- ============================================================================================ -->
+    <pathconvert property="appserver.home.win" targetos="windows">
+     	<path path="${appserver.home}"/>
+     	<filtermapper>
+     		<replacestring from="\" to="/"/>
+     	</filtermapper>		
+    </pathconvert> 			
+    	
     <!--For passing commands in jboss-cli.bat we have to escape double quotes -->
     <condition property="quot" value="\&quot;" else="&quot;">
         <os family="windows" />
@@ -9,13 +19,18 @@
     <!-- ============ -->
     <!-- Detecting OS -->
     <!-- ============ -->
-	<condition property="isWindows">
-		<os family="windows" />
-	</condition>
-	<condition property="isLinux">
-		<os family="unix" />
-	</condition>
-
+     <condition property="isWindows">
+ 	<os family="windows" />
+     </condition>
+     <condition property="isLinux">
+ 	<os family="unix" />
+     </condition>
+ 
+     <!-- In case of windows use the path defined in appserver.home.win -->
+     <condition property="appserverhome" value="${appserver.home.win}" else="${appserver.home}">
+         <os family="windows"/>
+     </condition>
+    	
     <condition property="tlsprotocol" value="TLSv1" else="TLSv1,TLSv1.1,TLSv1.2">
         <equals arg1="${ant.java.version}" arg2="1.6" />
     </condition>
@@ -35,7 +50,7 @@
     <target name="set-paths-jboss7" if="jboss7">
         <!-- Paths for JBoss 7 -->
         <property name="jboss7.mode" value="standalone"/>
-	    <property name="jboss.server.home.dir" value="${appserver.home}/${jboss7.mode}"/>
+    	<property name="jboss.server.home.dir" value="${appserverhome}/${jboss7.mode}"/>
         <property name="jboss.conf.dir" value="${jboss.server.home.dir}/configuration"/>
 	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deployments"/>
 	    <property name="jboss.farm.dir" value="${jboss.deploy.dir}"/> <!-- TODO -->
@@ -47,7 +62,7 @@
         <!-- Paths for JBoss 4, 5 and 6 -->
         <property name="jboss.config" value="default"/>
         <property name="jboss.farm.name" value="deploy"/>
-	    <property name="jboss.server.home.dir" value="${appserver.home}/server/${jboss.config}"/>
+    	<property name="jboss.server.home.dir" value="${appserverhome}/server/${jboss.config}"/>
         <property name="jboss.conf.dir" value="${jboss.server.home.dir}/conf"/>
 	    <property name="jboss.farm.dir" value="${jboss.server.home.dir}/${jboss.farm.name}"/>
 	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deploy"/>
@@ -63,15 +78,15 @@
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
             -->
-		<fail message="Please set the property 'appserver.home' for this project" unless="appserver.home"/>
+		<fail message="Please set the property 'appserver.home' for this project" unless="appserverhome"/>
 		<!-- jboss-j2ee.jar is JBoss 4.2.x, jboss-appclient.jar is JBoss 5.x and 6.x, modules.xml is JBoss 7.x. Available does not touch the property
 		     if the file does not exist, which is why this works. -->
-		<available file="${appserver.home}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
-		<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.home.valid"/>
-        <available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
-		<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
-		<fail message="'appserver.home' (${appserver.home}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
-		<echo message="Using appserver.home : ${appserver.home}"/>
+    <available file="${appserverhome}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
+    <available file="${appserverhome}/client/jboss-appclient.jar" property="appserver.home.valid"/>
+	<available file="${appserverhome}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
+    <available file="${appserverhome}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
+    <fail message="'appserver.home' (${appserverhome}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
+    <echo message="Using appserver.home : ${appserverhome}"/>
 	</target>
 
 	<target name="detect-tomcatdir" depends="set-paths">
@@ -480,9 +495,9 @@
 	</target>
 
 	<target name="jee:run" description="Start the JEE server">
-		<jee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
+		<jee-server classname="org.jboss.Main" classpath="${appserverhome}/bin/run.jar">
 			<args>
-				<jvmarg value="-Djboss.home=${appserver.home}"/>
+				<jvmarg value="-Djboss.home=${appserverhome}"/>jb
 			</args>
 		</jee-server>
 		<!--
@@ -559,9 +574,9 @@
                   </filterchain>
               </loadresource>
             <echo message="@{arg}"/>
-            <exec executable="${appserver.home}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}">
-                    <arg value="-c" />
-                    <arg value="--command=${arg_escaped}" />
+          	<exec executable="${appserverhome}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}">
+          		<arg value="-c" />
+                <arg value="--command=${arg_escaped}" />
             </exec>
           </sequential>
         </macrodef>
@@ -581,7 +596,7 @@
                     </tokenfilter>
                 </filterchain>
             </loadresource>
-                <exec executable="${appserver.home}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}" outputproperty="admsilent.throwaway.output" resultproperty="@{resultproperty}">
+            	<exec executable="${appserverhome}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}" outputproperty="admsilent.throwaway.output" resultproperty="@{resultproperty}">
                     <arg value="-c" />
                     <arg value="--command=${arg_escaped}" />
                 </exec>
@@ -604,7 +619,7 @@
                 </filterchain>
             </loadresource>
                 <echo message="@{arg_escaped}"/>
-                <exec executable="${appserver.home}/bin/${jbosscliexe}" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
+            	<exec executable="${appserverhome}/bin/${jbosscliexe}" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
                     <arg value="-c" />
                     <arg value="--command=${arg_escaped}" />
                 </exec>
