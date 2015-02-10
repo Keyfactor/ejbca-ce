@@ -340,62 +340,59 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     * Method that calculates the available cas to an end entity. Used in add/edit end entity pages. It calculates a set of available CAs as an
-     * intersection of: - The administrators authorized CAs - The end entity profiles available CAs - The certificate profiles available CAs.
+     * Method that calculates the available CAs to an end entity. Used in add/edit end entity pages. It calculates a set of available CAs as an
+     * intersection of: - The administrator's authorized CAs, the end entity profile's available CAs and the certificate profile's available CAs.
      * 
-     * @param The id of end entity profile to retrieve set form.
-     * @returns a HashMap of CertificateProfileId to Collection. It returns a set of avialable CAs per certificate profile.
+     * @param The id of end entity profile to retrieve map from.
+     * @returns a HashMap of CertificateProfileIds mapped to Lists if CA IDs. It returns a set of available CAs per end entity profile.
      */
 
-    public HashMap<Integer, List<Integer>> getEndEntityAvailableCAs(int endentityprofileid) {
+    public Map<Integer, List<Integer>> getEndEntityAvailableCAs(int endentityprofileid) {
         if (endentityavailablecas == null) {
-            // Build new structure.
-            Collection<Integer> authorizedcas = getAuthorizedCAIds();
-
-            HashMap<Integer, CertificateProfile> certproftemp = new HashMap<Integer, CertificateProfile>();
-
             endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
-
+            // 1. Retrieve a list of all CA's the current user is authorized to
+            List<Integer> authorizedcas = getAuthorizedCAIds();
+            //Cache certificate profiles to save on database transactions
+            HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();        
+            // 2. Retrieve a list of all authorized end entity profile IDs
             for (Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator)) {
                 EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(nextendentityprofileid.intValue());
-                String[] values = endentityprofile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-                ArrayList<Integer> endentityprofileavailcas = new ArrayList<Integer>();
-                for (int i = 0; i < values.length; i++) {
-                    endentityprofileavailcas.add(Integer.valueOf(values[i]));
+                // 3. Retrieve the list of CA's available to the current end entity profile
+                String[] availableCAs = endentityprofile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+                List<Integer> casDefineInEndEntityProfile = new ArrayList<Integer>();
+                for (String profileId : availableCAs) {
+                    casDefineInEndEntityProfile.add(Integer.valueOf(profileId));
                 }
-
-                boolean endentityprofileallcas = false;
-                if (endentityprofileavailcas.contains(Integer.valueOf(SecConst.ALLCAS))) {
-                    endentityprofileallcas = true;
+                boolean allCasDefineInEndEntityProfile = false;
+                if (casDefineInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
+                    allCasDefineInEndEntityProfile = true;
                 }
-
-                values = endentityprofile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-                HashMap<Integer, List<Integer>> certificateprofilemap = new HashMap<Integer, List<Integer>>();
-                for (int i = 0; i < values.length; i++) {
-                    Integer nextcertprofileid = Integer.valueOf(values[i]);
-                    CertificateProfile certprofile = (CertificateProfile) certproftemp.get(nextcertprofileid);
+                // 4. Next retrieve all certificate profiles defined in the end entity profile
+                String[] availableCertificateProfiles = endentityprofile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
+                HashMap<Integer, List<Integer>> certificateProfileMap = new HashMap<Integer, List<Integer>>();
+                for (String certificateProfileIdString : availableCertificateProfiles) {
+                    Integer certificateProfileId = Integer.valueOf(certificateProfileIdString);
+                    CertificateProfile certprofile = (CertificateProfile) certificateProfiles.get(certificateProfileId);
                     if (certprofile == null) {
-                        certprofile = certificateProfileSession.getCertificateProfile(nextcertprofileid.intValue());
-                        certproftemp.put(nextcertprofileid, certprofile);
+                        certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId.intValue());
+                        //Cache the profile for repeated use
+                        certificateProfiles.put(certificateProfileId, certprofile);
                     }
-
-                    Collection<Integer> certprofilesavailablecas = certprofile.getAvailableCAs();
-                    if (certprofilesavailablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
-                        ArrayList<Integer> authorizedcastemp = new ArrayList<Integer>(authorizedcas);
-                        if (!endentityprofileallcas) {
-                            authorizedcastemp.retainAll(endentityprofileavailcas);
-                        }
-                        certificateprofilemap.put(nextcertprofileid, authorizedcastemp);
-                    } else {
-                        ArrayList<Integer> authorizedcastemp = new ArrayList<Integer>(authorizedcas);
-                        if (!endentityprofileallcas) {
-                            authorizedcastemp.retainAll(endentityprofileavailcas);
-                        }
-                        authorizedcastemp.retainAll(certprofilesavailablecas);
-                        certificateprofilemap.put(nextcertprofileid, authorizedcastemp);
+                    // 5. Retrieve all CAs defined in the current certificate profile
+                    Collection<Integer> casDefinedInCertificateProfile = certprofile.getAvailableCAs();
+                    // First make a clone of the full list of available CAs
+                    List<Integer> authorizedCas = new ArrayList<Integer>(authorizedcas);
+                    if (!casDefinedInCertificateProfile.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
+                        //If ANYCA wasn't defined among the list from the cert profile, only keep the intersection
+                        authorizedCas.retainAll(casDefinedInCertificateProfile);
                     }
+                    if (!allCasDefineInEndEntityProfile) {
+                        //If ALL wasn't defined in the EE profile, only keep the intersection
+                        authorizedCas.retainAll(casDefineInEndEntityProfile);
+                    }             
+                    certificateProfileMap.put(certificateProfileId, authorizedCas);
                 }
-                endentityavailablecas.put(nextendentityprofileid, certificateprofilemap);
+                endentityavailablecas.put(nextendentityprofileid, certificateProfileMap);
             }
         }
 
