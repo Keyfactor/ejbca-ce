@@ -142,13 +142,6 @@
     boolean useoldprofile = false;
     boolean usehardtokenissuers = false;
     boolean usekeyrecovery = false;
-    boolean isAuthorized = false;
-
-    try {
-        isAuthorized = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_RAFUNCTIONALITY + "/"
-                + AccessRulesConstants.VIEW_END_ENTITY);
-    } catch (AuthorizationDeniedException ade) {
-    }
 
     EndEntityProfile oldprofile = null;
     String addedusername = "";
@@ -737,7 +730,7 @@
         if (value != null && !value.equals(""))
             lastselectedhardtokenissuer = Integer.parseInt(value);
     }
-    ArrayList[] tokenissuers = null;
+    ArrayList<Integer>[] tokenissuers = null;
 
     usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
     usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER, 0);
@@ -745,14 +738,13 @@
         tokenissuers = new ArrayList[availabletokens.length];
         for (int i = 0; i < availabletokens.length; i++) {
             if (Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT) {
-                tokenissuers[i] = new ArrayList();
+                tokenissuers[i] = new ArrayList<Integer>();
                 for (int j = 0; j < availablehardtokenissuers.length; j++) {
                     HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(Integer
                             .parseInt(availablehardtokenissuers[j]));
                     if (issuerdata != null) {
-                        Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
-                        while (iter.hasNext()) {
-                            if (Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
+                        for(Integer value : issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles()) {                        
+                            if (Integer.parseInt(availabletokens[i]) == value.intValue())
                                 tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
                         }
                     }
@@ -761,25 +753,8 @@
         }
     }
 
-    Map availablecas = null;
+    Map<Integer, List<Integer>> availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
     Collection authcas = null;
-
-    if (isAuthorized) {
-        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
-            authcas = ejbcawebbean.getAuthorizedCAIds();
-        } else {
-            authcas = profile.getAvailableCAs();
-            // If we have selected 'Any CA' we will display all authorized CAs (wich should be all for a superadmin)
-            if (authcas.contains(String.valueOf(SecConst.ALLCAS))) {
-                authcas = ejbcawebbean.getAuthorizedCAIds();
-            }
-            if ((lastselectedca == null) || lastselectedca.equals("")) {
-                lastselectedca = String.valueOf(profile.getDefaultCA());
-            }
-        }
-    } else {
-        availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
-    }
 
     pageContext.setAttribute("useradded", useradded);
     pageContext.setAttribute("profile", profile);
@@ -870,51 +845,7 @@ function isKeyRecoveryPossible(){
 }
 
    <% } %>
-
-
-  
-
-  <% if(isAuthorized){ %>
-  var availablecas = new Array(<%= authcas.size()%>);
- 
-  var CANAME       = 0;
-  var CAID         = 1;
-<%
-      Iterator iter = authcas.iterator();
-      int i = 0;
-      while(iter.hasNext()){
-        Object next = iter.next();
-        Integer nextca = null;   
-        if(next instanceof String)
-           nextca =  Integer.valueOf((String) next);
-        else
-           nextca = (Integer) next;
-    %> 
-    
-    availablecas[<%=i%>] = new Array(2);
-    availablecas[<%=i%>][CANAME] = "<c:out value="<%= caidtonamemap.get(nextca) %>"/>";
-    availablecas[<%=i%>][CAID] = <%= nextca.intValue() %>;
-    
-   <%   i++; 
-      } %>
-
-function fillCAField(){
-   var caselect   =  document.adduser.<%=SELECT_CA%>; 
-   var numofcas = caselect.length;
-   for( i=numofcas-1; i >= 0; i-- ){
-       caselect.options[i]=null;
-    }   
-
-   for( i=0; i < availablecas.length; i ++){
-     caselect.options[i]=new Option(availablecas[i][CANAME],
-                                     availablecas[i][CAID]);    
-     if(availablecas[i][CAID] == "<%= lastselectedca %>")
-       caselect.options.selectedIndex=i;
-   }
-}
-
- <% } else { %>
-
+   
   var certprofileids = new Array(<%= availablecas.keySet().size()%>);
   var CERTPROFID   = 0;
   var AVAILABLECAS = 1;
@@ -923,25 +854,25 @@ function fillCAField(){
   var CAID         = 1;
 <%
   Iterator iter = availablecas.keySet().iterator();
-  int i = 0;
+  int x = 0;
   while(iter.hasNext()){ 
     Integer next = (Integer) iter.next();
     Collection nextcaset = (Collection) availablecas.get(next);
   %>
-    certprofileids[<%=i%>] = new Array(2);
-    certprofileids[<%=i%>][CERTPROFID] = <%= next.intValue() %> ;
-    certprofileids[<%=i%>][AVAILABLECAS] = new Array(<%= nextcaset.size() %>);
-<% Iterator iter2 = nextcaset.iterator();
-   int j = 0;
-   while(iter2.hasNext()){
-     Integer nextca = (Integer) iter2.next(); %>
-    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>] = new Array(2);
-    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      
-    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>][CAID] = <%= nextca.intValue() %>;
-  <% j++ ;
-   }
-   i++;
- } %>     
+    certprofileids[<%=x%>] = new Array(2);
+    certprofileids[<%=x%>][CERTPROFID] = <%= next.intValue() %> ;
+    certprofileids[<%=x%>][AVAILABLECAS] = new Array(<%= nextcaset.size() %>);
+<%  Iterator iter2 = nextcaset.iterator();
+    int y = 0;
+    while(iter2.hasNext()){
+        Integer nextca = (Integer) iter2.next(); %>
+        certprofileids[<%=x%>][AVAILABLECAS][<%=y%>] = new Array(2);
+        certprofileids[<%=x%>][AVAILABLECAS][<%=y%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      
+        certprofileids[<%=x%>][AVAILABLECAS][<%=y%>][CAID] = <%= nextca.intValue() %>;
+ <%     y++ ;
+    }
+    x++;
+  } %>     
 
 function fillCAField(){
    var selcertprof = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options.selectedIndex; 
@@ -966,8 +897,6 @@ function fillCAField(){
       }
     }
 }
-
-  <% } %> 
 
 function checkallfields(){
     var illegalfields = 0;

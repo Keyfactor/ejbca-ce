@@ -119,16 +119,9 @@
     boolean usehardtokenissuers = false;
     boolean usekeyrecovery = false;
 
-    boolean issuperadministrator = false;
-    try {
-        issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_RAFUNCTIONALITY + "/"
-                + AccessRulesConstants.VIEW_END_ENTITY);
-    } catch (AuthorizationDeniedException ade) {
-    }
-
     String approvalmessage = null;
 
-    Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+    Map<Integer, String> caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 
     RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -138,20 +131,14 @@
             userdata = rabean.findUserForEdit(username);
             if (userdata != null) {
                 notauthorized = false;
-                profileid = userdata.getEndEntityProfileId();
-                if (!issuperadministrator && profileid == SecConst.EMPTY_ENDENTITYPROFILE)
-                    profile = null;
-                else
-                    profile = rabean.getEndEntityProfile(profileid);
-
+                profileid = userdata.getEndEntityProfileId();    
+                profile = rabean.getEndEntityProfile(profileid);
                 if (request.getParameter(ACTION) != null) {
                     if (request.getParameter(ACTION).equals(ACTION_EDITUSER)) {
                         if (request.getParameter(BUTTON_SAVE) != null) {
                             UserView newuser = new UserView();
-
                             newuser.setEndEntityProfileId(profileid);
                             newuser.setUsername(username);
-
                             String value = request.getParameter(TEXTFIELD_PASSWORD);
                             if (value != null) {
                                 value = value.trim();
@@ -159,7 +146,6 @@
                                     newuser.setPassword(value);
                                 }
                             }
-
                             value = request.getParameter(CHECKBOX_REGENERATEPASSWD);
                             if (value != null) {
                                 if (value.equals(CHECKBOX_VALUE)) {
@@ -168,14 +154,12 @@
                                     newuser.setPassword(null);
                                 }
                             }
-
                             value = request.getParameter(SELECT_PASSWORD);
                             if (value != null) {
                                 if (!value.equals("")) {
                                     newuser.setPassword(value);
                                 }
                             }
-
                             value = request.getParameter(CHECKBOX_CLEARTEXTPASSWORD);
                             if (value != null) {
                                 if (value.equals(CHECKBOX_VALUE)) {
@@ -184,7 +168,6 @@
                                     newuser.setClearTextPassword(false);
                                 }
                             }
-
                             ExtendedInformation ei = newuser.getExtendedInformation();
                             if (ei == null) {
                                 ei = new ExtendedInformation();
@@ -194,7 +177,6 @@
                             if (userei != null) {
                                 ei.setRemainingLoginAttempts(userei.getRemainingLoginAttempts());
                             }
-
                             value = request.getParameter(RADIO_MAXFAILEDLOGINS);
                             if (RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED.equals(value)) {
                                 value = "-1";
@@ -205,7 +187,6 @@
                                 ei.setMaxLoginAttempts(Integer.parseInt(value));
                                 newuser.setExtendedInformation(ei);
                             }
-
                             value = request.getParameter(TEXTAREA_EXTENSIONDATA);
                             if (value != null) {
                                 // Save the new value if the profile allows it
@@ -213,7 +194,6 @@
                                     editendentitybean.setExtensionData(value);
                                 }
                             }
-
                             value = request.getParameter(CHECKBOX_RESETLOGINATTEMPTS);
                             if (value != null) {
                                 if (value.equals(CHECKBOX_VALUE)) {
@@ -221,7 +201,6 @@
                                     newuser.setExtendedInformation(ei);
                                 }
                             }
-
                             value = request.getParameter(TEXTFIELD_EMAIL);
                             if (value == null || value.trim().equals("")) {
                                 newuser.setEmail("");
@@ -235,7 +214,6 @@
                                             newuser.setEmail(value + "@" + emaildomain);
                                         }
                                     }
-
                                     emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
                                     if (emaildomain != null) {
                                         emaildomain = emaildomain.trim();
@@ -245,24 +223,24 @@
                                     }
                                 }
                             }
-
                             value = request.getParameter(TEXTFIELD_CARDNUMBER);
                             if (value != null) {
                                 value = value.trim();
                                 newuser.setCardNumber(value);
                             }
-
                             String subjectdn = "";
                             int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
                             for (int i = 0; i < numberofsubjectdnfields; i++) {
                                 value = null;
                                 fielddata = profile.getSubjectDNFieldsInOrder(i);
-                                if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS))
+                                if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)){
                                     value = request.getParameter(TEXTFIELD_SUBJECTDN + i);
-                                else {
-                                    if (request.getParameter(CHECKBOX_SUBJECTDN + i) != null)
-                                        if (request.getParameter(CHECKBOX_SUBJECTDN + i).equals(CHECKBOX_VALUE))
+                                } else {
+                                    if (request.getParameter(CHECKBOX_SUBJECTDN + i) != null) {
+                                        if (request.getParameter(CHECKBOX_SUBJECTDN + i).equals(CHECKBOX_VALUE)) {
                                             value = newuser.getEmail();
+                                        }
+                                    }
                                 }
                                 if (value != null) {
                                     value = value.trim();
@@ -275,11 +253,11 @@
                                     } else {
                                         dnPart = field;
                                     }
-                                    if (subjectdn.equals(""))
+                                    if (subjectdn.equals("")) {
                                         subjectdn = dnPart;
-                                    else
+                                    } else {
                                         subjectdn += ", " + dnPart;
-
+                                    }
                                 }
                                 value = request.getParameter(SELECT_SUBJECTDN + i);
                                 if (value != null) {
@@ -287,10 +265,11 @@
                                         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(
                                                 DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
                                                 DNFieldExtractor.TYPE_SUBJECTDN) + value);
-                                        if (subjectdn.equals(""))
-                                            subjectdn = value;
-                                        else
+                                        if (subjectdn.equals("")) {
+                                            subjectdn = value;                                    
+                                        } else {
                                             subjectdn += ", " + value;
+                                        }
                                     }
                                 }
                             }
@@ -335,10 +314,11 @@
                                         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(
                                                 DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
                                                 DNFieldExtractor.TYPE_SUBJECTALTNAME) + value);
-                                        if (subjectaltname.equals(""))
+                                        if (subjectaltname.equals("")) {
                                             subjectaltname = value;
-                                        else
+                                        } else {
                                             subjectaltname += ", " + value;
+                                        }
                                     }
                                 }
                                 // We have to do almost the same again they may have select drop-downs instead of textfields
@@ -359,10 +339,11 @@
                                         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(
                                                 DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
                                                 DNFieldExtractor.TYPE_SUBJECTALTNAME) + value);
-                                        if (subjectaltname.equals(""))
+                                        if (subjectaltname.equals("")) {
                                             subjectaltname = value;
-                                        else
+                                        } else {
                                             subjectaltname += ", " + value;
+                                        }
                                     }
                                 }
                             }
@@ -380,11 +361,11 @@
                                         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(
                                                 DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
                                                 DNFieldExtractor.TYPE_SUBJECTDIRATTR) + value);
-                                        if (subjectdirattr.equals(""))
+                                        if (subjectdirattr.equals("")) {
                                             subjectdirattr = value;
-                                        else
+                                        } else {
                                             subjectdirattr += ", " + value;
-
+                                        }
                                     }
                                 }
                                 value = request.getParameter(SELECT_SUBJECTDIRATTR + i);
@@ -393,16 +374,15 @@
                                         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(
                                                 DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
                                                 DNFieldExtractor.TYPE_SUBJECTDIRATTR) + value);
-                                        if (subjectdirattr.equals(""))
+                                        if (subjectdirattr.equals("")) {
                                             subjectdirattr = value;
-                                        else
+                                        }  else {
                                             subjectdirattr += ", " + value;
-
+                                        }
                                     }
                                 }
                             }
                             newuser.setSubjectDirAttributes(subjectdirattr);
-
                             value = request.getParameter(SELECT_ALLOWEDREQUESTS);
                             if (value != null) {
                                 ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, value);
@@ -435,21 +415,17 @@
 
                             value = request.getParameter(SELECT_CERTIFICATEPROFILE);
                             newuser.setCertificateProfileId(Integer.parseInt(value));
-
                             value = request.getParameter(SELECT_CA);
                             newuser.setCAId(Integer.parseInt(value));
-
                             value = request.getParameter(SELECT_TOKEN);
                             int tokentype = Integer.parseInt(value);
                             newuser.setTokenType(Integer.parseInt(value));
-
                             int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
                             if (tokentype > SecConst.TOKEN_SOFT && request.getParameter(SELECT_HARDTOKENISSUER) != null) {
                                 value = request.getParameter(SELECT_HARDTOKENISSUER);
                                 hardtokenissuer = Integer.parseInt(value);
                             }
                             newuser.setHardTokenIssuerId(hardtokenissuer);
-
                             // Issuance revocation reason, what state a newly issued certificate will have
                             value = request.getParameter(SELECT_ISSUANCEREVOCATIONREASON);
                             // If it's not modifyable don't even try to modify it
@@ -461,7 +437,6 @@
                                 ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, value);
                                 newuser.setExtendedInformation(ei);
                             }
-
                             value = request.getParameter(TEXTFIELD_STARTTIME);
                             if (value != null) {
                                 value = value.trim();
@@ -544,11 +519,11 @@
     int[] tokenids = RAInterfaceBean.tokenids;
     String[] availabletokens = null;
     String[] availablehardtokenissuers = null;
-    ArrayList[] tokenissuers = null;
+    ArrayList<Integer>[] tokenissuers = null;
 
     if (userdata != null && profile != null) {
         if (globalconfiguration.getIssueHardwareTokens()) {
-            TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
+            TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
 
             tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
             tokenids = new int[tokentexts.length];
@@ -556,7 +531,7 @@
                 tokentexts[i] = RAInterfaceBean.tokentexts[i];
                 tokenids[i] = RAInterfaceBean.tokenids[i];
             }
-            Iterator iter = hardtokenprofiles.keySet().iterator();
+            Iterator<String> iter = hardtokenprofiles.keySet().iterator();
             int index = 0;
             while (iter.hasNext()) {
                 String name = (String) iter.next();
@@ -575,12 +550,12 @@
             tokenissuers = new ArrayList[availabletokens.length];
             for (int i = 0; i < availabletokens.length; i++) {
                 if (Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT) {
-                    tokenissuers[i] = new ArrayList();
+                    tokenissuers[i] = new ArrayList<Integer>();
                     for (int j = 0; j < availablehardtokenissuers.length; j++) {
                         HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(Integer
                                 .parseInt(availablehardtokenissuers[j]));
                         if (issuerdata != null) {
-                            Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
+                            Iterator<Integer> iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
                             while (iter.hasNext()) {
                                 if (Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
                                     tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
@@ -592,27 +567,7 @@
         }
     }
 
-    Map availablecas = null;
-    Collection authcas = null;
-
-    if (issuperadministrator) {
-        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
-            authcas = ejbcawebbean.getAuthorizedCAIds();
-        } else {
-            if (profile != null) {
-                authcas = profile.getAvailableCAs();
-            } else {
-                authcas = new ArrayList();
-            }
-            // If we have selected 'Any CA' we will display all authorized CAs (wich should be all for a superadmin)
-            if (authcas.contains(String.valueOf(SecConst.ALLCAS))) {
-                authcas = ejbcawebbean.getAuthorizedCAIds();
-            }
-        }
-    } else {
-        availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
-    }
-
+    Map<Integer, List<Integer>> availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
     editendentitybean.setExtendedInformation(userdata.getExtendedInformation());
     pageContext.setAttribute("profile", profile);
 
@@ -704,48 +659,6 @@ function isKeyRecoveryPossible(){
 
    <% } %>
 
-  <% if(issuperadministrator){ %>
-  var availablecas = new Array(<%= authcas.size()%>);
- 
-  var CANAME       = 0;
-  var CAID         = 1;
-<%
-      Iterator iter = authcas.iterator();
-      int i = 0;
-      while(iter.hasNext()){
-        Object next = iter.next();
-        Integer nextca = null;   
-        if(next instanceof String)
-           nextca =  Integer.valueOf((String) next);
-        else
-           nextca = (Integer) next;
-    %>
-    
-    availablecas[<%=i%>] = new Array(2);
-    availablecas[<%=i%>][CANAME] = "<c:out value="<%= caidtonamemap.get(nextca) %>"/>";
-    availablecas[<%=i%>][CAID] = <%= nextca.intValue() %>;
-    
-   <%   i++; 
-      } %>
-
-function fillCAField(){
-   var caselect   =  document.edituser.<%=SELECT_CA%>; 
-
-   var numofcas = caselect.length;
-   for( i=numofcas-1; i >= 0; i-- ){
-       caselect.options[i]=null;
-    }   
-
-   for( i=0; i < availablecas.length; i ++){
-     caselect.options[i]=new Option(availablecas[i][CANAME],
-                                     availablecas[i][CAID]);    
-     if(availablecas[i][CAID] == "<%= userdata.getCAId() %>")
-       caselect.options.selectedIndex=i;
-   }
-}
-
- <% } else { %>
-
   var certprofileids = new Array(<%= availablecas.keySet().size()%>);
   var CERTPROFID   = 0;
   var AVAILABLECAS = 1;
@@ -753,25 +666,25 @@ function fillCAField(){
   var CANAME       = 0;
   var CAID         = 1;
 <%
-  Iterator iter = availablecas.keySet().iterator();
-  int i = 0;
+  Iterator<Integer> iter = availablecas.keySet().iterator();
+  int x = 0;
   while(iter.hasNext()){ 
-    Integer next = (Integer) iter.next();
-    Collection nextcaset = (Collection) availablecas.get(next);
+    Integer next = iter.next();
+    List<Integer> nextcaset = availablecas.get(next);
   %>
-    certprofileids[<%=i%>] = new Array(2);
-    certprofileids[<%=i%>][CERTPROFID] = <%= next.intValue() %> ;
-    certprofileids[<%=i%>][AVAILABLECAS] = new Array(<%= nextcaset.size() %>);
-<% Iterator iter2 = nextcaset.iterator();
-   int j = 0;
+    certprofileids[<%=x%>] = new Array(2);
+    certprofileids[<%=x%>][CERTPROFID] = <%= next.intValue() %> ;
+    certprofileids[<%=x%>][AVAILABLECAS] = new Array(<%= nextcaset.size() %>);
+<% Iterator<Integer> iter2 = nextcaset.iterator();
+   int y = 0;
    while(iter2.hasNext()){
-     Integer nextca = (Integer) iter2.next(); %>
-    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>] = new Array(2);
-    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      
-    certprofileids[<%=i%>][AVAILABLECAS][<%=j%>][CAID] = <%= nextca.intValue() %>;
-  <% j++ ;
+     Integer nextca = iter2.next(); %>
+    certprofileids[<%=x%>][AVAILABLECAS][<%=y%>] = new Array(2);
+    certprofileids[<%=x%>][AVAILABLECAS][<%=y%>][CANAME] = "<%= caidtonamemap.get(nextca) %>";      
+    certprofileids[<%=x%>][AVAILABLECAS][<%=y%>][CAID] = <%= nextca.intValue() %>;
+  <% y++ ;
    }
-   i++;
+   x++;
  } %>     
 
 function fillCAField(){
@@ -798,7 +711,6 @@ function fillCAField(){
     }
 }
 
-  <% } %> 
 
 function checkallfields(){
     var illegalfields = 0;
