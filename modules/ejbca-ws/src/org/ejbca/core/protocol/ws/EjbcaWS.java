@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -44,7 +43,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -111,24 +109,21 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.token.BaseCryptoToken;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.token.p11.exception.PKCS11LibraryFileNotFoundException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EnterpriseEditionWSBridgeSessionLocal;
 import org.ejbca.core.ejb.ServiceLocatorException;
+import org.ejbca.core.ejb.UnsupportedMethodException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -280,6 +275,8 @@ public class EjbcaWS implements IEjbcaWS {
     private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationSession;
+    @EJB 
+    private EnterpriseEditionWSBridgeSessionLocal enterpriseWSBridgeSession;
 
 	/** The maximum number of rows returned in array responses. */
 	private static final int MAXNUMBEROFROWS = 100;
@@ -492,62 +489,15 @@ public class EjbcaWS implements IEjbcaWS {
 	@Override
 	public void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
             String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
-            HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException  {                    
-                    
-        final String className;
-        final Properties cryptoTokenProperties = new Properties();
-        if (SoftCryptoToken.class.getSimpleName().equals(tokenType)) {
-            className = SoftCryptoToken.class.getName();
-            cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(exportKey));
-            cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
-        } else if (PKCS11CryptoToken.class.getSimpleName().equals(tokenType)) {
-            className = PKCS11CryptoToken.class.getName();
-            // Parse library file
-            if(null == pkcs11LibFilename || !new File(pkcs11LibFilename).exists()) {
-                throw new PKCS11LibraryFileNotFoundException("Cannot find the specified PKCS11 library file: " + (pkcs11LibFilename==null? "none" : pkcs11LibFilename) );
-            }
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, pkcs11LibFilename);    
-            if(pkcs11SlotPropertyValue == null) {
-                throw new PKCS11SlotDataInvalidException("pkcs11SlotPropertyValue '" + pkcs11SlotPropertyValue + "' for PKCS#11 tokens is not specified.");
-            }
-            
-            if (pkcs11SlotLabelType == null) {
-                throw new PKCS11SlotDataInvalidException("pkcs11SlotLabelType '" + pkcs11SlotLabelType + "' for PKCS#11 tokens is not specified.");
-            }
-            Pkcs11SlotLabelType labelType = Pkcs11SlotLabelType.getFromKey(pkcs11SlotLabelType);
-            if(labelType == null) {
-                throw new PKCS11SlotDataInvalidException(pkcs11SlotLabelType + " was not a valid slot reference type.");
-            }
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, pkcs11SlotPropertyValue);
-            //If an index was given, accept just numbers as well
-            if (labelType.isEqual(Pkcs11SlotLabelType.SLOT_INDEX)) {
-                if (pkcs11SlotPropertyValue.charAt(0) != 'i') {
-                    pkcs11SlotPropertyValue = "i" + pkcs11SlotPropertyValue;
-                }
-            }
-            if (!labelType.validate(pkcs11SlotPropertyValue)) {
-                throw new PKCS11SlotDataInvalidException("Invalid value " + pkcs11SlotPropertyValue + " given for slot type " + labelType.getDescription());
-            } else {
-                cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, labelType.getKey());
-            }
-            // Set attribute file to null until we implement an alternative way to read the attributes. 
-            // For now, we let the attributes have the default values only
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, null);
-        } else {
-            throw new UnsupportedCryptoTokenTypeException("Invalid crypto token type: " + tokenType + ". Valid types: SoftCryptoToken and PKCS11CryptoToken");
-        }
-        
-        final char[] authenticationCode = StringTools.passwordDecryption(activationPin, "CryptoToken pin").toCharArray();;
-        if (autoActivate) {
-            BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(authenticationCode), true);
-        }
-        try {
-            EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
-                    certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
-                    hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-            final Integer cryptoTokenIdNew = cryptoTokenManagementSession.createCryptoToken(ejbhelper.getAdmin(), tokenName, className,
-                    cryptoTokenProperties, null, authenticationCode);
-            log.info("CryptoToken '" + tokenName + "' with id '" + cryptoTokenIdNew + "' was created successfully.");
+            HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException  {
+	    
+	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
+                certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+                hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	    
+	    try {
+	        enterpriseWSBridgeSession.createCryptoToken(ejbhelper.getAdmin(), tokenName, tokenType, activationPin, autoActivate, 
+	            exportKey, pkcs11LibFilename, pkcs11SlotLabelType, pkcs11SlotPropertyValue, PKCS11AttributeData);
         } catch (AuthorizationDeniedException e) {
             TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;
@@ -560,7 +510,9 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
         } catch (NoSuchSlotException e) {
             throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-        }   
+        } catch (PKCS11LibraryFileNotFoundException e) {
+            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+        }
 	}
 	
 	@Override
@@ -569,10 +521,8 @@ public class EjbcaWS implements IEjbcaWS {
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-	    Integer ctokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
 	    try {
-	        cryptoTokenManagementSession.createKeyPair(ejbhelper.getAdmin(), ctokenId, keyPairAlias, keySpecification);
-	        log.info("Key pair generated successfully.");
+	        enterpriseWSBridgeSession.generateCryptoTokenKeys(ejbhelper.getAdmin(), cryptoTokenName, keyPairAlias, keySpecification);
 	    } catch (AuthorizationDeniedException e) {
 	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
 	        throw e;

@@ -80,8 +80,7 @@ public class ErrorCode implements Serializable {
     private static final String _CERTIFICATE_IMPORT = "CERTIFICATE_IMPORT"; // Failure during import of a certificate
     private static final String _NAMECONSTRAINT_VIOLATION = "NAMECONSTRAINT_VIOLATION"; // End-entity does not satisfy name constraints of CA
     private static final String _UNKNOWN_PROFILE_TYPE = "UNKNOWN_PROFILE_TYPE"; // The profile type is neither end entity profile nor certificate profile
-    private static final String _PKCS11_LIBRARY_NOT_FOUND = "PKCS11_LIBRARY_NOT_FOUND"; // The specified pkcs11 library file was not found
-    private static final String _PKCS11_SLOT_DATA_INVALID = "PKCS11_SLOT_DATA_INVALID"; // The specified pkcs11 slot a property value is invalid
+    private static final String _UNSUPPORTED_METHOD = "UNSUPPORTED_METHOD"; // Typically used to block access to enterprise-only features
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -176,8 +175,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode CERTIFICATE_IMPORT = new ErrorCode(_CERTIFICATE_IMPORT);
     public static final ErrorCode NAMECONSTRAINT_VIOLATION = new ErrorCode(_NAMECONSTRAINT_VIOLATION);
     public static final ErrorCode UNKNOWN_PROFILE_TYPE = new ErrorCode(_UNKNOWN_PROFILE_TYPE);
-    public static final ErrorCode PKCS11_LIBRARY_NOT_FOUND = new ErrorCode(_PKCS11_LIBRARY_NOT_FOUND);
-    public static final ErrorCode PKCS11_SLOT_DATA_INVALID = new ErrorCode(_PKCS11_SLOT_DATA_INVALID);
+    public static final ErrorCode UNSUPPORTED_METHOD = new ErrorCode(_UNSUPPORTED_METHOD);
 
 
     /** Get the internal error code. */

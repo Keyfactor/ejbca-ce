@@ -11,30 +11,25 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol.ws;
-
-import javax.xml.ws.WebFault;
+package org.ejbca.core.ejb;
 
 import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 /**
- * Thrown when the no PKCS11 library file is specified or when the specified PKCS11 library 
- * file is not found
+ * Thrown when accessing enterprise-edition-only features in the community version
  * @version $Id$
  *
  */
-@WebFault
-public class PKCS11LibraryFileNotFoundException extends EjbcaException {
+public class UnsupportedMethodException extends EjbcaException {
+    
 
-
-
-    private static final long serialVersionUID = 1639115377050156144L;
+    private static final long serialVersionUID = -6099472895840497282L;
 
     /**
      * @param message with more information what is wrong
      */
-    public PKCS11LibraryFileNotFoundException(String m) {
-        super(ErrorCode.PKCS11_LIBRARY_NOT_FOUND, m);
+    public UnsupportedMethodException(String m) {
+        super(ErrorCode.UNSUPPORTED_METHOD, m);
     }
 }

@@ -10,31 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.cesecore.keys.token.p11.exception;
 
-package org.ejbca.core.protocol.ws;
-
-import javax.xml.ws.WebFault;
-
-import org.cesecore.ErrorCode;
-import org.ejbca.core.EjbcaException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
- * Thrown when the PKCS11 slot property value is invalid
- * @version $Id$
+ * Thrown to signify that a slot was not found. Differs from {@link CryptoTokenOfflineException} by virtue of
+ * the latter being thrown when a slot exists, but for some reason is unavailable.
+ * 
+ * @version $Id: NoSuchSlotException.java 19902 2014-09-30 14:32:24Z anatom $
  *
  */
-@WebFault
-public class PKCS11SlotDataInvalidException extends EjbcaException {
+public class PKCS11LibraryFileNotFoundException extends Exception {
 
 
+    private static final long serialVersionUID = 471712760739840779L;
 
+    public PKCS11LibraryFileNotFoundException() {
+        super();
+    }
 
-    private static final long serialVersionUID = 7197787941794988403L;
+    public PKCS11LibraryFileNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    /**
-     * @param message with more information what is wrong
-     */
-    public PKCS11SlotDataInvalidException(String m) {
-        super(ErrorCode.PKCS11_SLOT_DATA_INVALID, m);
+    public PKCS11LibraryFileNotFoundException(String message) {
+        super(message);
+    }
+
+    public PKCS11LibraryFileNotFoundException(Throwable cause) {
+        super(cause);
     }
 }

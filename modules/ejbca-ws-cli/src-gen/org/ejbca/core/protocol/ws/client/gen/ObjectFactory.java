@@ -129,9 +129,6 @@ public class ObjectFactory {
     private final static QName _CaCertResponseArg1_QNAME = new QName("", "arg1");
     private final static QName _CreateCryptoToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoToken");
     private final static QName _CreateCryptoTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoTokenResponse");
-    private final static QName _PKCS11LibraryFileNotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PKCS11LibraryFileNotFoundException");
-    private final static QName _PKCS11SlotDataInvalidException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PKCS11SlotDataInvalidException");
-    private final static QName _UnsupportedCryptoTokenTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnsupportedCryptoTokenTypeException");
     private final static QName _GenerateCryptoTokenKeys_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeys");
     private final static QName _GenerateCryptoTokenKeysResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeysResponse");
 
@@ -1086,30 +1083,6 @@ public class ObjectFactory {
      */
     public CreateCryptoTokenResponse createCreateCryptoTokenResponse() {
         return new CreateCryptoTokenResponse();
-    }
-    
-    /**
-     * Create an instance of {@link PKCS11LibraryFileNotFoundException }
-     *
-     */
-    public PKCS11LibraryFileNotFoundException createPKCS11LibraryFileNotFoundException() {
-        return new PKCS11LibraryFileNotFoundException();
-    }
-    
-    /**
-     * Create an instance of {@link PKCS11LibraryFileNotFoundException }
-     *
-     */
-    public PKCS11SlotDataInvalidException createPKCS11SlotDataInvalidException() {
-        return new PKCS11SlotDataInvalidException();
-    }
-    
-    /**
-     * Create an instance of {@link UnsupportedCryptoTokenTypeException }
-     *
-     */
-    public UnsupportedCryptoTokenTypeException createUnsupportedCryptoTokenTypeException() {
-        return new UnsupportedCryptoTokenTypeException();
     }
     
     /**
@@ -2080,33 +2053,6 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoTokenResponse")
     public JAXBElement<CreateCryptoTokenResponse> createCreateCryptoTokenResponse(CreateCryptoTokenResponse value) {
         return new JAXBElement<CreateCryptoTokenResponse>(_CreateCryptoTokenResponse_QNAME, CreateCryptoTokenResponse.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link PKCS11LibraryFileNotFoundException }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "PKCS11LibraryFileNotFoundException")
-    public JAXBElement<PKCS11LibraryFileNotFoundException> createPKCS11LibraryFileNotFoundException(PKCS11LibraryFileNotFoundException value) {
-        return new JAXBElement<PKCS11LibraryFileNotFoundException>(_PKCS11LibraryFileNotFoundException_QNAME, PKCS11LibraryFileNotFoundException.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link PKCS11SlotDataInvalidException }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "PKCS11SlotDataInvalidException")
-    public JAXBElement<PKCS11SlotDataInvalidException> createPKCS11SlotDataInvalidException(PKCS11SlotDataInvalidException value) {
-        return new JAXBElement<PKCS11SlotDataInvalidException>(_PKCS11SlotDataInvalidException_QNAME, PKCS11SlotDataInvalidException.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link UnsupportedCryptoTokenTypeException }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnsupportedCryptoTokenTypeException")
-    public JAXBElement<UnsupportedCryptoTokenTypeException> createUnsupportedCryptoTokenTypeException(UnsupportedCryptoTokenTypeException value) {
-        return new JAXBElement<UnsupportedCryptoTokenTypeException>(_UnsupportedCryptoTokenTypeException_QNAME, UnsupportedCryptoTokenTypeException.class, null, value);
     }
     
     /**
