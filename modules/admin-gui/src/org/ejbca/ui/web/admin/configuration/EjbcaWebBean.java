@@ -85,6 +85,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -122,6 +123,7 @@ public class EjbcaWebBean implements Serializable {
     };
 
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+    private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
     private final AccessControlSessionLocal authorizationSession = ejbLocalHelper.getAccessControlSession();
     private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
     private final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
@@ -918,6 +920,10 @@ public class EjbcaWebBean implements Serializable {
 
     public EjbLocalHelper getEjb() {
         return ejbLocalHelper;
+    }
+    
+    public EnterpriseEjbLocalHelper getEnterpriseEjb() {
+        return enterpriseEjbLocalHelper;
     }
     
     

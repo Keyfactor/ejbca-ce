@@ -37,7 +37,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.EjbcaAuditorSessionLocal;
@@ -67,7 +66,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
  * 
  * @version $Id$
  */
-public class EjbLocalHelper implements EjbBridgeSessionLocal, EnterpriseEditionEjbBridgeSessionLocal {
+public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	
     private static final Logger log = Logger.getLogger(EjbLocalHelper.class);
 	private static Context initialContext = null;
@@ -120,37 +119,6 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal, EnterpriseEditionE
 		return ret;
 	}
 
-	   /**
-     * Requires a "ejb-local-ref" definition in web.xml and ejb-jar.xml from all accessing components
-     * or an application server that support global JNDI names (introduced in EJB 3.1).
-     * @return a reference to the bridge SSB
-     * 
-     * @throws LocalLookupException if local lookup couldn't be made.
-     */
-    private EnterpriseEditionEjbBridgeSessionLocal getEnterpriseEditionEjbLocal() {
-        EnterpriseEditionEjbBridgeSessionLocal ret = null;
-        try {
-            if (!useEjb31GlobalJndiName) {
-                ret = (EnterpriseEditionEjbBridgeSessionLocal) getInitialContext().lookup("java:comp/env/EnterpriseEditionEjbBridgeSession");
-            }
-        } catch (NamingException e) {
-            // Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
-            // java:global[/<app-name>]/<module-name>/<bean-name>[!<fully-qualified-interface-name>]
-            useEjb31GlobalJndiName = true;  // So let's not try what we now know is a failing method ever again..
-            if (log.isDebugEnabled()) {
-                log.debug("Failed JEE5 version of EnterpriseEditionEjbBridgeSessionLocal JNDI lookup. All future lookups will JEE6 version lookups.");
-            }
-        }
-        try {
-            if (useEjb31GlobalJndiName) {
-                ret = (EnterpriseEditionEjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/peerconnector-ejb/EnterpriseEditionEjbBridgeSessionBean!org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal");
-            }
-        } catch (NamingException e) {
-            throw new LocalLookupException("Cannot lookup EnterpriseEditionEjbBridgeSessionLocal.", e);
-        }
-        return ret;
-    }
-
 	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return getEjbLocal().getAccessRuleManagementSession(); }
 	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return getEjbLocal().getAccessUserAspectSession(); }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return getEjbLocal().getApprovalExecutionSession(); }
@@ -190,15 +158,4 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal, EnterpriseEditionE
 	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return getEjbLocal().getCryptoTokenManagementSession(); }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return getEjbLocal().getInternalKeyBindingMgmtSession(); }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> T getEnterpriseEditionEjbLocal(final Class<T> localInterfaceClass, final String modulename) {
-        try {
-            // Try JEE6 lookup first
-            return (T) getInitialContext().lookup("java:global/ejbca/"+modulename+"/"+localInterfaceClass.getSimpleName().replaceAll("Local", "Bean") + "!"+localInterfaceClass.getName());
-        } catch (NamingException e) {
-            return getEnterpriseEditionEjbLocal().getEnterpriseEditionEjbLocal(localInterfaceClass, null);
-        }
-    }
 }

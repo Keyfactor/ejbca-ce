@@ -15,6 +15,9 @@
     <module>
         <ejb>ejbca-ejb.jar</ejb>
     </module>
+        <module>
+        <ejb>edition-specific-ejb.jar</ejb>
+    </module>
     <module>
         <web>
             <web-uri>publicweb.war</web-uri>

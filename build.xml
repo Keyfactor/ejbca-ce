@@ -493,6 +493,7 @@
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
                 <include name="ejbca-ejb.jar" />
+            	<include name="edition-specific-ejb.jar" />
                 <include name="ejbca-ws-ejb.jar" />
                 <include name="ejbca-xkms-ejb.jar" />
                 <include name="adminweb.war" />
@@ -516,6 +517,8 @@
                 <include name="externalra-service.jar" />
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
+        		<include name="edition-specific-interface.jar" />
+        		<include name="edition-specific-ejb.jar" />
                 <include name="ejbca-entity.jar" />
                 <include name="cesecore-ejb-interface.jar" />
                 <include name="cesecore-common.jar" />
