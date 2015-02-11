@@ -351,7 +351,7 @@ public class InformationMemory implements Serializable {
         if (endentityavailablecas == null) {
             endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
             // 1. Retrieve a list of all CA's the current user is authorized to
-            List<Integer> authorizedcas = casession.getAuthorizedAndNonExternalCaIds(administrator);
+            List<Integer> authorizedCas = casession.getAuthorizedAndNonExternalCaIds(administrator);
             //Cache certificate profiles to save on database transactions
             HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();        
             // 2. Retrieve a list of all authorized end entity profile IDs
@@ -381,16 +381,16 @@ public class InformationMemory implements Serializable {
                     // 5. Retrieve all CAs defined in the current certificate profile
                     Collection<Integer> casDefinedInCertificateProfile = certprofile.getAvailableCAs();
                     // First make a clone of the full list of available CAs
-                    List<Integer> authorizedCas = new ArrayList<Integer>(authorizedcas);
+                    List<Integer> authorizedCasClone = new ArrayList<Integer>(authorizedCas);
                     if (!casDefinedInCertificateProfile.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
                         //If ANYCA wasn't defined among the list from the cert profile, only keep the intersection
-                        authorizedCas.retainAll(casDefinedInCertificateProfile);
+                        authorizedCasClone.retainAll(casDefinedInCertificateProfile);
                     }
                     if (!allCasDefineInEndEntityProfile) {
                         //If ALL wasn't defined in the EE profile, only keep the intersection
-                        authorizedCas.retainAll(casDefineInEndEntityProfile);
+                        authorizedCasClone.retainAll(casDefineInEndEntityProfile);
                     }             
-                    certificateProfileMap.put(certificateProfileId, authorizedCas);
+                    certificateProfileMap.put(certificateProfileId, authorizedCasClone);
                 }
                 endentityavailablecas.put(nextendentityprofileid, certificateProfileMap);
             }
