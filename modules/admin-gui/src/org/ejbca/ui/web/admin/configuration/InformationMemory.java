@@ -22,6 +22,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +39,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -349,9 +352,19 @@ public class InformationMemory implements Serializable {
 
     public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid) {
         if (endentityavailablecas == null) {
-            endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
+            endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();        
+            //Create a TreeMap to get a sorted list.
+            TreeMap<CAInfo, Integer> sortedMap = new TreeMap<CAInfo, Integer>(new Comparator<CAInfo>() {
+                @Override
+                public int compare(CAInfo o1, CAInfo o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
             // 1. Retrieve a list of all CA's the current user is authorized to
-            List<Integer> authorizedCas = casession.getAuthorizedAndNonExternalCaIds(administrator);
+            for(CAInfo caInfo : casession.getAuthorizedAndNonExternalCaInfos(administrator)) {
+                sortedMap.put(caInfo, caInfo.getCAId());
+            }
+            Collection<Integer> authorizedCas = sortedMap.values(); 
             //Cache certificate profiles to save on database transactions
             HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();        
             // 2. Retrieve a list of all authorized end entity profile IDs
@@ -395,7 +408,6 @@ public class InformationMemory implements Serializable {
                 endentityavailablecas.put(nextendentityprofileid, certificateProfileMap);
             }
         }
-
         return endentityavailablecas.get(Integer.valueOf(endentityprofileid));
     }
 
