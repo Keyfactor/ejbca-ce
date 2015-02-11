@@ -103,7 +103,7 @@ public interface CaSession {
       * give access to the CAs but only returns CAIds of CAs.
       * 
       * @param admin AuthenticationToken of admin
-      * @return a List<CAInfo> of available CA id's
+      * @return a List<CAInfo> of authorized and enabled CAs
       */
      List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken);
      
@@ -116,9 +116,9 @@ public interface CaSession {
       * give access to the CAs but only returns CAIds of CAs.
       * 
       * @param admin AuthenticationToken of admin
-      * @return a List<Integer> of available CA id's
+      * @return a List<CAInfo> of authorized and non-external CAs
       */
-     List<Integer> getAuthorizedAndNonExternalCaIds(AuthenticationToken authenticationToken);
+     List<CAInfo> getAuthorizedAndNonExternalCaInfos(AuthenticationToken authenticationToken);
      
     /**
      * Method returning names of all CA's available to the system that the
