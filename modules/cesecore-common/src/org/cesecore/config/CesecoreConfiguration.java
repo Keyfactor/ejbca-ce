@@ -398,4 +398,16 @@ public final class CesecoreConfiguration {
         }
         return availableCipherSuites.toArray(new String[0]);
     }
+
+    /**
+     * Gets the maximum number of entries in the CT cache. Each entry contains the SCTs for a
+     * given certificate. Each SCT will be around 100-150 bytes, and a certificate will typically
+     * have 2-4 SCTs. Also, the cache may temporarily overshoot by 50%. There's also some overhead
+     * for the cache data structure (ConcurrentCache).
+     * 
+     * The default is 100 000.
+     */
+    public static long getCTCacheMaxEntries() {
+        return getLongValue("ct.maxcacheentries", 100000L, "number of entries in cache");
+    }
 }
