@@ -103,9 +103,22 @@ public interface CaSession {
       * give access to the CAs but only returns CAIds of CAs.
       * 
       * @param admin AuthenticationToken of admin
-      * @return a List<Integer> of available CA id's
+      * @return a List<CAInfo> of available CA id's
       */
      List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken);
+     
+     /**
+      * Method returning info objects for  all active CA's available to the system, i.e. not 
+      * having status "external", uninitialized or "waiting for certificate response" and that the
+      * administrator is authorized to, 
+      * 
+      * Does not log access control to all CAs it checks, because this does not 
+      * give access to the CAs but only returns CAIds of CAs.
+      * 
+      * @param admin AuthenticationToken of admin
+      * @return a List<Integer> of available CA id's
+      */
+     List<Integer> getAuthorizedAndNonExternalCaIds(AuthenticationToken authenticationToken);
      
     /**
      * Method returning names of all CA's available to the system that the

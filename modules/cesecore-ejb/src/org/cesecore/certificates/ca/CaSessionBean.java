@@ -445,7 +445,26 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
         }
         return result;
+    }   
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<Integer> getAuthorizedAndNonExternalCaIds(AuthenticationToken authenticationToken) {
+        List<Integer> result = new ArrayList<Integer>();
+        for (Integer caId : getAuthorizedCaIds(authenticationToken)) {
+            CAInfo caInfo;
+            try {
+                caInfo = getCAInfoInternal(caId);
+            } catch (CADoesntExistsException e) {
+                throw new IllegalStateException("CA with ID " + caId + " was not found in spite if just being retrieved.");
+            }
+            if ( caInfo.getStatus() != CAConstants.CA_EXTERNAL ) {
+                result.add(caId);
+            }
+        }
+        return result;
     }    
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
