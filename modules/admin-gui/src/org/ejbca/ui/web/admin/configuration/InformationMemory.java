@@ -343,15 +343,15 @@ public class InformationMemory implements Serializable {
      * Method that calculates the available CAs to an end entity. Used in add/edit end entity pages. It calculates a set of available CAs as an
      * intersection of: - The administrator's authorized CAs, the end entity profile's available CAs and the certificate profile's available CAs.
      * 
-     * @param The id of end entity profile to retrieve map from.
+     * @param endentityprofileid the EE profile of the end entity
      * @returns a HashMap of CertificateProfileIds mapped to Lists if CA IDs. It returns a set of available CAs per end entity profile.
      */
 
-    public Map<Integer, List<Integer>> getEndEntityAvailableCAs(int endentityprofileid) {
+    public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid) {
         if (endentityavailablecas == null) {
             endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
             // 1. Retrieve a list of all CA's the current user is authorized to
-            List<Integer> authorizedcas = getAuthorizedCAIds();
+            List<Integer> authorizedcas = casession.getAuthorizedAndNonExternalCaIds(administrator);
             //Cache certificate profiles to save on database transactions
             HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();        
             // 2. Retrieve a list of all authorized end entity profile IDs
