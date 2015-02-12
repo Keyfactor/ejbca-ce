@@ -91,6 +91,8 @@
 		<antcall target="statedumpclean"/>
 		<antcall target="ctclean"/>
 		<antcall target="certsafeclean"/>
+		<antcall target="edition-specific-clean"/>
+		<antcall target="edition-specific-ee-clean"/>
 		<antcall target="peerconnectorclean"/>
 		<delete failonerror="false">
 			<fileset dir="${modules.basedir}/dist" includes="*" />
@@ -130,7 +132,16 @@
 	</condition>
 	<target name="certsafeclean" if="${mod.certsafe.exists}">
 	    <ant antfile="${mod.certsafe.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>	
+	</target>
+	<condition property="mod.edition-specific-ee.exists">
+		<available file="${mod.edition-specific-ee-ejb.path}/build.xml" />
+	</condition>
+	<target name="edition-specific-ee-clean" if="${mod.edition-specific-ee.exists}">
+	    <ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	<target name="edition-specific-clean">
+		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
 		
     <target name="peerconnectorclean" if="${mod.peerconnector.exists}">
         <ant antfile="${mod.peerconnector.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -465,7 +476,7 @@
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector">
+	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector" if="${mod.edition-specific-ee.exists}">
 			<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
