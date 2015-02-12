@@ -77,7 +77,36 @@ public final class ConcurrentCacheTest {
         } catch (IllegalStateException e) { // NOPMD
         }
         entry.close();
-        log.trace(">testSingleThreaded");
+        log.trace("<testSingleThreaded");
+    }
+    
+    @Test
+    public void testDisabled() throws Exception {
+        log.trace(">testDisabled");
+        final ConcurrentCache<String,Integer> cache = new ConcurrentCache<String,Integer>();
+        cache.setEnabled(false);
+        ConcurrentCache<String,Integer>.Entry entry;
+        
+        // Create entries. All operations should be "no-ops"
+        for (int i = 0; i < 10; i++) {
+            long timeBefore = System.currentTimeMillis();
+            entry = cache.openCacheEntry("A", 1);
+            assertTrue("openCacheEntry took too long. It should be a no-op when cache is disabled", System.currentTimeMillis() < timeBefore+10);
+            assertNotNull("openCacheEntry timed out when cache is disabled", entry);
+            assertFalse("isInCache should return false when cache is disabled", entry.isInCache());
+            try {
+                entry.getValue();
+                fail("getValue should throw when caching is disabled");
+            } catch (IllegalStateException e) { // NOPMD
+            }
+            entry.putValue(111);
+            entry.setCacheValidity(60*1000);
+            entry.close();
+            
+            // This should have been a no-op
+            cache.checkNumberOfEntries(0, 0);
+        }
+        log.trace("<testDisabled");
     }
     
     @Test

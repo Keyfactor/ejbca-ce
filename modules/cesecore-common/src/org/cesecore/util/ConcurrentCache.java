@@ -40,6 +40,8 @@ public final class ConcurrentCache<K,V> {
     
     /**
      * A reference to a cache entry, with a get and put method to read/write data from/to the cache.
+     * 
+     * All methods are thread safe, but only one thread should operate on an Entry object.
      */
     public final class Entry {
         private final K key;
@@ -80,11 +82,14 @@ public final class ConcurrentCache<K,V> {
         }
         
         /**
-         * Updates the value in this Entry as well as in the underlying cache. Thread-safe.
+         * Updates the value in this Entry as well as in the underlying cache.
+         * The expire time is set to be "infinite". Thread-safe.
          */
         public void putValue(final V value) {
-            entry = new InternalEntry<V>(value);
-            cache.put(key, entry);
+            if (key != null) {
+                entry = new InternalEntry<V>(value);
+                cache.put(key, entry);
+            }
         }
         
         public void setCacheValidity(long validFor) {
@@ -110,7 +115,14 @@ public final class ConcurrentCache<K,V> {
     private final ConcurrentHashMap<K,InternalEntry<V>> cache = new ConcurrentHashMap<K,InternalEntry<V>>();
     private final ConcurrentMap<K,Object> semaphores = new ConcurrentHashMap<K,Object>();
     
-    private long maxEntries = 0L; // no limit by default
+    public static final long NO_LIMIT = -1L;
+    
+    /** @see setEnabled */
+    private boolean enabled = true;
+    
+    /** @see setMaxEntries */
+    private long maxEntries = NO_LIMIT;
+    
     private AtomicLong numEntries = new AtomicLong(0L);
     private final ConcurrentHashMap<K,Boolean> pendingRemoval = new ConcurrentHashMap<K,Boolean>(); // always contains Boolean.TRUE
     private final Lock isCleaning = new ReentrantLock();
@@ -118,7 +130,7 @@ public final class ConcurrentCache<K,V> {
     private long cleanupInterval = 1000L;
     
     /**
-     * "Opens" a cache entry. If the entry already exists, then an Entry that
+     * "Opens" a cache entry. If the entry already exists, then an {@link Entry} that
      * maps to the existing entry is returned. Otherwise, a semaphore is used
      * to prevent multiple threads from creating the new cache entry. Only the
      * first thread is returned an Entry with isInCache()==false, later threads
@@ -132,10 +144,19 @@ public final class ConcurrentCache<K,V> {
      *                 to block for (approximately) this amount of time.
      * @return An Entry object that maps to an entry in the cache (existing
      *         or blank), or null if a timeout occurred. 
+     * @throws NullPointerException if key is null.
      */
     public Entry openCacheEntry(final K key, final long timeout) {
         final long timeAtEntry = System.currentTimeMillis();
-        if (maxEntries != 0L) {
+        if (key == null) {
+            throw new NullPointerException("key may not be null");
+        }
+        
+        if (!enabled) {
+            return new Entry(null, null);
+        }
+        
+        if (maxEntries != NO_LIMIT) {
             pendingRemoval.remove(key); // always mark as used
         }
         
@@ -197,16 +218,38 @@ public final class ConcurrentCache<K,V> {
     }
     
     /**
-     * Sets the desired maximum number of entries in the cache. This is not a
-     * strict limit, and the cache may temporarily exceed this number.
+     * <p>Enables or disables caching. If disabled, nothing will be cached and openCacheEntry will
+     * always immediately return an non-existent entry (this may also cause concurrent attempts
+     * to fetch/build/etc the same object).</p>
      * 
-     * The default is zero, which means "no limit".
+     * <p>Disabling the cache doesn't stop any currently "open" cache entries from being written to.</p>
+     * 
+     * <p>The default is enabled.</p>
      */
-    public void setMaxEntries(long maxEntries) {
-        this.maxEntries = maxEntries;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
     
-    /** @see setMaxEntries */
+    /** @see ConcurrentCache#setEnabled */
+    public boolean isEnabled() {
+        return enabled;
+    }
+    
+    /**
+     * <p>Sets the desired maximum number of entries in the cache. This is not a
+     * strict limit, and the cache may temporarily exceed this number.</p>
+     * 
+     * <p>The value {@link ConcurrentCache#NO_LIMIT} (-1) is the default.</p>
+     */
+    public void setMaxEntries(long maxEntries) {
+        if (maxEntries == NO_LIMIT || maxEntries > 0L) {
+            this.maxEntries = maxEntries;
+        } else {
+            throw new IllegalArgumentException("max entries must be either a positive value or -1");
+        }
+    }
+    
+    /** @see ConcurrentCache#setMaxEntries */
     public long getMaxEntries() {
         return maxEntries;
     }
@@ -220,20 +263,20 @@ public final class ConcurrentCache<K,V> {
         cleanupInterval = milliseconds;
     }
     
-    /** @see setCleanupInterval */
+    /** @see ConcurrentCache#setCleanupInterval */
     public long getCleanupInterval() {
         return cleanupInterval;
     }
     
     private void cleanupIfNeeded() {
-        if (maxEntries != 0L && numEntries.get() > maxEntries) {
+        if (maxEntries != NO_LIMIT && numEntries.get() > maxEntries) {
             cleanup();
         }
     }
     
     private void cleanupIfHighlyNeeded() {
         // More than 1.5 times the limit 
-        if (maxEntries != 0L && 2L*numEntries.get() > 3L*maxEntries) {
+        if (maxEntries != NO_LIMIT && 2L*numEntries.get() > 3L*maxEntries) {
             cleanup();
         }
     }
@@ -264,7 +307,7 @@ public final class ConcurrentCache<K,V> {
         try {
             final float ratioToRemove;
             final Random random;
-            if (maxEntries == 0L) {
+            if (maxEntries == NO_LIMIT) {
                 ratioToRemove = 0;
                 random = null;
             } else {
@@ -287,7 +330,7 @@ public final class ConcurrentCache<K,V> {
                 if (mapEntry.getValue().expire <= now) {
                     iter.remove();
                     numEntries.decrementAndGet();
-                } else if (maxEntries != 0L && random.nextFloat() < ratioToRemove) {
+                } else if (maxEntries != NO_LIMIT && random.nextFloat() < ratioToRemove) {
                     pendingRemoval.put(mapEntry.getKey(), Boolean.TRUE);
                 }
             }
