@@ -53,6 +53,7 @@
 		<pathelement location="${mod.ejbca-util.lib}"/>
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
+		<pathelement location="${mod.edition-specific-interface.lib}"/>
 		<pathelement location="${mod.ejbca-util.lib}"/>
 		<pathelement location="${mysql.lib}"/>
 		<pathelement location="${test-interface.jar}"/>
