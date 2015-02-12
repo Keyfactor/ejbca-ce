@@ -24,6 +24,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -121,6 +122,32 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
 
     public void setAccessRules(Map<Integer, AccessRuleData> accessRules) {
         this.accessRules = accessRules;
+    }
+    
+    /**
+     * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
+     * @param rule the rule to check
+     * @return true if this Role has access to the given rule. 
+     */
+    @Transient
+    public boolean hasAccessToRule(final String rule) {
+        if(!rule.startsWith("/")) {
+            throw new IllegalArgumentException("Rule must start with a \"/\"");
+        }
+        //return recurseRules(rule, accessRules.values(), false);
+        boolean result = false;
+        for(AccessRuleData accessRuleData : accessRules.values()) {
+            String currentRule = accessRuleData.getAccessRuleName();
+            if(rule.startsWith(currentRule)) {
+                if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT) && accessRuleData.getRecursive()) {
+                    result = true;
+                } else if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_DECLINE)) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

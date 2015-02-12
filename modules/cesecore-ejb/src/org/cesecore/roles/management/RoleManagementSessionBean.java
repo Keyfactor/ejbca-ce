@@ -15,9 +15,12 @@ package org.cesecore.roles.management;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -458,11 +461,41 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
                 return false;
             }
         }
-        if (!isAuthorizedToRules(authenticationToken, role.getAccessRules().values())) {
+        Map<Integer, AccessRuleData> accessRules = role.getAccessRules();
+        if (!isAuthorizedToRules(authenticationToken, accessRules.values())) {
             return false;
         }
+        // The admin may have resources denied to itself, and if role has access to any of these, the admin should not have access
+        // to that role. 
+        Set<String> ruleCache = new HashSet<String>();
+        List<String> deniedRules = new LinkedList<String>();
+        try {
+            // AuthenticationToken may match several roles. Go through each of them and if any denied rules are found, at them if they belong to the 
+            // preferred role. 
+            for(String roleName : roleAccessSession.getRolesMatchingAuthenticationToken(authenticationToken)) {
+               for(AccessRuleData accessRule : roleAccessSession.findRole(roleName).getAccessRules().values()) {
+                   String rule = accessRule.getAccessRuleName();
+                   //Ignore if this rule has already been checked 
+                   if(!ruleCache.contains(rule)) {                     
+                       ruleCache.add(rule);
+                       // If this rule is deny and dominant (due to the Role it belongs to being dominant over another Role that may contain the same rule
+                       // with a different setting), cache it away
+                       if(!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
+                           deniedRules.add(rule);
+                       }
+                   }
+               }
+            }
+        } catch (AuthenticationFailedException e) {
+            throw new IllegalArgumentException("AuthenticationToken " + authenticationToken + " was not valid.", e);
+        }
+        //If our role has access to any of the rules that the admin was denied to, then we're a no go. 
+        for(String deniedRule : deniedRules) {
+            if(role.hasAccessToRule(deniedRule)) {
+                return false;
+            }
+        }
 
-        // Everything's A-OK, role is good.
         return true;
     }
   
