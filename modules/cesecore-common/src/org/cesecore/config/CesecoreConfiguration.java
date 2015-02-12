@@ -405,9 +405,17 @@ public final class CesecoreConfiguration {
      * have 2-4 SCTs. Also, the cache may temporarily overshoot by 50%. There's also some overhead
      * for the cache data structure (ConcurrentCache).
      * 
-     * The default is 100 000.
+     * 0 means no limit (and not "off"). The default is 100 000.
+     * 
+     * @see getCTCacheEnabled
      */
     public static long getCTCacheMaxEntries() {
         return getLongValue("ct.maxcacheentries", 100000L, "number of entries in cache");
+    }
+    
+    /** Whether caching of SCTs should be enabled. The default is true. */
+    public static boolean getCTCacheEnabled() {
+        final String value = ConfigurationHolder.getString("ct.cacheenabled");
+        return value == null || !value.trim().equalsIgnoreCase("false");
     }
 }
