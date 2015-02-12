@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -40,9 +42,11 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -58,6 +62,8 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -82,6 +88,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.UnsupportedMethodException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -95,6 +102,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -107,6 +115,7 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -912,6 +921,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
             cryptoTokenManagementSession.activate(intAdmin, ctid.intValue(), "1234".toCharArray());
             assertTrue(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
+        } catch (RuntimeException e) {
+            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
+                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
+            } else {
+                throw e;
+            }
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             if(ctid != null) {
@@ -938,6 +953,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             KeyPairInfo keyInfo = cryptoTokenManagementSession.getKeyPairInfo(intAdmin, ctid.intValue(), keyAlias);
             assertEquals("RSA", keyInfo.getKeyAlgorithm());
             assertEquals("1024", keyInfo.getKeySpecification());
+        } catch (RuntimeException e) {
+            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
+                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
+            } else {
+                throw e;
+            }
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             if(ctid != null) {
@@ -945,7 +966,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
         }
     }
-     
+    
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
