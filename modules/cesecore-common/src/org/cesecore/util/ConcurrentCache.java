@@ -118,16 +118,16 @@ public final class ConcurrentCache<K,V> {
     public static final long NO_LIMIT = -1L;
     
     /** @see setEnabled */
-    private boolean enabled = true;
+    private volatile boolean enabled = true;
     
     /** @see setMaxEntries */
-    private long maxEntries = NO_LIMIT;
+    private volatile long maxEntries = NO_LIMIT;
     
     private AtomicLong numEntries = new AtomicLong(0L);
     private final ConcurrentHashMap<K,Boolean> pendingRemoval = new ConcurrentHashMap<K,Boolean>(); // always contains Boolean.TRUE
     private final Lock isCleaning = new ReentrantLock();
-    private long lastCleanup = 0L;
-    private long cleanupInterval = 1000L;
+    private volatile long lastCleanup = 0L;
+    private volatile long cleanupInterval = 1000L;
     
     /**
      * "Opens" a cache entry. If the entry already exists, then an {@link Entry} that
