@@ -405,17 +405,43 @@ public final class CesecoreConfiguration {
      * have 2-4 SCTs. Also, the cache may temporarily overshoot by 50%. There's also some overhead
      * for the cache data structure (ConcurrentCache).
      * 
-     * 0 means no limit (and not "off"). The default is 100 000.
+     * -1 means no limit (and not "off"). The default is 100 000.
      * 
      * @see getCTCacheEnabled
      */
     public static long getCTCacheMaxEntries() {
-        return getLongValue("ct.maxcacheentries", 100000L, "number of entries in cache");
+        return getLongValue("ct.cache.maxentries", 100000L, "number of entries in cache");
+    }
+    
+    /**
+     * How many milliseconds between periodic cache cleanup. The cleanup routine is only ever
+     * run if the cache is also filled with too many entries.
+     */
+    public static long getCTCacheCleanupInterval() {
+        return getLongValue("ct.cache.cleanupinterval", 1000L, "milliseconds between periodic cache cleanup");
     }
     
     /** Whether caching of SCTs should be enabled. The default is true. */
     public static boolean getCTCacheEnabled() {
-        final String value = ConfigurationHolder.getString("ct.cacheenabled");
+        final String value = ConfigurationHolder.getString("ct.cache.enabled");
         return value == null || !value.trim().equalsIgnoreCase("false");
+    }
+    
+    /**
+     * Whether log availability should be tracked, and requests should "fast fail"
+     * whenever a log is known to be down. A log is "known to be down" when it
+     * is either unreachable or responds with an HTTP error status to a request.
+     */
+    public static boolean getCTFastFailEnabled() {
+        final String value = ConfigurationHolder.getString("ct.fastfail.enabled");
+        return value == null || !value.trim().equalsIgnoreCase("false");
+    }
+    
+    /**
+     * How long time (in milliseconds) EJBCA should wait until trying to use a log
+     * which has failed to respond to a request.
+     */
+    public static long getCTFastFailBackOff() {
+        return getLongValue("ct.fastfail.backoff", 1000L, "milliseconds");
     }
 }
