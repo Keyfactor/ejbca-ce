@@ -434,7 +434,7 @@ public final class CesecoreConfiguration {
      */
     public static boolean getCTFastFailEnabled() {
         final String value = ConfigurationHolder.getString("ct.fastfail.enabled");
-        return value == null || !value.trim().equalsIgnoreCase("false");
+        return value != null && value.trim().equalsIgnoreCase(TRUE);
     }
     
     /**

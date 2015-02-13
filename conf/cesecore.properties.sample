@@ -230,8 +230,17 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Whether log availability should be tracked, and requests should "fast fail"
 # whenever a log is known to be down. A log is "known to be down" when it
 # is either unreachable or responds with an HTTP error status to a request.
-# Default: true (fast fail enabled)
-#ct.fastfail.enabled=false
+# NOTE: Since a single error will cause ALL subsequent requests that are not
+# cached to "fast fail" until the backoff time is over, make sure to:
+#   1. Disallow CAs that are not trusted by the CT logs in CT-enabled
+#      certificate profiles. If a log server receives a request for a
+#      certificate from an untrusted CA, it will return an error, and trigger
+#      "fail fail" for other certificates.
+#   2. Make sure the certificate profiles are restrictive and do not allow
+#      uncommon certificate fields etc., that could cause a parse error
+#      in the CT log, which would also trigger fast fail.
+# Default: false (fast fail disabled)
+#ct.fastfail.enabled=true
 #
 # How long time (in milliseconds) EJBCA should wait until trying to use a log
 # which has failed to respond to a request.
