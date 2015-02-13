@@ -56,18 +56,22 @@ public class OcspSigningCacheEntry {
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
             String signatureProviderName, OcspKeyBinding ocspKeyBinding, int responderIdType) {
-      this.caCertificateChain = signingCaCertificateChain;
+        this.caCertificateChain = signingCaCertificateChain;
         this.ocspSigningCertificate = ocspSigningCertificate;
         if (ocspSigningCertificate == null) {
+            // We will sign with a CA key
             fullCertificateChain = signingCaCertificateChain;
         } else {
+            // We will sign with an OCSP Key Binding
             fullCertificateChain = new ArrayList<X509Certificate>();
             fullCertificateChain.add(ocspSigningCertificate);
             fullCertificateChain.addAll(signingCaCertificateChain);
         }
         if (fullCertificateChain==null) {
+            // This is just a placeholder cache entry
             signingCertificate = null;
         } else {
+            // Get the certificate that corresponds to the private key
             signingCertificate = fullCertificateChain.get(0);
         }
         this.privateKey = privateKey;
@@ -78,9 +82,11 @@ public class OcspSigningCacheEntry {
         this.issuerCaCertificateStatus = issuerCaCertificateStatus;
         this.responderIdType = responderIdType;
         if (signingCertificate==null) {
+            // This is just a placeholder cache entry
             respId = null;
             signingCertificateForOcspSigning = true;
         } else {
+            // Pre-calculate the Responder ID
             if (responderIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
                 respId = new JcaRespID(signingCertificate.getSubjectX500Principal());
             } else {
@@ -104,33 +110,55 @@ public class OcspSigningCacheEntry {
         }
     }
 
+    /** @return certificate of the CA that we want to respond for */
+    public X509Certificate getIssuerCaCertificate() { return issuerCaCertificate; }
+
+    /** @return certificate ID of the CA that we want to respond for */
     public List<CertificateID> getCertificateID() { return certificateID; }
+
+    /** @return the certificate revocation status for the CA that we want to respond for at the time of cache reload */
+    public CertificateStatus getIssuerCaCertificateStatus() { return issuerCaCertificateStatus; }
+
+    /** @return the chain of all CA certificates */
     public List<X509Certificate> getCaCertificateChain() { return caCertificateChain; }
+
+    /** @return a OCSP signing certificate or null if this cache entry will use a CA key to sign the response */
     public X509Certificate getOcspSigningCertificate() { return ocspSigningCertificate; }
+
+    /** @return the full certificate chain that will be used to sign the OCSP response. The first position is either an OCSP signing certificate or a CA certificate. */
     public List<X509Certificate> getFullCertificateChain() { return fullCertificateChain; }
+
+    /** @return the certificate that will be used to sign the OCSP response. This is either an OCSP signing certificate or a CA certificate. */
     public X509Certificate getSigningCertificate() { return signingCertificate; }
+
+    /** @return the private key that will be used to sign the OCSP response. */
     public PrivateKey getPrivateKey() { return privateKey; }
+
+    /** @return the signature provider that should be used with this cache entries private key. */
     public String getSignatureProviderName() { return signatureProviderName; }
+
+    /** @return the OCSP key binding mapped by this entry or null if the private key belongs to a CA. */
     public OcspKeyBinding getOcspKeyBinding() { return ocspKeyBinding; }
+
+    /** @return one of the OcspConfiguration.RESPONDERIDTYPE_* values used by this cache entry */
     public int getResponderIdType() { return responderIdType; }
+
+    /** @return the actual responder type ASN1 object used by this cache entry */
     public RespID getRespId() { return respId; }
+
+    /** @return the part of the full certificate chain that has been configured to be included in the response. */
     public X509Certificate[] getResponseCertChain() { return responseCertChain; }
     /**
      * Checks if the entry has a OCSP signing certificate separate from the certificate chain.
      * Only entries with a keybinding can have a separate certificate.
-     * */
+     */
     public boolean isUsingSeparateOcspSigningCertificate() { return ocspSigningCertificate != null; }
+
+    /** @return false when we are using a non-CA signing certificate and the certificate lacks the OCSP signing EKU */
     public boolean isSigningCertificateForOcspSigning() { return signingCertificateForOcspSigning; }
-    
-    public CertificateStatus getIssuerCaCertificateStatus() {
-        return issuerCaCertificateStatus;
-    }
 
+    /** @return true if this entry is just a temporary placeholder that should be replaced with the default responder when rebuilding the cache. */
     public boolean isPlaceholder() { return privateKey == null; }
-
-    public X509Certificate getIssuerCaCertificate() {
-        return issuerCaCertificate;
-    }
 
     /** @return false for the first thread that invokes this method (a caller that gets a false return value should verify the response signature) */
     public boolean checkResponseSignatureVerified() {
@@ -162,13 +190,13 @@ public class OcspSigningCacheEntry {
             includeSignCert = getOcspKeyBinding().getIncludeSignCert();
             includeChain = getOcspKeyBinding().getIncludeCertChain();
         }
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Include signing cert: " + includeSignCert);
             log.debug("Include chain: " + includeChain);
         }
-        if(includeSignCert) {
+        if (includeSignCert) {
             if (includeChain) {
-                if(certChain.length > 1) { // certChain contained more than the root cert
+                if (certChain.length > 1) { // certChain contained more than the root cert
                     //create a new array containing all the certs in certChain except for the root cert
                     chain = new X509Certificate[certChain.length-1];
                     for(int i=0; i<chain.length; i++) {
@@ -182,7 +210,7 @@ public class OcspSigningCacheEntry {
                 chain[0] = certChain[0];
             }
         } else {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("OCSP signing certificate is not included in the response");
             }
             chain = new X509Certificate[0];
