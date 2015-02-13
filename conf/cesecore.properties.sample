@@ -205,3 +205,36 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #authkeybind.ciphersuite.3=TLSv1;TLS_DHE_RSA_WITH_AES_256_CBC_SHA
 #authkeybind.ciphersuite.4=TLSv1;TLS_RSA_WITH_AES_256_CBC_SHA
 #authkeybind.ciphersuite.5=TLSv1;TLS_RSA_WITH_AES_128_CBC_SHA
+
+
+# ------------------- Certificate Transparency settings -------------------
+# If your EJBCA has support for CT in it, you may configure caching of SCTs
+# here. The cache is only used when using CT in OCSP responses (and not in
+# the CT publisher or when using CT in new certificates).
+#
+# Enables or disables the cache.
+# Default: true (caching enabled)
+#ct.cache.enabled=false
+#
+# Maximum number of OCSP response extensions to cache, or -1 for no limit.
+# You may need to adjust java heap parameters if you adjust this.
+# Default: 100000
+#ct.cache.maxentries=1000000
+#
+# Maximum frequency in milliseconds of clean ups when the cache is over its
+# limit. During a clean up, cache entries are randomly queued for removal
+# at the next clean up if they aren't used.
+# Default: 10000 (10 seconds)
+#ct.cache.cleanupinterval=60000
+#
+# Whether log availability should be tracked, and requests should "fast fail"
+# whenever a log is known to be down. A log is "known to be down" when it
+# is either unreachable or responds with an HTTP error status to a request.
+# Default: true (fast fail enabled)
+#ct.fastfail.enabled=false
+#
+# How long time (in milliseconds) EJBCA should wait until trying to use a log
+# which has failed to respond to a request.
+# Default: 1000 (1 second)
+#ct.fastfail.backoff=60000
+

@@ -1744,7 +1744,7 @@ EJBCA supports all of those, including combinations. The following sections desc
 <p>No extra preparations are needed. Just configure the logs and enable CT in the certificate profiles as described in the following sections "Adding CT logs" and "Activating CT".</p>
 </subsubsection>
 <subsubsection name="CT in OCSP responses">
-<p>CT in OCSP is only recommended for pre-generating OCSP responses, since EJBCA sends queries to the CT logs for each OCSP request (which is very slow, since no caching is implemented). If you use OCSP without pre-generation you must enable CT publishing, see below. In order to use CT OCSP you must enable the corresponding extension class in <code>conf/ocsp.properties</code>:</p>
+<p>EJBCA supports CT in OCSP responses, both in live OCSP responders and for pre-production of responses. By default, EJBCA will cache up to approximately <nobr>100 000</nobr> CT response extensions in memory. Excess cached response extensions that haven't been requested for 10 seconds are randomly evicted from the cache. These parameters may be adjusted in <code>conf/cesecore.properties</code>. In order to use CT OCSP you must also enable the corresponding extension class in <code>conf/ocsp.properties</code>:</p>
 
 <source>
 ocsp.extensionoid=*1.3.6.1.4.1.11129.2.4.5
