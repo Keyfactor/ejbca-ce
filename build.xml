@@ -517,8 +517,6 @@
                 <include name="externalra-service.jar" />
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
-        		<include name="edition-specific-interface.jar" />
-        		<include name="edition-specific-ejb.jar" />
                 <include name="ejbca-entity.jar" />
                 <include name="cesecore-ejb-interface.jar" />
                 <include name="cesecore-common.jar" />
@@ -530,6 +528,8 @@
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	    <include name="ct.jar" />
         		<include name="certsafe.jar" />
+        		<include name="edition-specific-interface.jar" />
+        		<include name="edition-specific-ejb.jar" />
                 <include name="peerconnector-publ.jar" />
                 <include name="peerconnector-interface.jar" />
                 <include name="peerconnector-common.jar" />

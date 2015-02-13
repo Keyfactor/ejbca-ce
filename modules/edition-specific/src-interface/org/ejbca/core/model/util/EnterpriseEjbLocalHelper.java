@@ -29,7 +29,7 @@ import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
  */
 public class EnterpriseEjbLocalHelper implements EnterpriseEditionEjbBridgeSessionLocal {
     
-    private static final Logger log = Logger.getLogger(EjbLocalHelper.class);
+    private static final Logger log = Logger.getLogger(EnterpriseEjbLocalHelper.class);
     private static Context initialContext = null;
     private static ReentrantLock initialContextLock = new ReentrantLock(true);
     // Static is more performant, but a failed JEE5 lookup from one module would block all other JEE5 lookups
