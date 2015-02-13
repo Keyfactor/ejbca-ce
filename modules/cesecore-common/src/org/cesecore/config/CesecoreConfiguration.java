@@ -414,11 +414,11 @@ public final class CesecoreConfiguration {
     }
     
     /**
-     * How many milliseconds between periodic cache cleanup. The cleanup routine is only ever
-     * run if the cache is also filled with too many entries.
+     * How many milliseconds between periodic cache cleanup. The cleanup routine is only
+     * run when the cache is filled with too many entries.
      */
     public static long getCTCacheCleanupInterval() {
-        return getLongValue("ct.cache.cleanupinterval", 1000L, "milliseconds between periodic cache cleanup");
+        return getLongValue("ct.cache.cleanupinterval", 10000L, "milliseconds between periodic cache cleanup");
     }
     
     /** Whether caching of SCTs should be enabled. The default is true. */
