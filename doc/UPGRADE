@@ -31,8 +31,13 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 
 From EJBCA 6.2.x to EJBCA 6.2.8
 -------------------------------
-A very minor change has been made to how the "EMPTY" (default) End Entity Profile is handled. Previous versions required root access (access to "/" in the admin rules tree) to use this 
-profile, but since we since a few versions back generate rights for this profile like any other, those are now used instead. 
+A very minor change has been made to how the "EMPTY" (default) End Entity Profile is handled. Previous versions required root access
+(access to "/" in the admin rules tree) to use this profile, but since we since a few versions back generate rights for this profile like
+any other, those are now used instead.
+
+The signature of OCSP responses are only verified for the first created response per issuer after a OCSP signer cache reload. Previously
+we always checked each response. (This intends to detect a failing HSMs. The security aspect of response validation is the OCSP clients
+responsibility.) Use the health check to detect failing HSMs if you cache the OCSP signers for a long time and want to detect this.
 
 From EJBCA 6.2.x up to EJBCA 6.3.0
 -------------------------------
