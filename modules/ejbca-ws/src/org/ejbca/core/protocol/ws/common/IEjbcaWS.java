@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ws.common;
 import java.security.cert.CertificateExpiredException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -207,6 +208,33 @@ public interface IEjbcaWS {
      */
 	abstract void generateCryptoTokenKeys(String cryptoTokenName, String keyPairAlias, String keySpecification) 
             throws AuthorizationDeniedException, EjbcaException;
+	
+	/**
+	 * 
+	 * @param caname The CA name
+	 * @param cadn The CA subjectDN
+	 * @param catype the CA type. It could be either 'x509' or 'cvc'
+	 * @param catokentype Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.
+	 * @param catokenpassword The password for the CA token. Set to 'null' to use the default system password for Soft token CAs.
+	 * @param catokenProperties The catoken properties
+	 * @param cryptoTokenName The name of the cryptotoken associated with the CA
+	 * @param cryptotokenKeyAlias The keyalias of the cryptotoken key that will be used for the CA's extended services
+	 * @param validityInDays Validity of the CA in days.
+	 * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
+	 * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
+	 * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
+	 * GOST3411withECGOST3410, GOST3411withDSTU4145
+	 * @param policyId The policy ID can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' 
+	 * or objectID and cpsurl as '2.5.29.32.0 http://foo.bar.com/mycps.txt'. You can add multiple policies such as 
+	 * '2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt'.
+	 * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA).
+	 * CAs created using the WS cannot be signed by external CAs.
+	 * @throws EjbcaException
+	 * @throws AuthorizationDeniedException
+	 */
+	abstract void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
+            Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException;
 	
 	/**
 	 *  Generates a certificate for a user.

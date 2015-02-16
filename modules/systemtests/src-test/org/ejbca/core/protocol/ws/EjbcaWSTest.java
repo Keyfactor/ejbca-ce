@@ -21,8 +21,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -63,7 +61,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -88,7 +85,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.UnsupportedMethodException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -102,7 +98,6 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -115,7 +110,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -902,7 +896,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     
     @Test
     public void test70CreateSoftCryptoToken() throws Exception {
-        //createSoftCryptoToken();
+        log.trace(">test70CreateSoftCryptoToken()");
         String ctname = "NewTestCryptoTokenThroughWS";
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
@@ -933,10 +927,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
             }
         }
+        log.trace("<test70CreateSoftCryptoToken()");
     }
-    
+
     @Test
     public void test71GenerateCryptoTokenKeys() throws Exception {
+        log.trace(">test71GenerateCryptoTokenKeys()");
         String ctname = "NewTestCryptoTokenThroughWS";
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
@@ -965,6 +961,68 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
             }
         }
+        log.trace("<test71GenerateCryptoTokenKeys()");
+    }
+
+    @Test
+    public void test72CreateCA() throws Exception {
+        log.trace(">test72CreateCA()");
+        String caname = "NewTestCAThroughWS";
+        if(caSession.existsCa(caname)) {
+            int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
+            caSession.removeCA(intAdmin, caid);
+        }
+        
+        String ctname = caname + "CryptoToken";
+        Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+        if(ctid != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        }
+        
+        try {
+            // create cryptotoken
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, false, null, null, null, null);
+            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+
+            // generate keys
+            String keyAlias = "privatedeckeyalias";
+            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            keyAlias = "privatesignkeyalias";
+            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            
+            // construct the ca token properties
+            final Properties caTokenProperties = new Properties();
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
+            
+            ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, keyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
+            CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
+            assertNotNull(cainfo);
+            assertEquals(caname, cainfo.getName());
+            assertEquals("CN=" + caname, cainfo.getSubjectDN());
+            assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, cainfo.getCertificateProfileId());
+            assertEquals(CAInfo.SELFSIGNED, cainfo.getSignedBy());
+            assertEquals(CAInfo.CATYPE_X509, cainfo.getCAType());
+        } catch (RuntimeException e) {
+            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
+                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
+            } else {
+                throw e;
+            }
+        } finally {
+            if(caSession.existsCa(caname)) {
+                int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
+                caSession.removeCA(intAdmin, caid);
+            }
+            
+            ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+            if(ctid != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+            }
+        }
+        log.trace("<test72CreateCA()");
     }
     
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
