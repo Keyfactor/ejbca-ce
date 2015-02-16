@@ -21,6 +21,7 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
@@ -29,6 +30,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11.exception.PKCS11LibraryFileNotFoundException;
+import org.cesecore.roles.RoleNotFoundException;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -54,4 +56,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException, 
             SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, ProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
+    
+    void addSubjectToRole(AuthenticationToken admin, String roleName, String caName, String matchWith, String matchType, 
+            String matchValue) throws UnsupportedMethodException, RoleNotFoundException, CADoesntExistsException, AuthorizationDeniedException;
 }

@@ -119,6 +119,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11.exception.PKCS11LibraryFileNotFoundException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -538,6 +539,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    }
 	}
 	
+	@Override
 	public void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
             Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
@@ -562,7 +564,25 @@ public class EjbcaWS implements IEjbcaWS {
             TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;
         }
-	    
+	}
+	
+	public void addSubjectToRole(String roleName, String caName, String matchWith, String matchType, 
+            String matchValue) throws EjbcaException, AuthorizationDeniedException {
+	            
+	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
+	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	           
+	    try {
+	        enterpriseWSBridgeSession.addSubjectToRole(ejbhelper.getAdmin(), roleName, caName, matchWith, matchType, matchValue);
+	    } catch (CADoesntExistsException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_NOT_EXISTS, Level.INFO);
+	    } catch (RoleNotFoundException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
+	    } catch (AuthorizationDeniedException e) {
+	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+	        throw e;
+        }
 	}
 
 	/**

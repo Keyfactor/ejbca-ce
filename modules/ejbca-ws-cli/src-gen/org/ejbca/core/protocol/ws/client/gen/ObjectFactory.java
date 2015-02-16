@@ -133,6 +133,8 @@ public class ObjectFactory {
     private final static QName _GenerateCryptoTokenKeysResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeysResponse");
     private final static QName _CreateCA_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCA");
     private final static QName _CreateCAResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCAResponse");
+    private final static QName _AddSubjectToRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRole");
+    private final static QName _AddSubjectToRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRoleResponse");
     
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
@@ -1117,6 +1119,22 @@ public class ObjectFactory {
         return new CreateCAResponse();
     }
 
+    /**
+     * Create an instance of {@link AddSubjectToRole }
+     *
+     */
+    public AddSubjectToRole createAddSubjectToRole() {
+        return new AddSubjectToRole();
+    }
+    
+    /**
+     * Create an instance of {@link AddSubjectToRoleResponse }
+     *
+     */
+    public AddSubjectToRoleResponse createAddSubjectToRoleResponse() {
+        return new AddSubjectToRoleResponse();
+    }
+    
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardTokenResponse }{@code >}}
      * 
@@ -2105,6 +2123,24 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCAResponse")
     public JAXBElement<CreateCAResponse> createCreateCAResponse(CreateCAResponse value) {
         return new JAXBElement<CreateCAResponse>(_CreateCAResponse_QNAME, CreateCAResponse.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRole }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRole")
+    public JAXBElement<AddSubjectToRole> createAddSubjectToRole(AddSubjectToRole value) {
+        return new JAXBElement<AddSubjectToRole>(_AddSubjectToRole_QNAME, AddSubjectToRole.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRoleResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRoleResponse")
+    public JAXBElement<AddSubjectToRoleResponse> createAddSubjectToRoleResponse(AddSubjectToRoleResponse value) {
+        return new JAXBElement<AddSubjectToRoleResponse>(_AddSubjectToRoleResponse_QNAME, AddSubjectToRoleResponse.class, null, value);
     }
 
 }
