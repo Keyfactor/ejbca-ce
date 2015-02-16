@@ -56,6 +56,12 @@ import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -79,6 +85,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
+import org.cesecore.roles.RoleData;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
@@ -989,6 +996,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
             keyAlias = "privatesignkeyalias";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            keyAlias = "testKey";
+            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
             
             // construct the ca token properties
             final Properties caTokenProperties = new Properties();
@@ -996,6 +1005,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, "testKey");
             
             ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, keyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
@@ -1024,6 +1034,90 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         log.trace("<test72CreateCA()");
     }
+
+    @Test
+    public void test73AddSubjectToRole() throws Exception {
+        log.trace(">test73AddSubjectToRole()");
+        
+        String rolename = "TestWSNewAccessRole";
+        String testAdminUsername = "newWsAdminUserName";
+        
+        RoleData role = roleAccessSession.findRole(rolename);
+        if(role != null) {
+            roleManagementSession.remove(intAdmin, role);
+        }
+        
+        try {
+            CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
+            assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
+            
+            // Create/update the admin end entity and issue its certificate
+            EndEntityInformation adminUser = endEntityAccessSession.findUser(intAdmin, testAdminUsername);
+            if(adminUser == null) {
+                adminUser = new EndEntityInformation();
+                adminUser.setUsername(testAdminUsername);
+                adminUser.setPassword("foo123");
+                adminUser.setDN("CN="+testAdminUsername);
+                adminUser.setCAId(cainfo.getCAId());
+                adminUser.setEmail(null);
+                adminUser.setSubjectAltName(null);
+                adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+                adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
+                adminUser.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+                adminUser.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
+                log.info("Adding new user: "+adminUser.getUsername());
+                endEntityManagementSession.addUser(intAdmin, adminUser, true);
+            } else {
+                adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+                adminUser.setPassword("foo123");
+                log.info("Changing user: "+adminUser.getUsername());
+                endEntityManagementSession.changeUser(intAdmin, adminUser, true);
+            }
+            BatchCreateTool.createUser(intAdmin, "p12", adminUser.getUsername());
+            adminUser = endEntityAccessSession.findUser(intAdmin, testAdminUsername);
+        
+            // Create a new role
+            log.info("Creating new role: "+rolename);
+            role = roleManagementSession.create(intAdmin, rolename);
+            
+            // Set access rules for the new role
+            final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(rolename, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
+            role = roleManagementSession.addAccessRulesToRole(intAdmin, role, accessRules);
+            
+            // Verify that there are no admins from the start
+            assertTrue(role.getAccessUsers().size()==0);
+        
+            // Add an adminUser to the new role
+            ejbcaraws.addSubjectToRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+                    AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
+            role = roleAccessSession.findRole(rolename);
+            
+            // Verify the admin data
+            Collection <AccessUserAspectData> admins = role.getAccessUsers().values();
+            assertTrue(admins.size()==1);
+            AccessUserAspectData addedAdmin = admins.iterator().next();
+            assertEquals(cainfo.getCAId(), addedAdmin.getCaId().intValue());
+            assertEquals(AccessMatchType.TYPE_EQUALCASE.getNumericValue(), addedAdmin.getMatchType());
+            assertEquals(adminUser.getCertificateDN(), addedAdmin.getMatchValue());
+            assertEquals(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(), addedAdmin.getMatchWith());
+
+        } catch (RuntimeException e) {
+            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
+                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
+            } else {
+                throw e;
+            }
+        } finally {
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, testAdminUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
+            if(roleAccessSession.findRole(rolename)!=null) {
+                roleManagementSession.remove(intAdmin, roleAccessSession.findRole(rolename));
+            }
+        }
+        log.trace("<test73AddSubjectToRole()");
+    }
+
     
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
