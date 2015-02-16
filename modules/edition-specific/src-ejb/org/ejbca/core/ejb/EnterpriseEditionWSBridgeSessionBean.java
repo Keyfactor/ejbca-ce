@@ -31,9 +31,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWSBridgeSessionLocal {
 
     @Override
-    public void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
-            String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
-            HashMap<String, String> PKCS11AttributeData) throws UnsupportedMethodException {
+    public void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, 
+            boolean autoActivate, boolean exportKey, String pkcs11LibFilename, String pkcs11SlotLabelType, 
+            String pkcs11SlotPropertyValue, HashMap<String, String> PKCS11AttributeData) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition. Bohohohohoho");
     }
     
@@ -47,7 +47,12 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
     public void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword,
             Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile,
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException {
-        throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");
-        
+        throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
+    }
+    
+    @Override
+    public void addSubjectToRole(AuthenticationToken admin, String roleName, String caName, String matchWith, 
+            String matchType, String matchValue) throws UnsupportedMethodException {
+        throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
     }
 }
