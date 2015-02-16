@@ -15,11 +15,15 @@ package org.ejbca.core.ejb;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.HashMap;
+import java.util.Properties;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -44,5 +48,10 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
     void generateCryptoTokenKeys(AuthenticationToken admin, String cryptoTokenName, String keyPairAlias, String keySpecification) 
             throws UnsupportedMethodException, InvalidKeyException, CryptoTokenOfflineException, InvalidAlgorithmParameterException, 
             AuthorizationDeniedException;
-                    
+    
+    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword, 
+            Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException, 
+            SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
+            CertificateProfileDoesNotExistException, ProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
 }

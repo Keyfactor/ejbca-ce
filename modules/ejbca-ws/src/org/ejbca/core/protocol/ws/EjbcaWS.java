@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -83,9 +84,11 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -123,7 +126,6 @@ import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionWSBridgeSessionLocal;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.UnsupportedMethodException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -534,6 +536,33 @@ public class EjbcaWS implements IEjbcaWS {
 	    } catch (InvalidAlgorithmParameterException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.INVALID_KEY_SPEC, Level.INFO);
 	    }
+	}
+	
+	public void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
+            Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
+	    
+	       EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
+	                certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+	                hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	       
+	       try {
+            enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, catokentype, catokenpassword, 
+                       catokenProperties, cryptoTokenName, cryptotokenKeyAlias, validityInDays, certprofile, signAlg, policyId, 
+                       signedByCAId);
+        } catch (CAExistsException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
+        } catch (CertificateProfileDoesNotExistException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CERT_PROFILE_NOT_EXISTS, Level.INFO);
+        } catch (CryptoTokenOfflineException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
+        } catch (InvalidAlgorithmException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), Level.INFO);
+        } catch (AuthorizationDeniedException e) {
+            TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
+        }
+	    
 	}
 
 	/**

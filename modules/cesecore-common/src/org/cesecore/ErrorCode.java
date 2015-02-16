@@ -81,6 +81,8 @@ public class ErrorCode implements Serializable {
     private static final String _NAMECONSTRAINT_VIOLATION = "NAMECONSTRAINT_VIOLATION"; // End-entity does not satisfy name constraints of CA
     private static final String _UNKNOWN_PROFILE_TYPE = "UNKNOWN_PROFILE_TYPE"; // The profile type is neither end entity profile nor certificate profile
     private static final String _UNSUPPORTED_METHOD = "UNSUPPORTED_METHOD"; // Typically used to block access to enterprise-only features
+    private static final String _SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED = "SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED"; // when trying to create a new CA signed by an external CA using the WS
+    private static final String _BAD_PROFILE_TYPE = "BAD_PROFILE_TYPE"; // when using a cert/endentity profile of the wrong type
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -176,6 +178,8 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode NAMECONSTRAINT_VIOLATION = new ErrorCode(_NAMECONSTRAINT_VIOLATION);
     public static final ErrorCode UNKNOWN_PROFILE_TYPE = new ErrorCode(_UNKNOWN_PROFILE_TYPE);
     public static final ErrorCode UNSUPPORTED_METHOD = new ErrorCode(_UNSUPPORTED_METHOD);
+    public static final ErrorCode SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED = new ErrorCode(_SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED);
+    public static final ErrorCode BAD_PROFILE_TYPE = new ErrorCode(_BAD_PROFILE_TYPE);
 
 
     /** Get the internal error code. */

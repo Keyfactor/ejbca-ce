@@ -131,8 +131,8 @@ public class ObjectFactory {
     private final static QName _CreateCryptoTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoTokenResponse");
     private final static QName _GenerateCryptoTokenKeys_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeys");
     private final static QName _GenerateCryptoTokenKeysResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeysResponse");
-
-
+    private final static QName _CreateCA_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCA");
+    private final static QName _CreateCAResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCAResponse");
     
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
@@ -1099,6 +1099,22 @@ public class ObjectFactory {
      */
     public GenerateCryptoTokenKeysResponse createGenerateCryptoTokenKeysResponse() {
         return new GenerateCryptoTokenKeysResponse();
+    }
+    
+    /**
+     * Create an instance of {@link CreateCA }
+     *
+     */
+    public CreateCA createCreateCA() {
+        return new CreateCA();
+    }
+    
+    /**
+     * Create an instance of {@link CreateCAResponse }
+     *
+     */
+    public CreateCAResponse createCreateCAResponse() {
+        return new CreateCAResponse();
     }
 
     /**
@@ -2071,6 +2087,24 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeysResponse")
     public JAXBElement<GenerateCryptoTokenKeysResponse> createGenerateCryptoTokenKeysResponse(GenerateCryptoTokenKeysResponse value) {
         return new JAXBElement<GenerateCryptoTokenKeysResponse>(_GenerateCryptoTokenKeysResponse_QNAME, GenerateCryptoTokenKeysResponse.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCA }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCA")
+    public JAXBElement<CreateCA> createCreateCA(CreateCA value) {
+        return new JAXBElement<CreateCA>(_CreateCA_QNAME, CreateCA.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCAResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCAResponse")
+    public JAXBElement<CreateCAResponse> createCreateCAResponse(CreateCAResponse value) {
+        return new JAXBElement<CreateCAResponse>(_CreateCAResponse_QNAME, CreateCAResponse.class, null, value);
     }
 
 }

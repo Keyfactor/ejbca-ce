@@ -3,6 +3,7 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -1066,5 +1067,55 @@ public interface EjbcaWS {
           String arg2)
           throws AuthorizationDeniedException_Exception, EjbcaException_Exception
   ;
+  
+  /**
+   * @param arg0
+   * @param arg1
+   * @param arg2
+   * @param arg3
+   * @param arg4
+   * @param arg5
+   * @param arg6
+   * @param arg7
+   * @param arg8
+   * @param arg9
+   * @param arg10
+   * @param arg11
+   * @param arg12
+   * @throws EjbcaException_Exception
+   * @throws AuthorizationDeniedException_Exception
+   */
+ @WebMethod
+ @RequestWrapper(localName = "createCA", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCA")
+ @ResponseWrapper(localName = "createCAResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCAResponse")
+ public void createCA(
+         @WebParam(name = "arg0", targetNamespace = "")
+         String arg0,
+         @WebParam(name = "arg1", targetNamespace = "")
+         String arg1,
+         @WebParam(name = "arg2", targetNamespace = "")
+         String arg2,
+         @WebParam(name = "arg3", targetNamespace = "")
+         String arg3,
+         @WebParam(name = "arg4", targetNamespace = "")
+         String arg4,
+         @WebParam(name = "arg5", targetNamespace = "")
+         Properties arg5,
+         @WebParam(name = "arg6", targetNamespace = "")
+         String arg6,
+         @WebParam(name = "arg7", targetNamespace = "")
+         String arg7,
+         @WebParam(name = "arg8", targetNamespace = "")
+         long arg8,
+         @WebParam(name = "arg9", targetNamespace = "")
+         String arg9,
+         @WebParam(name = "arg10", targetNamespace = "")
+         String arg10,
+         @WebParam(name = "arg11", targetNamespace = "")
+         String arg11,
+         @WebParam(name = "arg12", targetNamespace = "")
+         int arg12)
+         throws AuthorizationDeniedException_Exception, EjbcaException_Exception
+ ;
    
 }
