@@ -116,6 +116,8 @@ import org.cesecore.certificates.certificate.CertificateStatusHolder;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
@@ -222,6 +224,21 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             reloadOcspSigningCache();
         } else {
             log.info("Not initing OCSP reload timers, there are already some.");
+        }
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void reloadOcspExtensionsCache() {
+        OcspExtensionsCache.INSTANCE.reloadCache();
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void clearCTFailFastCache() {
+        final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
+        if (ct != null) {
+            ct.clearCaches();
         }
     }
 

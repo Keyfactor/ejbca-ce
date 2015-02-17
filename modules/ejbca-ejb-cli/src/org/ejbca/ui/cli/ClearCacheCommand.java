@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
@@ -46,6 +47,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
     private static final String CERTIFICATE_PROFILE = "-certprofile";
     private static final String AUTHORIZATION = "-authorization";
     private static final String CA_CACHE = "-ca";
+    private static final String CT_CACHE = "-ct";
 
     //Register parameters 
     {
@@ -59,6 +61,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         registerParameter(new Parameter(AUTHORIZATION, "Authorization", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Clear Authorization cache."));
         registerParameter(new Parameter(CA_CACHE, "CA Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CA cache."));
+        registerParameter(new Parameter(CT_CACHE, "CT Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CT caches (OCSP and Fail Fast cache)."));
     }
 
     @Override
@@ -86,8 +89,9 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         final boolean certprofile = (parameters.get(CERTIFICATE_PROFILE) != null) || all;
         final boolean authorization = (parameters.get(AUTHORIZATION) != null) || all;
         final boolean cacache = (parameters.get(CA_CACHE) != null) || all;
+        final boolean ctcache = (parameters.get(CT_CACHE) != null) || all;
 
-        if (!(all || globalconf || eeprofile || certprofile || authorization || cacache)) {
+        if (!(all || globalconf || eeprofile || certprofile || authorization || cacache || ctcache)) {
             log.error("ERROR: No caches were flushed because no parameters were specified.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
@@ -127,6 +131,14 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             // Flush CAs
             EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         }
+        if (ctcache) {
+            log.info("Flushing CT caches.");
+            // Flush CT OCSP response extension cache and CT fast fail URL cache.
+            final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspResponseGeneratorSessionRemote.class);
+            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
+            ocspResponseGeneratorSession.clearCTFailFastCache();
+        }
+        
         return CommandResult.SUCCESS;
 
     }

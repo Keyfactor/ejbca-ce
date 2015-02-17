@@ -33,6 +33,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -143,12 +144,16 @@ public class ClearCacheServlet extends HttpServlet {
                 if(log.isDebugEnabled()) {
                     log.debug("OCSP signing cache cleared.");
                 }
+                ocspResponseGeneratorSession.reloadOcspExtensionsCache(); // clear CT OCSP response extension cache
+                log.debug("OCSP extensions cache cleared.");
+                if (CertificateTransparencyFactory.isCTAvailable()) {
+                    ocspResponseGeneratorSession.clearCTFailFastCache();
+                    log.debug("CT caches cleared");
+                }
                 certificateStoreSession.reloadCaCertificateCache(); 
                 if(log.isDebugEnabled()) {
                     log.debug("Certificate Store cache cleared and reloaded.");
                 }
-                
-                
         	}
         } else {
     		if (log.isDebugEnabled()) {
