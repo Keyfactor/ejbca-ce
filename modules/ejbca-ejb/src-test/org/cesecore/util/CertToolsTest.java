@@ -1271,7 +1271,7 @@ public class CertToolsTest {
             int len = modulus.bitLength();
             assertEquals(1024, len);
         } else {
-            assertTrue(false);
+            fail();
         }
         String subjectdn = CertTools.getSubjectDN(cert);
         assertEquals("CN=RPS,C=SE", subjectdn);
@@ -1297,13 +1297,13 @@ public class CertToolsTest {
     	CertTools.checkValidity(cert, new Date(MAY5_2359_2010_GMT));
     	try {
     		CertTools.checkValidity(cert, new Date(MAY5_0000_2008_GMT_MINUS1MS));
-    		assertTrue("Should throw", false);
+    		fail("Should throw");
     	} catch (CertificateNotYetValidException e) {
     		// NOPMD
     	}
     	try {
     		CertTools.checkValidity(cert, new Date(MAY5_2359_2010_GMT_PLUS1MS));
-    		assertTrue("Should throw", false);
+    		fail("Should throw");
     	} catch (CertificateExpiredException e) {
     		// NOPMD
     	}    	
@@ -1336,7 +1336,7 @@ public class CertToolsTest {
         try {
             authreq.verify(pubKey);
         } catch (Exception e) {
-            assertTrue(false);
+            fail();
         }
         // Test verification of an authenticated request that fails
         parsedObject = CertificateParser.parseCVCObject(cvcreqrenew);
@@ -1344,7 +1344,7 @@ public class CertToolsTest {
         req = authreq.getRequest();
         try {
             authreq.verify(req.getCertificateBody().getPublicKey());
-            assertTrue(false);
+            fail();
         } catch (Exception e) {
         }
         

@@ -1072,6 +1072,16 @@ Example:
 Do not use a "Subset of Subject DN" when issuing CA certificates. That can have undesired consequences, such as colliding CAIds and inability to find CA certificates.
 </note>
 </subsubsection>
+<subsubsection name="Single Active Certificate Constraint">
+<p>
+This value add the constraint that only a single active certificate may exist for an end entity at any point of time. Issuing a new certificate for an end entity using this constraint automatically
+leads to the revocation of any unrevoked and unexpired previous certificates. Revocation reason will be set as "Superseded".
+</p>
+<note>
+This configuration value is only available for End Entity Certificate Profiles. 
+</note>
+</subsubsection>
+
 
 </subsection>
 </section>

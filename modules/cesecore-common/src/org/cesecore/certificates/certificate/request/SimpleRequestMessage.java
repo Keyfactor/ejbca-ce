@@ -24,7 +24,6 @@ import java.util.Date;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CeSecoreNameStyle;
 
 
@@ -76,11 +75,8 @@ public class SimpleRequestMessage implements RequestMessage {
     /** Requested certificate extensions */
     private Extensions x509Extensions = null;
     
-    /** Private key used for signing/encrypting response, if needed */
-    private PrivateKey responsePrivateKey;
-    /** Security provider used for the responsePrivateKey */
-    private String responseProvider = BouncyCastleProvider.PROVIDER_NAME;
-
+    private Date validityNotAfter = null;
+   
     /**
      * Constructs a new Simple message handler object.
      * @param pubkey the public key to be certified
@@ -91,6 +87,20 @@ public class SimpleRequestMessage implements RequestMessage {
         this.pubkey = pubkey;
         this.username = username;
         this.password = password;
+    }
+    
+    /**
+     * Constructs a new Simple message handler object.
+     * @param pubkey the public key to be certified
+     * @param username username of the EJBCA user
+     * @param password password of the EJBCA user
+     * @param the end validity of this certificate
+     */
+    public SimpleRequestMessage(final PublicKey pubkey, final String username, final String password, Date validity) {
+        this.pubkey = pubkey;
+        this.username = username;
+        this.password = password;
+        this.validityNotAfter = validity;
     }
 
     @Override
@@ -176,7 +186,7 @@ public class SimpleRequestMessage implements RequestMessage {
 	
     @Override
 	public Date getRequestValidityNotAfter() {
-		return null;
+		return validityNotAfter;
 	}
 	
     @Override
@@ -250,10 +260,7 @@ public class SimpleRequestMessage implements RequestMessage {
 
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
-        this.responsePrivateKey = key;
-        if (provider != null) {
-            this.responseProvider = provider;
-        }
+  
     }
 
 } // SimpleRequestMessage
