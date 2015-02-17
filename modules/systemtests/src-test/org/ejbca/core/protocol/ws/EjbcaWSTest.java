@@ -1036,7 +1036,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test73AddSubjectToRole() throws Exception {
+    public void test73ManageSubjectInRole() throws Exception {
         log.trace(">test73AddSubjectToRole()");
         
         String rolename = "TestWSNewAccessRole";
@@ -1089,7 +1089,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             // Verify that there are no admins from the start
             assertTrue(role.getAccessUsers().size()==0);
         
-            // Add an adminUser to the new role
+            // Add adminUser to the new role
             ejbcaraws.addSubjectToRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
                     AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
             role = roleAccessSession.findRole(rolename);
@@ -1103,6 +1103,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals(adminUser.getCertificateDN(), addedAdmin.getMatchValue());
             assertEquals(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(), addedAdmin.getMatchWith());
 
+            // Remove adminUser from the new role
+            ejbcaraws.removeSubjectFromRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+                    AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
+            role = roleAccessSession.findRole(rolename);            
+            assertTrue(role.getAccessUsers().values().size()==0);
+            
         } catch (RuntimeException e) {
             if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
                 log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
