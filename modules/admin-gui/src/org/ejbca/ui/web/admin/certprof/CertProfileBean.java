@@ -779,7 +779,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private boolean isApprovalEnabled(final int approvalType) throws AuthorizationDeniedException {
         return getCertificateProfile().getApprovalSettings().contains(Integer.valueOf(approvalType));
     }
-
+    
     private void setApprovalEnabled(final int approvalType, final boolean enabled) throws AuthorizationDeniedException {
         final List<Integer> approvalSettings = new ArrayList<Integer>(getCertificateProfile().getApprovalSettings());
         if (enabled) {

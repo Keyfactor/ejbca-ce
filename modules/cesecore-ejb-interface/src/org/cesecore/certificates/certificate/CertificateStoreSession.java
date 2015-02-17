@@ -81,12 +81,22 @@ public interface CertificateStoreSession {
     /**
      * Lists certificates for a given subject signed by the given issuer.
      * 
-     * @param subjectDN the DN of the subject whos certificates will be retrieved.
-     * @param issuerDN the dn of the certificates issuer.
+     * @param subjectDN the DN of the subject whose certificates will be retrieved.
+     * @param issuerDN the DN of the certificates issuer.
      * @return Collection of Certificates (java.security.cert.Certificate) in no
      *         specified order or an empty Collection.
      */
-    Collection<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN);
+    List<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN);
+    
+    /**
+     * Lists certificates for a given subject signed by the given issuer.
+     * 
+     * @param subjectDN the DN of the subject whose certificates will be retrieved.
+     * @param issuerDN the DN of the certificates issuer.
+     * @param onlyActive set to true to limit the search to active (non revoked, unexpired) certificates.
+     * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
+     */
+    List<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN, boolean onlyActive);
 
     /** @return set of users with certificates with specified subject DN issued by specified issuer. */
     Set<String> findUsernamesByIssuerDNAndSubjectDN(String issuerDN, String subjectDN);

@@ -19,10 +19,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -777,6 +781,75 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // NOPMD
         } finally {
             internalCertStoreSession.removeCertificate(fingerprint);
+        }
+    }
+    
+    /**
+     * This test checks the Single Active Certificate Constraint, i.e. a certificate profile setting that ensures that when a new certificate is issued for and end entity,
+     * all previous non-revoked (active and notified about expiration) and unexpired certificates are revoked with status "Superseded". 
+     */
+    @Test
+    public void testCreateSingleActiveCertificateConstraint() throws CertificateProfileExistsException, AuthorizationDeniedException,
+            CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException,
+            CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, CertificateExpiredException, CertificateNotYetValidException {
+        final String profileName = "testCreateSingleActiveCertificateConstraint";
+        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile.setAllowValidityOverride(true);
+        int certificateProfileId = certProfileSession.addCertificateProfile(alwaysAllowToken, profileName, profile);
+        final String username = "testCreateSingleActiveCertificateConstraint";
+        EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, testx509ca.getCAId(), null, null, new EndEntityType(
+                EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntity.setPassword("foo123");
+        BigInteger toBeRevokedSerialNumber = null;
+        BigInteger notifiedAboutExpiration = null;
+        BigInteger alreadyExpired = null;
+        BigInteger newCertificate = null;
+        try {
+            SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), endEntity.getUsername(), endEntity.getPassword());
+            // First certificate, meant to be revoked. 
+            X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            toBeRevokedSerialNumber = CertTools.getSerialNumber(responseMessage.getCertificate());
+            // Second certificate, also to be revoked, but with status 
+            responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            if (!certificateStoreSession.setStatus(alwaysAllowToken, CertTools.getFingerprintAsString(responseMessage.getCertificate()),
+                    CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+                throw new IllegalStateException("Could not update certificate status, test can't continue.");
+            }
+            notifiedAboutExpiration = CertTools.getSerialNumber(responseMessage.getCertificate());
+            //Third certificate, expired. Shouldn't be touched. 
+            SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), endEntity.getUsername(), endEntity.getPassword(), new Date(
+                    System.currentTimeMillis() - 1000*60*60*12));
+            responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, expiredReq,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            try {
+                CertTools.checkValidity(responseMessage.getCertificate(), new Date(System.currentTimeMillis() + 1000*60*60));
+                fail("Certificate is not expired, test cannot continue.");
+            } catch (CertificateExpiredException e) {
+                // NOPMD: As it should be
+            }
+            alreadyExpired = CertTools.getSerialNumber(responseMessage.getCertificate());
+
+            //Update the profile with the new constraint
+            profile.setSingleActiveCertificateConstraint(true);
+            certProfileSession.changeCertificateProfile(alwaysAllowToken, profileName, profile);
+            //Create a new certificate, it should be valid. 
+            responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            newCertificate = CertTools.getSerialNumber(responseMessage.getCertificate());
+            assertEquals("New certificate was revoked.", CertificateStatus.OK, certificateStoreSession.getStatus(X509CADN, newCertificate));
+            assertEquals("Old certificate was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(X509CADN, toBeRevokedSerialNumber));
+            assertEquals("Old certificate with notified about expiration status was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(X509CADN, notifiedAboutExpiration));
+            assertEquals("Expired certificate was revoked.", CertificateStatus.OK, certificateStoreSession.getStatus(X509CADN, alreadyExpired));
+        } finally {
+            certProfileSession.removeCertificateProfile(alwaysAllowToken, profileName);
+            internalCertStoreSession.removeCertificate(toBeRevokedSerialNumber);
+            internalCertStoreSession.removeCertificate(notifiedAboutExpiration);
+            internalCertStoreSession.removeCertificate(alreadyExpired);
+            internalCertStoreSession.removeCertificate(newCertificate);
         }
     }
 

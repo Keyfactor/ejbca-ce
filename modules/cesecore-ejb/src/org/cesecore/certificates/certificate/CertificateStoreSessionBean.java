@@ -269,7 +269,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Collection<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN) {
+    public List<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN) {
+        return findCertificatesBySubjectAndIssuer(subjectDN, issuerDN, false);
+    }
+    
+    @Override
+    public List<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN, boolean onlyActive) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
         }
@@ -278,12 +283,26 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         dn = CertTools.stringToBCDNString(dn);
         String issuerdn = StringTools.strip(issuerDN);
         issuerdn = CertTools.stringToBCDNString(issuerdn);
-        log.debug("Looking for cert with (transformed)DN: " + dn);
-        Collection<Certificate> ret = new ArrayList<Certificate>();
-        Collection<CertificateData> coll = CertificateData.findBySubjectDNAndIssuerDN(entityManager, dn, issuerdn);
-        Iterator<CertificateData> iter = coll.iterator();
-        while (iter.hasNext()) {
-            ret.add(iter.next().getCertificate(this.entityManager));
+        if (log.isDebugEnabled()) {
+            log.debug("Looking for cert with (transformed)DN: " + dn);
+        }
+        List<Certificate> ret = new ArrayList<Certificate>();
+        
+        final Query query;
+        if (onlyActive) {
+            query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE " + "a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN"
+                    + " AND (a.status=:active OR a.status=:notifiedexpired)" + "AND a.expireDate>:expireDate");
+            query.setParameter("active", CertificateConstants.CERT_ACTIVE);
+            query.setParameter("notifiedexpired", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+            query.setParameter("expireDate", System.currentTimeMillis());
+        } else {
+            query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
+        }
+        query.setParameter("subjectDN", subjectDN);
+        query.setParameter("issuerDN", issuerDN);
+        
+        for(Object certificateData : query.getResultList()) {
+            ret.add(((CertificateData) certificateData).getCertificate(this.entityManager));
         }
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
