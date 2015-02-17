@@ -541,11 +541,11 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                 // NOPMD
             }
             // Remove the deny rule again so we can remove the profile later on
-            roleManagementSession.removeAccessRulesFromRole(roleMgmgToken, role, accessRules);
+            roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
         } finally {
-            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH");
-            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH1");
-            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH2");
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "TESTEEPROFNOAUTH");
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "TESTEEPROFNOAUTH1");
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "TESTEEPROFNOAUTH2");
         }
     }
 
