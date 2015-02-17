@@ -244,6 +244,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CTMINSCTS = "ctminscts";
     protected static final String CTMAXSCTS = "ctmaxscts";
     protected static final String CTMAXRETRIES = "ctmaxretries";
+    protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
 
     /**
      * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
@@ -426,6 +427,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUsePrivateKeyUsagePeriodNotAfter(false);
         setPrivateKeyUsagePeriodStartOffset(0);
         setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
+        
+        setSingleActiveCertificateConstraint(false);
     }
 
     /**
@@ -1699,6 +1702,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseSubjectDirAttributes(boolean use) {
         data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));
     }
+    
+    public void setSingleActiveCertificateConstraint(final boolean enabled) {
+        data.put(USERSINGLEACTIVECERTIFICATECONSTRAINT, Boolean.valueOf(enabled));
+    }
+    
+    public boolean isSingleActiveCertificateConstraint() {
+        Object constraintObject = data.get(USERSINGLEACTIVECERTIFICATECONSTRAINT);
+        if(constraintObject == null) {
+            //For upgrading from versions prior to 6.3.1
+            setSingleActiveCertificateConstraint(false);
+            return false;
+        } else {
+            return ((Boolean) data.get(USERSINGLEACTIVECERTIFICATECONSTRAINT)).booleanValue();
+        }
+    }
+
     
     /**
      * Returns which type of terminals are used in this ca/certificate hierarchy.
