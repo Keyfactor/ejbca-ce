@@ -38,8 +38,7 @@ public class ejbcawsracli  {
                 System.out.println(
                     "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | " +
                     "getpublisherqueuelength | revoketoken | revokeuser | checkrevocationstatus | generatenewuser | " +
-                    "createcrl | cacertrequest | cacertresponse | customlog | getprofile | createcryptotoken | " +
-                    "generatecryptotokenkeys | stress");
+                    "createcrl | cacertrequest | cacertresponse | customlog | getprofile | stress");
             }
         } catch (Exception e) {
         	Throwable cause = e.getCause();
