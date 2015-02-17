@@ -59,4 +59,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
     
     void addSubjectToRole(AuthenticationToken admin, String roleName, String caName, String matchWith, String matchType, 
             String matchValue) throws UnsupportedMethodException, RoleNotFoundException, CADoesntExistsException, AuthorizationDeniedException;
+    
+    void removeSubjectFromRole(AuthenticationToken admin, String roleName, String caName, String matchWith, String matchType, 
+            String matchValue) throws UnsupportedMethodException, RoleNotFoundException, CADoesntExistsException, AuthorizationDeniedException;
 }

@@ -135,6 +135,8 @@ public class ObjectFactory {
     private final static QName _CreateCAResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCAResponse");
     private final static QName _AddSubjectToRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRole");
     private final static QName _AddSubjectToRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRoleResponse");
+    private final static QName _RemoveSubjectFromRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRole");
+    private final static QName _RemoveSubjectFromRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRoleResponse");
     
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
@@ -1133,6 +1135,22 @@ public class ObjectFactory {
      */
     public AddSubjectToRoleResponse createAddSubjectToRoleResponse() {
         return new AddSubjectToRoleResponse();
+    }
+
+    /**
+     * Create an instance of {@link RemoveSubjectFromRole }
+     *
+     */
+    public RemoveSubjectFromRole createRemoveSubjectFromRole() {
+        return new RemoveSubjectFromRole();
+    }
+    
+    /**
+     * Create an instance of {@link RemoveSubjectFromRoleResponse }
+     *
+     */
+    public RemoveSubjectFromRoleResponse createRemoveSubjectFromRoleResponse() {
+        return new RemoveSubjectFromRoleResponse();
     }
     
     /**
@@ -2141,6 +2159,24 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRoleResponse")
     public JAXBElement<AddSubjectToRoleResponse> createAddSubjectToRoleResponse(AddSubjectToRoleResponse value) {
         return new JAXBElement<AddSubjectToRoleResponse>(_AddSubjectToRoleResponse_QNAME, AddSubjectToRoleResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRole }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRole")
+    public JAXBElement<RemoveSubjectFromRole> createRemoveSubjectFromRole(RemoveSubjectFromRole value) {
+        return new JAXBElement<RemoveSubjectFromRole>(_RemoveSubjectFromRole_QNAME, RemoveSubjectFromRole.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRoleResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRoleResponse")
+    public JAXBElement<RemoveSubjectFromRoleResponse> createRemoveSubjectFromRoleResponse(RemoveSubjectFromRoleResponse value) {
+        return new JAXBElement<RemoveSubjectFromRoleResponse>(_RemoveSubjectFromRoleResponse_QNAME, RemoveSubjectFromRoleResponse.class, null, value);
     }
 
 }

@@ -1143,5 +1143,31 @@ public interface EjbcaWS {
            String arg4)
            throws AuthorizationDeniedException_Exception, EjbcaException_Exception
    ;
+   
+   /**
+    * @param arg0   
+    * @param arg1
+    * @param arg2
+    * @param arg3
+    * @param arg4
+    * @throws EjbcaException_Exception
+    * @throws AuthorizationDeniedException_Exception
+    */
+   @WebMethod
+   @RequestWrapper(localName = "removeSubjectFromRole", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RemoveSubjectFromRole")
+   @ResponseWrapper(localName = "removeSubjectFromRoleResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RemoveSubjectFromRoleResponse")
+   public void removeSubjectFromRole(
+           @WebParam(name = "arg0", targetNamespace = "")
+           String arg0,
+           @WebParam(name = "arg1", targetNamespace = "")
+           String arg1,
+           @WebParam(name = "arg2", targetNamespace = "")
+           String arg2,
+           @WebParam(name = "arg3", targetNamespace = "")
+           String arg3,
+           @WebParam(name = "arg4", targetNamespace = "")
+           String arg4)
+           throws AuthorizationDeniedException_Exception, EjbcaException_Exception
+   ;
 
 }

@@ -566,6 +566,7 @@ public class EjbcaWS implements IEjbcaWS {
         }
 	}
 	
+	@Override
 	public void addSubjectToRole(String roleName, String caName, String matchWith, String matchType, 
             String matchValue) throws EjbcaException, AuthorizationDeniedException {
 	            
@@ -583,6 +584,26 @@ public class EjbcaWS implements IEjbcaWS {
 	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
 	        throw e;
         }
+	}
+	
+	@Override
+	public void removeSubjectFromRole(String roleName, String caName, String matchWith, String matchType, 
+	        String matchValue) throws EjbcaException, AuthorizationDeniedException {
+	    
+	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
+	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	               
+	    try {
+	        enterpriseWSBridgeSession.removeSubjectFromRole(ejbhelper.getAdmin(), roleName, caName, matchWith, matchType, matchValue);
+	    } catch (CADoesntExistsException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_NOT_EXISTS, Level.INFO);
+	    } catch (RoleNotFoundException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
+	    } catch (AuthorizationDeniedException e) {
+	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+	        throw e;
+	    }
 	}
 
 	/**

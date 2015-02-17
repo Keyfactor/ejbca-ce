@@ -34,7 +34,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
     public void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, 
             boolean autoActivate, boolean exportKey, String pkcs11LibFilename, String pkcs11SlotLabelType, 
             String pkcs11SlotPropertyValue, HashMap<String, String> PKCS11AttributeData) throws UnsupportedMethodException {
-        throw new UnsupportedMethodException("This method can only be used in Enterprise edition. Bohohohohoho");
+        throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");
     }
     
     @Override
@@ -52,6 +52,12 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
     
     @Override
     public void addSubjectToRole(AuthenticationToken admin, String roleName, String caName, String matchWith, 
+            String matchType, String matchValue) throws UnsupportedMethodException {
+        throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
+    }
+    
+    @Override
+    public void removeSubjectFromRole(AuthenticationToken admin, String roleName, String caName, String matchWith, 
             String matchType, String matchValue) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
     }

@@ -239,7 +239,6 @@ public interface IEjbcaWS {
 	/**
 	 * Adds an administrator to the specified role
 	 * 
-	 * @param admin
 	 * @param roleName The role to add the admin to
 	 * @param caName Name of the CA that issued the new administrator's certificate
 	 * @param matchWith Could be any of: NONE, WITH_COUNTRY, WITH_DOMAINCOMPONENT, WITH_STATEORPROVINCE, WITH_LOCALITY, WITH_ORGANIZATION,
@@ -252,6 +251,22 @@ public interface IEjbcaWS {
 	 */
 	abstract void addSubjectToRole(String roleName, String caName, String matchWith, String matchType, String matchValue) 
 	        throws EjbcaException, AuthorizationDeniedException;
+	
+	/**
+     * Removes an administrator from the specified role
+     * 
+     * @param roleName The role to remove the admin from
+     * @param caName Name of the CA that issued the administrator's certificate
+     * @param matchWith Could be any of: NONE, WITH_COUNTRY, WITH_DOMAINCOMPONENT, WITH_STATEORPROVINCE, WITH_LOCALITY, WITH_ORGANIZATION,
+              WITH_ORGANIZATIONALUNIT, WITH_TITLE, WITH_COMMONNAME, WITH_UID, WITH_DNSERIALNUMBER, WITH_SERIALNUMBER,
+              WITH_DNEMAILADDRESS, WITH_RFC822NAME, WITH_UPN, WITH_FULLDN
+     * @param matchType Could be one of: TYPE_EQUALCASE, TYPE_EQUALCASEINS, TYPE_NOT_EQUALCASE, TYPE_NOT_EQUALCASEINS, TYPE_NONE
+     * @param matchValue
+     * @throws EjbcaException
+     * @throws AuthorizationDeniedException
+     */
+    abstract void removeSubjectFromRole(String roleName, String caName, String matchWith, String matchType, String matchValue) 
+            throws EjbcaException, AuthorizationDeniedException;
 	
 	/**
 	 *  Generates a certificate for a user.
