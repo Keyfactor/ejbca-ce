@@ -243,6 +243,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CTLOGS = "ctlogs";
     protected static final String CTMINSCTS = "ctminscts";
     protected static final String CTMAXSCTS = "ctmaxscts";
+    protected static final String CTMINSCTSOCSP = "ctminsctsocsp";
+    protected static final String CTMAXSCTSOCSP = "ctmaxsctsocsp";
     protected static final String CTMAXRETRIES = "ctmaxretries";
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
 
@@ -2004,7 +2006,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     /**
      * Number of CT logs to require an SCT from, or it will be considered an error.
-     * If zero, CT is completely optional and ignored if no log servers can be contacted. 
+     * If zero, CT is completely optional and ignored if no log servers can be contacted.
+     * This value is used for certificates and publishers. For OCSP responses, see CertificateProfile#getCTMinSCTsOCSP
      */
     public int getCTMinSCTs() {
         if (data.get(CTMINSCTS) == null) {
@@ -2018,8 +2021,23 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     /**
-     * After the maximum number of SCTs have been received EJBCA
-     * will stop contacting log servers.
+     * @see CertificateProfile#getCTMinSCTs
+     */
+    public int getCTMinSCTsOCSP() {
+        if (data.get(CTMINSCTSOCSP) == null) {
+            return getCTMinSCTs();
+        }
+        return (Integer)data.get(CTMINSCTSOCSP);
+    }
+    
+    public void setCTMinSCTsOCSP(int minSCTsOCSP) {
+        data.put(CTMINSCTSOCSP, minSCTsOCSP);
+    }
+    
+    /**
+     * After the maximum number of SCTs have been received EJBCA will stop contacting log servers.
+     * This value is for certificates. For OCSP responses, see CertificateProfile#getCTMaxSCTsOCSP.
+     * For publishers, certificates are submitted to all enabled logs.
      */
     public int getCTMaxSCTs() {
         if (data.get(CTMAXSCTS) == null) {
@@ -2030,6 +2048,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setCTMaxSCTs(int maxSCTs) {
         data.put(CTMAXSCTS, maxSCTs);
+    }
+    
+    /**
+     * @see CertificateProfile#getCTMaxSCTs
+     */
+    public int getCTMaxSCTsOCSP() {
+        if (data.get(CTMAXSCTSOCSP) == null) {
+            return getCTMaxSCTs();
+        }
+        return (Integer)data.get(CTMAXSCTSOCSP);
+    }
+    
+    public void setCTMaxSCTsOCSP(int maxSCTsOCSP) {
+        data.put(CTMAXSCTSOCSP, maxSCTsOCSP);
     }
     
     /** Number of times to retry connecting to a Certificate Transparency log */
