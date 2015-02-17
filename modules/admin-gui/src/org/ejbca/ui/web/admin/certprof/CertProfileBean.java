@@ -141,14 +141,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 success = false;
             }
             if (isCtEnabled()) {
-                if (prof.getEnabledCTLogs().isEmpty()) {
+                int numEnabledLogs = prof.getEnabledCTLogs().size();
+                if (numEnabledLogs == 0) {
                     addErrorMessage("NOCTLOGSSELECTED");
                     success = false;
-                } else if (prof.getCTMinSCTs() < 0 ||
-                    prof.getCTMinSCTs() > prof.getEnabledCTLogs().size() ||
-                    prof.getCTMaxSCTs() < 1 ||
-                    prof.getCTMaxSCTs() > prof.getEnabledCTLogs().size() ||
-                    prof.getCTMinSCTs() > prof.getCTMaxSCTs()) {
+                } else if (prof.getCTMinSCTs() < 0 || prof.getCTMinSCTsOCSP() < 0 ||
+                    prof.getCTMinSCTs() > numEnabledLogs ||
+                    prof.getCTMinSCTsOCSP() > numEnabledLogs ||
+                    prof.getCTMaxSCTs() < 1 || prof.getCTMaxSCTsOCSP() < 1 ||
+                    prof.getCTMaxSCTs() > numEnabledLogs || prof.getCTMaxSCTsOCSP() > numEnabledLogs ||
+                    prof.getCTMinSCTs() > prof.getCTMaxSCTs() ||
+                    prof.getCTMinSCTsOCSP() > prof.getCTMaxSCTsOCSP()) {
                     addErrorMessage("INCORRECTMINMAXSCTS");
                     success = false;
                 }
