@@ -79,7 +79,8 @@ public interface CertificateTransparency {
     boolean hasSCTs(Certificate cert);
 
     /**
-     * Clears the URL availability status cache.
+     * Clears the URL availability status (fast fail) cache.
+     * To clear the OCSP CT cache, use OcspExtensionsCache.reloadCache()
      */
     void clearCaches();
     

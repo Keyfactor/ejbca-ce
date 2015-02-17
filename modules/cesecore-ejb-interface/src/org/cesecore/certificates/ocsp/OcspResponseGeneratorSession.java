@@ -50,5 +50,10 @@ public interface OcspResponseGeneratorSession {
     
     /** Reloads the cache of OCSP signers. */
     void reloadOcspSigningCache();
+    
+    /** Reloads the cache of OCSP extensions (including extension specific caches, e.g. the CT OCSP response extensions cache). */
+    void reloadOcspExtensionsCache();
 
+    /** Clears CT fail fast cache. If CT is not supported in this build, then it does nothing. */
+    void clearCTFailFastCache();
 }
