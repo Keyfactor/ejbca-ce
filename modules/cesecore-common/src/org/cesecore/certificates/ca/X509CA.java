@@ -979,10 +979,11 @@ public class X509CA extends CA implements Serializable {
                     }
                 } else { // if not a subjectAlternativeName extension, just add it to both certbuilder and precertbuilder 
                     final boolean isCritical = extension.isCritical();
-                    final ASN1Encodable parsedValue = extension.getParsedValue();
-                    certbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+                    // We must get the raw octets here in order to be able to create invalid extensions that is not constructed from proper ASN.1
+                    final byte[] value = extension.getExtnValue().getOctets();
+                    certbuilder.addExtension(extension.getExtnId(), isCritical, value);
                     if (precertbuilder != null) {
-                        precertbuilder.addExtension(extension.getExtnId(), isCritical, parsedValue);
+                        precertbuilder.addExtension(extension.getExtnId(), isCritical, value);
                     }
                 }
             }
