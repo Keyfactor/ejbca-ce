@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -715,7 +717,13 @@ public class X509CATest {
         prop.put("id3.property.dynamin", "false");
         prop.put("id3.property.value", "aabbccddeeff00");
         // Load the Custom extensions
-        CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance(prop);
+        Field certificateExtensionFactoryInstance = CertificateExtensionFactory.class.getDeclaredField("instance");
+        certificateExtensionFactoryInstance.setAccessible(true);
+        Method parseConfiguration = CertificateExtensionFactory.class.getDeclaredMethod("parseConfiguration", Properties.class);
+        parseConfiguration.setAccessible(true);
+        CertificateExtensionFactory instance = (CertificateExtensionFactory) parseConfiguration.invoke(null, prop);
+        certificateExtensionFactoryInstance.set(null, instance);
+        CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
         assertEquals(fact.getCertificateExtensions(1).getOID(), "2.16.840.1.113730.1.13");
         assertEquals(fact.getCertificateExtensions(2).getOID(), "1.2.3.4");
         assertEquals(fact.getCertificateExtensions(3).getOID(), "1.2.3.5");
