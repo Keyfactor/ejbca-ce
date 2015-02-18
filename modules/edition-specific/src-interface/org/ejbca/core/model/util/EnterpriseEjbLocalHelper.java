@@ -25,7 +25,7 @@ import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 /**
  * Helper methods to get EJB session interfaces.
  * 
- * @version $Id: EjbLocalHelper.java 19968 2014-10-09 13:13:58Z mikekushner $
+ * @version $Id$
  */
 public class EnterpriseEjbLocalHelper implements EnterpriseEditionEjbBridgeSessionLocal {
     
