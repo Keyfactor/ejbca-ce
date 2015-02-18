@@ -24,7 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 /**
  * JEE5 EJB lookup helper.
  * 
- * @version $Id: EnterpriseEditionEjbBridgeSessionBean.java 20647 2015-02-10 11:07:47Z aveen4711 $
+ * @version $Id$
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
