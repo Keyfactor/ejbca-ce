@@ -38,6 +38,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -58,6 +59,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
@@ -82,6 +84,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -662,7 +665,107 @@ public class X509CATest {
             // NOPMD: this is what we expect
         }
     }
-    
+
+    /** 
+     * Test that the CA can issue certificates with custom certificate extensions.
+     */
+    @Test
+    public void testCustomCertificateExtension() throws Exception {
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        X509CA testCa = createTestCA(cryptoToken, "CN=foo");    
+        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, revcerts, 0);
+        assertNotNull(testCrl);
+        X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
+        Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
+        assertEquals("A list was returned without any values present.", 0, result.size());        
+        // Issue a certificate with two different basic certificate extensions
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        // Configure some custom basic certificate extension
+        // one with a good IA5String encoding
+        Properties prop = new Properties();
+        prop.put("id1.oid", "2.16.840.1.113730.1.13");
+        prop.put("id1.classpath", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
+        prop.put("id1.displayname", "NetscapeComment");
+        prop.put("id1.used", "true");
+        prop.put("id1.translatable", "false");
+        prop.put("id1.critical", "false");
+        prop.put("id1.property.encoding", "DERIA5STRING");
+        prop.put("id1.property.dynamin", "false");
+        prop.put("id1.property.value", "Hello World");
+        // one RAW with proper DER encoding
+        prop.put("id2.oid", "1.2.3.4");
+        prop.put("id2.classpath", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
+        prop.put("id2.displayname", "RawProper");
+        prop.put("id2.used", "true");
+        prop.put("id2.translatable", "false");
+        prop.put("id2.critical", "false");
+        prop.put("id2.property.encoding", "RAW");
+        prop.put("id2.property.dynamin", "false");
+        prop.put("id2.property.value", "301a300c060a2b060104018237140202300a06082b06010505070302");
+        // one RAW with no DER encoding (actually invalid according to RFC5280)
+        prop.put("id3.oid", "1.2.3.5");
+        prop.put("id3.classpath", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
+        prop.put("id3.displayname", "RawNoDer");
+        prop.put("id3.used", "true");
+        prop.put("id3.translatable", "false");
+        prop.put("id3.critical", "false");
+        prop.put("id3.property.encoding", "RAW");
+        prop.put("id3.property.dynamin", "false");
+        prop.put("id3.property.value", "aabbccddeeff00");
+        // Load the Custom extensions
+        CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance(prop);
+        assertEquals(fact.getCertificateExtensions(1).getOID(), "2.16.840.1.113730.1.13");
+        assertEquals(fact.getCertificateExtensions(2).getOID(), "1.2.3.4");
+        assertEquals(fact.getCertificateExtensions(3).getOID(), "1.2.3.5");
+        // Configure to use the custom extensions in the certificate profile
+        List<Integer> list = new ArrayList<Integer>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        cp.setUsedCertificateExtensions(list);
+        final KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        X509Certificate cert = (X509Certificate)testCa.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+        assertNotNull("A certificate should have been issued", cert);
+        byte[] ext1 = cert.getExtensionValue("2.16.840.1.113730.1.13");
+        // The Extension value is an Octet String, containing my value
+        ASN1InputStream is = new ASN1InputStream(ext1);
+        ASN1OctetString oct = (ASN1OctetString) (is.readObject());
+        is.close();
+        ASN1InputStream is2 = new ASN1InputStream(oct.getOctets());
+        DERIA5String str = (DERIA5String)is2.readObject();
+        is2.close();
+        assertEquals("Hello World", str.getString());
+        
+        byte[] ext2 = cert.getExtensionValue("1.2.3.4");
+        is = new ASN1InputStream(ext2);
+        oct = (ASN1OctetString) (is.readObject());
+        is.close();
+        is2 = new ASN1InputStream(oct.getOctets());
+        ASN1Sequence seq = (ASN1Sequence)is2.readObject();
+        System.out.println(ASN1Dump.dumpAsString(seq));
+        is2.close();
+        ASN1Encodable enc = seq.getObjectAt(0);
+        ASN1Sequence seq2 = ASN1Sequence.getInstance(enc);
+        ASN1Encodable enc2 = seq2.getObjectAt(0);
+        ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(enc2);
+        assertEquals("1.3.6.1.4.1.311.20.2.2", id.getId());
+        enc = seq.getObjectAt(1);
+        seq2 = ASN1Sequence.getInstance(enc);
+        enc2 = seq2.getObjectAt(0);
+        id = ASN1ObjectIdentifier.getInstance(enc2);
+        assertEquals("1.3.6.1.5.5.7.3.2", id.getId());
+        
+        byte[] ext3 = cert.getExtensionValue("1.2.3.5");
+        is = new ASN1InputStream(ext3);
+        oct = (ASN1OctetString) (is.readObject());
+        is.close();
+        // This value can not be parsed as ASN.1
+        byte[] bytes = oct.getOctets();
+        assertEquals("aabbccddeeff00", Hex.toHexString(bytes));
+    }
+
     /**
      * Tests default value of "use printable string" option (should be disabled by default)
      * and tests that the option works.
