@@ -1498,7 +1498,7 @@ public abstract class CertTools {
     }
 
     /**
-     * Generate a selfsigned certiicate.
+     * Generate a selfsigned certificate.
      * 
      * @param dn subject and issuer DN
      * @param validity in days
