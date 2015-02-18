@@ -126,6 +126,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
@@ -258,6 +259,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspResponseGeneratorSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws CertificateException {
@@ -907,6 +909,7 @@ Content-Type: text/html; charset=iso-8859-1
      */
     @Test
     public void testUseAlwaysExtensions() throws Exception {
+        log.trace(">testUseAlwaysExtensions");
         final String EXTENSION_OID = "ocsp.extensionoid";
         final String EXTENSION_CLASS = "ocsp.extensionclass";
         final String oldOidValue = cesecoreConfigurationProxySession.getConfigurationValue(EXTENSION_OID);
@@ -915,6 +918,7 @@ Content-Type: text/html; charset=iso-8859-1
             cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_OID, "*" + OcspCertHashExtension.CERT_HASH_OID);
             cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_CLASS,
                     "org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension");
+            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
 
             // An OCSP request, ocspTestCert is already created in earlier tests
             OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -931,6 +935,8 @@ Content-Type: text/html; charset=iso-8859-1
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_OID, oldOidValue);
             cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_CLASS, oldClass);
+            ocspResponseGeneratorSession.reloadOcspExtensionsCache();
+            log.trace("<testUseAlwaysExtensions");
         }
     }
     
