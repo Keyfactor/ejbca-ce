@@ -143,7 +143,6 @@
 	<property name="mod.edition-specific-interface.lib" location="${mod.dist.path}/edition-specific-interface.jar"/>
 	<property name="mod.edition-specific-ejb.lib" location="${mod.dist.path}/edition-specific-ejb.jar"/>
 	<property name="mod.edition-specific-ee-ejb.path" location="${mod.path}/edition-specific-ee"/>
-	<!-- <property name="mod.eedition-ejb.path" location="${mod.path}/edition-specific-ee"/> -->
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
