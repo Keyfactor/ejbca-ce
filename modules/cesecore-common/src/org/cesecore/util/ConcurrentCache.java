@@ -12,9 +12,11 @@
  *************************************************************************/  
 package org.cesecore.util;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -136,7 +138,7 @@ public final class ConcurrentCache<K,V> {
     private volatile long maxEntries = NO_LIMIT;
     
     private AtomicLong numEntries = new AtomicLong(0L);
-    private final ConcurrentHashMap<K,Boolean> pendingRemoval = new ConcurrentHashMap<K,Boolean>(); // always contains Boolean.TRUE
+    private final Set<K> pendingRemoval = Collections.newSetFromMap(new ConcurrentHashMap<K,Boolean>());
     private final Lock isCleaning = new ReentrantLock();
     private volatile long lastCleanup = 0L;
     private volatile long cleanupInterval = 1000L;
@@ -327,7 +329,7 @@ public final class ConcurrentCache<K,V> {
                 ratioToRemove = Math.max(0.0F, 1.0F-0.8F*(float)maxEntries/(float)numEntries.get());
                 
                 // Remove items that have not been accessed since they were last marked as "pending removal"
-                for (K key : pendingRemoval.keySet()) {
+                for (K key : pendingRemoval) {
                     cache.remove(key);
                     numEntries.decrementAndGet();
                 }
@@ -343,7 +345,7 @@ public final class ConcurrentCache<K,V> {
                     iter.remove();
                     numEntries.decrementAndGet();
                 } else if (maxEntries != NO_LIMIT && random.nextFloat() < ratioToRemove) {
-                    pendingRemoval.put(mapEntry.getKey(), Boolean.TRUE);
+                    pendingRemoval.add(mapEntry.getKey());
                 }
             }
         } finally {
