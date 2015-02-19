@@ -1142,9 +1142,13 @@ CMP Authentication Module : HMAC
 CMP Authentication Parameters : password
 </source>
 <p>
-You can then use cmpclient (as an RA):</p>
+You can then use cmpforopenssl (as an RA):</p>
 <source>
 ./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/opensslra -srvcert ManagementCA.cacert.pem -user NewUser -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=NewUser/O=My Organization/C=SE"
+</source>
+<p>or, with other version of cmpforopenssl:</p>
+<source>
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=User Name;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
 EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
@@ -1164,9 +1168,13 @@ bin/ejbca.sh ra setclearpwd user1 password
 bin/ejbca.sh ra setendentitystatus user1 10
 </source>
 <p>
-You can then use cmpclient (as a client):</p>
+You can then use cmpforopenssl (as a client):</p>
 <source>
 ./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/opensslclient -srvcert ManagementCA.cacert.pem -user user1 -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+</source>
+<p>or, with other version of cmpforopenssl:</p>
+<source>
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=user1;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
@@ -1185,7 +1193,7 @@ bin/ejbca.sh ra setclearpwd user1 password
 bin/ejbca.sh ra setendentitystatus user1 10
 </source>
 <p>
-You can then use cmpclient (as a client):</p>
+You can then use cmpforopenssl (as a client):</p>
 <source>
 ./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/openssleec -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
