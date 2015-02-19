@@ -1048,7 +1048,15 @@ options as for jCert.
 <p>CMP has been tested with <a href="http://www.bouncycastle.org">BouncyCastle</a> CMP classes, available in BC 1.46 or later. Both client and RA mode should work.</p>
 <p>Sample code for a HMAC protected (RA mode) message:</p>
 <source>
-CertificateRequestMessageBuilder msgbuilder = new CertificateRequestMessageBuilder(BigInteger.valueOf(certReqId));
+// Just preparations
+final BigInteger certReqId = BigInteger.valueOf(1);
+final byte[] senderNonce = "12345".getBytes();
+final byte[] transactionId = "23456".getBytes();
+KeyPairGenerator kpi = KeyPairGenerator.getInstance("RSA");
+kpi.initialize(1024);
+KeyPair keyPair = kpi.generateKeyPair();
+// Now on to the CMP 
+CertificateRequestMessageBuilder msgbuilder = new CertificateRequestMessageBuilder(certReqId);
 X509NameEntryConverter dnconverter = new X509DefaultEntryConverter();
 X500Name issuerDN = X500Name.getInstance(new X509Name("CN=ManagementCA").toASN1Object());
 X500Name subjectDN = X500Name.getInstance(new X509Name("CN=user", dnconverter).toASN1Object());
