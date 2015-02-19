@@ -13,7 +13,6 @@
 package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateExpiredException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -180,27 +179,23 @@ public interface IEjbcaWS {
 	throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
-	 * Creates a new crypto token
+	 * Creates a new cryptotoken
 	 * 
-	 * @param tokenName The name of the crypto token
-	 * @param tokenType The type of the crypto token. Available types: SoftCryptoToken, PKCS11CryptoToken
-	 * @param activationPin Pin code for the crypto token
-	 * @param autoActivate Set to true|false to allow|disallow whether crypto token should be autoactivated or not
-	 * @param exportKey (SoftCryptoToken) Set to true|false to allow|disallow private key export
-	 * @param pkcs11LibFilename (PKCS11CryptoToken) PKCS#11 library file. Required if type is PKCS11CryptoToken
-	 * @param pkcs11SlotLabelType (PKCS11CryptoToken) Slot Reference Type: SLOT_LABEL, SLOT_INDEX, SLOT_NUMBER, SUN_FILE
-	 * @param pkcs11SlotPropertyValue (PKCS11CryptoToken) Slot reference
-	 * @param PKCS11AttributeData (Not implemented yet) (PKCS11CryptoToken) The attribute data of the PKCS11CryptoToken. The 
-	 * value of this argument will be ignored for now but still has to be set. 
+	 * @param tokenName The name of the cryptotoken
+	 * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
+	 * @param activationPin Pin code for the cryptotoken
+	 * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
+	 * @param cryptotokenProperties
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
 	 */
-	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
-            String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
-            HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException;
+	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
+	        Properties cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
-	 * @param cryptoTokenName The name of the crypto token
+	 * Generates a key pair in the specified cryptotoken
+	 *  
+	 * @param cryptoTokenName The name of the cryptotoken
      * @param keyPairAlias Key pair alias
      * @param keyPairSpecification Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145
      * @throws AuthorizationDeniedException
@@ -213,7 +208,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param caname The CA name
 	 * @param cadn The CA subjectDN
-	 * @param catype the CA type. It could be either 'x509' or 'cvc'
+	 * @param catype The CA type. It could be either 'x509' or 'cvc'
 	 * @param catokentype Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.
 	 * @param catokenpassword The password for the CA token. Set to 'null' to use the default system password for Soft token CAs.
 	 * @param catokenProperties The catoken properties

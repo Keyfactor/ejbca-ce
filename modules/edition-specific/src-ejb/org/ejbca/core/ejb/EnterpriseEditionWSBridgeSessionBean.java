@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 import javax.ejb.Stateless;
@@ -32,8 +31,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
 
     @Override
     public void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, 
-            boolean autoActivate, boolean exportKey, String pkcs11LibFilename, String pkcs11SlotLabelType, 
-            String pkcs11SlotPropertyValue, HashMap<String, String> PKCS11AttributeData) throws UnsupportedMethodException {
+            boolean autoActivate, Properties cryptoTokenProperties) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");
     }
     
