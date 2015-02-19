@@ -83,6 +83,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.roles.RoleData;
@@ -911,7 +912,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         
         try {
-            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, false, null, null, null, null);
+            
+            Properties cryptotokenProperties = new Properties();
+            cryptotokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
+            cryptotokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+            
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             assertNotNull("Creating a new SoftCryptoToken failed", ctid);
             CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
@@ -947,9 +953,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         
         try {
-            String keyAlias = "testWSGeneratedKeys";
-            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, true, null, null, null, null);
+            Properties cryptotokenProperties = new Properties();
+            cryptotokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
+            cryptotokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
+            
+            String keyAlias = "testWSGeneratedKeys";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
             List<String> keyAliases = cryptoTokenManagementSession.getKeyPairAliases(intAdmin, ctid.intValue());
             assertTrue(keyAliases.contains(keyAlias));
@@ -988,7 +998,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         
         try {
             // create cryptotoken
-            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, false, null, null, null, null);
+            Properties cryptotokenProperties = new Properties();
+            cryptotokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
+            cryptotokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
 
             // generate keys
