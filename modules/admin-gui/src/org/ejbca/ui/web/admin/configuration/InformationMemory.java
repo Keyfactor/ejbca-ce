@@ -22,7 +22,6 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -392,7 +391,12 @@ public class InformationMemory implements Serializable {
                         certificateProfiles.put(certificateProfileId, certprofile);
                     }
                     // 5. Retrieve all CAs defined in the current certificate profile
-                    Collection<Integer> casDefinedInCertificateProfile = certprofile.getAvailableCAs();
+                    final Collection<Integer> casDefinedInCertificateProfile;
+                    if(certprofile != null) {
+                        casDefinedInCertificateProfile = certprofile.getAvailableCAs();
+                    } else {
+                        casDefinedInCertificateProfile = new ArrayList<Integer>();
+                    }
                     // First make a clone of the full list of available CAs
                     List<Integer> authorizedCasClone = new ArrayList<Integer>(authorizedCas);
                     if (!casDefinedInCertificateProfile.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
