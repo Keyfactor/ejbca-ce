@@ -921,6 +921,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             assertNotNull("Creating a new SoftCryptoToken failed", ctid);
             CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
+            
+            cryptotokenProperties = token.getCryptoTokenProperties();
+            assertEquals(cryptotokenProperties.keySet().size(), 3);
+            assertTrue(cryptotokenProperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
+            assertEquals(cryptotokenProperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
+            
             assertEquals("SoftCryptoToken", token.getType());
             assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
             assertTrue(token.isActive());
