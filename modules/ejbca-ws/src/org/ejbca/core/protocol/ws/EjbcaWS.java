@@ -117,7 +117,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.token.p11.exception.PKCS11LibraryFileNotFoundException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
@@ -490,9 +489,8 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 	
 	@Override
-	public void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, boolean exportKey, 
-            String pkcs11LibFilename, String pkcs11SlotLabelType, String pkcs11SlotPropertyValue,
-            HashMap<String, String> PKCS11AttributeData) throws AuthorizationDeniedException, EjbcaException  {
+	public void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
+	        Properties cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException  {
 	    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
                 certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
@@ -500,7 +498,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    
 	    try {
 	        enterpriseWSBridgeSession.createCryptoToken(ejbhelper.getAdmin(), tokenName, tokenType, activationPin, autoActivate, 
-	            exportKey, pkcs11LibFilename, pkcs11SlotLabelType, pkcs11SlotPropertyValue, PKCS11AttributeData);
+	            cryptotokenProperties);
         } catch (AuthorizationDeniedException e) {
             TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;
@@ -512,8 +510,6 @@ public class EjbcaWS implements IEjbcaWS {
         } catch (CryptoTokenNameInUseException e) {
             throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
         } catch (NoSuchSlotException e) {
-            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-        } catch (PKCS11LibraryFileNotFoundException e) {
             throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
         }
 	}

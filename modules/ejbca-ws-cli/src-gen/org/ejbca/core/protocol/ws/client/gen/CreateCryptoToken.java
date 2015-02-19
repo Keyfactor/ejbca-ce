@@ -1,6 +1,7 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.HashMap;
+import java.util.Properties;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -20,11 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}HashMap<String, String>"/>
+ *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}Properties"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -40,10 +37,6 @@ import javax.xml.bind.annotation.XmlType;
    "arg2",
    "arg3",
    "arg4",
-   "arg5",
-   "arg6",
-   "arg7",
-   "arg8",
 })
 
 public class CreateCryptoToken {
@@ -52,11 +45,7 @@ public class CreateCryptoToken {
    protected String arg1;
    protected String arg2;
    protected boolean arg3;
-   protected boolean arg4;
-   protected String arg5;
-   protected String arg6;
-   protected String arg7;
-   protected HashMap<String, String> arg8;
+   protected Properties arg4;
    
    /**
     * Gets the value of the arg0 property.
@@ -126,7 +115,7 @@ public class CreateCryptoToken {
     * Gets the value of the arg4 property.
     * 
     */
-   public boolean getArg4() {
+   public Properties getArg4() {
        return arg4;
    }
 
@@ -134,72 +123,7 @@ public class CreateCryptoToken {
     * Sets the value of the arg4 property.
     * 
     */
-   public void setArg4(boolean value) {
+   public void setArg4(Properties value) {
        this.arg4 = value;
    }
-
-   /**
-    * Gets the value of the arg5 property.
-    * 
-    */
-   public String getArg5() {
-       return arg5;
-   }
-
-   /**
-    * Sets the value of the arg5 property.
-    * 
-    */
-   public void setArg5(String value) {
-       this.arg5 = value;
-   }
-
-   /**
-    * Gets the value of the arg6 property.
-    * 
-    */
-   public String getArg6() {
-       return arg6;
-   }
-
-   /**
-    * Sets the value of the arg6 property.
-    * 
-    */
-   public void setArg6(String value) {
-       this.arg6 = value;
-   }
-
-   /**
-    * Gets the value of the arg7 property.
-    * 
-    */
-   public String getArg7() {
-       return arg7;
-   }
-
-   /**
-    * Sets the value of the arg7 property.
-    * 
-    */
-   public void setArg7(String value) {
-       this.arg7 = value;
-   }
-
-   /**
-    * Gets the value of the arg8 property.
-    * 
-    */
-   public HashMap<String, String> getArg8() {
-       return arg8;
-   }
-
-   /**
-    * Sets the value of the arg8 property.
-    * 
-    */
-   public void setArg8(HashMap<String, String> value) {
-       this.arg8 = value;
-   }
-
 }
