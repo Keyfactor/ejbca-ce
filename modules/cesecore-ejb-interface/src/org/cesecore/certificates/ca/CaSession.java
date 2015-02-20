@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -87,12 +88,24 @@ public interface CaSession {
      * administrator is authorized to, 
      * 
      * Does not log access control to all CAs it checks, because this does not 
-     * give access to the CAs but only returns CAIds of CAs.
+     * give access to the CAs but only returns IDs of CAs.
      * 
      * @param admin AuthenticationToken of admin
-     * @return a List<Integer> of available CA id's
+     * @return a List<Integer> of available CA IDs
      */
      List<Integer> getAuthorizedCaIds(AuthenticationToken admin);
+     
+     /**
+      * Method returning names of all CA's available to the system that the
+      * administrator is authorized to, 
+      * 
+      * Does not log access control to all CAs it checks, because this does not 
+      * give access to the CAs but only returns names of CAs.
+      * 
+      * @param admin AuthenticationToken of admin
+      * @return a Collection<String> of available CA names
+      */
+     Collection<String> getAuthorizedCaNames(AuthenticationToken admin);
      
      /**
       * Method returning info objects for  all active CA's available to the system, i.e. not 
@@ -109,8 +122,7 @@ public interface CaSession {
      
      /**
       * Method returning info objects for  all active CA's available to the system, i.e. not 
-      * having status "external", uninitialized or "waiting for certificate response" and that the
-      * administrator is authorized to, 
+      * having status "external", and that the administrator is authorized to. 
       * 
       * Does not log access control to all CAs it checks, because this does not 
       * give access to the CAs but only returns CAIds of CAs.
