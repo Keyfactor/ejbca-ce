@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -426,6 +427,24 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         return returnval;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Collection<String> getAuthorizedCaNames(final AuthenticationToken admin) {
+        final Collection<Integer> availableCaIds = getAllCaIds();
+        final TreeSet<String> names = new TreeSet<String>();
+        for (Integer caid : availableCaIds) {
+            if (authorizedToCANoLogging(admin, caid)) {
+                try {
+                    names.add(getCAInfoInternal(caid).getName());
+                } catch (CADoesntExistsException e) {
+                   // NOPMD Should not happen since we just retrieved the ID
+                }
+            }
+        }
+        return names;
+    }
+    
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
