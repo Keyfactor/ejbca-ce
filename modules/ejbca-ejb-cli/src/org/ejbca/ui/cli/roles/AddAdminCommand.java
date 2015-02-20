@@ -141,9 +141,9 @@ public class AddAdminCommand extends BaseRolesCommand {
             availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
         }
         sb.append("Available Roles: " + availableRoles + "\n");
-        Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(getAuthenticationToken());
+
         String availableCas = "";
-        for (String caname : canames) {
+        for (String caname : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaNames(getAuthenticationToken())) {
             availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caname + "\"";
         }
         sb.append("Available CAs: " + availableCas + "\n");
