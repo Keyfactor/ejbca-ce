@@ -68,6 +68,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -168,7 +169,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Generate certificate for the new user
 
         // user that we know exists...
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
@@ -244,7 +245,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
@@ -284,7 +285,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
@@ -325,7 +326,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
@@ -368,7 +369,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request

@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.util.StringTools;
 
 
@@ -31,6 +32,16 @@ import org.cesecore.util.StringTools;
 public class KeyRecoveryInformation implements Serializable {
 
     private static final long serialVersionUID = -7473386427889757839L;
+
+    // Private fields
+    private BigInteger certificatesn;
+    private String issuerdn;
+    private String username;
+    private boolean markedasrecoverable;
+    private KeyPairWrapper keypair;
+    private Certificate certificate;
+    
+    
     // Public Constructors
     public KeyRecoveryInformation(BigInteger certificatesn, String issuerdn, String username,
                            boolean markedasrecoverable, KeyPair keypair, Certificate certificate) {
@@ -38,7 +49,7 @@ public class KeyRecoveryInformation implements Serializable {
         this.issuerdn = issuerdn;
         this.username = StringTools.stripUsername(username);
         this.markedasrecoverable = markedasrecoverable;
-        this.keypair = keypair;
+        this.keypair = new KeyPairWrapper(keypair);
         this.certificate = certificate;
     }
 
@@ -53,85 +64,40 @@ public class KeyRecoveryInformation implements Serializable {
         return this.certificatesn;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param certificatesn DOCUMENT ME!
-     */
     public void setCertificateSN(BigInteger certificatesn) {
         this.certificatesn = certificatesn;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getIssuerDN() {
         return this.issuerdn;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param issuerdn DOCUMENT ME!
-     */
     public void setIssuerDN(String issuerdn) {
         this.issuerdn = issuerdn;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getUsername() {
         return this.username;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param username DOCUMENT ME!
-     */
     public void setUsername(String username) {
         this.username = StringTools.stripUsername(username);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public boolean getMarkedAsRecoverable() {
         return this.markedasrecoverable;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param markedasrecoverable DOCUMENT ME!
-     */
     public void setMarkedAsRecoverable(boolean markedasrecoverable) {
         this.markedasrecoverable = markedasrecoverable;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public KeyPair getKeyPair() {
-        return this.keypair;
+        return keypair.getKeyPair();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param keypair DOCUMENT ME!
-     */
     public void setKeyPair(KeyPair keypair) {
-        this.keypair = keypair;
+        this.keypair = new KeyPairWrapper(keypair);
     }
 
 	/**
@@ -146,14 +112,6 @@ public class KeyRecoveryInformation implements Serializable {
 	public void setCertificate(Certificate certificate) {
 		this.certificate = certificate;
 	}
-    
-    // Private fields
-    private BigInteger certificatesn;
-    private String issuerdn;
-    private String username;
-    private boolean markedasrecoverable;
-    private KeyPair keypair;
-    private Certificate certificate;
-
+   
 
 }

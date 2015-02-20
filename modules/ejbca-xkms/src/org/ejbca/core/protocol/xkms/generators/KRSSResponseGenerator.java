@@ -63,7 +63,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSession;
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
@@ -257,12 +259,12 @@ public class KRSSResponseGenerator extends
 					}
 
 				}else{        	 
-					cert = (X509Certificate) signSession.createCertificate(pubAdmin, endEntityInformation.getUsername(), password, certKey);	 
+					cert = (X509Certificate) signSession.createCertificate(pubAdmin, endEntityInformation.getUsername(), password, new PublicKeyWrapper(certKey));	 
 				}
 
 				if (savekeys) {
 					// Save generated keys to database.	             
-				    keyRecoverySession.addKeyRecoveryData(pubAdmin, cert, endEntityInformation.getUsername(), keyPair);
+				    keyRecoverySession.addKeyRecoveryData(pubAdmin, cert, endEntityInformation.getUsername(), new KeyPairWrapper(keyPair));
 				}
 
 				// Save the revocation code

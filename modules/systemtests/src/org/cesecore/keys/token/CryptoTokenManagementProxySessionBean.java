@@ -13,12 +13,12 @@
 package org.cesecore.keys.token;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.util.PublicKeyWrapper;
 
 /**
  * @see CryptoTokenManagementProxySessionRemote
@@ -43,9 +43,9 @@ public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagem
     }
     
     @Override
-    public PublicKey getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException {
+    public PublicKeyWrapper getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException {
         CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
-        return cryptoToken.getPublicKey(alias);
+        return new PublicKeyWrapper(cryptoToken.getPublicKey(alias));
     }
     
     @Override

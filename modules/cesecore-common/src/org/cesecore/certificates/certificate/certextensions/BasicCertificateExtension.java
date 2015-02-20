@@ -19,15 +19,15 @@ import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERBoolean;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -298,7 +298,7 @@ public class BasicCertificateExtension extends CertificateExtension {
         ASN1Encodable retval = null;
         try {
             BigInteger intValue = new BigInteger(value, 10);
-            retval = new DERInteger(intValue);
+            retval = new ASN1Integer(intValue);
         } catch (NumberFormatException e) {
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
@@ -354,11 +354,11 @@ public class BasicCertificateExtension extends CertificateExtension {
     private ASN1Encodable parseDERBoolean(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         if (value.equalsIgnoreCase("TRUE")) {
-            retval = DERBoolean.TRUE;
+            retval = ASN1Boolean.TRUE;
         }
 
         if (value.equalsIgnoreCase("FALSE")) {
-            retval = DERBoolean.FALSE;
+            retval = ASN1Boolean.FALSE;
         }
 
         if (retval == null) {

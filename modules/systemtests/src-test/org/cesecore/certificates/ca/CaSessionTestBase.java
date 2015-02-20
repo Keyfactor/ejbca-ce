@@ -269,7 +269,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         String cadn = "CN=TEST,O=Foo,C=SE";
         CAToken catoken = ca1.getCAToken();
         Collection<Certificate> cachain = new ArrayList<Certificate>();
-        final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
         final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true, cryptoTokenManagementProxySession.getSignProviderName(catoken.getCryptoTokenId()));
         assertNotNull(cacert);
@@ -312,13 +312,14 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         	// Now create a CA certificate
         	CAInfo info = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
             // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
-        	PublicKey pk = cryptoTokenManagementSession.getPublicKey(roleMgmgToken, cryptoTokenId, signKeyAlias);
+        	PublicKey pk = cryptoTokenManagementSession.getPublicKey(roleMgmgToken, cryptoTokenId, signKeyAlias).getPublicKey();
             EndEntityInformation user = new EndEntityInformation("casessiontestca", cadn, ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
-            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+            X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             cert = (X509Certificate)resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             // Verifies with CA token?
@@ -492,7 +493,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             caSession.addCA(authenticationToken, ca);
             final int cryptoTokenId = caToken.getCryptoTokenId();
             cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", "1024");
-            PublicKey pubK = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, "signKeyAlias");
+            PublicKey pubK = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, "signKeyAlias").getPublicKey();
             assertNotNull(pubK);
             // Now create a CA certificate
             CAInfo info = caSession.getCAInfo(authenticationToken, ca.getCAId());

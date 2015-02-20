@@ -137,6 +137,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -1089,7 +1090,7 @@ Content-Type: text/html; charset=iso-8859-1
             long now = (new Date()).getTime();
             long notAfter = now + 1000;
             xcert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", 
-                            keys.getPublic(), -1, new Date(), new Date(notAfter));
+                    new PublicKeyWrapper(keys.getPublic()), -1, new Date(), new Date(notAfter));
             assertNotNull("Failed to create new certificate", xcert);
         
             
@@ -1813,7 +1814,7 @@ Content-Type: text/html; charset=iso-8859-1
         KeyPair keys = KeyTools.genKeys("512", "RSA");
 
         // user that we know exists...
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create new certificate", ocspTestCert);
         return keys;
     }

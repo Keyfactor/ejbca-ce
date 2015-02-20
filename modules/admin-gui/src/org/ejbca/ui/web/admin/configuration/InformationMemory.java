@@ -11,12 +11,6 @@
  *                                                                       *
  *************************************************************************/
 
-/*
- * InformationMemory.java
- *
- * Created on den 14 juli 2003, 14:05
- */
-
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;

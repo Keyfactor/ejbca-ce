@@ -210,7 +210,7 @@ public abstract class CaTestUtils {
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         if (genKeys) {
             final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId,
-                    catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                    catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
             final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId,
                     catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             final String keyalg = AlgorithmTools.getKeyAlgorithm(publicKey);
@@ -268,7 +268,7 @@ public abstract class CaTestUtils {
         // A CA certificate
         CAReferenceField caRef = new CAReferenceField("SE", "CAREF001", "00000");
         HolderReferenceField holderRef = new HolderReferenceField("SE", "CAREF001", "00000");
-        final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
         final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         CVCertificate cv = CaTestUtils.createTestCvcCertificate(publicKey, privateKey, caRef, holderRef, "SHA256WithRSA", AuthorizationRoleEnum.CVCA,
                 cryptoTokenManagementProxySession.getSignProviderName(cryptoTokenId));

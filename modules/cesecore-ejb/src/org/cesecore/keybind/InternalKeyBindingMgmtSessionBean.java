@@ -513,7 +513,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } else {
             keyPairAlias = nextKeyPairAlias;
         }
-        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias);
+        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
         return publicKey;
     }
 
@@ -535,7 +535,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } else {
             keyPairAlias = nextKeyPairAlias;
         }
-        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias);
+        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
         // Chose first available signature algorithm
         final Collection<String> availableSignatureAlgorithms = AlgorithmTools.getSignatureAlgorithms(publicKey);
         final String signatureAlgorithm = availableSignatureAlgorithms.iterator().next();
@@ -577,7 +577,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // If a nextKeyPairAlias is present we assume that this is the one we want to find a certificate for
             PublicKey nextPublicKey;
             try {
-                nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalNextKeyPairAlias);
+                nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalNextKeyPairAlias).getPublicKey();
             } catch (CryptoTokenOfflineException e) {
                 throw new CertificateImportException("Operation is not available when CryptoToken is offline.", e);
             }
@@ -620,7 +620,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             log.debug("currentKeyPairAlias: " + currentKeyPairAlias);
             PublicKey currentPublicKey;
             try {
-                currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
+                currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias).getPublicKey();
             } catch (CryptoTokenOfflineException e) {
                 throw new CertificateImportException("Operation is not available when CryptoToken is offline.", e);
             }
@@ -728,7 +728,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         boolean updated = false;
         try {
             String certificateId = CertTools.getFingerprintAsString(certificate);
-            final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalKeyPairAlias);
+            final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalKeyPairAlias).getPublicKey();
             if (log.isDebugEnabled()) {
                 log.debug("currentPublicKey: "
                         + (currentPublicKey != null ? new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier()))
@@ -750,7 +750,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     log.debug("originalNextKeyPairAlias: " + originalNextKeyPairAlias);
                 }
                 if (originalNextKeyPairAlias != null) {
-                    final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalNextKeyPairAlias);
+                    final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalNextKeyPairAlias).getPublicKey();
                     if (log.isDebugEnabled()) {
                         log.debug("nextPublicKey: "
                                 + (nextPublicKey != null ? new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier()))

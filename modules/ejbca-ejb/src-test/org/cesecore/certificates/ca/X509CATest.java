@@ -48,12 +48,12 @@ import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -268,7 +268,7 @@ public class X509CATest {
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         ASN1Primitive obj = aIn.readObject();
-        CRLReason reason = CRLReason.getInstance((DEREnumerated)obj);
+        CRLReason reason = CRLReason.getInstance((ASN1Enumerated)obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
         //DEROctetString ostr = (DEROctetString)obj;
         
@@ -301,7 +301,7 @@ public class X509CATest {
         octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         obj = aIn.readObject();
-        reason = CRLReason.getInstance((DEREnumerated)obj);
+        reason = CRLReason.getInstance((ASN1Enumerated)obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
 	}
 	

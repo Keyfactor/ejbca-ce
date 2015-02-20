@@ -39,6 +39,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -141,7 +142,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
     
     @Override
-    public boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair)
+    public boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPairWrapper keypair)
             throws AuthorizationDeniedException {
   	if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryData(user: " + username + ")");
@@ -152,7 +153,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             boolean returnval = false;
             try {
                 KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
-                        new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
+                        new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair.getKeyPair()));
                 entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
                         .getIssuerDN(certificate), username, response.getKeyData(), response.getCryptoTokenId(), response.getKeyAlias(), response.getPublicKeyId()));
                 // same method to make hex serno as in KeyRecoveryDataBean
@@ -181,7 +182,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
     @Override
-    public boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair) throws AuthorizationDeniedException {
+    public boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPairWrapper keypair) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString(16) + ", " +
                     CertTools.getIssuerDN(certificate) + ")");
@@ -198,7 +199,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     	        }
     	        krd.setMarkedAsRecoverable(markedasrecoverable);
     	        final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
-    	                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
+    	                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair.getKeyPair()));
     	        krd.setKeyDataFromByteArray(response.getKeyData());
     	        // Update with the key information for the key used to protect this new key recovery data
     	        krd.setCryptoTokenId(response.getCryptoTokenId());

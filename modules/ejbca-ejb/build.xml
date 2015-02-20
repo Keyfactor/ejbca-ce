@@ -273,6 +273,7 @@
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
 		<include name="org/ejbca/core/model/hardtoken/profiles/*Profile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
+		<include name="org/cesecore/keys/util/PublicKeyWrapper.java"/>	
 		<include name="org/ejbca/core/model/hardtoken/types/*.java"/>
 		<include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationToken.java"/>
 		<include name="org/ejbca/core/ejb/authentication/cli/CliUserAccessMatchValue.java"/>
