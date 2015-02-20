@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -224,7 +225,7 @@ public class XKMSKISSTest {
                 endEntityProfileId, certificatetypeid, type, token, hardtokenissuerid, caid);
         endEntityManagementSession.setClearTextPassword(administrator, username1, pwd);
         KeyPair keys1 = genKeys();
-        cert1 = (X509Certificate) signSession.createCertificate(administrator, username1, "foo123", keys1.getPublic());
+        cert1 = (X509Certificate) signSession.createCertificate(administrator, username1, "foo123", new PublicKeyWrapper(keys1.getPublic()));
 
         username2 = genUserName();
         dn2 = "C=SE, O=AnaTom, CN=" + username2;
@@ -238,7 +239,7 @@ public class XKMSKISSTest {
                 endEntityProfileId, profile1Id, type, token, hardtokenissuerid, caid);
         endEntityManagementSession.setClearTextPassword(administrator, username2, pwd);
         KeyPair keys2 = genKeys();
-        cert2 = (X509Certificate) signSession.createCertificate(administrator, username2, "foo123", keys2.getPublic());
+        cert2 = (X509Certificate) signSession.createCertificate(administrator, username2, "foo123", new PublicKeyWrapper(keys2.getPublic()));
 
         username3 = genUserName();
         dn3 = "C=SE, O=AnaTom, CN=" + username3;
@@ -251,7 +252,7 @@ public class XKMSKISSTest {
                 endEntityProfileId, profile2Id, type, token, hardtokenissuerid, caid);
         endEntityManagementSession.setClearTextPassword(administrator, username3, pwd);
         KeyPair keys3 = genKeys();
-        signSession.createCertificate(administrator, username3, "foo123", keys3.getPublic());
+        signSession.createCertificate(administrator, username3, "foo123", new PublicKeyWrapper(keys3.getPublic()));
         log.debug("username1: \"" + username1 + "\" dn1: \"" + dn1 + "\"");
         log.debug("username2: \"" + username2 + "\" dn2: \"" + dn2 + "\"");
         log.debug("username3: \"" + username3 + "\" dn3: \"" + dn3 + "\"");

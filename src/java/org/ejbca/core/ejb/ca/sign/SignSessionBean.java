@@ -85,6 +85,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -219,9 +220,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException {
-      // Default key usage is defined in certificate profiles
+        // Default key usage is defined in certificate profiles
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
+    }
+    
+    @Override
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk)
+            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException,
+            IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException,
+            AuthLoginException {
+        return createCertificate(admin, username, password, pk.getPublicKey());
     }
 
     @Override
@@ -231,6 +241,16 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
         return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                SecConst.CAID_USEUSERDEFINED);
+    }
+    
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKeyWrapper pk,
+            final int keyusage, final Date notBefore, final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException,
+            CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException {
+        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
 
@@ -373,6 +393,15 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace("<createCertificate(IRequestMessage)");
         }
         return ret;
+    }
+    
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKeyWrapper pk,
+            final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
+            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException {
+            return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
     }
 
     @Override

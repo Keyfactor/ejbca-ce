@@ -11,7 +11,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -107,7 +109,7 @@ public class GenerateToken {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
-			cert = (X509Certificate)signSession.createCertificate(administrator, username, password, rsaKeys.getPublic());
+			cert = (X509Certificate)signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()));
     	}
     	// Clear password from database
     	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
@@ -140,7 +142,7 @@ public class GenerateToken {
             if (log.isDebugEnabled()) {
                 log.debug("Saving generated keys for recovery for user: "+ username);
             }
-			keyRecoverySession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
+			keyRecoverySession.addKeyRecoveryData(administrator, cert, username, new KeyPairWrapper(rsaKeys));
     	}
         //  Use CN if as alias in the keystore, if CN is not present use username
     	String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");

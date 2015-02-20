@@ -13,9 +13,10 @@
 package org.cesecore.keys.token;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 
 import javax.ejb.Remote;
+
+import org.cesecore.keys.util.PublicKeyWrapper;
 
 /**
  * Bridge for local EJB calls that we only want to expose to in test deployments.
@@ -30,7 +31,7 @@ public interface CryptoTokenManagementProxySessionRemote {
 
     boolean isCryptoTokenNameUsed(final String cryptoTokenName);
 
-    PublicKey getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException;
+    PublicKeyWrapper getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException;
 
     PrivateKey getPrivateKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException;
     

@@ -25,15 +25,15 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -83,8 +83,8 @@ public class BasicCertificateExtensionTest {
 		baseExt.init(1, "1.2.3", false, props);
 		
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
-		assertTrue(value.getClass().toString(),value instanceof DERInteger);
-		assertTrue(((DERInteger)value).toString(),((DERInteger)value).toString().equals("1234"));
+		assertTrue(value.getClass().toString(),value instanceof ASN1Integer);
+		assertTrue(((ASN1Integer)value).toString(),((ASN1Integer)value).toString().equals("1234"));
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
 		assertFalse(baseExt.isCriticalFlag());	
@@ -166,8 +166,8 @@ public class BasicCertificateExtensionTest {
 		baseExt.init(1, "1.2.3", false, props);
 		
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
-		assertTrue(value.getClass().toString(),value instanceof DERBoolean);
-		assertTrue(((DERBoolean)value).toString(),((DERBoolean)value).toString().equals("TRUE"));
+		assertTrue(value.getClass().toString(),value instanceof ASN1Boolean);
+		assertTrue(((ASN1Boolean)value).toString(),((ASN1Boolean)value).toString().equals("TRUE"));
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
 		assertFalse(baseExt.isCriticalFlag());			
@@ -178,7 +178,7 @@ public class BasicCertificateExtensionTest {
 		baseExt.init(1, "1.2.3", false, props);
 		
 		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));		
-		assertTrue(((DERBoolean)value).toString(),((DERBoolean)value).toString().equals("FALSE"));
+		assertTrue(((ASN1Boolean)value).toString(),((ASN1Boolean)value).toString().equals("FALSE"));
 		
 		props = new Properties();
 		props.put("id1.property.encoding", "DERBOOLEAN");

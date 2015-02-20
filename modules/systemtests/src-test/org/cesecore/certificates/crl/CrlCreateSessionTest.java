@@ -210,7 +210,7 @@ public class CrlCreateSessionTest {
             caSession.addCA(authenticationToken, subca);
             
             // Issue sub CA certificate with a non-standard SKID
-            PublicKey subcapubkey = cryptoTokenMgmtSession.getPublicKey(authenticationToken, cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            PublicKey subcapubkey = cryptoTokenMgmtSession.getPublicKey(authenticationToken, cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
             Date firstDate = new Date();
             firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
             Date lastDate = new Date();

@@ -14,13 +14,13 @@ package org.cesecore.keys.token;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.PublicKey;
 import java.util.List;
 import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.util.PublicKeyWrapper;
 
 /**
  * CryptoToken management operations that require authorization and/or security events audit logging.
@@ -169,7 +169,7 @@ public interface CryptoTokenManagementSession {
     KeyPairInfo getKeyPairInfo(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /** @return the public key of the key pair with the the specified alias in the CryptoToken. */
-    PublicKey getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, CryptoTokenOfflineException;
+    PublicKeyWrapper getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
      * Set the auto-activation PIN for a CryptoToken.

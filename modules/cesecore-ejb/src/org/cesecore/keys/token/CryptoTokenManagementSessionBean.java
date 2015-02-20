@@ -56,6 +56,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 
 /**
@@ -439,10 +440,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public PublicKey getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException,
+    public PublicKeyWrapper getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
-        return getCryptoTokenAndAssertExistence(cryptoTokenId).getPublicKey(alias);
+        return new PublicKeyWrapper(getCryptoTokenAndAssertExistence(cryptoTokenId).getPublicKey(alias));
     }
 
     @Override

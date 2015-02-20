@@ -18,6 +18,7 @@ import java.security.cert.X509Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 
@@ -37,7 +38,7 @@ public interface KeyRecoverySession {
      * @return false if the certificates keyrecovery data already exists.
      * @throws AuthorizationDeniedException if not authorized to administer keys.
      */
-    boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair) throws AuthorizationDeniedException;
+    boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPairWrapper keypair) throws AuthorizationDeniedException;
 
     /**
      * Updates keyrecovery data
@@ -51,7 +52,7 @@ public interface KeyRecoverySession {
      * @throws AuthorizationDeniedException if not authorized to administrate keys.
      *
      */
-    boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair) throws AuthorizationDeniedException;
+    boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPairWrapper keypair) throws AuthorizationDeniedException;
 
     /**
      * Removes a certificates keyrecovery data from the database.

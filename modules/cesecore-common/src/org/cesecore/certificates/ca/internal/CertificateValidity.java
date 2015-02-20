@@ -19,7 +19,6 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
@@ -204,7 +203,7 @@ public class CertificateValidity {
             final PrivateKeyUsagePeriod pku = CertTools.getPrivateKeyUsagePeriod(cert);
             if (pku != null) {
                 final Date now = new Date();
-                final DERGeneralizedTime notBefore = pku.getNotBefore();
+                final ASN1GeneralizedTime notBefore = pku.getNotBefore();
                 final Date pkuNotBefore;
                 final Date pkuNotAfter;
                 try {
@@ -224,7 +223,7 @@ public class CertificateValidity {
                         }
                         throw new CAOfflineException(msg);
                     }
-                    final DERGeneralizedTime notAfter = pku.getNotAfter();
+                    final ASN1GeneralizedTime notAfter = pku.getNotAfter();
 
                     if (notAfter == null) {
                         pkuNotAfter = null;

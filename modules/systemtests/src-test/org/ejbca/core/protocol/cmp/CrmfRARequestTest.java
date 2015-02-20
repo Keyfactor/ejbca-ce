@@ -62,6 +62,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -245,7 +246,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             
             Certificate user1Cert = null;
             try {
-                user1Cert = this.signSession.createCertificate(ADMIN, "samednuser1", "foo123", key3.getPublic());
+                user1Cert = this.signSession.createCertificate(ADMIN, "samednuser1", "foo123", new PublicKeyWrapper(key3.getPublic()));
             } catch(Exception e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             }

@@ -960,7 +960,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (currentCryptoToken != null && currentKeyPairAlias != null) {
             try {
                 final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, currentCryptoToken.intValue(),
-                        currentKeyPairAlias);
+                        currentKeyPairAlias).getPublicKey();
                 for (final String signatureAlgorithm : AlgorithmTools.getSignatureAlgorithms(currentPublicKey)) {
                     availableSignatureAlgorithms.add(new SelectItem(signatureAlgorithm));
                 }
