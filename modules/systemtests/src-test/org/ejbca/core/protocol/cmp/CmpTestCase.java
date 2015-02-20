@@ -389,8 +389,7 @@ public abstract class CmpTestCase extends CaTestCase {
         myPKIHeader.setProtectionAlg(pAlg);
         myPKIHeader.setSenderKID(senderKID);
 
-        PKIBody myPKIBody = new PKIBody(11, myRevReqContent); // revocation
-                                                              // request
+        PKIBody myPKIBody = new PKIBody(PKIBody.TYPE_REVOCATION_REQ, myRevReqContent); // revocation request
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
         return myPKIMessage;
     }
@@ -415,7 +414,7 @@ public abstract class CmpTestCase extends CaTestCase {
         v.add(cs);
         CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
         
-        PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
+        PKIBody myPKIBody = new PKIBody(PKIBody.TYPE_CERT_CONFIRM, cc); // Cert Confirm
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
         return myPKIMessage;
     }
@@ -510,7 +509,7 @@ public abstract class CmpTestCase extends CaTestCase {
      myPKIHeader.setProtectionAlg(pAlg);
      myPKIHeader.setSenderKID(senderKID);
 
-     PKIBody myPKIBody = new PKIBody(7, myCertReqMessages); // Key Update Request
+     PKIBody myPKIBody = new PKIBody(PKIBody.TYPE_KEY_UPDATE_REQ, myCertReqMessages); // Key Update Request
      PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
      
      return myPKIMessage;
