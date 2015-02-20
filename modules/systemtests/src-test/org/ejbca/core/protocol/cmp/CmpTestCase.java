@@ -136,12 +136,12 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
@@ -172,15 +172,15 @@ public abstract class CmpTestCase extends CaTestCase {
     protected int eepDnOverrideId;
     protected int cpDnOverrideId;
 
-    final private String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
-    final private String CMP_HOST; // = "127.0.0.1";
+    private final String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
+    private final String CMP_HOST; // = "127.0.0.1";
 
-    final protected CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    final protected ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    final protected EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    final protected SignSession signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    final protected CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    final protected EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    protected final CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    protected final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected final EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    protected final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    protected final CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
     static AuthenticationToken ADMIN = internalAdmin;
     public CmpTestCase() {
@@ -1132,8 +1132,9 @@ public abstract class CmpTestCase extends CaTestCase {
             IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
                 
         createUser(username, "CN="+username, password, caid);
-        Certificate racert = this.signSession.createCertificate(ADMIN, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, this.certProfileSession.getCertificateProfileId(certProfile), caid);
-
+        Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),
+                X509KeyUsage.digitalSignature | X509KeyUsage.keyCertSign, notBefore, notAfter,
+                this.certProfileSession.getCertificateProfileId(certProfile), caid);
         
         List<Certificate> certCollection = new ArrayList<Certificate>();
         certCollection.add(racert);

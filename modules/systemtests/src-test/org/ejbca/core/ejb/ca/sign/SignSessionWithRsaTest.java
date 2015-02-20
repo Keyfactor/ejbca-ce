@@ -72,6 +72,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -209,14 +210,14 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         try {
             // user that we know exists...
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate.", cert);
             log.debug("Cert=" + cert.toString());
             // Normal DN order
             assertEquals("C=SE,CN=" + RSA_USERNAME, cert.getSubjectX500Principal().getName());
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_REVERSE_USERNAME, "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_REVERSE_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate.", cert);
             log.debug("Cert=" + cert.toString());
             // Reverse DN order
@@ -276,7 +277,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
         int keyusage1 = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic(), keyusage1,
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()), keyusage1,
                 null, null);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -290,7 +291,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
         int keyusage2 = X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign;
 
-        X509Certificate cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic(),
+        X509Certificate cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()),
                 keyusage2, null, null);
 
         assertNotNull("Failed to create certificate", cert1);
@@ -453,7 +454,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, userData, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug(altNames);
@@ -480,7 +481,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntity.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug(altNames);
@@ -547,7 +548,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false); 
             log.debug("created user: foo, foo123, C=SE, CN=qc");
 
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", anotheKey.getPublic());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
@@ -569,7 +570,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false); 
             log.debug("created user: foo, foo123, C=SE, CN=qc");
 
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", anotheKey.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             dn = cert.getSubjectDN().getName();
             assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
@@ -634,8 +635,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 10);
             KeyPair anotherKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", anotherKey.getPublic(), -1,
-                    null, cal.getTime());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123",
+                    new PublicKeyWrapper(anotherKey.getPublic()), -1, null, cal.getTime());
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -663,7 +664,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             notBefore.add(Calendar.DAY_OF_MONTH, 2);
             cal.add(Calendar.DAY_OF_MONTH, 10);
             endEntityManagementSession.setUserStatus(internalAdmin, validityOverrideEndEntityName, EndEntityConstants.STATUS_NEW);
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", anotherKey.getPublic(), -1,
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()), -1,
                     notBefore.getTime(), cal.getTime());
             assertNotNull("Failed to create certificate", cert);
             assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -698,7 +699,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 200);
             endEntityManagementSession.setUserStatus(internalAdmin, validityOverrideEndEntityName, EndEntityConstants.STATUS_NEW);
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", anotherKey.getPublic(), -1,
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()), -1,
                     notBefore.getTime(), cal.getTime());
             assertNotNull("Failed to create certificate", cert);
             assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -759,7 +760,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // user that we know exists...; use new key so that the check that
             // two
             // don't prevent the creation of the certificate.
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", swedeKey.getPublic());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(swedeKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
             assertEquals("Wrong DN with Swedish characters", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"),
@@ -802,7 +803,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // Change a user that we know...
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", anotherKey.getPublic());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
@@ -812,7 +813,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             certprof.setUseLdapDnOrder(false);
             certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, certprof);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", anotherKey.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
@@ -830,7 +831,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     public void testOfflineCA() throws Exception {
         // user that we know exists...
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Set CA to offline
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
@@ -840,7 +841,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         boolean thrown = false;
         try {
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         } catch (Exception e) {
             thrown = true;
         }
@@ -861,7 +862,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         String username = genRandomUserName();
         endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was created
         List<CertReqHistory> history = certReqHistoryProxySession.retrieveCertReqHistory(username);
@@ -874,7 +875,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         username = genRandomUserName();
         endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-        cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was not created
         history = certReqHistoryProxySession.retrieveCertReqHistory(username);
@@ -1080,7 +1081,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         // create first cert
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create cert", cert);
         // log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1094,7 +1095,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         // It should only work once, not twice times
         boolean authstatus = false;
         try {
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         } catch (AuthStatusException e) {
             authstatus = true;
         }
@@ -1107,7 +1108,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         user.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         // create first cert
-        cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create cert", cert);
         // log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1120,7 +1121,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         }
         String serno = cert.getSerialNumber().toString(16);
         // It should work to get two certificates
-        cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create cert", cert);
         // log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1135,7 +1136,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         // It should only work twice, not three times
         authstatus = false;
         try {
-            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         } catch (AuthStatusException e) {
             authstatus = true;
         }

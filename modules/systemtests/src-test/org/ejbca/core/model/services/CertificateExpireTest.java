@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -131,7 +132,7 @@ public class CertificateExpireTest extends CaTestCase {
     
     private void createCertificate(int certificateProfileId) throws Exception {
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
-        cert = (X509Certificate) signSession.createCertificate(admin, USERNAME, PASSWORD, keys.getPublic(), -1, null, null, certificateProfileId,
+        cert = (X509Certificate) signSession.createCertificate(admin, USERNAME, PASSWORD, new PublicKeyWrapper(keys.getPublic()), -1, null, null, certificateProfileId,
                 SecConst.CAID_USEUSERDEFINED);
         certificatesToRemove.add(cert);
         fingerprint = CertTools.getFingerprintAsString(cert);

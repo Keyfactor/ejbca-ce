@@ -62,6 +62,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -461,7 +462,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         data1.setPassword("foo123");
         endEntityManagementSession.changeUser(admin, data1, true);
 
-        Certificate cert = signSession.createCertificate(admin, username, "foo123", keypair.getPublic());
+        Certificate cert = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()));
         CertificateStatus status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
         // Revoke the certificate, put on hold

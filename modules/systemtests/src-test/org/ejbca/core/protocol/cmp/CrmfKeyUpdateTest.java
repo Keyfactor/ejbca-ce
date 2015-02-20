@@ -84,6 +84,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
@@ -232,7 +233,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -312,7 +313,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -403,7 +404,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -629,7 +630,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -708,7 +709,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
         
         KeyPair newkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -788,7 +789,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         createUser(this.username, this.userDN.toString(), "foo123");
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -864,7 +865,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -946,7 +947,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -1022,7 +1023,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -1111,7 +1112,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -1188,7 +1189,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        final Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -1278,7 +1279,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         createUser(this.username, this.userDN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+        final Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -1363,7 +1364,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -1440,7 +1441,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", keys.getPublic());
+            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -1661,7 +1662,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
 
         try {
-            certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", keys.getPublic());
+            certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {

@@ -39,6 +39,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -144,7 +145,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // log.debug("Cert=" + cert.toString());
         List<String> ku = cert.getExtendedKeyUsage();
@@ -174,7 +175,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // log.debug("Cert=" + cert.toString());
         List<String> ku = cert.getExtendedKeyUsage();
@@ -186,7 +187,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         certprof.setExtendedKeyUsage(list);
         certificateProfileSession.changeCertificateProfile(internalAdmin, CERT_PROFILE_NAME, certprof);
         createOrEditUser(fooCertProfile, fooEEProfile);
-        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // log.debug("Cert=" + cert.toString());
         ku = cert.getExtendedKeyUsage();

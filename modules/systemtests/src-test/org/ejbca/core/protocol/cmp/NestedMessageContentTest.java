@@ -102,6 +102,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -113,6 +114,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -123,6 +126,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -925,22 +929,21 @@ public class NestedMessageContentTest extends CmpTestCase {
     }   
     
     
-    @Test
-    public void testZZZCleanUp() throws Exception {
-        log.trace(">testZZZCleanUp");
-        
+    @AfterClass
+    public static void afterClass() throws Exception {
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("NestedMessageContentTest"));
+        EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         try {
-            this.endEntityManagementSession.revokeAndDeleteUser(this.admin, "cmpTestAdmin", ReasonFlags.keyCompromise);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "cmpTestAdmin", ReasonFlags.keyCompromise);
         } catch(Exception e){
             // NOPMD
         }
         try {
-            this.endEntityManagementSession.revokeAndDeleteUser(this.admin, "\\ nestedCMPTest/", ReasonFlags.keyCompromise);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "\\ nestedCMPTest/", ReasonFlags.keyCompromise);
         } catch(Exception e){
-           assertTrue("The user '\\ nestedCMPTest/' should be in the DB.", false);
         }
         
-        log.trace("<testZZZCleanUp");
+
     }
     
 
@@ -1026,7 +1029,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             }
             
             try {
-                certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123", keys.getPublic());
+                certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
             } catch (ObjectNotFoundException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (CADoesntExistsException e) {

@@ -33,7 +33,9 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -209,10 +211,10 @@ public class AuthenticationSessionTest extends CaTestCase {
 
         // Create a dummy certificate and keypair.
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username1, "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username1, "foo123", new PublicKeyWrapper(keys.getPublic()));
 
         // First mark the user for recovery
-        keyRecoverySession.addKeyRecoveryData(internalAdmin, cert, username1, keys);
+        keyRecoverySession.addKeyRecoveryData(internalAdmin, cert, username1, new KeyPairWrapper(keys));
         endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
 
         assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(username1));

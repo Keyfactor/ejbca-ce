@@ -20,10 +20,10 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -103,8 +103,8 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
                 	ret.add(((DERPrintableString) current).getString());
             	} else if (current instanceof DERUTF8String) {
                 	ret.add(((DERUTF8String) current).getString());
-            	} else if (current instanceof DERInteger) {
-                	ret.add(((DERInteger) current).toString());
+            	} else if (current instanceof ASN1Integer) {
+                	ret.add(((ASN1Integer) current).toString());
             	} else {
             		ret.add("Unsupported type: " + current.getClass().getName());
             	}

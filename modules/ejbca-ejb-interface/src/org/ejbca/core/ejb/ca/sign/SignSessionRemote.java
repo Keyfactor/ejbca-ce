@@ -19,5 +19,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface SignSessionRemote extends SignSession {
-  
+ 
 }

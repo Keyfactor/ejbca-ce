@@ -48,7 +48,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -156,7 +158,7 @@ public class KeyRecoveryTest extends CaTestCase {
                     endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false,
                             SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
                             getTestCAId());
-                    cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", keypair1.getPublic());
+                    cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
                     fp1 = CertTools.getFingerprintAsString(cert1);
                     Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
                     accessRules.add(new AccessRuleData(KEYRECOVERY_ROLE, StandardRules.CAACCESS.resource() + CertTools.getIssuerDN(cert1).hashCode(), AccessRuleState.RULE_ACCEPT, false));
@@ -166,7 +168,7 @@ public class KeyRecoveryTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            if(!keyRecoverySession.addKeyRecoveryData(internalAdmin, cert1, user, keypair1)) {
+            if(!keyRecoverySession.addKeyRecoveryData(internalAdmin, cert1, user, new KeyPairWrapper(keypair1))) {
                 throw new RuntimeException("Key recovery data already exists in database.");
             }
             assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(cert1));
@@ -198,9 +200,9 @@ public class KeyRecoveryTest extends CaTestCase {
             EndEntityInformation ei = eeAccessSession.findUser(internalAdmin, user);
             ei.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, ei, false);
-            cert2 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", keypair2.getPublic());
+            cert2 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair2.getPublic()));
             fp2 = CertTools.getFingerprintAsString(cert2);
-            keyRecoverySession.addKeyRecoveryData(internalAdmin, cert2, user, keypair2);
+            keyRecoverySession.addKeyRecoveryData(internalAdmin, cert2, user, new KeyPairWrapper(keypair2));
             // Recover the first (old) key pair
             endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert1);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));

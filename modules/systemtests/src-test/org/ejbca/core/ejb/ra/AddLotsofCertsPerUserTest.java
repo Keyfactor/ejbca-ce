@@ -34,6 +34,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -147,13 +148,13 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
                 endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
-                signSession.createCertificate(administrator, username, password, keys.getPublic());
+                signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
             }
             // Create some revoked certs
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
                 endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
-                Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
+                Certificate certificate = signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
                 endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
@@ -179,7 +180,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
                 endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
-                Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
+                Certificate certificate = signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
                 endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
@@ -187,7 +188,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 endEntityManagementSession.setClearTextPassword(administrator, username, password);
                 endEntityManagementSession.setUserStatus(administrator, username, EndEntityConstants.STATUS_NEW);
-                Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
+                Certificate certificate = signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(keys.getPublic()));
                 endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 storeSession.setStatus(administrator, CertTools.getFingerprintAsString(certificate), CertificateConstants.CERT_ARCHIVED);

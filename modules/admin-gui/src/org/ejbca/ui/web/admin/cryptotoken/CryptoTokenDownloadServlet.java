@@ -66,7 +66,7 @@ public class CryptoTokenDownloadServlet extends HttpServlet {
         final int cryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
         final String aliasParam = request.getParameter("alias");
         try {
-            final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowAuthenticationToken, cryptoTokenId, aliasParam);
+            final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowAuthenticationToken, cryptoTokenId, aliasParam).getPublicKey();
             response.setContentType("application/octet-stream");
             response.setHeader("Content-disposition", " attachment; filename=\"" + StringTools.stripFilename(aliasParam + ".pem") + "\"");
             response.getOutputStream().write(KeyTools.getAsPem(publicKey).getBytes());

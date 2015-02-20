@@ -38,6 +38,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -298,8 +299,8 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         Calendar notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, 2);
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic(),-1,notBefore.getTime(), cal.getTime());
-        //X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123",
+                new PublicKeyWrapper(rsakeyPrivKeyUsagePeriod.getPublic()), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));

@@ -103,6 +103,7 @@ import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
@@ -303,7 +304,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 createUser(revUsername, revUserDN.toString(), "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
                 KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
-                cert = this.signSession.createCertificate(ADMIN, revUsername, "foo123", admkeys.getPublic());
+                cert = this.signSession.createCertificate(ADMIN, revUsername, "foo123", new PublicKeyWrapper(admkeys.getPublic()));
             }
             assertNotNull("No certificate to revoke.", cert);
 
@@ -413,7 +414,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             createUser("cmprevuser1", "CN=cmprevuser1,C=SE", "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
-            cert = this.signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", admkeys.getPublic());
+            cert = this.signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", new PublicKeyWrapper(admkeys.getPublic()));
         }
         assertNotNull("No certificate to revoke.", cert);
 
@@ -467,7 +468,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             createUser(userName, "CN=" + userName + ",C=SE", "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
-            cert = this.signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", admkeys.getPublic());
+            cert = this.signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", new PublicKeyWrapper(admkeys.getPublic()));
         }
         try {
             assertNotNull("No certificate to revoke.", cert);
@@ -660,7 +661,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         createUser(adminName, "CN=" + adminName + ",C=SE", "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         KeyPair admkeys = KeyTools.genKeys("512", "RSA");
-        Certificate admCert = this.signSession.createCertificate(ADMIN, adminName, "foo123", admkeys.getPublic());
+        Certificate admCert = this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(admkeys.getPublic()));
         CMPCertificate[] extraCert = getCMPCert(admCert);
         msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(msg);
@@ -1039,7 +1040,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             createUser(testUsername, testUserDN.toString(), "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             // A real certificate that can be used to sign the message
-            Certificate cert = this.signSession.createCertificate(ADMIN, testUsername, "foo123", keys.getPublic());
+            Certificate cert = this.signSession.createCertificate(ADMIN, testUsername, "foo123", new PublicKeyWrapper(keys.getPublic()));
             fingerprint = CertTools.getFingerprintAsString(cert);
             // A fake certificate that should not be valid
             Certificate fakeCert = CertTools.genSelfCert(testUserDN.toString(), 30, null, fakeKeys.getPrivate(), fakeKeys.getPublic(),
@@ -1091,7 +1092,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 createUser(otherUsername, otherUserDN, "foo123", true, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
                 // A real certificate that can be used to sign the message
-                Certificate othercert = this.signSession.createCertificate(ADMIN, otherUsername, "foo123", otherKeys.getPublic());
+                Certificate othercert = this.signSession.createCertificate(ADMIN, otherUsername, "foo123", new PublicKeyWrapper(otherKeys.getPublic()));
                 fingerprint2 = CertTools.getFingerprintAsString(cert);
                 AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
                 PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, pAlg,
@@ -1328,7 +1329,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
             createUser(testUsername, testUserDN.toString(), "foo123", false, this.caid, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            Certificate cert = this.signSession.createCertificate(ADMIN, testUsername, "foo123", keys.getPublic());
+            Certificate cert = this.signSession.createCertificate(ADMIN, testUsername, "foo123", new PublicKeyWrapper(keys.getPublic()));
             fingerprint = CertTools.getFingerprintAsString(cert);
 
             //Edit the status of the user to NEW
@@ -1429,7 +1430,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         Collection<Certificate> cachain = new ArrayList<Certificate>();
 
         final PublicKey publicKey = this.cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId,
-                catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
         //final String keyalg = AlgorithmTools.getKeyAlgorithm(publicKey);
         String sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
         final PrivateKey privateKey = this.cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId,
@@ -1815,7 +1816,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         }
 
         try {
-            certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", keys.getPublic());
+            certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
             throw new CertificateCreationException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {

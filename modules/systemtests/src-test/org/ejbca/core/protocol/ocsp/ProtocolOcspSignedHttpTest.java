@@ -59,6 +59,7 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
@@ -192,7 +193,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             KeyPair keys = KeyTools.genKeys("512", "RSA");
 
             // user that we know exists...
-            ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+            ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "ocsptest", "foo123", new PublicKeyWrapper(keys.getPublic()));
             assertNotNull("Failed to create a certificate", ocspTestCert);
 
             // And an OCSP request

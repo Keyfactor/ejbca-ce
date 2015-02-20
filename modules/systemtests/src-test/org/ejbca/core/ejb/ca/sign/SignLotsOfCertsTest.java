@@ -36,6 +36,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -256,7 +257,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
                 long before = System.currentTimeMillis();
                 for (int i = 0; i < NO_CERTS; i++) {
                     // user that we know exists...
-                    X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, user, "foo123", keys.getPublic());
+                    X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, user, "foo123", new PublicKeyWrapper(keys.getPublic()));
                     assertNotNull("Failed to create certificate", cert);
                     if ((i % 100) == 0) {
                         long mellantid = System.currentTimeMillis() - before;

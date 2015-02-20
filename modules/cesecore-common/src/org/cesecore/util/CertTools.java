@@ -75,6 +75,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -86,7 +87,6 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -2432,7 +2432,7 @@ public abstract class CertTools {
             // Second is the sequence of principal names, which is at tagged position 1 in the krb5p
             final ASN1EncodableVector principals = new ASN1EncodableVector();
             // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
-            principals.add(new DERTaggedObject(true, 0, new DERInteger(0)));
+            principals.add(new DERTaggedObject(true, 0, new ASN1Integer(0)));
             // The names themselves are yet another sequence
             final Iterator<String> i = principalarr.iterator();
             final ASN1EncodableVector names = new ASN1EncodableVector();
