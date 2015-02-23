@@ -131,7 +131,12 @@ public class RegisterReqBean {
     }
     
     public EndEntityProfile getEndEntityProfile() {
-        return endEntityProfileSession.getEndEntityProfile(getCertTypeInfo(certType, "eeprofile"));
+        String typeInfo = getCertTypeInfo(certType, "eeprofile");
+        if (typeInfo != null) {
+            return endEntityProfileSession.getEndEntityProfile(typeInfo);
+        } else {
+            return null;
+        }
     }
     
     public int getCertificateProfileId() {

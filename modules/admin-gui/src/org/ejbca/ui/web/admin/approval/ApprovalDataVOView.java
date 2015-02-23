@@ -50,7 +50,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 /**
  * Class representing the view of one ApprovalDataVO data
  * 
- * @author Philip Vendil
  * 
  * @version $Id$
  */
@@ -258,10 +257,9 @@ public class ApprovalDataVOView implements Serializable {
      * @return An array of Link-objects
      */
     public List<LinkView> getApprovalDataLinks() {
-        ArrayList<LinkView> certificateLinks = new ArrayList<LinkView>();
-        ArrayList<String> certificateSerialNumbers = new ArrayList<String>();
-        ArrayList<String> certificateIssuerDN = new ArrayList<String>();
-        ArrayList<String> usernames = new ArrayList<String>();
+        List<LinkView> certificateLinks = new ArrayList<LinkView>();
+        List<String> certificateSerialNumbers = new ArrayList<String>();
+        List<String> certificateIssuerDN = new ArrayList<String>();
         List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
 
         for (int i = 0; i < newTextRows.size(); i++) {
@@ -270,9 +268,6 @@ public class ApprovalDataVOView implements Serializable {
             }
             if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)) {
                 certificateIssuerDN.add(((ApprovalDataText) newTextRows.get(i)).getData());
-            }
-            if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(USERNAME)) {
-                usernames.add(((ApprovalDataText) newTextRows.get(i)).getData());
             }
         }
         if (certificateIssuerDN.size() != certificateSerialNumbers.size()) {
@@ -292,17 +287,6 @@ public class ApprovalDataVOView implements Serializable {
             certificateLinks.add(new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(CERTSERIALNUMBER) + ": ",
                     (String) certificateSerialNumbers.get(i), ""));
         }
-        for (int i = 0; i < usernames.size(); i++) {
-            try {
-                link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
-                        + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "ra/viewendentity.jsp?username="
-                        + java.net.URLEncoder.encode((String) usernames.get(i), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                log.warn("UnsupportedEncoding creating approval data link. ", e);
-            }
-            certificateLinks.add(new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(USERNAME) + ": ", (String) usernames.get(i),
-                    ""));
-        }
         return certificateLinks;
     }
 
@@ -315,8 +299,7 @@ public class ApprovalDataVOView implements Serializable {
         int size = newTextRows.size();
         for (int i = 0; i < size; i++) {
             if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)
-                    || ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)
-                    || ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(USERNAME)) {
+                    || ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)) {
                 continue;
             }
             String newString = "";
@@ -358,10 +341,8 @@ public class ApprovalDataVOView implements Serializable {
                 textComparisonList.add(new TextComparisonView(orgString, newString));
             }
         } else {
-            List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
-            int size = newTextRows.size();
-            for (int i = 0; i < size; i++) {
-                textComparisonList.add(new TextComparisonView(null, translateApprovalDataText((ApprovalDataText) newTextRows.get(i))));
+            for(ApprovalDataText approvalDataText : getNewRequestDataAsText()) {
+                textComparisonList.add(new TextComparisonView(null, translateApprovalDataText(approvalDataText)));
             }
         }
         return textComparisonList;
