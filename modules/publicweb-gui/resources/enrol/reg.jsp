@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="THIS_TITLE" value="Request Registration" />
 <%@ include file="header.jsp" %>
@@ -47,9 +48,8 @@
         </select>
         <br />
         <br />
-        
         <label for="ok"></label>
-        <input type="submit" id="ok" value="Continue" />
+        <input type="submit" id="ok" value="Continue" <% if(reg.getCertificateTypes().size() == 0) out.write(" disabled=\"disabled\" "); %>  />
       </fieldset>
     </form>
 
