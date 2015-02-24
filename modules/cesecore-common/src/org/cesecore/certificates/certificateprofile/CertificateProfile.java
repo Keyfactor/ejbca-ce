@@ -240,6 +240,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String PRIVKEYUSAGEPERIODLENGTH           = "privkeyusageperiodlength";
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
+    protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
     protected static final String CTMINSCTS = "ctminscts";
     protected static final String CTMAXSCTS = "ctmaxscts";
@@ -1986,6 +1987,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setUseCertificateTransparencyInOCSP(boolean use) {
         data.put(USECERTIFICATETRANSPARENCYINOCSP, use);
+    }
+    
+    /**
+     * Whether existing certificates should be submitted by the CT publisher and the CT OCSP extension class.
+     */
+    public boolean isUseCTSubmitExisting() {
+        if (data.get(CTSUBMITEXISTING) == null) {
+            return true;
+        }
+        return ((Boolean)data.get(CTSUBMITEXISTING)).booleanValue();
+    }
+    
+    public void setUseCTSubmitExisting(boolean use) {
+        data.put(CTSUBMITEXISTING, use);
     }
     
     /**
