@@ -33,9 +33,13 @@ public interface CertificateTransparency {
 
     String SCTLIST_OID = "1.3.6.1.4.1.11129.2.4.2";
     
-    /** Controls which parameters are used for minimum and maximum number of SCTs */
+    /**
+     * Controls which parameters are used for minimum and maximum number of SCTs.
+     * Also, for OCSP and PUBLISHER, the {@link CertificateProfile#isUseCTSubmitExisting}
+     * will be respected.
+     */
     public static enum UsageMode {
-        /** Requesting a SCT for a certificate (or pre-certificate) */
+        /** Requesting a SCT for a new certificate to be issued */
         CERTIFICATE,
         /** Requesting a SCT for inclusion in a OCSP response */
         OCSP,
@@ -63,7 +67,7 @@ public interface CertificateTransparency {
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured.
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs, UsageMode ctOperationMode) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs, UsageMode usageMode) throws CTLogException;
     
     /**
      * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).

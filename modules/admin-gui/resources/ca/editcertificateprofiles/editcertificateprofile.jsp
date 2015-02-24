@@ -718,6 +718,12 @@
                 disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
             <h:outputLabel for="textfieldctmaxsctsocsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
         </h:panelGroup>
+        
+        <h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="checkctsubmitexisting" value="#{web.text.EXT_CT_SUBMITEXISTING}" styleClass="subItem"/>
+        <h:panelGroup id="checkctsubmitexistinggroup" rendered="#{certProfileBean.ctEnabled}">
+            <h:selectBooleanCheckbox id="checkctsubmitexisting" value="#{certProfileBean.certificateProfile.useCTSubmitExisting}" disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
+            <h:outputLabel for="checkctsubmitexisting" value="#{web.text.USE}"/>
+        </h:panelGroup>
 
 		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="textfieldctmaxretries" value="#{web.text.EXT_CT_MAXRETRIES}" styleClass="subItem"/>
 		<h:inputText rendered="#{certProfileBean.ctEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="3" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
