@@ -78,8 +78,8 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String CRYPTOTOKEN_RESOURCE                   = CryptoTokenRules.BASE.resource();
     final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
     final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
-    final String EDITCAS_RESOURCE                       = "/ca_functionality";
-    final String EDITPUBLISHERS_RESOURCE                = "/ca_functionality";
+    final String EDITCAS_RESOURCE                       = StandardRules.CAFUNCTIONALITY.resource();
+    final String EDITPUBLISHERS_RESOURCE                = AccessRulesConstants.REGULAR_EDITPUBLISHER;
     final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
     final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
     final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
