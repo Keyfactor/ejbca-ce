@@ -153,6 +153,8 @@ function isExternalX509(){
    var policyidfield   =  document.ca.<%=TEXTFIELD_POLICYID%>;
    var activatexkms    =  document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>;
    var activatecms     =  document.ca.<%=CHECKBOX_ACTIVATECMSSERVICE%>;
+   var ncpermitted     =  document.ca.<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>;
+   var ncexcluded      =  document.ca.<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>;
    
    if (subjectaltname != null) {	
 	   subjectaltname.disabled = false; 
@@ -162,7 +164,9 @@ function isExternalX509(){
        if (typeof activatexkms != "undefined") {
 	   	activatexkms.disabled = false;
 	   	activatexkms.checked = false;
-       }   
+       }
+       ncpermitted.disabled = false;
+       ncexcluded.disabled = false;
 	
 	   if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
 	      subjectaltname.disabled = true; 
@@ -173,7 +177,8 @@ function isExternalX509(){
 		      activatexkms.disabled = true;
 		      activatexkms.checked = false;    
 		  }
-	    		      
+		  ncpermitted.disabled = true;
+          ncexcluded.disabled = true;
 	   } 
    }
 }
