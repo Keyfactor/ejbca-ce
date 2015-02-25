@@ -1036,9 +1036,18 @@ The purpose of CT is to create public audit logs of all certificates issued by t
 <p>The following options are visibile if the CT module is available (i.e. in the enterprise edition of EJBCA):</p>
 
 <ul>
+<li>Use in new certificates: During certificate issuing, whether EJBCA should submit a pre-certificate to CT logs and include the resulting SCTs in the certificate.</li>
+<li>Use in OCSP: Whether EJBCA should submit certificates and fetch SCTs from CT log during OCSP requests, and include the SCTs in an OCSP response extension.</li>
+<li>Use CT publishers: Whether certificates should be published by the CTCustomPublisher. A publisher of the type CTCustomPublisher must be created and enabled in the certificate profile.</li>
+</ul>
+
+<p>Depending on which of the options above are enabled, one or more of the following options may appear:</p>
+
+<ul>
 <li>Enabled CT Logs: Which logs to submit to and obtain Signed Certificate Timestamp (SCTs) from. New logs can be added in the System Configuration, see the <a href="adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">admin guide</a>.</li>
-<li>Minimum number of SCTs: If fewer servers respond with an SCT than this number, the underlying operation will fail (certificate issuing or OCSP response).</li>
+<li>Minimum number of SCTs: If fewer servers respond with an SCT than this number, the underlying operation will fail (certificate issuing or generation of an OCSP response extension).</li>
 <li>Maximum number of SCTs: After having received this number of SCTs, EJBCA will stop contacting log servers.</li>
+<li>Submit existing certificates: If existing certificates (defined as not already having an SCT) should be submitted to CT logs during OCSP responses or publishing.</li>
 <li>Number of retries: If a log server times out it will be tried again after all other logs have been tried. This is the maximum number of tries per server.</li>
 </ul>
 
