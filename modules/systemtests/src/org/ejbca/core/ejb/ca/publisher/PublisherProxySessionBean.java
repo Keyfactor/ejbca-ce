@@ -48,8 +48,8 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     private PublisherSessionLocal publisherSession;
     
     @Override
-    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
-        publisherSession.addPublisher(admin, name, publisher);
+    public int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
+        return publisherSession.addPublisher(admin, name, publisher);
 
     }
 

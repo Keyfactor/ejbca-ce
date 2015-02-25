@@ -36,7 +36,7 @@ public interface PublisherProxySessionRemote {
      * @throws PublisherExistsException if hard token already exists.
      * @throws AuthorizationDeniedException 
      */
-    void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
+    int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
      
     /**
      * Adds a publisher with the same content as the original.

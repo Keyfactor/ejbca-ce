@@ -19,6 +19,7 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 
@@ -448,8 +449,17 @@ public interface CAAdminSession {
     void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN,
             boolean doPublishDeltaCRL) throws AuthorizationDeniedException;
 
-    /** @return a Collection of id:s (Integer) to authorized publishers. */
-    Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
+    /** 
+     * This method returns a set containing IDs of all authorized publishers. This set will be the sum of the following:
+     * 
+     * * Unassigned publishers
+     * * Publishers assigned to CAs that the admin has access to
+     * * Publishers assigned to Certificate Profiles that the admin has access to
+     * * Publishers assigned to Peers (if Enterprise mode) that the admin has access to 
+     * 
+     * @return a Set of IDs of authorized publishers. 
+     */
+    Set<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
 
     /**
      * Method used to create a new CA.

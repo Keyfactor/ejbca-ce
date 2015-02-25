@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
+import java.util.Map;
+
 import javax.ejb.Local;
 
 /**
@@ -20,4 +22,10 @@ import javax.ejb.Local;
 @Local
 public interface CertificateProfileSessionLocal extends CertificateProfileSession {
 
+    /**
+     * 
+     * @return a collection of all existing certificate profiles.
+     */
+    Map<Integer, CertificateProfile> getAllCertificateProfiles();
+    
 }

@@ -18,7 +18,6 @@ import java.util.List;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
@@ -101,15 +100,14 @@ public interface RoleManagementSession {
      * Associates a list of access rules to a role. If the given role already exists, replace it.
      * 
      * @param role The role
-     * @param accessRules A collection of access rules. These are all presumed to be persisted.
-     * @throws AccessRuleNotFoundException if an access rule was submitted without being persisted first.
+     * @param accessRules A collection of access rules. 
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      * 
      * @return the merged {@link RoleData} with the new access rules
      */
     RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
-            throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException;
+            throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
      * Removes the given access rules from a role.

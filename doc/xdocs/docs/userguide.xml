@@ -1676,6 +1676,7 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 <li>manages certificate profiles</li>
 <li>manages end entity profiles</li>
 <li>manages log configuration</li>
+<li>manages publishers</li>
 <li>can create RA administrators</li>
 <li>can renew a CA with new certificate and new keys</li>
 <li>can have full read access to the audit log</li>

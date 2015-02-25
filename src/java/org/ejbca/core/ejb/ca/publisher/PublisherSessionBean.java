@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -342,15 +343,17 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException,
+    public int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException,
             AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ")");
         }
-        addPublisher(admin, findFreePublisherId(), name, publisher);
+        int id = findFreePublisherId();
+        addPublisher(admin, id, name, publisher);
         if (log.isTraceEnabled()) {
             log.trace("<addPublisher()");
         }
+        return id;
     }
 
     @Override
@@ -524,16 +527,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException {
-        if (!authorizationSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", admin.toString(),
-                    "Can not retrieve all publishers IDs.");
-            throw new AuthorizationDeniedException(msg);
-        }
-        HashSet<Integer> returnval = new HashSet<Integer>();
-        Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
-        while (i.hasNext()) {
-            returnval.add(i.next().getId());
+    public Set<Integer> getAllPublisherIds() {
+        Set<Integer> returnval = new HashSet<Integer>();
+        for(PublisherData publisher : PublisherData.findAll(entityManager)) {
+            returnval.add(publisher.getId());
         }
         return returnval;
     }
@@ -541,11 +538,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public HashMap<Integer, String> getPublisherIdToNameMap() {
-        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
-        while (i.hasNext()) {
-            PublisherData next = i.next();
-            returnval.put(next.getId(), next.getName());
+        HashMap<Integer,String> returnval = new HashMap<Integer,String>();
+        for(PublisherData publisher : PublisherData.findAll(entityManager)) {
+            returnval.put(publisher.getId(), publisher.getName());
         }
         return returnval;
     }
