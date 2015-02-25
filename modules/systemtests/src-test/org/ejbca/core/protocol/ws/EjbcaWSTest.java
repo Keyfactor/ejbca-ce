@@ -1013,10 +1013,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             // generate keys
             String keyAlias = "privatedeckeyalias";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
-            keyAlias = "privatesignkeyalias";
+            log.debug("Generated key " + keyAlias);
+            keyAlias = "test72CreateCA: privatesignkeyalias";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            log.debug("test72CreateCA: Generated key " + keyAlias);
             keyAlias = "testKey";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            log.debug("test72CreateCA: Generated key " + keyAlias);
             
             // construct the ca token properties
             final Properties caTokenProperties = new Properties();
