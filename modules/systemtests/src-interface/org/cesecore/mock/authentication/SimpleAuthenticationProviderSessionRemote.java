@@ -20,7 +20,6 @@ import org.cesecore.authentication.tokens.AuthenticationProvider;
  * This remote interface represents a trivial implementation of an AuthenticationProvider. This is merely a test resource and shouldn't be confused for real
  * code.
  * 
- * TODO: Remove me when proper authentication infrastructure falls into place.
  * 
  * @version $Id$
  */

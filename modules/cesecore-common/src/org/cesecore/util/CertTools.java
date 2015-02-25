@@ -1528,11 +1528,13 @@ public abstract class CertTools {
     }
 
     /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
+     * @throws IOException 
+     * @throws OperatorCreationException 
+     * @throws CertificateParsingException 
      * 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA, String provider, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
-            IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+            boolean isCA, String provider, boolean ldapOrder) throws CertificateParsingException, OperatorCreationException, IOException {
         final int keyUsage;
         if (isCA) {
             keyUsage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
@@ -1562,21 +1564,9 @@ public abstract class CertTools {
      * @param sigAlg signature algorithm, you can use one of the contants AlgorithmConstants.SIGALG_XXX
      * @param isCA boolean true or false
      * @param keyusage as defined by constants in X509KeyUsage
-     * 
-     * @return X509Certificate, self signed
-     * 
-     * @throws NoSuchAlgorithmException DOCUMENT ME!
-     * @throws SignatureException DOCUMENT ME!
-     * @throws InvalidKeyException DOCUMENT ME!
-     * @throws IllegalStateException
-     * @throws NoSuchProviderException
-     * @throws IOException 
-     * @throws CertificateException 
-     * @throws OperatorCreationException 
      */
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
-            String sigAlg, boolean isCA, int keyusage, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
-            IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+            String sigAlg, boolean isCA, int keyusage, boolean ldapOrder) throws CertificateParsingException, OperatorCreationException, IOException {
         return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, "BC", ldapOrder);
     }
 
@@ -1590,16 +1580,14 @@ public abstract class CertTools {
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder)
-            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
-            OperatorCreationException, CertificateException {
+            throws CertificateParsingException, OperatorCreationException, IOException {
         return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter,
                 provider, ldapOrder, null);
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
-            List<Extension> additionalExtensions) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException,
-            NoSuchProviderException, IOException, OperatorCreationException, CertificateException {
+            List<Extension> additionalExtensions) throws CertificateParsingException, IOException, OperatorCreationException {
         // Create self signed certificate
         Date firstDate = new Date();
 
@@ -1622,6 +1610,8 @@ public abstract class CertTools {
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating RSAPublicKey from spec: ", e);
                 publicKey = pubKey;
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("RSA was not a known algorithm", e);
             }
         } else if (pubKey instanceof ECPublicKey) {
             ECPublicKey ecpk = (ECPublicKey) pubKey;
@@ -1629,11 +1619,23 @@ public abstract class CertTools {
                 ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
                 final String algo = ecpk.getAlgorithm();
                 if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                    publicKey = KeyFactory.getInstance("ECGOST3410").generatePublic(ecspec);
+                    try {
+                        publicKey = KeyFactory.getInstance("ECGOST3410").generatePublic(ecspec);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("ECGOST3410 was not a known algorithm", e);
+                    }
                 } else if (algo.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-                    publicKey = KeyFactory.getInstance("DSTU4145").generatePublic(ecspec);
+                    try {
+                        publicKey = KeyFactory.getInstance("DSTU4145").generatePublic(ecspec);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("DSTU4145 was not a known algorithm", e);
+                    }
                 } else {
-                    publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
+                    try {
+                        publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("EC was not a known algorithm", e);
+                    }
                 }
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
@@ -1650,11 +1652,21 @@ public abstract class CertTools {
         // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
         // bean is created.
         byte[] serno = new byte[8];
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        SecureRandom random;
+        try {
+            random = SecureRandom.getInstance("SHA1PRNG");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA1PRNG was not a known algorithm", e);
+        }
         random.setSeed(new Date().getTime());
         random.nextBytes(serno);
 
-        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        SubjectPublicKeyInfo pkinfo;
+        try {
+            pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Provided public key could not be read to ASN1Primitive", e);
+        }
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
                 firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
 

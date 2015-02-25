@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -182,13 +183,13 @@ public abstract class CaTestUtils {
     }
 
 
-    public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11) throws Exception {
+    public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11)
+            throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, IOException {
         return CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, "1024", -1);
     }
 
-
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, final String keyspec,
-            int keyusage) throws Exception {
+            int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, IOException {
         // Create catoken
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -205,7 +206,11 @@ public abstract class CaTestUtils {
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
         X509CA x509ca = new X509CA(cainfo);
-        x509ca.setCAToken(catoken);
+        try {
+            x509ca.setCAToken(catoken);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
         // A CA certificate
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         if (genKeys) {
@@ -298,17 +303,19 @@ public abstract class CaTestUtils {
     }
 
 
-    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11) throws Exception {
+    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11) throws CertificateParsingException,
+            CryptoTokenOfflineException, OperatorCreationException, IOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11);
     }
 
 
-    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage) throws Exception {
+    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage) throws CertificateParsingException,
+            CryptoTokenOfflineException, OperatorCreationException, IOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, "1024", keyusage);
     }
 
-
-    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, final String keyspec) throws Exception {
+    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, final String keyspec) throws CertificateParsingException,
+            CryptoTokenOfflineException, OperatorCreationException, IOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, keyspec, -1);
     }
 }
