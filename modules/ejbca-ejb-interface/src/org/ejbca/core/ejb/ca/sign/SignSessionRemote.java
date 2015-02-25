@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.ca.sign;
 import javax.ejb.Remote;
 
 /**
- * Remote interface for RSASignSession.
+ * Remote interface for SignSession.
  */
 @Remote
 public interface SignSessionRemote extends SignSession {

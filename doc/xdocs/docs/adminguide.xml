@@ -4281,11 +4281,22 @@ can be any external source where you want to send issued certificates and
 CRLs to be stored. The most common cases of Publishers, which are
 implemented by default in EJBCA are LDAP directories and Active Directory
 (which is a special case of LDAP directory).
-</p><p>
+</p>
+<p>
 The Publisher architecture is modular and it's possible to implement custom
 publishers that can also be easily integrated and set up in the Admin GUI.
-</p><p>
-First we will start with describing the built-in publishers.
+</p>
+<subsection name="Publisher Access Rules">
+<p>The presumed administrator of publishers is the built in CA Administrator role, or more specifically a role with access to <i>/ca_functionality/edit_publishers</i>. Besided that, only
+the following publishers will be available for a given role:</p>
+<ul>
+<li>Publishers assigned to a CA that the role has access to.</li>
+<li>Publishers assigned to a Certificate Profile that the role has access to.</li>
+<li><b>EJBCA Enterprise only</b>: Publishers assigned to peers that the role has access to, given that the role has access to <i>/peer/view</i></li>
+</ul>
+</subsection>
+<p>
+Now we will look at the built-in publishers.
 </p>
 <subsection name="LDAP Naming">
 <p>

@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -2834,24 +2835,35 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<Integer> getAuthorizedPublisherIds(final AuthenticationToken admin) {
-        final HashSet<Integer> returnval = new HashSet<Integer>();
-        try {
-            // If superadmin return all available publishers
-            returnval.addAll(publisherSession.getAllPublisherIds(admin));
-        } catch (AuthorizationDeniedException e1) {
-            // If regular CA-admin return publishers he is authorized to
-            for (final Integer caid : caSession.getAuthorizedCaIds(admin)) {
-                try {
-                    returnval.addAll(caSession.getCAInfo(admin, caid).getCRLPublishers());
-                } catch (CADoesntExistsException e) {
-                    log.debug("CA " + caid + " does not exist.");
-                } catch (AuthorizationDeniedException e) {
-                    log.debug("Unauthorized to CA " + caid + ", admin '" + admin.toString() + "'");
+    public Set<Integer> getAuthorizedPublisherIds(final AuthenticationToken admin) {
+        // Set to use to track all authorized publisher IDs
+        final Set<Integer> result = new HashSet<Integer>();
+        // Find all publishers, use this set to track unowned publishers
+        final Set<Integer> allPublishers = publisherSession.getAllPublisherIds();
+
+        //First, find all CAs
+        for (final int caId : caSession.getAllCaIds()) {
+            boolean authorizedToCa = caSession.authorizedToCA(admin, caId);
+            try {
+                Collection<Integer> crlPublishers = caSession.getCAInfoInternal(caId).getCRLPublishers();
+                if (crlPublishers != null) {
+                    // TODO: Logically getCRLPublishers() should return an empty list if empty, but that's a change for another day
+                    for (Integer caPublisherId : crlPublishers) {
+                        //This publisher is owned by a CA 
+                        allPublishers.remove(caPublisherId);
+                        if (authorizedToCa) {
+                            //Admin has access to the CA, so return it as a result. 
+                            result.add(caPublisherId);
+                        }
+                    }
                 }
+            } catch (CADoesntExistsException e) {
+                // NOPMD: This can't happen
             }
-        }
-        return returnval;
+        } 
+        //Any remaining publishers must be unowned, so add them in as well. 
+        result.addAll(allPublishers);
+        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

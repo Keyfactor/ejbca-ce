@@ -325,6 +325,11 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         return returnval;
     }
+    
+    @Override
+    public Map<Integer, CertificateProfile> getAllCertificateProfiles() {
+        return profileCache.getProfileCache(entityManager);
+    }
 
     @Override
     public CertificateProfile getCertificateProfile(final String name) {

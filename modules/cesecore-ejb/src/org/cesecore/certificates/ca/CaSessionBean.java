@@ -747,9 +747,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      * Extract keystore or keystore reference and store it as a CryptoToken. Add a reference to the keystore.
      * @return true if any changes where made
      */
+    @SuppressWarnings("unchecked")
     @Deprecated // Remove when we no longer need to support upgrades from 5.0.x
     private boolean adhocUpgradeFrom50(int caid, LinkedHashMap<Object, Object> data, String caName) {
-        @SuppressWarnings("unchecked")
         HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CA.CATOKENDATA);
         if (tokendata.get(CAToken.CRYPTOTOKENID) != null) {
             // Already upgraded

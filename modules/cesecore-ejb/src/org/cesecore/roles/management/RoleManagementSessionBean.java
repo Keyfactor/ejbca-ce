@@ -228,7 +228,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     @Override
     public RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
-            throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {
+            throws RoleNotFoundException, AuthorizationDeniedException {
         assertAuthorizedToEditRole(authenticationToken, role);
         //Check that current aspect is authorized to all the rules she's planning on replacing
         if (!isAuthorizedToRules(authenticationToken, accessRules)) {
@@ -238,7 +238,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     private RoleData addAccessRulesToRoleNoAuth(AuthenticationToken authenticationToken, final RoleData role,
-            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException, AccessRuleNotFoundException {
+            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException {
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());

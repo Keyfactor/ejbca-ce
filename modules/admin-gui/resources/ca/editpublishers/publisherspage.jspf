@@ -4,7 +4,7 @@
 %>
 
 
-<h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %><%= ejbcawebbean.getHelpReference("/adminguide.html#LDAP%20and%20Publishers") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#publishers"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->

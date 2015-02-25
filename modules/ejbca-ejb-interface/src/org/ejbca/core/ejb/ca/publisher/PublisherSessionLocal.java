@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 import javax.ejb.Local;
 
@@ -63,10 +64,13 @@ public interface PublisherSessionLocal extends PublisherSession {
 
     /**
      * Adds a publisher to the database.
+     * 
+     * @return the publisher ID
+     * 
      * @throws PublisherExistsException if publisher already exists.
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
-    void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
+    int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
@@ -98,17 +102,14 @@ public interface PublisherSessionLocal extends PublisherSession {
     void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
-     * Retrieves a Collection of id:s (Integer) for all authorized publishers if
-     * the Admin has the SUPERADMIN role.
+     * Retrieves a Set of all Publisher IDs 
      * 
      * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
      * administrator.
      * 
-     * @return Collection of id:s (Integer)
-     * @throws AuthorizationDeniedException
-     *             if the admin does not have superadmin credentials
+     * @return Set of IDs (Integer)
      */
-    Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException;
+    Set<Integer> getAllPublisherIds();
 
     /** @return mapping of publisher id (Integer) to publisher name (String). */
     HashMap<Integer,String> getPublisherIdToNameMap();
