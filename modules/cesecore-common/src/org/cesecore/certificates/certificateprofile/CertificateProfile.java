@@ -240,6 +240,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String PRIVKEYUSAGEPERIODLENGTH           = "privkeyusageperiodlength";
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
+    protected static final String USECERTIFICATETRANSPARENCYINPUBLISHERS  = "usecertificatetransparencyinpublisher";
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
     protected static final String CTMINSCTS = "ctminscts";
@@ -1987,6 +1988,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setUseCertificateTransparencyInOCSP(boolean use) {
         data.put(USECERTIFICATETRANSPARENCYINOCSP, use);
+    }
+    
+    /**
+     * Whether Certificate Transparency (CT) should be used in publishers.
+     * You have to create a publisher and enable it in the profile also!
+     */
+    public boolean isUseCertificateTransparencyInPublishers() {
+        if (data.get(USECERTIFICATETRANSPARENCYINPUBLISHERS) == null) {
+            // Default to being enabled if CT in OCSP was enabled
+            return isUseCertificateTransparencyInOCSP();
+        }
+        return ((Boolean)data.get(USECERTIFICATETRANSPARENCYINPUBLISHERS)).booleanValue();
+    }
+    
+    public void setUseCertificateTransparencyInPublishers(boolean use) {
+        data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, use);
     }
     
     /**
