@@ -518,8 +518,27 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_certificatetransparency");
     }
     
+    public void toggleUseCertificateTransparencyInPublishers() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setUseCertificateTransparencyInPublishers(!getCertificateProfile().isUseCertificateTransparencyInPublishers());
+        redirectToComponent("header_certificatetransparency");
+    }
+    
     public boolean isCtAvailable() { return CertificateTransparencyFactory.isCTAvailable(); }
-    public boolean isCtEnabled() throws AuthorizationDeniedException { return getCertificateProfile().isUseCertificateTransparencyInCerts() || getCertificateProfile().isUseCertificateTransparencyInOCSP(); }
+    public boolean isCtEnabled() throws AuthorizationDeniedException {
+        return getCertificateProfile().isUseCertificateTransparencyInCerts() ||
+            getCertificateProfile().isUseCertificateTransparencyInOCSP() ||
+            getCertificateProfile().isUseCertificateTransparencyInPublishers();
+    }
+    
+    public boolean isCtInCertsOrOCSPEnabled() throws AuthorizationDeniedException {
+        return getCertificateProfile().isUseCertificateTransparencyInCerts() ||
+            getCertificateProfile().isUseCertificateTransparencyInOCSP();
+    }
+    
+    public boolean isCtInOCSPOrPublishersEnabled() throws AuthorizationDeniedException {
+        return getCertificateProfile().isUseCertificateTransparencyInOCSP() ||
+            getCertificateProfile().isUseCertificateTransparencyInPublishers();
+    }
     
     public List<SelectItem/*<String,String*/> getEnabledCTLogsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();

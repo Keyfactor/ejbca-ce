@@ -686,10 +686,19 @@
 			<h:commandButton id="cbusecertificatetransparencyincerts" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInCerts}"
 				value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusecertificatetransparencyincerts" value="#{web.text.EXT_CT_USE_IN_CERTS}…" styleClass="checkBoxOverlay"/>
+			
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}" rendered="#{!web.legacyInternetExplorer}"/>
 			<h:commandButton id="cbusecertificatetransparencyinocsp" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInOCSP}"
 				value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
 			<h:outputLabel for="cbusecertificatetransparencyinocsp" value="#{web.text.EXT_CT_USE_IN_OCSP}…" styleClass="checkBoxOverlay"/>
+			
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInPublishers}" rendered="#{!web.legacyInternetExplorer}"/>
+            <h:commandButton id="cbusecertificatetransparencyinpublishers" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCertificateTransparencyInPublishers}"
+                value="#{certProfileBean.certificateProfile.useCertificateTransparencyInPublishers?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
+            <h:outputLabel for="cbusecertificatetransparencyinpublishers" value="#{web.text.EXT_CT_USE_PUBLISHERS}…" styleClass="checkBoxOverlay"/>
+            
+            <br/>
+            <h:outputLabel rendered="#{certProfileBean.certificateProfile.useCertificateTransparencyInPublishers}" value="#{web.text.EXT_CT_PUBLISHERMUSTBECREATED}" styleClass="help"/>
 		</h:panelGroup>
 
 		<%-- Enabled CT logs selection --%>
@@ -699,8 +708,8 @@
 			<f:selectItems value="#{certProfileBean.enabledCTLogsAvailable}"/>
 		</h:selectManyListbox>
 
-		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" value="#{web.text.EXT_CT_MINSCTS}" styleClass="subItem"/>
-		<h:panelGroup rendered="#{certProfileBean.ctEnabled}">
+		<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_MINSCTS}" styleClass="subItem"/>
+		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
     		<h:inputText id="textfieldctminscts" value="#{certProfileBean.certificateProfile.CTMinSCTs}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
     			disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts}"/>
     		<h:outputLabel for="textfieldctminscts" value="#{web.text.EXT_CT_PER_CERTIFICATE}"/> &nbsp; &nbsp;
@@ -709,8 +718,8 @@
             <h:outputLabel for="textfieldctminsctsocsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
         </h:panelGroup>
 
-		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="textfieldctmaxscts" value="#{web.text.EXT_CT_MAXSCTS}" styleClass="subItem"/>
-		<h:panelGroup rendered="#{certProfileBean.ctEnabled}">
+		<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" for="textfieldctmaxscts" value="#{web.text.EXT_CT_MAXSCTS}" styleClass="subItem"/>
+		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
             <h:inputText id="textfieldctmaxscts" value="#{certProfileBean.certificateProfile.CTMaxSCTs}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
                 disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts}"/>
             <h:outputLabel for="textfieldctmaxscts" value="#{web.text.EXT_CT_PER_CERTIFICATE}"/> &nbsp; &nbsp;
@@ -719,14 +728,14 @@
             <h:outputLabel for="textfieldctmaxsctsocsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
         </h:panelGroup>
         
-        <h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="checkctsubmitexisting" value="#{web.text.EXT_CT_SUBMITEXISTING}" styleClass="subItem"/>
-        <h:panelGroup id="checkctsubmitexistinggroup" rendered="#{certProfileBean.ctEnabled}">
-            <h:selectBooleanCheckbox id="checkctsubmitexisting" value="#{certProfileBean.certificateProfile.useCTSubmitExisting}" disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
+        <h:outputLabel rendered="#{certProfileBean.ctInOCSPOrPublishersEnabled}" for="checkctsubmitexisting" value="#{web.text.EXT_CT_SUBMITEXISTING}" styleClass="subItem"/>
+        <h:panelGroup id="checkctsubmitexistinggroup" rendered="#{certProfileBean.ctInOCSPOrPublishersEnabled}">
+            <h:selectBooleanCheckbox id="checkctsubmitexisting" value="#{certProfileBean.certificateProfile.useCTSubmitExisting}"/>
             <h:outputLabel for="checkctsubmitexisting" value="#{web.text.USE}"/>
         </h:panelGroup>
 
-		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="textfieldctmaxretries" value="#{web.text.EXT_CT_MAXRETRIES}" styleClass="subItem"/>
-		<h:inputText rendered="#{certProfileBean.ctEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="3" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+		<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" for="textfieldctmaxretries" value="#{web.text.EXT_CT_MAXRETRIES}" styleClass="subItem"/>
+		<h:inputText rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="3" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts && !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"/>
 	</h:panelGrid>
 
