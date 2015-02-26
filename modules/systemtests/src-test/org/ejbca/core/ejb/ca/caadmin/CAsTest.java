@@ -88,12 +88,10 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.protocol.cmp.CmpResponseMessage;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -113,7 +111,6 @@ public class CAsTest extends CaTestCase {
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
@@ -1184,32 +1181,6 @@ public class CAsTest extends CaTestCase {
            cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);
        }
     }
-
-   @Test
-   public void test23GetAuthorizedPublisherIdsAccessTest() throws Exception {
-       log.trace(">test23GetAuthorizedPublisherIdsAccessTest()");
-       Set<Principal> principals = new HashSet<Principal>();
-       principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
-       AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
-       final String publisherName = CAsTest.class.getSimpleName();
-       try {
-           // Create at least one publisher so we know we have something
-           final ValidationAuthorityPublisher publ = new ValidationAuthorityPublisher();
-           publ.setDataSource("foo");
-           publ.setDescription("foobar");
-           publisherProxySession.addPublisher(admin, publisherName, publ);
-           // Superadmin should get several IDs
-           Collection<Integer> caids = caAdminSession.getAuthorizedPublisherIds(admin);
-           assertNotNull(caids);
-           assertFalse("Superadmin should read some publisher IDs", caids.isEmpty());
-           // Unprivilegeduser should get no IDs
-           caids = caAdminSession.getAuthorizedPublisherIds(unpriviledgedUser);
-           assertTrue("Unprivileged admin should not be allowed to read and publisher IDs", caids.isEmpty());
-       } finally {
-           publisherProxySession.removePublisher(admin, publisherName);
-       }
-       log.trace("<test23GetAuthorizedPublisherIdsAccessTest()");
-   }
 
     /** Used for direct manipulation of objects without setters. */
     private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
