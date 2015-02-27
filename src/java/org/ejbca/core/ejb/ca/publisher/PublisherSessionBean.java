@@ -120,7 +120,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         final List<BasePublisher> publishersToQueuePending = new ArrayList<BasePublisher>();
         final List<BasePublisher> publishersToQueueSuccess = new ArrayList<BasePublisher>();
         for (final Integer id : publisherids) {
-            BasePublisher publ = getPublisherInternal(id, true);
+            BasePublisher publ = getPublisherInternal(id, null, true);
             if (publ != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
                 if (publ.willPublishCertificate(status, revocationReason)) {
@@ -250,7 +250,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         boolean returnval = true;
         for (Integer id : publisherids) {
             int publishStatus = PublisherConst.STATUS_PENDING;
-            final BasePublisher publ = getPublisherInternal(id, true);
+            final BasePublisher publ = getPublisherInternal(id, null, true);
             if (publ != null) {
                 final String name = getPublisherName(id);
                 // If it should be published directly
@@ -549,14 +549,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public BasePublisher getPublisher(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
         authorizedToEditPublishers(authenticationToken);
-        return getPublisherInternal(name, true);
+        return getPublisherInternal(-1, name, true);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public BasePublisher getPublisher(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
         authorizedToEditPublishers(authenticationToken);
-        return getPublisherInternal(id, true);
+        return getPublisherInternal(id, null, true);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -574,7 +574,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public int getPublisherId(String name) {
         // Get publisher to ensure it is in the cache, or read
-        final BasePublisher pub = getPublisherInternal(name, true);
+        final BasePublisher pub = getPublisherInternal(-1, name, true);
         final int ret = (pub != null) ? pub.getPublisherId() : 0;
         return ret;
     }
@@ -586,7 +586,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace(">getPublisherName(id: " + id + ")");
         }
         // Get publisher to ensure it is in the cache, or read
-        final BasePublisher pub = getPublisherInternal(id, true);
+        final BasePublisher pub = getPublisherInternal(id, null, true);
         final String ret = (pub != null) ? pub.getName() : null;
         if (log.isTraceEnabled()) {
             log.trace("<getPublisherName(): " + ret);
@@ -601,7 +601,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace(">getPublisherData(id: " + id + ")");
         }
         
-        final BasePublisher pub = getPublisherInternal(id,true);
+        final BasePublisher pub = getPublisherInternal(id, null, true);
         if (pub == null) {
             throw new PublisherDoesntExistsException("Publisher with id "+id+" doesn't exist");
         }
@@ -644,15 +644,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return ProfileID.getNotUsedID(db);
     }
     
-    
-    private BasePublisher getPublisherInternal(final String name, boolean fromCache) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getPublisherInternal: " + name);
-        }
-        int id = PublisherCache.INSTANCE.getNameToIdMap().get(name);
-        return getPublisherInternal(id, fromCache);
-    }
-
     /**
      * Internal method for getting Publisher, to avoid code duplication. Tries to find the Publisher even if the id is wrong due to CA certificate DN not being
      * the same as CA DN. Uses PublisherCache directly if configured to do so.
@@ -660,16 +651,21 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * Note! No authorization checks performed in this internal method
      * 
      * @param id
-     *            numerical id of Publisher that we search for
+     *            numerical id of Publisher that we search for, or -1 if a name is to be used instead
+     * @param name
+     *            human readable name of Publisher, used instead of id if id == -1, can be null if id != -1
      * @param fromCache if we should use the cache or return a new, decoupled, instance from the database, to be used when you need
      *             a completely distinct object, for edit, and not a shared cached instance.
      * @return BasePublisher value object or null if it does not exist
      */
-    private BasePublisher getPublisherInternal(int id, boolean fromCache) {
+    private BasePublisher getPublisherInternal(int id, final String name, boolean fromCache) {
         if (log.isTraceEnabled()) {
-            log.trace(">getPublisherInternal: " + id);
+            log.trace(">getPublisherInternal: " + id + ", " + name);
         }
         Integer idValue = Integer.valueOf(id);
+        if (id == -1) {
+            idValue = PublisherCache.INSTANCE.getNameToIdMap().get(name);
+        }
         BasePublisher returnval = null;
         // If we should read from cache, and we have an id to use in the cache, and the cache does not need to be updated
         if (fromCache && idValue != null && !PublisherCache.INSTANCE.shouldCheckForUpdates(idValue)) {
@@ -680,11 +676,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         // if we selected to not read from cache, or if the cache did not contain this entry
         if (returnval == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Publisher with ID " + idValue + " will be checked for updates.");
+                log.debug("Publisher with ID " + idValue + " and/or name '" + name + "' will be checked for updates.");
             }
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
-            final PublisherData pd = PublisherData.findById(entityManager, idValue);
-            
+            final PublisherData pd;
+            if (name != null) {
+                pd = PublisherData.findByName(entityManager, name);
+            } else {
+                pd = PublisherData.findById(entityManager, idValue);
+            }
             if (pd != null) {
                 returnval = getPublisher(pd);
                 final int digest = pd.getProtectString(0).hashCode();
@@ -699,7 +699,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<getPublisherInternal: " + id + " : " + (returnval == null ? "null" : "not null"));
+            log.trace("<getPublisherInternal: " + id + ", " + name + ": " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
     }
