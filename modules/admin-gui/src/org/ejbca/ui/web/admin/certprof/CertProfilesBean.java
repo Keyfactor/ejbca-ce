@@ -574,7 +574,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             for (Integer publisher : publishers) {
                 BasePublisher pub = null;
                 try {
-                    pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(publisher);
+                    pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(getAdmin(), publisher);
                 } catch (Exception e) {
                     log.warn("Warning: There was an error loading publisher with id " + publisher
                             + ". Use debug logging to see stack trace: " + e.getMessage());
