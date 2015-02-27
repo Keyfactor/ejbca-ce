@@ -952,13 +952,13 @@
 				</h:selectOneMenu>
 			</h:panelGroup>
 		</h:panelGrid>
-		<h:panelGroup>
+		<h:panelGroup rendered="#{certProfileBean.typeEndEntity}">
 			<h:outputLabel for="singleActiveCertificateConstraintSettings" value="#{web.text.SINGLECERTCONSTRAINT}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Single%20Active%20Certificate%20Constraint") %>
 		</h:panelGroup>
-		<h:panelGrid columns="1" id="singleActiveCertificateConstraintSettings" >
+		<h:panelGrid columns="1" id="singleActiveCertificateConstraintSettings" rendered="#{certProfileBean.typeEndEntity}">
 			<h:panelGrid columns="4">
-				<h:selectBooleanCheckbox id="singleActiveCertificateConstraint" value="#{certProfileBean.certificateProfile.singleActiveCertificateConstraint}" rendered="#{certProfileBean.typeEndEntity}"/>
+				<h:selectBooleanCheckbox id="singleActiveCertificateConstraint" value="#{certProfileBean.certificateProfile.singleActiveCertificateConstraint}" />
 				<h:outputLabel for="singleActiveCertificateConstraint" value="#{web.text.USE}"/>
 			</h:panelGrid>
 		</h:panelGrid>

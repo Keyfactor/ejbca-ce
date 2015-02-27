@@ -291,9 +291,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final Query query;
         if (onlyActive) {
             query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE " + "a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN"
-                    + " AND (a.status=:active OR a.status=:notifiedexpired)" + "AND a.expireDate>:expireDate");
+                    + " AND (a.status=:active OR a.status=:notifiedexpired OR (a.status=:revoked AND a.revocationReason=:onhold))" + "AND a.expireDate>:expireDate");
             query.setParameter("active", CertificateConstants.CERT_ACTIVE);
             query.setParameter("notifiedexpired", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+            query.setParameter("revoked", CertificateConstants.CERT_REVOKED);
+            query.setParameter("onhold", RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             query.setParameter("expireDate", System.currentTimeMillis());
         } else {
             query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");

@@ -21,6 +21,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -35,6 +36,9 @@ import org.cesecore.util.CeSecoreNameStyle;
  * @version $Id$
  */
 public class SimpleRequestMessage implements RequestMessage {
+    
+    private static final Logger log = Logger.getLogger(SimpleRequestMessage.class);
+
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -261,7 +265,10 @@ public class SimpleRequestMessage implements RequestMessage {
 
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
-  
+      //These values are never used for this type of message
+        if(log.isDebugEnabled()) {
+            log.debug("Key and provider were set for a SimpleRequestMessage. These values are not used and will be ignored.");
+        }
     }
 
 } // SimpleRequestMessage

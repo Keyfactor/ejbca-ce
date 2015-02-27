@@ -786,7 +786,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     
     /**
      * This test checks the Single Active Certificate Constraint, i.e. a certificate profile setting that ensures that when a new certificate is issued for and end entity,
-     * all previous non-revoked (active and notified about expiration) and unexpired certificates are revoked with status "Superseded". 
+     * all previous non-revoked (active and notified about expiration + revoked but on hold) and unexpired certificates are revoked with status "Superseded". 
      */
     @Test
     public void testCreateSingleActiveCertificateConstraint() throws CertificateProfileExistsException, AuthorizationDeniedException,
@@ -806,13 +806,14 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         BigInteger notifiedAboutExpiration = null;
         BigInteger alreadyExpired = null;
         BigInteger newCertificate = null;
+        BigInteger onhold = null;
         try {
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), endEntity.getUsername(), endEntity.getPassword());
             // First certificate, meant to be revoked. 
             X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             toBeRevokedSerialNumber = CertTools.getSerialNumber(responseMessage.getCertificate());
-            // Second certificate, also to be revoked, but with status 
+            // Second certificate, also to be revoked, but with status CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION
             responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             if (!certificateStoreSession.setStatus(alwaysAllowToken, CertTools.getFingerprintAsString(responseMessage.getCertificate()),
@@ -832,7 +833,12 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 // NOPMD: As it should be
             }
             alreadyExpired = CertTools.getSerialNumber(responseMessage.getCertificate());
-
+            //Fourth certificate. Should be revoked but on hold. 
+            responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            certificateStoreSession.setRevokeStatus(alwaysAllowToken, responseMessage.getCertificate(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
+            onhold = CertTools.getSerialNumber(responseMessage.getCertificate());
+            
             //Update the profile with the new constraint
             profile.setSingleActiveCertificateConstraint(true);
             certProfileSession.changeCertificateProfile(alwaysAllowToken, profileName, profile);
@@ -841,15 +847,23 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             newCertificate = CertTools.getSerialNumber(responseMessage.getCertificate());
             assertEquals("New certificate was revoked.", CertificateStatus.OK, certificateStoreSession.getStatus(X509CADN, newCertificate));
-            assertEquals("Old certificate was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(X509CADN, toBeRevokedSerialNumber));
-            assertEquals("Old certificate with notified about expiration status was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(X509CADN, notifiedAboutExpiration));
+            assertEquals("Old certificate was not revoked.", CertificateStatus.REVOKED,
+                    certificateStoreSession.getStatus(X509CADN, toBeRevokedSerialNumber));
+            assertEquals("Revokation reason was not set to superseded", RevokedCertInfo.REVOCATION_REASON_SUPERSEDED,
+                    certificateStoreSession.getStatus(X509CADN, toBeRevokedSerialNumber).revocationReason);
+            assertEquals("Old certificate with notified about expiration status was not revoked.", CertificateStatus.REVOKED,
+                    certificateStoreSession.getStatus(X509CADN, notifiedAboutExpiration));
             assertEquals("Expired certificate was revoked.", CertificateStatus.OK, certificateStoreSession.getStatus(X509CADN, alreadyExpired));
+            assertEquals("Onhold certificate was not set to superseded.", RevokedCertInfo.REVOCATION_REASON_SUPERSEDED,
+                    certificateStoreSession.getStatus(X509CADN, onhold).revocationReason);
+
         } finally {
             certProfileSession.removeCertificateProfile(alwaysAllowToken, profileName);
             internalCertStoreSession.removeCertificate(toBeRevokedSerialNumber);
             internalCertStoreSession.removeCertificate(notifiedAboutExpiration);
             internalCertStoreSession.removeCertificate(alreadyExpired);
             internalCertStoreSession.removeCertificate(newCertificate);
+            internalCertStoreSession.removeCertificate(onhold);
         }
     }
 
