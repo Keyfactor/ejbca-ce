@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
@@ -55,6 +56,9 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
+import org.ejbca.core.model.ca.publisher.CustomPublisherAccessRulesSupport;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.junit.BeforeClass;
@@ -101,6 +105,14 @@ public class CaAdminSessionBeanTest {
         ValidationAuthorityPublisher certificateProfilePublisher = new ValidationAuthorityPublisher();
         final String certificateProfilePublisherName = "CERTIFICATE_PROFILE_PUBLISHER";
         int certificateProfilePublisherId = publisherProxySession.addPublisher(alwaysAllowToken, certificateProfilePublisherName, certificateProfilePublisher);
+        UnAuthorizedCustomPublisherMock unAuthorizedCustomPublisher = new UnAuthorizedCustomPublisherMock();
+        final String unAuthorizedCustomPublisherName = "UNAUTHORIZED_CUSTOM_PUBLISHER";
+        int unAuthorizedCustomPublisherId = publisherProxySession.addPublisher(alwaysAllowToken, unAuthorizedCustomPublisherName, unAuthorizedCustomPublisher);
+        AuthorizedCustomPublisherMock authorizedCustomPublisher = new AuthorizedCustomPublisherMock();
+        final String authorizedCustomPublisherName = "AUTHORIZED_CUSTOM_PUBLISHER";
+        int authorizedCustomPublisherId = publisherProxySession.addPublisher(alwaysAllowToken, authorizedCustomPublisherName, authorizedCustomPublisher);
+        
+        
         
         //Create a CA that admin has access to. Publishers attached to this CA should be included
         X509CA authorizedCa = CaTestUtils.createTestX509CA("CN=PUB_ID_authorizedCa", null, false);
@@ -158,6 +170,8 @@ public class CaAdminSessionBeanTest {
             assertFalse("Publisher attached to an unauthorized CA was in list.", publisherIds.contains(Integer.valueOf(unauthorizedCaPublisherId)));
             assertTrue("Unattached publisher was not in list.", publisherIds.contains(Integer.valueOf(unattachedCaPublisherId)));
             assertTrue("Publisher attached to Certificate Profile was not in list.", publisherIds.contains(Integer.valueOf(certificateProfilePublisherId)));
+            assertTrue("Authorized custom publisher was not in list.", publisherIds.contains(Integer.valueOf(authorizedCustomPublisherId)));
+            assertFalse("Unauthorized custom publisher was in list.", publisherIds.contains(Integer.valueOf(unAuthorizedCustomPublisherId)));         
         } finally {
             //Remove the test role
             try {
@@ -193,7 +207,8 @@ public class CaAdminSessionBeanTest {
             publisherProxySession.removePublisher(alwaysAllowToken, unauthorizedCaPublisherName);
             publisherProxySession.removePublisher(alwaysAllowToken, unattachedCaPublisherName);
             publisherProxySession.removePublisher(alwaysAllowToken, certificateProfilePublisherName);
+            publisherProxySession.removePublisher(alwaysAllowToken, unAuthorizedCustomPublisherName);
+            publisherProxySession.removePublisher(alwaysAllowToken, authorizedCustomPublisherName);
         }
     }
-
 }

@@ -177,6 +177,8 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -2839,9 +2841,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Set to use to track all authorized publisher IDs
         final Set<Integer> result = new HashSet<Integer>();
         // Find all publishers, use this set to track unowned publishers
-        final Set<Integer> allPublishers = publisherSession.getAllPublisherIds();
+        final Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
 
-        //First, find all CAs
+        //Firstly, weed out all publishers which we lack authorization to
+        for (Integer key : new HashSet<Integer>(allPublishers.keySet())) {
+            BasePublisher publisher = allPublishers.get(key);
+            if (publisher instanceof CustomPublisherContainer) {
+                final CustomPublisherContainer custompublisherdata = ((CustomPublisherContainer) publisher);
+                if (custompublisherdata.isCustomAccessRulesSupported()) {
+                    if (!custompublisherdata.isAuthorizedToPublisher(admin)) {
+                        allPublishers.remove(key);
+                    }
+                }
+            }
+        }
+        
+        //Secondly, find all CAs
         for (final int caId : caSession.getAllCaIds()) {
             boolean authorizedToCa = caSession.authorizedToCA(admin, caId);
             try {
@@ -2862,7 +2877,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         } 
         //Any remaining publishers must be unowned, so add them in as well. 
-        result.addAll(allPublishers);
+        result.addAll(allPublishers.keySet());
         return result;
     }
 

@@ -46,7 +46,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 /**
  * Contains help methods used to parse a publisher jsp page requests.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
@@ -150,6 +149,17 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String PAGE_PUBLISHERS                 = "publisherspage.jspf";
 
     private EjbcaWebBean ejbcawebbean;
+    
+    private CAInterfaceBean cabean;
+    private boolean initialized=false;
+    public boolean  publisherexists       = false;
+    public boolean  publisherdeletefailed = false;
+    public boolean  connectionmessage = false;
+    public boolean  connectionsuccessful = false;
+    public String   connectionerrormessage = "";
+    public boolean  issuperadministrator = false;
+    public BasePublisher publisherdata = null;
+    public String publishername = null;
 
     /** Creates new LogInterfaceBean */
     public EditPublisherJSPHelper(){
@@ -737,18 +747,5 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public <T> List<String> getCustomClasses() {
         return CustomLoader.getCustomClasses(ICustomPublisher.class);
     }
-
-    // Private fields.
-    private CAInterfaceBean cabean;
-    private boolean initialized=false;
-    public boolean  publisherexists       = false;
-    public boolean  publisherdeletefailed = false;
-    public boolean  connectionmessage = false;
-    public boolean  connectionsuccessful = false;
-    public String   connectionerrormessage = "";
-    public boolean  issuperadministrator = false;
-    public BasePublisher publisherdata = null;
-    public String publishername = null;
-
 
 }

@@ -13,17 +13,17 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.beans.XMLDecoder;
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -527,10 +527,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public Set<Integer> getAllPublisherIds() {
-        Set<Integer> returnval = new HashSet<Integer>();
+    public Map<Integer, BasePublisher> getAllPublishers() {
+        Map<Integer, BasePublisher> returnval = new HashMap<Integer, BasePublisher>();
         for(PublisherData publisher : PublisherData.findAll(entityManager)) {
-            returnval.add(publisher.getId());
+            returnval.put(publisher.getId(), getPublisher(publisher));
         }
         return returnval;
     }
@@ -717,9 +717,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private BasePublisher getPublisher(PublisherData pData) {
         BasePublisher publisher = pData.getCachedPublisher();
         if (publisher == null) {
-            java.beans.XMLDecoder decoder;
+            XMLDecoder decoder;
             try {
-                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(pData.getData().getBytes("UTF8")));
+                decoder = new XMLDecoder(new ByteArrayInputStream(pData.getData().getBytes("UTF8")));
             } catch (UnsupportedEncodingException e) {
                 throw new EJBException(e);
             }
