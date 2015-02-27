@@ -1843,6 +1843,92 @@ public class CertToolsTest {
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("2001:DB8::").getAddress())), "Disallowed SAN (IPv6 address) was accepted");
     }
     
+    @Test
+    public void testCertificateWithEmptyOU() throws CertificateParsingException {
+        byte[] customerCertificate = ("-----BEGIN CERTIFICATE-----\n"
+                +"MIIG6jCCBdKgAwIBAgISESF6Y6b1UsT6yhdJZ1npIcsFMA0GCSqGSIb3DQEBBQUA"
+                +"MFkxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8wLQYD"
+                +"VQQDEyZHbG9iYWxTaWduIEV4dGVuZGVkIFZhbGlkYXRpb24gQ0EgLSBHMjAeFw0x"
+                +"MjA4MDExNDA5MTBaFw0xNDA4MDIxNDA5MTBaMIHiMR0wGwYDVQQPDBRQcml2YXRl"
+                +"IE9yZ2FuaXphdGlvbjERMA8GA1UEBRMIMDgxNDgzMTAxEzARBgsrBgEEAYI3PAIB"
+                +"AxMCTkwxCzAJBgNVBAYTAk5MMRMwEQYDVQQIEwpPdmVyaWpzc2VsMRAwDgYDVQQH"
+                +"EwdEZW4gSGFtMRcwFQYDVQQJEw5Lcm9lemVuaG9layAgODEJMAcGA1UECxMAMR8w"
+                +"HQYDVQQKExZGb3RvIEtvbmlqbmVuYmVyZyBCLlYuMSAwHgYDVQQDExd3d3cuZm90"
+                +"b2tvbmlqbmVuYmVyZy5ubDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIB"
+                +"AN1kecyhfcJh7P33Sn5V4ThAneF9CehadDpAwm6u/o0htocYhQAxioXhUMXO6hcV"
+                +"NpyEeMBhEVKOSWuTunMhCUB1pgp/yY7/ul2xoXVYkEhBwuRo0ttg1XcQG6zoC1VC"
+                +"JTBTBgLWjeTxaEf10e2jALvuHAaPWKOLWykBaVbbMF6rAPHbV0t+GwQjGPkCOKoJ"
+                +"JvJhAm+8PTYfNZnYvHByBjg0g8axANTNmTutEnGxfqhzcnMj4dS0jZfSfN7JQn/o"
+                +"ul032uVfjlU6gDay/9vUzd67wb+0S/XZH1d8CGXZCYUlGoG5vIbkffOoqoN2+mac"
+                +"Vqco354CSjV5rO+M/qY2nZMUoCTRGPiWIahSQbAbuLssRozWAbk5tW1h4LqlwV1r"
+                +"OgRmxC0B3pfoouQuEdV52XMgiWyI8VKsKJL5K/oZCObyPszxfBhvl+jWhEa/xYxv"
+                +"sB9VdIBn8FWlXrMf3a27knjAlgVIM5AfZForfMkRVcUaRCrhYSn6n+w4wrDc0Fvr"
+                +"tC3iimvHztOQOcsA4dRc9oLDJ73v6ONLLwhUg/UEid80qc8fFFeBX6xLy4dCmVJP"
+                +"6Kr6A1u/QssrAIYzCJsF90bXy1r4lifhqJWG+qmst6CUl+CeVVFkRDyi0M8W+P16"
+                +"vslOgg8ut8w3JjMQnu0pnDCbsDFmC44c5Smh0CSoELPBAgMBAAGjggIgMIICHDAO"
+                +"BgNVHQ8BAf8EBAMCBaAwTAYDVR0gBEUwQzBBBgkrBgEEAaAyAQEwNDAyBggrBgEF"
+                +"BQcCARYmaHR0cHM6Ly93d3cuZ2xvYmFsc2lnbi5jb20vcmVwb3NpdG9yeS8wgYUG"
+                +"A1UdEQR+MHyCF3d3dy5mb3Rva29uaWpuZW5iZXJnLm5sghp3d3cuZm90b2tvbmlq"
+                +"bmVuYmVyZy5jby51a4IXd3d3LmZvdG9rb25pam5lbmJlcmcuZGWCF3d3dy5mb3Rv"
+                +"a29uaWpuZW5iZXJnLmJlghNmb3Rva29uaWpuZW5iZXJnLm5sMAkGA1UdEwQCMAAw"
+                +"HQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMD8GA1UdHwQ4MDYwNKAyoDCG"
+                +"Lmh0dHA6Ly9jcmwuZ2xvYmFsc2lnbi5jb20vZ3MvZ3NleHRlbmR2YWxnMi5jcmww"
+                +"gYgGCCsGAQUFBwEBBHwwejBBBggrBgEFBQcwAoY1aHR0cDovL3NlY3VyZS5nbG9i"
+                +"YWxzaWduLmNvbS9jYWNlcnQvZ3NleHRlbmR2YWxnMi5jcnQwNQYIKwYBBQUHMAGG"
+                +"KWh0dHA6Ly9vY3NwMi5nbG9iYWxzaWduLmNvbS9nc2V4dGVuZHZhbGcyMB0GA1Ud"
+                +"DgQWBBRcEvciiy8aP7yBrHIrhdDs9Y+LfjAfBgNVHSMEGDAWgBSwsEr9HHUo+Bxh"
+                +"qhP2+sGQPWsWozANBgkqhkiG9w0BAQUFAAOCAQEAeBPW1Mz9NaeMGvjBNPOntkMw"
+                +"k32sSlZ7fu/zTPLDiV4CHOom67amngXZWK/WGsVr862EHoWOXoFfIeKIKMZslmM5"
+                +"HvPevKBg3IHKBp1BLUTr2b5/yvy5TijeojraOtXipKtRWXyRM4E6YEX1YqwL5nF5"
+                +"lr53G4ikW+RSdugCOLbio7vfj7bSK34E4EBQE8jU2+RqiXyMgO8Ni0NitNZxmc8K"
+                +"JDlbioUjBIRX/xElQjdKqYJjUERgZxmk0+zmeF4bAN0nVJtAv6N/JOw7VOsUAea7"
+                +"uICq887NuvFm3bo5s6vFsGlPLbNDgresVimkvhmliuUuA5Q8U38QHZ33oZI1XA=="
+                +"\n-----END CERTIFICATE-----").getBytes();
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(customerCertificate, "BC");
+        String dn = CertTools.getSubjectDN(cert);
+        assertEquals("JurisdictionCountry=NL,STREET=Kroezenhoek  8,BusinessCategory=Private Organization,CN=www.fotokonijnenberg.nl,SN=08148310,OU=,O=Foto Konijnenberg B.V.,L=Den Ham,ST=Overijssel,C=NL", dn);
+    }
+
+    @Test
+    public void testCertificateWithHashInSN() throws CertificateParsingException {
+        byte[] customerCertificate = ("-----BEGIN CERTIFICATE-----\n" + "MIIGHzCCBQegAwIBAgISESGJvLFqytscBE3/U/YSjVZtMA0GCSqGSIb3DQEBBQUA"
+                + "MFkxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8wLQYD"
+                + "VQQDEyZHbG9iYWxTaWduIEV4dGVuZGVkIFZhbGlkYXRpb24gQ0EgLSBHMjAeFw0x"
+                + "MzEyMTkyMTIxMjFaFw0xNTEyMjAyMTIxMjFaMIIBGjEdMBsGA1UEDwwUUHJpdmF0"
+                + "ZSBPcmdhbml6YXRpb24xITAfBgNVBAUMGCNDTlBKOjE1LjA5NS4yNzEvMDAwMS00"
+                + "NTETMBEGCysGAQQBgjc8AgEDEwJCUjELMAkGA1UEBhMCQlIxDzANBgNVBAgMBlBh"
+                + "cmFuYTERMA8GA1UEBwwIQ2lhbm9ydGUxGDAWBgNVBAkTD0F2ZW5pZGEgUGFyYWli"
+                + "YTEaMBgGA1UECwwRTW9yZW5hIFJvc2EgR3JvdXAxPDA6BgNVBAoMM01vcmVuYSBS"
+                + "b3NhIEluZHVzdHJpYSBlIENvbWVyY2lvIGRlIENvbmZlY2NvZXMgUy5BLjEcMBoG"
+                + "A1UEAwwTbW9yZW5hcm9zYWdyb3VwLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEP"
+                + "ADCCAQoCggEBAJjIbr8WUwjRkiRLzjRXZwZFzxKX0/MT7T8037vg2XcxqoCN3e0D"
+                + "GMigxgDYisbmzUJB5uZdCAApYvK0T047JFzYY0pyb70wxebCTR/YrXlgVJzt6MzI"
+                + "GXL3B/cHBz2qkHFS3PqFT0N9PfBnLPT5fQ1Ri6yLIk5zgP0HfJVS4W+WE4YgbM/c"
+                + "fIJtWLxwTKcWQbI9FBmkx8XTUuKOxYs7LGIku40cCD6cTL8qN6StoPx6xNL8cfu8"
+                + "ImhIFv9ITIG5XQv4sfb34a2GpFiBrFWgrXWA3ZhBzdw1Hw4OCPn++ydVip6BvPhT"
+                + "KXelYMKrwvXFVYVWCEPJST6yZIVWbvfWysUCAwEAAaOCAhwwggIYMA4GA1UdDwEB"
+                + "/wQEAwIFoDBMBgNVHSAERTBDMEEGCSsGAQQBoDIBATA0MDIGCCsGAQUFBwIBFiZo"
+                + "dHRwczovL3d3dy5nbG9iYWxzaWduLmNvbS9yZXBvc2l0b3J5LzCBgQYDVR0RBHow"
+                + "eIITbW9yZW5hcm9zYWdyb3VwLmNvbYIdZXh0cmFvcmRpbmFyaW9tdW5kb2pveS5j"
+                + "b20uYnKCCmpveS5jb20uYnKCFW1hcmlhdmFsZW50aW5hLmNvbS5icoIRbW9yZW5h"
+                + "cm9zYS5jb20uYnKCDHppbmNvLmNvbS5icjAJBgNVHRMEAjAAMB0GA1UdJQQWMBQG"
+                + "CCsGAQUFBwMBBggrBgEFBQcDAjA/BgNVHR8EODA2MDSgMqAwhi5odHRwOi8vY3Js"
+                + "Lmdsb2JhbHNpZ24uY29tL2dzL2dzZXh0ZW5kdmFsZzIuY3JsMIGIBggrBgEFBQcB"
+                + "AQR8MHowQQYIKwYBBQUHMAKGNWh0dHA6Ly9zZWN1cmUuZ2xvYmFsc2lnbi5jb20v"
+                + "Y2FjZXJ0L2dzZXh0ZW5kdmFsZzIuY3J0MDUGCCsGAQUFBzABhilodHRwOi8vb2Nz"
+                + "cDIuZ2xvYmFsc2lnbi5jb20vZ3NleHRlbmR2YWxnMjAdBgNVHQ4EFgQU2uc6NRKH"
+                + "l1c9JEs648L0s5R1zgIwHwYDVR0jBBgwFoAUsLBK/Rx1KPgcYaoT9vrBkD1rFqMw"
+                + "DQYJKoZIhvcNAQEFBQADggEBAJNa16vT304p0DVGUX9K50JjGD3rcruBHO+uENMP"
+                + "6SkqFVCVxx+jha2Z7IX4kv1IsRn2ZYNoxYHkefGPJD4qk1X+MTvEgN2nKUxJQGrJ"
+                + "n/vDnGCJjNWwmcoBmp7n3//S4S4CtNMhGXJ61mcx1tK7sIK14xC+MD/33Q675OhO"
+                + "84bjb9kdIpqDaYl6x8JuaLlKim9249IAiYm/0IH+aLMyE9LO1+ohUSq4nCoZ30dV"
+                + "5OkLGTRxw1vYfHKgf1BHMOki/PKVxxE5qas5p43xFcdp8r94LeErvlm5NtgJFHA0" + "zSNkEEEgGMdf2/MyB49NTuqyJWtz94Ox0HKvHPCfLtG/Ib4="
+                + "\n-----END CERTIFICATE-----").getBytes();
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(customerCertificate, "BC");
+        String dn = CertTools.getSubjectDN(cert);
+        assertEquals("JurisdictionCountry=BR,STREET=Avenida Paraiba,BusinessCategory=Private Organization,CN=morenarosagroup.com,SN=\\#CNPJ:15.095.271/0001-45,OU=Morena Rosa Group,O=Morena Rosa Industria e Comercio de Confeccoes S.A.,L=Cianorte,ST=Parana,C=BR", dn);
+    }
+
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
             CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
