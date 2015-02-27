@@ -326,7 +326,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (Integer publisher : publishers) {
                                             BasePublisher pub = null;
                                             try {
-                                                pub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(publisher);
+                                                pub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(getAuthenticationToken(), publisher);
                                             } catch (Exception e) {
                                                 getLogger().warn(
                                                         "Warning: There was an error loading publisher with id " + publisher

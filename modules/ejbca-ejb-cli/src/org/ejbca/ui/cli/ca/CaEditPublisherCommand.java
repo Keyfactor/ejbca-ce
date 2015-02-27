@@ -72,7 +72,13 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
         final String field = parameters.get(FIELD_KEY);
         final String value = parameters.get(VALUE_KEY);
 
-        final BasePublisher pub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(name);
+        BasePublisher pub;
+        try {
+            pub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(getAuthenticationToken(), name);
+        } catch (AuthorizationDeniedException e1) {
+            log.error("CLI User was not authorized to edit publishers.");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        }
         if (pub == null) {
             log.info("Publisher '" + name + "' does not exist.");
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -89,7 +95,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                     EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).changePublisher(getAuthenticationToken(), name, pub);
                     // Verify our new value
                     log.info("Reading modified value for verification...");
-                    final BasePublisher modpub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(name);
+                    final BasePublisher modpub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(getAuthenticationToken(), name);
 
                     // Print return value
                     fieldEditor.getBeanValue(field, modpub);
@@ -99,7 +105,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                 log.error(e.getMessage());
                 return CommandResult.FUNCTIONAL_FAILURE;
             } catch (AuthorizationDeniedException e) {
-                log.error("CLI User was not authorized to Publisher " + name);
+                log.error("CLI User was not authorized to edit publishers.");
                 return CommandResult.AUTHORIZATION_FAILURE;
             }
         }
