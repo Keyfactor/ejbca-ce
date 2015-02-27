@@ -4291,8 +4291,8 @@ publishers that can also be easily integrated and set up in the Admin GUI.
 the following publishers will be available for a given role:</p>
 <ul>
 <li>Publishers assigned to a CA that the role has access to.</li>
-<li>Publishers assigned to a Certificate Profile that the role has access to.</li>
-<li><b>EJBCA Enterprise only</b>: Publishers assigned to peers that the role has access to, given that the role has access to <i>/peer/view</i></li>
+<li>Publishers not assigned to any CA.</li>
+<li><b>EJBCA Enterprise only</b>: Validation Authority Peer Publishers, given that the role has access to <i>/peer/view</i></li>
 </ul>
 </subsection>
 <p>
