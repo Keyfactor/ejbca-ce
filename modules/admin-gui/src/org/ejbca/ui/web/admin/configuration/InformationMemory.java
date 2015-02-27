@@ -348,7 +348,7 @@ public class InformationMemory implements Serializable {
             TreeMap<CAInfo, Integer> sortedMap = new TreeMap<CAInfo, Integer>(new Comparator<CAInfo>() {
                 @Override
                 public int compare(CAInfo o1, CAInfo o2) {
-                    return o1.getName().compareTo(o2.getName());
+                    return o1.getName().compareToIgnoreCase(o2.getName());
                 }
             });
             // 1. Retrieve a list of all CA's the current user is authorized to
