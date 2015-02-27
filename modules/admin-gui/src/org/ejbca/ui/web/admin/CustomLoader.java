@@ -21,8 +21,6 @@ import org.ejbca.config.WebConfiguration;
 /**
  * Class with utility methods to find all implementations of a given
  * interface using the ServiceLoader functionality of JRE 1.6.
- * 
- * @author Samuel Lidén Borell
  *
  * @version $Id$
  */

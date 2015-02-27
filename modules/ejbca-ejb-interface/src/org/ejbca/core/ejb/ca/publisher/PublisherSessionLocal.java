@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.Map;
 
 import javax.ejb.Local;
 
@@ -102,14 +102,14 @@ public interface PublisherSessionLocal extends PublisherSession {
     void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
-     * Retrieves a Set of all Publisher IDs 
+     * Retrieves a Set of all Publishers
      * 
      * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
      * administrator.
      * 
-     * @return Set of IDs (Integer)
+     * @return Map of BasePublishers mapped by ID
      */
-    Set<Integer> getAllPublisherIds();
+    Map<Integer, BasePublisher> getAllPublishers();
 
     /** @return mapping of publisher id (Integer) to publisher name (String). */
     HashMap<Integer,String> getPublisherIdToNameMap();
