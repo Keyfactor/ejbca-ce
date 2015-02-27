@@ -86,7 +86,18 @@ public class CustomPublisherContainer extends BasePublisher {
 		data.put(PROPERTYDATA, propertydata);	
 	}
 	
-	public boolean isCustomUiRenderingSupported() {
+	public boolean isCustomAccessRulesSupported() {
+	    return getCustomPublisher() instanceof CustomPublisherAccessRulesSupport;
+	}
+	
+    public boolean isAuthorizedToPublisher(AuthenticationToken authenticationToken) {
+        if (getCustomPublisher() instanceof CustomPublisherAccessRulesSupport) {
+            return ((CustomPublisherAccessRulesSupport)getCustomPublisher()).isAuthorizedToPublisher(authenticationToken);
+        }
+        return true;
+    }
+
+    public boolean isCustomUiRenderingSupported() {
 	    return getCustomPublisher() instanceof CustomPublisherUiSupport;
 	}
     public List<CustomPublisherProperty> getCustomUiPropertyList() {
@@ -203,7 +214,6 @@ public class CustomPublisherContainer extends BasePublisher {
 	public Object saveData() {
 		this.custompublisher = null;
 		return super.saveData();
-	}
-	
+	}	
 
 }
