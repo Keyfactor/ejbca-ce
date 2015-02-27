@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -78,7 +79,12 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     for (int i = 0; i < ids.length; i++) {
                         int publisherId = Integer.valueOf(ids[i]);
                         // Get everything from the queue for this publisher id
-                        BasePublisher publisher = publisherSession.getPublisher(publisherId);
+                        BasePublisher publisher;
+                        try {
+                            publisher = publisherSession.getPublisher(getAdmin(), publisherId);
+                        } catch (AuthorizationDeniedException e) {
+                            throw new ServiceExecutionFailedException(getAdmin() + " does not have access to publishers.", e);
+                        }
                         publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId, publisher);
                     }
                 } else {

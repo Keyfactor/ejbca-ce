@@ -296,7 +296,7 @@ public class PublisherTest {
 	public void test06EditPublisher() throws AuthorizationDeniedException {
 		log.trace(">test06EditPublisher()");
 
-		final BasePublisher publisher = this.publisherSession.getPublisher(cloneName);
+		final BasePublisher publisher = this.publisherSession.getPublisher(internalAdmin, cloneName);
 		publisher.setDescription(publisher.getDescription().toUpperCase());
 		this.publisherSession.changePublisher(internalAdmin, cloneName, publisher);
 
