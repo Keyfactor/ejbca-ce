@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -47,10 +48,9 @@ public interface PublisherSession {
     BasePublisher getPublisher(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException;
     
     /**
-     * @return the name of the publisher with the given id.
-     * @throws PublisherDoesntExistsException if there's no publisher with the given id.
+     * @return the name of the publisher with the given id, null if none was found.
      */
-    String getPublisherName(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException;
+    String getPublisherName(int id);
     
     /**
      * @return the data hashmap of the publisher with the given id.

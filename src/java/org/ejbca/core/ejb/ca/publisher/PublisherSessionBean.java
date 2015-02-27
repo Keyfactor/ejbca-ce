@@ -384,7 +384,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     private void addPublisherInternal(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException,
             PublisherExistsException {
-        authorizedToEditPublisher(admin, name);
+        authorizedToEditPublishers(admin);
         if (PublisherData.findByName(entityManager, name) == null) {
             if (PublisherData.findById(entityManager, Integer.valueOf(id)) == null) {
                 entityManager.persist(new PublisherData(Integer.valueOf(id), name, publisher));
@@ -405,7 +405,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
         }
-        authorizedToEditPublisher(admin, name);
+        authorizedToEditPublishers(admin);
 
         PublisherData htp = PublisherData.findByName(entityManager, name);
         if (htp != null) {
@@ -467,7 +467,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">removePublisher(name: " + name + ")");
         }
-        authorizedToEditPublisher(admin, name);
+        authorizedToEditPublishers(admin);
         try {
             PublisherData htp = PublisherData.findByName(entityManager, name);
             if (htp == null) {
@@ -499,7 +499,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
         }
-        authorizedToEditPublisher(admin, oldname);
+        authorizedToEditPublishers(admin);
         boolean success = false;
         if (PublisherData.findByName(entityManager, newname) == null) {
             PublisherData htp = PublisherData.findByName(entityManager, oldname);
@@ -548,13 +548,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public BasePublisher getPublisher(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
-        authorizedToEditPublisher(authenticationToken, name);
+        authorizedToEditPublishers(authenticationToken);
         return getPublisherInternal(name, true);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public BasePublisher getPublisher(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
+        authorizedToEditPublishers(authenticationToken);
         return getPublisherInternal(id, true);
     }
 
@@ -595,17 +596,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getPublisherName(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException {
-        final String name = getPublisherName(id);
-        authorizedToEditPublisher(admin, name);
-        if (name == null) {
-            throw new PublisherDoesntExistsException("Publisher with id "+id+" doesn't exist");
-        }
-        return name;
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
     public Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherData(id: " + id + ")");
@@ -615,7 +605,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (pub == null) {
             throw new PublisherDoesntExistsException("Publisher with id "+id+" doesn't exist");
         }
-        authorizedToEditPublisher(admin, pub.getName());
+        authorizedToEditPublishers(admin);
         return (Map<?, ?>)pub.saveData();
     }
 
@@ -754,7 +744,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
-    private void authorizedToEditPublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
+    private void authorizedToEditPublishers(AuthenticationToken admin) throws AuthorizationDeniedException {
         // We need to check that admin also have rights to edit publishers
         if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_EDITPUBLISHER)) {
             final String msg = intres.getLocalizedMessage("store.editpublishernotauthorized", admin.toString());

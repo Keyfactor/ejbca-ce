@@ -127,12 +127,6 @@ public interface PublisherSessionLocal extends PublisherSession {
     int getPublisherId(String name);
 
     /**
-     * Returns a publishers name given its id.
-     * @return the name or null if id does not exist
-     */
-    String getPublisherName(int id);
-
-    /**
      * Use from Healthcheck only! Test connection for all publishers. No
      * authorization checks are performed.
      * @return an error message or an empty String if all are ok.
