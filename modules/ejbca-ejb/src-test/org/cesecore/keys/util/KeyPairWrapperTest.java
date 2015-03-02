@@ -16,12 +16,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
