@@ -205,12 +205,7 @@
                                             cabean.initialize(ejbcawebbean);
                                             tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
-  
-  boolean issuperadministrator = false;
-  try{
-    issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ENDENTITYPROFILEBASE);
-  }catch(AuthorizationDeniedException ade){}   
-
+   
 %>
  
 <head>
