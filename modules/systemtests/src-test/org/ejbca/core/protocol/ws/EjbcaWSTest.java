@@ -1011,15 +1011,15 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
 
             // generate keys
-            String keyAlias = "privatedeckeyalias";
-            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
-            log.debug("Generated key " + keyAlias);
-            keyAlias = "test72CreateCA: privatesignkeyalias";
-            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
-            log.debug("test72CreateCA: Generated key " + keyAlias);
-            keyAlias = "testKey";
-            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
-            log.debug("test72CreateCA: Generated key " + keyAlias);
+            final String decKeyAlias = CAToken.SOFTPRIVATEDECKEYALIAS;
+            ejbcaraws.generateCryptoTokenKeys(ctname, decKeyAlias, "1024");
+            log.debug("test72CreateCA:Generated key " + decKeyAlias);
+            final String signKeyAlias = CAToken.SOFTPRIVATESIGNKEYALIAS;
+            ejbcaraws.generateCryptoTokenKeys(ctname, signKeyAlias, "1024");
+            log.debug("test72CreateCA: Generated key " + signKeyAlias);
+            final String testKeyAlias = "test72CreateCATestKey";
+            ejbcaraws.generateCryptoTokenKeys(ctname, testKeyAlias, "1024");
+            log.debug("test72CreateCA: Generated key " + testKeyAlias);
             
             // construct the ca token properties
             final Properties caTokenProperties = new Properties();
@@ -1027,9 +1027,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, "testKey");
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
             
-            ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, keyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
+            ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, testKeyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertNotNull(cainfo);
             assertEquals(caname, cainfo.getName());
