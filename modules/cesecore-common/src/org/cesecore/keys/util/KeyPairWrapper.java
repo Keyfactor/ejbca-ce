@@ -38,6 +38,7 @@ public class KeyPairWrapper implements Serializable {
     final byte[] encodedPublicKey;
     final byte[] encodedPrivateKey;
     final String algorithm;
+    transient KeyPair cachedKeyPair = null;
     
     public KeyPairWrapper(final KeyPair keyPair) {
         this.encodedPublicKey = keyPair.getPublic().getEncoded();
@@ -85,7 +86,10 @@ public class KeyPairWrapper implements Serializable {
     
     
     public KeyPair getKeyPair() {
-        return new KeyPair(getPublicKey(), getPrivateKey());
+        if(cachedKeyPair == null) {
+            cachedKeyPair = new KeyPair(getPublicKey(), getPrivateKey());
+        } 
+        return cachedKeyPair;
     }
    
 }
