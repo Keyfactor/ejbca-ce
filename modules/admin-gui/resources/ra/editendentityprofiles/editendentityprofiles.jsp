@@ -205,7 +205,9 @@
                                             cabean.initialize(ejbcawebbean);
                                             tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
-   
+  
+  boolean accessToAllCAs = ejbcawebbean.isAuthorizedToAllCAs();
+
 %>
  
 <head>
