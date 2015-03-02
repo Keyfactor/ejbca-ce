@@ -76,7 +76,7 @@
 			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable}" disabled="#{certProfileBean.typeRootCa}"
 				action="#{certProfileBean.setTypeRootCa}" value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}"/>
 			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable}" disabled="#{certProfileBean.typeHardToken}"
-				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.ROOTCA}"/>
+				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.HARDTOKEN}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>
