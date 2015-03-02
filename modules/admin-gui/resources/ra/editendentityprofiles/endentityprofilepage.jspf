@@ -982,7 +982,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLECAS %>" size="7" multiple >
             <% String[] availablecas = profiledata.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-            if (issuperadministrator) { %>
+            if (accessToAllCAs) { %>
             <option  value='<%= SecConst.ALLCAS %>' 
                <% if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS)))
                     out.write(" selected ");%>>

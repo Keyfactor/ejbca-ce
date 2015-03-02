@@ -705,6 +705,10 @@ public class EjbcaWebBean implements Serializable {
     public Collection<Integer> getAuthorizedCAIds() {
         return this.informationmemory.getAuthorizedCAIds();
     }
+    
+    public boolean isAuthorizedToAllCAs() {
+        return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
+    }
 
     public void changeAdminPreference(AdminPreference ap) throws Exception {
         currentadminpreference = ap;
