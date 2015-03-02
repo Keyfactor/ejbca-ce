@@ -112,11 +112,6 @@
   CmpConfiguration cmpConfigClone = null;
 
   String THIS_FILENAME            = gc.getAdminWebPath() +  "/sysconfig/cmpconfiguration.jsp";
-  
-  boolean issuperadministrator = false;
-  try{
-    issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION);
-  }catch(AuthorizationDeniedException ade){}   
 
 %>
  
