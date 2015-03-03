@@ -138,7 +138,7 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
         boolean result = false;
         for(AccessRuleData accessRuleData : accessRules.values()) {
             String currentRule = accessRuleData.getAccessRuleName();
-            if(rule.startsWith(currentRule)) {
+            if(rule.startsWith(currentRule) && (rule.length() == currentRule.length() || rule.charAt(currentRule.length()) == '/')) {
                 if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT) && accessRuleData.getRecursive()) {
                     result = true;
                 } else if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_DECLINE)) {
