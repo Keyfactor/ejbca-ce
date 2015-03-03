@@ -877,6 +877,47 @@ SHA1 checksum:    ${cesecoresrcSHA1}
 SHA-256 checksum: ${cesecoresrcSHA256}
             </echo>
         </target>
+	
+    <condition property="statedump.exists">
+    	<available file="${mod.statedump.path}/build.xml" />
+    </condition>
+	
+    <!-- ======================================================================= -->
+    <!-- Make a ZIP source release for Statedump, if available.                  -->
+    <!-- Creates a fat source zip containing all Statedump source files and can  -->
+    <!-- be included in your IDE to be able to browse the source.                -->
+    <!-- ======================================================================= -->
+    <target name="ziprelease-statedump-src" if="${statedump.exists}">
+        <property name="statedump.src.basezipfile" value="statedump-${app.version.number}-src"/>
+        <delete file="../${statedump.src.basezipfile}.zip"/>
+
+        <property name="statedump.src.release.dir" location="${tmp}/statedump-release-src"/>
+        <delete dir="${statedump.src.release.dir}"/>
+        <mkdir dir="${statedump.src.release.dir}"/>
+        <copy todir="${statedump.src.release.dir}">
+            <fileset dir="${basedir}/modules/">
+                <include name="statedump/**" />
+            </fileset>
+        </copy>
+
+        <zip destfile="../${statedump.src.basezipfile}.zip">
+            <zipfileset dir="${statedump.src.release.dir}" filemode="600" dirmode="700">
+            </zipfileset>
+        </zip>
+
+        <antcall target="signjar">
+            <param name="signjar.file" value="../${statedump.src.basezipfile}.zip"/>
+        </antcall>
+        <checksum file="../${statedump.src.basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
+        <checksum file="../${statedump.src.basezipfile}.zip" algorithm="SHA1" property="statedumpsrcSHA1"/>
+        <checksum file="../${statedump.src.basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
+        <checksum file="../${statedump.src.basezipfile}.zip" algorithm="SHA-256" property="statedumpsrcSHA256"/>
+        <echo>
+File:             ../${statedump.src.basezipfile}.zip
+SHA1 checksum:    ${statedumpsrcSHA1}
+SHA-256 checksum: ${statedumpsrcSHA256}
+        </echo>
+    </target>
 
         <!-- ======================================================================= -->
         <!-- Make a ZIP binary release for CESeCore.                                 -->
