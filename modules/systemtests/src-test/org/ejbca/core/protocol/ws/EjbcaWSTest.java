@@ -1028,8 +1028,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
-            
+            log.trace("==test72CreateCA() Before Command");
             ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, testKeyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
+            log.trace("==test72CreateCA() After Command");
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertNotNull(cainfo);
             assertEquals(caname, cainfo.getName());
@@ -1038,6 +1039,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals(CAInfo.SELFSIGNED, cainfo.getSignedBy());
             assertEquals(CAInfo.CATYPE_X509, cainfo.getCAType());
         } catch (RuntimeException e) {
+            log.trace("==test72CreateCA() RuntimeException Catch");
             if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
                 log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
             } else {
