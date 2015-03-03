@@ -15,6 +15,7 @@ package org.ejbca;
 import static org.junit.Assert.fail;
 
 import java.io.EOFException;
+import java.io.StreamCorruptedException;
 
 import javax.ejb.EJBException;
 
@@ -46,7 +47,9 @@ public class PublicKeySerialisationTest {
             fail("Deserialisation over JNDI appears to work.");
         } catch (EJBException e) {
             if (e.getCausedByException() instanceof EOFException) {
-                // NOPMD: This is as expected after the update to BC 1.51
+                // NOPMD: This is as expected after the update to BC 1.51 this happens on JBoss6
+            } else if(e.getCausedByException() instanceof StreamCorruptedException) {
+                // NOPMD: This is as expected after the update to BC 1.51, this happens on JBoss7
             } else {
                 throw e;
             }
