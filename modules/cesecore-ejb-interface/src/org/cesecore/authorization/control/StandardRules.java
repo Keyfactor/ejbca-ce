@@ -31,7 +31,9 @@ public enum StandardRules {
 	EDITROLES(SYSTEMFUNCTIONALITY.resource()+"/edit_administrator_privileges"),
 	RECOVERY("/recovery"),
 	BACKUP(RECOVERY.resource()+"/backup"),
-	RESTORE(RECOVERY.resource()+"/restore");
+	RESTORE(RECOVERY.resource()+"/restore"),
+    REGULAR_EDITSYSTEMCONFIGURATION(SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration");
+
 	
 	private final String resource;
 	

@@ -88,7 +88,7 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
     final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
-    final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
+    final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
     final String SERVICES_RESOURCE                      = StandardRules.ROLE_ROOT.resource();
