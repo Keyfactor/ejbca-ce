@@ -5,6 +5,14 @@
   </properties>
 
   <body>
+  <section name="Trademarks">
+  <p>
+Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners.  
+  </p>
+  <p>
+  EJBCA is a registered trademark of PrimeKey Solutions AB
+  </p>
+  </section>
     <section name="Credits">
 <p>
 EJBCA uses the opensource JCE crypto provider from <a href="http://www.bouncycastle.org/">The Legion of the Bouncy Castle</a>.
