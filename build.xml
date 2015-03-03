@@ -886,6 +886,9 @@ SHA-256 checksum: ${cesecoresrcSHA256}
     <!-- Make a ZIP source release for Statedump, if available.                  -->
     <!-- Creates a fat source zip containing all Statedump source files and can  -->
     <!-- be included in your IDE to be able to browse the source.                -->
+	<!-- 																		 -->
+	<!-- Note that this zip is not standalone but needs to be unzipped inside an -->
+	<!-- existing EJBCA installation and built there.							 -->
     <!-- ======================================================================= -->
     <target name="ziprelease-statedump-src" if="${statedump.exists}">
         <property name="statedump.src.basezipfile" value="statedump-${app.version.number}-src"/>
@@ -916,6 +919,8 @@ SHA-256 checksum: ${cesecoresrcSHA256}
 File:             ../${statedump.src.basezipfile}.zip
 SHA1 checksum:    ${statedumpsrcSHA1}
 SHA-256 checksum: ${statedumpsrcSHA256}
+        	
+Note that this zip is not standalone but needs to be unzipped inside an existing EJBCA installation and built there.
         </echo>
     </target>
 
