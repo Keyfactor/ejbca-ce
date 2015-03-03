@@ -82,7 +82,6 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality"+VIEW_END_ENTITY_HISTORY; // Unused, but exists as "raw" string
 
     public static final String REGULAR_SYSTEMFUNCTIONALITY                = StandardRules.SYSTEMFUNCTIONALITY.resource(); // Unused but the "raw" string /system_functionality is present in admin GUI pages
-    public static final String REGULAR_EDITSYSTEMCONFIGURATION            = StandardRules.SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration";
 
     public static final String REGULAR_VIEWHARDTOKENS                     = "/ra_functionality" + HARDTOKEN_RIGHTS;
     public static final String REGULAR_VIEWPUKS                           = "/ra_functionality" + HARDTOKEN_PUKDATA_RIGHTS;
@@ -123,7 +122,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_APPROVEENDENTITY,
                                                            REGULAR_SYSTEMFUNCTIONALITY,
                                                            StandardRules.EDITROLES.resource(),
-                                                           REGULAR_EDITSYSTEMCONFIGURATION};
+                                                           StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()};
                                                        
     // Role Access Rules
     public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()};

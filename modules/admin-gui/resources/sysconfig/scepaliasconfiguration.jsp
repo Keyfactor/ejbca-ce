@@ -22,11 +22,12 @@
 org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
-org.cesecore.authorization.control.AuditLogRules
+org.cesecore.authorization.control.AuditLogRules,
+org.cesecore.authorization.control.StandardRules
 "%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); %>
+<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); %>
 <html>
 <f:view>
 <head>

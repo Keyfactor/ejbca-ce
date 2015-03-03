@@ -41,11 +41,11 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * This bean handled global configurations.
@@ -87,8 +87,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorized(admin, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION)) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION, null);
+        if (!accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
@@ -147,7 +147,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             log.trace(">saveConfiguration()");
         }
         String configID = conf.getConfigurationId();
-        if (this.accessSession.isAuthorized(admin, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION)) {
+        if (this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
             final GlobalConfigurationData gcdata = findByConfigurationId(configID);
             if (gcdata != null) {
                 // Save object and create a diff over what has changed
@@ -189,7 +189,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             }
         } else {
             throw new AuthorizationDeniedException("Authorization was denied to user " + admin
-                    + " to resource " + AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION + ". Could not save configuration.");
+                    + " to resource " + StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource() + ". Could not save configuration.");
         }
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");

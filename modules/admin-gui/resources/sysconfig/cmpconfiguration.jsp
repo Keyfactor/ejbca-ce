@@ -13,7 +13,8 @@
 				org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
                 org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterException, 
                 org.cesecore.certificates.util.AlgorithmConstants, org.cesecore.certificates.certificate.CertificateConstants, 
-                org.ejbca.core.model.authorization.AccessRulesConstants,org.ejbca.config.CmpConfiguration, org.ejbca.core.model.ra.UsernameGeneratorParams"%>
+                org.ejbca.core.model.authorization.AccessRulesConstants,org.ejbca.config.CmpConfiguration, org.ejbca.core.model.ra.UsernameGeneratorParams,
+                org.cesecore.authorization.control.StandardRules"%>
                 
 <%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
@@ -104,7 +105,7 @@
   boolean ramode = false;
   boolean pbe = false;
 
-  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
+  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); 
                                             cabean.initialize(ejbcawebbean); 
   
   ejbcawebbean.clearCMPCache();
