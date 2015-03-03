@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference,org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory,org.cesecore.certificates.certificatetransparency.CTLogInfo,org.ejbca.ui.web.HttpUpload,org.ejbca.ui.web.ParameterException, org.ejbca.ui.web.ParameterMap, org.cesecore.keys.util.KeyTools,
                 org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AccessRulesConstants, org.ejbca.core.model.InternalEjbcaResources, 
-                java.util.Set, java.util.Arrays, java.util.Map "%>
+                java.util.Set, java.util.Arrays, java.util.Map, org.cesecore.authorization.control.StandardRules "%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
@@ -76,7 +76,7 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "configuration.jsp";
 
-  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
+  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); 
   AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
 
   String forwardurl = "/" + gc.getMainFilename(); 
