@@ -1,3 +1,56 @@
+EJBCA 6.2.8, 2015-03-06
+---
+Bug
+	[ECA-3602] - jboss-cli.bat fails when called from jboss.xml on JDK >= 7.21 
+	[ECA-3807] - Root CA key is always used when decrypting SCEP requests
+	[ECA-3963] - Save and Test Connection with CT publisher should fail if no CT logs are configured
+	[ECA-4043] - Timing issue in CaRenewCACommandTest
+	[ECA-4065] - "Renew" button still exists for a revoked CA, produces stacktrace
+	[ECA-4067] - Regression: Default RA Admin doesn't have access to the Add End Entity page 
+	[ECA-4070] - External CAs turn up on the list of possible CAs when creating End Entities
+	[ECA-4074] - AlgorithmIdentifier of RFC 6960 id-pkix-ocsp-pref-sig-algs extension is not parsed correctly
+	[ECA-4083] - OCSP configuration per certificate profile id is used for CERTPROFILE_NO_PROFILE
+	[ECA-4094] - Remove extraneous authorization checks from PublisherDataHandler
+	[ECA-4095] - Incorrect log output in publisher authorization check
+	[ECA-4096] - Access rule /ca_functionality/edit_publishers does not allow role to edit publishers
+	[ECA-4101] - Security Issue
+	[ECA-4103] - References to deprecated rule '/super_administrator'
+	[ECA-4107] - Allow creation of non standard conformant RAW custom extension
+	[ECA-4110] - Approve Action - NPE after click on the username
+	[ECA-4112] - Regression: External CAs not listed as "Available CAs" in CLI when using  addadmin
+	[ECA-4116] - Remove notes and test extension from certextensions.properties 
+	[ECA-4131] - CT options can't be changed when using only publishing
+	[ECA-4136] - HardToken Certificate Profile Type has wrong label 
+
+Improvement
+	[ECA-3831] - adminmenu.jsp still refers to legacy /superadmin rule 
+	[ECA-4011] - Disable "Name Constraints" fields when External CA is selected
+	[ECA-4018] - Upgrade to BouncyCastle 1.51
+	[ECA-4039] - Improve HealthCheck free memory control
+	[ECA-4053] - Speed up HSMKeyTool stress test
+	[ECA-4087] - Update EJBCA copyright notice to match homepage
+	[ECA-4098] - Make sure sure that CAs in add/edit end entity screen are arrange alphabetically 
+	[ECA-4108] - Possibility to disable CT submission for existing non-CT certificates
+	[ECA-4111] - Upgrade cert-cvc subproject to BC 1.51 
+	[ECA-4114] - Sort CryptoTokens by name when creating a new Key Binding
+
+Master Ticket
+	[ECA-3971] - Improve OCSP responder performance
+		[ECA-4054] - Reload CA certificate cache in the background
+		[ECA-4055] - Avoid unnecessary OCSP response signature checks
+		[ECA-4072] - Avoid interactions with AuditLogger and TransactionLogger when disabled
+		[ECA-4082] - Improve OcspServlet.addRfc5019CacheHeaders
+		[ECA-4084] - Improve OCSP HSM signing thread behaviour
+		[ECA-4085] - Additional caching of objects that are the same between multiple OCSP requests
+
+New Feature
+	[ECA-3976] - Cache SCTs in OCSP responses
+	[ECA-4052] - Allow override of EJBCA's subject DN ordering in web service call for issuing certificate
+	[ECA-4106] - Allow to specify number of SCTs in OCSP responses
+	
+Task
+	[ECA-4060] - Create a subtarget to ant ziprelease that creates a versioned zip of the statedump source. 
+
 EJBCA 6.3.0, 2015-01-14
 Bug
 	[ECA-2478] - UnrevokeEndEntity unrevokes cert but not user
