@@ -2033,7 +2033,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     public void setEnabledCTLogs(Set<Integer> logIds) {
-        data.put(CTLOGS, logIds);
+        data.put(CTLOGS, new LinkedHashSet<Integer>(logIds));
     }
     
     /**
