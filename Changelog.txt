@@ -33,6 +33,7 @@ Improvement
 	[ECA-4108] - Possibility to disable CT submission for existing non-CT certificates
 	[ECA-4111] - Upgrade cert-cvc subproject to BC 1.51 
 	[ECA-4114] - Sort CryptoTokens by name when creating a new Key Binding
+	[ECA-4139] - Editing CMP, SCEP and system configuration requires root privileges
 
 Master Ticket
 	[ECA-3971] - Improve OCSP responder performance
