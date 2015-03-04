@@ -1,4 +1,33 @@
-EJBCA 6.3.0
+EJBCA 6.2.8
+-----------
+The goal of this release has primarily been optimization of our OCSP responder, fixing usability issues, tightening up security and heavy GUI testing. We've 
+also snuck in a brand new feature which web service users may find useful. 
+
+This maintenance release contains 42 bug fixes, features and improvements, below a selection of the most noteworthy:
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+- Improvements:
+	* OCSP responder has been widely optimized.
+	* OCSP responder now caches SCTs, improving response times when using Certificate Transparency.
+	* EJBCA has been upgraded to use BouncyCastle 1.51
+	* HealthCheck memory monitor now reports on total amount of free memory instead of allocated free memory.
+- New Features:
+	* Web service calls for issuing certificates can now override EJBCA's default subject DN order with their own. 
+- Bug Fixes:
+	* A minor security escalation issue has been fixed affecting explicit rule access denial.
+	
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  A selection of known issues:
+    *   External RA GUI cannot handle SubCA certificates with critical CDP: https://jira.primekey.se/browse/ECA-2138
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though: https://jira.primekey.se/browse/ECA-4022 
+	*	A base64 decoder exception is thrown when inspecting a specially-crafted CSR: https://jira.primekey.se/browse/ECA-4071 
+
+EJBCA 6.3.0 (Contains all bug fixes and improvements up until and including EJBCA 6.2.7)
 -----------
 EJBCA 6.3.0 introduces a powerful new feature for Enterprise and Appliance users: the EJBCA Peer System protocol. The purpose is to allow secure 
 communication over TLS between peered installations of EJBCA, doing away with the need of direct database publishing in order to propagate 
