@@ -138,10 +138,19 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
         boolean result = false;
         for(AccessRuleData accessRuleData : accessRules.values()) {
             String currentRule = accessRuleData.getAccessRuleName();
-            if(rule.startsWith(currentRule) && (rule.length() == currentRule.length() || rule.charAt(currentRule.length()) == '/')) {
+            if(rule.startsWith(currentRule)) {
+                if(rule.length() > currentRule.length()) {
+                    if(currentRule.length() > 1 && rule.charAt(currentRule.length()) != '/') {
+                        // Not a parent rule but just one with a similar name, compare /foo/bar to /foo_bar,
+                        // also ignoring the root "/" rule. 
+                        continue;
+                    }
+                }
                 if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT) && accessRuleData.getRecursive()) {
-                    result = true;
+                    // A possible match, but there may be a contraindicator down the line
+                    result = true;                   
                 } else if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_DECLINE)) {
+                    // Definitely a non-match, break. 
                     result = false;
                     break;
                 }
