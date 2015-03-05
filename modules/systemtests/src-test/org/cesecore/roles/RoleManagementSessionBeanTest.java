@@ -655,7 +655,8 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             weakRoleSubjects.add(weakRoleAspect);
             weakRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, weakRole, weakRoleSubjects);
             Collection<AccessRuleData> weakRoleRules = new ArrayList<AccessRuleData>();
-            weakRoleRules.add(new AccessRuleData(weakRoleName, "/foo", AccessRuleState.RULE_DECLINE, false));
+            weakRoleRules.add(new AccessRuleData(weakRoleName, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
+            weakRoleRules.add(new AccessRuleData(weakRoleName, "/foo", AccessRuleState.RULE_ACCEPT, false));
             weakRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, weakRole, weakRoleRules);
           
             accessControlSession.forceCacheExpire();
