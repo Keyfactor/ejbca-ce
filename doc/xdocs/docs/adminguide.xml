@@ -323,13 +323,13 @@ Command line interface and CRL Update service will generate delta CRLs if 'Delta
 
 <section name="Scep">
 <p>
-Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+<i>SCEP requires the 'Unlimited Strength Jurisdiction Policy Files' to be installed in the JDK.
 The policy files can be found at the same place as the JDK download. Further information on this can be found in 
-the Oracle documentation on the JCE.
+the Oracle documentation on the JCE.</i>
 </p><p>
-There are some compatibility issues with SCEP, one being if the CA certificate should be returned in an SCEP enrollment
-response or not. The CA certificate is optional but some, Cisco VPN client, seems to require it while others, Juniper, 
-seems to dislike it. Therefore EJBCA has this option configurable.
+There are some compatibility issues with SCEP, one being whether the CA certificate should be returned in an SCEP enrollment
+response or not. The CA certificate is optional, but some clients such as the  Cisco VPN client to require it while others, such as Juniper's, 
+prohibit it. EJBCA has this option configurable.
 </p>
 <subsection name="SCEP Configuration">
 <p>
