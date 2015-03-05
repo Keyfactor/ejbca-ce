@@ -282,7 +282,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
     	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE)) {
+        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + AccessRulesConstants.CREATE_END_ENTITY)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
@@ -297,14 +297,16 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         				if (!authorizedcaids.contains(caIdInt) && (!rootAccess || allcaids.contains(caIdInt))) {
         					authorizedToProfile = false;
         					if (LOG.isDebugEnabled()) {
-        						LOG.debug("Profile " + entry.getKey().toString() + " not authorized");
+        						LOG.debug("Profile " + entry.getKey().toString() + " not authorized to CA with ID " + caIdInt);
         					}
         					break;
         				}
         			}
-        			if (authorizedToProfile) {
-        				returnval.add(entry.getKey());
-        			}
+                    if (authorizedToProfile
+                            && authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey()
+                                    + AccessRulesConstants.CREATE_END_ENTITY)) {
+                        returnval.add(entry.getKey());
+                    }
         		}
         	}
         } catch (Exception e) {
