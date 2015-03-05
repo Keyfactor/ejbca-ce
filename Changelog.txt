@@ -1,4 +1,4 @@
-EJBCA 6.2.8, 2015-03-06
+EJBCA 6.2.8, 2015-03-05
 ---
 Bug
 	[ECA-3602] - jboss-cli.bat fails when called from jboss.xml on JDK >= 7.21 
