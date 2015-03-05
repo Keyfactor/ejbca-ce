@@ -451,6 +451,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
    
     
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
         if (role == null) {
             return false;
@@ -470,18 +471,18 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         Set<String> ruleCache = new HashSet<String>();
         List<String> deniedRules = new LinkedList<String>();
         try {
-            // AuthenticationToken may match several roles. Go through each of them and if any denied rules are found, at them if they belong to the 
+            // AuthenticationToken may match several roles. Go through each of them and if any denied rules are found, add them if they belong to the 
             // preferred role. 
             for(String roleName : roleAccessSession.getRolesMatchingAuthenticationToken(authenticationToken)) {
                for(AccessRuleData accessRule : roleAccessSession.findRole(roleName).getAccessRules().values()) {
                    String rule = accessRule.getAccessRuleName();
                    //Ignore if this rule has already been checked 
-                   if(!ruleCache.contains(rule)) {                     
-                       ruleCache.add(rule);
+                   if(!ruleCache.contains(rule)) {                                          
                        // If this rule is deny and dominant (due to the Role it belongs to being dominant over another Role that may contain the same rule
                        // with a different setting), cache it away
                        if(!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
                            deniedRules.add(rule);
+                           ruleCache.add(rule);                       
                        }
                    }
                }

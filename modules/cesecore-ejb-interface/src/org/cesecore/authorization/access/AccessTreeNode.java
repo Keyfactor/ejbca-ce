@@ -267,7 +267,10 @@ public class AccessTreeNode {
                          * be a super token by setting the return of getDefaultMatchValue() to Integer.MaxInt, hence trumping any other 
                          * matches done by this method. This eliminates the need for any reflective code for supertokens. 
                          */
-                        state = AccessTreeState.STATE_ACCEPT_RECURSIVE;
+                        if (state == null) {
+                            //Only set state to A+R if this is the first run
+                            state = AccessTreeState.STATE_ACCEPT_RECURSIVE;
+                        }
                         final AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
                         final AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                         if (log.isTraceEnabled()) {
