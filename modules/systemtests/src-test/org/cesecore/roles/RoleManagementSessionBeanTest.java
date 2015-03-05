@@ -30,6 +30,7 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleExistsException;
@@ -59,6 +60,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
 
     private static final Logger log = Logger.getLogger(RoleManagementSessionBeanTest.class);
     
+    private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private AccessRuleManagementTestSessionRemote accessRuleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessRuleManagementTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private AccessUserAspectManagerTestSessionRemote accessUserAspectManagerSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessUserAspectManagerTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -589,7 +591,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
      * 
      * Role A is a standard super admin with recursive access to "/"
      * Role B is a super admin with recursive access to "/" but is denied access to a certain rule "/foo"
-     * Role C is a super admin with acess to "/" and "/foo", but is identified by a weaker DN value
+     * Role C is a super admin with access to "/" and "/foo", but is identified by a weaker DN value
      * 
      * Role B should thus be unauthorized to edit A
      * 
@@ -598,7 +600,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     public void testIsAuthorizedToEditRoleWithDeniedRuleAccess() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException,
             AccessUserAspectExistsException, AccessRuleExistsException {
         final String unauthorizedRoleName = "RoleB";
-        final String unauthorizedRoleDn = "CN=RoleB";
+        final String unauthorizedRoleDn = "C=SE,CN=RoleB";
         final String authorizedRoleName = "RoleA";
         final String weakRoleName = "RoleC";
         AuthenticationToken unauthorizedRoleAuthenticationToken = createAuthenticationToken(unauthorizedRoleDn);
@@ -646,19 +648,17 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             authorizedRoleRules.add(accessRuleManagementSession.createRule("/", authorizedRoleName, AccessRuleState.RULE_ACCEPT, true));
             authorizedRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleRules); 
             
-            //Create rules for RoleC
+            //Create rules for RoleC, a weaker role match than the above CN 
             AccessUserAspectData weakRoleAspect = accessUserAspectManagerSession.create(weakRole, caId,
-                    X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, weakRoleName);
+                    X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE");
             Collection<AccessUserAspectData> weakRoleSubjects = new ArrayList<AccessUserAspectData>();
             weakRoleSubjects.add(weakRoleAspect);
             weakRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, weakRole, weakRoleSubjects);
             Collection<AccessRuleData> weakRoleRules = new ArrayList<AccessRuleData>();
-            // Add the recursive access to root
-            weakRoleRules
-                    .add(new AccessRuleData(weakRoleName, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
-            weakRoleRules.add(new AccessRuleData(weakRoleName, "/foo", AccessRuleState.RULE_ACCEPT, false));
+            weakRoleRules.add(new AccessRuleData(weakRoleName, "/foo", AccessRuleState.RULE_DECLINE, false));
             weakRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, weakRole, weakRoleRules);
-            
+          
+            accessControlSession.forceCacheExpire();
             // Check privileges here. 
             assertFalse("Role was given access to another role even though denied resources available to that role.",
                     roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
