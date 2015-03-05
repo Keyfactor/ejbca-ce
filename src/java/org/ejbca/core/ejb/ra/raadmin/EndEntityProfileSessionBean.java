@@ -282,7 +282,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
     	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + EMPTY_ENDENTITYPROFILENAME)) {
+        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
