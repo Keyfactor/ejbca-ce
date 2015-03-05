@@ -54,7 +54,10 @@ Differences are:
 	*	System Configuration is now accessed via /system_functionality/edit_systemconfiguration instead of "/" in previous versions
 	*	The rule /ca_functionality/edit_publishers is now all that is required to access the Publisher's page in the GUI, and all publishers assigned 
 		to a CA that the admin has access to, or unassigned to any CA, will show up on the list. The "CA Administrator" role template has been given 
-		access to this rule. Previous versions required access to the "/"-rule, so any admins who previously had access to publishers will still do so. 
+		access to this rule. 
+These changes require no action during or after upgrade. Since earlier rules were either lower level or non-selectable due to deprecation, any user with access to
+those rules much have access to the new ones as well. Since the new rules are more specific than the old ones, any users gaining access to the affected resources 
+is presumed to be intentional, but testing should be made for any custom roles. 
 
 From EJBCA 6.2.x to EJBCA 6.2.7
 -------------------------------
