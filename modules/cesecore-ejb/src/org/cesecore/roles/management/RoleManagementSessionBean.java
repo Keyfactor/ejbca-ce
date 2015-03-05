@@ -477,12 +477,12 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
                for(AccessRuleData accessRule : roleAccessSession.findRole(roleName).getAccessRules().values()) {
                    String rule = accessRule.getAccessRuleName();
                    //Ignore if this rule has already been checked 
-                   if(!ruleCache.contains(rule)) {                                          
+                   if(!ruleCache.contains(rule)) {  
+                       ruleCache.add(rule);    
                        // If this rule is deny and dominant (due to the Role it belongs to being dominant over another Role that may contain the same rule
                        // with a different setting), cache it away
                        if(!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
-                           deniedRules.add(rule);
-                           ruleCache.add(rule);                       
+                           deniedRules.add(rule);                                           
                        }
                    }
                }
