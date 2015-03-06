@@ -98,6 +98,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -133,6 +134,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -141,6 +143,7 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
+import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -242,7 +245,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     protected final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CertReqHistoryProxySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -975,6 +980,78 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         editUser(ca1userData2, getDN(CA1_WSTESTUSER2));
         editUser(ca2userData1, getDN(CA2_WSTESTUSER1));
         log.trace("<enforcementOfUniqueSubjectDN");
+    }
+
+    protected void certificateRequestThrowAway() throws Exception {
+        final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST-certificateRequestThrowAway"));
+        final String username = "CA1_WSTESTUSER_ThrowAway";
+        String certificateFingerprint = null;
+        // Use throw away CA mode (don't store UserData, CertificateData or CertReqHistoryData)
+        final CAInfo caInfo = caSession.getCAInfo(authenticationToken, CA1);
+        final boolean originalUseCertificateStorage = caInfo.isUseCertificateStorage();
+        final boolean originalUseCertReqHistory = caInfo.isUseCertReqHistory();
+        final boolean originalUseUserStorage = caInfo.isUseUserStorage();
+        try {
+            caInfo.setUseCertificateStorage(false);
+            caInfo.setUseCertReqHistory(false);
+            caInfo.setUseUserStorage(false);
+            caSession.editCA(authenticationToken, caInfo);
+            // Setup user data to make the request
+            final UserDataVOWS userDataVOWS = new UserDataVOWS();
+            userDataVOWS.setUsername(username);
+            userDataVOWS.setPassword(PASSWORD);
+            userDataVOWS.setClearPwd(true);
+            userDataVOWS.setSubjectDN("CN=" + username);
+            userDataVOWS.setCaName(caInfo.getName());
+            userDataVOWS.setEmail(null);
+            userDataVOWS.setSubjectAltName(null);
+            userDataVOWS.setStatus(UserDataVOWS.STATUS_NEW);
+            userDataVOWS.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            userDataVOWS.setEndEntityProfileName(WS_EEPROF_EI);
+            userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
+            // Generate a certificate request
+            final String pkcs10AsBase64 = getP10();
+            // Request a certificate via the WS API
+            final CertificateResponse certificateResponse;
+            try {
+                certificateResponse = ejbcaraws.certificateRequest(userDataVOWS, pkcs10AsBase64, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            } catch (EjbcaException_Exception e) {
+                final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
+                log.info(errorCode.getInternalErrorCode(), e);
+                fail("Throw away certificate request failed with error code " + errorCode);
+                throw new Error("JUnit test should have bailed out before this happens.");
+            }
+            // Verify that the response is of the right type and that a certificate was issued correctly
+            assertNotNull(certificateResponse);
+            assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+            final X509Certificate x509Certificate = certificateResponse.getCertificate();
+            assertNotNull(x509Certificate);
+            assertTrue(x509Certificate.getSubjectDN().toString().equals(userDataVOWS.getSubjectDN()));
+            certificateFingerprint = CertTools.getFingerprintAsString(x509Certificate);
+            // Verify that no UserData was written to the database
+            assertFalse("UserData was persisted dispite the CA being told not to store it.", endEntityManagementSession.existsUser(username));
+            // Verify that no CertificateData was written to the database
+            final java.security.cert.Certificate certificate = certificateStoreSession.findCertificateByFingerprint(certificateFingerprint);
+            assertNull("CertificateData was persisted dispite the CA being told not to store it.", certificate);
+            // Verify that no CertReqHistoryData was written to the database
+            final List<CertReqHistory> certReqHistoryList = certReqHistorySession.retrieveCertReqHistory(username);
+            assertEquals("CertReqHistoryData was persisted dispite the CA being told not to store it.", 0, certReqHistoryList.size());
+        } finally {
+            final CAInfo caInfoToRestore = caSession.getCAInfo(authenticationToken, CA1);
+            caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
+            caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
+            caInfoToRestore.setUseUserStorage(originalUseUserStorage);
+            caSession.editCA(authenticationToken, caInfoToRestore);
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(authenticationToken, username);
+            }
+            if (certificateFingerprint!=null && certificateStoreSession.findCertificateByFingerprint(certificateFingerprint)!=null) {
+                internalCertStoreSession.removeCertificate(certificateFingerprint);
+            }
+            if (certReqHistorySession.retrieveCertReqHistory(username).size()>0) {
+                certReqHistorySession.removeCertReqHistoryData(certificateFingerprint);
+            }
+        }
     }
 
     protected void generateCrmf() throws Exception {
