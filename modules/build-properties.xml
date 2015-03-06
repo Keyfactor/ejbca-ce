@@ -450,10 +450,6 @@
 	<path id="lib.clientToolBox.classpath">
         <path location="${mod.clientToolBox.dist}/properties" />
         <path location="${mod.clientToolBox.lib}" />
-        <path location="${mod.ejbca-entity.lib}"/>
-                <path location="${mod.cesecore-entity.lib}"/>
-                <path location="${mod.cesecore-common.lib}"/>
-                <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path>
 			<fileset dir="${mod.clientToolBox.dist}/lib" includes="*.jar" />
 		</path>
