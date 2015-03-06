@@ -5,7 +5,8 @@
     </description>
 
 	<dirname property="this.dir" file="${ant.file.clientToolBox}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<property name="appserver.type" value="dummy. clientToolBox is not using any appserver."/>
+	<import file="../build-properties.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
@@ -24,14 +25,6 @@
             <include name="commons-logging-1.1.1.jar"/>
         	<include name="commons-io-*.jar"/>
         </fileset>
-		<path refid="lib.jpa.classpath"/>
-		<path refid="lib.xml.classpath"/>
-		<path refid="lib.javaxejb.classpath"/>
-                <path location="${mod.ejbca-entity.lib}"/>
-                <path location="${mod.cesecore-entity.lib}"/>
-                <path location="${mod.cesecore-common.lib}"/>
-                <path location="${mod.cesecore-ejb-interface.lib}"/>
-		
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
@@ -68,7 +61,7 @@
 		<delete dir="${mod.clientToolBox.dist}" />
     </target>
 	
-    <target name="compile" depends="cesecore-ejb-interface, setup">
+    <target name="compile" depends="setup">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
             <classpath>
@@ -85,6 +78,8 @@
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-entity.path}/src" />
             <src path="${mod.va-war.path}/src-war" />
+            <src path="${mod.cesecore-common.path}/src" />
+            <src path="${mod.cesecore-ejb-interface.path}/src" />
         	
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
