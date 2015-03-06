@@ -35,6 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -2185,19 +2186,56 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     } // test23GetAvailableCertificateProfiles
 
     protected void createAndGetCRL() throws Exception {
-        String caname = getAdminCAName();
-        // This will throw exception if it fails
-        byte[] crlbytes = ejbcaraws.getLatestCRL(caname, false);
-        X509CRL crl = CertTools.getCRLfromByteArray(crlbytes);
-        BigInteger crlnumber1 = CrlExtensions.getCrlNumber(crl);
-        // Generate a new CRL
-        ejbcaraws.createCRL(caname);
-        // After generation the CRL number should have increased by one
-        crlbytes = ejbcaraws.getLatestCRL(caname, false);
-        crl = CertTools.getCRLfromByteArray(crlbytes);
-        BigInteger crlnumber2 = CrlExtensions.getCrlNumber(crl);
-        assertEquals("CRL number of newly generated CRL should be exactly one more than for the previous CRL.", crlnumber1.intValue()+1, crlnumber2.intValue());
-    } // createAndGetCRL
+        final String caname = getAdminCAName();
+        final CAInfo caInfo = caSession.getCAInfo(intAdmin, caname);
+        final long originalDeltaCRLPeriod = caInfo.getDeltaCRLPeriod();
+        try {
+            // Disable delta CRLs
+            caInfo.setDeltaCRLPeriod(0);
+            caSession.editCA(intAdmin, caInfo);
+            // This will throw exception if it fails
+            int crlNumberBefore = getLatestCRLNumber(caname, false);
+            log.info("crlNumberBefore: " + crlNumberBefore);
+            if (originalDeltaCRLPeriod!=0) {
+                int deltaCrlNumberBefore = getLatestCRLNumber(caname, true);
+                crlNumberBefore = Math.max(deltaCrlNumberBefore, crlNumberBefore);
+            }
+            log.info("crlNumberBefore: " + crlNumberBefore);
+            // Generate a new full CRL
+            ejbcaraws.createCRL(caname);
+            // After generation the CRL number should have increased by one
+            final int fullCrlNumberAfter1 = getLatestCRLNumber(caname, false);
+            log.info("fullCrlNumberAfter1: " + fullCrlNumberAfter1);
+            if (originalDeltaCRLPeriod!=0) {
+                final int deltaCrlNumberAfter1 = getLatestCRLNumber(caname, false);
+                log.info("deltaCrlNumberAfter1: " + deltaCrlNumberAfter1);
+            }
+            assertEquals("CRL number of newly generated CRL should be exactly one more than for the previous CRL.", crlNumberBefore+1, fullCrlNumberAfter1);
+            // Enable delta CRLs
+            caInfo.setDeltaCRLPeriod(30L);
+            caSession.editCA(intAdmin, caInfo);
+            // Generate a new full CRL and a delta CRL
+            ejbcaraws.createCRL(caname);
+            // Verify that the generated CRLs have the expected numbering
+            final int fullCrlNumberAfter2 = getLatestCRLNumber(caname, false);
+            final int deltaCrlNumberAfter2 = getLatestCRLNumber(caname, true);
+            log.info("fullCrlNumberAfter2: " + fullCrlNumberAfter2 + " deltaCrlNumberAfter2: " + deltaCrlNumberAfter2);
+            assertEquals("CRL number of newly generated CRL should be exactly one more than for the previous CRL.", fullCrlNumberAfter1+1, fullCrlNumberAfter2);
+            assertEquals("CRL number of newly generated delta CRL should be exactly two more than for the the full CRL.", fullCrlNumberAfter2+1, deltaCrlNumberAfter2);
+        } finally {
+            final CAInfo caInfoToRestore = caSession.getCAInfo(intAdmin, caname);
+            caInfoToRestore.setDeltaCRLPeriod(originalDeltaCRLPeriod);
+            caSession.editCA(intAdmin, caInfoToRestore);
+        }
+    }
+
+    private int getLatestCRLNumber(final String caName, final boolean delta) throws CADoesntExistsException_Exception, EjbcaException_Exception, CRLException {
+        final byte[] crlBytes = ejbcaraws.getLatestCRL(caName, delta);
+        final X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+        final BigInteger crlNumber = CrlExtensions.getCrlNumber(crl);
+        log.info("getLatestCRLNumber for " + caName + " delta="+delta + " crlNumber=" + crlNumber.intValue());
+        return crlNumber.intValue();
+    }
 
     protected void ejbcaVersion() throws Exception {
 
