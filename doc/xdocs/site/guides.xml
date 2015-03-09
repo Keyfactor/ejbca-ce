@@ -396,7 +396,7 @@ Router#debug crypto pki validation
   
   <subsection name="EJBCA - OpenSSO Integration articles">
   <p>
-  A really good <a href="http://developers.sun.com/identity/reference/techart/opensso_protect.html">article</a> and description about EJBCA and OpenSSO is written by Bruno Bonfils.
+  A really good <a href="http://www.oracle.com/technetwork/java/opensso-protect-140200.html">article</a> and description about EJBCA and OpenSSO is written by Bruno Bonfils.
   </p>
   <p><a href="http://download.primekey.se/documents/ejbca-opensso-integration-techpaper.pdf">This paper</a> also describes easy integration between EJBCA and OpenSSO, where EJBCA is used for user provisioning.
   </p> 
