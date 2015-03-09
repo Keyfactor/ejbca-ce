@@ -156,6 +156,10 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
 
+    /** Removed certificates created during checks for present certificate serial number unique index. 
+     * Should not be used externally. */
+    void removeUniqueCertificateSerialNumberTestCertificates();
+    
     /**
      * Method for populating the CertificateData table with limited information for example from a CRL, so the OCSP responder can answer if a certificate is revoked.
      * 

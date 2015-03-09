@@ -12,14 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
@@ -1151,51 +1147,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
             // Loading two dummy certificates. These certificates has same serial number and issuer.
             // It should not be possible to store both of them in the DB.
-            final X509Certificate cert1;
-            final X509Certificate cert2;
-            {
-                final byte certEncoded1[];
-                final byte certEncoded2[];
-                {
-                    final String certInBase64 =
-                            "MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
-                                    "QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU0OTM2WhcN"+
-                                    "MjAwNjI2MDU0OTM2WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
-                                    "YWwgbnVtYmVyIG92ZXJyaWRlIDEwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAnnIj"+
-                                    "y8A6CJzASedM5MbZk/ld8R3P0aWfRSW2UUDaskm25oK5SsjwVZD3KEc3IJgyl1/D"+
-                                    "lWdywxEduWwc2nzGGQIDAQABo2AwXjAdBgNVHQ4EFgQUPL3Au/wYZbD3TpNGW1G4"+
-                                    "+Ck4A2swDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
-                                    "7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAPMWjE5hv3G5T"+
-                                    "q/fzPQlRMCQDoM5EgVwJYQu1S+wns/mKPI/bDv9s5nybKoro70LKpqLb1+f2TaD+"+
-                                    "W2Ro+ni8zYm5+H6okXRIc5Kd4LlD3tjsOF7bS7fixvMCSCUgLxQOt2creOqfDVjm"+
-                                    "i6MA48AhotWmx/rlzQXhnvuKnMI3m54=";
-                    certEncoded1= org.bouncycastle.util.encoders.Base64.decode(certInBase64);
-                }{
-                    final String certInBase64 =
-                            "MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
-                                    "QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU1MDA4WhcN"+
-                                    "MjAwNjI2MDU1MDA4WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
-                                    "YWwgbnVtYmVyIG92ZXJyaWRlIDIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAn2H4"+
-                                    "IAMYZyXqkSTY4Slq9LKZ/qB5wc+3hbEHNawdOoMBBkhLGi2q49sbCdcI8AZi3med"+
-                                    "sm8+A8Q4NHFRKdOYuwIDAQABo2AwXjAdBgNVHQ4EFgQUhWVwIsv18DIYszvRzqDg"+
-                                    "AkGO8QkwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
-                                    "7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAM8laLm4bgMTz"+
-                                    "e9TLmwcmhwqevPrfea9jdiNafHCyb+JVppoLVHqAZjPs3Lvlxdt2d75au5+QcJ/Z"+
-                                    "9RgakF8Vq29Tz3xrYYIQe9VtlaUzw/dgsDfZi6V8W57uHLpU65fe5afwfi+5XDZk"+
-                                    "TaTsNgFz8NorE2f7ILSm2FcfIpC+GPI=";
-                    certEncoded2 = org.bouncycastle.util.encoders.Base64.decode(certInBase64);
-                }
-                try {
-                    final CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
-                    cert1 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded1));
-                    cert2 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded2));
-                } catch (CertificateException e) {
-                    throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
-                } catch (NoSuchProviderException e) {
-                    throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
-                }
-            }
-
+            final X509Certificate cert1 = UniqueSernoHelper.getTestCertificate1();
+            final X509Certificate cert2 = UniqueSernoHelper.getTestCertificate2();
             final Certificate c1 = findCertificateByFingerprint(CertTools.getFingerprintAsString(cert1));
             final Certificate c2 = findCertificateByFingerprint(CertTools.getFingerprintAsString(cert2));
             if ( (c1 != null) && (c2 != null) ) {
@@ -1228,9 +1181,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 log.info( INTRES.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
             }
             // Remove potentially stored certificates so anyone can create the unique index if wanted
-            // TODO: need access to EntityManager directly to do this
-            // In EJBCA this is solved by removing the two dummy certificates in the beginning of the create index sql script..
-            
+            try { 
+                certificateStoreSession.removeUniqueCertificateSerialNumberTestCertificates();
+                log.info("Removed rows used during test for unique certificate serial number database constraint.");
+            } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
+                log.debug("Unable to clean up database rows used during test for unique certificate serial number."+
+                        " This is expected if DELETE is not granted to the EJBCA database user.", e);
+            }
         }
         return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue();
     }
@@ -1242,6 +1199,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     public void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException {
         storeCertificate(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
+    }
+
+    // We want deletion of a certificates to run in a new transactions, so we can catch errors as they happen..
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void removeUniqueCertificateSerialNumberTestCertificates() {
+        final X509Certificate x509Certificate1 = UniqueSernoHelper.getTestCertificate1();
+        final X509Certificate x509Certificate2 = UniqueSernoHelper.getTestCertificate2();
+        final String fingerprint1 = CertTools.getFingerprintAsString(x509Certificate1);
+        final String fingerprint2 = CertTools.getFingerprintAsString(x509Certificate2);
+        entityManager.createNativeQuery("DELETE FROM Base64CertData WHERE fingerprint IN ('"+fingerprint1+"', '"+fingerprint2+"')").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM CertificateData WHERE fingerprint IN ('"+fingerprint1+"', '"+fingerprint2+"')").executeUpdate();
     }
 
     @Override
