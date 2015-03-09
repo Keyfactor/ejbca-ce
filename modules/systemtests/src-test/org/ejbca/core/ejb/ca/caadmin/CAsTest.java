@@ -21,15 +21,23 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -38,6 +46,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
@@ -46,6 +55,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -79,6 +89,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -1152,8 +1163,8 @@ public class CAsTest extends CaTestCase {
     /** Test that we can not create CAs with too short key lengths.
      * CA creation dwith too short keys should result in an InvalidKeyException (wrapped in EJBException of course).
     */
-   @Test
-   public void test22IllegalKeyLengths() throws Exception {
+    @Test
+    public void test22IllegalKeyLengths() throws Exception {
        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
        // TODO: These tests should be moved to another class and are just here because they replaces older tests with similar purpose
        final Properties cryptoTokenProperties = new Properties();
@@ -1182,6 +1193,75 @@ public class CAsTest extends CaTestCase {
        }
     }
 
+    @Test
+    public void testExternalCaCertificateImport() throws Exception {
+        final String TEST_NAME = this.getClass().getSimpleName() + "." + "testCaCertificateImport";
+        try {
+            final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            final String subjectDn = "CN="+TEST_NAME;
+            final X509Certificate nonCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+            try {
+                caAdminSession.importCACertificate(admin, TEST_NAME, Arrays.asList(new Certificate[] {nonCaCertificate}));
+                fail("Import of non-CA certificate should not be allowed using this method.");
+            } catch (EJBException e) {
+                // Expected
+                assertTrue(e.getCause() instanceof IllegalStateException);
+            }
+            final X509Certificate oldCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            caAdminSession.importCACertificate(admin, TEST_NAME, Arrays.asList(new Certificate[] {oldCaCertificate}));
+            final CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
+            assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, caInfo.getCertificateProfileId());
+            assertEquals("Wrong status.", CAConstants.CA_EXTERNAL, caInfo.getStatus());
+            assertEquals("Wrong 'signed by'.", CAInfo.SELFSIGNED, caInfo.getSignedBy());
+            final int caId = caInfo.getCAId();
+            try {
+                caAdminSession.importCACertificate(admin, TEST_NAME, Arrays.asList(new Certificate[] {oldCaCertificate}));
+                fail("Should not be allowed to import external CA using existing name.");
+            } catch (CAExistsException e) {
+                // Expected
+            }
+            try {
+                caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {oldCaCertificate}));
+                fail("Should not be allowed to update with existing CA certificate");
+            } catch (CAExistsException e) {
+                // Expected
+            }
+            final X509Certificate newDnCaCertificate = CertTools.genSelfCert(subjectDn+"x", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            try {
+                caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {newDnCaCertificate}));
+                fail("Should not be allowed to update existing CA with a different subject DN.");
+            } catch (CAExistsException e) {
+                // Expected
+            }
+            final X509Certificate newCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {newCaCertificate}));
+            final CAInfo newCaInfo = caSession.getCAInfo(admin, TEST_NAME);
+            assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, newCaInfo.getCertificateProfileId());
+            assertEquals("Wrong status.", CAConstants.CA_EXTERNAL, newCaInfo.getStatus());
+            assertEquals("Wrong 'signed by'.", CAInfo.SELFSIGNED, newCaInfo.getSignedBy());
+            try {
+                caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {oldCaCertificate}));
+                fail("Should not be allowed to update existing CA with an older CA certificate.");
+            } catch (CAExistsException e) {
+                // Expected
+            }
+            final X509Certificate nonCaCertificate2 = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+            try {
+                caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {nonCaCertificate2}));
+                fail("Import of non-CA certificate should not be allowed using this method.");
+            } catch (EJBException e) {
+                // Expected
+                assertTrue(e.getCause() instanceof IllegalStateException);
+            }
+        } finally {
+            try {
+                caSession.removeCA(admin, caSession.getCAInfo(admin, TEST_NAME).getCAId());
+            } catch (CADoesntExistsException e) {
+                // Great! No such CA to remove...
+            }
+        }
+    }
+   
     /** Used for direct manipulation of objects without setters. */
     private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
         log.trace(">setPrivateField");
