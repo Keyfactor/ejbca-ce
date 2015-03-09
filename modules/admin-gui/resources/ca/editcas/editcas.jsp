@@ -126,6 +126,7 @@ java.security.InvalidAlgorithmParameterException
   static final String BUTTON_GENDEFAULTCRLISSUER        = "checkboxgeneratedefaultcrlissuer";
   static final String BUTTON_GENCADEFINEDFRESHESTCRL    = "checkboxgeneratecadefinedfresherstcrl";
   static final String BUTTON_GENDEFAULTOCSPLOCATOR      = "checkbexgeneratedefaultocsplocator";
+  static final String BUTTON_RECEIVE_IMPORT_RENEWAL     = "buttonreceiveimportrenewal";
 
   static final String TEXTFIELD_KEYSEQUENCE           = "textfieldkeysequence";
   static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
@@ -200,6 +201,7 @@ java.security.InvalidAlgorithmParameterException
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_RECIEVEFILE_MAKEREQUEST                = "filerecievefilemakerequest";
   static final String FILE_RECIEVEFILE_RECEIVEREQUEST             = "filerecievefilerecieverequest";
+  static final String FILE_RECIEVEFILE_IMPORTED_RENEWAL           = "filerecievefileimportrenewal";
 
   static final String CERTSERNO_PARAMETER       = "certsernoparameter"; 
 
@@ -469,6 +471,14 @@ java.security.InvalidAlgorithmParameterException
                     final String nextSignKeyAlias = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY_RECEIVEREQ);
                     cadatahandler.receiveResponse(caid, fileBuffer, nextSignKeyAlias);
                     caactivated = true;
+            	} catch (Exception e) {
+            		errormessage = e.getMessage();
+            	}
+            }
+            if (requestMap.get(BUTTON_RECEIVE_IMPORT_RENEWAL) != null) {
+            	try {
+                    cadatahandler.importCACertUpdate(caid, fileBuffer);
+                    carenewed = true;
             	} catch (Exception e) {
             		errormessage = e.getMessage();
             	}
