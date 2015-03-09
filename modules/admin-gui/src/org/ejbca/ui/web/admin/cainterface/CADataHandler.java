@@ -137,6 +137,23 @@ public class CADataHandler implements Serializable {
   }
 
   /**
+   * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   */
+  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException {
+      Collection<Certificate> certs = null;
+      try {
+          certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+      } catch (CertificateException e) {
+          log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
+          // See if it is a single binary certificate
+          certs = new ArrayList<Certificate>();
+          certs.add(CertTools.getCertfromByteArray(certbytes));
+      }
+      caadminsession.importCACertificateUpdate(administrator, caId, certs);
+      info.cAsEdited();
+  }
+
+  /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
   public void importCACert(String caname, byte[] certbytes) throws Exception {

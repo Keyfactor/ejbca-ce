@@ -130,6 +130,10 @@ public interface CAAdminSession {
     void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException;
 
+    /** Update an external CA's certificate */
+    void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, final Collection<Certificate> certificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException;
+
     /**
      * Inits an external CA service. this means that a new key and certificate
      * will be generated for this service, if it exists before. If it does not

@@ -1655,7 +1655,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException {
-        Certificate caCertificate = (Certificate) certificates.iterator().next();
+        final Certificate caCertificate = certificates.iterator().next();
+        if (!CertTools.isCA(caCertificate)) {
+            throw new IllegalStateException("Only CA certificates can be imported using this function.");
+        }
         CA ca = null;
         CAInfo cainfo = null;
 
@@ -1666,7 +1669,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         long validity = 0;
         int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
         log.info("Preparing to import of CA with Subject DN " + subjectdn);
-
         if (caCertificate instanceof X509Certificate) {
             X509Certificate x509CaCertificate = (X509Certificate) caCertificate;
             String subjectaltname = CertTools.getSubjectAlternativeName(x509CaCertificate);
@@ -1710,6 +1712,47 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.addCA(admin, ca);
         // Publish CA certificates.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
+    }
+
+    @Override
+    public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, final Collection<Certificate> certificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException {
+        final Certificate newCaCertificate = certificates.iterator().next();
+        if (!CertTools.isCA(newCaCertificate)) {
+            throw new IllegalStateException("Only CA certificates can be imported using this function.");
+        }
+        final String newSubjectDn = CertTools.getSubjectDN(newCaCertificate);
+        log.info("Preparing to import of update for CA with Subject DN " + newSubjectDn);
+        final CA ca = caSession.getCAForEdit(authenticationToken, caId);
+        final CAInfo caInfo = ca.getCAInfo();
+        final Certificate oldCaCertificate = ca.getCACertificate();
+        if (ca.getStatus() != CAConstants.CA_EXTERNAL) {
+            throw new IllegalStateException("Only able to update imported CA certificate of external CAs.");
+        }
+        if (CertTools.getFingerprintAsString(oldCaCertificate).equals(CertTools.getFingerprintAsString(newCaCertificate))) {
+            throw new CAExistsException("The CA certificate is already imported.");
+        }
+        if (!CertTools.getSubjectDN(oldCaCertificate).equals(newSubjectDn)) {
+            throw new CAExistsException("Only able to update imported CA certificate if Subject DN of the certificate is the same.");
+        }
+        // Check that update is newer if information is present
+        final Date newValidFrom = CertTools.getNotBefore(newCaCertificate);
+        final Date oldValidFrom = CertTools.getNotBefore(oldCaCertificate);
+        if (newValidFrom!=null && oldValidFrom!=null && newValidFrom.before(oldValidFrom)) {
+            throw new CAExistsException("Only able to update imported CA certificate if new certificate is issued after the currently used.");
+        }
+        ca.setExpireTime(CertTools.getNotAfter(newCaCertificate));
+        // Could be signed by an external CA now or vice versa
+        if (CertTools.isSelfSigned(newCaCertificate)) {
+            caInfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+            caInfo.setSignedBy(CAInfo.SELFSIGNED);
+        } else {
+            caInfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+            caInfo.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        }
+        ca.setCertificateChain(certificates);
+        // Update CA in database
+        caSession.editCA(authenticationToken, ca, true);
     }
 
     @Override

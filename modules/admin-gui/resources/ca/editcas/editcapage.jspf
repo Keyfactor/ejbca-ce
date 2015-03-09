@@ -1763,6 +1763,37 @@ function checkallfields(){
     </tr>
     <% } %>
 
+    <% if (isexternal && editca) { %>
+    <tr id="Row<%=row++%2%>" class="section">
+        <td width="50%" align="right">
+        <strong><%= ejbcawebbean.getText("IMPORTED_CA_RENEWAL") %></strong>
+        </td>
+        <td width="50%">&nbsp;</td>
+    </tr>
+    <tr id="Row<%=row++%2%>">
+        <td width="49%" valign="top">&nbsp;</td>
+        <td width="51%" valign="top">
+            <table>
+                <tbody>
+                    <tr>
+                        <td><%= ejbcawebbean.getText("IMPORTED_CA_RENEWAL_NEWCERT") %><br/>
+                            <p class="help"><%= ejbcawebbean.getText("IMPORTED_CA_RENEWAL_NEWCERT_HELP") %></p></td>
+                        <td>
+                            <input type="file" name="<%= FILE_RECIEVEFILE_IMPORTED_RENEWAL %>">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="submit" name="<%= BUTTON_RECEIVE_IMPORT_RENEWAL %>" value="<%= ejbcawebbean.getText("RECEIVE_IMPORT_RENEWAL") %>" >
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <% } %>
+
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
 
     <%/* close CA form */%>
