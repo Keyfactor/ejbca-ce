@@ -16,12 +16,14 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.keybind.InternalKeyBinding;
@@ -81,6 +83,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
             getLogger()
                     .info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, NextKeyPairAlias, properties={Implementations specific properties}, trust={list of trusted CAs and certificates}");
         }
+        final Date now = new Date();
         for (final InternalKeyBinding internalKeyBinding : internalKeyBindings) {
             final StringBuilder sb = new StringBuilder();
             final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
@@ -88,14 +91,21 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 sb.append(' ').append(internalKeyBinding.getImplementationAlias());
                 sb.append('\t').append('\"').append(internalKeyBinding.getName()).append('\"');
                 sb.append(" (").append(internalKeyBinding.getId()).append(')');
-                sb.append(", ").append(internalKeyBinding.getStatus().name());
                 final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(internalKeyBinding.getCertificateId());
+                String status = internalKeyBinding.getStatus().name();
                 String issuerDn = "n/a,";
                 String serialNumber = "n/a";
                 if (certificateInfo != null) {
+                    // We don't check for "Not yet valid" status to avoid another remote EJB call and this should be a rare thing.
+                    if (certificateInfo.getExpireDate().before(now)) {
+                        status = "EXPIRED";
+                    } else if (certificateInfo.getStatus() == CertificateConstants.CERT_REVOKED) {
+                        status = "REVOKED";
+                    }
                     issuerDn = "\"" + certificateInfo.getIssuerDN() + "\",";
                     serialNumber = certificateInfo.getSerialNumber().toString(16).toUpperCase();
                 }
+                sb.append(", ").append(status);
                 sb.append(", ").append(issuerDn).append(" ").append(serialNumber);
 
                 final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);

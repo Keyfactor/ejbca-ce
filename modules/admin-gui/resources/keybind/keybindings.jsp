@@ -107,9 +107,9 @@ org.cesecore.keybind.InternalKeyBindingRules
    			<f:facet name="header">
    				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
    			</f:facet>
-			<h:commandButton rendered="#{guiInfo.status eq 'ACTIVE'}" action="#{internalKeyBindingMBean.commandDisable}"
+			<h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandDisable}"
 				value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}"/>
-			<h:commandButton rendered="#{guiInfo.status eq 'DISABLED'}" action="#{internalKeyBindingMBean.commandEnable}"
+			<h:commandButton rendered="#{guiInfo.status eq 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandEnable}"
 				value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}"/>
 			<h:commandButton action="#{internalKeyBindingMBean.commandDelete}"
 				value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"

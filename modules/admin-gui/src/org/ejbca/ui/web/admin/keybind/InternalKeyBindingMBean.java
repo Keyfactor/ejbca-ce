@@ -20,6 +20,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,7 +115,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             this.cryptoTokenActive = cryptoTokenActive;
             this.keyPairAlias = keyPairAlias;
             this.nextKeyPairAlias = nextKeyPairAlias;
-            this.status = status;
+            this.status = "INTERNALKEYBINDING_STATUS_" + status;
             this.certificateId = certificateId;
             this.certificateIssuerDn = certificateIssuerDn;
             this.certificateSerialNumber = certificateSerialNumber;
@@ -411,6 +414,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 String caCertificateSerialNumber = "";
                 String certificateInternalCaName = null;
                 int certificateInternalCaId = 0;
+                String status = current.getStatus().name();
                 if (certificate != null) {
                     certificateSubjectDn = CertTools.getSubjectDN(certificate);
                     certificateIssuerDn = CertTools.getIssuerDN(certificate);
@@ -434,9 +438,27 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                             caCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
                         }
                     }
+                    // Check for additional informative UI states
+                    if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatus())) {
+                        // Check if certificate is expired
+                        if (certificate instanceof X509Certificate) {
+                            final X509Certificate x509Certificate = (X509Certificate) certificate;
+                            try {
+                                x509Certificate.checkValidity();
+                                // Check if certificate is revoked
+                                if (certificateStoreSession.isRevoked(certificateIssuerDn, x509Certificate.getSerialNumber())) {
+                                    status = "REVOKED";
+                                }
+                            } catch (CertificateExpiredException e) {
+                                status = "EXPIRED";
+                            } catch (CertificateNotYetValidException e) {
+                                status = "NOTYETVALID";
+                            }
+                        }
+                    }
                 }
                 internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, cryptoTokenAvailable,
-                        cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), current.getStatus().name(), current
+                        cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), status, current
                                 .getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
                         certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
                 Collections.sort(internalKeyBindingList, new Comparator<GuiInfo>() {
