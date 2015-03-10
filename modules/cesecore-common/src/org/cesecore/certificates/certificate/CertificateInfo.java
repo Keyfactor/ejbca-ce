@@ -67,9 +67,9 @@ public class CertificateInfo implements Serializable {
     public BigInteger getSerialNumber() {return new BigInteger(serno);}
     public String getSubjectDN() {return subjectdn;}
     public String getIssuerDN() {return issuerdn;}
-    /** One of the SecConst.CERT_ constants, for example SecConst.CERT_ACTIVE */
+    /** One of the CertificateConstants.CERT_ constants, for example CertificateConstants.CERT_ACTIVE */
     public int getStatus() { return status; }
-    /** One of the SecConst.CERT_ constants, for example SecConst.CERT_ACTIVE */
+    /** One of the CertificateConstants.CERT_ constants, for example CertificateConstants.CERT_ACTIVE */
     public void setStatus(int s) { this.status=s; }
     public int getType() { return type; }
     public Date getExpireDate() { return expiredate; }
