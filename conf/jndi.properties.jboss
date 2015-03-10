@@ -2,6 +2,3 @@
 java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
 java.naming.provider.url=127.0.0.1:1099
 java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
-
-# JBoss 7
-#java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
