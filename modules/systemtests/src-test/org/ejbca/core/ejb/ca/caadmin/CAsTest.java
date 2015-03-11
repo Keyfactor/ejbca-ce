@@ -1232,7 +1232,14 @@ public class CAsTest extends CaTestCase {
             } catch (CAExistsException e) {
                 // Expected
             }
+            // Ensure that the new certificate really is newer with 1 second granularity
+            final long notBefore = oldCaCertificate.getNotBefore().getTime();
+            final long now = System.currentTimeMillis();
+            final long waitTime = Math.max(0, 1001L-(now-notBefore));
+            log.debug("Sleeping " + waitTime + " ms before new CA certificate is generated. oldNotBefore:" + oldCaCertificate.getNotBefore());
+            Thread.sleep(waitTime);
             final X509Certificate newCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            log.debug("new notBefore:" + newCaCertificate.getNotBefore());
             caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {newCaCertificate}));
             final CAInfo newCaInfo = caSession.getCAInfo(admin, TEST_NAME);
             assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, newCaInfo.getCertificateProfileId());
