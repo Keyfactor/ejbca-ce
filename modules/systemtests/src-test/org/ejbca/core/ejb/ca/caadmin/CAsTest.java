@@ -1206,6 +1206,7 @@ public class CAsTest extends CaTestCase {
                 // Expected
                 assertTrue(e.getCause() instanceof IllegalStateException);
             }
+            final long beforeFirstCACert = System.currentTimeMillis();
             final X509Certificate oldCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
             caAdminSession.importCACertificate(admin, TEST_NAME, Arrays.asList(new Certificate[] {oldCaCertificate}));
             final CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
@@ -1233,9 +1234,7 @@ public class CAsTest extends CaTestCase {
                 // Expected
             }
             // Ensure that the new certificate really is newer with 1 second granularity
-            final long notBefore = oldCaCertificate.getNotBefore().getTime();
-            final long now = System.currentTimeMillis();
-            final long waitTime = Math.max(0, 1001L-(now-notBefore));
+            final long waitTime = Math.max(0, 1001L-(System.currentTimeMillis()-beforeFirstCACert));
             log.debug("Sleeping " + waitTime + " ms before new CA certificate is generated. oldNotBefore:" + oldCaCertificate.getNotBefore());
             Thread.sleep(waitTime);
             final X509Certificate newCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
