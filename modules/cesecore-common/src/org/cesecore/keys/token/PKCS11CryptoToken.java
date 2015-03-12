@@ -182,7 +182,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
             setKeyStore(null);
         } catch (KeyStoreException e) {
             // Exception should only be thrown if loading a non-null KeyStore fails
-            throw new Error("This can never happen.");
+            throw new IllegalStateException("This should never happen.");
         }
         this.p11slot.logoutFromSlotIfNoTokensActive();
         String msg = intres.getLocalizedMessage("token.deactivate", getId());

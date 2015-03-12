@@ -218,7 +218,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             setKeyStore(null);
         } catch (KeyStoreException e) {
         	// Exception should only be thrown if loading a non-null KeyStore fails
-            throw new Error("This can never happen.");
+            throw new IllegalStateException("This should never happen.");
         }
         String msg = intres.getLocalizedMessage("token.deactivate", getId());
         log.info(msg);
