@@ -22,7 +22,6 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -61,6 +60,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
+import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
@@ -72,11 +72,10 @@ public class KeyStoreTools {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    protected final KeyStore keyStore;
+    protected final CachingKeyStoreWrapper keyStore;
     private final String providerName;
 
-    public KeyStoreTools( KeyStore _keyStore,
-                           String _providerName){
+    public KeyStoreTools(CachingKeyStoreWrapper _keyStore, String _providerName){
         this.keyStore = _keyStore;
         this.providerName = _providerName;
     }
@@ -91,7 +90,7 @@ public class KeyStoreTools {
     /**
      * @return a reference to the KeyStore for this container
      */
-    public KeyStore getKeyStore() {
+    public CachingKeyStoreWrapper getKeyStore() {
         return this.keyStore;
     }
     
