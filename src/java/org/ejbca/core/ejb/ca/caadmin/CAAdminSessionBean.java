@@ -126,6 +126,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -1654,10 +1655,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
-            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException {
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
+        // Re-order if needed and validate chain
+        try {
+            certificates = CertTools.createCertChain(certificates);
+        } catch (CertPathValidatorException e) {
+            throw new CertificateImportException("The provided certificates does not form a full certificate chain.");
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new CertificateImportException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new CertificateImportException(e);
+        } catch (NoSuchProviderException e) {
+            throw new CertificateImportException(e);
+        } catch (CertificateException e) {
+            throw new CertificateImportException(e);
+        }
         final Certificate caCertificate = certificates.iterator().next();
         if (!CertTools.isCA(caCertificate)) {
-            throw new IllegalStateException("Only CA certificates can be imported using this function.");
+            throw new CertificateImportException("Only CA certificates can be imported using this function.");
         }
         CA ca = null;
         CAInfo cainfo = null;
@@ -1715,11 +1730,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, final Collection<Certificate> certificates)
-            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException {
+    public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, Collection<Certificate> certificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
+        // Re-order if needed and validate chain
+        try {
+            certificates = CertTools.createCertChain(certificates);
+        } catch (CertPathValidatorException e) {
+            throw new CertificateImportException("The provided certificates does not form a full certificate chain.");
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new CertificateImportException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new CertificateImportException(e);
+        } catch (NoSuchProviderException e) {
+            throw new CertificateImportException(e);
+        } catch (CertificateException e) {
+            throw new CertificateImportException(e);
+        }
         final Certificate newCaCertificate = certificates.iterator().next();
         if (!CertTools.isCA(newCaCertificate)) {
-            throw new IllegalStateException("Only CA certificates can be imported using this function.");
+            throw new CertificateImportException("Only CA certificates can be imported using this function.");
         }
         final String newSubjectDn = CertTools.getSubjectDN(newCaCertificate);
         log.info("Preparing to import of update for CA with Subject DN " + newSubjectDn);
@@ -1727,19 +1756,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final CAInfo caInfo = ca.getCAInfo();
         final Certificate oldCaCertificate = ca.getCACertificate();
         if (ca.getStatus() != CAConstants.CA_EXTERNAL) {
-            throw new IllegalStateException("Only able to update imported CA certificate of external CAs.");
+            throw new CertificateImportException("Only able to update imported CA certificate of external CAs.");
         }
         if (CertTools.getFingerprintAsString(oldCaCertificate).equals(CertTools.getFingerprintAsString(newCaCertificate))) {
-            throw new CAExistsException("The CA certificate is already imported.");
+            // The admin might want to update the chain even if the leaf CA cert is the same
+            boolean sameAsExisting = true;
+            if (caInfo.getCertificateChain().size()==certificates.size()) {
+                for (int i=1; i<certificates.size(); i++) {
+                    if (!CertTools.getFingerprintAsString(oldCaCertificate).equals(CertTools.getFingerprintAsString(newCaCertificate))) {
+                        sameAsExisting = false;
+                    }
+                }
+            } else {
+                sameAsExisting = false;
+            }
+            if (sameAsExisting) {
+                throw new CertificateImportException("The CA certificate chain is already imported.");
+            }
         }
         if (!CertTools.getSubjectDN(oldCaCertificate).equals(newSubjectDn)) {
-            throw new CAExistsException("Only able to update imported CA certificate if Subject DN of the certificate is the same.");
+            throw new CertificateImportException("Only able to update imported CA certificate if Subject DN of the leaf CA certificate is the same.");
         }
         // Check that update is newer if information is present
         final Date newValidFrom = CertTools.getNotBefore(newCaCertificate);
         final Date oldValidFrom = CertTools.getNotBefore(oldCaCertificate);
         if (newValidFrom!=null && oldValidFrom!=null && newValidFrom.before(oldValidFrom)) {
-            throw new CAExistsException("Only able to update imported CA certificate if new certificate is issued after the currently used.");
+            throw new CertificateImportException("Only able to update imported CA certificate if new certificate is issued after the currently used.");
         }
         ca.setExpireTime(CertTools.getNotAfter(newCaCertificate));
         // Could be signed by an external CA now or vice versa
