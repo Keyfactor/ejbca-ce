@@ -40,6 +40,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -126,13 +127,25 @@ public interface CAAdminSession {
     ResponseMessage processRequest(AuthenticationToken admin, CAInfo cainfo, RequestMessage requestmessage) throws CAExistsException,
             CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
-    /** Add an external CA's certificate as a CA */
-    void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
-            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException;
+    /**
+     * Add an external CA's certificate as a CA.
+     * 
+     * @param certificates contains the full certificate chain down to the leaf CA to be imported
+     * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
+     */
+    void importCACertificate(AuthenticationToken authenticationToken, String caName, Collection<Certificate> certificates)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
 
-    /** Update an external CA's certificate */
+    /**
+     * Update an existing external CA's certificate chain.
+     * 
+     * We allow the same leaf CA certificate to be re-imported in the case where the chain has changed.
+     * 
+     * @param certificates contains the full certificate chain down to the leaf CA to be imported
+     * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
+     */
     void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, final Collection<Certificate> certificates)
-            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException;
+            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException;
 
     /**
      * Inits an external CA service. this means that a new key and certificate
