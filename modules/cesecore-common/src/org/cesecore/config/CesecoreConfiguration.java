@@ -380,7 +380,7 @@ public final class CesecoreConfiguration {
 
     /** @return true key store content of Crypto Tokens should be cached. */
     public static boolean isKeyStoreCacheEnabled() {
-        return Boolean.getBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache"));
+        return Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache"));
     }
 
     /** @return a list of enabled TLS protocol versions and cipher suites */
