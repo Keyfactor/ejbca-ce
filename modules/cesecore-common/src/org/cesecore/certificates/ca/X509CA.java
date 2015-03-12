@@ -1041,8 +1041,6 @@ public class X509CA extends CA implements Serializable {
                             cause += "No CT audit logging callback was passed to X509CA.";
                         } else if (certGenParams.getConfiguredCTLogs() == null) {
                             cause += "There are no CT logs configured in System Configuration.";
-                        } else {
-                            cause += "Internal error, should not happen.";
                         }
                     }
                     log.debug("Not logging to CT. "+cause);                    
