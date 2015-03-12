@@ -188,7 +188,7 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #pkcs11.disableHashingSignMechanisms=false
 
 # Caching the references to PKCS#11 objects can make a big performance difference.
-# Default: false
+# Default: true
 #cryptotoken.keystorecache=true
 
 # ------------------- Authentication Key Binding settings -------------------
