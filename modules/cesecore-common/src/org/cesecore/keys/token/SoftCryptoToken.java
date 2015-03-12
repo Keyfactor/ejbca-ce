@@ -214,7 +214,12 @@ public class SoftCryptoToken extends BaseCryptoToken {
     @Override
     public void deactivate() {
         storeKeyStore();
-        setKeyStore(null);
+        try {
+            setKeyStore(null);
+        } catch (KeyStoreException e) {
+        	// Exception should only be thrown if loading a non-null KeyStore fails
+            throw new Error("This can never happen.");
+        }
         String msg = intres.getLocalizedMessage("token.deactivate", getId());
         log.info(msg);
     }

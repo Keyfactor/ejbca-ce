@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -148,6 +149,7 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.BaseCryptoToken;
+import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -1741,7 +1743,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // Use reflection to dig out the certificate objects for each alias so we can create an internal key binding for it
                     final Method m = BaseCryptoToken.class.getDeclaredMethod("getKeyStore");
                     m.setAccessible(true);
-                    final KeyStore keyStore = (KeyStore) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
+                    final CachingKeyStoreWrapper cachingKeyStoreWrapper = (CachingKeyStoreWrapper) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
+                    final Field f = CachingKeyStoreWrapper.class.getDeclaredField("keyStore");
+                    final KeyStore keyStore = (KeyStore) f.get(cachingKeyStoreWrapper);
                     createInternalKeyBindings(authenticationToken, p11CryptoTokenId, keyStore, trustDefaults);
                 }
             } catch (Exception e) {

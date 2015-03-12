@@ -187,6 +187,10 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Default: true (the mechanisms are disabled).
 #pkcs11.disableHashingSignMechanisms=false
 
+# Caching the references to PKCS#11 objects can make a big performance difference.
+# Default: false
+#cryptotoken.keystorecache=true
+
 # ------------------- Authentication Key Binding settings -------------------
 # Configuration of available cipher suites for outgoing SSL/TLS connections
 # that can be selected for an Authentication Key Binding.
