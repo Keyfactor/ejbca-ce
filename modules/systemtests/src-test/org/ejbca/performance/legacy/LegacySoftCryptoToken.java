@@ -42,7 +42,6 @@ import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
-import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 
