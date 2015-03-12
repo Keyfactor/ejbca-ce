@@ -49,6 +49,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -139,7 +140,7 @@ public class CADataHandler implements Serializable {
   /**
    * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException {
+  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CertificateImportException {
       Collection<Certificate> certs = null;
       try {
           certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
