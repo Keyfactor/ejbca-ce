@@ -378,6 +378,11 @@ public final class CesecoreConfiguration {
         return value==null || Boolean.parseBoolean(value.trim());
     }
 
+    /** @return true key store content of Crypto Tokens should be cached. */
+    public static boolean isKeyStoreCacheEnabled() {
+        return Boolean.getBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache"));
+    }
+
     /** @return a list of enabled TLS protocol versions and cipher suites */
     /*
      * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider

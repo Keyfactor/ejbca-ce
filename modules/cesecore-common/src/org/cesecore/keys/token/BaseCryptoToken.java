@@ -77,15 +77,19 @@ public abstract class BaseCryptoToken implements CryptoToken {
     private int id;
 
     /** The java KeyStore backing the Crypto Token */
-    protected transient KeyStore keyStore;
+    protected transient CachingKeyStoreWrapper keyStore;
 
     /** public constructor */
     public BaseCryptoToken() {
         super();
     }
 
-    protected void setKeyStore(KeyStore keystore) {
-        this.keyStore = keystore;
+    protected void setKeyStore(KeyStore keystore) throws KeyStoreException {
+        if (keystore==null) {
+            this.keyStore = null;
+        } else {
+            this.keyStore = new CachingKeyStoreWrapper(keystore, CesecoreConfiguration.isKeyStoreCacheEnabled());
+        }
     }
 
     /**
@@ -94,7 +98,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @return the keystore.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected.
      */
-    protected KeyStore getKeyStore() throws CryptoTokenOfflineException {
+    protected CachingKeyStoreWrapper getKeyStore() throws CryptoTokenOfflineException {
         autoActivate();
         if (this.keyStore == null) {
             final String msg = intres.getLocalizedMessage("token.errorinstansiate", mJcaProviderName, "keyStore ("+id+") == null");
