@@ -78,6 +78,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -1202,9 +1203,8 @@ public class CAsTest extends CaTestCase {
             try {
                 caAdminSession.importCACertificate(admin, TEST_NAME, Arrays.asList(new Certificate[] {nonCaCertificate}));
                 fail("Import of non-CA certificate should not be allowed using this method.");
-            } catch (EJBException e) {
+            } catch (CertificateImportException e) {
                 // Expected
-                assertTrue(e.getCause() instanceof IllegalStateException);
             }
             final long beforeFirstCACert = System.currentTimeMillis();
             final X509Certificate oldCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
@@ -1223,14 +1223,14 @@ public class CAsTest extends CaTestCase {
             try {
                 caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {oldCaCertificate}));
                 fail("Should not be allowed to update with existing CA certificate");
-            } catch (CAExistsException e) {
+            } catch (CertificateImportException e) {
                 // Expected
             }
             final X509Certificate newDnCaCertificate = CertTools.genSelfCert(subjectDn+"x", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
             try {
                 caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {newDnCaCertificate}));
                 fail("Should not be allowed to update existing CA with a different subject DN.");
-            } catch (CAExistsException e) {
+            } catch (CertificateImportException e) {
                 // Expected
             }
             // Ensure that the new certificate really is newer with 1 second granularity
@@ -1247,16 +1247,15 @@ public class CAsTest extends CaTestCase {
             try {
                 caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {oldCaCertificate}));
                 fail("Should not be allowed to update existing CA with an older CA certificate.");
-            } catch (CAExistsException e) {
+            } catch (CertificateImportException e) {
                 // Expected
             }
             final X509Certificate nonCaCertificate2 = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
             try {
                 caAdminSession.importCACertificateUpdate(admin, caId, Arrays.asList(new Certificate[] {nonCaCertificate2}));
                 fail("Import of non-CA certificate should not be allowed using this method.");
-            } catch (EJBException e) {
+            } catch (CertificateImportException e) {
                 // Expected
-                assertTrue(e.getCause() instanceof IllegalStateException);
             }
         } finally {
             try {
