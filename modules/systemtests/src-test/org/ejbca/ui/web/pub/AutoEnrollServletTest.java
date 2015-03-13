@@ -25,6 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -32,9 +33,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
 import org.bouncycastle.util.Store;
-import org.bouncycastle.x509.X509CertStoreSelector;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -271,8 +270,9 @@ public class AutoEnrollServletTest {
 		while (iter.hasNext())
 		{
 			SignerInformation signer = iter.next();
-			JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();			
-			X509Certificate caCert = jcaX509CertificateConverter.getCertificate((X509CertificateHolder) certStore.getMatches(X509CertStoreSelector.getInstance(conv.getCertSelector(signer.getSID()))).iterator().next());
+            @SuppressWarnings("unchecked")
+            List<X509CertificateHolder> certCollection = (List<X509CertificateHolder>)certStore.getMatches(signer.getSID());
+            X509Certificate caCert = new JcaX509CertificateConverter().getCertificate(certCollection.get(0));
 			@SuppressWarnings("unchecked")
             Iterator<X509CertificateHolder> iter2 = certStore.getMatches(null).iterator();
 			if (iter2.hasNext()) {
