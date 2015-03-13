@@ -95,13 +95,11 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
-import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
-import org.bouncycastle.x509.X509CertStoreSelector;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -964,10 +962,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                         LOG.debug("*** SIGNATURE: " + "\n" + si.getSID());
                     }
                     
-                    final Collection<X509CertificateHolder> signerCerts;
-                   
-                    JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();
-                    signerCerts = certs.getMatches(X509CertStoreSelector.getInstance(conv.getCertSelector(si.getSID())));
+                    final Collection<X509CertificateHolder> signerCerts = (Collection<X509CertificateHolder>)certs.getMatches(si.getSID());
 
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("signerCerts: " + signerCerts);
