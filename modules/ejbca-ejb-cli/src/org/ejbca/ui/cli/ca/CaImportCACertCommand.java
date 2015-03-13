@@ -71,10 +71,6 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
         try {
             CryptoProviderTools.installBCProvider();
             Collection<Certificate> certs = CertTools.getCertsFromPEM(pemFile);
-            if (certs.size() != 1) {
-                log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
-                return CommandResult.FUNCTIONAL_FAILURE;
-            }
             try {
                 // We need to check if the CA already exists to determine what to do:
                 // - If CA already exist, it might be a sub CA that waits for certificate from an external CA
@@ -82,6 +78,10 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 // getCAInfo throws an exception (CADoesntExistsException) if the CA does not exists, that is how we check if the CA exists 
                 CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
                 if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                    if (certs.size() != 1) {
+                        log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    }
                     log.info("CA '" + caName
                             + "' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
                     X509ResponseMessage resp = new X509ResponseMessage();
@@ -89,6 +89,12 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                     EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).receiveResponse(getAuthenticationToken(), cainfo.getCAId(),
                             resp, null, null);
                     log.info("Received certificate response and activated CA " + caName);
+                } else if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                    // CA exists and this is assumed to be an update of the imported CA certificate
+                    log.info("CA '" + caName
+                            + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCACertificateUpdate(getAuthenticationToken(), cainfo.getCAId(), certs);
+                    log.info("Updated certificate chain for imported external CA " + caName);
                 } else {
                     log.error("CA '" + caName
                             + "' already exists and is not waiting for certificate response from an external CA.");

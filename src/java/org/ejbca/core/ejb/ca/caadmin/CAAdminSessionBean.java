@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -152,6 +153,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -1657,18 +1659,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
         // Re-order if needed and validate chain
-        try {
-            certificates = CertTools.createCertChain(certificates);
-        } catch (CertPathValidatorException e) {
-            throw new CertificateImportException("The provided certificates does not form a full certificate chain.");
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new CertificateImportException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new CertificateImportException(e);
-        } catch (NoSuchProviderException e) {
-            throw new CertificateImportException(e);
-        } catch (CertificateException e) {
-            throw new CertificateImportException(e);
+        if (certificates.size()!=1) {
+            // In the case there is a chain, we require a full chain leading up to a root
+            try {
+                certificates = CertTools.createCertChain(certificates);
+            } catch (CertPathValidatorException e) {
+                throw new CertificateImportException("The provided certificates does not form a full certificate chain.");
+            } catch (InvalidAlgorithmParameterException e) {
+                throw new CertificateImportException(e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new CertificateImportException(e);
+            } catch (NoSuchProviderException e) {
+                throw new CertificateImportException(e);
+            } catch (CertificateException e) {
+                throw new CertificateImportException(e);
+            }
         }
         final Certificate caCertificate = certificates.iterator().next();
         if (!CertTools.isCA(caCertificate)) {
@@ -1733,18 +1738,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, Collection<Certificate> certificates)
             throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
         // Re-order if needed and validate chain
-        try {
-            certificates = CertTools.createCertChain(certificates);
-        } catch (CertPathValidatorException e) {
-            throw new CertificateImportException("The provided certificates does not form a full certificate chain.");
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new CertificateImportException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new CertificateImportException(e);
-        } catch (NoSuchProviderException e) {
-            throw new CertificateImportException(e);
-        } catch (CertificateException e) {
-            throw new CertificateImportException(e);
+        if (certificates.size()!=1) {
+            // In the case there is a chain, we require a full chain leading up to a root
+            try {
+                certificates = CertTools.createCertChain(certificates);
+            } catch (CertPathValidatorException e) {
+                throw new CertificateImportException("The provided certificates does not form a full certificate chain.");
+            } catch (InvalidAlgorithmParameterException e) {
+                throw new CertificateImportException(e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new CertificateImportException(e);
+            } catch (NoSuchProviderException e) {
+                throw new CertificateImportException(e);
+            } catch (CertificateException e) {
+                throw new CertificateImportException(e);
+            }
         }
         final Certificate newCaCertificate = certificates.iterator().next();
         if (!CertTools.isCA(newCaCertificate)) {
@@ -1780,6 +1788,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Check that update is newer if information is present
         final Date newValidFrom = CertTools.getNotBefore(newCaCertificate);
         final Date oldValidFrom = CertTools.getNotBefore(oldCaCertificate);
+        if (log.isDebugEnabled()) {
+            log.debug("Current valid from: " + ValidityDate.formatAsISO8601(oldValidFrom, TimeZone.getDefault()) +
+                    " Import valid from: " + ValidityDate.formatAsISO8601(newValidFrom, TimeZone.getDefault()));
+        }
         if (newValidFrom!=null && oldValidFrom!=null && newValidFrom.before(oldValidFrom)) {
             throw new CertificateImportException("Only able to update imported CA certificate if new certificate is issued after the currently used.");
         }
