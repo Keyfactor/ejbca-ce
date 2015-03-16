@@ -40,10 +40,15 @@ public class CMPSendHTTP {
 		this.response = ba;
 		this.responseCode = rc;
 	}
+
 	public static CMPSendHTTP doIt(final byte[] message, final String hostName,
-	                               final int port, final String urlPath, final boolean doClose) throws Exception {
+	        final int port, final String urlPath, final boolean doClose) throws Exception {
+	    return doIt(message, "http://"+hostName+":"+port+(urlPath!=null ? urlPath:"/ejbca/publicweb/cmp"), doClose);
+	}
+
+	public static CMPSendHTTP doIt(final byte[] message, final String url, final boolean doClose) throws Exception {
 		boolean isError = true;
-		final HttpURLConnection con = (HttpURLConnection)new URL("http://"+hostName+":"+port+(urlPath!=null ? urlPath:"/ejbca/publicweb/cmp")).openConnection();
+		final HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
 		try {
 			// POST the CMP request
 			// we are going to do a POST
