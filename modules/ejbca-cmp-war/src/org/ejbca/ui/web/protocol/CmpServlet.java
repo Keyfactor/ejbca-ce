@@ -69,6 +69,12 @@ public class CmpServlet extends HttpServlet {
          <binary CMP message>
          */
         try {
+            final String alias = getAlias(request.getPathInfo());
+            if(alias.length() > 32) {
+                log.info("Unaccepted alias more than 32 characters.");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unaccepted alias more than 32 characters.");
+                return;
+            }
             final ServletInputStream sin = request.getInputStream();
             // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
             final ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -82,14 +88,6 @@ public class CmpServlet extends HttpServlet {
                 }
                 output.write(buf, 0, n);
             }
-            
-            String alias = getAlias(request.getPathInfo());
-            if(alias.length() > 32) {
-                log.info("Unaccepted alias more than 32 characters.");
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unaccepted alias more than 32 characters.");
-                return;
-            }
-            
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -157,19 +155,16 @@ public class CmpServlet extends HttpServlet {
         // pathInfo contains what * is and should have the form "/<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING 
         // TEXT" and that will be the CMP configuration alias.
         String alias = null;
-        if((pathInfo != null) && (pathInfo.length() > 0) ) {
+        if (pathInfo!=null && pathInfo.length()>0) {
             alias = pathInfo.substring(1);
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Using CMP configuration alias: " + alias);
             }
         }
-        
-        if((alias == null) || (alias.length() < 1)) {
+        if (alias==null || alias.length()<1) {
             log.info("No CMP alias specified in the URL. Using the default alias: " + DEFAULT_CMP_ALIAS);
             return DEFAULT_CMP_ALIAS;
         }
-        
         return alias;
     }
-    
 }
