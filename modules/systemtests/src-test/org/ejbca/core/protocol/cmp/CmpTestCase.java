@@ -583,8 +583,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException {
         // POST the CMP request
         // we are going to do a POST
-        final String resource = resourceCmp + "/" + cmpAlias;
-        final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resource);
+        final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + '/' + cmpAlias;
         log.info("http URL: " + urlString);
         URL url = new URL(urlString);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -609,7 +608,7 @@ public abstract class CmpTestCase extends CaTestCase {
             // Check that the CMP respone has the cache-control headers as specified in 
             // http://tools.ietf.org/html/draft-ietf-pkix-cmp-transport-protocols-14
             final String cacheControl = con.getHeaderField("Cache-Control");
-            assertNotNull(cacheControl);
+            assertNotNull("'Cache-Control' header is not present.", cacheControl);
             assertEquals("no-cache", cacheControl);
             final String pragma = con.getHeaderField("Pragma");
             assertNotNull(pragma);
