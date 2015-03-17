@@ -13,7 +13,6 @@
 package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateExpiredException;
-import java.util.HashMap;
 import java.util.List;
 
 import org.cesecore.CesecoreException;
@@ -185,12 +184,12 @@ public interface IEjbcaWS {
 	 * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
 	 * @param activationPin Pin code for the cryptotoken
 	 * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
-	 * @param cryptotokenProperties
+	 * @param cryptotokenProperties as a String array where each index has the form "key=value"
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
 	 */
 	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-	        HashMap<Object, Object> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
+	        List<String> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
 	 * Generates a key pair in the specified cryptotoken
@@ -228,7 +227,7 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 */
 	abstract void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            HashMap<Object, Object> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException;
 	
 	/**

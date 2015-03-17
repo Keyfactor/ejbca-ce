@@ -490,7 +490,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	@Override
 	public void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-	        HashMap<Object, Object> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException  {
+	        List<String> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException  {
 	    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
                 certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
@@ -537,7 +537,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	@Override
 	public void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            HashMap<Object, Object> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
 	    
 	       EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
