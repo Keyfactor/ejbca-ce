@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -926,7 +927,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
             
             cryptotokenProperties = token.getCryptoTokenProperties();
-            assertEquals(cryptotokenProperties.keySet().size(), 3);
+            log.debug("test70CreateSoftCryptoToken(): new cryptotoken properties size " + cryptotokenProperties.size() + " : ");
+            Iterator itr = cryptotokenProperties.keySet().iterator();
+            while(itr.hasNext()) {
+                String propKey = (String) itr.next();
+                Object propValue = cryptotokenProperties.get(propKey);
+                log.debug(propKey + " : " + propValue);
+            }
+            assertEquals(3, cryptotokenProperties.keySet().size());
             assertTrue(cryptotokenProperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
             assertEquals(cryptotokenProperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
             
