@@ -14,7 +14,7 @@ package org.ejbca.core.ejb;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.util.HashMap;
+import java.util.List;
 
 import javax.ejb.Local;
 
@@ -55,7 +55,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws NoSuchSlotException
      */
     void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-            HashMap<Object, Object> cryptoTokenProperties) throws UnsupportedMethodException, AuthorizationDeniedException, 
+            List<String> cryptoTokenProperties) throws UnsupportedMethodException, AuthorizationDeniedException, 
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException;
     
     /**
@@ -107,7 +107,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws InvalidAlgorithmException
      */
     void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            HashMap<Object, Object> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException, 
             SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, ProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;

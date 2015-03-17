@@ -1,6 +1,7 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -21,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}HashMap"/>
+ *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}String" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}long"/>
@@ -61,7 +62,7 @@ public class CreateCA {
    protected String arg2;
    protected String arg3;
    protected String arg4;
-   protected HashMap<Object, Object> arg5;
+   protected List<String> arg5;
    protected String arg6;
    protected String arg7;
    protected long arg8;
@@ -153,17 +154,30 @@ public class CreateCA {
    /**
     * Gets the value of the arg5 property.
     * 
-    */
-   public HashMap<Object, Object> getArg5() {
-       return arg5;
-   }
-
-   /**
-    * Sets the value of the arg5 property.
+    * <p>
+    * This accessor method returns a reference to the live list,
+    * not a snapshot. Therefore any modification you make to the
+    * returned list will be present inside the JAXB object.
+    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
+    * 
+    * <p>
+    * For example, to add a new item, do as follows:
+    * <pre>
+    *    getArg5().add(newItem);
+    * </pre>
+    * 
+    * 
+    * <p>
+    * Objects of the following type(s) are allowed in the list
+    * {@link String }
+    * 
     * 
     */
-   public void setArg5(HashMap<Object, Object> value) {
-       this.arg5 = value;
+   public List<String> getArg5() {
+       if (arg5 == null) {
+           arg5 = new ArrayList<String>();
+       }
+       return this.arg5;
    }
 
    /**
