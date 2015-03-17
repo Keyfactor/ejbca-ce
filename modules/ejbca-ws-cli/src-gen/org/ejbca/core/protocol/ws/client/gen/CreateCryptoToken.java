@@ -1,6 +1,7 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -20,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}HashMap"/>
+ *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -44,7 +45,7 @@ public class CreateCryptoToken {
    protected String arg1;
    protected String arg2;
    protected boolean arg3;
-   protected HashMap<Object, Object> arg4;
+   protected List<String> arg4;
    
    /**
     * Gets the value of the arg0 property.
@@ -113,16 +114,30 @@ public class CreateCryptoToken {
    /**
     * Gets the value of the arg4 property.
     * 
-    */
-   public HashMap<Object, Object> getArg4() {
-       return arg4;
-   }
-
-   /**
-    * Sets the value of the arg4 property.
+    * <p>
+    * This accessor method returns a reference to the live list,
+    * not a snapshot. Therefore any modification you make to the
+    * returned list will be present inside the JAXB object.
+    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
+    * 
+    * <p>
+    * For example, to add a new item, do as follows:
+    * <pre>
+    *    getArg4().add(newItem);
+    * </pre>
+    * 
+    * 
+    * <p>
+    * Objects of the following type(s) are allowed in the list
+    * {@link String }
+    * 
     * 
     */
-   public void setArg4(HashMap<Object, Object> value) {
-       this.arg4 = value;
+   public List<String> getArg4() {
+       if (arg4 == null) {
+           arg4 = new ArrayList<String>();
+       }
+       return this.arg4;
    }
+
 }
