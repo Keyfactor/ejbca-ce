@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import java.util.Properties;
+import java.util.HashMap;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -31,7 +31,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
 
     @Override
     public void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, 
-            boolean autoActivate, Properties cryptoTokenProperties) throws UnsupportedMethodException {
+            boolean autoActivate, HashMap<Object, Object> cryptoTokenProperties) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");
     }
     
@@ -43,7 +43,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
 
     @Override
     public void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword,
-            Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile,
+            HashMap<Object, Object> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile,
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
     }

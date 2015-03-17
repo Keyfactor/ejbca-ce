@@ -1,6 +1,6 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
-import java.util.Properties;
+import java.util.HashMap;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}Properties"/>
+ *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}HashMap"/>
  *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}long"/>
@@ -61,7 +61,7 @@ public class CreateCA {
    protected String arg2;
    protected String arg3;
    protected String arg4;
-   protected Properties arg5;
+   protected HashMap<Object, Object> arg5;
    protected String arg6;
    protected String arg7;
    protected long arg8;
@@ -154,7 +154,7 @@ public class CreateCA {
     * Gets the value of the arg5 property.
     * 
     */
-   public Properties getArg5() {
+   public HashMap<Object, Object> getArg5() {
        return arg5;
    }
 
@@ -162,7 +162,7 @@ public class CreateCA {
     * Sets the value of the arg5 property.
     * 
     */
-   public void setArg5(Properties value) {
+   public void setArg5(HashMap<Object, Object> value) {
        this.arg5 = value;
    }
 

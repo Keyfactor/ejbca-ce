@@ -13,8 +13,8 @@
 package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateExpiredException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -190,7 +190,7 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 */
 	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-	        Properties cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
+	        HashMap<Object, Object> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
 	 * Generates a key pair in the specified cryptotoken
@@ -228,7 +228,7 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 */
 	abstract void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            Properties catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            HashMap<Object, Object> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException;
 	
 	/**

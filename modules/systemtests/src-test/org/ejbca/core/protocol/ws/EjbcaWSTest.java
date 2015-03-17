@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -917,26 +918,26 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         
         try {
             
-            Properties cryptotokenProperties = new Properties();
-            cryptotokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
-            cryptotokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+            HashMap<Object, Object> cryptotokenProperties = new HashMap<Object, Object>();
+            cryptotokenProperties.put(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
+            cryptotokenProperties.put(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
             
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             assertNotNull("Creating a new SoftCryptoToken failed", ctid);
             CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
             
-            cryptotokenProperties = token.getCryptoTokenProperties();
+            Properties ctproperties = token.getCryptoTokenProperties();
             log.debug("test70CreateSoftCryptoToken(): new cryptotoken properties size " + cryptotokenProperties.size() + " : ");
-            Iterator itr = cryptotokenProperties.keySet().iterator();
+            Iterator itr = ctproperties.keySet().iterator();
             while(itr.hasNext()) {
                 String propKey = (String) itr.next();
-                Object propValue = cryptotokenProperties.get(propKey);
+                Object propValue = ctproperties.get(propKey);
                 log.debug(propKey + " : " + propValue);
             }
-            assertEquals(3, cryptotokenProperties.keySet().size());
-            assertTrue(cryptotokenProperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
-            assertEquals(cryptotokenProperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
+            assertEquals(3, ctproperties.keySet().size());
+            assertTrue(ctproperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
+            assertEquals(ctproperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
             
             assertEquals("SoftCryptoToken", token.getType());
             assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
@@ -970,9 +971,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         
         try {
-            Properties cryptotokenProperties = new Properties();
-            cryptotokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
-            cryptotokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+            HashMap<Object, Object> cryptotokenProperties = new HashMap<Object, Object>();
+            cryptotokenProperties.put(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
+            cryptotokenProperties.put(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             
@@ -1015,9 +1016,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         
         try {
             // create cryptotoken
-            Properties cryptotokenProperties = new Properties();
-            cryptotokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
-            cryptotokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+            HashMap<Object, Object> cryptotokenProperties = new HashMap<Object, Object>();
+            cryptotokenProperties.put(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
+            cryptotokenProperties.put(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
 
@@ -1030,12 +1031,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ejbcaraws.generateCryptoTokenKeys(ctname, testKeyAlias, "1024");
             
             // construct the ca token properties
-            final Properties caTokenProperties = new Properties();
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-            final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
+            final HashMap<Object, Object> caTokenProperties = new HashMap<Object, Object>();
+            caTokenProperties.put(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            caTokenProperties.put(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            final String certSignValue = (String) caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
+            caTokenProperties.put(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
+            caTokenProperties.put(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
             ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, testKeyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertNotNull(cainfo);
