@@ -1043,29 +1043,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 throw e;
             }
         } finally {
-            int count = 0;
-            while(!caSession.existsCa(caname)) {
-                if(count > 10) {
-                    break;
-                }
-                
-                count++;
-                Thread.sleep(100);
-            }
-            boolean caCreationfailed = false;
             if(caSession.existsCa(caname)) {
                 int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
                 caSession.removeCA(intAdmin, caid);
-            } else {
-                caCreationfailed = true;
             }
             
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             if(ctid != null) {
                 cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
-            }
-            if(caCreationfailed) {
-                fail("CA was never created.");
             }
         }
         log.trace("<test72CreateCA()");
