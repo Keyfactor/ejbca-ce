@@ -49,6 +49,7 @@ import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
+import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.query.IllegalQueryException;
 
 /**
@@ -189,7 +190,7 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 */
 	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-	        List<String> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
+	        List<KeyValuePair> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
 	 * Generates a key pair in the specified cryptotoken
@@ -227,7 +228,7 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 */
 	abstract void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException;
 	
 	/**

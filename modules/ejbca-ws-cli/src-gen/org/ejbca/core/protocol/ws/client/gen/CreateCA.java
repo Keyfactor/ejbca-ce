@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.ejbca.util.KeyValuePair;
+
 /**
  * <p>Java class for createCA complex type.
  * 
@@ -22,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}String" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}KeyValuePair" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}long"/>
@@ -62,7 +64,7 @@ public class CreateCA {
    protected String arg2;
    protected String arg3;
    protected String arg4;
-   protected List<String> arg5;
+   protected List<KeyValuePair> arg5;
    protected String arg6;
    protected String arg7;
    protected long arg8;
@@ -173,9 +175,9 @@ public class CreateCA {
     * 
     * 
     */
-   public List<String> getArg5() {
+   public List<KeyValuePair> getArg5() {
        if (arg5 == null) {
-           arg5 = new ArrayList<String>();
+           arg5 = new ArrayList<KeyValuePair>();
        }
        return this.arg5;
    }

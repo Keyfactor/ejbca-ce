@@ -19,6 +19,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.ejbca.util.KeyValuePair;
 
 /**
  * JEE5 EJB lookup helper.
@@ -31,7 +32,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
 
     @Override
     public void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, 
-            boolean autoActivate, List<String> cryptoTokenProperties) throws UnsupportedMethodException {
+            boolean autoActivate, List<KeyValuePair> cryptoTokenProperties) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");
     }
     
@@ -43,7 +44,7 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
 
     @Override
     public void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword,
-            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile,
+            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile,
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
     }

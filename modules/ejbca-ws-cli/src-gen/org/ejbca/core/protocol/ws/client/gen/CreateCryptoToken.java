@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.ejbca.util.KeyValuePair;
+
 /**
  * <p>Java class for createCryptoToken complex type.
  * 
@@ -21,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}KeyValuePair" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -45,7 +47,7 @@ public class CreateCryptoToken {
    protected String arg1;
    protected String arg2;
    protected boolean arg3;
-   protected List<String> arg4;
+   protected List<KeyValuePair> arg4;
    
    /**
     * Gets the value of the arg0 property.
@@ -133,9 +135,9 @@ public class CreateCryptoToken {
     * 
     * 
     */
-   public List<String> getArg4() {
+   public List<KeyValuePair> getArg4() {
        if (arg4 == null) {
-           arg4 = new ArrayList<String>();
+           arg4 = new ArrayList<KeyValuePair>();
        }
        return this.arg4;
    }
