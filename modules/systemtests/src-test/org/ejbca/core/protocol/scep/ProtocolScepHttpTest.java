@@ -540,7 +540,7 @@ public class ProtocolScepHttpTest {
         byte[] respBytes = baos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
-        assertEquals(new String(respBytes), "POSTPKIOperation\nSHA-1");
+        assertEquals(new String(respBytes), "POSTPKIOperation\nSHA-1\nRenewal");
         log.debug(">test09ScepGetCACaps()");
     }
 
@@ -667,11 +667,11 @@ public class ProtocolScepHttpTest {
         return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair key, String signatureProvider) throws InvalidKeyException,
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keys, String signatureProvider) throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
             IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
-        gen.setKeys(key, signatureProvider);
+        gen.setKeys(keys, signatureProvider);
         gen.setDigestOid(digestoid);
         byte[] msgBytes = null;
         // Create a transactionId
@@ -679,11 +679,12 @@ public class ProtocolScepHttpTest {
         this.rand.nextBytes(randBytes);
         byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
         transId = new String(Base64.encode(digest));
-
+        final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
+                keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         if (makeCrlReq) {
-            msgBytes = gen.generateCrlReq(userDN, transId, cacert);
+            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keys.getPrivate());
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert);
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keys.getPrivate());
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();

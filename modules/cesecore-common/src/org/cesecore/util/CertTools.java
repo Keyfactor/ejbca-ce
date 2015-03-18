@@ -1510,21 +1510,13 @@ public abstract class CertTools {
      * 
      * @return X509Certificate, self signed
      * 
-     * @throws NoSuchAlgorithmException DOCUMENT ME!
-     * @throws SignatureException DOCUMENT ME!
-     * @throws InvalidKeyException DOCUMENT ME!
-     * @throws IllegalStateException
-     * @throws NoSuchProviderException
-     * 
-     * TODO: Fix documentation
      * @throws IOException 
      * @throws CertificateException 
      * @throws OperatorCreationException 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException,
-            OperatorCreationException, CertificateException, IOException {
-        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, "BC");
+            boolean isCA) throws OperatorCreationException, CertificateException, IOException {
+        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, BouncyCastleProvider.PROVIDER_NAME);
     }
 
     /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
@@ -1548,8 +1540,7 @@ public abstract class CertTools {
      * 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException,
-            NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+            boolean isCA, String provider) throws OperatorCreationException, CertificateException, IOException {
         return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, provider, true);
     } // genselfCert
 
@@ -3586,16 +3577,16 @@ public abstract class CertTools {
      * 
      * @param signatureAlgorithm
      * @param subject   The request's subjectDN
-     * @param publickey
+     * @param publickey the public key for the certificate requesting signing
      * @param attributes    A set of attributes, for example, extensions, challenge password, etc.
-     * @param signingKey
+     * @param privateKey the private key used to generate the certificate
      * @param provider
      * @return a PKCS10CertificateRequest based on the input parameters.
      * 
      * @throws OperatorCreationException if an error occurred while creating the signing key
      */
     public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey,
-            ASN1Set attributes, PrivateKey signingKey, String provider) throws OperatorCreationException {
+            ASN1Set attributes, PrivateKey privateKey, String provider) throws OperatorCreationException {
 
         ContentSigner signer;
         CertificationRequestInfo reqInfo;
@@ -3607,9 +3598,7 @@ public abstract class CertTools {
             if (provider == null) {
                 provider = BouncyCastleProvider.PROVIDER_NAME;
             }
-          
-
-            signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(signingKey), 20480);
+            signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(privateKey), 20480);
             signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
             signer.getOutputStream().flush();
         } catch (IOException e) {

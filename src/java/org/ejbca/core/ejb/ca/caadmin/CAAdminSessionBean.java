@@ -26,7 +26,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -2383,10 +2382,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (CertificateException e) {
             throw new IllegalCryptoTokenException(e);
         } catch (IOException e) {
-            throw new IllegalCryptoTokenException(e);
-        } catch (InvalidKeyException e) {
-            throw new IllegalCryptoTokenException(e);
-        } catch (SignatureException e) {
             throw new IllegalCryptoTokenException(e);
         } catch (IllegalStateException e) {
             throw new IllegalCryptoTokenException(e);

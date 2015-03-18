@@ -32,6 +32,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -78,6 +79,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -97,6 +99,8 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 
@@ -299,6 +303,27 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return createCertificate(admin, username, password, incert.getPublicKey(),
                 CertTools.sunKeyUsageToBC(((X509Certificate) incert).getKeyUsage()), null, null);
     }
+    
+    @Override
+    public ResponseMessage createCertificateIgnoreStatus(final AuthenticationToken admin, final RequestMessage req,
+            Class<? extends CertificateResponseMessage> responseClass) throws AuthorizationDeniedException, CertificateExtensionException,
+            NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            CADoesntExistsException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException,
+            IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException,
+            CAOfflineException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
+        final String username = req.getUsername();
+        EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
+        if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+            try {
+                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            } catch (FinderException e) {
+                throw new NoSuchEndEntityException("End entity with username " + username + " not found.", e);
+            }
+        }
+        return createCertificate(admin, req, responseClass, null);
+
+    }
+
 
     @Override
     public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req,

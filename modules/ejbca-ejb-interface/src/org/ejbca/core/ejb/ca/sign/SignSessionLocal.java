@@ -27,13 +27,21 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 
@@ -53,6 +61,57 @@ public interface SignSessionLocal extends SignSession {
      * @throws AuthorizationDeniedException
      */
     CA getCAFromRequest(AuthenticationToken admin, RequestMessage req, boolean doLog) throws CADoesntExistsException, AuthorizationDeniedException;
+    
+    /**
+     * Requests for a certificate to be created for the passed public key wrapped in a certification request message (ex PKCS10).  The username and password used to 
+     * authorize is taken from the request message. Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails. 
+     * The method queries the user database for authorization of the user.
+     * 
+     * Works like the standard methods in this class for creating certificates, but will set status to new if it is GENERATED
+     *
+     * @param admin         Information about the administrator or admin performing the event.
+     * @param req           a Certification Request message, containing the public key to be put in the
+     *                      created certificate. Currently no additional parameters in requests are considered!
+     * @param keyUsage      integer with bit mask describing desired keys usage. Bit mask is packed in
+     *                      in integer using contants from CertificateDataBean. ex. int keyusage =
+     *                      CertificateDataBean.digitalSignature | CertificateDataBean.nonRepudiation; gives
+     *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateDataBean.keyCertSign
+     *                      | CertificateDataBean.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
+     *                      keyUsage should be used, or should be taken from extensions in the request.
+     * @param responseClass The implementation class that will be used as the response message.
+     * @param suppliedUserData Optional (can be null) supplied user data, if we are running without storing UserData this will be used. Should only 
+     *  be supplied when we issue certificates in a single transaction.
+     *  
+     * @return The newly created response
+     * 
+     * @throws CertificateExtensionException if there was an error with the extensions specified in the request message
+     * @throws NoSuchEndEntityException       if the user does not exist.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
+     * @throws CryptoTokenOfflineException 
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws SignRequestException          if the provided request is invalid.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by the CA.
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CAOfflineException if the CA was offline
+     * @throws IllegalValidityException if the validity defined in the request was invalid 
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
+     * @throws ApprovalException if changing the end entity status requires approval 
+     * @throws WaitingForApprovalException if an approval is already waiting for the status to be changed
+     */
+    ResponseMessage createCertificateIgnoreStatus(final AuthenticationToken admin, final RequestMessage req,
+            Class<? extends CertificateResponseMessage> responseClass) throws AuthorizationDeniedException,
+            CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException,
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, AuthStatusException,
+            AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException;
     
     /**
      * Requests for a certificate to be created for the passed public key with default key usage

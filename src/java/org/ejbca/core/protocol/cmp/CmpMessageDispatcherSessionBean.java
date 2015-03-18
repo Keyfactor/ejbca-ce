@@ -66,7 +66,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * - PKI Confirmation - same as certificate confirmation accept - will return a PKIConfirm
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
- * @author tomas
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CmpMessageDispatcherSessionRemote")

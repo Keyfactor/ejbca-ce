@@ -37,7 +37,6 @@ import org.ejbca.ui.web.pub.ServletUtils;
 /**
  * Servlet implementing server side of the Certificate Management Protocols (CMP)
  * 
- * @author tomas
  * @version $Id$
  */
 public class CmpServlet extends HttpServlet {
