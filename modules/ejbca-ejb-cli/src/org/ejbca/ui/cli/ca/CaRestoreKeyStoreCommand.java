@@ -136,7 +136,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
                 log.error("Keystore contains more than one alias, alias must be provided as argument.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             } else if (length < 1) {
-                log.error("Keystore does not contains any aliases. It can not be used for a CA.");
+                log.error("Keystore does not contain any aliases. It can not be used for a CA.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             // else alias already contains the only alias, so we can use that
