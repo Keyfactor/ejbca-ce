@@ -208,6 +208,7 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.IPatternLogger;
+import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -490,7 +491,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	@Override
 	public void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-	        List<String> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException  {
+	        List<KeyValuePair> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException  {
 	    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
                 certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
@@ -537,7 +538,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	@Override
 	public void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
 	    
 	       EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
