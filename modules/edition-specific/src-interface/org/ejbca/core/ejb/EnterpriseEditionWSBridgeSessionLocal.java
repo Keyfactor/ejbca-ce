@@ -29,6 +29,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.roles.RoleNotFoundException;
+import org.ejbca.util.KeyValuePair;
 
 /**
  * JEE5 Lookup helper implementation for optional (enterprise edition) WS methods.
@@ -55,7 +56,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws NoSuchSlotException
      */
     void createCryptoToken(AuthenticationToken admin, String tokenName, String tokenType, String activationPin, boolean autoActivate, 
-            List<String> cryptoTokenProperties) throws UnsupportedMethodException, AuthorizationDeniedException, 
+            List<KeyValuePair> cryptoTokenProperties) throws UnsupportedMethodException, AuthorizationDeniedException, 
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException;
     
     /**
@@ -107,7 +108,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws InvalidAlgorithmException
      */
     void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            List<String> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
+            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException, 
             SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, ProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
