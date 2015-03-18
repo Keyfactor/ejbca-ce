@@ -21,27 +21,49 @@ package org.cesecore.audit.enums;
  */
 public enum EventTypes implements EventType {
 
+    /** Authorization check to resource of authenticated entity. */
     ACCESS_CONTROL,
+    /** Authentication check of an entity. */
     AUTHENTICATION,
+    /** Creation of a Certificate Authority. */
     CA_CREATION,
+    /** Removal of a Certificate Authority. */
     CA_DELETION,
+    /** Internal application name change of a Certificate Authority. Unrelated to Certificate Authority's Subject Distinguisher Name. */
     CA_RENAMING,
+    /** Modification of a Certificate Authority. */
     CA_EDITING,
+    /** Certificate Authority generation of a new key pair that can be activated. */
     CA_KEYGEN,
+    /** Certificate Authority activation of a new key pair that was generated previously and ready for activation. */
     CA_KEYACTIVATE,
+    /** Certificate Authority state change to start serving requests. Unrelated to CA private key availability. */
     CA_SERVICEACTIVATE,
+    /** Certificate Authority state change to stop serving requests. Unrelated to CA private key availability. */
     CA_SERVICEDEACTIVATE,
+    /** Persistence of a certificate to the database. */
     CERT_STORED,
+    /** Change of a certificate's status to revoked or active. */
     CERT_REVOKED,
+    /** Change of a certificate's status to unassigned, inactive, active, notified about expiration, revoked or archived. */
     CERT_CHANGEDSTATUS,
+    /** A request for certificate issuance from a Certificate Authority is submitted. */
     CERT_REQUEST,
+    /** A certificate from a Certificate Authority is issued. */
     CERT_CREATION,
+    /** Certificate Transparency log server(s) responds to a pre-certificate submission from a Certificate Authority. */
     CERT_CTPRECERT_SUBMISSION,
+    /** <i>Event type is not used in EJBCA.</i> */
     CERTIFICATE_KEY_BIND,
+    /** <i>Event type is not used in EJBCA.</i> */
     CERTIFICATE_KEY_UNBIND,
+    /** Creation of a certificate profile. */
     CERTPROFILE_CREATION,
+    /** Removal of a certificate profile. */
     CERTPROFILE_DELETION,
+    /** Name change of a certificate profile. */
     CERTPROFILE_RENAMING,
+    /** Modification of a certificate profile. */
     CERTPROFILE_EDITING,
     CRL_STORED,
     CRL_DELETED,
@@ -72,9 +94,13 @@ public enum EventTypes implements EventType {
     ROLE_ACCESS_USER_DELETION,
     SYSTEMCONF_CREATE,
     SYSTEMCONF_EDIT,
+    /** <i>Event type is not used in EJBCA.</i> */
     BACKUP,
+    /** <i>Event type is not used in EJBCA.</i> */
     RESTORE,
+    /** <i>Event type is not used in EJBCA.</i> */
     TIME_SYNC_ACQUIRE,
+    /** <i>Event type is not used in EJBCA.</i> */
     TIME_SYNC_LOST,
     INTERNALKEYBINDING_CREATE,
     INTERNALKEYBINDING_EDIT,
