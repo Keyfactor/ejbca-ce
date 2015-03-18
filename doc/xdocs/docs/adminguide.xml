@@ -5601,12 +5601,15 @@ The Security Audit Log is stored in the database and the System Log is stroed in
 <subsection name="Security Audit Log">
 <p>
 The are two different logging devices available for official security audit events
-(creation of certificate etc). These devices should not be
-confused with the info/debug output that is sent to Log4J directly. You can
-find more information on how to configure Log4J in doc/howto/log4j.txt.
+(creation of certificate etc).
+The full explanation of the Service, Module and Event types can be found in JavaDoc format <a href="logtypes/index.html" target="_blank">here</a>.
 </p>
 <p>
 What log devices to use, can be configured in conf/cesecore.properties.
+</p>
+<p>
+These devices should not be confused with the info/debug output that is sent to Log4J directly.
+You can find more information on how to configure Log4J in doc/howto/log4j.txt.
 </p>
 <p>
 It is recommended to only allow new log-posts to the database-tables. More
