@@ -18,6 +18,7 @@
     <property name="docs.dest"    location="tmp/htdocs/docs"/>
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
+    <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
     <property name="site.src"     location="doc/xdocs/site"/>
     <property name="site.dest"    location="tmp/htdocs"/>
     <property name="jdocs.ws.tmp" location="tmp/jdocswstmp"/>
@@ -157,9 +158,29 @@
 	          <include name="**/CertificateHelper.java"/>
 	          <include name="**/KeyStoreHelper.java"/>
 	        </fileset>
-	       <link offline="true" href="http://download.oracle.com/javase/6/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
+	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
 	      <doctitle><![CDATA[<h1>EJBCA WS Support</h1>]]></doctitle>
-	      <bottom><![CDATA[<i>2014 PrimeKey Solutions AB.</i>]]></bottom>
+	      <bottom><![CDATA[<i>2015 PrimeKey Solutions AB.</i>]]></bottom>
+	    </javadoc>
+        <mkdir dir="${docs.dest.logtypes}"/>
+	    <javadoc destdir="${docs.dest.logtypes}"
+	             author="false"
+	             version="true"
+	             Package="false"
+	             Use="false"
+	             nodeprecated="true"
+	             nodeprecatedlist="true"
+	    	     classpathref="jdoc.classpath"
+	             windowtitle="EJBCA and CESeCore Audit Log types">
+	        <fileset dir="modules/cesecore-common/src" defaultexcludes="yes">
+	          <include name="org/cesecore/audit/enums/*Types.java"/>
+	        </fileset>
+	        <fileset dir="modules/ejbca-ejb-interface/src" defaultexcludes="yes">
+	          <include name="org/ejbca/core/ejb/audit/enums/*Types.java"/>
+	        </fileset>
+	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
+	      <doctitle><![CDATA[<h1>EJBCA and CESeCore Audit Log types</h1>]]></doctitle>
+	      <bottom><![CDATA[<i>2015 PrimeKey Solutions AB.</i>]]></bottom>
 	    </javadoc>
         
         <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
