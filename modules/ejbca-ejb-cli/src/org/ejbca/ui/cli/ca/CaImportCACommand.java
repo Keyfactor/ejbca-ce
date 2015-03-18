@@ -182,7 +182,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                         log.info("Keystore contains more than one alias, alias must be provided as argument.");
                         return CommandResult.FUNCTIONAL_FAILURE;
                     } else if (length < 1) {
-                        log.info("Keystore does not contains any aliases. It can not be used for a CA.");
+                        log.info("Keystore does not contain any aliases. It can not be used for a CA.");
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
                     // else alias already contains the only alias, so we can use that
