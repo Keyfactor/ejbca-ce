@@ -80,6 +80,7 @@ public class SimpleRequestMessage implements RequestMessage {
     /** Requested certificate extensions */
     private Extensions x509Extensions = null;
     
+    private Date validityNotBefore = null;
     private Date validityNotAfter = null;
    
     /**
@@ -99,13 +100,28 @@ public class SimpleRequestMessage implements RequestMessage {
      * @param pubkey the public key to be certified
      * @param username username of the EJBCA user
      * @param password password of the EJBCA user
-     * @param the end validity of this certificate
+     * @param validityNotAfter the end validity of this certificate
      */
-    public SimpleRequestMessage(final PublicKey pubkey, final String username, final String password, Date validity) {
+    public SimpleRequestMessage(final PublicKey pubkey, final String username, final String password, final Date validityNotAfter) {
         this.pubkey = new PublicKeyWrapper(pubkey);
         this.username = username;
         this.password = password;
-        this.validityNotAfter = validity;
+        this.validityNotAfter = validityNotAfter;
+    }
+    
+    /**
+     * Constructs a new Simple message handler object.
+     * @param pubkey the public key to be certified
+     * @param username username of the EJBCA user
+     * @param password password of the EJBCA user
+     * @param the end validity of this certificate
+     */
+    public SimpleRequestMessage(final PublicKey pubkey, final String username, final String password, final Date validityNotBefore, final Date validityNotAfter) {
+        this.pubkey = new PublicKeyWrapper(pubkey);
+        this.username = username;
+        this.password = password;
+        this.validityNotBefore = validityNotBefore;
+        this.validityNotAfter = validityNotAfter;
     }
 
     @Override
@@ -186,7 +202,7 @@ public class SimpleRequestMessage implements RequestMessage {
 
     @Override
 	public Date getRequestValidityNotBefore() {
-		return null;
+		return validityNotBefore;
 	}
 	
     @Override

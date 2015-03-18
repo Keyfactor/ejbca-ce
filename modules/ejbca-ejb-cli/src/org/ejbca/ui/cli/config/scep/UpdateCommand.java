@@ -129,14 +129,14 @@ public class UpdateCommand extends BaseScepConfigCommand {
         for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(getAuthenticationToken())) {
             existingCas.append((existingCas.length() == 0 ? "" : divider) + ca);
         }
-        sb.append("    " + ScepConfiguration.SCEP_RA_DEFAULTCA + " - possible values: ProfileDefault" + divider + existingCas + "\n");
-        
+        sb.append("    " + ScepConfiguration.SCEP_RA_DEFAULTCA + " - possible values: ProfileDefault" + divider + existingCas + "\n");        
         sb.append("    " + ScepConfiguration.SCEP_RA_AUTHPWD + " - possible values: none " + divider + " any alphanumeric string" + "\n");
         sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_SCHEME + " - possible values: DN " + divider + " RANDOM " + divider + " USERNAME " + divider + " FIXED" + "\n");
         sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_PARAMETERS + " - possible values: See CMP Configurations in the Admin GUI" + "\n");
         sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_PREFIX + " - possible values: ${RANDOM} " + divider + " any alphanumeric string" + "\n");
         sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_POSTFIX + " - possible values: ${RANDOM} " + divider + " any alphanumeric string" + "\n");
-        
+        sb.append("    " + ScepConfiguration.SCEP_CLIENT_CERTIFICATE_RENEWAL + " - possible values: true " + divider + " false" + "\n");  
+        sb.append("    " + ScepConfiguration.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY + " - possible values: true " + divider + " false" + "\n");      
         return sb.toString();
 
     }

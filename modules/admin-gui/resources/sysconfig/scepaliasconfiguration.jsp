@@ -71,6 +71,12 @@ org.cesecore.authorization.control.StandardRules
 		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" rendered="true"/>
 		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
 
+		<h:outputLabel for="clientCertificateRenewal" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL}" rendered="true"/>
+		<h:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
+		
+		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" rendered="true"/>
+		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
+		
 		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
 		<h:panelGroup id="eep"  rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">

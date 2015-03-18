@@ -154,7 +154,7 @@ public final class KeyTools {
 
         KeyPairGenerator keygen;
         try {
-            keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
+            keygen = KeyPairGenerator.getInstance(keyAlg, BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm " + keyAlg + "was not recognized.", e);
          } catch (NoSuchProviderException e) {

@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,29 +10,44 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.core.model.ca;
-
-import javax.ejb.ApplicationException;
-import org.ejbca.core.EjbcaException;
+package org.ejbca.ui.web.protocol;
 
 /**
- * Authentication error due to wrong status of user object. To authenticate a user the user must
- * have status new, failed or inprocess.
- *
+ * Thrown if an error occurs during Client Certificate Renewal.
+ * 
  * @version $Id$
+ *
  */
-@ApplicationException(rollback=true)  
-public class AuthStatusException extends EjbcaException {
-    private static final long serialVersionUID = -1399828365257002586L;
+public class ClientCertificateRenewalException extends Exception {
+
+    private static final long serialVersionUID = 1L;
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
-     * baseclass <code>Exception</code>.
-     *
-     * @param message Human redable error message, can not be NULL.
+     * 
      */
-    public AuthStatusException(String message) {
+    public ClientCertificateRenewalException() {
+    }
+
+    /**
+     * @param message
+     */
+    public ClientCertificateRenewalException(String message) {
         super(message);
     }
+
+    /**
+     * @param cause
+     */
+    public ClientCertificateRenewalException(Throwable cause) {
+        super(cause);
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public ClientCertificateRenewalException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

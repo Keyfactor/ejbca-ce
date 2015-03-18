@@ -48,6 +48,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RA_NAME_GENERATION_PARAMETERS = "ra.namegenerationparameters";
     public static final String SCEP_RA_NAME_GENERATION_PREFIX = "ra.namegenerationprefix";
     public static final String SCEP_RA_NAME_GENERATION_POSTFIX = "ra.namegenerationpostfix";
+    public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL = "clientCertificateRenewal";
+    public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = "clientCertificateRenewalWithOldKey";
     
     
     
@@ -69,7 +71,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
     public static final String DEFAULT_OPERATION_MODE = "ca";
-    public static final String DEFAULT_INCLUDE_CA = "true";
+    public static final String DEFAULT_INCLUDE_CA = Boolean.TRUE.toString();
+    public static final String DEFAULT_CLIENT_CERTIFICATE_RENEWAL = Boolean.FALSE.toString();
+    public static final String DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = Boolean.FALSE.toString();
     public static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
     public static final String DEFAULT_RA_ENTITYPROFILE = "EMPTY";
     public static final String DEFAULT_RA_DEFAULTCA = "";
@@ -106,6 +110,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + SCEP_RA_NAME_GENERATION_PARAMETERS, DEFAULT_RA_NAME_GENERATION_PARAMETERS);
             data.put(alias + SCEP_RA_NAME_GENERATION_PREFIX, DEFAULT_RA_NAME_GENERATION_PREFIX);
             data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
+            data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+            data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         }
     }
     
@@ -123,9 +129,43 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_RA_NAME_GENERATION_PARAMETERS);
         keys.add(alias + SCEP_RA_NAME_GENERATION_PREFIX);
         keys.add(alias + SCEP_RA_NAME_GENERATION_POSTFIX);
+        keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL);
+        keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         return keys;
     }
+    
+    public boolean getClientCertificateRenewal(final String alias) {
+        String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL;
+        String value = getValue(key, alias);
+        //Lazy initialization for SCEP configurations older than 6.3.1
+        if(value == null) {
+            data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+            return Boolean.getBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+        }
+        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+    }
+        
+    public void setClientCertificateRenewal(String alias, boolean clientCertificateRenewal) {
+        String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL;
+        setValue(key, clientCertificateRenewal ? Boolean.TRUE.toString() : Boolean.FALSE.toString(), alias);
+    }
 
+    public boolean getAllowClientCertificateRenewalWithOldKey(final String alias) {
+        String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY;
+        String value = getValue(key, alias);
+        //Lazy initialization for SCEP configurations older than 6.3.1
+        if(value == null) {
+            data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+            return Boolean.getBoolean(DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        }
+        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+    }
+    
+    public void setAllowClientCertificateRenewalWithOldKey(String alias, boolean clientCertificateRenewal) {
+        String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY;
+        setValue(key, clientCertificateRenewal ? Boolean.TRUE.toString() : Boolean.FALSE.toString(), alias);
+    }
+    
     /** Method used by the Admin GUI. */
     public boolean getRAMode(String alias) {
         String key = alias + "." + SCEP_OPERATIONMODE;
