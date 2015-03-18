@@ -14,12 +14,8 @@ package org.cesecore.mock.authentication;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Principal;
-import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -132,17 +128,9 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
             try {
                 certificate = CertTools.genSelfCert(dn, 365, null, keys.getPrivate(), keys.getPublic(),
                         AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-            } catch (InvalidKeyException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (CertificateEncodingException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
-            } catch (SignatureException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
-            } catch (IllegalStateException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
-            } catch (NoSuchProviderException e) {
+            }catch (IllegalStateException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (OperatorCreationException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);

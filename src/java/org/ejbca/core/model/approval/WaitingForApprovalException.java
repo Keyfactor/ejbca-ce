@@ -17,7 +17,6 @@ import javax.xml.ws.WebFault;
 /**
  * Exception thrown from actions that stop to wait for approvals
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 @WebFault

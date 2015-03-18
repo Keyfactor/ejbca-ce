@@ -65,7 +65,7 @@ public class ScepRaModeExtension implements ScepPlugin {
         final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
         final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
         final ScepConfiguration scepConfiguration = scepConfig;
-         final String configAlias = alias;
+        final String configAlias = alias;
 
         // Try to find the CA name from the issuerDN in the request. If we can't find it, we use the default
         String issuerDN = certificateStoreSession.getCADnFromRequest(reqmsg);

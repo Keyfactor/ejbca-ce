@@ -247,12 +247,12 @@ public interface EndEntityManagementSession {
     /**
      * Changes status of a user.
      * 
+     * @param admin An authentication token 
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
-     * @throws ApprovalException
-     *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException if approval is required and the
-     *             action have been added in the approval queue.
+     * 
+     * @throws ApprovalException if an approval already is waiting for specified action
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      */
     void setUserStatus(AuthenticationToken admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
 

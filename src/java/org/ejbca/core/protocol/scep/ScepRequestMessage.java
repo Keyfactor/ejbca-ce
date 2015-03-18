@@ -52,10 +52,16 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.SignerInformationVerifier;
+import org.bouncycastle.cms.SignerInformationVerifierProvider;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -121,7 +127,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     /** transaction id */
     private String transactionId = null;
 
-    /** request key info, this is the requestors self-signed certificate used to identify the senders public key */
+    /** request key info, this is the requester's self-signed certificate used to identify the senders public key */
     private byte[] requestKeyInfo = null;
 
     /** Type of error */
@@ -150,7 +156,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     /** Private key used for decryption. */
     private transient PrivateKey privateKey = null;
     /** JCE Provider used when decrypting with private key. Default provider is BC. */
-    private transient String jceProvider = "BC";
+    private transient String jceProvider = BouncyCastleProvider.PROVIDER_NAME;
 
     /** IssuerAndSerialNUmber for CRL request */
     private transient IssuerAndSerialNumber issuerAndSerno = null;
@@ -183,7 +189,20 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         	log.trace("<ScepRequestMessage");
         }
     }
-
+    
+    /**
+     * This method verifies the signature of the PKCS#7 wrapper of this message. 
+     * 
+     * @param publicKey the public key of the keypair that signed this message
+     * @return true if signature verifies. 
+     * @throws CMSException if the underlying byte array of this SCEP message couldn't be read
+     * @throws OperatorCreationException if a signature verifier couldn't be constructed from the given public key
+     */
+    public boolean verifySignature(PublicKey publicKey) throws CMSException, OperatorCreationException {
+        CMSSignedData cmsSignedData = new CMSSignedData(scepmsg);
+        return cmsSignedData.verifySignatures(new ScepVerifierProvider(publicKey));
+    }
+    
     private void init() throws IOException {
     	if (log.isTraceEnabled()) {
     		log.trace(">init");
@@ -212,23 +231,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         } finally {
             seqAsn1InputStream.close();
         }
-        ContentInfo ci = new ContentInfo(seq);
+        ContentInfo ci = ContentInfo.getInstance(seq);
         String ctoid = ci.getContentType().getId();
 
         if (ctoid.equals(CMSObjectIdentifiers.signedData.getId())) {
-            // This is SignedData so it is a pkcsCertReqSigned,
-            //  pkcsGetCertInitialSigned, pkcsGetCertSigned, pkcsGetCRLSigned
+            // This is SignedData so it is a pkcsCertReqSigned, pkcsGetCertInitialSigned, pkcsGetCertSigned, pkcsGetCRLSigned
             // (could also be pkcsRepSigned or certOnly, but we don't receive them on the server side
             // Try to find out what kind of message this is
             sd = SignedData.getInstance((ASN1Sequence) ci.getContent());	
-
             // Get self signed cert to identify the senders public key
             ASN1Set certs = sd.getCertificates();
             if (certs.size() > 0) {
                 // There should be only one...
                 ASN1Encodable dercert = certs.getObjectAt(0);
                 if (dercert != null) {
-                    // Requestors self-signed certificate is requestKeyInfo
+                    // Requester's self-signed certificate is requestKeyInfo
                     ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                     DEROutputStream dOut = new DEROutputStream(bOut);
                     dOut.writeObject(dercert);
@@ -253,7 +270,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             Enumeration<?> sis = sd.getSignerInfos().getObjects();
 
             if (sis.hasMoreElements()) {
-                SignerInfo si = new SignerInfo((ASN1Sequence) sis.nextElement());
+                SignerInfo si = SignerInfo.getInstance((ASN1Sequence) sis.nextElement());
                 Enumeration<?> attr = si.getAuthenticatedAttributes().getObjects();
 
                 while (attr.hasMoreElements()) {
@@ -308,11 +325,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     } finally {
                         seq1Asn1InputStream.close();
                     }
-                    envEncData = new ContentInfo(seq1);
+                    envEncData = ContentInfo.getInstance(seq1);
                     ctoid = envEncData.getContentType().getId();
 
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
-                        envData = new EnvelopedData((ASN1Sequence) envEncData.getContent());
+                        envData = EnvelopedData.getInstance((ASN1Sequence) envEncData.getContent());
                         ASN1Set recipientInfos = envData.getRecipientInfos();
                         Enumeration<?> e = recipientInfos.getObjects();
                         while (e.hasMoreElements()) {
@@ -461,7 +478,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         }
         return ret;
     }
-
+   
     @Override
     public boolean verify() {
         if (log.isTraceEnabled()) {
@@ -475,7 +492,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             }
             ret = super.verify();
         } catch (IOException e) {
-            log.error("PKCS7 not inited!");
+            log.error("PKCS7 not initialized!");
         } catch (GeneralSecurityException e) {
             log.error("Error in PKCS7:", e);
         } catch (CMSException e) {
@@ -727,6 +744,24 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      */
     public Certificate getSignerCert(){
     	return signercert;
+    }
+    
+    private static class ScepVerifierProvider implements SignerInformationVerifierProvider {
+        
+        private final SignerInformationVerifier signerInformationVerifier;
+        
+        public ScepVerifierProvider(PublicKey publicKey) throws OperatorCreationException {
+            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            JcaSignerInfoVerifierBuilder signerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build())
+            .setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            signerInformationVerifier = signerInfoVerifierBuilder.build(publicKey);
+        }
+                
+        @Override
+        public SignerInformationVerifier get(SignerId signerId) throws OperatorCreationException {
+            return signerInformationVerifier;
+        }
+        
     }
         
 } // ScepRequestMessage
