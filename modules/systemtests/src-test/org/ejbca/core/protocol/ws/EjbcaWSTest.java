@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -1143,6 +1142,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
         }
         log.trace("<test73AddSubjectToRole()");
+    }
+
+    @Test
+    public void test74GetExpiredCerts() throws Exception {
+        log.trace(">test74GetExpiredCert()");
+        getExpiredCerts();
+        log.trace("<test74GetExpiredCert()");
     }
 
     

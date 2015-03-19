@@ -1160,5 +1160,61 @@ public interface EjbcaWS {
            String arg4)
            throws AuthorizationDeniedException_Exception, EjbcaException_Exception
    ;
-
+   
+   /**
+    * @param arg0
+    * @return
+    *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
+    */
+   @WebMethod
+   @WebResult(targetNamespace = "")
+   @RequestWrapper(localName = "getCertificatesByExpirationTime", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTime")
+   @ResponseWrapper(localName = "getCertificatesByExpirationTimeResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeResponse")
+   public List<Certificate> getCertificatesByExpirationTime(
+           @WebParam(name = "arg0", targetNamespace = "")
+           long arg0,
+           @WebParam(name = "arg1", targetNamespace = "")
+           int arg1)
+           throws EjbcaException_Exception
+   ;
+   
+   /**
+    * @param arg0
+    * @param arg1
+    * @return
+    *     returns java.util.ArrayList<org.ejbca.core.protocol.ws.client.gen.Certificate>
+    */
+   @WebMethod
+   @WebResult(targetNamespace = "")
+   @RequestWrapper(localName = "getCertificatesByExpirationTimeAndIssuer", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndIssuer")
+   @ResponseWrapper(localName = "getCertificatesByExpirationTimeAndIssuerResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndIssuerResponse")
+   public List<Certificate> getCertificatesByExpirationTimeAndIssuer(
+           @WebParam(name = "arg0", targetNamespace = "")
+           long arg0,
+           @WebParam(name = "arg1", targetNamespace = "")
+           String arg1,
+           @WebParam(name = "arg2", targetNamespace = "")
+           int arg2)
+           throws EjbcaException_Exception
+   ;
+   
+   /**
+    * @param arg0
+    * @param arg1
+    * @return
+    *     returns java.util.ArrayList<org.ejbca.core.protocol.ws.client.gen.Certificate>
+    */
+   @WebMethod
+   @WebResult(targetNamespace = "")
+   @RequestWrapper(localName = "getCertificatesByExpirationTimeAndType", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndType")
+   @ResponseWrapper(localName = "getCertificatesByExpirationTimeAndTypeResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndTypeResponse")
+   public List<Certificate> getCertificatesByExpirationTimeAndType(
+           @WebParam(name = "arg0", targetNamespace = "")
+           long arg0,
+           @WebParam(name = "arg1", targetNamespace = "")
+           int arg1,
+           @WebParam(name = "arg2", targetNamespace = "")
+           int arg2)
+           throws EjbcaException_Exception
+   ;
 }
