@@ -20,8 +20,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
@@ -348,66 +346,7 @@ public class RequestHelper {
         out.println();
     } // ieCertFormat
 
-    /**
-     * @param certificate b64 encoded cert to be installed in netid
-     * @param response output stream to send to
-     * @param sc serveltcontext
-     * @param responseTemplate path to template page for response
-     * @throws Exception
-     */
-    public static void sendNewCertToIidClient(byte[] certificate, HttpServletRequest request, OutputStream out, ServletContext sc,
-                                                String responseTemplate, String classid) throws Exception {
-    	log.trace(">sendNewCertToIidClient");
-        if ( certificate.length <= 0 ) {
-            log.error("0 length certificate can not be sent to  client!");
-            return;
-        }
-        StringWriter sw = new StringWriter();
-        {
-            InputStream is = sc.getResourceAsStream(responseTemplate);
-            if (is == null) {
-            	// Some app servers (oracle) require a / first...
-                if (log.isDebugEnabled()) {
-                    log.debug("Trying to read responseTemplate with / first");
-                }
-                is = sc.getResourceAsStream("/"+responseTemplate);
-            }
-            if (is == null) {
-            	throw new IOException("Template '(/)"+responseTemplate+"' can not be found or read.");
-            }
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String baseURL = request.getRequestURL().toString().substring(0, request.getRequestURL().toString().lastIndexOf(
-            		request.getRequestURI().toString()) ) + request.getContextPath() + "/";
-            // If we would like to parse the jsp stuff instead so we could use "include" etc, we could use the below code
-            // unfortunately if we are using https this will not work correctly, because we can not make a https connection here.
-            /*
-            String responseURL = baseURL + responseTemplate;
-            BufferedReader br = new BufferedReader(new InputStreamReader( (new URL(responseURL)).openStream() ));
-            */
-            PrintWriter pw = new PrintWriter(sw);
-            while (true) {
-                String line = br.readLine();
-                if (line == null) {
-                    break;
-                }
-                line = line.replaceAll("\\x2E\\x2E/", baseURL);		// This line should be removed when headers are properly configured with absolute paths
-                line = line.replaceAll("TAG_cert",new String(certificate));
-                line = CLASSID.matcher(line).replaceFirst(classid);
-                pw.println(line);
-            }
-            pw.close();
-            sw.flush();
-        }
-        PrintWriter pw = new PrintWriter(out);
-        if (log.isDebugEnabled()) {
-            log.debug(sw);
-        }
-        pw.print(sw);
-        pw.close();
-        out.flush();
-    	log.trace("<sendNewCertToIidClient");
-    } // sendCertificates
+   
     /**
      * Reads template and inserts cert to send back to IE for installation of cert
      *

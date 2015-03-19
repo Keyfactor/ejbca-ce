@@ -22,18 +22,6 @@
 
 <hr />
 <div>
-<script type="text/javascript">
-<!--
-	myDeclare();
-	show_NetID_form("${username}", "${password}");
-	
-	if (plugin) {
-	   document.write("<hr />\n<p>If you wish to do a standard browser enrollment without using NetID, please click the Enroll button below.</p>");
-	} else {
-	   document.write("<p>To continue the enrollment process, please click the Enroll button.</p>");
-	}
--->
-</script>
 
 <form action="../certreq" enctype="x-www-form-encoded" method="post">
 

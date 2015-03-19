@@ -388,19 +388,6 @@ public class RequestInstance {
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}
-				} else if ( getParameter("iidPkcs10") != null && !getParameter("iidPkcs10").equals("")) {
-					// NetID iid?
-					byte[] reqBytes = getParameter("iidPkcs10").getBytes();
-					if ((reqBytes != null) && (reqBytes.length>0)) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Received iidPkcs10 request: "+new String(reqBytes));
-                        }
-						byte[] b64cert=helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, CertificateResponseType.ENCODED_CERTIFICATE, false).getEncoded();
-						response.setContentType("text/html");
-						RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseIidTemplate"),classid);
-					} else {
-						throw new SignRequestException("No request bytes received.");
-					}
 				} else if ( (getParameter("pkcs10") != null) || (getParameter("PKCS10") != null) ) {
 					// if not firefox, check if it's IE
 					byte[] reqBytes = getParameter("pkcs10").getBytes();

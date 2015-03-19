@@ -50,23 +50,6 @@
        }
     }
 
-    function generate_pkcs10() {
-       if ( plugin ) {
-          document.iID.SetProperty('Base64', 'true');
-          document.iID.SetProperty('URLEncode', 'false');
-          document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
-          aKey = document.netIdForm.tokenKey.value.split(";");
-          document.iID.SetProperty('KeyId', aKey[2]); 
-          document.iID.SetProperty('ActiveSlot', aKey[0]); 
-          rv = document.iID.Invoke('CreateRequest');
-          if (rv == 0) {
-             document.netIdForm.iidPkcs10.value = document.iID.GetProperty("Request");
-             document.netIdForm.submit();
-          } else
-             alert("Error when fetching certificate request from NetID: "+rv+". Slot: "+aKey[0]+". KeyId: "+aKey[2]+".");
-       }
-    }
-
     // Used by cardCertApply.jsp
     function generate_card_pkcs10()
     {
@@ -99,28 +82,4 @@
         document.form1.submit();    
     }
     
-    // Used by apply_nav.jspf, apply_exp.jspf
-	function show_NetID_form(username, password) {
-        if (plugin) {
-            document.writeln("<p>Since you have NetID installed you may download a certificate for a ");
-            document.writeln("key on your smart card.</p>");
-            document.writeln("<form name=\"netIdForm\" action=\"../certreq\" enctype=\"x-www-form-encoded\" method=\"post\">");
-            document.writeln("  <fieldset>");
-            document.writeln("    <legend>Key length</legend>");
-            document.writeln("    <input name=\"user\" type=\"hidden\" value=\""+username+"\" />");
-            document.writeln("    <input name=\"password\" type=\"hidden\" value=\""+password+"\" />");
-            document.writeln("    <input name=\"iidPkcs10\" type=\"hidden\" />");
-            if (navigator.appName.indexOf("Explorer") != -1 && navigator.userAgent.indexOf("Windows NT 6") != -1 ) {
-				document.writeln("    <input name=\"classid\" type=\"hidden\" value=\"clsid:884e2049-217d-11da-b2a4-000e7bbb2b09\" />");
-			}
-            document.writeln("    <label for=\"tokenkey\">Please select key:</label> ");
-            document.writeln("    <select name=\"tokenKey\" accesskey=\"p\">");
-            selectKey();
-            document.writeln("    </select>");
-            document.writeln("    <label for=\"dummy\"></label>");
-            document.writeln("    <input type=\"button\" value=\"Fetch Certificate\" onclick=\"generate_pkcs10()\" />");
-            document.writeln("  </fieldset>");
-            document.writeln("</form>");
-        }
-        // if the plugin is not available we silently ignore it.
-    }
+
