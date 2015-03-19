@@ -27,10 +27,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
@@ -600,11 +600,12 @@ public class RequestInstance {
 	 */
 	@SuppressWarnings("unchecked")
     private void setParameters(HttpServletRequest request) throws FileUploadException, IOException {
-		if (FileUpload.isMultipartContent(request)) {
+		if (ServletFileUpload.isMultipartContent(request)) {
 			params = new HashMap<String, String>();
-			DiskFileUpload upload = new DiskFileUpload();
+            final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+            diskFileItemFactory.setSizeThreshold(9999);
+            ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
 			upload.setSizeMax(10000);
-			upload.setSizeThreshold(9999);
             List<FileItem> items = upload.parseRequest(request);
 			Iterator<FileItem> iter = items.iterator();
 			while (iter.hasNext()) {

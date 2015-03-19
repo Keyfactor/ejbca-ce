@@ -23,10 +23,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
@@ -168,13 +168,12 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
             // ignore
         }
 
-        if (FileUploadBase.isMultipartContent(request)) {
+        if (ServletFileUpload.isMultipartContent(request)) {
             try {
-
-                DiskFileUpload upload = new DiskFileUpload();
+                final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+                diskFileItemFactory.setSizeThreshold(1999999);
+                ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
                 upload.setSizeMax(2000000);
-                upload.setSizeThreshold(1999999);
-                @SuppressWarnings("unchecked")
                 List<FileItem> items = upload.parseRequest(request);
 
                 Iterator<FileItem> iter = items.iterator();

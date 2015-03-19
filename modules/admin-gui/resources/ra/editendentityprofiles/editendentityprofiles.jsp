@@ -7,7 +7,7 @@
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, java.util.Map.Entry,
-                org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
+                org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, 
                 org.apache.commons.lang.ArrayUtils, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.authorization.control.StandardRules"%>
 
 <html>
