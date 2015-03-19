@@ -83,11 +83,8 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param caname The CA name
      * @param cadn The CA subjectDN
      * @param catype The CA type. It could be either 'x509' or 'cvc'
-     * @param catokentype Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.
-     * @param catokenpassword The password for the CA token. Set to 'null' to use the default system password for Soft token CAs.
      * @param catokenProperties The catoken properties
      * @param cryptoTokenName The name of the cryptotoken associated with the CA
-     * @param cryptotokenKeyAlias The keyalias of the cryptotoken key that will be used for the CA's extended services
      * @param validityInDays Validity of the CA in days.
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
@@ -107,10 +104,9 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws CryptoTokenOfflineException
      * @throws InvalidAlgorithmException
      */
-    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
-            String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException, 
-            SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
+    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, List<KeyValuePair> catokenProperties, String cryptoTokenName, 
+            long validityInDays, String certprofile, String signAlg, String policyId, int signedByCAId) 
+            throws UnsupportedMethodException, SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, CertificateProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
     
     /**
