@@ -563,18 +563,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         return ret;
     }
-    
-    private Collection<Certificate> getReturnCertificateList(Collection<CertificateData> coll) {
-        Collection<Certificate> ret = new ArrayList<Certificate>();
-        //Iterator<CertificateData> iter = coll.iterator();
-        //while (iter.hasNext()) {
-        //    ret.add(iter.next().getCertificate(this.entityManager));
-        //}
-        for(CertificateData certData : coll) {
-            ret.add(certData.getCertificate(entityManager));
-        }
-        return ret;
-    }
 
     @Override
     public Collection<String> findUsernamesByExpireTimeWithLimit(Date expiretime) {
