@@ -602,7 +602,64 @@ public class EjbcaWS implements IEjbcaWS {
 	        throw e;
 	    }
 	}
+	
+	public List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) throws EjbcaException {
+	    Date findDate = new Date();
+	    long millis = (days * 24 * 60 * 60 * 1000);
+	    findDate.setTime(findDate.getTime() + millis);
+	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate, maxNumberOfResults);
 
+	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
+	    Iterator<java.security.cert.Certificate> itr = certs.iterator();
+	    while(itr.hasNext()) {
+	        java.security.cert.Certificate cert = itr.next();
+	        try {
+	            ret.add(new Certificate(cert));
+	        } catch (CertificateEncodingException e) {
+	            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	        }
+	    }
+	    return ret;
+	}
+	
+	public List<Certificate> getCertificatesByExpirationTimeAndIssuer(long days, String issuer, int maxNumberOfResults) throws EjbcaException {
+	    Date findDate = new Date();
+	    long millis = (days * 24 * 60 * 60 * 1000);
+	    findDate.setTime(findDate.getTime() + millis);
+	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndIssuerWithLimit(findDate, issuer, maxNumberOfResults);
+	    
+	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
+        Iterator<java.security.cert.Certificate> itr = certs.iterator();
+        while(itr.hasNext()) {
+            java.security.cert.Certificate cert = itr.next();
+            try {
+                ret.add(new Certificate(cert));
+            } catch (CertificateEncodingException e) {
+                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+            }
+        }
+	    return ret;
+	}
+	
+	public List<Certificate> getCertificatesByExpirationTimeAndType(long days, int certificateType, int maxNumberOfResults) throws EjbcaException {
+	    Date findDate = new Date();
+	    long millis = (days * 24 * 60 * 60 * 1000);
+	    findDate.setTime(findDate.getTime() + millis);
+	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndTypeWithLimit(findDate, certificateType, maxNumberOfResults);
+	    
+	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
+        Iterator<java.security.cert.Certificate> itr = certs.iterator();
+        while(itr.hasNext()) {
+            java.security.cert.Certificate cert = itr.next();
+            try {
+                ret.add(new Certificate(cert));
+            } catch (CertificateEncodingException e) {
+                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+            }
+        }
+	    return ret;
+	}
+	
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#crmfRequest(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */

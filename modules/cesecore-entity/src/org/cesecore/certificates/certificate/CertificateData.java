@@ -979,19 +979,63 @@ public class CertificateData extends ProtectedData implements Serializable {
         revokedCertInfos.closeForWrite();
         return revokedCertInfos;
     }
+    
+    /** @return return the query results as a List of maximum 500 elements. */
+    @SuppressWarnings("unchecked")
+    public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
+        return findByExpireDateWithLimit(entityManager, expireDate, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
+    }
 
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
+    public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate, int maxNumberOfResults) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2)");
         query.setParameter("expireDate", expireDate);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setMaxResults(CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
+        query.setMaxResults(maxNumberOfResults);
         return query.getResultList();
     }
+    
+    /** @return return the query results as a List of maximum 500 elements. */
+    @SuppressWarnings("unchecked")
+    public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN) {
+        return findByExpireDateAndIssuerWithLimit(entityManager, expireDate, issuerDN, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
+    }
 
+    /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN, int maxNumberOfResults) {
+        final Query query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) AND issuerDN=:issuerDN");
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("issuerDN", issuerDN);
+        query.setMaxResults(maxNumberOfResults);
+        return query.getResultList();
+    }
+    
+    /** @return return the query results as a List of maximum 500 elements. */
+    @SuppressWarnings("unchecked")
+    public static List<CertificateData> findByExpireDateAndTypeWithLimit(EntityManager entityManager, long expireDate, int certificateType) {
+        return findByExpireDateAndTypeWithLimit(entityManager, expireDate, certificateType, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
+    }
+    
+    /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    public static List<CertificateData> findByExpireDateAndTypeWithLimit(EntityManager entityManager, long expireDate, int certificateType, int maxNumberOfResults) {
+        final Query query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) AND a.type=:ctype");
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("ctype", certificateType);
+        query.setMaxResults(maxNumberOfResults);
+        return query.getResultList();
+    }
+    
     @SuppressWarnings("unchecked")
     public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
         // TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
