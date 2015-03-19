@@ -22,6 +22,7 @@ import javax.ejb.EJBException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -30,6 +31,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
+@Ignore
 public class PublicKeySerialisationTest {
 
     private PublicKeySerialisationTestSessionRemote publicKeySerialisationTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
