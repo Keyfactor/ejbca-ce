@@ -40,10 +40,10 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -913,10 +913,11 @@ public class RAInterfaceBean implements Serializable {
     //-------------------------------------------------------
     public byte[]  getfileBuffer(HttpServletRequest request, Map<String, String> requestMap) throws IOException, FileUploadException {
         byte[] fileBuffer = null;
-            if (FileUpload.isMultipartContent(request)) {
-                final DiskFileUpload upload = new DiskFileUpload();
+            if (ServletFileUpload.isMultipartContent(request)) {
+                final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+                diskFileItemFactory.setSizeThreshold(59999);
+                ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
                 upload.setSizeMax(60000);                   
-                upload.setSizeThreshold(59999);
                 final List<FileItem> items = upload.parseRequest(request);     
                 for (final FileItem item : items) {
                     if (item.isFormField()) {
