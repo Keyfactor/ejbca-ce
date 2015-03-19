@@ -131,6 +131,15 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/resource/api/main/jboss-connector-api_1.6_spec-1.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
