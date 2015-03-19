@@ -21,6 +21,7 @@ package org.cesecore.audit.enums;
  * @version $Id$
  */
 public enum ServiceTypes implements ServiceType {
+    /** CE Security Core */
 	CORE;
 
 	@Override

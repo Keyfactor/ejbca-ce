@@ -20,7 +20,10 @@ package org.cesecore.audit.enums;
  * 
  */
 public enum EventStatus {
-
-    FAILURE, SUCCESS, VOID
-
+    /** Operation failed. */
+    FAILURE,
+    /** Operation succeeded. */
+    SUCCESS,
+    /** Operation completed without a defined result. */
+    VOID
 }
