@@ -21,7 +21,6 @@ import org.ejbca.core.EjbcaException;
  * General Exception when something serious goes wrong when
  * managing approvals
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 @WebFault

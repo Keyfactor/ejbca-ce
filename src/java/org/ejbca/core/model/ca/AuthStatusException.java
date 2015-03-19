@@ -13,7 +13,6 @@
  
 package org.ejbca.core.model.ca;
 
-import javax.ejb.ApplicationException;
 import org.ejbca.core.EjbcaException;
 
 /**
@@ -22,7 +21,6 @@ import org.ejbca.core.EjbcaException;
  *
  * @version $Id$
  */
-@ApplicationException(rollback=true)  
 public class AuthStatusException extends EjbcaException {
     private static final long serialVersionUID = -1399828365257002586L;
 

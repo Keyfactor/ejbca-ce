@@ -306,11 +306,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     
     @Override
     public ResponseMessage createCertificateIgnoreStatus(final AuthenticationToken admin, final RequestMessage req,
-            Class<? extends CertificateResponseMessage> responseClass) throws AuthorizationDeniedException, CertificateExtensionException,
-            NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
-            CADoesntExistsException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException,
-            IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException,
-            CAOfflineException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
+            Class<? extends CertificateResponseMessage> responseClass) throws AuthorizationDeniedException, NoSuchEndEntityException,
+            CertificateCreateException, CertificateRevokeException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
         final String username = req.getUsername();
         EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
         if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
@@ -320,7 +317,35 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 throw new NoSuchEndEntityException("End entity with username " + username + " not found.", e);
             }
         }
-        return createCertificate(admin, req, responseClass, null);
+        try {
+            return createCertificate(admin, req, responseClass, null);
+        } catch (CryptoTokenOfflineException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (IllegalKeyException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (CADoesntExistsException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (SignRequestException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (SignRequestSignatureException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (AuthStatusException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (AuthLoginException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (CertificateExtensionException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (CustomCertificateSerialNumberException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (IllegalNameException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (CertificateSerialNumberException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (IllegalValidityException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        } catch (CAOfflineException e) {
+            throw new CertificateCreateException("Error during certificate creation, rolling back.", e);
+        }
 
     }
 
