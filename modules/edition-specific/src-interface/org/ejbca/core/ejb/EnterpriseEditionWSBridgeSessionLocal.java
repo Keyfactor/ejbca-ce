@@ -65,7 +65,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param admin
      * @param cryptoTokenName The name of the cryptotoken
      * @param keyPairAlias Key pair alias
-     * @param keySpecification Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145
+     * @param keySpecification Key specification, for example RSA2048, secp256r1, DSA1024, gost3410, dstu4145
      * @throws UnsupportedMethodException When trying to access this method in the community version
      * @throws InvalidKeyException
      * @throws CryptoTokenOfflineException
@@ -103,7 +103,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws CAExistsException
      * @throws AuthorizationDeniedException
      * @throws CertificateProfileDoesNotExistException
-     * @throws ProfileTypeNotAcceptedException
+     * @throws CertificateProfileTypeNotAcceptedException
      * @throws CryptoTokenOfflineException
      * @throws InvalidAlgorithmException
      */
@@ -111,7 +111,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
             List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
             String signAlg, String policyId, int signedByCAId) throws UnsupportedMethodException, 
             SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
-            CertificateProfileDoesNotExistException, ProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
+            CertificateProfileDoesNotExistException, CertificateProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
     
     /**
      * Adds an administrator to the specified role

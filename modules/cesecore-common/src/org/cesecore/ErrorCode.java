@@ -82,7 +82,7 @@ public class ErrorCode implements Serializable {
     private static final String _UNKNOWN_PROFILE_TYPE = "UNKNOWN_PROFILE_TYPE"; // The profile type is neither end entity profile nor certificate profile
     private static final String _UNSUPPORTED_METHOD = "UNSUPPORTED_METHOD"; // Typically used to block access to enterprise-only features
     private static final String _SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED = "SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED"; // when trying to create a new CA signed by an external CA using the WS
-    private static final String _BAD_PROFILE_TYPE = "BAD_PROFILE_TYPE"; // when using a cert/endentity profile of the wrong type
+    private static final String _BAD_CERTIFICATE_PROFILE_TYPE = "BAD_CERTIFICATE_PROFILE_TYPE"; // when using a cert/endentity profile of the wrong type
     private static final String _ROLE_DOES_NOT_EXIST = "ROLE_DOES_NOT_EXIST"; // When trying to find a role that does not exist
 
     /** Default constructor. */
@@ -180,7 +180,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode UNKNOWN_PROFILE_TYPE = new ErrorCode(_UNKNOWN_PROFILE_TYPE);
     public static final ErrorCode UNSUPPORTED_METHOD = new ErrorCode(_UNSUPPORTED_METHOD);
     public static final ErrorCode SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED = new ErrorCode(_SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED);
-    public static final ErrorCode BAD_PROFILE_TYPE = new ErrorCode(_BAD_PROFILE_TYPE);
+    public static final ErrorCode BAD_CERTIFICATE_PROFILE_TYPE = new ErrorCode(_BAD_CERTIFICATE_PROFILE_TYPE);
     public static final ErrorCode ROLE_DOES_NOT_EXIST = new ErrorCode(_ROLE_DOES_NOT_EXIST);
 
 
