@@ -18,16 +18,23 @@ import org.cesecore.audit.enums.ModuleType;
  * EJBCA specific module types.
  * 
  * @version $Id$
- * 
  */
 public enum EjbcaModuleTypes implements ModuleType {
+    /** Registration Authority module. */
     RA,
+    /** (Client) hardware token management module. */
     HARDTOKEN,
+    /** Key recovery module. */
     KEYRECOVERY,
+    /** Approval module. */
     APPROVAL,
+    /** Publisher module. */
     PUBLISHER,
+    /** EJBCA background service module. */
     SERVICE,
+    /** External module. */
     CUSTOM,
+    /** Administrative web GUI module. */
     ADMINWEB;
 
     @Override

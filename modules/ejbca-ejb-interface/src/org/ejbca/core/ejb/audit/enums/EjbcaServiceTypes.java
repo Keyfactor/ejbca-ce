@@ -16,9 +16,9 @@ import org.cesecore.audit.enums.ServiceType;
 
 /**
  * @version $Id$
- *
  */
 public enum EjbcaServiceTypes implements ServiceType {
+    /** Enterprise JavaBeans Certificate Authority */
     EJBCA;
     
     @Override

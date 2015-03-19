@@ -600,22 +600,7 @@ public class X509CA extends CA implements Serializable {
         }
     }
 
-    /**
-     * If request is an CA certificate, useprevious==true and createlinkcert==true it returns a new certificate signed with the CAs keys. This can be
-     * used to create a NewWithOld certificate for CA key rollover. This method can only create a self-signed certificate and only uses the public key
-     * from the passed in certificate. If the passed in certificate is not signed by the CAs signature key and does not have the same DN as the
-     * current CA, null certificate is returned. This is because we do not want to create anything else than a NewWithOld certificate, because that
-     * would be a security risk. Regular certificates must be issued using createCertificate.
-     * 
-     * Note: Creating the NewWithOld will only work correctly for Root CAs.
-     * 
-     * If request is a CSR (pkcs10) it returns null.
-     * 
-     * @param usepreviouskey
-     *            must be trust otherwise null is returned, this is because this method on an X509CA should only be used to create a NewWithOld.
-     * 
-     * @see CA#signRequest(Collection, String)
-     */
+    /** This method is not supported for X509 CAs. */
     @Override
     public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, final byte[] request) throws CryptoTokenOfflineException {
         throw new UnsupportedOperationException("Creation of authenticated CSRs is not supported for X509 CAs.");
