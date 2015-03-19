@@ -227,9 +227,9 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
 	 */
-	abstract void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
-            String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException;
+	abstract void createCA(String caname, String cadn, String catype, List<KeyValuePair> catokenProperties, 
+	        String cryptoTokenName, long validityInDays, String certprofile, String signAlg, String policyId, 
+	        int signedByCAId) throws EjbcaException, AuthorizationDeniedException;
 	
 	/**
 	 * Adds an administrator to the specified role
