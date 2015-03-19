@@ -13,11 +13,13 @@
 
 package org.ejbca.core.protocol.cmp.client;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 
@@ -25,7 +27,6 @@ import org.ejbca.ui.web.LimitLengthASN1Reader;
  * Client to send message to CMP server over HTTP.
  * 
  * @version $Id$
- *
  */
 public class CMPSendHTTP {
     /** Internal localization of logs and errors */
@@ -42,44 +43,39 @@ public class CMPSendHTTP {
 	}
 
 	public static CMPSendHTTP doIt(final byte[] message, final String hostName,
-	        final int port, final String urlPath, final boolean doClose) throws Exception {
+	        final int port, final String urlPath, final boolean doClose) throws MalformedURLException, IOException {
 	    return doIt(message, "http://"+hostName+":"+port+(urlPath!=null ? urlPath:"/ejbca/publicweb/cmp"), doClose);
 	}
 
-	public static CMPSendHTTP doIt(final byte[] message, final String url, final boolean doClose) throws Exception {
+	public static CMPSendHTTP doIt(final byte[] message, final String url, final boolean doClose) throws MalformedURLException, IOException {
 		boolean isError = true;
 		final HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
 		try {
 			// POST the CMP request
-			// we are going to do a POST
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Content-type", "application/pkixcmp");
 			con.connect();
-			// POST it
 			final OutputStream os = con.getOutputStream();
 			os.write(message);
 			os.close();
-
 			final String contentType = con.getContentType();
 			final int responseCode = con.getResponseCode();
-			if ( responseCode!=HttpURLConnection.HTTP_OK ) {
-				return new CMPSendHTTP( contentType, null, responseCode );
+			if (responseCode!=HttpURLConnection.HTTP_OK) {
+				return new CMPSendHTTP(contentType, null, responseCode);
 			}
-			final InputStream in = con.getInputStream();
-            LimitLengthASN1Reader limitLengthASN1Reader = new LimitLengthASN1Reader(in, con.getContentLength());
+            final LimitLengthASN1Reader limitLengthASN1Reader = new LimitLengthASN1Reader(con.getInputStream(), con.getContentLength());
             try {
-                final byte response[] = limitLengthASN1Reader.readObject().getEncoded();
-                if (response == null || response.length < 1) {
-                    throw new Exception(intres.getLocalizedMessage("cmp.errornoasn1"));
-                }
+                final byte response[] = limitLengthASN1Reader.readFirstASN1Object();
                 isError = false;
                 return new CMPSendHTTP(contentType, response, responseCode);
+            } catch (MalformedRequestException e) {
+                throw new IOException(intres.getLocalizedMessage("cmp.errornoasn1"), e);
             } finally {
                 limitLengthASN1Reader.close();
             }
 		} finally {
-			if ( doClose || isError ) {
+			if (doClose || isError) {
 				con.disconnect();
 			}
 		}
