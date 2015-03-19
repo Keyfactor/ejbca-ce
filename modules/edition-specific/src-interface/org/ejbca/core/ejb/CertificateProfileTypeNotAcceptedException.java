@@ -20,14 +20,14 @@ import org.ejbca.core.EjbcaException;
  * @version $Id$
  *
  */
-public class ProfileTypeNotAcceptedException extends EjbcaException {
+public class CertificateProfileTypeNotAcceptedException extends EjbcaException {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * @param message with more information what is wrong
      */
-    public ProfileTypeNotAcceptedException(String m) {
-        super(ErrorCode.BAD_PROFILE_TYPE, m);
+    public CertificateProfileTypeNotAcceptedException(String m) {
+        super(ErrorCode.BAD_CERTIFICATE_PROFILE_TYPE, m);
     }
 }
