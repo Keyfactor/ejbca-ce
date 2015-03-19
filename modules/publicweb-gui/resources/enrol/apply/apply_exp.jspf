@@ -271,23 +271,6 @@
 -->      
 </script>
 
-<script type="text/javascript">
-<!--
-	function useNetiD() {
-		if ( navigator.userAgent.indexOf("Windows NT 6") == -1 ) {
-			plugin = ControlExists("IID.iIDCtl");
-		} else {
-			plugin = IsCSPInstalled("Net iD - CSP");
-		}
-		if (plugin) {
-			document.writeln("<object name=\"iID\" classid=\"CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E\" width=\"0\" height=\"0\"><\/object>");
-		}
-		// if the plugin is not available we silently ignore it.
-	}
-	useNetiD();
--->
-</script>
-
 <h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> IE Certificate Enrollment</h1>
 
 <p>Welcome to certificate enrollment!</p>
@@ -332,15 +315,6 @@
 	</c:choose>
 
 <hr />
-<script type="text/javascript">
-<!--
-	show_NetID_form("${username}", "${password}");
-	
-	if (plugin) {
-       document.write("<hr />"); // show a separating line
-    }
--->
-</script>
 
 <div class="message">
   <div class="label">Note</div>
