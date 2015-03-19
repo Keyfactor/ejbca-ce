@@ -55,6 +55,8 @@ import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -118,12 +120,23 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509Principal;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -136,6 +149,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -631,7 +645,7 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg) throws Exception {
+            boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
         boolean pbe = (pbeSecret != null);
@@ -733,14 +747,14 @@ public abstract class CmpTestCase extends CaTestCase {
                 basekey[raSecret.length + i] = salt[i];
             }
             // Construct the base key according to rfc4210, section 5.1.3.1
-            MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), "BC");
+            MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             for (int i = 0; i < iterationCount; i++) {
                 basekey = dig.digest(basekey);
                 dig.reset();
             }
             // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
             String macOid = macAlg.getAlgorithm().getId();
-            Mac mac = Mac.getInstance(macOid, "BC");
+            Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
             SecretKey key = new SecretKeySpec(basekey, macOid);
             mac.init(key);
             mac.reset();
@@ -1107,8 +1121,8 @@ public abstract class CmpTestCase extends CaTestCase {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
     }
 
-    protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-    EjbcaException, Exception {
+    protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid) throws AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, FinderException, CADoesntExistsException, EjbcaException {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1126,10 +1140,13 @@ public abstract class CmpTestCase extends CaTestCase {
         return user;
     }
 
-    protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore, 
-            Date notAfter, String certProfile, int caid) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
-            IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
-                
+    protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore,
+            Date notAfter, String certProfile, int caid) throws AuthorizationDeniedException, CertificateException, FileNotFoundException,
+            IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, RemoveException, CADoesntExistsException,
+            WaitingForApprovalException, FinderException, EjbcaException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException {
+               
         createUser(username, "CN="+username, password, caid);
         Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),
                 X509KeyUsage.digitalSignature | X509KeyUsage.keyCertSign, notBefore, notAfter,

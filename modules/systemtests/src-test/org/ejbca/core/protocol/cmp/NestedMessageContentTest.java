@@ -23,22 +23,25 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.security.auth.x500.X500Principal;
 
@@ -92,7 +95,17 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -100,6 +113,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -109,6 +123,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -124,6 +139,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.LdapNameStyle;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -158,7 +174,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     private final int caid;
     private final Certificate cacert;
     private final CA testx509ca;
-    private final X500Name subjectDN;
+    private static final X500Name SUBJECT_DN= CertTools.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, O=SE");
     private final String issuerDN;
     private final CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "NestedMessageContentTstConfAlias";
@@ -174,12 +190,6 @@ public class NestedMessageContentTest extends CmpTestCase {
 
     public NestedMessageContentTest() throws Exception {
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-
-        final X500NameBuilder x500nb = new X500NameBuilder();
-        x500nb.addRDN(BCStyle.O, " Nested Inc.");
-        x500nb.addRDN(BCStyle.CN, " nestedCMPTest ");
-        x500nb.addRDN(BCStyle.C, "SE ");
-        this.subjectDN=x500nb.build();
 
         this.issuerDN = "CN=TestCA";
         
@@ -262,7 +272,8 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
 
     @Test
-    public void test01CrmfReq() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
+    public void test01CrmfReq() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException,
+            EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         //-----------------Creating CRMF request
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
@@ -276,7 +287,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, nb, na, null, pAlg, new DEROctetString(senderNonce));
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, nb, na, null, pAlg, new DEROctetString(senderNonce));
 
         String adminName = "cmpTestAdmin";
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
@@ -329,10 +340,10 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         
         // do not check signing if we expect a failure (sFailMessage==null)
-        checkCmpResponseGeneral(resp, this.issuerDN, this.subjectDN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
+        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                             crmfMsg.getHeader().getTransactionID().getOctets(), false, null, 
                             PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        final Certificate cert = checkCmpCertRepMessage(this.subjectDN, this.cacert, resp, reqID);
+        final Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqID);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
         assertNotNull("CrmfRequest did not return a certificate", cert);
@@ -341,7 +352,8 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test02Verify() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
+    public void test02Verify() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
@@ -354,7 +366,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);
         
@@ -391,13 +403,12 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test03RevReq() throws NoSuchAlgorithmException, AuthorizationDeniedException, EjbcaException, CertificateEncodingException, IOException, Exception{
-        Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(this.subjectDN.toString(), this.issuerDN);
-        log.debug("Found " + certs.size() + " certificates for userDN \"" + this.subjectDN + "\"");
-        Certificate cert = null, tmp=null;
-        Iterator<Certificate> itr = certs.iterator();
-        while(itr.hasNext()) {
-            tmp = itr.next();
+    public void test03RevReq() throws NoSuchAlgorithmException, AuthorizationDeniedException, EjbcaException, IOException, InvalidAlgorithmParameterException, RoleNotFoundException, InvalidKeyException, NoSuchProviderException, SecurityException,
+            SignatureException, ObjectNotFoundException, CertificateException, CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, UserDoesntFullfillEndEntityProfile, RemoveException, WaitingForApprovalException, FinderException {
+        Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
+        log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");
+        Certificate cert = null;
+        for(Certificate tmp : certs) {
             if(!this.certificateStoreSession.isRevoked(this.issuerDN, CertTools.getSerialNumber(tmp))) {
                 cert = tmp;
                 break;
@@ -410,7 +421,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage revMsg = genRevReq(this.issuerDN, this.subjectDN, CertTools.getSerialNumber(cert), this.cacert, nonce, transid, false, pAlg, new DEROctetString(nonce)); 
+        PKIMessage revMsg = genRevReq(this.issuerDN, SUBJECT_DN, CertTools.getSerialNumber(cert), this.cacert, nonce, transid, false, pAlg, new DEROctetString(nonce)); 
         assertNotNull("Generating CrmfRequest failed." + revMsg);
 
         String adminName = "cmpTestAdmin";
@@ -454,7 +465,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);        
-        checkCmpResponseGeneral(resp, this.issuerDN, this.subjectDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         int revStatus = checkRevokeStatus(this.issuerDN, CertTools.getSerialNumber(cert));
         assertNotEquals("Revocation request failed to revoke the certificate", Integer.valueOf(RevokedCertInfo.NOT_REVOKED), Integer.valueOf(revStatus));
         
@@ -462,7 +473,8 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
 
     @Test
-    public void test04CrmfRACertExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
+    public void test04CrmfRACertExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException,
+            EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
@@ -475,7 +487,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
-        PKIMessage crmfReqMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
+        PKIMessage crmfReqMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfReqMsg);
         PKIMessage crmfMsg = protectPKIMessage(crmfReqMsg, false, "foo123", 567);
@@ -520,7 +532,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                         crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        final Certificate cert = checkCmpCertRepMessage(this.subjectDN, this.cacert, resp, reqID);
+        final Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
@@ -546,7 +558,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
         
@@ -621,7 +633,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
         myCertTemplate.setValidity( myOptionalValidity );
         myCertTemplate.setIssuer(new X500Name(this.issuerDN));
-        myCertTemplate.setSubject(this.subjectDN);
+        myCertTemplate.setSubject(SUBJECT_DN);
         byte[]                  bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
@@ -660,7 +672,7 @@ public class NestedMessageContentTest extends CmpTestCase {
 
         CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(this.subjectDN), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(SUBJECT_DN), new GeneralName(new X500Name(((X509Certificate)this.cacert).getSubjectDN().getName())));
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
@@ -716,7 +728,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
         
@@ -794,7 +806,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = null;
         keys = KeyTools.genKeys("1024", "RSA");
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
         
@@ -869,7 +881,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage crmfMsg = genCertReq(this.issuerDN, this.subjectDN, keys, this.cacert, senderNonce, transactionID, false, null, 
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, pAlg, new DEROctetString(senderNonce));
 
         KeyPair nonAdminKeys = KeyTools.genKeys("1024", "RSA");
@@ -920,9 +932,9 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
-        checkCmpResponseGeneral(resp, this.issuerDN, this.subjectDN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
+        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                         crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        final Certificate cert = checkCmpCertRepMessage(this.subjectDN, this.cacert, resp, reqID);
+        final Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
@@ -942,6 +954,9 @@ public class NestedMessageContentTest extends CmpTestCase {
             endEntityManagementSession.revokeAndDeleteUser(admin, "\\ nestedCMPTest/", ReasonFlags.keyCompromise);
         } catch(Exception e){
         }
+        
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN.toString());
         
 
     }
