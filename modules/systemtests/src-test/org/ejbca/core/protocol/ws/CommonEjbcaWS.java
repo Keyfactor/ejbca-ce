@@ -77,6 +77,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -99,6 +100,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
@@ -121,6 +123,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -135,8 +138,10 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -146,6 +151,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
@@ -258,6 +264,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     protected final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    protected final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    protected final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     
     public CommonEjbcaWS() {
         hostname = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
@@ -2279,6 +2287,102 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(foundnocerts != null);
         assertTrue(foundnocerts.size() == 0);
         log.trace("<getLastCertChain");
+    }
+    
+    protected void getExpiredCerts() throws Exception {
+        String testUsername = "testUserForExpirationTime";
+        
+        if(endEntityManagementSession.existsUser(testUsername)) {
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, testUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
+        }
+        
+        java.security.cert.Certificate cert = null;
+        try {
+            KeyPair key = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
+            assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
+
+            CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+            if ( certProfile == null ) {
+                certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+                certProfile.setAllowValidityOverride(true);
+                certificateProfileSession.addCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
+            } else {
+                certProfile.setAllowValidityOverride(true);
+                certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
+            }
+            int cpid = certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI);
+            EndEntityProfile eeprofile = endEntityProfileSession.getEndEntityProfile(WS_EEPROF_EI);
+            if(eeprofile == null) {
+                eeprofile = new EndEntityProfile(true);
+                eeprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cpid));
+                this.endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, eeprofile);
+            } else {
+                eeprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cpid));
+                this.endEntityProfileSession.changeEndEntityProfile(intAdmin, WS_EEPROF_EI, eeprofile);
+            }
+             
+            // Create/update an end entity and issue its certificate
+            EndEntityInformation adminUser = endEntityAccessSession.findUser(intAdmin, testUsername);
+            if(adminUser == null) {
+                adminUser = new EndEntityInformation();
+                adminUser.setUsername(testUsername);
+                adminUser.setPassword("foo123");
+                adminUser.setDN("CN="+testUsername);
+                adminUser.setCAId(cainfo.getCAId());
+                adminUser.setEmail(null);
+                adminUser.setSubjectAltName(null);
+                adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+                adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
+                adminUser.setEndEntityProfileId(endEntityProfileSession.getEndEntityProfileId(WS_EEPROF_EI));
+                adminUser.setCertificateProfileId(cpid);
+                adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
+                log.info("Adding new user: "+adminUser.getUsername());
+                endEntityManagementSession.addUser(intAdmin, adminUser, true);
+            } else {
+                adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+                adminUser.setPassword("foo123");
+                log.info("Changing user: "+adminUser.getUsername());
+                endEntityManagementSession.changeUser(intAdmin, adminUser, true);
+            }
+            Date certNotAfterDate = new Date((new Date()).getTime() + (12 * 60 * 60 * 1000)); // cert will expire in 12 hours from now
+            signSession.createCertificate(intAdmin, testUsername, "foo123",   new PublicKeyWrapper(key.getPublic()), KeyUsage.cRLSign, new Date(), certNotAfterDate);
+            
+            List<java.security.cert.Certificate> genCerts = certificateStoreSession.findCertificatesBySubject("CN="+testUsername);
+            assertEquals("more than one certificate with subjectDN 'CN=" + testUsername + "' was found. Maybe test clean up should be fixed.", 1, genCerts.size());
+            cert = genCerts.get(0);
+            assertEquals(CertificateStatus.OK, certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
+            
+            Date testDate = new Date((new Date()).getTime() + (24 * 60 * 60 * 1000)); // 1 day from now
+            assertTrue(CertTools.getNotAfter(cert).before(testDate));
+            
+            
+            List<Certificate> certs = ejbcaraws.getCertificatesByExpirationTime(1, 1000); // get certs that will expire in 1 day
+            log.debug("Found" + certs.size() + " certificates that will expire within one day");
+            assertTrue(certs.size() > 0);
+            boolean certfound = false;
+            Iterator<Certificate> itr = certs.iterator();
+            while(itr.hasNext()) {
+            	Certificate expirewscert = (Certificate) itr.next();
+                java.security.cert.Certificate expirecert = (java.security.cert.Certificate) CertificateHelper.getCertificate(expirewscert.getCertificateData());
+                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert), CertTools.getSubjectDN(expirecert))) {
+                    certfound = true;
+                    break;
+                }
+            }
+            assertTrue(certfound);
+        } finally {
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(intAdmin, testUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
+            } catch (NotFoundException e) { /* The test probably failed before creating the end entity */ }
+            
+            if(cert != null) {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
+            }
+            
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
+            certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
+        }
     }
 
     protected void isAuthorized(boolean authorized) throws Exception {

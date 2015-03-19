@@ -137,6 +137,12 @@ public class ObjectFactory {
     private final static QName _AddSubjectToRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRoleResponse");
     private final static QName _RemoveSubjectFromRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRole");
     private final static QName _RemoveSubjectFromRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRoleResponse");
+    private final static QName _GetCertificatesByExpirationTime_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTime");
+    private final static QName _GetCertificatesByExpirationTimeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeResponse");
+    private final static QName _GetCertificatesByExpirationTimeAndIssuer_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuer");
+    private final static QName _GetCertificatesByExpirationTimeAndIssuerResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuerResponse");
+    private final static QName _GetCertificatesByExpirationTimeAndType_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndType");
+    private final static QName _GetCertificatesByExpirationTimeAndTypeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndTypeResponse");
     
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
@@ -1153,6 +1159,52 @@ public class ObjectFactory {
         return new RemoveSubjectFromRoleResponse();
     }
     
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTime }
+     */
+    public GetCertificatesByExpirationTime createGetCertificatesByExpirationTime() {
+        return new GetCertificatesByExpirationTime();
+    }
+    
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTimeResponse }
+     */
+    public GetCertificatesByExpirationTimeResponse createGetCertificatesByExpirationTimeResponse() {
+        return new GetCertificatesByExpirationTimeResponse();
+    }
+        
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTimeAndIssuer }
+     */
+    public GetCertificatesByExpirationTimeAndIssuer createGetCertificatesByExpirationTimeAndIssuer() {
+        return new GetCertificatesByExpirationTimeAndIssuer();
+    }
+        
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTimeAndIssuerResponse }
+     */
+    public GetCertificatesByExpirationTimeAndIssuerResponse createGetCertificatesByExpirationTimeAndIssuerResponse() {
+        return new GetCertificatesByExpirationTimeAndIssuerResponse();
+    }
+        
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTimeAndType }
+     */
+    public GetCertificatesByExpirationTimeAndType createGetCertificatesByExpirationTimeAndType() {
+        return new GetCertificatesByExpirationTimeAndType();
+    }
+        
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTimeAndTypeResponse }
+     */
+    public GetCertificatesByExpirationTimeAndTypeResponse createGetCertificatesByExpirationTimeAndTypeResponse() {
+        return new GetCertificatesByExpirationTimeAndTypeResponse();
+    }
+        
+        
+        
+        
+        
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardTokenResponse }{@code >}}
      * 
@@ -2178,5 +2230,59 @@ public class ObjectFactory {
     public JAXBElement<RemoveSubjectFromRoleResponse> createRemoveSubjectFromRoleResponse(RemoveSubjectFromRoleResponse value) {
         return new JAXBElement<RemoveSubjectFromRoleResponse>(_RemoveSubjectFromRoleResponse_QNAME, RemoveSubjectFromRoleResponse.class, null, value);
     }
-
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTime }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTime")
+    public JAXBElement<GetCertificatesByExpirationTime> createGetCertificatesByExpirationTime(GetCertificatesByExpirationTime value) {
+        return new JAXBElement<GetCertificatesByExpirationTime>(_GetCertificatesByExpirationTime_QNAME, GetCertificatesByExpirationTime.class, null, value);
+    }
+        
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeResponse")
+    public JAXBElement<GetCertificatesByExpirationTimeResponse> createGetCertificatesByExpirationTimeResponse(GetCertificatesByExpirationTimeResponse value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeResponse>(_GetCertificatesByExpirationTimeResponse_QNAME, GetCertificatesByExpirationTimeResponse.class, null, value);
+    }
+        
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuer }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuer")
+    public JAXBElement<GetCertificatesByExpirationTimeAndIssuer> createGetCertificatesByExpirationTimeAndIssuer(GetCertificatesByExpirationTimeAndIssuer value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndIssuer>(_GetCertificatesByExpirationTimeAndIssuer_QNAME, GetCertificatesByExpirationTimeAndIssuer.class, null, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuerResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuerResponse")
+    public JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse> createGetCertificatesByExpirationTimeAndIssuerResponse(GetCertificatesByExpirationTimeAndIssuerResponse value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse>(_GetCertificatesByExpirationTimeAndIssuerResponse_QNAME, GetCertificatesByExpirationTimeAndIssuerResponse.class, null, value);
+    }
+        
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndType }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndType")
+    public JAXBElement<GetCertificatesByExpirationTimeAndType> createGetCertificatesByExpirationTimeAndType(GetCertificatesByExpirationTimeAndType value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndType>(_GetCertificatesByExpirationTimeAndType_QNAME, GetCertificatesByExpirationTimeAndType.class, null, value);
+    }
+        
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndTypeResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndTypeResponse")
+    public JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse> createGetCertificatesByExpirationTimeAndTypeResponse(GetCertificatesByExpirationTimeAndTypeResponse value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse>(_GetCertificatesByExpirationTimeAndTypeResponse_QNAME, GetCertificatesByExpirationTimeAndTypeResponse.class, null, value);
+    }
+    
 }

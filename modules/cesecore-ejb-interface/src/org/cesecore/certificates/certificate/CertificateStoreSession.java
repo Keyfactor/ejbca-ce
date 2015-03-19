@@ -128,9 +128,64 @@ public interface CertificateStoreSession {
      * status "active" or "notifiedaboutexpiration".
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return Collection of Certificate, never null
+     * @return Collection of maximum 500 Certificates, never null
      */
     Collection<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime);
+    
+    /**
+     * Finds certificates  expiring within a specified time and that has
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of Certificate, never null
+     */
+    Collection<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime, int maxNumberOfResults);
+    
+    /**
+     * Finds certificates  expiring within a specified time, issued by a specified issuer and has
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of maximum 500 Certificates, never null
+     */
+    Collection<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN);
+    
+    /**
+     * Finds certificates  expiring within a specified time, issued by a specified issuer and has
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of Certificate, never null
+     */
+    Collection<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN, int maxNumberOfResults);
+        
+    /**
+     * Finds certificates  expiring within a specified time, of a specified type and has
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_UNKNOWN
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ENDENTITY
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
+     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
+     * @return Collection of maximum 500 Certificates, never null
+     */
+    Collection<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType);
+    
+   /** 
+    * Finds certificates  expiring within a specified time, of a specified type and has
+    * status "active" or "notifiedaboutexpiration".
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_UNKNOWN
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ENDENTITY
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
+    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
+    * @return Collection of Certificate, never null
+    */
+   Collection<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType, int maxNumberOfResults);
 
     /**
      * Finds usernames of users having certificate(s) expiring within a
