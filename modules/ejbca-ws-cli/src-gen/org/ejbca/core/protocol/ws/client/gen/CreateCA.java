@@ -22,11 +22,8 @@ import org.ejbca.util.KeyValuePair;
  *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}KeyValuePair" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}long"/>
  *         &lt;element name="arg9" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg10" type="{http://www.w3.org/2001/XMLSchema}String"/>
@@ -52,9 +49,6 @@ import org.ejbca.util.KeyValuePair;
    "arg7",
    "arg8",
    "arg9",
-   "arg10",
-   "arg11",
-   "arg12",
 })
 
 public class CreateCA {
@@ -62,16 +56,13 @@ public class CreateCA {
    protected String arg0;
    protected String arg1;
    protected String arg2;
-   protected String arg3;
+   protected List<KeyValuePair> arg3;
    protected String arg4;
-   protected List<KeyValuePair> arg5;
+   protected long arg5;
    protected String arg6;
    protected String arg7;
-   protected long arg8;
-   protected String arg9;
-   protected String arg10;
-   protected String arg11;
-   protected int arg12;
+   protected String arg8;
+   protected int arg9;
    
    /**
     * Gets the value of the arg0 property.
@@ -122,19 +113,32 @@ public class CreateCA {
    }
 
    /**
-    * Gets the value of the arg3 property.
+    * Gets the value of the arg5 property.
+    * 
+    * <p>
+    * This accessor method returns a reference to the live list,
+    * not a snapshot. Therefore any modification you make to the
+    * returned list will be present inside the JAXB object.
+    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
+    * 
+    * <p>
+    * For example, to add a new item, do as follows:
+    * <pre>
+    *    getArg3().add(newItem);
+    * </pre>
+    * 
+    * 
+    * <p>
+    * Objects of the following type(s) are allowed in the list
+    * {@link KeyValuePair }
+    * 
     * 
     */
-   public String getArg3() {
-       return arg3;
-   }
-
-   /**
-    * Sets the value of the arg3 property.
-    * 
-    */
-   public void setArg3(String value) {
-       this.arg3 = value;
+   public List<KeyValuePair> getArg3() {
+       if (arg3 == null) {
+           arg3 = new ArrayList<KeyValuePair>();
+       }
+       return this.arg3;
    }
 
    /**
@@ -156,32 +160,19 @@ public class CreateCA {
    /**
     * Gets the value of the arg5 property.
     * 
-    * <p>
-    * This accessor method returns a reference to the live list,
-    * not a snapshot. Therefore any modification you make to the
-    * returned list will be present inside the JAXB object.
-    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
-    * 
-    * <p>
-    * For example, to add a new item, do as follows:
-    * <pre>
-    *    getArg5().add(newItem);
-    * </pre>
-    * 
-    * 
-    * <p>
-    * Objects of the following type(s) are allowed in the list
-    * {@link String }
-    * 
-    * 
     */
-   public List<KeyValuePair> getArg5() {
-       if (arg5 == null) {
-           arg5 = new ArrayList<KeyValuePair>();
-       }
-       return this.arg5;
+   public long getArg5() {
+       return arg5;
    }
 
+   /**
+    * Sets the value of the arg5 property.
+    * 
+    */
+   public void setArg5(long value) {
+       this.arg5 = value;
+   }
+   
    /**
     * Gets the value of the arg6 property.
     * 
@@ -197,7 +188,7 @@ public class CreateCA {
    public void setArg6(String value) {
        this.arg6 = value;
    }
-
+   
    /**
     * Gets the value of the arg7 property.
     * 
@@ -213,12 +204,12 @@ public class CreateCA {
    public void setArg7(String value) {
        this.arg7 = value;
    }
-
+   
    /**
     * Gets the value of the arg8 property.
     * 
     */
-   public long getArg8() {
+   public String getArg8() {
        return arg8;
    }
 
@@ -226,7 +217,7 @@ public class CreateCA {
     * Sets the value of the arg8 property.
     * 
     */
-   public void setArg8(long value) {
+   public void setArg8(String value) {
        this.arg8 = value;
    }
    
@@ -234,7 +225,7 @@ public class CreateCA {
     * Gets the value of the arg9 property.
     * 
     */
-   public String getArg9() {
+   public int getArg9() {
        return arg9;
    }
 
@@ -242,56 +233,8 @@ public class CreateCA {
     * Sets the value of the arg9 property.
     * 
     */
-   public void setArg9(String value) {
+   public void setArg9(int value) {
        this.arg9 = value;
-   }
-   
-   /**
-    * Gets the value of the arg10 property.
-    * 
-    */
-   public String getArg10() {
-       return arg10;
-   }
-
-   /**
-    * Sets the value of the arg10 property.
-    * 
-    */
-   public void setArg10(String value) {
-       this.arg10 = value;
-   }
-   
-   /**
-    * Gets the value of the arg11 property.
-    * 
-    */
-   public String getArg11() {
-       return arg11;
-   }
-
-   /**
-    * Sets the value of the arg11 property.
-    * 
-    */
-   public void setArg11(String value) {
-       this.arg11 = value;
-   }
-   
-   /**
-    * Gets the value of the arg12 property.
-    * 
-    */
-   public int getArg12() {
-       return arg12;
-   }
-
-   /**
-    * Sets the value of the arg12 property.
-    * 
-    */
-   public void setArg12(int value) {
-       this.arg12 = value;
    }
 
 }

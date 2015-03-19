@@ -43,7 +43,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -537,18 +536,17 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 	
 	@Override
-	public void createCA(String caname, String cadn, String catype, String catokentype, String catokenpassword, 
-            List<KeyValuePair> catokenProperties, String cryptoTokenName, String cryptotokenKeyAlias, long validityInDays, String certprofile, 
-            String signAlg, String policyId, int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
+	public void createCA(String caname, String cadn, String catype, List<KeyValuePair> catokenProperties, 
+	        String cryptoTokenName, long validityInDays, String certprofile, String signAlg, String policyId, 
+	        int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
 	    
 	       EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	                certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	                hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	       
 	       try {
-            enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, catokentype, catokenpassword, 
-                       catokenProperties, cryptoTokenName, cryptotokenKeyAlias, validityInDays, certprofile, signAlg, policyId, 
-                       signedByCAId);
+            enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, catokenProperties, cryptoTokenName, 
+                    validityInDays, certprofile, signAlg, policyId, signedByCAId);
         } catch (CAExistsException e) {
             throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
         } catch (CertificateProfileDoesNotExistException e) {

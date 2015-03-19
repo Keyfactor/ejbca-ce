@@ -1027,7 +1027,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
             caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
             caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));
-            ejbcaraws.createCA(caname, "CN="+caname, "x509", "soft", "1234", caTokenProperties, ctname, testKeyAlias, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
+            ejbcaraws.createCA(caname, "CN="+caname, "x509", caTokenProperties, ctname, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertNotNull(cainfo);
             assertEquals(caname, cainfo.getName());
