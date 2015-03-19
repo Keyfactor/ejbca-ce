@@ -3059,11 +3059,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     /**
-     * Checks the signer validity given a CADataLocal object, as a side-effect marks the signer as expired if it is expired, and throws an
-     * EJBException to the caller. This should only be called from create and edit CA methods.
+     * Checks the signer validity given a CA object and throws an EJBException to the caller.
+     * This should only be called from create and edit CA methods.
      * 
      * @param admin administrator calling the method
-     * @param signcadata a CADataLocal entity object of the signer to be checked
+     * @param signca a CA object of the signer to be checked
      * @throws EJBException embedding a CertificateExpiredException or a CertificateNotYetValidException if the certificate has expired or is not yet
      *             valid
      */
