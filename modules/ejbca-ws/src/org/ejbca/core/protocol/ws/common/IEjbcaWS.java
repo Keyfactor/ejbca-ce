@@ -185,7 +185,7 @@ public interface IEjbcaWS {
 	 * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
 	 * @param activationPin Pin code for the cryptotoken
 	 * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
-	 * @param cryptotokenProperties as a String array where each index has the form "key=value"
+	 * @param cryptotokenProperties as a List of KeyValuePair objects
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
 	 */
@@ -197,7 +197,7 @@ public interface IEjbcaWS {
 	 *  
 	 * @param cryptoTokenName The name of the cryptotoken
      * @param keyPairAlias Key pair alias
-     * @param keyPairSpecification Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145
+     * @param keySpecification Key specification, for example RSA2048, secp256r1, DSA1024, gost3410, dstu4145
      * @throws AuthorizationDeniedException
      * @throws EjbcaException
      */
@@ -205,15 +205,13 @@ public interface IEjbcaWS {
             throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
+	 * Creates a new CA using the specified cryptotoken
 	 * 
 	 * @param caname The CA name
 	 * @param cadn The CA subjectDN
 	 * @param catype The CA type. It could be either 'x509' or 'cvc'
-	 * @param catokentype Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.
-	 * @param catokenpassword The password for the CA token. Set to 'null' to use the default system password for Soft token CAs.
-	 * @param catokenProperties The catoken properties
+	 * @param catokenProperties The catoken properties as a List of KeyValuePair objects
 	 * @param cryptoTokenName The name of the cryptotoken associated with the CA
-	 * @param cryptotokenKeyAlias The keyalias of the cryptotoken key that will be used for the CA's extended services
 	 * @param validityInDays Validity of the CA in days.
 	 * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
 	 * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
@@ -240,7 +238,7 @@ public interface IEjbcaWS {
               WITH_ORGANIZATIONALUNIT, WITH_TITLE, WITH_COMMONNAME, WITH_UID, WITH_DNSERIALNUMBER, WITH_SERIALNUMBER,
               WITH_DNEMAILADDRESS, WITH_RFC822NAME, WITH_UPN, WITH_FULLDN
 	 * @param matchType Could be one of: TYPE_EQUALCASE, TYPE_EQUALCASEINS, TYPE_NOT_EQUALCASE, TYPE_NOT_EQUALCASEINS, TYPE_NONE
-	 * @param matchValue
+	 * @param matchValue That value to match against
      * @throws EjbcaException
      * @throws AuthorizationDeniedException
 	 */
@@ -256,7 +254,7 @@ public interface IEjbcaWS {
               WITH_ORGANIZATIONALUNIT, WITH_TITLE, WITH_COMMONNAME, WITH_UID, WITH_DNSERIALNUMBER, WITH_SERIALNUMBER,
               WITH_DNEMAILADDRESS, WITH_RFC822NAME, WITH_UPN, WITH_FULLDN
      * @param matchType Could be one of: TYPE_EQUALCASE, TYPE_EQUALCASEINS, TYPE_NOT_EQUALCASE, TYPE_NOT_EQUALCASEINS, TYPE_NONE
-     * @param matchValue
+     * @param matchValue The value to match against
      * @throws EjbcaException
      * @throws AuthorizationDeniedException
      */
@@ -273,7 +271,7 @@ public interface IEjbcaWS {
 	 * @param password the password sent with editUser call
 	 * @param crmf the CRMF request message (only the public key is used.)
 	 * @param responseType indicating which type of answer that should be returned, on of the 
-	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
+	 *                     {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException
 	 * @throws NotFoundException
@@ -295,7 +293,7 @@ public interface IEjbcaWS {
 	 * @param password the password sent with editUser call
 	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
 	 * @param responseType indicating which type of answer that should be returned, on of the
-	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
+	 *                     {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException
 	 * @throws NotFoundException
