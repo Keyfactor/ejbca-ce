@@ -23,7 +23,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  */
 public class PKCS11LibraryFileNotFoundException extends Exception {
 
-
     private static final long serialVersionUID = 471712760739840779L;
 
     public PKCS11LibraryFileNotFoundException() {
