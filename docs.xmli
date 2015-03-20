@@ -165,7 +165,9 @@
         <mkdir dir="${docs.dest.logtypes}"/>
 	    <javadoc destdir="${docs.dest.logtypes}"
 	             author="false"
-	             version="true"
+	             notree="true"
+	             nohelp="true"
+	             version="false"
 	             Package="false"
 	             Use="false"
 	             nodeprecated="true"

@@ -17,6 +17,8 @@ package org.cesecore.audit.enums;
  *
  * When doing secure audit log it is necessary to identify the event being logged.
  *
+ * @see org.cesecore.audit.enums.ModuleTypes
+ * @see org.cesecore.audit.enums.ServiceTypes
  * @version $Id$
  */
 public enum EventTypes implements EventType {
