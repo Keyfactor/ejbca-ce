@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
