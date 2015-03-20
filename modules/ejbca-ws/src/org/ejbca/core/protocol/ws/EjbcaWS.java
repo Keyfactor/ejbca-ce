@@ -493,25 +493,23 @@ public class EjbcaWS implements IEjbcaWS {
 	        List<KeyValuePair> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException  {
 	    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
-                certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
-                hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	    
 	    try {
 	        enterpriseWSBridgeSession.createCryptoToken(ejbhelper.getAdmin(), tokenName, tokenType, activationPin, autoActivate, 
-	            cryptotokenProperties);
-        } catch (AuthorizationDeniedException e) {
-            TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-            throw e;
-        } catch (CryptoTokenOfflineException e) {
-            log.info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
-            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-        } catch (CryptoTokenAuthenticationFailedException e) {
-            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-        } catch (CryptoTokenNameInUseException e) {
-            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-        } catch (NoSuchSlotException e) {
-            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-        }
+	                cryptotokenProperties);
+	    } catch (AuthorizationDeniedException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } catch (CryptoTokenOfflineException e) {
+	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	    } catch (CryptoTokenAuthenticationFailedException e) {
+	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	    } catch (CryptoTokenNameInUseException e) {
+	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	    } catch (NoSuchSlotException e) {
+	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	    }
 	}
 	
 	@Override
@@ -523,10 +521,8 @@ public class EjbcaWS implements IEjbcaWS {
 	    try {
 	        enterpriseWSBridgeSession.generateCryptoTokenKeys(ejbhelper.getAdmin(), cryptoTokenName, keyPairAlias, keySpecification);
 	    } catch (AuthorizationDeniedException e) {
-	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-	        throw e;
+	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
 	    } catch (CryptoTokenOfflineException e) {
-	        log.info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
 	    } catch (InvalidKeyException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.INVALID_KEY, Level.INFO);
@@ -540,30 +536,29 @@ public class EjbcaWS implements IEjbcaWS {
 	        String cryptoTokenName, long validityInDays, String certprofile, String signAlg, String policyId, 
 	        int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
 	    
-	       EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
-	                certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
-	                hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
+	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
+	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	       
-	       try {
-            enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, catokenProperties, cryptoTokenName, 
-                    validityInDays, certprofile, signAlg, policyId, signedByCAId);
-        } catch (CAExistsException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
-        } catch (CertificateProfileDoesNotExistException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CERT_PROFILE_NOT_EXISTS, Level.INFO);
-        } catch (CryptoTokenOfflineException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
-        } catch (InvalidAlgorithmException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), Level.INFO);
-        } catch (AuthorizationDeniedException e) {
-            TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-            throw e;
-        }
+	    try {
+	        enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, catokenProperties, cryptoTokenName, 
+	                validityInDays, certprofile, signAlg, policyId, signedByCAId);
+	    } catch (CAExistsException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
+	    } catch (CertificateProfileDoesNotExistException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CERT_PROFILE_NOT_EXISTS, Level.INFO);
+	    } catch (CryptoTokenOfflineException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
+	    } catch (InvalidAlgorithmException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), Level.INFO);
+	    } catch (AuthorizationDeniedException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    }
 	}
 	
 	@Override
 	public void addSubjectToRole(String roleName, String caName, String matchWith, String matchType, 
-            String matchValue) throws EjbcaException, AuthorizationDeniedException {
+	        String matchValue) throws EjbcaException, AuthorizationDeniedException {
 	            
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
@@ -574,11 +569,10 @@ public class EjbcaWS implements IEjbcaWS {
 	    } catch (CADoesntExistsException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_NOT_EXISTS, Level.INFO);
 	    } catch (RoleNotFoundException e) {
-            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
+	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
 	    } catch (AuthorizationDeniedException e) {
-	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-	        throw e;
-        }
+	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    }
 	}
 	
 	@Override
@@ -596,8 +590,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    } catch (RoleNotFoundException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
 	    } catch (AuthorizationDeniedException e) {
-	        TransactionLogger.getPatternLogger().paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-	        throw e;
+	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
 	    }
 	}
 	
@@ -627,15 +620,15 @@ public class EjbcaWS implements IEjbcaWS {
 	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndIssuerWithLimit(findDate, issuer, maxNumberOfResults);
 	    
 	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
-        Iterator<java.security.cert.Certificate> itr = certs.iterator();
-        while(itr.hasNext()) {
-            java.security.cert.Certificate cert = itr.next();
-            try {
-                ret.add(new Certificate(cert));
-            } catch (CertificateEncodingException e) {
-                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-            }
-        }
+	    Iterator<java.security.cert.Certificate> itr = certs.iterator();
+	    while(itr.hasNext()) {
+	        java.security.cert.Certificate cert = itr.next();
+	        try {
+	            ret.add(new Certificate(cert));
+	        } catch (CertificateEncodingException e) {
+	            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	        }
+	    }
 	    return ret;
 	}
 	
@@ -646,15 +639,15 @@ public class EjbcaWS implements IEjbcaWS {
 	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndTypeWithLimit(findDate, certificateType, maxNumberOfResults);
 	    
 	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
-        Iterator<java.security.cert.Certificate> itr = certs.iterator();
-        while(itr.hasNext()) {
-            java.security.cert.Certificate cert = itr.next();
-            try {
-                ret.add(new Certificate(cert));
-            } catch (CertificateEncodingException e) {
-                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-            }
-        }
+	    Iterator<java.security.cert.Certificate> itr = certs.iterator();
+	    while(itr.hasNext()) {
+	        java.security.cert.Certificate cert = itr.next();
+	        try {
+	            ret.add(new Certificate(cert));
+	        } catch (CertificateEncodingException e) {
+	            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	        }
+	    }
 	    return ret;
 	}
 	
