@@ -13,10 +13,12 @@
 package org.cesecore.audit.enums;
 
 /**
- * Represents the basic module types supported.
+ * When doing secure audit log it is necessary to identify from which module a security audit event originates.
  *
- * When doing secure audit log it is necessary to identify which CESeCore module is logging.
+ * A modules is a group of related functionality. This class contains the modules in the CESeCore core itself.
  * 
+ * @see org.cesecore.audit.enums.EventTypes
+ * @see org.cesecore.audit.enums.ServiceTypes
  * @version $Id$
  */
 public enum ModuleTypes implements ModuleType {

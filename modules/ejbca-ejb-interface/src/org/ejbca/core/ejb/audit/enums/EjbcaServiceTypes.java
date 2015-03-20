@@ -15,10 +15,20 @@ package org.ejbca.core.ejb.audit.enums;
 import org.cesecore.audit.enums.ServiceType;
 
 /**
+ * EJBCA specific security audit event service type, for audit using CESecore's audit log.
+ * 
+ * When doing secure audit log ServiceType is used to indicate if the log  
+ * was executed from the core itself or by an external application.
+ * 
+ * In relation to CESeCore, EJBCA acts as an "external application" in this case.
+ * 
+ * @see org.cesecore.audit.enums.ServiceTypes
+ * @see org.ejbca.core.ejb.audit.enums.EjbcaEventTypes
+ * @see org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes
  * @version $Id$
  */
 public enum EjbcaServiceTypes implements ServiceType {
-    /** Enterprise JavaBeans Certificate Authority */
+    /** Enterprise JavaBeans Certificate Authority extension of the CE Security Core. */
     EJBCA;
     
     @Override

@@ -5600,11 +5600,7 @@ The Security Audit Log is stored in the database and the System Log is stroed in
 </subsection>
 <subsection name="Security Audit Log">
 <p>
-The are two different logging devices available for official security audit events
-(creation of certificate etc).
-The full explanation of the Service, Module and Event types can be found in JavaDoc format <a href="logtypes/index.html" target="_blank">here</a>.
-</p>
-<p>
+The are two different logging devices available for official security audit events (creation of certificate etc).
 What log devices to use, can be configured in conf/cesecore.properties.
 </p>
 <p>
@@ -5612,10 +5608,53 @@ These devices should not be confused with the info/debug output that is sent to 
 You can find more information on how to configure Log4J in doc/howto/log4j.txt.
 </p>
 <p>
-It is recommended to only allow new log-posts to the database-tables. More
-information on this can be found in doc/howto/HOWTO-database.txt.
+It is recommended to only allow new log-posts to the database-tables. More information on this can be found in doc/howto/HOWTO-database.txt.
 </p>
-</subsection>
+<subsubsection name="Services, Modules, Events and Status">
+<p>
+The security audit events are divided into Services, Modules, Events according to from where it originates.
+The full list of the different Service, Module and Event types and a short explanation for each type can be found in
+<a href="logtypes/index.html" target="_blank">JavaDoc format of the API</a>.
+Since EJBCA is build around the CESeCore project, to see all possible event types that EJBCA can generate both
+<a href="logtypes/org/cesecore/audit/enums/EventTypes.html" target="_blank">EventTypes</a> and
+<a href="logtypes/org/ejbca/core/ejb/audit/enums/EjbcaEventTypes.html" target="_blank">EjbcaEventTypes</a> in the API doc needs to be considered.
+</p>
+<p>
+An example of how such an event would look like in the server log using the Log4jDevice is the event that the application is starting:
+<pre>
+... INFO  [Log4jDevice] 2015-03-20 12:47:51+01:00;EJBCA_STARTING;SUCCESS;SERVICE;EJBCA;StartServicesServlet.init;;hostname;;msg=Init, EJBCA 6.3.1Alpha (working copy) startup.
+</pre>
+and the same kind of event using IntegrityProtectedDevice that writes the log entry to the database:
+<pre>
+mysql> select * from AuditRecordData where eventType='EJBCA_STARTING' ... \G
+               pk: 24861ebf7f00010106e5a024d82c694d
+additionalDetails: ...  Init, EJBCA 6.3.1Alpha (working copy) startup.  ...
+        authToken: StartServicesServlet.init
+         customId: NULL
+      eventStatus: SUCCESS
+        eventType: EJBCA_STARTING
+           module: SERVICE
+           nodeId: hostname
+    rowProtection: 1:2:123:4d2f6...
+       rowVersion: 0
+    searchDetail1: hostname
+    searchDetail2: NULL
+   sequenceNumber: 17640195
+          service: EJBCA
+        timeStamp: 1426205614754
+</pre>
+
+This should be interpreted as the following:
+<ul>
+<li>Service is EJBCA (not shown in the Admin GUI) : the event originates from the part of the application that not part of the core shared with other projects.</li>
+<li>Module is SERVICE: this event was generated from a module in EJBCA that is responsible for background services.</li>
+<li>Event is EJBCA_STARTING: the application EJBCA is starting up.</li>
+<li>Status (named "Outcome" in the Admin GUI) is SUCCESS: in the context of the event, this should be interpreted as no error were detected during the EJBCA startup.</li>
+<li>Additionally there is an event specific message with additional information telling us (in this case) the version of EJBCA that was started.</li>
+</ul>
+Also note that the time in the log entry itself is the time of the event and might differ from the time when this was written to the server log.
+</p>
+</subsubsection>
 <subsubsection name="Log4JLogDevice">
 <p>
 Appends the information from the offical event to the console or file. This is
@@ -5657,6 +5696,7 @@ OldLogDevice stores log-events in the database. Viewed events can
 be exported from the Admin GUI.
 </p>
 </subsubsection>
+</subsection>
 <subsection name="System Log">
 <p>The system log is logged using Log4J, and has several different levels of log. You can configure which log level is actually logged.
 </p>

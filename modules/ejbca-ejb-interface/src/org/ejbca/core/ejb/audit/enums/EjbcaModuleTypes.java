@@ -15,8 +15,14 @@ package org.ejbca.core.ejb.audit.enums;
 import org.cesecore.audit.enums.ModuleType;
 
 /**
- * EJBCA specific module types.
+ * EJBCA specific security audit event module types, for audit using CESecore's audit log.
  * 
+ * A modules is a group of related functionality.
+ * These module types are part of EJBCA (not the core itself) and extend the list of already existing module types of CESeCore.
+ * 
+ * @see org.cesecore.audit.enums.ModuleTypes
+ * @see org.ejbca.core.ejb.audit.enums.EjbcaEventTypes
+ * @see org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes
  * @version $Id$
  */
 public enum EjbcaModuleTypes implements ModuleType {

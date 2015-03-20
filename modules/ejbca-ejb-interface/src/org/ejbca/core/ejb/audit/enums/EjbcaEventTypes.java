@@ -15,8 +15,13 @@ package org.ejbca.core.ejb.audit.enums;
 import org.cesecore.audit.enums.EventType;
 
 /**
- * EJBCA specific event types, for audit using CESecore's audit log.
+ * EJBCA specific security audit event types, for audit using CESecore's audit log.
  * 
+ * These event types extend the list of already existing event types of CESeCore.
+ * 
+ * @see org.cesecore.audit.enums.EventTypes
+ * @see org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes
+ * @see org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes
  * @version $Id$
  */
 public enum EjbcaEventTypes implements EventType {
