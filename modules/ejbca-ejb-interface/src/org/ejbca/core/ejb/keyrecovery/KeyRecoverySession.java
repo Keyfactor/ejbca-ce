@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.keyrecovery;
 
-import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
