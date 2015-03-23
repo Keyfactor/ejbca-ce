@@ -233,6 +233,11 @@
 		</tr>
 		</table>
       </div>
+      <div id="doc-version">
+		<span title="Documentation applies to the EJBCA version shown here.">
+#include( "VERSION" )
+		</span>
+      </div>
 
       #makeMainNavigation()
 #end
