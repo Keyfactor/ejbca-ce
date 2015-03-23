@@ -64,7 +64,7 @@ public interface SignSessionLocal extends SignSession {
      * authorize is taken from the request message. Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails. 
      * The method queries the user database for authorization of the user.
      * 
-     * Works like the standard methods in this class for creating certificates, but will set status to new if it is GENERATED. Is quaranteed to roll back user status change if an 
+     * Works like the standard methods in this class for creating certificates, but will set status to NEW if it is GENERATED. Is guaranteed to roll back user status change if an 
      * error is encountered during certificate creation. 
      * 
      *
@@ -72,7 +72,7 @@ public interface SignSessionLocal extends SignSession {
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * @param keyUsage      integer with bit mask describing desired keys usage. Bit mask is packed in
-     *                      in integer using contants from CertificateDataBean. ex. int keyusage =
+     *                      in integer using constants from CertificateDataBean. ex. int keyusage =
      *                      CertificateDataBean.digitalSignature | CertificateDataBean.nonRepudiation; gives
      *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateDataBean.keyCertSign
      *                      | CertificateDataBean.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default

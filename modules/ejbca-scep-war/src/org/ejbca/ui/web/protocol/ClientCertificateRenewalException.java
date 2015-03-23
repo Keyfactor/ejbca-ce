@@ -23,28 +23,27 @@ public class ClientCertificateRenewalException extends Exception {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 
+     * @see java.lang.Exception#Exception()
      */
     public ClientCertificateRenewalException() {
     }
 
     /**
-     * @param message
+     * @see java.lang.Exception#Exception(String)
      */
     public ClientCertificateRenewalException(String message) {
         super(message);
     }
 
     /**
-     * @param cause
+     * @see java.lang.Exception#Exception(Throwable)
      */
     public ClientCertificateRenewalException(Throwable cause) {
         super(cause);
     }
 
     /**
-     * @param message
-     * @param cause
+     * @see java.lang.Exception#Exception(String, Throwable)
      */
     public ClientCertificateRenewalException(String message, Throwable cause) {
         super(message, cause);

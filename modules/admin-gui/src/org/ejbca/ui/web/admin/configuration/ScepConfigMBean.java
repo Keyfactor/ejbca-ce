@@ -66,7 +66,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             if(alias != null) {
                 this.alias = alias;
                 if(scepConfig.aliasExists(alias)) {
-                    this.mode = (scepConfig.getRAMode(alias) ? "RA" : "CA");
+                    this.mode = (scepConfig.getRAMode(alias) ?  ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
                     this.includeCA = scepConfig.getIncludeCA(alias);
                     this.raCertProfile = scepConfig.getRACertProfile(alias);
                     this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
@@ -227,6 +227,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setRANameGenerationPrefix(alias, currentAlias.getRaNameGenPrefix());
             scepConfig.setRANameGenerationPostfix(alias, currentAlias.getRaNameGenPostfix());
             scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
+            scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
             
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
@@ -305,8 +306,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     /** @return a list of usable operational modes */
     public List<SelectItem> getAvailableModes() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        ret.add(new SelectItem("RA", "RA"));
-        ret.add(new SelectItem("CA", "CA"));
+        ret.add(new SelectItem(ScepConfiguration.Mode.RA.getResource(), ScepConfiguration.Mode.RA.getResource()));
+        ret.add(new SelectItem(ScepConfiguration.Mode.CA.getResource(), ScepConfiguration.Mode.CA.getResource()));
         return ret;
     }
     
