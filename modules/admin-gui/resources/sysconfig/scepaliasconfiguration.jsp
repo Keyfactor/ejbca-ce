@@ -38,21 +38,21 @@ org.cesecore.authorization.control.StandardRules
 </head>
 <body>
 	<h1>
-		<h:outputText value="#{scepConfigMBean.currentAlias.alias}" rendered="true"/>
+		<h:outputText value="#{scepConfigMBean.currentAlias.alias}" />
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form id="currentAliasForm">
 	<h:panelGrid columns="2">
 		<h:panelGroup>
-			<h:outputLink rendered="true" value="adminweb/sysconfig/scepconfiguration.jsf"><h:outputText value="#{web.text.SCEP_ALIAS_NAV_BACK}              "/></h:outputLink>
+			<h:outputLink  value="adminweb/sysconfig/scepconfiguration.jsf"><h:outputText value="#{web.text.SCEP_ALIAS_NAV_BACK}              "/></h:outputLink>
 			<h:commandButton action="#{scepConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 		
-		<h:panelGroup id="placeholder1" rendered="true"/>
+		<h:panelGroup id="placeholder1" />
 		
 		<h:outputLabel for="currentAlias" value="#{web.text.SCEP_ALIAS}:"/>
 		<h:panelGroup id="currentAlias">
-	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" rendered="true"/>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" />
 		</h:panelGroup>
  
 		<h:outputLabel for="currentMode" value="#{web.text.SCEP_OPERATIONAL_MODE}"/>
@@ -68,14 +68,14 @@ org.cesecore.authorization.control.StandardRules
 			<h:outputText value="#{scepConfigMBean.currentAlias.mode}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" rendered="true"/>
-		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
+		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" />
+		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
 
-		<h:outputLabel for="clientCertificateRenewal" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL}" rendered="true"/>
-		<h:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
+		<h:outputLabel for="clientCertificateRenewal" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL}" />
+		<h:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
 		
-		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" rendered="true"/>
-		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}" disabled="#{!scepConfigMBean.currentAliasEditMode}" rendered="true"/>
+		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" />
+		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
 		
 		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
 		<h:panelGroup id="eep"  rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
