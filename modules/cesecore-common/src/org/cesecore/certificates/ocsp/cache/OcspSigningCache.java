@@ -48,11 +48,9 @@ public enum OcspSigningCache {
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
     private final ReentrantLock lock = new ReentrantLock(false);
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
-    /** Flag to cache if we have logged the existence of a default responder */
-    private volatile boolean loggedDefaultResponder = false;
-    /** Flag to cache if we have logged the non-existence of a default responder */
-    private volatile boolean loggedNoDefaultResponder = false;
-    
+    /** Flag to detect and log non-existence of a default responder once. */
+    private boolean logDefaultHasRunOnce = false;
+
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
@@ -89,40 +87,15 @@ public enum OcspSigningCache {
                 final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
                 if (CertTools.getIssuerDN(signingCertificate).equals(defaultResponderSubjectDn)) {
                     defaultResponderCacheEntry = entry;
-                    if (!loggedDefaultResponder) {
-                        log.info("Setting keybinding with ID" + entry.getOcspKeyBinding().getId() + " and DN " + defaultResponderSubjectDn
-                                + " as default OCSP responder.");
-                        loggedDefaultResponder = true; // we should only log this once, unless status changes
-                    }
                     break;
                 }
             } else if (entry.getCaCertificateChain() != null && !entry.getCaCertificateChain().isEmpty()) {
                 final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
                 if (CertTools.getSubjectDN(signingCertificate).equals(defaultResponderSubjectDn)) {
                     defaultResponderCacheEntry = entry;
-                    if (!loggedDefaultResponder) {
-                        log.info("Setting CA with DN " + defaultResponderSubjectDn + " as default OCSP responder.");
-                        loggedDefaultResponder = true; // we should only log this once, unless status changes
-                    }
                     break;
                 }
             }
-        }
-        if (defaultResponderCacheEntry == null) {
-            if (!loggedNoDefaultResponder) {
-                String msg;
-                if (StringUtils.isEmpty(defaultResponderSubjectDn)) {
-                    msg = "No default responder was defined.";
-                } else {
-                    msg = "The default OCSP responder with subject '" + defaultResponderSubjectDn + "' was not found.";
-                }
-                msg += " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3";
-                log.info(msg);
-                loggedNoDefaultResponder = true; // we should only log this once, unless status changes
-            }
-            loggedDefaultResponder = false; // if we get a default responder again, log it
-        } else {
-            loggedNoDefaultResponder = false; // if we lose a default responder again, log it
         }
         //Lastly, walk through the list of entries and replace all placeholders with the default responder
         Map<Integer, OcspSigningCacheEntry> modifiedEntries = new HashMap<Integer, OcspSigningCacheEntry>();
@@ -147,6 +120,7 @@ public enum OcspSigningCache {
         for (Integer removedKey : removedEntries) {
             staging.remove(removedKey);
         }
+        logDefaultResponderChanges(this.defaultResponderCacheEntry, defaultResponderCacheEntry, defaultResponderSubjectDn);
         cache = staging;
         this.defaultResponderCacheEntry = defaultResponderCacheEntry;
         if (log.isDebugEnabled()) {
@@ -166,6 +140,54 @@ public enum OcspSigningCache {
 
     public void stagingRelease() {
         lock.unlock();
+    }
+
+    /** Log any change in default responder */
+    private void logDefaultResponderChanges(final OcspSigningCacheEntry currentEntry, final OcspSigningCacheEntry stagedEntry, final String defaultResponderSubjectDn) {
+        String msg = null;
+        if (stagedEntry==null && (currentEntry!=null || !logDefaultHasRunOnce)) {
+            // No default responder after staging. Did we loose it or is it the first time we run this check?
+            if (StringUtils.isEmpty(defaultResponderSubjectDn)) {
+                msg = "No default responder was defined.";
+            } else {
+                msg = "The default OCSP responder with subject '" + defaultResponderSubjectDn + "' was not found.";
+            }
+            msg += " OCSP requests for certificates issued by unknown CAs will return \"unauthorized\" as per RFC6960, Section 2.3";
+        } else if (stagedEntry!=null && currentEntry==null) {
+            // We gained a default responder.
+            if (stagedEntry.isUsingSeparateOcspSigningCertificate()) {
+                msg = "Setting keybinding with ID" + stagedEntry.getOcspKeyBinding().getId() + " and DN " + defaultResponderSubjectDn
+                        + " as default OCSP responder.";
+            } else {
+                msg = "Setting CA with DN " + defaultResponderSubjectDn + " as default OCSP responder.";
+            }
+        } else if (stagedEntry!=null && currentEntry!=null) {
+            // We have a default responder both before and after. Did it change in any way?
+            if (stagedEntry.isUsingSeparateOcspSigningCertificate()!=currentEntry.isUsingSeparateOcspSigningCertificate()
+                    || !CertTools.getSubjectDN(stagedEntry.getIssuerCaCertificate()).equals(CertTools.getSubjectDN(currentEntry.getIssuerCaCertificate()))) {
+                // We switched from signing with a CA to OcspKeyBindinig or vice versa, or use a different default.
+                if (stagedEntry.isUsingSeparateOcspSigningCertificate()) {
+                    msg = "Setting keybinding with ID" + stagedEntry.getOcspKeyBinding().getId() + " and DN " + defaultResponderSubjectDn
+                            + " as default OCSP responder.";
+                } else {
+                    msg = "Setting CA with DN " + defaultResponderSubjectDn + " as default OCSP responder.";
+                }
+            } else if (stagedEntry.isUsingSeparateOcspSigningCertificate()) {
+                if (stagedEntry.getOcspKeyBinding().getId() != currentEntry.getOcspKeyBinding().getId()) {
+                    // A different OcspKeyBinding will be used to respond to requests even though the issuing CA has not changed
+                    msg = "Setting keybinding with ID" + stagedEntry.getOcspKeyBinding().getId() + " and DN " + defaultResponderSubjectDn
+                            + " as default OCSP responder.";
+                }
+            }
+        }
+        if (msg==null) {
+            if (log.isDebugEnabled()) {
+                log.debug("No change in default responder.");
+            }
+        } else {
+            log.info(msg);
+        }
+        logDefaultHasRunOnce = true;
     }
 
     /**
