@@ -323,7 +323,7 @@ Command line interface and CRL Update service will generate delta CRLs if 'Delta
 
 <section name="Scep">
 <p>
-<i>SCEP requires the 'Unlimited Strength Jurisdiction Policy Files' to be installed in the JDK.
+<i>SCEP requires the 'Unlimited Strength Jurisdiction Policy Files' to be installed in the JDK if running Oracle's JDK.
 The policy files can be found at the same place as the JDK download. Further information on this can be found in 
 the Oracle documentation on the JCE.</i>
 </p><p>
@@ -378,7 +378,7 @@ EJBCA will not send back proper SCEP error messages in all cases of failure. The
 </subsection>
 
 <subsection name="Configuration">
-<p>Configuring SCEP is done in the Admin GUI, under 'SCEP Configuration'. To be able to edit SCEP configuration, you have to have the 'edit_systemconfiguration' access. </p>
+<p>Configuring SCEP is done in the Admin GUI, under 'SCEP Configuration'. To be able to edit SCEP configuration, you have to have the '/edit_systemconfiguration' access. </p>
 <subsubsection name="Operation Mode">
 <p>SCEP can be run in one of the following three modes:</p>
 <ul>
