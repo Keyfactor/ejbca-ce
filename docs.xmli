@@ -111,7 +111,7 @@
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
         </taskdef>
-
+		<echo file="${docs.templ.path}/VERSION" append="false" message="${app.version}"/>
         <anakia basedir="${docs.src}" destdir="${docs.dest}"
              extension=".html" style="./site.vsl"
              projectFile="${project.file}"
@@ -121,6 +121,7 @@
              templatePath="${docs.templ.path}"
              velocityPropertiesFile="${docs.velocity.props}">
         </anakia>
+		<delete file="${docs.templ.path}/VERSION"/>
 
         <copy todir="${docs.dest}">
         	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
