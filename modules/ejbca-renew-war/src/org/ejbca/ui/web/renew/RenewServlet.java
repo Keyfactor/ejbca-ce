@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -78,7 +79,6 @@ public class RenewServlet extends HttpServlet {
     public void doRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     	
 		AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RenewServlet: "+request.getRemoteAddr()));
-    	//Admin admin = new Admin(Admin.TYPE_RA_USER);
     	
     	// SSL client authentication
     	Object o = request.getAttribute("javax.servlet.request.X509Certificate");
@@ -113,6 +113,11 @@ public class RenewServlet extends HttpServlet {
 		    		userdata.setStatus(EndEntityConstants.STATUS_NEW);
 	    			endEntityManagementSession.changeUser(admin, userdata, false);
 	    			statusMessage = "Your request for certificate renewal has been submitted.";
+                    if (userdata.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
+                        statusMessage += " You will be notified by mail of the status change and new password.";
+                    } else {
+                        statusMessage += " Note that no notifications have been set for this end entity, so the new password can't be retrieved.";
+                    }
 	    		} catch(WaitingForApprovalException ex) {
 	    			statusMessage = "Your request for certificate renewal has been submitted and is now waiting for approval.";
 	    		} catch(ApprovalException ex) {
