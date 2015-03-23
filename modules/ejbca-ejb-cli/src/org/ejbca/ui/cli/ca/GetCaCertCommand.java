@@ -45,6 +45,7 @@ public class GetCaCertCommand extends BaseCaAdminCommand {
     private static final String CA_NAME_KEY = "--caname";
     private static final String FILE_KEY = "-f";
     private static final String DER_KEY = "-der";
+    private static final String FULL_CERT_CHAIN_KEY = "--include-full-chain";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -53,6 +54,8 @@ public class GetCaCertCommand extends BaseCaAdminCommand {
                 "The file to export to."));
         registerParameter(new Parameter(DER_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Use DER encoding. Default is PEM encoding."));
+        registerParameter(Parameter
+                .createFlag(FULL_CERT_CHAIN_KEY, "Set this flag to get the full certificate chain. Only available for PEM format."));
     }
 
     @Override
@@ -67,7 +70,8 @@ public class GetCaCertCommand extends BaseCaAdminCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        boolean pem = parameters.get(DER_KEY) == null;
+        boolean pem = !parameters.containsKey(DER_KEY);
+        boolean fullChain = parameters.containsKey(FULL_CERT_CHAIN_KEY);
 
         String caname = parameters.get(CA_NAME_KEY);
         String filename = parameters.get(FILE_KEY);
@@ -76,7 +80,7 @@ public class GetCaCertCommand extends BaseCaAdminCommand {
         ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAuthenticationToken(), caname));
         try {
             if (chain.size() > 0) {
-                Certificate rootcert = (Certificate) chain.get(chain.size() - 1);
+                Certificate caCert = (Certificate) chain.get(0);
 
                 FileOutputStream fos;
                 try {
@@ -86,12 +90,19 @@ public class GetCaCertCommand extends BaseCaAdminCommand {
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 if (pem) {
-                    fos.write(CertTools.getPemFromCertificateChain(chain));
+                    if (fullChain) {
+                        fos.write(CertTools.getPemFromCertificateChain(chain));
+                    } else {
+                        fos.write(CertTools.getPemFromCertificateChain(chain.subList(0, 1)));
+                    }
                 } else {
-                    fos.write(rootcert.getEncoded());
+                    fos.write(caCert.getEncoded());
+                    if (fullChain) {
+                        log.info("Full certificate chain not available in DER format. Writing only CA certificate.");
+                    }
                 }
                 fos.close();
-                log.info("Wrote CA certificate to '" + filename + "' using " + (pem ? "PEM" : "DER") + " encoding.");
+                log.info("Wrote CA certificate " + (pem && fullChain ? "with full certificate chain " : "") + "to '" + filename + "' using " + (pem ? "PEM" : "DER") + " encoding.");
                 return CommandResult.SUCCESS;
             } else {
                 log.error("No CA certificate found.");
