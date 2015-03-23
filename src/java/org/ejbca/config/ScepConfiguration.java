@@ -34,6 +34,28 @@ import org.cesecore.configuration.ConfigurationBase;
 
 public class ScepConfiguration extends ConfigurationBase implements Serializable {
     
+    private static final long serialVersionUID = -2051789798029184421L;
+
+    private static final Logger log = Logger.getLogger(ScepConfiguration.class);
+    
+    public enum Mode {
+        CA("CA"), RA("RA");
+
+        private final String resource;
+
+        private Mode(final String resource) {
+            this.resource = resource;
+        }
+
+        public String getResource() {
+            return resource;
+        }
+        
+        @Override
+        public String toString() {
+            return resource;
+        }
+    }
     
     // Constants: Configuration keys
     public static final String SCEP_PREFIX = "scep.";
@@ -56,21 +78,18 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA);
     
-    private final String ALIAS_LIST = "aliaslist";
     public static final String SCEP_CONFIGURATION_ID = "2";
     
-    private static final long serialVersionUID = -2051789798029184421L;
 
-    private static final Logger log = Logger.getLogger(ScepConfiguration.class);
-    
-    
+    private final String ALIAS_LIST = "aliaslist";
+ 
     // Default Values
     public static final float LATEST_VERSION = 3f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
     public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
-    public static final String DEFAULT_OPERATION_MODE = "ca";
+    public static final String DEFAULT_OPERATION_MODE = Mode.CA.getResource();
     public static final String DEFAULT_INCLUDE_CA = Boolean.TRUE.toString();
     public static final String DEFAULT_CLIENT_CERTIFICATE_RENEWAL = Boolean.FALSE.toString();
     public static final String DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = Boolean.FALSE.toString();
@@ -134,6 +153,13 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return keys;
     }
     
+    /**
+     * Client Certificate Renewal is defined in the SCEP draft as the capability of a certificate enrollment request to be interpreted as a 
+     * certificate renewal request if the previous certificate has passed half its validity. 
+     * 
+     * @param alias A SCEP configuration alias
+     * @return true of SCEP Client Certificate Renewal is enabled
+     */
     public boolean getClientCertificateRenewal(final String alias) {
         String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL;
         String value = getValue(key, alias);
@@ -142,14 +168,27 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
             return Boolean.getBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
         }
-        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+        return Boolean.valueOf(value);
     }
-        
+    /**
+     * @see ScepConfiguration#getClientCertificateRenewal(String)
+     * 
+     * @param alias A SCEP configuration alias
+     * @param clientCertificateRenewal true of Client Certificate Renewal is to be enabled
+     */
     public void setClientCertificateRenewal(String alias, boolean clientCertificateRenewal) {
         String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL;
-        setValue(key, clientCertificateRenewal ? Boolean.TRUE.toString() : Boolean.FALSE.toString(), alias);
+        setValue(key,  Boolean.toString(clientCertificateRenewal), alias);
     }
 
+    /**
+     * @see ScepConfiguration#getClientCertificateRenewal(String) for information about Client Certificate Renewal
+     * 
+     * The SCEP draft makes it optional whether or not old keys may be reused during Client Certificate Renewal
+     * 
+     * @param alias A SCEP configuration alias
+     * @return true of old keys are allowed Client Certificate Renewal
+     */
     public boolean getAllowClientCertificateRenewalWithOldKey(final String alias) {
         String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY;
         String value = getValue(key, alias);
@@ -158,23 +197,29 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
             return Boolean.getBoolean(DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         }
-        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+        return Boolean.valueOf(value);
     }
     
-    public void setAllowClientCertificateRenewalWithOldKey(String alias, boolean clientCertificateRenewal) {
+    /**
+     * @see ScepConfiguration#getAllowClientCertificateRenewalWithOldKey(String)
+     * 
+     * @param alias A SCEP configuration alias
+     * @param allowClientCertificateRenewalWithOldKey set true to allow Client Certificate Renewal using old keys
+     */
+    public void setAllowClientCertificateRenewalWithOldKey(String alias, boolean allowClientCertificateRenewalWithOldKey) {
         String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY;
-        setValue(key, clientCertificateRenewal ? Boolean.TRUE.toString() : Boolean.FALSE.toString(), alias);
+        setValue(key, Boolean.toString(allowClientCertificateRenewalWithOldKey), alias);
     }
     
     /** Method used by the Admin GUI. */
     public boolean getRAMode(String alias) {
         String key = alias + "." + SCEP_OPERATIONMODE;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "ra");
+        return StringUtils.equalsIgnoreCase(value, Mode.RA.getResource());
     }
     public void setRAMode(String alias, boolean ramode) {
         String key = alias + "." + SCEP_OPERATIONMODE;
-        setValue(key, ramode? "ra" : "ca", alias);
+        setValue(key, ramode ? Mode.RA.getResource() : Mode.CA.getResource(), alias);
     }
     
     public boolean getIncludeCA(String alias) {

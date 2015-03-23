@@ -102,19 +102,13 @@ public class ScepRequestGenerator {
         this.cacert = ca;
         this.reqdn = dn;
         X500Name name = CertTools.stringToBcX500Name(cacert.getIssuerDN().getName());
-        IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());
-        // Create self signed cert, validity 1 day
-        //cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
-        
+        IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
-        byte[] msg = wrap(ias.getEncoded(), "22", transactionId, senderCertificate, signatureKey);        
-        return msg;
+        return wrap(ias.getEncoded(), "22", transactionId, senderCertificate, signatureKey);        
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
             final PrivateKey signatureKey) throws IOException, OperatorCreationException, CertificateException, CMSException {
-        // Extension request attribute is a set of X509Extensions
-        // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // Requested extensions attribute
@@ -163,12 +157,8 @@ public class ScepRequestGenerator {
         final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
-        // Create self signed cert, validity 1 day
-        //this.cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
-        
         // wrap message in pkcs#7
-        byte[] msg = wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey);
-        return msg;        
+        return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey);
     }
 
     public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
@@ -186,13 +176,8 @@ public class ScepRequestGenerator {
         vec.add(new DERUTF8String(dn));
         DERSequence seq = new DERSequence(vec);
 
-        // The self signed certificate has already been generated when the request message was created
-        // Create self signed cert, validity 1 day
-        //cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
-
         // wrap message in pkcs#7
-        byte[] msg = wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey);
-        return msg;
+        return wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey);
     }
     
     private CMSEnvelopedData envelope(CMSTypedData envThis) throws CMSException, CertificateEncodingException {
