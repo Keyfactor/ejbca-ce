@@ -42,7 +42,7 @@ public class SetPasswordCommand extends BaseRaCommand {
     {
         registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Username for the end entity."));
-        registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New password for the end entity."));
     }
 
