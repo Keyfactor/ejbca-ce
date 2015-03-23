@@ -667,11 +667,11 @@ public class ProtocolScepHttpTest {
         return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keys, String signatureProvider) throws InvalidKeyException,
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider) throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
             IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
-        gen.setKeys(keys, signatureProvider);
+        gen.setKeys(keyPair, signatureProvider);
         gen.setDigestOid(digestoid);
         byte[] msgBytes = null;
         // Create a transactionId
@@ -680,11 +680,11 @@ public class ProtocolScepHttpTest {
         byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
         transId = new String(Base64.encode(digest));
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
-                keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         if (makeCrlReq) {
-            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keys.getPrivate());
+            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate());
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keys.getPrivate());
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate());
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
