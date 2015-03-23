@@ -76,7 +76,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
      * Retrieves the complete certificate chain from the CA
      * 
      * @param human readable name of CA
-     * @return array of certificates, from ISignSession.getCertificateChain()
+     * @return a Collection of certificates
      */
     protected Collection<Certificate> getCertChain(AuthenticationToken authenticationToken, String caname) {
         log.trace(">getCertChain()");
