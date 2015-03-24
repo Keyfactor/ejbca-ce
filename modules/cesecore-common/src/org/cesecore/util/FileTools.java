@@ -84,7 +84,12 @@ public abstract class FileTools {
 
         opstr.close();
 
-        final byte[] bytes = Base64.decode(ostr.toByteArray());
+        final byte[] bytes;
+        try {
+            bytes = Base64.decode(ostr.toByteArray());
+        } catch (Exception e) {
+            throw new IOException("Malformed PEM encoding or PEM of unknown type: " + e.getMessage());
+        }
         if (log.isTraceEnabled()) {
             log.trace("<getBytesFromPEM");
         }
