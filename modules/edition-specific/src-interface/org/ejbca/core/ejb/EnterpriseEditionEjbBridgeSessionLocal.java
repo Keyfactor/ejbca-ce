@@ -23,4 +23,6 @@ import javax.ejb.Local;
 public interface EnterpriseEditionEjbBridgeSessionLocal {
 
     <T> T getEnterpriseEditionEjbLocal(Class<T> localInterfaceClass, String modulename);
+    
+    boolean isRunningEnterprise();
 }

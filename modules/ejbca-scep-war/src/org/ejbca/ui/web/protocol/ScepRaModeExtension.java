@@ -50,7 +50,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * @version $Id$
  *
  */
-public class ScepRaModeExtension implements ScepPlugin {
+public class ScepRaModeExtension implements ScepOperationPlugin {
 
     private static final Logger log = Logger.getLogger(ScepRaModeExtension.class);
 
