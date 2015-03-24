@@ -88,4 +88,9 @@ public class EnterpriseEjbLocalHelper implements EnterpriseEditionEjbBridgeSessi
             return getEnterpriseEditionEjbLocal().getEnterpriseEditionEjbLocal(localInterfaceClass, null);
         }
     }
+
+    @Override
+    public boolean isRunningEnterprise() {
+        return getEnterpriseEditionEjbLocal().isRunningEnterprise();
+    }
 }

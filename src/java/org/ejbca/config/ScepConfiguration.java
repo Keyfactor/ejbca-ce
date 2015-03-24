@@ -72,9 +72,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RA_NAME_GENERATION_POSTFIX = "ra.namegenerationpostfix";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL = "clientCertificateRenewal";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = "clientCertificateRenewalWithOldKey";
-    
-    
-    
+       
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA);
     

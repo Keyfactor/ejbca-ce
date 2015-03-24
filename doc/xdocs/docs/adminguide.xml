@@ -369,7 +369,7 @@ The following CA capabilities are supported:
 <ul>
 <li>POSTPKIOperation</li>
 <li>SHA-1</li>
-<li>Client Certificate Renewal</li>
+<li>Client Certificate Renewal <i><b>(Enterprise Edition Only)</b></i></li>
 </ul>
 </p>
 <p>
@@ -413,12 +413,12 @@ the different parameters through the command line is available when executing th
 <subsubsection name="Include CA certificate in response">
 <p>Setting this value to true will cause the CA certificate to be included in the response, if applicable</p>
 </subsubsection>
-<subsubsection name="Allow Client Certificate Renewal">
+<subsubsection name="Allow Client Certificate Renewal (Enterprise Edition only)">
 <p>This setting activates Client Certificate Renewal, as defined in <a href="http://tools.ietf.org/html/draft-nourse-scep-23#appendix-D">Appendix D</a> of the SCEP draft. In short, this 
 mode allows the server to interpret enrollment requests as certificate renewal requests, only if the latest issued certificate for the end entity has passed half its validity. To be 
 valid, the PKCS#7 wrapping the CSR must be signed by the old certificate's keypair. </p>
 </subsubsection>
-<subsubsection name="Allow Client Certificate Renewal using old key">
+<subsubsection name="Allow Client Certificate Renewal using old key (Enterprise Edition only)">
 <p>The SCEP draft doesn't mandate if old keys may be reused for Client Certificate Renewal or not, so EJBCA includes this as a setting. </p>
 </subsubsection>
 </subsection>
