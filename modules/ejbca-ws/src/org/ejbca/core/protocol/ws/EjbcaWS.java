@@ -83,11 +83,9 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -113,7 +111,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
@@ -495,102 +492,123 @@ public class EjbcaWS implements IEjbcaWS {
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-	    
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    logAdminName(ejbhelper.getAdmin(),logger);
 	    try {
 	        enterpriseWSBridgeSession.createCryptoToken(ejbhelper.getAdmin(), tokenName, tokenType, activationPin, autoActivate, 
 	                cryptotokenProperties);
 	    } catch (AuthorizationDeniedException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
-	    } catch (CryptoTokenOfflineException e) {
-	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-	    } catch (CryptoTokenAuthenticationFailedException e) {
-	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-	    } catch (CryptoTokenNameInUseException e) {
-	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	        throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } catch (CesecoreException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
+	    } catch (RuntimeException e) {  // ClassCastException, EJBException ...
+	        throw EjbcaWSHelper.getInternalException(e, logger);
 	    } catch (NoSuchSlotException e) {
 	        throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+	    } finally {
+	        logger.writeln();
+	        logger.flush();
 	    }
 	}
-	
+
 	@Override
 	public void generateCryptoTokenKeys(String cryptoTokenName, String keyPairAlias, String keySpecification) 
 	        throws AuthorizationDeniedException, EjbcaException {
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    logAdminName(ejbhelper.getAdmin(),logger);
 	    try {
 	        enterpriseWSBridgeSession.generateCryptoTokenKeys(ejbhelper.getAdmin(), cryptoTokenName, keyPairAlias, keySpecification);
 	    } catch (AuthorizationDeniedException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
-	    } catch (CryptoTokenOfflineException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
+	        throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } catch (CesecoreException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
+	    } catch (RuntimeException e) {  // ClassCastException, EJBException ...
+	        throw EjbcaWSHelper.getInternalException(e, logger);
 	    } catch (InvalidKeyException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.INVALID_KEY, Level.INFO);
 	    } catch (InvalidAlgorithmParameterException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.INVALID_KEY_SPEC, Level.INFO);
+	    } finally {
+	        logger.writeln();
+	        logger.flush();
 	    }
 	}
-	
+
 	@Override
-	public void createCA(String caname, String cadn, String catype, List<KeyValuePair> catokenProperties, 
-	        String cryptoTokenName, long validityInDays, String certprofile, String signAlg, String policyId, 
-	        int signedByCAId) throws EjbcaException, AuthorizationDeniedException {
+	public void createCA(String caname, String cadn, String catype, long validityInDays, String certprofile, 
+	        String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, 
+	        List<KeyValuePair> caProperties) throws EjbcaException, AuthorizationDeniedException {
 	    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-	       
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    logAdminName(ejbhelper.getAdmin(),logger);
 	    try {
-	        enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, catokenProperties, cryptoTokenName, 
-	                validityInDays, certprofile, signAlg, policyId, signedByCAId);
-	    } catch (CAExistsException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.FIELD_VALUE_NOT_VALID, Level.INFO);
-	    } catch (CertificateProfileDoesNotExistException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CERT_PROFILE_NOT_EXISTS, Level.INFO);
-	    } catch (CryptoTokenOfflineException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
-	    } catch (InvalidAlgorithmException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), Level.INFO);
+	        enterpriseWSBridgeSession.createCA(ejbhelper.getAdmin(), caname, cadn, catype, validityInDays, certprofile, 
+	                signAlg, signedByCAId, cryptoTokenName, purposeKeyMapping, caProperties);
 	    } catch (AuthorizationDeniedException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	        throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } catch (CesecoreException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
+	    } catch (RuntimeException e) {  // ClassCastException, EJBException ...
+	        throw EjbcaWSHelper.getInternalException(e, logger);
+	    } finally {
+	        logger.writeln();
+	        logger.flush();
 	    }
 	}
-	
+
 	@Override
 	public void addSubjectToRole(String roleName, String caName, String matchWith, String matchType, 
 	        String matchValue) throws EjbcaException, AuthorizationDeniedException {
-	            
+    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-	           
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    logAdminName(ejbhelper.getAdmin(),logger);
 	    try {
 	        enterpriseWSBridgeSession.addSubjectToRole(ejbhelper.getAdmin(), roleName, caName, matchWith, matchType, matchValue);
-	    } catch (CADoesntExistsException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_NOT_EXISTS, Level.INFO);
+	    } catch (AuthorizationDeniedException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } catch (CesecoreException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
+	    } catch (RuntimeException e) {  // ClassCastException, EJBException ...
+	        throw EjbcaWSHelper.getInternalException(e, logger);    
 	    } catch (RoleNotFoundException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
-	    } catch (AuthorizationDeniedException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } finally {
+	        logger.writeln();
+	        logger.flush();
 	    }
 	}
-	
+
 	@Override
 	public void removeSubjectFromRole(String roleName, String caName, String matchWith, String matchType, 
 	        String matchValue) throws EjbcaException, AuthorizationDeniedException {
-	    
+    
 	    EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, 
 	            certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, 
 	            hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
-	               
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    logAdminName(ejbhelper.getAdmin(),logger);
 	    try {
 	        enterpriseWSBridgeSession.removeSubjectFromRole(ejbhelper.getAdmin(), roleName, caName, matchWith, matchType, matchValue);
-	    } catch (CADoesntExistsException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_NOT_EXISTS, Level.INFO);
+	    } catch (AuthorizationDeniedException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } catch (CesecoreException e) {
+	        throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
+	    } catch (RuntimeException e) {  // ClassCastException, EJBException ...
+	        throw EjbcaWSHelper.getInternalException(e, logger);    
 	    } catch (RoleNotFoundException e) {
 	        throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.ROLE_DOES_NOT_EXIST, Level.INFO);
-	    } catch (AuthorizationDeniedException e) {
-	        throw EjbcaWSHelper.getEjbcaException(e, TransactionLogger.getPatternLogger(), ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+	    } finally {
+	        logger.writeln();
+	        logger.flush();
 	    }
 	}
 	

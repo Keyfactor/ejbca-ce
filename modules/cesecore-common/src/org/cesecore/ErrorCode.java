@@ -34,6 +34,7 @@ public class ErrorCode implements Serializable {
     private String internalErrorCode = _NOT_SPECIFIED;
 
     private static final String _CA_NOT_EXISTS = "CA_NOT_EXISTS"; // CA does not exist.
+    private static final String _CA_ALREADY_EXISTS = "CA_ALREADY_EXISTS"; // CA already exists.
     private static final String _CA_ID_EQUALS_ZERO = "CA_ID_EQUALS_ZERO"; // CA ID can't be equal to zero.
     private static final String _EE_PROFILE_NOT_EXISTS = "EE_PROFILE_NOT_EXISTS"; // End Entity profile does not exist.
     private static final String _CERT_PROFILE_NOT_EXISTS = "CERT_PROFILE_NOT_EXISTS"; // Certificate profile does not exist.
@@ -97,6 +98,8 @@ public class ErrorCode implements Serializable {
 
     /** CA does not exist. */
     public static final ErrorCode CA_NOT_EXISTS = new ErrorCode(_CA_NOT_EXISTS);
+    /** CA already exists. */
+    public static final ErrorCode CA_ALREADY_EXISTS = new ErrorCode(_CA_ALREADY_EXISTS);
     /** CA ID can't be equal to zero. */
     public static final ErrorCode CA_ID_EQUALS_ZERO = new ErrorCode(_CA_ID_EQUALS_ZERO);
     /** End Entity profile does not exist. */

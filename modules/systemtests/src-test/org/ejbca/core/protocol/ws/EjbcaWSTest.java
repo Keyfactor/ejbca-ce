@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -105,6 +105,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -909,7 +910,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test70CreateSoftCryptoToken() throws Exception {
         log.trace(">test70CreateSoftCryptoToken()");
+        
+        // If this is community edition, then this method is not supported and the test is skipped
+        boolean methodSupported = true;
+        try {
+            ejbcaraws.createCryptoToken(null, null, null, false, null);
+        } catch(EjbcaException_Exception e) {
+            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
+                methodSupported = false;
+            }
+        }
+        assumeTrue(methodSupported);
+
         String ctname = "NewTestCryptoTokenThroughWS";
+        
+        // Remove any residues from earlier test runs
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
             cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
@@ -937,12 +952,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
             cryptoTokenManagementSession.activate(intAdmin, ctid.intValue(), "1234".toCharArray());
             assertTrue(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
-        } catch (RuntimeException e) {
-            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
-                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
-            } else {
-                throw e;
-            }
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             if(ctid != null) {
@@ -955,7 +964,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test71GenerateCryptoTokenKeys() throws Exception {
         log.trace(">test71GenerateCryptoTokenKeys()");
+        
+        // If this is community edition, then this method is not supported and the test is skipped
+        boolean methodSupported = true;
+        try {
+            ejbcaraws.generateCryptoTokenKeys(null, null, null);
+        } catch(EjbcaException_Exception e) {
+            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
+                methodSupported = false;
+            }
+        }
+        assumeTrue(methodSupported);
+
         String ctname = "NewTestCryptoTokenThroughWS";
+        
+        // Remove any residues from earlier test runs
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
             cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
@@ -969,18 +992,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             
             String keyAlias = "testWSGeneratedKeys";
-            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "1024");
+            ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "RSA1024");
             List<String> keyAliases = cryptoTokenManagementSession.getKeyPairAliases(intAdmin, ctid.intValue());
             assertTrue(keyAliases.contains(keyAlias));
             KeyPairInfo keyInfo = cryptoTokenManagementSession.getKeyPairInfo(intAdmin, ctid.intValue(), keyAlias);
             assertEquals("RSA", keyInfo.getKeyAlgorithm());
             assertEquals("1024", keyInfo.getKeySpecification());
-        } catch (RuntimeException e) {
-            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
-                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
-            } else {
-                throw e;
-            }
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             if(ctid != null) {
@@ -993,13 +1010,28 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test72CreateCA() throws Exception {
         log.trace(">test72CreateCA()");
+        
+        // It this is community edition, then this method is not supported and the test is skipped
+        boolean methodSupported = true;
+        try {
+            ejbcaraws.createCA(null, null, null, 0L, null, null, 0, null, null, null);
+        } catch(EjbcaException_Exception e) {
+            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
+                methodSupported = false;
+            }
+        }
+        assumeTrue(methodSupported);
+        
+        
         String caname = "NewTestCAThroughWS";
+        String ctname = caname + "CryptoToken";
+        
+        // Remove any residues from earlier test runs
         if(caSession.existsCa(caname)) {
             int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
             caSession.removeCA(intAdmin, caid);
         }
         
-        String ctname = caname + "CryptoToken";
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
             cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
@@ -1010,24 +1042,49 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<KeyValuePair>();
             cryptotokenProperties.add(new KeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false)));
             cryptotokenProperties.add(new KeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
-            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
+            ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", true, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
 
             // generate keys
             final String decKeyAlias = CAToken.SOFTPRIVATEDECKEYALIAS;
-            ejbcaraws.generateCryptoTokenKeys(ctname, decKeyAlias, "1024");
+            ejbcaraws.generateCryptoTokenKeys(ctname, decKeyAlias, "RSA1024");
             final String signKeyAlias = CAToken.SOFTPRIVATESIGNKEYALIAS;
-            ejbcaraws.generateCryptoTokenKeys(ctname, signKeyAlias, "1024");
+            ejbcaraws.generateCryptoTokenKeys(ctname, signKeyAlias, "RSA1024"); //secp256r1 
             final String testKeyAlias = "test72CreateCATestKey";
-            ejbcaraws.generateCryptoTokenKeys(ctname, testKeyAlias, "1024");
+            ejbcaraws.generateCryptoTokenKeys(ctname, testKeyAlias, "secp256r1");
             
             // construct the ca token properties
-            final ArrayList<KeyValuePair> caTokenProperties = new ArrayList<KeyValuePair>();
-            caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS));
-            caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
-            caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
-            caTokenProperties.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));
-            ejbcaraws.createCA(caname, "CN="+caname, "x509", caTokenProperties, ctname, 3L, null, "SHA1WithRSA", null, CAInfo.SELFSIGNED);
+            final ArrayList<KeyValuePair> purposeKeyMapping = new ArrayList<KeyValuePair>();
+            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS));
+            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
+            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
+            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));
+            
+            // Try to create a CA signed by an external CA. It should fail.
+            try {
+                ejbcaraws.createCA(caname, "CN="+caname, "x509", 3L, null, "SHA256WithRSA", CAInfo.SIGNEDBYEXTERNALCA, ctname, purposeKeyMapping, null);
+                fail("It was possible to create a CA signed by an external CA");
+            } catch(EjbcaException_Exception e) {
+                if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED.getInternalErrorCode())) {
+                    throw e;
+                }
+            }
+            
+            // Try to create a CA that already exists. It should fail
+            try {
+                ejbcaraws.createCA("ManagementCA", caSession.getCAInfo(intAdmin, "ManagementCA").getSubjectDN(), "x509", 3L, null, "SHA256WithRSA", 
+                        CAInfo.SELFSIGNED, ctname, purposeKeyMapping, null);
+                fail("It was possible to create a CA even though the CA already exists");
+            } catch(EjbcaException_Exception e) {
+                if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.CA_ALREADY_EXISTS.getInternalErrorCode())) {
+                    throw e;
+                }
+            }
+            
+            // Try to create a CA. It should succeed (Happy path test)
+            ejbcaraws.createCA(caname, "CN="+caname, "x509", 3L, null, "SHA256WithRSA", CAInfo.SELFSIGNED, ctname, purposeKeyMapping, null);
+            
+            // Verify the new CA's parameters
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertNotNull(cainfo);
             assertEquals(caname, cainfo.getName());
@@ -1035,12 +1092,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, cainfo.getCertificateProfileId());
             assertEquals(CAInfo.SELFSIGNED, cainfo.getSignedBy());
             assertEquals(CAInfo.CATYPE_X509, cainfo.getCAType());
-        } catch (RuntimeException e) {
-            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
-                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
-            } else {
-                throw e;
-            }
+
         } finally {
             if(caSession.existsCa(caname)) {
                 int caid = caSession.getCAInfo(intAdmin, caname).getCAId();
@@ -1059,9 +1111,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test73ManageSubjectInRole() throws Exception {
         log.trace(">test73AddSubjectToRole()");
         
+        // It this is community edition, then this method is not supported and the test is skipped
+        boolean methodSupported = true;
+        try {
+            ejbcaraws.addSubjectToRole(null, null, null, null, null);
+        } catch(EjbcaException_Exception e) {
+            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
+                methodSupported = false;
+            }
+        }
+        assumeTrue(methodSupported);
+        
         String rolename = "TestWSNewAccessRole";
         String testAdminUsername = "newWsAdminUserName";
         
+     // Remove any residues from earlier test runs
         RoleData role = roleAccessSession.findRole(rolename);
         if(role != null) {
             roleManagementSession.remove(intAdmin, role);
@@ -1109,7 +1173,19 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             // Verify that there are no admins from the start
             assertTrue(role.getAccessUsers().size()==0);
         
-            // Add adminUser to the new role
+            
+            // Add adminUser to a non-existing role. It should fail
+            try {
+                ejbcaraws.addSubjectToRole("NoneExistingRole", getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+                        AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
+                fail("Succeeded in adding subject to a non-existing role");
+            } catch(EjbcaException_Exception e) {
+                if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.ROLE_DOES_NOT_EXIST.getInternalErrorCode())) {
+                    throw e;
+                }
+            }
+            
+            // Add adminUser to the new role. It should succeed
             ejbcaraws.addSubjectToRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
                     AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
             role = roleAccessSession.findRole(rolename);
@@ -1123,18 +1199,24 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals(adminUser.getCertificateDN(), addedAdmin.getMatchValue());
             assertEquals(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(), addedAdmin.getMatchWith());
 
-            // Remove adminUser from the new role
+            
+            // Remove adminUser specified by a non-existing CA. It should fail
+            try {
+                ejbcaraws.removeSubjectFromRole(rolename, "NoneExistingCA", X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+                        AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
+                fail("Succeeded in adding subject to a non-existing role");
+            } catch(EjbcaException_Exception e) {
+                if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.CA_NOT_EXISTS.getInternalErrorCode())) {
+                    throw e;
+                }
+            }
+            
+            // Remove adminUser from the new role. It should succeed
             ejbcaraws.removeSubjectFromRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
                     AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
             role = roleAccessSession.findRole(rolename);            
             assertTrue(role.getAccessUsers().values().size()==0);
             
-        } catch (RuntimeException e) {
-            if(StringUtils.equals("This method can only be used in Enterprise edition.", e.getMessage())) {
-                log.info("This feature is an enterprise-only feature and cannot be accessed here. Skipping this test");
-            } else {
-                throw e;
-            }
         } finally {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, testAdminUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
             if(roleAccessSession.findRole(rolename)!=null) {
