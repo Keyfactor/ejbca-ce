@@ -1537,7 +1537,7 @@ How to automate that is more advanced and can be done in many ways, suitable for
 <subsection name="Request Browser Certificate Renewal">
 <p>If renewal is enabled there is an extra link under "Enroll" on the public web page called "Renew Browser Certificate". The page requires 
 authentication with a client certificate and makes it possible for the user to request the certificate to be renewed.</p>
-<p>Renewal will result in the status of the end entity being set to NEW and the password set to an auto-generated password. The end enity must have 
+<p>Renewal will result in the status of the end entity being set to NEW and the password set to an auto-generated password. The end entity must have 
 notifications set or the password will be unretrievable.</p>
 <p>
 The renewal functionality is provided in a separate web module called renew.war which is not deployed and linked to by default. It can be 
