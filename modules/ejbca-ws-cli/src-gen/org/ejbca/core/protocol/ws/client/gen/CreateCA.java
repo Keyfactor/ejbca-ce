@@ -22,13 +22,13 @@ import org.ejbca.util.KeyValuePair;
  *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}String"/>
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}KeyValuePair" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}long"/>
- *         &lt;element name="arg9" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg10" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg11" type="{http://www.w3.org/2001/XMLSchema}String"/>
- *         &lt;element name="arg12" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}long"/>
+ *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}String"/>
+ *         &lt;element name="arg5" type="{http://www.w3.org/2001/XMLSchema}String"/>
+ *         &lt;element name="arg6" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="arg7" type="{http://www.w3.org/2001/XMLSchema}String"/>
+ *         &lt;element name="arg8" type="{http://www.w3.org/2001/XMLSchema}KeyValuePair" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="arg9" type="{http://www.w3.org/2001/XMLSchema}KeyValuePair" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -56,13 +56,14 @@ public class CreateCA {
    protected String arg0;
    protected String arg1;
    protected String arg2;
-   protected List<KeyValuePair> arg3;
+   protected long arg3;
    protected String arg4;
-   protected long arg5;
-   protected String arg6;
+   protected String arg5;
+   protected int arg6;
    protected String arg7;
-   protected String arg8;
-   protected int arg9;
+   protected List<KeyValuePair> arg8;
+   protected List<KeyValuePair> arg9;
+
    
    /**
     * Gets the value of the arg0 property.
@@ -113,32 +114,19 @@ public class CreateCA {
    }
 
    /**
-    * Gets the value of the arg5 property.
-    * 
-    * <p>
-    * This accessor method returns a reference to the live list,
-    * not a snapshot. Therefore any modification you make to the
-    * returned list will be present inside the JAXB object.
-    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
-    * 
-    * <p>
-    * For example, to add a new item, do as follows:
-    * <pre>
-    *    getArg3().add(newItem);
-    * </pre>
-    * 
-    * 
-    * <p>
-    * Objects of the following type(s) are allowed in the list
-    * {@link KeyValuePair }
-    * 
+    * Gets the value of the arg3 property.
     * 
     */
-   public List<KeyValuePair> getArg3() {
-       if (arg3 == null) {
-           arg3 = new ArrayList<KeyValuePair>();
-       }
-       return this.arg3;
+   public long getArg3() {
+       return arg3;
+   }
+
+   /**
+    * Sets the value of the arg3 property.
+    * 
+    */
+   public void setArg3(long value) {
+       this.arg3 = value;
    }
 
    /**
@@ -156,12 +144,12 @@ public class CreateCA {
    public void setArg4(String value) {
        this.arg4 = value;
    }
-
+   
    /**
     * Gets the value of the arg5 property.
     * 
     */
-   public long getArg5() {
+   public String getArg5() {
        return arg5;
    }
 
@@ -169,7 +157,7 @@ public class CreateCA {
     * Sets the value of the arg5 property.
     * 
     */
-   public void setArg5(long value) {
+   public void setArg5(String value) {
        this.arg5 = value;
    }
    
@@ -177,7 +165,7 @@ public class CreateCA {
     * Gets the value of the arg6 property.
     * 
     */
-   public String getArg6() {
+   public int getArg6() {
        return arg6;
    }
 
@@ -185,7 +173,7 @@ public class CreateCA {
     * Sets the value of the arg6 property.
     * 
     */
-   public void setArg6(String value) {
+   public void setArg6(int value) {
        this.arg6 = value;
    }
    
@@ -206,35 +194,61 @@ public class CreateCA {
    }
    
    /**
-    * Gets the value of the arg8 property.
+    * Gets the value of the arg5 property.
+    * 
+    * <p>
+    * This accessor method returns a reference to the live list,
+    * not a snapshot. Therefore any modification you make to the
+    * returned list will be present inside the JAXB object.
+    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
+    * 
+    * <p>
+    * For example, to add a new item, do as follows:
+    * <pre>
+    *    getArg8().add(newItem);
+    * </pre>
+    * 
+    * 
+    * <p>
+    * Objects of the following type(s) are allowed in the list
+    * {@link KeyValuePair }
+    * 
     * 
     */
-   public String getArg8() {
-       return arg8;
-   }
-
-   /**
-    * Sets the value of the arg8 property.
-    * 
-    */
-   public void setArg8(String value) {
-       this.arg8 = value;
+   public List<KeyValuePair> getArg8() {
+       if (arg8 == null) {
+           arg8 = new ArrayList<KeyValuePair>();
+       }
+       return this.arg8;
    }
    
    /**
-    * Gets the value of the arg9 property.
+    * Gets the value of the arg5 property.
+    * 
+    * <p>
+    * This accessor method returns a reference to the live list,
+    * not a snapshot. Therefore any modification you make to the
+    * returned list will be present inside the JAXB object.
+    * This is why there is not a <CODE>set</CODE> method for the arg1 property.
+    * 
+    * <p>
+    * For example, to add a new item, do as follows:
+    * <pre>
+    *    getArg9().add(newItem);
+    * </pre>
+    * 
+    * 
+    * <p>
+    * Objects of the following type(s) are allowed in the list
+    * {@link KeyValuePair }
+    * 
     * 
     */
-   public int getArg9() {
-       return arg9;
-   }
-
-   /**
-    * Sets the value of the arg9 property.
-    * 
-    */
-   public void setArg9(int value) {
-       this.arg9 = value;
+   public List<KeyValuePair> getArg9() {
+       if (arg9 == null) {
+           arg9 = new ArrayList<KeyValuePair>();
+       }
+       return this.arg9;
    }
 
 }

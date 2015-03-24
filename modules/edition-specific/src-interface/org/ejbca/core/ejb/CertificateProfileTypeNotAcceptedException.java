@@ -27,7 +27,7 @@ public class CertificateProfileTypeNotAcceptedException extends EjbcaException {
     /**
      * @param message with more information what is wrong
      */
-    public CertificateProfileTypeNotAcceptedException(String m) {
-        super(ErrorCode.BAD_CERTIFICATE_PROFILE_TYPE, m);
+    public CertificateProfileTypeNotAcceptedException(String message) {
+        super(ErrorCode.BAD_CERTIFICATE_PROFILE_TYPE, message);
     }
 }
