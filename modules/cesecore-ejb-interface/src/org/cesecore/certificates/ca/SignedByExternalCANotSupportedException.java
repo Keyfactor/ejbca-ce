@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -9,27 +9,28 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/
-
-package org.ejbca.core.ejb;
+ *************************************************************************/ 
+package org.cesecore.certificates.ca;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 
-/**
- * Thrown when accessing enterprise-edition-only features in the community version
- * @version $Id$
- *
- */
-public class UnsupportedMethodException extends CesecoreException {
-    
 
-    private static final long serialVersionUID = -6099472895840497282L;
+/**
+ * Thrown when trying to create a new CA signed by an external CA using the WS *
+ * @version $Id: CAExistsException.java 17625 2013-09-20 07:12:06Z netmackan $
+ */
+public class SignedByExternalCANotSupportedException extends CesecoreException {
+
+    
+    private static final long serialVersionUID = -8917528643510939912L;
 
     /**
-     * @param message with more information what is wrong
+     * Constructs an instance of <code>SignedByExternalCANotSupportedException</code> with the specified detail message.
+     * @param msg the detail message.
      */
-    public UnsupportedMethodException(String m) {
-        super(ErrorCode.UNSUPPORTED_METHOD, m);
+    public SignedByExternalCANotSupportedException(String msg) {
+        super(ErrorCode.SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED, msg);
     }
+    
 }

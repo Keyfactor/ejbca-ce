@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignedByExternalCANotSupportedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
@@ -83,18 +84,16 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param caname The CA name
      * @param cadn The CA subjectDN
      * @param catype The CA type. It could be either 'x509' or 'cvc'
-     * @param catokenProperties The catoken properties
-     * @param cryptoTokenName The name of the cryptotoken associated with the CA
      * @param validityInDays Validity of the CA in days.
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
      * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
      * GOST3411withECGOST3410, GOST3411withDSTU4145
-     * @param policyId The policy ID can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' 
-     * or objectID and cpsurl as '2.5.29.32.0 http://foo.bar.com/mycps.txt'. You can add multiple policies such as 
-     * '2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt'.
      * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA).
      * CAs created using the WS cannot be signed by external CAs.
+     * @param cryptoTokenName The name of the cryptotoken associated with the CA
+     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose
+     * @param caProperties The CA properties that are not purpose-key mapping
      * @throws UnsupportedMethodException When trying to access this method in the community version
      * @throws SignedByExternalCANotSupportedException
      * @throws CAExistsException
@@ -104,8 +103,8 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws CryptoTokenOfflineException
      * @throws InvalidAlgorithmException
      */
-    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, List<KeyValuePair> catokenProperties, String cryptoTokenName, 
-            long validityInDays, String certprofile, String signAlg, String policyId, int signedByCAId) 
+    void createCA(AuthenticationToken admin, String caname, String cadn, String catype, long validityInDays, String certprofile, 
+            String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, List<KeyValuePair> caProperties) 
             throws UnsupportedMethodException, SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, CertificateProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
     

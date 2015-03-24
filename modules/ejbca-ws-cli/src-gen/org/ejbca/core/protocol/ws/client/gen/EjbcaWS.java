@@ -1087,19 +1087,19 @@ public interface EjbcaWS {
            @WebParam(name = "arg2", targetNamespace = "")
            String arg2,
            @WebParam(name = "arg3", targetNamespace = "")
-           List<KeyValuePair> arg3,
+           long arg3,
            @WebParam(name = "arg4", targetNamespace = "")
            String arg4,
            @WebParam(name = "arg5", targetNamespace = "")
-           long arg5,
+           String arg5,
            @WebParam(name = "arg6", targetNamespace = "")
-           String arg6,
+           int arg6,
            @WebParam(name = "arg7", targetNamespace = "")
            String arg7,
            @WebParam(name = "arg8", targetNamespace = "")
-           String arg8,
+           List<KeyValuePair> arg8,
            @WebParam(name = "arg9", targetNamespace = "")
-           int arg9)
+           List<KeyValuePair> arg9)
            throws AuthorizationDeniedException_Exception, EjbcaException_Exception
    ;
 

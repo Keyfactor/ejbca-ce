@@ -10,26 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.ejbca.core.protocol.ws.objects;
 
-package org.ejbca.core.ejb;
-
-import org.cesecore.ErrorCode;
-import org.ejbca.core.EjbcaException;
-
-/**
- * Thrown when trying to create a new CA signed by an external CA using the WS
- * @version $Id$
- *
- */
-public class SignedByExternalCANotSupportedException extends EjbcaException {
-    
-
-    private static final long serialVersionUID = 1L;
+public class CaConstants {
 
     /**
-     * @param message with more information what is wrong
+     * The policy ID can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' 
+     * or objectID and cpsurl as '2.5.29.32.0 http://foo.bar.com/mycps.txt'. You can add multiple policies such as 
+     * '2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt'.
      */
-    public SignedByExternalCANotSupportedException(String m) {
-        super(ErrorCode.SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED, m);
-    }
+    public static final String POLICYID = "policyid";
+    
 }

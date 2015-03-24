@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 
 
 /**
@@ -38,6 +39,6 @@ public class CAExistsException extends CesecoreException {
      * @param msg the detail message.
      */
     public CAExistsException(String msg) {
-        super(msg);
+        super(ErrorCode.CA_ALREADY_EXISTS, msg);
     }
 }
