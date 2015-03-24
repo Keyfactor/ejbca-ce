@@ -355,7 +355,7 @@ To manage SCEP aliases in the AdminGUI, go to System Functions -> SCEP Configura
 <p>
 EJBCA implements features from (at least) draft 11 of the SCEP specification. This means that we implement the following SCEP messages:
 <ul>
-<li>PKCSReq</li>
+<li>PKCSReq including Client Certificate Renewal</li>
 <li>GetCRL</li>
 <li>GetCACert</li>
 <li>GetCACertChain</li>
