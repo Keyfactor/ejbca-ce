@@ -29,4 +29,9 @@ public class EnterpriseEditionEjbBridgeSessionBean implements EnterpriseEditionE
     public <T> T getEnterpriseEditionEjbLocal(Class<T> localInterfaceClass, String modulename) {
         return null; // NOOP in community edition
     }
+    
+    @Override
+    public boolean isRunningEnterprise() {
+        return false;
+    }
 }

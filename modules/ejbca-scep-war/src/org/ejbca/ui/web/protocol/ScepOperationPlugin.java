@@ -17,12 +17,12 @@ import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
 /**
- * Interface for SCEP plugins
+ * Interface for SCEP plugins which require pe
  * 
  * @version $Id$
  *
  */
-public interface ScepPlugin {
+public interface ScepOperationPlugin {
 
     /**
      * Performs an operation on this extension
