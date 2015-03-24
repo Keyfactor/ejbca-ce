@@ -115,10 +115,13 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -3652,6 +3655,49 @@ public abstract class CertTools {
             certificateHolderChain.add( new JcaX509CertificateHolder(certificate));
         }
         return certificateHolderChain;
+    }
+
+    /**
+     * Converts a X509CertificateHolder chain into a X509Certificate chain.
+     * 
+     * @param certificateHolderChain input chain to be converted
+     * @return the result
+     * @throws CertificateException if there is a problem extracting the certificate information.
+     */
+    public static final List<X509Certificate> convertToX509CertificateList(Collection<X509CertificateHolder> certificateHolderChain) throws CertificateException {
+        final List<X509Certificate> ret = new ArrayList<X509Certificate>();
+        final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
+        for (final X509CertificateHolder certificateHolder : certificateHolderChain) {
+            ret.add(jcaX509CertificateConverter.getCertificate(certificateHolder));
+        }
+        return ret;
+    }
+
+    /**
+     * Converts a X509CertificateHolder chain into a X509Certificate chain.
+     * 
+     * @param certificateHolderChain input chain to be converted
+     * @return the result
+     * @throws CertificateException if there is a problem extracting the certificate information.
+     */
+    public static final X509Certificate[] convertToX509CertificateArray(Collection<X509CertificateHolder> certificateHolderChain) throws CertificateException {
+        return convertToX509CertificateList(certificateHolderChain).toArray(new X509Certificate[0]);
+    }
+
+    /**
+     * Converts a X509CertificateHolder chain into a X509Certificate chain.
+     * 
+     * @param certificateHolderChain input chain to be converted
+     * @return the result
+     * @throws CRLException if there is a problem extracting the CRL information.
+     */
+    public static final List<X509CRL> convertToX509CRLList(Collection<X509CRLHolder> crlHolders) throws CRLException {
+        final List<X509CRL> ret = new ArrayList<X509CRL>();
+        final JcaX509CRLConverter jcaX509CRLConverter = new JcaX509CRLConverter();
+        for (final X509CRLHolder crlHolder : crlHolders) {
+            ret.add(jcaX509CRLConverter.getCRL(crlHolder));
+        }
+        return ret;
     }
 
     /**

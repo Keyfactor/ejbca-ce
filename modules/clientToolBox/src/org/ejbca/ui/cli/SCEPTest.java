@@ -36,6 +36,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,9 +53,6 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
@@ -85,15 +83,12 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
  * Used to stress test the SCEP interface.
- * @author tomas
- * @version $Id$
  *
+ * @version $Id$
  */
 class SCEPTest extends ClientToolBox {
 	
-	/** Inner class used to implement stress test framework 
-	 * 
-	 */
+	/** Inner class used to implement stress test framework */
     static private class StressTest {
     	/** PerformaceTest framework, giving nice printed output */
         private final PerformanceTest performanceTest;
@@ -155,26 +150,22 @@ class SCEPTest extends ClientToolBox {
                 final CMSSignedData s = new CMSSignedData(con.getInputStream());
                 final Store certstore = s.getCertificates();
                 @SuppressWarnings("unchecked")
-                final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
+                final X509Certificate[] certs = CertTools.convertToX509CertificateArray(certstore.getMatches(null));
                 // Length two if the Scep RA server is signed directly by a Root CA
                 // Length three if the Scep RA server is signed by a CA which is signed by a Root CA
-                final Iterator<X509CertificateHolder> it = certs.iterator();
-                if ( this.sessionData.certchain!=null && this.sessionData.certchain.length!=certs.size() ) {
-                    StressTest.this.performanceTest.getLog().error("Length of received certificate chain "+certs.size()+" but should be "+this.sessionData.certchain.length);
+                if ( this.sessionData.certchain!=null && this.sessionData.certchain.length!=certs.length ) {
+                    StressTest.this.performanceTest.getLog().error("Length of received certificate chain "+certs.length+" but should be "+this.sessionData.certchain.length);
                     return false;
                 }
-                JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
-                final X509Certificate tmp[] = new X509Certificate[certs.size()];
-                for (int i=0; it.hasNext(); i++ ) {
-                    tmp[i] = jcaX509CertificateConverter.getCertificate(it.next());
+                for (int i=0; i<certs.length; i++) {
                     if ( this.sessionData.certchain==null ) {
-                        StressTest.this.performanceTest.getLog().info("Cert "+i+" "+tmp[i].getSubjectDN());
-                    } else if ( !tmp[i].equals(this.sessionData.certchain[i]) ) {
+                        StressTest.this.performanceTest.getLog().info("Cert "+i+" "+certs[i].getSubjectDN());
+                    } else if ( !certs[i].equals(this.sessionData.certchain[i]) ) {
                         StressTest.this.performanceTest.getLog().error("New cert chain is not equal to old!");
                         return false;
                     }
                 }
-                this.sessionData.certchain = tmp;
+                this.sessionData.certchain = certs;
                 return true;
             }
             public String getJobTimeDescription() {
@@ -543,14 +534,12 @@ class SCEPTest extends ClientToolBox {
             	if (crlRep) {
             		// We got a reply with a requested CRL
             		@SuppressWarnings("unchecked")
-                    final Collection<X509CRLHolder> crls = sd.getCRLs().getMatches(null);
-            		if ( crls.size() != 1 ) {
+                    final Collection<X509CRL> crls = CertTools.convertToX509CRLList(sd.getCRLs().getMatches(null));
+            		if (crls.size() != 1) {
             			StressTest.this.performanceTest.getLog().error("CRLS should be 1: "+crls.size());
             			return false;
             		}
-            		final Iterator<?> it = crls.iterator();
-            		// CRL is first (and only)
-            		final X509CRL retCrl = (X509CRL)it.next();
+                    final X509CRL retCrl = crls.iterator().next();
             		//System.out.println("Got CRL with DN: "+ retCrl.getIssuerDN().getName());
             		//                        try {
             		//                            FileOutputStream fos = new FileOutputStream("sceptest.der");
@@ -567,7 +556,7 @@ class SCEPTest extends ClientToolBox {
             	}
             	// We got a reply with a requested certificate 
             	@SuppressWarnings("unchecked")
-                final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
+                final List<X509Certificate> certs = CertTools.convertToX509CertificateList(certstore.getMatches(null));
             	//System.out.println("Got certificate reply with certchain of length: "+certs.size());
             	// EJBCA returns the issued cert and the CA cert (cisco vpn client requires that the ca cert is included)
             	final X509Certificate usercert;
@@ -577,17 +566,16 @@ class SCEPTest extends ClientToolBox {
             			StressTest.this.performanceTest.getLog().error("Certs should be 1: "+certs.size());
             			return false;
             		}
-            		final Iterator<?> it = certs.iterator();
-            		usercert = (X509Certificate)it.next();
+            		usercert = certs.iterator().next();
             		cacert = null;
             	} else {
             		if ( certs.size() != 2 ) {
             			StressTest.this.performanceTest.getLog().error("Certs should be 2: "+certs.size());
             			return false;
             		}
-            		final Iterator<?> it = certs.iterator();
-            		usercert = (X509Certificate)it.next();
-            		cacert = (X509Certificate)it.next();
+            		final Iterator<X509Certificate> it = certs.iterator();
+            		usercert = it.next();
+            		cacert = it.next();
             	}
             	// Issued certificate must be first
             	//                            try {
