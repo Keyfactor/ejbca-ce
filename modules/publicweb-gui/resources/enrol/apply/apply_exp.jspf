@@ -98,9 +98,6 @@
        newencoder.providerName = options(index).text
        tmpProviderType = options(index).value
        newencoder.providerType = tmpProviderType
-       if Document.CertReqForm.enchancedeid.checked then      
-         newencoder.ContainerName = "\Prime EID IP1 (basic PIN)\E"
-       end if
        newencoder.KeySpec = 2
        if tmpProviderType < 2 Then
           newencoder.KeySpec = 1
@@ -139,9 +136,6 @@
        oldencoder.providerName = options(index).text
        tmpProviderType = options(index).value
        oldencoder.providerType = tmpProviderType
-       if Document.CertReqForm.enchancedeid.checked then         
-         oldencoder.ContainerName = "\Prime EID IP1 (basic PIN)\E"
-       end if
        oldencoder.KeySpec = 2
        if tmpProviderType < 2 Then
           oldencoder.KeySpec = 1
@@ -185,16 +179,7 @@
 		g_objPrivateKey.MachineContext = false
 		g_objPrivateKey.KeyProtection = 1	' (XCN_NCRYPT_UI_PROTECT_KEY_FLAG = 1)
 		g_objPrivateKey.ExportPolicy = exportflag	' (XCN_NCRYPT_ALLOW_EXPORT_FLAG = 1)
-	    If Document.CertReqForm.enchancedeid.checked then
-	    	If Document.CertReqForm.containername = "" Then
-				g_objPrivateKey.ContainerName = "\Prime EID IP1 (basic PIN)\E"
-			Else
-				g_objPrivateKey.ContainerName = Document.CertReqForm.containername.value
-			End If
-			g_objPrivateKey.Existing = True
-		Else
-			g_objPrivateKey.Existing = False
-		End if
+		g_objPrivateKey.Existing = False
 		' Initialize
 		Call g_objRequest.InitializeFromPrivateKey(1, g_objPrivateKey, "")	'X509CertificateEnrollmentContext.ContextUser
 		Dim X500DistinguishedName
@@ -384,10 +369,6 @@
     <c:if test="${!applybean.certificateProfileListShown}">
         <input type="hidden" name="certprofile" id="certprofile" value="<c:out value="${availableCertProfiles[0]}" />">
     </c:if>
-
-    <label for="enchancedeid" style="white-space:normal;">Add to enhanced eID card</label>
-    <input type="checkbox" name="enchancedeid" value="true" accesskey="a" /> 
-    <br />
 
     <label for="exportable" style="white-space:normal;">If possible, make key exportable</label>
     <input type="checkbox" name="exportable" value="true" checked="true" accesskey="e" /> 
