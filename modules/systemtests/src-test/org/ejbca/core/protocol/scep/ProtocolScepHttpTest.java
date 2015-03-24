@@ -305,7 +305,6 @@ public class ProtocolScepHttpTest {
      */
     @Test
     public void test02Access() throws Exception {
-        log.trace(">test02Access()");
         
         ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         
@@ -314,8 +313,6 @@ public class ProtocolScepHttpTest {
         sendScepAliasRequest(scepConfig, "", "scep", "SCEP alias 'scep' does not exist"); // No alias in the request causes Ejbca to use "scep" (the default alias) as SCEP alias
         sendScepAliasRequest(scepConfig, null, "scep", "SCEP alias 'scep' does not exist"); // No alias in the request causes Ejbca to use "scep" (the default alias) as SCEP alias
         sendScepAliasRequest(scepConfig, "alias??&!!foo", null, "Wrong URL. No alias found"); // Specifying alias with non-alphanumeric characters causes the request to fail. 
-
-        log.trace("<test02Access()");
     }
     
 
@@ -326,7 +323,6 @@ public class ProtocolScepHttpTest {
      */
     @Test
     public void test03OpenScep() throws Exception {
-        log.debug(">test02OpenScep()");
         // send message to server and see what happens
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
@@ -342,12 +338,10 @@ public class ProtocolScepHttpTest {
         // at least :)
         // We should get a NOT_FOUND error back.
         assertEquals("Response code", 404, resp.getStatusCode());
-        log.debug("<test02OpenScep()");
     }
 
     @Test
     public void test04ScepRequestOKSHA1() throws Exception {
-        log.debug(">test03ScepRequestOKSHA1()");
         // find a CA create a user and
         // send SCEP req to server and get good response with cert
 
@@ -363,12 +357,10 @@ public class ProtocolScepHttpTest {
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
         
-        log.debug("<test03ScepRequestOKSHA1()");
     }
 
     @Test
     public void test05ScepRequestOKMD5() throws Exception {
-        log.debug(">test04ScepRequestOKMD5()");
         // find a CA create a user and
         // send SCEP req to server and get good response with cert
 
@@ -384,12 +376,10 @@ public class ProtocolScepHttpTest {
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false);
         
-        log.debug("<test04ScepRequestOKMD5()");
     }
 
     @Test
     public void test06ScepRequestPostOK() throws Exception {
-        log.debug(">test05ScepRequestPostOK()");
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
@@ -404,12 +394,10 @@ public class ProtocolScepHttpTest {
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
         
-        log.debug(">test05ScepRequestPostOK()");
     }
 
     @Test
     public void test07ScepRequestPostOKNoCA() throws Exception {
-        log.debug(">test06ScepRequestPostOKNoCA()");
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
@@ -424,12 +412,10 @@ public class ProtocolScepHttpTest {
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, true);
         
-        log.debug(">test06ScepRequestPostOKNoCA()");
     }
 
     @Test
     public void test08ScepGetCACert() throws Exception {
-        log.debug(">test07ScepGetCACert()");
         {
             String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(x509ca.getName(), "UTF-8");
             URL url = new URL(reqUrl);
@@ -498,7 +484,6 @@ public class ProtocolScepHttpTest {
             // Check that we got the right cert back
             assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         }
-        log.debug(">test07ScepGetCACert()");
     }
 
     @Test
@@ -517,7 +502,6 @@ public class ProtocolScepHttpTest {
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
-        log.debug(">test09ScepGetCACaps()");
         String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(x509ca.getName(), "UTF-8");
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -540,14 +524,11 @@ public class ProtocolScepHttpTest {
         byte[] respBytes = baos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
-        assertEquals(new String(respBytes), "POSTPKIOperation\nSHA-1\nRenewal");
-        log.debug(">test09ScepGetCACaps()");
+        assertEquals(new String(respBytes), "POSTPKIOperation\nRenewal\nSHA-1");
     }
 
     @Test
-    public void test11EnforcementOfUniquePublicKeys() throws Exception {
-        log.debug(">test10EnforcementOfUniquePublicKeys()");
-        
+    public void test11EnforcementOfUniquePublicKeys() throws Exception {        
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
@@ -565,9 +546,7 @@ public class ProtocolScepHttpTest {
             throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
         }
         assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
-        
-        log.debug("<test10EnforcementOfUniquePublicKeys()");
-    }
+     }
 
     @Test
     public void test12EnforcementOfUniqueDN() throws Exception {
