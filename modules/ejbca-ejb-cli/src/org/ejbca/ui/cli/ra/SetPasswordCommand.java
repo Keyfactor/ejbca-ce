@@ -55,7 +55,7 @@ public class SetPasswordCommand extends BaseRaCommand {
     public CommandResult execute(ParameterContainer parameters) {
         String username = parameters.get(USERNAME_KEY);
         String password = parameters.get(PASSWORD_KEY);
-        getLogger().info("Setting password (hashed only) " + password + " for user " + username);
+        getLogger().info("Setting password (hashed only) for user " + username);
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setPassword(getAuthenticationToken(), username,
                     password);
