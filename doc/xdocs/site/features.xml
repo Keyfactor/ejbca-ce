@@ -121,7 +121,8 @@
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
 <li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
 <li><a href="docs/adminguide.html#CMP%20Proxy%20(EJBCA%20Enterprise%20only)">CMP Proxy</a> to add an additional network layer, with message check, between the CA and CMP clients.</li>
-<li><a href="docs/adminguide.html#Operation%20Modes">SCEP RA mode</a>, using SCEP controlling entity creation from an RA.</li>
+<li><a href="docs/adminguide.html#Configuration">SCEP RA mode</a>, using SCEP controlling entity creation from an RA.</li>
+<li><a href="docs/adminguide.html#Configuration">SCEP Client Certificate Renewal</a>, allowing client certificate renewal using SCEP</li>
 <li><a href="docs/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">Certificate Transparency</a>, RFC6962.</li>
 <li><a href="docs/adminguide.html#Cert%20Safe%20publisher%20for%20a%20HTTPS%20server%20(Enterprise%20only)">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
 <li><a href="docs/userguide.html#Managing EJBCA Peer Systems">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
