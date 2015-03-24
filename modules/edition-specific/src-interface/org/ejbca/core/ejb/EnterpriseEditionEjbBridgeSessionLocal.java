@@ -24,5 +24,11 @@ public interface EnterpriseEditionEjbBridgeSessionLocal {
 
     <T> T getEnterpriseEditionEjbLocal(Class<T> localInterfaceClass, String modulename);
     
+    /**
+     * A simple function allowing the implementation to answer whether elements only available in Enterprise are present, in cases 
+     * where the elements in question might not be available on the classpath across the application. 
+     * 
+     * @return true if running EJBCA Enterprise Edition
+     */
     boolean isRunningEnterprise();
 }
