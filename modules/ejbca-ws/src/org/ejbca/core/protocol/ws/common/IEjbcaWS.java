@@ -1122,7 +1122,7 @@ public interface IEjbcaWS {
      * @param days the number of days before the certificates will expire
      * @param maxNumberOfResults the maximum number of returned certificates
      * @return A list of certificates, never null
-     * @throws EjbcaException 
+     * @throws EjbcaException if at least one of the certificates is unreadable
      */
     List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) throws EjbcaException;
     
@@ -1134,7 +1134,7 @@ public interface IEjbcaWS {
      * @param issuerDN The issuerDN of the certificates
      * @param maxNumberOfResults the maximum number of returned certificates
      * @return A list of certificates, never null
-     * @throws EjbcaException 
+     * @throws EjbcaException if at least one of the certificates is unreadable
      */
     List<Certificate> getCertificatesByExpirationTimeAndIssuer(long days, String issuerDN, int maxNumberOfResults) throws EjbcaException;
         
@@ -1145,7 +1145,7 @@ public interface IEjbcaWS {
      * @param certificateType The type of the certificates. Use 0=Unknown  1=EndEntity  2=SUBCA  8=ROOTCA  16=HardToken
      * @param maxNumberOfResults the maximum number of returned certificates
      * @return A list of certificates, never null
-     * @throws EjbcaException
+     * @throws EjbcaException if at least one of the certificates is unreadable
      */
     List<Certificate> getCertificatesByExpirationTimeAndType(long days, int certificateType, int maxNumberOfResults) throws EjbcaException;
 
