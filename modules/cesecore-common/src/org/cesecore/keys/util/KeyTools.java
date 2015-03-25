@@ -90,7 +90,7 @@ import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -768,7 +768,7 @@ public final class KeyTools {
     /** @return a buffer with the public key in PEM format */
     public static String getAsPem(final PublicKey publicKey) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PEMWriter pemWriter = new PEMWriter(new OutputStreamWriter(baos));
+        final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos));
         pemWriter.writeObject(publicKey);
         pemWriter.close();
         return new String(baos.toByteArray(), "UTF8");
