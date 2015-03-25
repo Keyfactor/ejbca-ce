@@ -619,14 +619,12 @@ public class EjbcaWS implements IEjbcaWS {
 	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate, maxNumberOfResults);
 
 	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
-	    Iterator<java.security.cert.Certificate> itr = certs.iterator();
-	    while(itr.hasNext()) {
-	        java.security.cert.Certificate cert = itr.next();
+	    for(java.security.cert.Certificate cert : certs) {
 	        try {
-	            ret.add(new Certificate(cert));
-	        } catch (CertificateEncodingException e) {
-	            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-	        }
+                ret.add(new Certificate(cert));
+            } catch (CertificateEncodingException e) {
+                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+            }
 	    }
 	    return ret;
 	}
@@ -638,15 +636,13 @@ public class EjbcaWS implements IEjbcaWS {
 	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndIssuerWithLimit(findDate, issuer, maxNumberOfResults);
 	    
 	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
-	    Iterator<java.security.cert.Certificate> itr = certs.iterator();
-	    while(itr.hasNext()) {
-	        java.security.cert.Certificate cert = itr.next();
-	        try {
-	            ret.add(new Certificate(cert));
-	        } catch (CertificateEncodingException e) {
-	            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-	        }
-	    }
+        for(java.security.cert.Certificate cert : certs) {
+            try {
+                ret.add(new Certificate(cert));
+            } catch (CertificateEncodingException e) {
+                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+            }
+        }
 	    return ret;
 	}
 	
@@ -657,15 +653,13 @@ public class EjbcaWS implements IEjbcaWS {
 	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndTypeWithLimit(findDate, certificateType, maxNumberOfResults);
 	    
 	    ArrayList<Certificate> ret = new ArrayList<Certificate>();
-	    Iterator<java.security.cert.Certificate> itr = certs.iterator();
-	    while(itr.hasNext()) {
-	        java.security.cert.Certificate cert = itr.next();
-	        try {
-	            ret.add(new Certificate(cert));
-	        } catch (CertificateEncodingException e) {
-	            throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
-	        }
-	    }
+        for(java.security.cert.Certificate cert : certs) {
+            try {
+                ret.add(new Certificate(cert));
+            } catch (CertificateEncodingException e) {
+                throw EjbcaWSHelper.getInternalException(e, TransactionLogger.getPatternLogger());
+            }
+        }
 	    return ret;
 	}
 	
