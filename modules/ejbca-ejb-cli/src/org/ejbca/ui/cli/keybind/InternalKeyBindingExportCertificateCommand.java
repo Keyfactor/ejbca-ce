@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.keybind.CertificateImportException;
@@ -75,7 +75,7 @@ public class InternalKeyBindingExportCertificateCommand extends RudInternalKeyBi
                 getLogger().error("Certificate with fingerprint "+fp+" does not exist.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            PEMWriter pw = new PEMWriter(new FileWriter(filename));            
+            JcaPEMWriter pw = new JcaPEMWriter(new FileWriter(filename));            
             pw.writeObject(cert);
             pw.close();
             getLogger().info("Operation completed successfully.");
