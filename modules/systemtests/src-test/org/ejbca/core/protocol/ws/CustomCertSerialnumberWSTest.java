@@ -16,10 +16,13 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -53,7 +56,11 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
 	private static final String TEST_USER3 = "customSerialNrUser3";
 
-    private InternalCertificateStoreSessionRemote sernoHelperSession= EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void setupAccessRights() {
@@ -109,7 +116,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
             user.setCertificateSerialNumber(serno);
             try {
                 // Make sure EJBCA thinks that we don't have a unique serno index, then we should get a CustomCertSerialNumberException
-                sernoHelperSession.setUniqueSernoIndexFalse();
+                internalCertificateStoreSession.setUniqueSernoIndexFalse();
                 this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 fail("We should not be able to create a certificate with customCertSerialNo when there is no unique issuerDN/certSerno index in the database.");
             } catch (Exception e) {
@@ -121,7 +128,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
             // Make sure EJBCA "thinks" that we have a unique serno index in the database
-            sernoHelperSession.setUniqueSernoIndexTrue();
+            internalCertificateStoreSession.setUniqueSernoIndexTrue();
             KeyStore ksenv = this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
             assertNotNull(keyStore);
@@ -172,8 +179,8 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
             // See if we really have a unique serno index in the database
-            sernoHelperSession.resetUniqueSernoCheck();
-            boolean hasUniqueSernoIndex = sernoHelperSession.existsUniqueSernoIndex();
+            internalCertificateStoreSession.resetUniqueSernoCheck();
+            boolean hasUniqueSernoIndex = internalCertificateStoreSession.existsUniqueSernoIndex();
             if (hasUniqueSernoIndex) {
                 ksenv = null;
                 try {
@@ -191,7 +198,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
             }
         } finally {
             // Reset so that EJBCA "knows" if it has a unique index in the database or not
-            sernoHelperSession.resetUniqueSernoCheck();
+            internalCertificateStoreSession.resetUniqueSernoCheck();
         }
 
         log.debug("<test01CreateCertWithCustomSN");
