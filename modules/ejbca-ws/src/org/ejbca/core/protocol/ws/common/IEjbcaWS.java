@@ -185,7 +185,7 @@ public interface IEjbcaWS {
 	 * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
 	 * @param activationPin Pin code for the cryptotoken
 	 * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
-	 * @param cryptotokenProperties as a List of KeyValuePair objects
+	 * @param cryptotokenProperties as a List of KeyValuePair objects. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstants}
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
 	 */
@@ -207,21 +207,19 @@ public interface IEjbcaWS {
 	/**
 	 * Creates a new CA using the specified cryptotoken
 	 * 
-	 * @param caname The CA name
-	 * @param cadn The CA subjectDN
-	 * @param catype The CA type. It could be either 'x509' or 'cvc'
-	 * @param catokenProperties The catoken properties as a List of KeyValuePair objects
-	 * @param cryptoTokenName The name of the cryptotoken associated with the CA
-	 * @param validityInDays Validity of the CA in days.
-	 * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
-	 * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-	 * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
-	 * GOST3411withECGOST3410, GOST3411withDSTU4145
-	 * @param policyId The policy ID can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' 
-	 * or objectID and cpsurl as '2.5.29.32.0 http://foo.bar.com/mycps.txt'. You can add multiple policies such as 
-	 * '2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt'.
-	 * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA).
-	 * CAs created using the WS cannot be signed by external CAs.
+     * @param caname The CA name
+     * @param cadn The CA subjectDN
+     * @param catype The CA type. It could be either 'x509' or 'cvc'
+     * @param validityInDays Validity of the CA in days.
+     * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
+     * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
+     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
+     * GOST3411withECGOST3410, GOST3411withDSTU4145
+     * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA).
+     * CAs created using the WS cannot be signed by external CAs.
+     * @param cryptoTokenName The name of the cryptotoken associated with the CA
+     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
+     * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
 	 */
