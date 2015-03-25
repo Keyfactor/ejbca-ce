@@ -157,7 +157,7 @@
 	          <include name="**/AlgorithmConstants.java"/>
 	        </fileset>
 	        <fileset dir="${es.iface.dir}" defaultexcludes="yes">
-	          <include name="**/*Constants.java"/>
+	          <include name="**/*ConstantsWS.java"/>
 	        </fileset>
 	        <fileset dir="${ws.common.dir}" defaultexcludes="yes">
 	          <include name="**/CertificateHelper.java"/>
