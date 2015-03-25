@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.bouncycastle.asn1.DERTags;
+import org.bouncycastle.asn1.BERTags;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.junit.After;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class LimitLengthASN1ReaderTest {
 	 * The contents of this input stream are known to be a working ASN.1
 	 * representation, since they have been lifted from a working environment.
 	 */
-	private static final int[] VALID_STREAM = { DERTags.SEQUENCE, 108, 48, 106,
+	private static final int[] VALID_STREAM = { BERTags.SEQUENCE, 108, 48, 106,
 			48, 69, 48, 67, 48, 65, 48, 9, 6, 5, 43, 14, 3, 2, 26, 5, 0, 4, 20,
 			65, 69, -8, -91, -52, -16, 126, 1, -21, -15, -46, 45, 64, -95, -30,
 			-109, -110, -79, -32, 46, 4, 20, 81, 9, 91, -19, -59, -104, 106,
@@ -50,7 +50,7 @@ public class LimitLengthASN1ReaderTest {
 	/*
 	 * Length byte is longer than LimitLengthASN1Reader.MAX_REQUEST_SIZE
 	 */
-	private static final int[] INVALID_LENGTH = { DERTags.SEQUENCE, 0x18704,
+	private static final int[] INVALID_LENGTH = { BERTags.SEQUENCE, 0x18704,
 			48, 106, 48, 69, 48, 67, 48, 65, 48, 9, 6, 5, 43, 14, 3, 2, 26, 5,
 			0, 4, 20, 65, 69, -8, -91, -52, -16, 126, 1, -21, -15, -46, 45, 64,
 			-95, -30, -109, -110, -79, -32, 46, 4, 20, 81, 9, 91, -19, -59,
@@ -63,7 +63,7 @@ public class LimitLengthASN1ReaderTest {
 	 * This stream contains less bytes than specified. May be due to a broken
 	 * connection.
 	 */
-	private static final int[] FINITE_STREAM_TOO_SHORT = { DERTags.SEQUENCE,
+	private static final int[] FINITE_STREAM_TOO_SHORT = { BERTags.SEQUENCE,
 			108, 48, 106, 48, 69, 48, 67, 48, 65, 48, 9, 6, 5, 43, 14, 3, 2,
 			26, 5, 0, 4, 20, 65, 69, -8, -91, -52, -16, 126, 1, -21, -15, -46,
 			45, 64, -95, -30, -109, -110, -79, -32, 46, 4, 20, 81, 9, 91, -19,
@@ -75,7 +75,7 @@ public class LimitLengthASN1ReaderTest {
 	/*
 	 * Sequence byte has been replaced by an integer.
 	 */
-	private static final int[] NOT_A_SEQUENCE_STREAM = { DERTags.INTEGER, 108,
+	private static final int[] NOT_A_SEQUENCE_STREAM = { BERTags.INTEGER, 108,
 			48, 106, 48, 69, 48, 67, 48, 65, 48, 9, 6, 5, 43, 14, 3, 2, 26, 5,
 			0, 4, 20, 65, 69, -8, -91, -52, -16, 126, 1, -21, -15, -46, 45, 64,
 			-95, -30, -109, -110, -79, -32, 46, 4, 20, 81, 9, 91, -19, -59,
@@ -87,7 +87,7 @@ public class LimitLengthASN1ReaderTest {
 	/*
 	 * Represents an infinite length stream
 	 */
-	private static final int[] UNDEFINED_LENGTH_HAPPY = { DERTags.SEQUENCE,
+	private static final int[] UNDEFINED_LENGTH_HAPPY = { BERTags.SEQUENCE,
 			128, 48, 106, 48, 69, 48, 67, 48, 65, 48, 9, 6, 5, 43, 14, 3, 2,
 			26, 5, 0, 4, 20, 65, 69, -8, -91, -52, -16, 126, 1, -21, -15, -46,
 			45, 64, -95, -30, -109, -110, -79, -32, 46, 4, 20, 81, 9, 91, -19,

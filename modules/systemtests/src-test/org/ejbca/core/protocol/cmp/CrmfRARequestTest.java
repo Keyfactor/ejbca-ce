@@ -24,8 +24,8 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -481,13 +481,13 @@ public class CrmfRARequestTest extends CmpTestCase {
         ASN1EncodableVector vec = new ASN1EncodableVector();
         ASN1EncodableVector v = new ASN1EncodableVector();
         
-        v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+        v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
         v.add(new DERTaggedObject(true, 0, new DERUTF8String("boo@bar")));
         GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
         
         v = new ASN1EncodableVector();
-        v.add(new DERObjectIdentifier("2.5.5.6"));
+        v.add(new ASN1ObjectIdentifier("2.5.5.6"));
         v.add(new DERTaggedObject(true, 0, new DERIA5String( "2.16.528.1.1007.99.8-1-993000027-N-99300011-00.000-00000000" )));
         gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
