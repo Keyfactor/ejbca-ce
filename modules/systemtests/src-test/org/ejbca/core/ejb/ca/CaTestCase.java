@@ -121,7 +121,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    protected static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
     protected TestX509CertificateAuthenticationToken caAdmin;
 

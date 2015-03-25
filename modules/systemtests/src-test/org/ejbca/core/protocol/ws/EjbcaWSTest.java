@@ -67,6 +67,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -80,12 +81,15 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
@@ -98,6 +102,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
@@ -146,12 +151,18 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private final  CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
-    private final GlobalConfigurationSessionRemote raAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-
-    private static final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     
     private static String originalForbiddenChars;
     private final static SecureRandom secureRandom;
@@ -168,6 +179,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public static void beforeClass() throws Exception {
         adminBeforeClass();
         setupAccessRights(WS_ADMIN_ROLENAME);
+        CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         originalForbiddenChars = cesecoreConfigurationProxySession.getConfigurationValue(forbiddenCharsKey);
     }
 
@@ -180,6 +193,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public static void afterClass() throws Exception {
         cleanUpAdmins(WS_ADMIN_ROLENAME);
         cleanUpAdmins(WS_TEST_ROLENAME);
+        CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, originalForbiddenChars);
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
@@ -1245,6 +1260,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowDNOverrideByEndEntityInformation(allowDNOverrideByEndEntityInformation);
         certificateProfileSession.addCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME, profile);
+        //This test will fail if EEP limitations are enabled
+        GlobalConfiguration originalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfiguration.setEnableEndEntityProfileLimitations(false);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalConfiguration);
         try {
             String userName = "eeiDnOverride" + secureRandom.nextLong();
             final UserDataVOWS userData = new UserDataVOWS();
@@ -1293,6 +1313,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
                 certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
             }
+            globalConfigurationSession.saveConfiguration(intAdmin, originalConfiguration);
         }
     }
 
@@ -1335,10 +1356,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Creates a "hardtoken" with certficates.
      */
     private void createHardToken(String username, String caName, String serialNumber) throws Exception {
-        GlobalConfiguration gc = (GlobalConfiguration) raAdminSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        raAdminSession.saveConfiguration(intAdmin, gc);
+        globalConfigurationSession.saveConfiguration(intAdmin, gc);
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         }
@@ -1393,7 +1414,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertTrue(responses.size() == 2);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        raAdminSession.saveConfiguration(intAdmin, gc);
+        globalConfigurationSession.saveConfiguration(intAdmin, gc);
     } // createHardToken
 
     /**
