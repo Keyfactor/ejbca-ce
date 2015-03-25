@@ -1070,9 +1070,6 @@ public interface EjbcaWS {
     * @param arg7
     * @param arg8
     * @param arg9
-    * @param arg10
-    * @param arg11
-    * @param arg12
     * @throws EjbcaException_Exception
     * @throws AuthorizationDeniedException_Exception
     */
