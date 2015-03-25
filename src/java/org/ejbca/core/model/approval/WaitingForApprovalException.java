@@ -23,7 +23,7 @@ import javax.xml.ws.WebFault;
 public class WaitingForApprovalException extends Exception {
 
 	private static final long serialVersionUID = 6808192333114783496L;
-    public int approvalId = 0;
+    private int approvalId = 0;
 
 	public WaitingForApprovalException(String message, Throwable cause) {
 		super(message, cause);
