@@ -48,7 +48,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param tokenType The type of the crypto token. Available types: SoftCryptoToken, PKCS11CryptoToken
      * @param activationPin Pin code for the crypto token
      * @param autoActivate Set to true|false to allow|disallow whether crypto token should be autoactivated or not
-     * @param cryptoTokenProperties The properties of the cryptotoken
+     * @param cryptoTokenProperties The properties of the cryptotoken. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstants}
      * @throws UnsupportedMethodException When trying to access this method in the community version
      * @throws AuthorizationDeniedException
      * @throws CryptoTokenOfflineException
@@ -92,8 +92,8 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA).
      * CAs created using the WS cannot be signed by external CAs.
      * @param cryptoTokenName The name of the cryptotoken associated with the CA
-     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose
-     * @param caProperties The CA properties that are not purpose-key mapping
+     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
+     * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
      * @throws UnsupportedMethodException When trying to access this method in the community version
      * @throws SignedByExternalCANotSupportedException
      * @throws CAExistsException

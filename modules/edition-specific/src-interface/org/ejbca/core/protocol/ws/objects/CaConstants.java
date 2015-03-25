@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
+import org.cesecore.certificates.ca.catoken.CAToken;
+
 public class CaConstants {
 
     /**
@@ -20,5 +22,11 @@ public class CaConstants {
      * '2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt'.
      */
     public static final String POLICYID = "policyid";
+    
+    // Key Aliases
+    public static final String SOFTPRIVATESIGNKEYALIAS = CAToken.SOFTPRIVATESIGNKEYALIAS;
+    public static final String SOFTPREVIOUSPRIVATESIGNKEYALIAS = CAToken.SOFTPREVIOUSPRIVATESIGNKEYALIAS;
+    public static final String SOFTNEXTPRIVATESIGNKEYALIAS = CAToken.SOFTNEXTPRIVATESIGNKEYALIAS;
+    public static final String SOFTPRIVATEDECKEYALIAS = CAToken.SOFTPRIVATEDECKEYALIAS;
     
 }
