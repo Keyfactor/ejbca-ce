@@ -13,8 +13,9 @@
 package org.ejbca.core.protocol.ws.objects;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 
-public class CaConstants {
+public class CAConstantsWS {
 
     /**
      * The policy ID can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' 
@@ -29,4 +30,14 @@ public class CaConstants {
     public static final String SOFTNEXTPRIVATESIGNKEYALIAS = CAToken.SOFTNEXTPRIVATESIGNKEYALIAS;
     public static final String SOFTPRIVATEDECKEYALIAS = CAToken.SOFTPRIVATEDECKEYALIAS;
     
+    
+    public static final String CAKEYPURPOSE_CERTSIGN_STRING = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING;
+    public static final String CAKEYPURPOSE_CRLSIGN_STRING = CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING;
+    public static final String CAKEYPURPOSE_KEYENCRYPT_STRING = CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING;
+    public static final String CAKEYPURPOSE_TESTKEY_STRING = CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING;
+    public static final String CAKEYPURPOSE_DEFAULT_STRING = CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING;
+    public static final String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING;
+    public static final String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS;
+    public static final String CAKEYPURPOSE_CERTSIGN_STRING_NEXT = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT;
+
 }
