@@ -185,10 +185,10 @@ public interface IEjbcaWS {
 	 * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
 	 * @param activationPin Pin code for the cryptotoken
 	 * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
-	 * @param cryptotokenProperties as a List of KeyValuePair objects. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstants}
+	 * @param cryptotokenProperties as a List of KeyValuePair objects. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS}
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
-	 * @see org.ejbca.core.protocol.ws.objects.CryptoTokenConstants
+	 * @see org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS
 	 */
 	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
 	        List<KeyValuePair> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
@@ -219,11 +219,11 @@ public interface IEjbcaWS {
      * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA).
      * CAs created using the WS cannot be signed by external CAs.
      * @param cryptoTokenName The name of the cryptotoken associated with the CA
-     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
-     * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
+     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
+     * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
-     * @see org.ejbca.core.protocol.ws.objects.CaConstants
+     * @see org.ejbca.core.protocol.ws.objects.CAConstantsWS
 	 */
 	abstract void createCA(String caname, String cadn, String catype, long validityInDays, String certprofile, 
 	        String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, 
