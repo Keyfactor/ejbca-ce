@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
+/**
+ * Property keys for creation of CryptoTokens via WS.
+ * 
+ * @version $Id$
+ */
 public class CryptoTokenConstantsWS {
 
     // -----------------
