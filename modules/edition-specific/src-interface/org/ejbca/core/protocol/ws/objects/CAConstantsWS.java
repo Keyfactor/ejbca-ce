@@ -12,9 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
-import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 
+/**
+ * Property keys for creation of CAs via WS.
+ * 
+ * @version $Id$
+ */
 public class CAConstantsWS {
 
     /**
@@ -24,20 +28,16 @@ public class CAConstantsWS {
      */
     public static final String POLICYID = "policyid";
     
-    // Key Aliases
-    public static final String SOFTPRIVATESIGNKEYALIAS = CAToken.SOFTPRIVATESIGNKEYALIAS;
-    public static final String SOFTPREVIOUSPRIVATESIGNKEYALIAS = CAToken.SOFTPREVIOUSPRIVATESIGNKEYALIAS;
-    public static final String SOFTNEXTPRIVATESIGNKEYALIAS = CAToken.SOFTNEXTPRIVATESIGNKEYALIAS;
-    public static final String SOFTPRIVATEDECKEYALIAS = CAToken.SOFTPRIVATEDECKEYALIAS;
-    
-    
+    /** Certificate signing key alias */
     public static final String CAKEYPURPOSE_CERTSIGN_STRING = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING;
+    /** Certificate Revocation List (CRL) signing key alias. Must be the same as the certificate signing key.  */
     public static final String CAKEYPURPOSE_CRLSIGN_STRING = CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING;
+    /** Used for decryption of key recovery data. Must be an RSA key. */
     public static final String CAKEYPURPOSE_KEYENCRYPT_STRING = CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING;
+    /** Test signing key. Used by health-check. */
     public static final String CAKEYPURPOSE_TESTKEY_STRING = CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING;
+    /** Default key. If any of the other aliases are not specified, this will be used in their place. Must be an RSA key if decryption key aliases are not specified.*/
     public static final String CAKEYPURPOSE_DEFAULT_STRING = CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING;
+    /** Used for decryption of hard token data (e.g. PUK code). Must be an RSA key. */
     public static final String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING;
-    public static final String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS;
-    public static final String CAKEYPURPOSE_CERTSIGN_STRING_NEXT = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT;
-
 }
