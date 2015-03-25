@@ -94,6 +94,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -1049,7 +1050,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             final String decKeyAlias = CAToken.SOFTPRIVATEDECKEYALIAS;
             ejbcaraws.generateCryptoTokenKeys(ctname, decKeyAlias, "RSA1024");
             final String signKeyAlias = CAToken.SOFTPRIVATESIGNKEYALIAS;
-            ejbcaraws.generateCryptoTokenKeys(ctname, signKeyAlias, "RSA1024"); //secp256r1 
+            ejbcaraws.generateCryptoTokenKeys(ctname, signKeyAlias, "RSA1024");
             final String testKeyAlias = "test72CreateCATestKey";
             ejbcaraws.generateCryptoTokenKeys(ctname, testKeyAlias, "secp256r1");
             
@@ -1071,14 +1072,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
             
             // Try to create a CA that already exists. It should fail
+            String existingTestCA = "WSCreateCATestTestingExistingCA";
+            CaTestCase.createTestCA(existingTestCA);
             try {
-                ejbcaraws.createCA("ManagementCA", caSession.getCAInfo(intAdmin, "ManagementCA").getSubjectDN(), "x509", 3L, null, "SHA256WithRSA", 
+                ejbcaraws.createCA(existingTestCA, caSession.getCAInfo(intAdmin, existingTestCA).getSubjectDN(), "x509", 3L, null, "SHA256WithRSA", 
                         CAInfo.SELFSIGNED, ctname, purposeKeyMapping, null);
                 fail("It was possible to create a CA even though the CA already exists");
             } catch(EjbcaException_Exception e) {
                 if(!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.CA_ALREADY_EXISTS.getInternalErrorCode())) {
                     throw e;
                 }
+                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, existingTestCA).getCAId());
             }
             
             // Try to create a CA. It should succeed (Happy path test)
