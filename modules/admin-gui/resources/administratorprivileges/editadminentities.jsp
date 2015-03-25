@@ -140,6 +140,7 @@
 			<h:commandLink action="#{rolesManagedBean.deleteAdmin}" title="#{web.text.DELETE}"
 				styleClass="commandLink" onclick="return confirm('#{web.text.AREYOUSURE}');" >
 				<h:outputText value="#{web.text.DELETE}"/>
+				<f:param name="primaryKey" value="#{admin.primaryKey}"/>
 			</h:commandLink>
 		</h:column>
 	</h:dataTable>
