@@ -124,44 +124,54 @@ public interface CertificateStoreSession {
     List<Certificate> findCertificatesBySubject(String subjectDN);
 
     /**
-     * Finds certificates  expiring within a specified time and that has
+     * Finds certificates  expiring within a specified time and that have
      * status "active" or "notifiedaboutexpiration".
+     * @param expireTime The time by which the certificates will be expired
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return Collection of maximum 500 Certificates, never null
+     * @return Collection of maximum 500 certificates (java.security.cert.Certificate), never null
      */
-    Collection<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime);
+    List<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime);
     
     /**
-     * Finds certificates  expiring within a specified time and that has
+     * Finds certificates  expiring within a specified time and that have
      * status "active" or "notifiedaboutexpiration".
+     * @param expireTime The time by which the certificates will be expired
+     * @param maxNumberOfResults The maximum number of certificates to be returned
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return Collection of Certificate, never null
+     * @return Collection of certificates (java.security.cert.Certificate), never null
      */
-    Collection<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime, int maxNumberOfResults);
+    List<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime, int maxNumberOfResults);
     
     /**
-     * Finds certificates  expiring within a specified time, issued by a specified issuer and has
+     * Finds certificates  expiring within a specified time, issued by a specified issuer and have
      * status "active" or "notifiedaboutexpiration".
+     * @param expireTime The time by which the certificates will be expired
+     * @param issuerDN The SubjectDN of the CA that issued the certificates that will expire within the given time
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return Collection of maximum 500 Certificates, never null
+     * @return Collection of maximum 500 certificates (java.security.cert.Certificate), never null
      */
-    Collection<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN);
+    List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN);
     
     /**
-     * Finds certificates  expiring within a specified time, issued by a specified issuer and has
+     * Finds certificates  expiring within a specified time, issued by a specified issuer and have
      * status "active" or "notifiedaboutexpiration".
+     * @param expireTime The time by which the certificates will be expired
+     * @param issuerDN The SubjectDN of the CA that issued the certificates that will expire within the given time
+     * @param maxNumberOfResults The maximum number of certificates to be returned
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return Collection of Certificate, never null
+     * @return Collection of certificates (java.security.cert.Certificate), never null
      */
-    Collection<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN, int maxNumberOfResults);
+    List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN, int maxNumberOfResults);
         
     /**
-     * Finds certificates  expiring within a specified time, of a specified type and has
+     * Finds certificates  expiring within a specified time, of a specified type and have
      * status "active" or "notifiedaboutexpiration".
+     * @param expireTime The time by which the certificates will be expired
+     * @param certificateType The type of the certificates that will expire within the given time
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_UNKNOWN
@@ -169,13 +179,16 @@ public interface CertificateStoreSession {
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
-     * @return Collection of maximum 500 Certificates, never null
+     * @return Collection of maximum 500 certificates (java.security.cert.Certificate), never null
      */
-    Collection<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType);
+    List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType);
     
    /** 
-    * Finds certificates  expiring within a specified time, of a specified type and has
+    * Finds certificates  expiring within a specified time, of a specified type and have
     * status "active" or "notifiedaboutexpiration".
+    * @param expireTime The time by which the certificates will be expired
+    * @param certificateType The type of the certificates that will expire within the given time
+    * @param maxNumberOfResults The maximum number of certificates to be returned
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_UNKNOWN
@@ -183,9 +196,9 @@ public interface CertificateStoreSession {
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
-    * @return Collection of Certificate, never null
+    * @return Collection of certificates (java.security.cert.Certificate), never null
     */
-   Collection<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType, int maxNumberOfResults);
+    List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType, int maxNumberOfResults);
 
     /**
      * Finds usernames of users having certificate(s) expiring within a
