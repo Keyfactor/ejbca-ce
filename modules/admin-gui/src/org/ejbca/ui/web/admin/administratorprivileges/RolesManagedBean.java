@@ -297,7 +297,23 @@ public class RolesManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      */
     public void deleteAdmin() throws RoleNotFoundException {
-        AccessUserAspectData adminEntity = getAdminForEach();
+        final String primaryKey = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("primaryKey");
+        if (primaryKey==null) {
+            addErrorMessage("ACCESSUSERASPECT_UNKNOWN");
+            return;
+        }
+        final int pk;
+        try {
+            pk = Integer.parseInt(primaryKey);
+        } catch (NumberFormatException e) {
+            addErrorMessage("ACCESSUSERASPECT_UNKNOWN");
+            return;
+        }
+        final AccessUserAspectData adminEntity = getAuthorizationDataHandler().getRole((getCurrentRole())).getAccessUsers().get(pk);
+        if (adminEntity==null) {
+            addErrorMessage("ACCESSUSERASPECT_UNKNOWN");
+            return;
+        }
         Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(adminEntity);
         try {
