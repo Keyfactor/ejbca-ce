@@ -188,6 +188,7 @@ public interface IEjbcaWS {
 	 * @param cryptotokenProperties as a List of KeyValuePair objects. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstants}
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
+	 * @see org.ejbca.core.protocol.ws.objects.CryptoTokenConstants
 	 */
 	abstract void createCryptoToken(String tokenName, String tokenType, String activationPin, boolean autoActivate, 
 	        List<KeyValuePair> cryptotokenProperties) throws AuthorizationDeniedException, EjbcaException;
@@ -222,6 +223,7 @@ public interface IEjbcaWS {
      * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CaConstants}
 	 * @throws EjbcaException
 	 * @throws AuthorizationDeniedException
+     * @see org.ejbca.core.protocol.ws.objects.CaConstants
 	 */
 	abstract void createCA(String caname, String cadn, String catype, long validityInDays, String certprofile, 
 	        String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, 

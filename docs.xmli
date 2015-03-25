@@ -24,6 +24,7 @@
     <property name="jdocs.ws.tmp" location="tmp/jdocswstmp"/>
     <property name="ws.client.gen.relative-path" value="org/ejbca/core/protocol/ws/client/gen"/>
     <property name="client.ws.class" value="EjbcaWS"/>
+    <property name="es.iface.dir" location="modules/edition-specific/src-interface/org/ejbca/core/protocol/ws/objects"/>
     <property name="ws.objects.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/objects"/>
     <property name="ws.common.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common"/>
     <property name="ws.client.gen.src" location="modules/ejbca-ws-cli/src-gen"/>
@@ -154,6 +155,9 @@
 	        <packageset dir="${jdocs.ws.tmp}"/>
 	        <fileset dir="modules/cesecore-common/src" defaultexcludes="yes">
 	          <include name="**/AlgorithmConstants.java"/>
+	        </fileset>
+	        <fileset dir="${es.iface.dir}" defaultexcludes="yes">
+	          <include name="**/*Constants.java"/>
 	        </fileset>
 	        <fileset dir="${ws.common.dir}" defaultexcludes="yes">
 	          <include name="**/CertificateHelper.java"/>
