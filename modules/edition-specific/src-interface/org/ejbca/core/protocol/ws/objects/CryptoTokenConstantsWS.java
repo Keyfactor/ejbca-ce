@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
-public class CryptoTokenConstants {
+public class CryptoTokenConstantsWS {
 
     // -----------------
     // Soft Crypto Token
