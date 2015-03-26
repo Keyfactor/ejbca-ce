@@ -1,3 +1,56 @@
+EJBCA 6.3.1, 2015-03-26
+---
+Bug
+	[ECA-4044] - Ignore EJBCA test certificates from been published using the Peer connector
+	[ECA-4048] - Peer System: Failure to connect when list of trusted certs is empty
+	[ECA-4068] - Add PeerData to drop tables SQL script
+	[ECA-4073] - typo in exception 'Failed to write audit log...'
+    
+Improvement
+	[ECA-3146] - Allow an renewal of  an external CA certificate by import 
+	[ECA-3951] - Add a column to InternalKeyBindingPage/CLI to warn for inactive certificate
+	[ECA-4033] - Do not include administrators registered via certificate serial numbers in statedump
+	[ECA-4092] - Create module for separate enterprise and community specific implementation
+	[ECA-4093] - Lower log-level of CmsCAService "KEYSTORE is null..." message
+	[ECA-4117] - CMPProxy not updated to work with different cmpalias
+
+New Feature
+	[ECA-3581] - Single Active Certificate Constraint
+	[ECA-3754] - CLI: Create a table utility
+	[ECA-4062] - WS API support to create a new CA and Superadmin certificate
+	[ECA-4063] - WS APIs for monitoring certificate expiration
+	[ECA-4064] - SCEP support for Client Certificate Renewal
+	[ECA-4159] - Show what version documentation applies to at all times
+
+Task
+	[ECA-4145] - Document all audit log messages
+
+EJBCA 6.2.9, 2015-03-26
+---
+Bug
+	[ECA-3619] - Wrong administrator removed from role when deleting at the same time with two separate CA admins
+	[ECA-3788] - CLI needs to set argument --password together with the value when setting it
+	[ECA-3879] - Fix logging of default OCSP responder properly
+	[ECA-4049] - Certificates of non-CAs are accepted when importing external CAs
+	[ECA-4071] - A base64 decoder exception is thrown when inspecting a specially-crafted CSR
+	[ECA-4122] - Typo in Crypto Token HSM Slot
+	[ECA-4148] - EJBCA WS Test test25CreateandGetCRL fails when delta CRLs are enabled
+	[ECA-4152] - "Renew Browser Certificate" should require notifications to be set. 
+	[ECA-4156] - Regression: BaseCryptoToken has lost caching of keys since EJBCA4
+	[ECA-4160] - X509CertStoreSelector does not work as used in BC 1.51
+	[ECA-4173] - CLI command ca getcacert always outputs root CA certificate when using the -der option
+	[ECA-4179] - SCEP stress test regression
+	[ECA-4184] - WaitingForApprovalException declares property as public
+
+Improvement
+	[ECA-4128] - Replace references to deprecated class DiskFileUpload
+	[ECA-4137] - Test throw away CA issuance over web service interface
+	[ECA-4181] - Several EjbcaWS tests fail when EEP-limitations are enabled
+	[ECA-4182] - Replace deprecated classes: PEMWriter, DERObjectIdentifier and DERTags
+
+Task
+	[ECA-4090] - Remove broken NetID integration code
+
 EJBCA 6.2.8, 2015-03-05
 ---
 Bug
