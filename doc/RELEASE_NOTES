@@ -1,3 +1,48 @@
+EJBCA 6.3.1
+-----------
+This maintenance release contains 17 new features, bug fixes and improvements, in addition to all fixes made in 6.2.8 and 6.2.9. Below is a 
+selection of the most noteworthy.
+
+- New Features:
+    *   Now possible to create CAs and issue End Entity certificates through the Web Service API.
+    *   SCEP Client Certificate Renewal.
+    *   Web Service API calls for monitoring certificate expiration.
+    *   Single Active Certificate Constraint has been added to Certificate Profiles, allowing for automatic revocation of old certificates, as new ones are issued. 
+- Improvements:
+    *   All Audit Log messages have been properly JavaDoc:ed.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  A selection of known issues:
+    *   External RA GUI cannot handle SubCA certificates with critical CDP: https://jira.primekey.se/browse/ECA-2138
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	Regression: Healtcheck is not enabled for new CAs by default: https://jira.primekey.se/browse/ECA-3999 
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though: https://jira.primekey.se/browse/ECA-4022 
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	JDK patches for RSAWithMGF1 is not working on newer java: https://jira.primekey.se/browse/ECA-4175
+
+EJBCA 6.2.9
+-----------
+This maintenance release contains 18 bug fixes and improvements, below a selection of the most noteworthy.
+
+- Improvements:
+	*	The main feature of EJBCA 6.2.9 is an optimization for certificate signing that has reduced certificate signing time with approximately 10% 
+		for low workloads and 70% for intensive workloads. Numbers are compared to EJBCA 5 and EJBCA 6.
+- Bug Fixes:
+	*	A minor regression introduced in 6.2.7 where trying to create a Browser Certificate in the External RA GUI failed.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  A selection of known issues:
+    *   External RA GUI cannot handle SubCA certificates with critical CDP: https://jira.primekey.se/browse/ECA-2138
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	Regression: Healtcheck is not enabled for new CAs by default: https://jira.primekey.se/browse/ECA-3999 
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though: https://jira.primekey.se/browse/ECA-4022 
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	JDK patches for RSAWithMGF1 is not working on newer java: https://jira.primekey.se/browse/ECA-4175
+
 EJBCA 6.2.8
 -----------
 The goal of this release has primarily been optimization of our OCSP responder, fixing usability issues, tightening up security and heavy GUI testing. We've 
