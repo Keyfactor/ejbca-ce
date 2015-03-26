@@ -1810,7 +1810,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Function that looks up in the profile all certificate extensions that we should use if the value si that we should use it, the oid for this
+     * Function that looks up in the profile all certificate extensions that we should use if the value is that we should use it, the oid for this
      * extension is returned in the list
      * 
      * @return List of oid Strings for standard certificate extensions that should be used
