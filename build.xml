@@ -469,9 +469,9 @@
 		    <zipfileset dir="${ejbca.plugin.gen.path}" erroronmissingdir="false"/>
             <zipfileset prefix="lib" dir="${lib}">
             	<!-- Since WepSphere 7's "special" tools can't handle the signature of these objects, we will add them later. -->
-                <include name="bcpkix-jdk15on-151.jar" unless="websphere-specials"/>
-                <include name="bcprov-jdk15on-151.jar" unless="websphere-specials"/>
-                <include name="cert-cvc-1.4.1.jar" />
+                <include name="bcpkix-jdk15on-152.jar" unless="websphere-specials"/>
+                <include name="bcprov-jdk15on-152.jar" unless="websphere-specials"/>
+                <include name="cert-cvc-1.4.2.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
@@ -575,7 +575,7 @@
 			<arg line="${caear} -verbose" />
 		</exec>
 		<!-- Now when WebSphere is done we can finally add the BC libraries again. -->
-		<jar update="true" destfile="${caear}" basedir="${ejbca.home}" includes="lib/bcpkix-jdk15on-151.jar lib/bcprov-jdk15on-151.jar"/>
+		<jar update="true" destfile="${caear}" basedir="${ejbca.home}" includes="lib/bcpkix-jdk15on-152.jar lib/bcprov-jdk15on-152.jar"/>
     </target>
 
 	<target name="create-log4config-bundle">
