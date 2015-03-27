@@ -136,7 +136,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         }
         // 1.2.840.113549.1.1.10 is SHA256WithRSAAndMGF1
         assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgOID());
-        assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgName());
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, cert.getSigAlgName());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
         log.trace("<test18SignSessionRSAWithRSASha256WithMGF1CA()");
@@ -189,7 +189,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         }
         // 1.2.840.113549.1.1.10 is SHA256WithRSAAndMGF1
         assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgOID());
-        assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgName());
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, cert.getSigAlgName());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
         log.trace("<test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
