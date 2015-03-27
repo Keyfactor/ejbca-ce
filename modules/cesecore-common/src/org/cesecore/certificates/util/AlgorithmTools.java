@@ -271,8 +271,8 @@ public abstract class AlgorithmTools {
                         final BigInteger b2 = ec2.getB().toBigInteger();
                         final int fs2 = ec2.getFieldSize();
                         final org.bouncycastle.math.ec.ECPoint g2 = parameterSpec2.getG();
-                        final BigInteger ax2 = g2.getX().toBigInteger();
-                        final BigInteger ay2 = g2.getY().toBigInteger();
+                        final BigInteger ax2 = g2.getAffineXCoord().toBigInteger();
+                        final BigInteger ay2 = g2.getAffineYCoord().toBigInteger();
                         final BigInteger h2 = parameterSpec2.getH();
                         final BigInteger n2 = parameterSpec2.getN();
                         if (a1.equals(a2) && ax1.equals(ax2) && b1.equals(b2) && ay1.equals(ay2) && fs1==fs2 && o1.equals(n2) && c1==h2.intValue()) {

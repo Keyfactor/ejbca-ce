@@ -79,6 +79,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -1284,7 +1285,13 @@ public class X509CA extends CA implements Serializable {
                         getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded()));
                 try {
                     SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
-                    AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+                    JcaX509ExtensionUtils extensionUtils;
+                    try {
+                        extensionUtils = new JcaX509ExtensionUtils();
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("SHA-1 was not a known algorithm.", e);
+                    }
+                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(apki);
                     crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
                 } finally {
                     asn1InputStream.close();
