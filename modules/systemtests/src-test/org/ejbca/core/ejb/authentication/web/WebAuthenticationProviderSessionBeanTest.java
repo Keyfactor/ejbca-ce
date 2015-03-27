@@ -57,6 +57,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
@@ -303,7 +304,13 @@ public class WebAuthenticationProviderSessionBeanTest {
                     X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
                     SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
                     SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) apkiAsn1InputStream.readObject());
-                    AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+                    JcaX509ExtensionUtils extensionUtils;
+                    try {
+                        extensionUtils = new JcaX509ExtensionUtils();
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException("SHA-1 was not a known algorithm.", e);
+                    }
+                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(apki);
                     certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
                     certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
                 } finally {
