@@ -126,7 +126,7 @@
 <li><a href="docs/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">Certificate Transparency</a>, RFC6962.</li>
 <li><a href="docs/adminguide.html#Cert%20Safe%20publisher%20for%20a%20HTTPS%20server%20(Enterprise%20only)">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
 <li><a href="docs/userguide.html#Managing EJBCA Peer Systems">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
-<li>Create cryptotokens and CAs, generate keys and add and remove administrators through the WS (Enterprise only)</li>
+<li>Create Crypto Tokens and CAs, generate keys and add and remove administrators through the Web Service API.</li>
 <li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality State and Country).</li>
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 <li>Penetration tested with improved security.</li>
