@@ -233,16 +233,16 @@ public class AlgorithmToolsTest {
     	assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsa));
     	assertEquals("SHA384WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha384rsa));
     	assertEquals("SHA512WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha512rsa));
-    	assertEquals("SHA1WithRSAAndMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsamgf));
-    	assertEquals("SHA256WithRSAAndMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsamgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsamgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsamgf));
     	
     	assertEquals("SHA1WithRSA", AlgorithmTools.getSignatureAlgorithm(sha1rsa));
     	assertEquals("MD5WithRSA", AlgorithmTools.getSignatureAlgorithm(md5rsa));
     	assertEquals("SHA256WithRSA", AlgorithmTools.getSignatureAlgorithm(sha256rsa));
     	assertEquals("SHA384WithRSA", AlgorithmTools.getSignatureAlgorithm(sha384rsa));
     	assertEquals("SHA512WithRSA", AlgorithmTools.getSignatureAlgorithm(sha512rsa));
-    	assertEquals("SHA1WithRSAAndMGF1", AlgorithmTools.getSignatureAlgorithm(sha1rsamgf));
-    	assertEquals("SHA256WithRSAAndMGF1", AlgorithmTools.getSignatureAlgorithm(sha256rsamgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getSignatureAlgorithm(sha1rsamgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getSignatureAlgorithm(sha256rsamgf));
     	
     	// CVC
         CAReferenceField caRef = new CAReferenceField("SE", "CAREF001", "00000");
@@ -262,8 +262,8 @@ public class AlgorithmToolsTest {
     	
     	assertEquals("SHA1WithRSA", AlgorithmTools.getSignatureAlgorithm(cvsha1));
     	assertEquals("SHA256WithRSA", AlgorithmTools.getSignatureAlgorithm(cvsha256));
-    	assertEquals("SHA1WithRSAAndMGF1", AlgorithmTools.getSignatureAlgorithm(cvsha1mgf));
-    	assertEquals("SHA256WithRSAAndMGF1", AlgorithmTools.getSignatureAlgorithm(cvsha256mgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getSignatureAlgorithm(cvsha1mgf));
+    	assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getSignatureAlgorithm(cvsha256mgf));
 
     	// DSA
     	keyPair = KeyTools.genKeys("1024", "DSA");
