@@ -97,9 +97,9 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-151.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-151.jar"/>
-	<classpathentry kind="lib" path="lib/cert-cvc-1.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="lib/cert-cvc-1.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>

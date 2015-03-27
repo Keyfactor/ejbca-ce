@@ -25,7 +25,7 @@ Log4j.jar is from apache, License is Apache.
 The file is used for logging throughout EJBCA.
 Version is 1.2.16.
 
-cert-cvc-1.4.1.jar is a library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA, 
+cert-cvc-1.4.2.jar is a library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA, 
 originally developed by Keijo Kurkinen, and contributed to EJBCA. License is LGPL.
 
 libidn.jar: version 0.6.9, http://www.gnu.org/software/libidn/, java library is LGPL.
