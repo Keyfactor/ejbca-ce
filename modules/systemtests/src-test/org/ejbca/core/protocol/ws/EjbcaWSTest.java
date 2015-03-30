@@ -96,6 +96,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -163,6 +164,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static String originalForbiddenChars;
     private final static SecureRandom secureRandom;
@@ -926,18 +928,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test70CreateSoftCryptoToken() throws Exception {
         log.trace(">test70CreateSoftCryptoToken()");
+        assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         
-        // If this is community edition, then this method is not supported and the test is skipped
-        boolean methodSupported = true;
-        try {
-            ejbcaraws.createCryptoToken(null, null, null, false, null);
-        } catch(EjbcaException_Exception e) {
-            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
-                methodSupported = false;
-            }
-        }
-        assumeTrue(methodSupported);
-
         String ctname = "NewTestCryptoTokenThroughWS";
         
         // Remove any residues from earlier test runs
@@ -980,17 +972,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test71GenerateCryptoTokenKeys() throws Exception {
         log.trace(">test71GenerateCryptoTokenKeys()");
-        
-        // If this is community edition, then this method is not supported and the test is skipped
-        boolean methodSupported = true;
-        try {
-            ejbcaraws.generateCryptoTokenKeys(null, null, null);
-        } catch(EjbcaException_Exception e) {
-            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
-                methodSupported = false;
-            }
-        }
-        assumeTrue(methodSupported);
+        assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
 
         String ctname = "NewTestCryptoTokenThroughWS";
         
@@ -1026,17 +1008,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test72CreateCA() throws Exception {
         log.trace(">test72CreateCA()");
-        
-        // It this is community edition, then this method is not supported and the test is skipped
-        boolean methodSupported = true;
-        try {
-            ejbcaraws.createCA(null, null, null, 0L, null, null, 0, null, null, null);
-        } catch(EjbcaException_Exception e) {
-            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
-                methodSupported = false;
-            }
-        }
-        assumeTrue(methodSupported);
+        assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         
         
         String caname = "NewTestCAThroughWS";
@@ -1129,17 +1101,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test73ManageSubjectInRole() throws Exception {
         log.trace(">test73AddSubjectToRole()");
-        
-        // It this is community edition, then this method is not supported and the test is skipped
-        boolean methodSupported = true;
-        try {
-            ejbcaraws.addSubjectToRole(null, null, null, null, null);
-        } catch(EjbcaException_Exception e) {
-            if(e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.UNSUPPORTED_METHOD.getInternalErrorCode())) {
-                methodSupported = false;
-            }
-        }
-        assumeTrue(methodSupported);
+        assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         
         String rolename = "TestWSNewAccessRole";
         String testAdminUsername = "newWsAdminUserName";
