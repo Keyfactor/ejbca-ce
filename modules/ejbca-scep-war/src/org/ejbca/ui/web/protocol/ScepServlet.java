@@ -134,7 +134,7 @@ public class ScepServlet extends HttpServlet {
     private static final String DEFAULT_SCEP_ALIAS = "scep";
 
     private transient ScepOperationPlugin scepRaModeExtension = null;
-    private transient ClientCertificateRenewalExtension scepClientCertificateRenewal = null;
+    private transient ScepResponsePlugin scepClientCertificateRenewal = null;
 
     @PostConstruct
     public void postConstruct() {
@@ -154,7 +154,7 @@ public class ScepServlet extends HttpServlet {
         
         try {
             @SuppressWarnings("unchecked")
-            Class<ClientCertificateRenewalExtension> extensionClass = (Class<ClientCertificateRenewalExtension>) Class.forName(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME);
+            Class<ScepResponsePlugin> extensionClass = (Class<ScepResponsePlugin>) Class.forName(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME);
             scepClientCertificateRenewal = extensionClass.newInstance();
         } catch (ClassNotFoundException e) {
             scepClientCertificateRenewal = null;
