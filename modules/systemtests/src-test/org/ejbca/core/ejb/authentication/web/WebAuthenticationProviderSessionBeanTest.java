@@ -75,6 +75,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -304,12 +305,7 @@ public class WebAuthenticationProviderSessionBeanTest {
                     X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
                     SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
                     SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) apkiAsn1InputStream.readObject());
-                    JcaX509ExtensionUtils extensionUtils;
-                    try {
-                        extensionUtils = new JcaX509ExtensionUtils();
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException("SHA-1 was not a known algorithm.", e);
-                    }
+                    JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(apki);
                     certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
                     certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
