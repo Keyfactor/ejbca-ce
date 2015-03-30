@@ -361,7 +361,7 @@ EJBCA implements features from (at least) draft 11 of the SCEP specification. Th
 <li>GetCACertChain</li>
 <li>GetCACaps</li>
 </ul>
-Using the <a href="externalra.html">External RA</a> API the following SCEP message is also supported for polling mode:
+Using the <a href="externalra.html">External RA</a> <i><b>(Enterprise Edition Only)</b></i> API the following SCEP message is also supported for polling mode:
 <ul>
 <li>GetCertInitial</li>
 </ul>
@@ -423,7 +423,7 @@ valid, the PKCS#7 wrapping the CSR must be signed by the old certificate's keypa
 </subsubsection>
 </subsection>
 
-<subsection name="External RA SCEP Server">
+<subsection name="External RA SCEP Server (Enterprise Edition Only)">
 <p>
 EJBCA supports the SCEP 'polling' RA model using the <a href="externalra.html">External RA API</a>.
 Using this, a SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
@@ -2059,7 +2059,7 @@ To automatic test the XKMS Service do the following:
 </subsection>
 </section>
 
-<section name="External RA API">
+<section name="External RA API (Enterprise Edition Only)">
 <p>
 Information on how to use the External RA API is available <a href="externalra.html">here</a>.
 </p>

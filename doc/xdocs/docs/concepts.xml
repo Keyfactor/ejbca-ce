@@ -118,11 +118,11 @@ publish certificate revocation information to the second instance or perform aut
 certificates over the secure channel.
 </p>
 </subsection>
-<subsection name="External RA">
+<subsection name="External RA (Enterprise Edition Only)">
 <p>
 In some cases, for security reasons, is it preferable to deny all in-bound traffic to the CA and instead let the CA
 periodically fetch and process information from external trusted data sources. For this reason there is an add-on
-module provided with the EJBCA distribution called 'externalra', which is short for <a href="externalra.html">External RA API</a>.
+module provided with the EJBCA Enterprise distribution called 'externalra', which is short for <a href="externalra.html">External RA API</a>.
 </p>
 </subsection>
 
