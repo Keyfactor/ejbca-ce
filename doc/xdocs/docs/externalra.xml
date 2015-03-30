@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <document>
   <properties>
-    <title>The External Registration Authority</title>
+    <title>The External Registration Authority (Enterprise Edition Only)</title>
   </properties>
 <body>
 
@@ -20,7 +20,7 @@ The External Registration Authority (RA) API contains the most basic functions l
  <li>Generate a certificate for an existing user using a shared secret</li>
  <li>Generate a keystore for an existing user using a shared secret</li>
 </ul>
-From EJBCA 3.10 the External RA API is bundled as a part of EJBCA and can be enabled in conf/externalra.properties. 
+From EJBCA 6.3.1 the External RA API is bundled as a part of EJBCA Enterprise Edition and can be enabled in conf/externalra.properties. 
 </p><p>
 <img src="images/extra-architecture.jpg" alt="EJBCA with External RA" />
 </p>
