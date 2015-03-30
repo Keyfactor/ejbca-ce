@@ -14,7 +14,6 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
@@ -28,8 +27,6 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
@@ -37,6 +34,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.util.CertTools;
 
 /**
@@ -65,14 +63,8 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
         ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(keybytes));
         try {      
             try {
-                final SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) inputStream.readObject());
-                JcaX509ExtensionUtils extensionUtils;
-                try {
-                    extensionUtils = new JcaX509ExtensionUtils();
-                } catch (NoSuchAlgorithmException e) {
-                    throw new IllegalStateException("SHA-1 was not a known algorithm.", e);
-                }
-                ret = extensionUtils.createAuthorityKeyIdentifier(apki);
+                JcaX509ExtensionUtils  extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                ret = extensionUtils.createAuthorityKeyIdentifier(caPublicKey);
                 // If we have a CA-certificate (i.e. this is not a Root CA), we must take the authority key identifier from
                 // the CA-certificates SubjectKeyIdentifier if it exists. If we don't do that we will get the wrong identifier if the
                 // CA does not follow RFC3280 (guess if MS-CA follows RFC3280?)

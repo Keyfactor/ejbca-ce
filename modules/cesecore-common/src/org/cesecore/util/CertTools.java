@@ -139,6 +139,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.OcspConfiguration;
@@ -1696,15 +1697,8 @@ public abstract class CertTools {
                     SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) sAsn1InputStream.readObject());
                     X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
                     SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
-                    SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) aAsn1InputStream.readObject());
-                    JcaX509ExtensionUtils extensionUtils;
-                    try {
-                        extensionUtils = new JcaX509ExtensionUtils();
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException("SHA-1 was not a known algorithm.", e);
-                    }
-                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(apki);
-                    
+                    JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(publicKey);                 
                     certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
                     certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
                 } finally {

@@ -128,6 +128,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
@@ -1284,14 +1285,9 @@ public class X509CA extends CA implements Serializable {
                 ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cryptoToken.getPublicKey(
                         getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded()));
                 try {
-                    SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
-                    JcaX509ExtensionUtils extensionUtils;
-                    try {
-                        extensionUtils = new JcaX509ExtensionUtils();
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException("SHA-1 was not a known algorithm.", e);
-                    }
-                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(apki);
+                    JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(cryptoToken.getPublicKey(getCAToken()
+                            .getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)));
                     crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
                 } finally {
                     asn1InputStream.close();
