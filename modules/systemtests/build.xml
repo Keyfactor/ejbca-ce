@@ -104,6 +104,8 @@
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
+		<pathelement location="${mod.edition-specific-interface.lib}"/>
+		<pathelement location="${mod.edition-specific-ejb.lib}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="cesecore-ejb, va-ejbca-war, build-libs, compile-tests" /> 
