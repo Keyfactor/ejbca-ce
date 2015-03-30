@@ -60,9 +60,7 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-xkms.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -93,11 +91,30 @@
 		<antcall target="certsafeclean"/>
 		<antcall target="edition-specific-clean"/>
 		<antcall target="edition-specific-ee-clean"/>
+		<antcall target="externalraclean"/>
+		<antcall target="externalra-guiclean"/>
 		<antcall target="peerconnectorclean"/>
 		<delete failonerror="false">
 			<fileset dir="${modules.basedir}/dist" includes="*" />
 		</delete>
 	</target>
+	
+    <condition property="externalra.exists">
+    	<available file="${mod.externalra.path}}/build.xml" />
+    </condition>
+	<target name="externalraclean" if="${externalra.exists}">
+		<echo message="Cleaning externalra"/>
+		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
+    <condition property="externalra-gui.exists">
+    	<available file="${mod.externalra-gui.path}}/build.xml" />
+    </condition>
+	<target name="externalra-guiclean" if="${externalra-gui.exists}">
+		<echo message="Cleaning externalra-gui"/>
+		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
     <condition property="statedump.exists">
     	<available file="${mod.statedump.path}/build.xml" />
     </condition>
