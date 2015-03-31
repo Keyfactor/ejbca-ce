@@ -1177,23 +1177,23 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="externalra-service"/>
 	</target>
 
-	<target name="externalra-client" depends="deprecated:check" if="mod.externalracli.exists" description="Build the EJBCA External RA Service CLI">
+	<target name="externalra-client" depends="deprecated:check" if="mod.externalracli.exists" description="Build the EJBCA External RA Service CLI (Enterprise Edition Only).">
     	<ant dir="modules" target="externalra-client"/>
 	</target>
 
-	<target name="externalra-scep" depends="deprecated:check"  if="mod.externalracli.exists" description="Build the EJBCA External RA StandAlone SCEP application.">
+	<target name="externalra-scep" depends="deprecated:check"  if="mod.externalracli.exists" description="Build the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only).">
 		<ant dir="modules" target="externalra-scep"/>
 	</target>
 
-	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application." depends="externalra-scep,deprecated:check">
+	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only)" depends="externalra-scep,deprecated:check">
 		<antcall target="jee:deploy-scep-war" />
 	</target>
 
-	<target name="externalra-gui"  if="mod.externalracli.exists" depends="deprecated:check" description="Build the EJBCA External RA StandAlone GUI application">
+	<target name="externalra-gui"  if="mod.externalracli.exists" depends="deprecated:check" description="Build the EJBCA External RA StandAlone GUI application (Enterprise Edition Only).">
     	<ant dir="modules" target="externalra-gui"/>
 	</target>
 
-	<target name="externalra-gui-deploy"  if="mod.externalracli.exists" description="Deploy the EJBCA External RA StandAlone GUI application" depends="externalra-gui, deprecated:check">
+	<target name="externalra-gui-deploy"  if="mod.externalracli.exists" description="Deploy the EJBCA External RA StandAlone GUI application (Enterprise Edition Only)." depends="externalra-gui, deprecated:check">
         <antcall target="jee:deploy-externalragui-war" />
 	</target>
 
