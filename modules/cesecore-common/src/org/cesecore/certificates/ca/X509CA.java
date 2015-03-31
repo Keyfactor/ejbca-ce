@@ -45,7 +45,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -1281,17 +1280,10 @@ public class X509CA extends CA implements Serializable {
                 AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(caSkid);
                 crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
             } else {
-                // Generate from SHA1 of public key
-                ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cryptoToken.getPublicKey(
-                        getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded()));
-                try {
-                    JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(cryptoToken.getPublicKey(getCAToken()
-                            .getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)));
-                    crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
-                } finally {
-                    asn1InputStream.close();
-                }
+                JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(
+                        CATokenConstants.CAKEYPURPOSE_CRLSIGN)));
+                crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
             }
         }
         

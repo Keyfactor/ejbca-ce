@@ -16,7 +16,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -42,7 +41,6 @@ import java.util.Set;
 
 import javax.ejb.CreateException;
 
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -54,9 +52,7 @@ import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -298,21 +294,11 @@ public class WebAuthenticationProviderSessionBeanTest {
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA) {
-                ASN1InputStream spkiAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
-                ASN1InputStream apkiAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
-                try {
-                    SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) spkiAsn1InputStream.readObject());
-                    X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
-                    SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
-                    SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) apkiAsn1InputStream.readObject());
-                    JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(apki);
-                    certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
-                    certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
-                } finally {
-                    spkiAsn1InputStream.close();
-                    apkiAsn1InputStream.close();
-                }
+                JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                SubjectKeyIdentifier ski = extensionUtils.createSubjectKeyIdentifier(pubKey);
+                AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(publicKey);
+                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
             }
         } catch (IOException e) { // do nothing
         }
