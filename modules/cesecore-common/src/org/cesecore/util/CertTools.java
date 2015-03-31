@@ -117,9 +117,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -1690,21 +1688,11 @@ public abstract class CertTools {
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA) {
-
-                ASN1InputStream sAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
-                ASN1InputStream aAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
-                try {
-                    SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) sAsn1InputStream.readObject());
-                    X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
-                    SubjectKeyIdentifier ski = x509ExtensionUtils.createSubjectKeyIdentifier(spki);
-                    JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                    AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(publicKey);                 
-                    certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
-                    certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
-                } finally {
-                    sAsn1InputStream.close();
-                    aAsn1InputStream.close();
-                }
+                JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                SubjectKeyIdentifier ski = extensionUtils.createSubjectKeyIdentifier(publicKey);
+                AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(publicKey);
+                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
             }
         } catch (IOException e) { // do nothing
         }
