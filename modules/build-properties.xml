@@ -502,8 +502,12 @@
 	<!--
 	<echo message="peerconnector available: ${mod.peerconnector.exists}"/>
 	-->
-	<condition property="mod.externalracli.exists">
-		<available file="${mod.externalra-cli.path}/build.xml" />
+	<condition property="mod.externalra.exists">
+		<available file="${mod.externalra.path}/build.xml" />
+    </condition>
+	
+	<condition property="mod.externalra-scep.exists">
+		<available file="${mod.externalra-scep.path}/build.xml" />
     </condition>
 
 </project>

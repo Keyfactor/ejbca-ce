@@ -1,9 +1,9 @@
-# $Id$
 #
 # This is the configuration file for the External RA client GUI.
 #
-# Rename this file 'externalra-gui.properties' before building and deploying
-# the External RA GUI.
+# Note that External RA is only included in the Enterprise Edition of EJBCA.
+#
+# Rename this file 'externalra-gui.properties' before building and deploying the External RA GUI.
 #
 
 #
