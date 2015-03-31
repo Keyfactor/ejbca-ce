@@ -124,7 +124,7 @@
 		<copy file="${systemtests.properties.file}" todir="${build.interface.dir}" failonerror="false"/>
 	</target>
 
-	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb">
+	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb, edition-specific-interface">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="UTF-8" classpathref="compile-ejb.classpath" target="${java.target.version}">	
