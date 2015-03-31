@@ -2,7 +2,9 @@
 # EJBCA's external RA service can be used to only allow outgoing network traffic from the CA installation.
 # This file is used for configuring the service that polls the external database.
 # 
-# From EJBCA 3.10 properties should be configured in the EJBCA Admin GUI for each worker. For example:
+# Note that External RA is only included in the Enterprise Edition of EJBCA.
+#
+# Properties should be configured in the EJBCA Admin GUI for each worker. For example:
 #
 #  Select Worker:            Custom Worker
 #  Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker
