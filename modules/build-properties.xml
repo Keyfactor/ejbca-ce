@@ -150,7 +150,12 @@
 	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
 	<condition property="xkms.enabled.true"><istrue value="${xkms.enabled}"/></condition>
-	<condition property="externalra.enabled.true"><istrue value="${externalra.enabled}"/></condition>
+	<condition property="externalra.enabled.true">
+		<and>
+			<istrue value="${externalra.enabled}"/>
+			<available file="${mod.externalra.path}/build.xml" />
+		</and>
+	</condition>
 
 	<!-- Files of global interest -->
 	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
