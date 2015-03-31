@@ -60,7 +60,6 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-xkms.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -93,6 +92,7 @@
 		<antcall target="edition-specific-ee-clean"/>
 		<antcall target="externalraclean"/>
 		<antcall target="externalra-guiclean"/>
+		<antcall target="externalra-scepclean"/>
 		<antcall target="peerconnectorclean"/>
 		<delete failonerror="false">
 			<fileset dir="${modules.basedir}/dist" includes="*" />
@@ -113,6 +113,14 @@
 	<target name="externalra-guiclean" if="${externalra-gui.exists}">
 		<echo message="Cleaning externalra-gui"/>
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
+    <condition property="externalra-scep.exists">
+    	<available file="${mod.externalra-scep.path}}/build.xml" />
+    </condition>
+	<target name="externalra-scepclean" if="${externalra-scep.exists}">
+		<echo message="Cleaning externalra-scep"/>
+		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
     <condition property="statedump.exists">
