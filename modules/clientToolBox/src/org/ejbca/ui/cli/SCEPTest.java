@@ -44,8 +44,6 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
@@ -148,6 +146,7 @@ class SCEPTest extends ClientToolBox {
                     return false;
                 }
                 final CMSSignedData s = new CMSSignedData(con.getInputStream());
+                @SuppressWarnings("rawtypes")
                 final Store certstore = s.getCertificates();
                 @SuppressWarnings("unchecked")
                 final X509Certificate[] certs = CertTools.convertToX509CertificateArray(certstore.getMatches(null));
@@ -172,29 +171,15 @@ class SCEPTest extends ClientToolBox {
                 return "Get certificate chain";
             }
         }
+
         private Extensions generateExtensions(int bcKeyUsage) throws IOException {
-            // Extension request attribute is a set of X509Extensions
-            // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
-            // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-            ExtensionsGenerator extgen = new ExtensionsGenerator();
-            { // KeyUsage
-                final X509KeyUsage ku = new X509KeyUsage(bcKeyUsage);
-                final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                final DEROutputStream dOut = new DEROutputStream(bOut);
-                dOut.writeObject(ku);
-                final byte value[] = bOut.toByteArray();
-                extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
-            }
-            {// Requested extensions attribute
-                // AltNames
-                GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
-                ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                DEROutputStream dOut = new DEROutputStream(bOut);
-                dOut.writeObject(san);
-                extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(bOut.toByteArray()));
-            }
+            final ExtensionsGenerator extgen = new ExtensionsGenerator();
+            extgen.addExtension(Extension.keyUsage, false, new X509KeyUsage(bcKeyUsage));
+            final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
+            extgen.addExtension(Extension.subjectAlternativeName, false, san);
             return extgen.generate();
         }
+
         /** Class with command to get certificate using SCEP.
          * It will detect if it is a CA that returns the certificate immediately, or an
          * RA that returns a "polling" answer so we have to poll for a little while.
@@ -530,7 +515,8 @@ class SCEPTest extends ClientToolBox {
             	// This is yet another CMS signed data
             	final CMSSignedData sd = new CMSSignedData(decBytes);
             	// Get certificates from the signed data
-            	final Store certstore = sd.getCertificates();
+                @SuppressWarnings("rawtypes")
+                final Store certstore = sd.getCertificates();
             	if (crlRep) {
             		// We got a reply with a requested CRL
             		@SuppressWarnings("unchecked")
@@ -600,9 +586,10 @@ class SCEPTest extends ClientToolBox {
             		return false;
             	}
             	final String altName = CertTools.getSubjectAlternativeName(usercert);
-            	if ( !StringUtils.equals("iPAddress=10.0.0.1, dNSName=foo.bar.com", altName) ) {
-            		StressTest.this.performanceTest.getLog().error("altName should be iPAddress=10.0.0.1, dNSName=foo.bar.com but was: "+altName);
-            		return false;
+            	final String expectedAltName = CertTools.getGeneralNamesFromAltName("iPAddress=10.0.0.1, dNSName=foo.bar.com").toString();
+            	if (altName==null || CertTools.getGeneralNamesFromAltName(altName).equals(expectedAltName)) {
+                    StressTest.this.performanceTest.getLog().error("altName should be " + expectedAltName + " but was: " + altName);
+                    return false;
             	}
             	if ( cacert!=null ) {
             		//System.out.println("Got CA cert with DN: "+ retcert.getSubjectDN().getName());
@@ -696,6 +683,11 @@ class SCEPTest extends ClientToolBox {
             System.out.println(args[0]+" <SCEP url> <CA name> [<number of threads>] [<wait time between each thread is started>] [<user CN to be prepended by >]");
             System.out.println("SCEP URL extra example: http://127.0.0.1:8080/scepraserver/scep/pkiclient.exe");
             System.out.println("SCEP URL ca example: http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe");
+            System.out.println();
+            System.out.println("The test requires that your configured SCEP alias 'noca':");
+            System.out.println("- is a configured to never returns the CA certificate.");
+            System.out.println("- references a certificate profile with allowExtensionOverride=true and allow 1024 bit keys.");
+            System.out.println("- references an end entity profile with 'Use' 'Batch generation");
             System.out.println();
             System.out.println("NOTE: This test should work for both EJBCA and EXTRA.");
             System.out.println("Originally it was written for EXTRA. But then it was change to use EJBCA directly also.");
