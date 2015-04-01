@@ -124,7 +124,7 @@
 		<copy file="${systemtests.properties.file}" todir="${build.interface.dir}" failonerror="false"/>
 	</target>
 
-	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb, edition-specific-interface">
+	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb, edition-specific-interface, eedition-ejb">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="UTF-8" classpathref="compile-ejb.classpath" target="${java.target.version}">	
@@ -234,7 +234,7 @@
 	<!-- =================================
           Run most system tests
          ================================= -->
-	<target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
+	<target name="run" depends="build, assert-appserverrunning, runws, runxkms, edition-specific-interface, eedition-ejb" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime"/>
 		<mkdir dir="${this.dir}/p12"/>
 		<!-- Workaround for tests using BatchMakeP12 -->
