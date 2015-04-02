@@ -35,6 +35,8 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -817,9 +819,13 @@ class CMPTest extends ClientToolBox {
                 }
                 return this.socket;
             }
-            private String getRandomAllDigitString( int length ) {
-            	final String s = Integer.toString( StressTest.this.performanceTest.getRandom().nextInt() );
-            	return s.substring(s.length()-length);
+            /** @return a positive integer as a zero-padded String (max length that is pseudo-random is 9 chars). */
+            private String getRandomAllDigitString(int length) {
+                final NumberFormat format = DecimalFormat.getInstance();
+                format.setMinimumIntegerDigits(length);
+                format.setMaximumIntegerDigits(length);
+                format.setGroupingUsed(false);
+                return format.format((long)StressTest.this.performanceTest.getRandom().nextInt(Integer.MAX_VALUE));
             }
             private String getFnrLra() {
             	return getRandomAllDigitString(6)+getRandomAllDigitString(5)+'-'+getRandomAllDigitString(5);
