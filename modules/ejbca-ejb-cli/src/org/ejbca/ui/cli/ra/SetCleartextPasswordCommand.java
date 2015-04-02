@@ -43,8 +43,8 @@ public class SetCleartextPasswordCommand extends BaseRaCommand {
     {
         registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Username for the end entity."));
-        registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "New password for the end entity."));
+        registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New password for the end entity. Leaving out password will prompt for it."));
     }
 
     @Override
@@ -56,8 +56,12 @@ public class SetCleartextPasswordCommand extends BaseRaCommand {
     public CommandResult execute(ParameterContainer parameters) {
         String username = parameters.get(USERNAME_KEY);
         String password = parameters.get(PASSWORD_KEY);
+        if(password == null) {
+            log.info("Enter password: ");
+            // Read the password, but mask it so we don't display it on the console
+            password = String.valueOf(System.console().readPassword());
+        }
         getLogger().info("Setting clear text password for user " + username);
-
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(),
                     username, password);
