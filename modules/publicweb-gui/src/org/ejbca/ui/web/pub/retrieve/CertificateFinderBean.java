@@ -194,7 +194,7 @@ public class CertificateFinderBean {
 		try {
 			BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));			
 			CertificateStatus info = mStoreSession.getStatus(StringUtils.trimToEmpty(issuerDN), serialBignum);
-			if (info == null) {
+			if (info.equals(CertificateStatus.NOT_AVAILABLE)) {
 				result.setRevocationDate(null);
 				result.setUserCertificate(null);
 			} else {
