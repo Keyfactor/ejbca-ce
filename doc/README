@@ -40,6 +40,12 @@ You can make a nice, deliverable, document by:
 - replace all <h3> with <h2> and </h3> with </h2>
 - Edit <pre> formatted text commands for line breaks by adding "\" and a space as first char on the next line.
   These commands work very good to copy-paste into a Linux shell.
+  You have to go through the documents manually to fix these, it should take ~1h for both. 
+- "EJBCA support, development and maintenance by PrimeKey" needs the <img> removed, and put "PrimeKey" in text instead.
+- The Title is too long and should be named something like this instead "EJBCA Enterprise v6.3.0 - User Guide".
+
+Open question:
+- Is it possible to add our logo somewhere?
 
 Release notes and upgrade
 -------------------------
