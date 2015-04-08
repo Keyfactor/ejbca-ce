@@ -83,7 +83,23 @@ public class EJBCAWSRACommandFactory {
             return new CvcPrintCommand(args);
         } else if (args[0].equals("cvcpem")) {
             return new CvcPemCommand(args);
-	    }
+        } else if (args[0].equals("createcryptotoken")) {
+            return new CreateCryptoTokenCommand(args);
+        } else if (args[0].equals("generatectkeys")) {
+            return new GenerateCryptoTokenKeysCommand(args);
+        } else if (args[0].equals("createca")) {
+            return new CreateCACommand(args);
+        } else if (args[0].equals("addadmintorole")) {
+            return new AddSubjectToRoleCommand(args);
+        } else if (args[0].equals("removeadminfromrole")) {
+            return new RemoveSubjectFromRoleCommand(args);
+        } else if (args[0].equals("getexpiredcerts")) {
+            return new GetExpiredCertificatesCommand(args);
+        } else if (args[0].equals("getexpiredcertsbyissuer")) {
+            return new GetExpiredCertificatesByIssuerCommand(args);
+        } else if (args[0].equals("getexpiredcertsbytype")) {
+            return new GetExpiredCertificatesByTypeCommand(args);
+        }
         
         else {
             return null;
