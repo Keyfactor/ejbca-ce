@@ -111,6 +111,8 @@ If you select (as type) to use a PKCS#11 Crypto Token additional fields are disp
 The PKCS#11 properties above are described in more technical detail in the <a href="adminguide.html#Hardware Security Modules (HSM)">Adminguide's HSM</a> section.
 A unique Crypto Token identifier will be generated when the token is created.
 </p>
+<p>It is also possible to create new Crypto Tokens by using the WS API call <a href="ws/org/ejbca/core/protocol/ws/client/gen/EjbcaWS.html#createCryptoToken(java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean,%20java.util.List)">createCryptoToken</a>
+in your application or with the <a href="adminguide.html#Using the Web Services CLI">Web Services CLI</a>.</p>
 </subsection>
 <subsection name="View or Edit a Crypto Token">
 <p>
@@ -141,6 +143,8 @@ The shown SubjectKeyID column is a SHA1 over the public key.
 Please note that the shown key specifications might not be supported by underlying PKCS#11 modules and
 an error will be shown when trying to use such a key specification.
 </p>
+<p>It is also possible to generate new keys by using the WS API call <a href="ws/org/ejbca/core/protocol/ws/client/gen/EjbcaWS.html#generateCryptoTokenKeys(java.lang.String,%20java.lang.String,%20java.lang.String)">generateCryptoTokenKeys</a>
+in your application or with the <a href="adminguide.html#Using the Web Services CLI">Web Services CLI</a>.</p>
 </subsection>
 <subsection name="CryptoToken Authorization">
 <p>
@@ -203,6 +207,10 @@ and stored/published.
 <subsubsection name="Using Admin GUI">
 <p>Creating CAs in the Admin GUI is done by selecting 'Edit Certificate Authorities' in the menu, entering a new CA name in the text field and clicking 'Create'.
 </p>
+</subsubsection>
+<subsubsection name="Using EJBCA's web service">
+<p>If EJBCA's web service is set up, it is also possible to create new CA by using the WS API call <a href="ws/org/ejbca/core/protocol/ws/client/gen/EjbcaWS.html#createCA(java.lang.String,%20java.lang.String,%20java.lang.String,%20long,%20java.lang.String,%20java.lang.String,%20int,%20java.lang.String,%20java.util.List,%20java.util.List)">createCA</a>
+in your application or with the <a href="adminguide.html#Using the Web Services CLI">Web Services CLI</a>.</p>
 </subsubsection>
 </subsection>
 <subsection name="CA fields">
@@ -1783,6 +1791,8 @@ The RAadmin shall have access to add/list/edit end entites. To create a new role
 <li>Press "Add"</li> 
 </ul>
 </p>
+<p>It is also possible to add a new administrator to an existing role by using the WS API call <a href="ws/org/ejbca/core/protocol/ws/client/gen/EjbcaWS.html#addSubjectToRole(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String)">addSubjectToRole</a>
+in your application or with the <a href="adminguide.html#Using the Web Services CLI">Web Services CLI</a>.</p>
 </subsubsection>
 <subsubsection name="Test the new administrator">
 <p>

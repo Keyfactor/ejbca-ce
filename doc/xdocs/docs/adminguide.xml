@@ -1763,6 +1763,44 @@ caCertResponse, caRenewCertRequest:
 <ul>
 <li>/ca_functionality/renew_ca</li>
 </ul>
+<p>
+createCryptoToken:
+</p>
+<ul>
+<li>/cryptotoken/modify</li>
+</ul>
+<p>
+generateCryptoTokenKeys:
+</p>
+<ul>
+<li>/cryptotoken/keys/generate/'related CryptoToken'</li>
+</ul>
+<p>
+createCA:
+</p>
+<ul>
+<li>/</li>
+</ul>
+<p>
+addSubjectToRole:
+</p>
+<ul>
+<li>/ca/'related CAs (All the CAs that issued the certificates of every member in the the related role)'</li>
+<li>/system_functionality/edit_administrator_privileges</li>
+</ul>
+<p>
+removeSubjectFromRole:
+</p>
+<ul>
+<li>/ca/'related CAs (All the CAs that issued the certificates of every member in the the related role)'</li>
+<li>/system_functionality/edit_administrator_privileges</li>
+</ul>
+<p>
+getCertificatesByExpirationTime, getCertificatesByExpirationTimeAndIssuer, getCertificatesByExpirationTimeAndType:
+</p>
+<ul>
+<li>No other access rules are required</li>
+</ul>
 </subsection>
 <subsection name="Error codes on web services">
     <p>
