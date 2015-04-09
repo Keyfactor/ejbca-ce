@@ -137,9 +137,27 @@ function roleupdated(){
     selectother.disabled = false;
     selectinternalkeybindingrules.disabled = true;
     
-    numberofkeybindingrules = selectinternalkeybindingrules.length;
-    for( i = numberofkeybindingrules -1; i >= 0; i--) {
-    	selectinternalkeybindingrules.options[i].selected=false;
+    numofendentity = selectendentityrules.length;
+    for( i=numofendentity-1; i >= 0; i-- ){
+    	if(selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEW %> ||
+    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %> || 
+    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_CREATE %> || 
+    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_EDIT %> || 
+    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_DELETE %> || 
+    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_REVOKE %> ) {
+    		selectendentityrules.options[i].selected=true;
+    	} else {
+    		selectendentityrules.options[i].disabled=true;
+    	}
+    }
+    
+    numofotherrules = selectother.length;
+    for( i=numofotherrules-1; i >= 0; i--) {
+    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
+    		selectother.options[i].selected=true;
+    	} else {
+    		selectother.options[i].disabled=true;
+    	}
     }
 
   }  
@@ -156,18 +174,15 @@ function roleupdated(){
           selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>)
          selectendentityrules.options[i].selected=true;
        else
-         selectendentityrules.options[i].selected=false;
+         selectendentityrules.options[i].disabled=true;
     }
     numofotherrules = selectother.length;
     for( i=numofotherrules-1; i >= 0; i--) {
-    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>) {
-    		selectother.options[i].selected=false;
+    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
+    		selectother.options[i].selected=true;
+    	} else {
+    		selectother.options[i].disabled=true;
     	}
-    }
-    
-    numberofkeybindingrules = selectinternalkeybindingrules.length;
-    for( i = numberofkeybindingrules -1; i >= 0; i--) {
-    	selectinternalkeybindingrules.options[i].selected=false;
     }
   }
 }
