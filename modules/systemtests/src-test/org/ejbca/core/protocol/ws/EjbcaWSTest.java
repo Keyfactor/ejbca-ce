@@ -928,6 +928,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test70CreateSoftCryptoToken() throws Exception {
         log.trace(">test70CreateSoftCryptoToken()");
+        log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         
         String ctname = "NewTestCryptoTokenThroughWS";
@@ -972,6 +973,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test71GenerateCryptoTokenKeys() throws Exception {
         log.trace(">test71GenerateCryptoTokenKeys()");
+        log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
 
         String ctname = "NewTestCryptoTokenThroughWS";
@@ -1008,6 +1010,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test72CreateCA() throws Exception {
         log.trace(">test72CreateCA()");
+        log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         
         
@@ -1101,6 +1104,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test73ManageSubjectInRole() throws Exception {
         log.trace(">test73AddSubjectToRole()");
+        log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         
         String rolename = "TestWSNewAccessRole";
