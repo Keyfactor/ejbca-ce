@@ -85,6 +85,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 public class InternalKeyBindingMBean extends BaseManagedBean implements Serializable {
 
     public class GuiInfo {
+        public static final String TEXTKEY_PREFIX = "INTERNALKEYBINDING_STATUS_";
         private final int internalKeyBindingId;
         private final String name;
         private final int cryptoTokenId;
@@ -115,7 +116,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             this.cryptoTokenActive = cryptoTokenActive;
             this.keyPairAlias = keyPairAlias;
             this.nextKeyPairAlias = nextKeyPairAlias;
-            this.status = "INTERNALKEYBINDING_STATUS_" + status;
+            this.status = TEXTKEY_PREFIX + status;
             this.certificateId = certificateId;
             this.certificateIssuerDn = certificateIssuerDn;
             this.certificateSerialNumber = certificateSerialNumber;
@@ -302,7 +303,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         boolean currentValueMatched = false;
         Set<String> internalkeybindingSet = new HashSet<String>();
         for (final GuiInfo guiInfo : (List<GuiInfo>) getInternalKeyBindingGuiList().getWrappedData()) {
-            if (guiInfo.getStatus().equalsIgnoreCase(InternalKeyBindingStatus.ACTIVE.name())) {
+            if (guiInfo.getStatus().equalsIgnoreCase(GuiInfo.TEXTKEY_PREFIX + InternalKeyBindingStatus.ACTIVE.name())) {
                 internalkeybindingSet.add(guiInfo.getCertificateIssuerDn());
                 ret.add(new SelectItem(guiInfo.getCertificateIssuerDn(), "OCSPKeyBinding: " + guiInfo.getName()));
                 if (currentValue.equals(guiInfo.getCertificateIssuerDn())) {
