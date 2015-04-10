@@ -60,6 +60,9 @@ public class CachingKeyStoreWrapper {
     private final boolean cachingEnabled;
     private HashMap<String, KeyStoreMapEntry> keyStoreCache = new HashMap<String, KeyStoreMapEntry>();
     
+    @Deprecated // Should only be used from OcspResponseGeneratorSessionBean.adhocUpgradeFromPre60
+    public KeyStore getKeyStore() { return keyStore; }
+    
     /**
      * Wrap the key store object with optional caching of all entries.
      * 

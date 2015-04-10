@@ -18,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -1744,9 +1743,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final Method m = BaseCryptoToken.class.getDeclaredMethod("getKeyStore");
                     m.setAccessible(true);
                     final CachingKeyStoreWrapper cachingKeyStoreWrapper = (CachingKeyStoreWrapper) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
-                    final Field f = CachingKeyStoreWrapper.class.getDeclaredField("keyStore");
-                    final KeyStore keyStore = (KeyStore) f.get(cachingKeyStoreWrapper);
-                    createInternalKeyBindings(authenticationToken, p11CryptoTokenId, keyStore, trustDefaults);
+                    createInternalKeyBindings(authenticationToken, p11CryptoTokenId, cachingKeyStoreWrapper.getKeyStore(), trustDefaults);
                 }
             } catch (Exception e) {
                 log.error("", e);
@@ -1852,8 +1849,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @Deprecated //Remove this method as soon as upgrading from 5->6 is dropped
     private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException {
         final Enumeration<String> aliases = keyStore.aliases();
+        boolean noAliases = true;
         while (aliases.hasMoreElements()) {
             final String keyPairAlias = aliases.nextElement();
+            noAliases = false;
             log.info("Found alias " + keyPairAlias + ", trying to figure out if this is something we should convert into a new KeyBinding...");
             final Certificate[] chain = keyStore.getCertificateChain(keyPairAlias);
             if (chain == null || chain.length==0) {
@@ -1881,6 +1880,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } else {
                 log.info("Alias " + keyPairAlias + " contains certificate of unknown type and will be ignored.");
             }
+        }
+        if (noAliases) {
+            log.info("No aliases to process were found in the key store.");
         }
     }
 
