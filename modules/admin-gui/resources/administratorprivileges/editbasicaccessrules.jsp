@@ -50,63 +50,41 @@ function roleupdated(){
   var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');	 
   var currentrole = selectrole.options[selectrole.options.selectedIndex].value;  
  
-  if(currentrole == '<%=DefaultRoles.CUSTOM.getName() %>'){
+  if(currentrole == '<%=DefaultRoles.CUSTOM.getName() %>' || 
+     currentrole == '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>' ) {
     selectcas.disabled = true;
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
     selectother.disabled = true;
     selectinternalkeybindingrules.disabled = true;
- 
-    numofcas = selectcas.length;
-    for( i=numofcas-1; i >= 0; i-- ){          
-         selectcas.options[i].selected=false;
-    }
- 
-    numofendentity = selectendentityrules.length;
-    for( i=numofendentity-1; i >= 0; i-- ){          
-         selectendentityrules.options[i].selected=false;
-    }
- 
-    numofprofiles = selectendentityprofiles.length;
-    for( i=numofprofiles-1; i >= 0; i-- ){          
-         selectendentityprofiles.options[i].selected=false;
+    
+    numberofselectcas = selectcas.length;
+    for( i = numberofselectcas -1; i >= 0; i--) {
+    	selectcas.options[i].selected=false;
     }
     
-    numofintinternalkeybindings = selectinternalkeybindingrules.length;
-    for( i=numofintinternalkeybindings-1; i >= 0; i-- ){          
-    	numofintinternalkeybindings.options[i].selected=false;
+    numberofselectendentityrules = selectendentityrules.length;
+    for( i = numberofselectendentityrules -1; i >= 0; i--) {
+    	selectendentityrules.options[i].selected=false;
     }
- 
+    
+    numberofselectendentityprofiles = selectendentityprofiles.length;
+    for( i = numberofselectendentityprofiles -1; i >= 0; i--) {
+    	selectendentityprofiles.options[i].selected=false;
+    }
+    
+    numberofselectinternalkeybindingrules = selectinternalkeybindingrules.length;
+    for( i = numberofselectinternalkeybindingrules -1; i >= 0; i--) {
+    	selectinternalkeybindingrules.options[i].selected=false;
+    }
+    
+    numberofselectother = selectother.length;
+    for( i = numberofselectother -1; i >= 0; i--) {
+    	selectother.options[i].selected=false;
+    }
+    
   }
   
-  if(currentrole == '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>'){
-    selectcas.disabled = true;
-    selectendentityrules.disabled = true;
-    selectendentityprofiles.disabled = true;
-    selectother.disabled = true;
-    selectinternalkeybindingrules.disabled = true;
- 
-    numofcas = selectcas.length;
-    for( i=numofcas-1; i >= 0; i-- ){          
-         selectcas.options[i].selected=false;
-    }
- 
-    numofendentity = selectendentityrules.length;
-    for( i=numofendentity-1; i >= 0; i-- ){          
-         selectendentityrules.options[i].selected=false;
-    }
- 
-    numofprofiles = selectendentityprofiles.length;
-    for( i=numofprofiles-1; i >= 0; i-- ){          
-         selectendentityprofiles.options[i].selected=false;
-    }
-    
-    numofintinternalkeybindings = selectinternalkeybindingrules.length;
-    for( i=numofintinternalkeybindings-1; i >= 0; i-- ){          
-    	numofintinternalkeybindings.options[i].selected=false;
-    }
- 
-  }
   if(currentrole == '<%= DefaultRoles.CAADMINISTRATOR.getName()%>'){
     selectcas.disabled = false;
     selectendentityrules.disabled = true;
@@ -114,18 +92,28 @@ function roleupdated(){
     selectother.disabled = false;
     selectinternalkeybindingrules.disabled = false;
  
-    numofendentity = selectendentityrules.length;
-    for( i=numofendentity-1; i >= 0; i-- ){          
-         selectendentityrules.options[i].selected=false;
+    numberofselectendentityrules = selectendentityrules.length;
+    for( i = numberofselectendentityrules -1; i >= 0; i--) {
+    	selectendentityrules.options[i].selected=false;
     }
- 
-    numofprofiles = selectendentityprofiles.length;
-    for( i=numofprofiles-1; i >= 0; i-- ){          
-         selectendentityprofiles.options[i].selected=false;
+    
+    numberofselectendentityprofiles = selectendentityprofiles.length;
+    for( i = numberofselectendentityprofiles -1; i >= 0; i--) {
+    	selectendentityprofiles.options[i].selected=false;
     }
+
     numberofkeybindingrules = selectinternalkeybindingrules.length;
     for( i = numberofkeybindingrules -1; i >= 0; i--) {
     	selectinternalkeybindingrules.options[i].selected=true;
+    }
+    
+    numofotherrules = selectother.length;
+    for( i=numofotherrules-1; i >= 0; i--) {
+    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
+    		selectother.options[i].selected=true;
+    	} else {
+    		selectother.options[i].disabled=true;
+    	}
     }
     
 
@@ -151,6 +139,11 @@ function roleupdated(){
     	}
     }
     
+    numberofselectinternalkeybindingrules = selectinternalkeybindingrules.length;
+    for( i = numberofselectinternalkeybindingrules -1; i >= 0; i--) {
+    	selectinternalkeybindingrules.options[i].selected=false;
+    }
+    
     numofotherrules = selectother.length;
     for( i=numofotherrules-1; i >= 0; i--) {
     	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
@@ -165,7 +158,7 @@ function roleupdated(){
     selectcas.disabled = false;
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
-    selectother.disabled = true;
+    selectother.disabled = false;
     selectinternalkeybindingrules.disabled = true;
  
     numofendentity = selectendentityrules.length;
@@ -173,9 +166,17 @@ function roleupdated(){
        if(selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEW %> ||
           selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>)
          selectendentityrules.options[i].selected=true;
-       else
-         selectendentityrules.options[i].disabled=true;
+       else {
+    	   selectendentityrules.options[i].selected=false;
+           selectendentityrules.options[i].disabled=true;
+       }
     }
+    
+    numberofselectinternalkeybindingrules = selectinternalkeybindingrules.length;
+    for( i = numberofselectinternalkeybindingrules -1; i >= 0; i--) {
+    	selectinternalkeybindingrules.options[i].selected=false;
+    }
+    
     numofotherrules = selectother.length;
     for( i=numofotherrules-1; i >= 0; i--) {
     	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
@@ -188,42 +189,14 @@ function roleupdated(){
 }
  
 function checkallfields(){ 
-	var selectcas = document.getElementById('basicRules:selectcas');
 	var selectrole = document.getElementById('basicRules:selectrole');
-	var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
-	var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');
-	var selectother = document.getElementById('basicRules:selectother');
-	var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');
-
-    var illegalfields = 0;
-    var illegalselection = false;
- 
-    selectcas.disabled = false;
-    selectendentityrules.disabled = false;
-    selectendentityprofiles.disabled = false;
-    selectother.disabled = false;
-    selectinternalkeybindingrules.disabled = false;
- 
-    var currentrole = selectrole.options[selectrole.options.selectedIndex].value;        
- 
+    var currentrole = selectrole.options[selectrole.options.selectedIndex].value;         
     if(currentrole == '<%= DefaultRoles.CUSTOM.getName()%>'){
-      alert("<%= ejbcawebbean.getText("SELECTAROLE", true) %>");
+      alert("<%= ejbcawebbean.getText("SELECTANOTHERROLE", true) %>");
       return false;
     }
  
-    if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){
-      var numofendentity = selectendentityrules.length;
-      for( i=numofendentity-1; i >= 0; i-- ){
-       if(selectendentityrules.options[i].selected){
-         if(!(selectendentityrules.options[i].value==<%= BasicAccessRuleSet.ENDENTITY_VIEW%> ||
-              selectendentityrules.options[i].value==<%= BasicAccessRuleSet.ENDENTITY_VIEWHISTORY%> ||
-              selectendentityrules.options[i].value==<%= BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS%>)){
-            illegalselection = true;
-         }
-       }
-      }
-    }
-    return illegalfields == 0;  
+    return true;
 } 
 
 -->
