@@ -1764,32 +1764,25 @@ caCertResponse, caRenewCertRequest:
 <li>/ca_functionality/renew_ca</li>
 </ul>
 <p>
-createCryptoToken:
+createCryptoToken (Available in Enterprise Edition only):
 </p>
 <ul>
 <li>/cryptotoken/modify</li>
 </ul>
 <p>
-generateCryptoTokenKeys:
+generateCryptoTokenKeys (Available in Enterprise Edition only):
 </p>
 <ul>
 <li>/cryptotoken/keys/generate/'related CryptoToken'</li>
 </ul>
 <p>
-createCA:
+createCA (Available in Enterprise Edition only):
 </p>
 <ul>
 <li>/</li>
 </ul>
 <p>
-addSubjectToRole:
-</p>
-<ul>
-<li>/ca/'related CAs (All the CAs that issued the certificates of every member in the the related role)'</li>
-<li>/system_functionality/edit_administrator_privileges</li>
-</ul>
-<p>
-removeSubjectFromRole:
+addSubjectToRole, removeSubjectFromRole (Available with Enterprise Edition only):
 </p>
 <ul>
 <li>/ca/'related CAs (All the CAs that issued the certificates of every member in the the related role)'</li>
