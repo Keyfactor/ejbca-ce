@@ -458,6 +458,49 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             caCertificateChain.add(currentLevelCertificate);
         }
+        try {
+            CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain));
+        } catch (Exception e) {
+            // Apparently the built chain could not be used to validate the leaf certificate
+            // this could happen if the CA keys were renewed, but the subject DN did not change
+            log.info("Unable to build a valid certificate chain for OCSP signing certificate with Subject DN '" +
+                    CertTools.getSubjectDN(leafCertificate)  + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                    "' using the latest CA certificate(s) in the database. Trying to recover from exception: " + e.getMessage());
+            final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(leafCertificate));
+            final List<Certificate> chainByFingerPrints = certificateStoreSession.getCertificateChain(certificateInfo);
+            if (chainByFingerPrints.size()>0) {
+                // Remove the leaf certificate itself
+                chainByFingerPrints.remove(0);
+            }
+            caCertificateChain.clear();
+            for (final Certificate current : chainByFingerPrints) {
+                if (current instanceof X509Certificate) {
+                    caCertificateChain.add((X509Certificate) current);
+                } else {
+                    log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                            CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                            "'. CA certificate chain contains non-X509 certificates.");
+                    return null;
+                }
+            }
+            if (caCertificateChain.isEmpty()) {
+                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                        CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                        "''. CA certificate(s) are missing in the database.");
+                return null;
+            }
+            try {
+                CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain));
+            } catch (Exception e2) {
+                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                        CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                        "''. Found CA certificate(s) cannot be used for validation: " + e2.getMessage());
+                return null;
+            }
+            log.info("Recovered and managed to build a valid certificate chain for OCSP signing certificate with Subject DN '" +
+                    CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                    "'.");
+        }
         return caCertificateChain;
     }
    
