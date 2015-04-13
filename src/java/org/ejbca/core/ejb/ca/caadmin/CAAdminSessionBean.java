@@ -36,6 +36,8 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -257,15 +259,31 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initializeAndUpgradeCAs() {
-        for (final CAData cadata : CAData.findAll(entityManager)) {
-            final String caname = cadata.getName();
+        final List<CAData> caDatas = CAData.findAll(entityManager);
+        // Sort CAs by name (to produce pretty table in log)
+        Collections.sort(caDatas, new Comparator<CAData>() {
+            @Override
+            public int compare(final CAData arg0, final CAData arg1) {
+                return arg0.getName().compareTo(arg1.getName());
+            }
+        });
+        // Figure out the longest CA name (to produce pretty table in log)
+        int maxNameLenght = 0;
+        for (final CAData caData : caDatas) {
+            if (caData.getName().length()>maxNameLenght) {
+                maxNameLenght = caData.getName().length();
+            }
+        }
+        for (final CAData caData : caDatas) {
+            final String caName = caData.getName();
             try {
-                caAdminSession.initializeAndUpgradeCA(cadata.getCaId());
-                log.info("Initialized CA: " + caname + ", with expire time: " + new Date(cadata.getExpireTime()));
+                caAdminSession.initializeAndUpgradeCA(caData.getCaId());
+                final String expires = ValidityDate.formatAsISO8601ServerTZ(caData.getExpireTime(), ValidityDate.TIMEZONE_SERVER);
+                log.info("Initialized CA: " +  String.format("%-"+maxNameLenght+"s", caName) + " with expire time: " + expires);
             } catch (CADoesntExistsException e) {
-                log.error("CADoesntExistsException trying to load CA with name: " + caname, e);
+                log.error("CADoesntExistsException trying to load CA with name: " + caName, e);
             } catch (Throwable e) {
-                log.error("Exception trying to load CA, possible upgrade not performed: " + caname, e);
+                log.error("Exception trying to load CA, possible upgrade not performed: " + caName, e);
             }
         }
     }
