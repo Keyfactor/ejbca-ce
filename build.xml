@@ -789,6 +789,7 @@
 	    ]]>
     </scriptdef>
 		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
+		<antcall target="update-edition" />
 		<convertdot/> <!-- convert dots to underscores in version string -->
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
 		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}"/>
@@ -1004,13 +1005,24 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<delete file="svnlog.out"/>
 		<antcall target="update-svnrev-updatefile" /> <!-- do update of file only if property is set -->
     </target>
-
+	
 	<target name="update-svnrev-updatefile" if="Revision">
 		<replaceregexp file="src/internal.properties" encoding="UTF-8" match='(svn.revision=).*'
 			replace='\1r${Revision}' />
 		<echo>Updated "svn.revision" to: r${Revision}</echo>
     </target>
 	
+	<target name="update-edition" depends="deprecated:check">
+		<condition property="app.edition" value="Enterprise" >
+			<matches string="${edition}" pattern="^ee$"/>
+		</condition>
+		<condition property="app.edition" value="Community" >
+			<matches string="${edition}" pattern="^ce$"/>
+		</condition>
+		<replaceregexp file="src/internal.properties" encoding="UTF-8" match='(app.edition.verbose=).*'
+					replace='\1${app.edition}' />
+				<echo>Updated "app.edition.verbose" to: ${app.edition}</echo>
+	</target>
      
 	<!--
         Target for signing a JAR (JAR, EAR, WAR or ZIP)
