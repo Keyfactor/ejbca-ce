@@ -990,7 +990,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
-            String remoteHost, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger)
+            StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger)
             throws MalformedRequestException, OCSPException {
         //Check parameters
         if (auditLogger == null) {
@@ -1289,6 +1289,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             // Find the certificate from the certId
                             if(certificateStatusHolder != null && certificateStatusHolder.getCertificate() != null) {
                                 X509Certificate cert = (X509Certificate) certificateStatusHolder.getCertificate();
+                                // From EJBCA 6.2.10 and 6.3.2 the extension must perform the reverse DNS lookup by itself if needed.
+                                final String remoteHost = remoteAddress;
                                 // Call the OCSP extension
                                 Map<ASN1ObjectIdentifier, Extension> retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert,
                                         certStatus);

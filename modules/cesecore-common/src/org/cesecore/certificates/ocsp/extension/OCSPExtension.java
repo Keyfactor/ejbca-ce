@@ -41,7 +41,7 @@ public interface OCSPExtension {
      * @param remoteAddress
      *            Extracted from the HttpServletRequest.
      * @param remoteHost
-     *            Extracted from the HttpServletRequest.
+     *            DEPRECATED. Currently set to the same as remoteAddress. An extension that relies on this value must perform the remote lookup by itself.
      * @param cert
      *            X509Certificate the caller asked for in the OCSP request
      * @param status
