@@ -200,7 +200,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -222,7 +222,7 @@ public class IntegratedOcspResponseTest {
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         response = new OCSPResp(responseBytes);
@@ -243,7 +243,7 @@ public class IntegratedOcspResponseTest {
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         response = new OCSPResp(responseBytes);
@@ -281,7 +281,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", new StringBuffer("http://foo.com"),
                     auditLogger, transactionLogger).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -296,7 +296,7 @@ public class IntegratedOcspResponseTest {
             assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
                     .getSerialNumber());
 
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", new StringBuffer("http://foo.com"),
                     auditLogger, transactionLogger).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -319,7 +319,7 @@ public class IntegratedOcspResponseTest {
             String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
             try {
-                responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+                responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", new StringBuffer("http://foo.com"),
                         auditLogger, transactionLogger).getOcspResponse();
                 assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -361,7 +361,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -401,7 +401,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -428,7 +428,7 @@ public class IntegratedOcspResponseTest {
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
@@ -469,7 +469,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"),
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", new StringBuffer("http://foo.com"),
                 auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -487,7 +487,7 @@ public class IntegratedOcspResponseTest {
         // Set that an unknown CA is "good", and redo the test (cache is reloaded automatically)
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "true");
 
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger,
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", new StringBuffer("http://foo.com"), auditLogger,
                 transactionLogger).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
@@ -542,7 +542,7 @@ public class IntegratedOcspResponseTest {
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
             // Create the audit logger for this transaction.
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             // Initial assert that status is null, i.e. "good"
@@ -550,7 +550,7 @@ public class IntegratedOcspResponseTest {
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
             // Erase the cert. It should still exist in the cache.
             caSession.removeCA(internalAdmin, testx509ca.getCAId());
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because cache changed before the entire test could run.",
@@ -559,7 +559,7 @@ public class IntegratedOcspResponseTest {
             // to wait that long, make it 8 seconds. We have set the timer to 2 seconds above.
             Thread.sleep(8 * 1000);
             // Since the CA is gone, expect an unauthorized response
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
@@ -603,7 +603,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         OCSPResp response = new OCSPResp(responseBytes);
@@ -643,7 +643,7 @@ public class IntegratedOcspResponseTest {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, auditLogger, transactionLogger)
                 .getOcspResponse();
         //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
         assertNotNull("OCSP responder replied null", responseBytes);
@@ -775,7 +775,7 @@ public class IntegratedOcspResponseTest {
                     TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
                     // Create the audit logger for this transaction.
                     AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-                    byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", "", null, auditLogger,
+                    byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, auditLogger,
                             transactionLogger).getOcspResponse();
                     assertNotNull("OCSP responder replied null", responseBytes);
 

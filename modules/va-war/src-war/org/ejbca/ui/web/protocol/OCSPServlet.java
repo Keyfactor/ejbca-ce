@@ -211,7 +211,6 @@ public class OCSPServlet extends HttpServlet {
 
     private void processOcspRequest(HttpServletRequest request, HttpServletResponse response, final HttpMethod httpMethod) throws ServletException {
         final String remoteAddress = request.getRemoteAddr();
-        final String remoteHost = request.getRemoteHost();
         final StringBuffer requestUrl = request.getRequestURL();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
@@ -235,7 +234,7 @@ public class OCSPServlet extends HttpServlet {
                 byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
                 X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
-                        requestBytes, requestCertificates, remoteAddress, remoteHost, requestUrl, auditLogger, transactionLogger);
+                        requestBytes, requestCertificates, remoteAddress, requestUrl, auditLogger, transactionLogger);
             } catch (MalformedRequestException e) {
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
