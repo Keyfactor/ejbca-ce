@@ -904,10 +904,6 @@ function checkallfields(){
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
         <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
         <% } %>
-        
-        <% if (editca) { %>
-            <input type="hidden" name="<%=HIDDEN_INCLUDEINHEALTHCHECK %>" value="<%= Boolean.valueOf(cainfo!=null && cainfo.getIncludeInHealthCheck()).toString() %>"/>
-        <% } %>
       </td>
     </tr>
 
@@ -1543,6 +1539,17 @@ function checkallfields(){
       </td>
     </tr>
     <% } %>
+    <tr id="Row<%=row++%2%>"> 
+        <td width="50%"  align="right"> 
+            <%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Monitoring%20and%20healthcheck") %>
+        </td>
+        <td width="50%">
+            <input type="checkbox" name="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>" value="<%=CHECKBOX_VALUE%>" id="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>"
+                <% if (cainfo!=null && cainfo.getIncludeInHealthCheck()) { out.write("CHECKED"); } %>
+                >
+                <label for="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
+        </td>
+    </tr>
 
    <% } %>
 
