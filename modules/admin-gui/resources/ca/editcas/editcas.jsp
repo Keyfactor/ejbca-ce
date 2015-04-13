@@ -170,6 +170,7 @@ java.security.InvalidAlgorithmParameterException
   static final String CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL       = "checkboxusecrldistributionpointoncrl";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL  = "checkboxcrldistributionpointoncrlcritical";
   static final String CHECKBOX_CREATELINKCERTIFICATE              = "checkboxcreatelinkcertificate";
+  static final String CHECKBOX_INCLUDEINHEALTHCHECK               = "checkboxincludeinhealthcheck";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
@@ -196,8 +197,6 @@ java.security.InvalidAlgorithmParameterException
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
 
-  static final String HIDDEN_INCLUDEINHEALTHCHECK                 = "includeinhealthcheck";
-  
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_RECIEVEFILE_MAKEREQUEST                = "filerecievefilemakerequest";
   static final String FILE_RECIEVEFILE_RECEIVEREQUEST             = "filerecievefilerecieverequest";
@@ -373,6 +372,7 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useldapdnorder = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USELDAPDNORDER));
                 final boolean usecrldistpointoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL));
                 final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
+                final boolean includeInHealthCheck = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_INCLUDEINHEALTHCHECK));
                 final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
@@ -396,7 +396,7 @@ java.security.InvalidAlgorithmParameterException
                		 usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
                		 authorityInformationAccess, nameConstraintsPermitted, nameConstraintsExcluded,
                		 caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
-               		 usecrldistpointoncrl, crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive,
+               		 usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive,
                		 serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest,
                		 cryptoTokenIdString, keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
                		 keyAliasHardTokenEncryptKey, keyAliasKeyEncryptKey, keyAliasKeyTestKey,
@@ -532,7 +532,7 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useldapdnorder = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USELDAPDNORDER));
                 final boolean usecrldistpointoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL));
                 final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
-                final boolean includeInHealthCheck = Boolean.valueOf(requestMap.get(HIDDEN_INCLUDEINHEALTHCHECK));
+                final boolean includeInHealthCheck = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_INCLUDEINHEALTHCHECK));
                 final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
