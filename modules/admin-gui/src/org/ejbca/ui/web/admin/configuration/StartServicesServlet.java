@@ -69,6 +69,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -109,6 +110,8 @@ public class StartServicesServlet extends HttpServlet {
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+    @EJB
+    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
@@ -333,6 +336,8 @@ public class StartServicesServlet extends HttpServlet {
         ocspResponseGeneratorSession.initTimers();
         // Start CA certificate cache reload
         certificateStoreSession.initTimers();
+        // Start legacy background service for renewal of OCSP signers via EJBCA WS calls to CA
+        ocspKeyRenewalSession.startTimer();
         // Verify that the EJB CLI user (if present) cannot be used to generate certificates
         final String cliUsername = EjbcaConfiguration.getCliDefaultUser();
         try {
