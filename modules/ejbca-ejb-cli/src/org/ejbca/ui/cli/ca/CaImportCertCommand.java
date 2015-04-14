@@ -74,7 +74,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
     private static final String FILE_KEY = "-f";
     private static final String EE_PROFILE_KEY = "--eeprofile";
     private static final String CERT_PROFILE_KEY = "--certprofile";
-    private static final String OVERRIDE_EXISTING_ENDNETITY = "--override";
+    private static final String OVERRIDE_EXISTING_ENDENTITY = "--overwrite";
 
     private static final String ACTIVE = "ACTIVE";
     private static final String REVOKED = "REVOKED";
@@ -96,8 +96,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 "Certificate Profile to create end entity with."));
         registerParameter(new Parameter(E_MAIL_KEY, "E-Mail", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "E-Mail for imported End Entity, if any."));
-        registerParameter(new Parameter(OVERRIDE_EXISTING_ENDNETITY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
-                "Override an existing end entity even if it was not revoked."));
+        registerParameter(new Parameter(OVERRIDE_EXISTING_ENDENTITY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Overwrite an existing end entity even if it was not revoked."));
     }
 
     @Override
@@ -161,7 +161,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             log.error("ERROR: CLI user not authorized to manage end entities.");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
-        if ((userdata != null) && !parameters.containsKey(OVERRIDE_EXISTING_ENDNETITY)) {
+        if ((userdata != null) && !parameters.containsKey(OVERRIDE_EXISTING_ENDENTITY)) {
             if (userdata.getStatus() != EndEntityConstants.STATUS_REVOKED) {
                 errorString.append("User " + username + " already exists; only revoked user can be overwritten.\n");
             }
