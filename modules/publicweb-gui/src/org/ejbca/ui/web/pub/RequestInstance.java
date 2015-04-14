@@ -38,6 +38,7 @@ import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -520,6 +521,8 @@ public class RequestInstance {
 		        }
 		    }
             iErrorMessage = intres.getLocalizedMessage("certreq.catokenoffline", ctoeMsg);
+		} catch (AuthorizationDeniedException e) {
+		    iErrorMessage = intres.getLocalizedMessage("certreq.authorizationdenied");
 		} catch (Exception e) {
 			Throwable e1 = e.getCause();
 			if (e1 instanceof CryptoTokenOfflineException) {
