@@ -39,166 +39,107 @@
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 <script type="text/javascript">
-<!--  
- 
-function roleupdated(){
-  var selectcas = document.getElementById('basicRules:selectcas');
-  var selectrole = document.getElementById('basicRules:selectrole');
-  var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
-  var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');  
-  var selectother = document.getElementById('basicRules:selectother');	
-  var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');	 
-  var currentrole = selectrole.options[selectrole.options.selectedIndex].value;  
- 
-  if(currentrole == '<%=DefaultRoles.CUSTOM.getName() %>' || 
-     currentrole == '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>' ) {
-    selectcas.disabled = true;
-    selectendentityrules.disabled = true;
-    selectendentityprofiles.disabled = true;
-    selectother.disabled = true;
-    selectinternalkeybindingrules.disabled = true;
-    
-    numberofselectcas = selectcas.length;
-    for( i = numberofselectcas -1; i >= 0; i--) {
-    	selectcas.options[i].selected=false;
+<!--
+/**
+ * Enable and modify the boolean state of all the select-elements options.
+ *
+ * @param selectElement is a select multiple elemnent
+ * @param the new boolean state of selectElement.disabled
+ * @param the new boolean option.selected state for each contained option
+ */
+function selectAll(selectElement, selectDisabled, selectedValue) {
+    var length = selectElement.length;
+    for (var i=0; i<length; i++) {
+    	selectElement.options[i].disabled = false;
+    	selectElement.options[i].selected = selectedValue;
     }
-    
-    numberofselectendentityrules = selectendentityrules.length;
-    for( i = numberofselectendentityrules -1; i >= 0; i--) {
-    	selectendentityrules.options[i].selected=false;
-    }
-    
-    numberofselectendentityprofiles = selectendentityprofiles.length;
-    for( i = numberofselectendentityprofiles -1; i >= 0; i--) {
-    	selectendentityprofiles.options[i].selected=false;
-    }
-    
-    numberofselectinternalkeybindingrules = selectinternalkeybindingrules.length;
-    for( i = numberofselectinternalkeybindingrules -1; i >= 0; i--) {
-    	selectinternalkeybindingrules.options[i].selected=false;
-    }
-    
-    numberofselectother = selectother.length;
-    for( i = numberofselectother -1; i >= 0; i--) {
-    	selectother.options[i].selected=false;
-    }
-    
-  }
-  
-  if(currentrole == '<%= DefaultRoles.CAADMINISTRATOR.getName()%>'){
-    selectcas.disabled = false;
-    selectendentityrules.disabled = true;
-    selectendentityprofiles.disabled = true;
-    selectother.disabled = false;
-    selectinternalkeybindingrules.disabled = false;
- 
-    numberofselectendentityrules = selectendentityrules.length;
-    for( i = numberofselectendentityrules -1; i >= 0; i--) {
-    	selectendentityrules.options[i].selected=false;
-    }
-    
-    numberofselectendentityprofiles = selectendentityprofiles.length;
-    for( i = numberofselectendentityprofiles -1; i >= 0; i--) {
-    	selectendentityprofiles.options[i].selected=false;
-    }
-
-    numberofkeybindingrules = selectinternalkeybindingrules.length;
-    for( i = numberofkeybindingrules -1; i >= 0; i--) {
-    	selectinternalkeybindingrules.options[i].selected=true;
-    }
-    
-    numofotherrules = selectother.length;
-    for( i=numofotherrules-1; i >= 0; i--) {
-    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
-    		selectother.options[i].selected=true;
-    	} else {
-    		selectother.options[i].disabled=true;
-    	}
-    }
-    
-
-  }
-  if(currentrole == '<%= DefaultRoles.RAADMINISTRATOR.getName()%>'){
-    selectcas.disabled = false;
-    selectendentityrules.disabled = false;
-    selectendentityprofiles.disabled = false;
-    selectother.disabled = false;
-    selectinternalkeybindingrules.disabled = true;
-    
-    numofendentity = selectendentityrules.length;
-    for( i=numofendentity-1; i >= 0; i-- ){
-    	if(selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEW %> ||
-    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %> || 
-    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_CREATE %> || 
-    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_EDIT %> || 
-    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_DELETE %> || 
-    	   selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_REVOKE %> ) {
-    		selectendentityrules.options[i].selected=true;
-    	} else {
-    		selectendentityrules.options[i].disabled=true;
-    	}
-    }
-    
-    numberofselectinternalkeybindingrules = selectinternalkeybindingrules.length;
-    for( i = numberofselectinternalkeybindingrules -1; i >= 0; i--) {
-    	selectinternalkeybindingrules.options[i].selected=false;
-    }
-    
-    numofotherrules = selectother.length;
-    for( i=numofotherrules-1; i >= 0; i--) {
-    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
-    		selectother.options[i].selected=true;
-    	} else {
-    		selectother.options[i].disabled=true;
-    	}
-    }
-
-  }  
-  if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){
-    selectcas.disabled = false;
-    selectendentityrules.disabled = false;
-    selectendentityprofiles.disabled = false;
-    selectother.disabled = false;
-    selectinternalkeybindingrules.disabled = true;
- 
-    numofendentity = selectendentityrules.length;
-    for( i=numofendentity-1; i >= 0; i-- ){
-       if(selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEW %> ||
-          selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>)
-         selectendentityrules.options[i].selected=true;
-       else {
-    	   selectendentityrules.options[i].selected=false;
-           selectendentityrules.options[i].disabled=true;
-       }
-    }
-    
-    numberofselectinternalkeybindingrules = selectinternalkeybindingrules.length;
-    for( i = numberofselectinternalkeybindingrules -1; i >= 0; i--) {
-    	selectinternalkeybindingrules.options[i].selected=false;
-    }
-    
-    numofotherrules = selectother.length;
-    for( i=numofotherrules-1; i >= 0; i--) {
-    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_VIEWLOG %>) {
-    		selectother.options[i].selected=true;
-    	} else {
-    		selectother.options[i].disabled=true;
-    	}
-    }
-  }
+    selectElement.disabled = selectDisabled;
 }
- 
-function checkallfields(){ 
-	var selectrole = document.getElementById('basicRules:selectrole');
-    var currentrole = selectrole.options[selectrole.options.selectedIndex].value;         
-    if(currentrole == '<%= DefaultRoles.CUSTOM.getName()%>'){
-      alert("<%= ejbcawebbean.getText("SELECTANOTHERROLE", true) %>");
-      return false;
+/**
+ * Enable and modify the set the state to selected of all the options that appear in the provided array.
+ *
+ * @param selectElement is a select multiple elemnent
+ * @param optionValues an array of (String) option values that should be enabled and selected.
+ * @param the new boolean option.disabled state for unselected option
+ */
+function selectSome(selectElement, optionValues, disableUnselected) {
+	selectElement.disabled = false;
+    var selectLength = selectElement.length;
+    for (var i=0; i<selectLength; i++) {
+    	var found = false;
+        for (var j=0; j<optionValues.length; j++) {
+        	if (selectElement.options[i].value === optionValues[j]) {
+        		found = true;
+        		break;
+        	}
+        }
+        if (found) {
+        	selectElement.options[i].selected = true;
+        	selectElement.options[i].disabled = false;
+        } else {
+        	selectElement.options[i].selected = false;
+        	selectElement.options[i].disabled = disableUnselected;
+        }
     }
- 
-    return true;
-} 
+}
+/**
+ * Modify selectable fields according to the currently selected role.
+ */
+function roleupdated() {
+	var selectcas = document.getElementById('basicRules:selectcas');
+	var selectrole = document.getElementById('basicRules:selectrole');
+	var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
+	var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');
+	var selectother = document.getElementById('basicRules:selectother');
+	var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');
+	var currentrole = selectrole.options[selectrole.options.selectedIndex].value;
+	if (currentrole === '<%=DefaultRoles.CUSTOM.getName() %>' || currentrole === '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>' ) {
+		selectAll(selectcas, true, false);
+		selectAll(selectendentityrules, true, false);
+		selectAll(selectendentityprofiles, true, false);
+		selectAll(selectinternalkeybindingrules, true, false);
+		selectAll(selectother, true, false);
+	} else if (currentrole === '<%= DefaultRoles.CAADMINISTRATOR.getName()%>') {
+		selectAll(selectcas, false, false);
+		selectAll(selectendentityrules, true, false);
+		selectAll(selectendentityprofiles, true, false);
+		selectAll(selectinternalkeybindingrules, false, true);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+	} else if (currentrole === '<%= DefaultRoles.RAADMINISTRATOR.getName()%>') {
+		selectAll(selectcas, false, false);
+		selectAll(selectendentityprofiles, false, false);
+		selectSome(selectendentityrules, [
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_CREATE %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_EDIT %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_DELETE %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_REVOKE %>'
+		], true);
+		selectAll(selectinternalkeybindingrules, true, false);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+	} else if(currentrole === '<%= DefaultRoles.SUPERVISOR.getName()%>') {
+		selectAll(selectcas, false, false);
+		selectAll(selectendentityprofiles, false, false);
+		selectSome(selectendentityrules, [
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS %>'
+		], true);
+		selectAll(selectinternalkeybindingrules, true, false);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+	}
+}
 
+function checkallfields() {
+	var selectrole = document.getElementById('basicRules:selectrole');
+	var currentrole = selectrole.options[selectrole.options.selectedIndex].value;
+	if (currentrole === '<%= DefaultRoles.CUSTOM.getName()%>') {
+		alert("<%= ejbcawebbean.getText("SELECTANOTHERROLE", true) %>");
+		return false;
+	}
+	return true;
+}
 -->
 </script>
 </head>
