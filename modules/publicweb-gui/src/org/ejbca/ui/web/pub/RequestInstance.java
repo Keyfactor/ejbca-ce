@@ -522,7 +522,7 @@ public class RequestInstance {
 		    }
             iErrorMessage = intres.getLocalizedMessage("certreq.catokenoffline", ctoeMsg);
 		} catch (AuthorizationDeniedException e) {
-		    iErrorMessage = intres.getLocalizedMessage("certreq.authorizationdenied");
+		    iErrorMessage = "Request could not be fulfilled due to lack of authorization. " + e.getLocalizedMessage();
 		} catch (Exception e) {
 			Throwable e1 = e.getCause();
 			if (e1 instanceof CryptoTokenOfflineException) {
