@@ -57,11 +57,13 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -88,10 +90,15 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenData;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -104,6 +111,8 @@ import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityAppro
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -470,6 +479,113 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      */
     private int getNumOfApprovalRequired(final int action, final int caid, final int certprofileid) {
         return caAdminSession.getNumOfApprovalRequired(action, caid, certprofileid);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean renameEndEntity(final AuthenticationToken admin, String currentUsername, String newUsername) throws AuthorizationDeniedException, EndEntityExistsException {
+        // Sanity check parameters
+        if (currentUsername==null || newUsername==null) {
+            throw new IllegalArgumentException("Cannot rename an end entity to or from null.");
+        }
+        currentUsername = StringTools.stripUsername(currentUsername).trim();
+        newUsername = StringTools.stripUsername(newUsername).trim();
+        if (currentUsername.length()==0 || newUsername.length()==0) {
+            throw new IllegalArgumentException("Cannot rename an end entity to or from empty string.");
+        }
+        // Check that end entity exists and that the target username isn't already in use
+        final UserData currentUserData = UserData.findByUsername(entityManager, currentUsername);
+        if (currentUserData==null) {
+            return false;
+        }
+        if (UserData.findByUsername(entityManager, newUsername)!=null) {
+            throw new EndEntityExistsException("Unable to rename end entity, since end entity with username '" + newUsername + "' already exists.");
+        }
+        // Check authorization
+        final int currentCaId = currentUserData.getCaId();
+        assertAuthorizedToCA(admin, currentCaId);
+        final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
+        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+            // Check if administrator is authorized to edit user.
+            assertAuthorizedToEndEntityProfile(admin, currentUserData.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, currentCaId);
+        }
+        // Rename the end entity. Username is a primary key of the UserData table and we need to use JPA for this to get rowProtection.
+        // we need to add a new end entity and remove the old one.
+        final long now = System.currentTimeMillis();
+        final UserData userDataClone = currentUserData.clone();
+        userDataClone.setUsername(newUsername);
+        userDataClone.setTimeModified(now);
+        entityManager.persist(userDataClone);
+        entityManager.remove(currentUserData);
+        // Find all entities and update the username (we cant just do UPDATE ... SET username.. WHERE username since rowProtection might be enabled)
+        final List<CertificateData> certificateDatas = (List<CertificateData>) entityManager.createQuery(
+                "SELECT a FROM CertificateData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        int updatedPublisherQueueDataRows = 0;
+        for (final CertificateData certificateData : certificateDatas) {
+            final String fingerprint = certificateData.getFingerprint();
+            certificateData.setUsername(newUsername);
+            certificateData.setUpdateTime(now);
+            // Find all publisher queue data where PublisherQueueData.fingerprint matches CertificateData.fingerprint for this user
+            final List<PublisherQueueData> publisherQueueDatas = PublisherQueueData.findDataByFingerprint(entityManager, fingerprint);
+            for (final PublisherQueueData publisherQueueData : publisherQueueDatas) {
+                // Only process entries that has not yet been published/processed
+                if (publisherQueueData.getPublishStatus()==PublisherConst.STATUS_PENDING) {
+                    final PublisherQueueVolatileInformation volatileInformation = publisherQueueData.getPublisherQueueVolatileData();
+                    if (currentUsername.equals(volatileInformation.getUsername())) {
+                        volatileInformation.setUsername(newUsername);
+                        // Invoke setter to trigger update of still managed JPA entity
+                        publisherQueueData.setPublisherQueueVolatileData(volatileInformation);
+                        updatedPublisherQueueDataRows++;
+                    }
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + certificateDatas.size() + " rows of CertificateData.");
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + updatedPublisherQueueDataRows + " rows of PublisherQueueData.");
+        }
+        final List<CertReqHistoryData> certReqHistoryDatas = (List<CertReqHistoryData>) entityManager.createQuery(
+                "SELECT a FROM CertReqHistoryData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        for (final CertReqHistoryData current : certReqHistoryDatas) {
+            // Note: Ignore the username inside certReqHistoryData.getUserDataVO(), since this should reflect the state of the UserData at the time of certificate issuance
+            current.setUsername(newUsername);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + certReqHistoryDatas.size() + " rows of CertReqHistoryData.");
+        }
+        final List<KeyRecoveryData> keyRecoveryDatas = (List<KeyRecoveryData>) entityManager.createQuery(
+                "SELECT a FROM KeyRecoveryData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        for (final KeyRecoveryData current : keyRecoveryDatas) {
+            current.setUsername(newUsername);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + keyRecoveryDatas.size() + " rows of KeyRecoveryData.");
+        }
+        final List<HardTokenData> hardTokenDatas = (List<HardTokenData>) entityManager.createQuery(
+                "SELECT a FROM HardTokenData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        for (final HardTokenData current : hardTokenDatas) {
+            current.setUsername(newUsername);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + hardTokenDatas.size() + " rows of HardTokenData.");
+        }
+        // Update CLI admins where this username is used in AdminEntityData table.
+        final List<AccessUserAspectData> accessUserAspectDatas = (List<AccessUserAspectData>) entityManager.createQuery(
+                "SELECT a FROM AccessUserAspectData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue")
+                .setParameter("tokenType", CliUserAccessMatchValue.USERNAME.getTokenType())
+                .setParameter("matchWith", CliUserAccessMatchValue.USERNAME.getNumericValue())
+                .setParameter("matchValue", currentUsername)
+                .getResultList();
+        for (final AccessUserAspectData current : accessUserAspectDatas) {
+            current.setMatchValue(newUsername);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + accessUserAspectDatas.size() + " rows of AdminEntityData.");
+        }
+        final String msg = intres.getLocalizedMessage("ra.editedentityrename", currentUsername, newUsername);
+        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
+                String.valueOf(currentCaId), newUsername, currentUsername, msg);
+        return true;
     }
 
     @Deprecated

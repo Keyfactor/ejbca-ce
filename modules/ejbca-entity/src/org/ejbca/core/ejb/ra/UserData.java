@@ -450,6 +450,32 @@ public class UserData extends ProtectedData implements Serializable {
     // Helper functions
     //
 
+    @Transient
+    public UserData clone() {
+        final UserData userData = new UserData();
+        userData.caId = caId;
+        userData.cardNumber = cardNumber;
+        userData.certificateProfileId = certificateProfileId;
+        userData.clearPassword = clearPassword;
+        userData.endEntityProfileId = endEntityProfileId;
+        userData.extendedInformationData = extendedInformationData;
+        userData.hardTokenIssuerId = hardTokenIssuerId;
+        userData.keyStorePassword = keyStorePassword;
+        userData.passwordHash = passwordHash;
+        userData.rowProtection = rowProtection;
+        userData.rowVersion = rowVersion;
+        userData.status = status;
+        userData.subjectAltName = subjectAltName;
+        userData.subjectDN = subjectDN;
+        userData.subjectEmail = subjectEmail;
+        userData.timeCreated = timeCreated;
+        userData.timeModified = timeModified;
+        userData.tokenType = tokenType;
+        userData.type = type;
+        userData.username = username;
+        return userData;
+    }
+
     /**
      * Non-searchable information about a user.
      */
