@@ -294,7 +294,11 @@ public class RAInterfaceBean implements Serializable {
     	// Method needed because it is used as an ApprovalOveradableClassName
     	return revokeCert(serno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
     }
-    
+
+    public boolean renameUser(final String currentUsername, final String newUsername) throws AuthorizationDeniedException, EndEntityExistsException {
+        return endEntityManagementSession.renameEndEntity(administrator, currentUsername, newUsername);
+    }
+
     /** Changes the userdata  */
     public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
         log.trace(">changeUserData()");
