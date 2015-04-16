@@ -1552,6 +1552,19 @@ The renewal functionality is provided in a separate web module called renew.war 
 enabled in conf/web.properties by setting web.renewalenabled=true and then (re-)deploy EJBCA. 
 </p>
 </subsection>
+
+<subsection name="Renaming Users">
+<p>
+The username is used to for example bind issued certificates or key recovery data to a specific end entity.
+In the case where the username has to be changed, this can be modified in the Edit End Entity view of the Admin GUI or using the
+'bin/ejbca.sh ra renameendentity' CLI.
+</p><p>
+Renaming an end entity this way will automatically update CLI administrators with this name and other internal database objects where this is used.
+This also means that unless you have added database indeces to CertificateData, CertReqHistoryData, HardTokenData and KeyRecoveryData or if you have
+a large number of pending publisher queue objects issued under this end entity, this operation will be heavy on the database and take a long time to
+complete.
+</p>
+</subsection>
 </section>
 
 <section name="Administrators">
