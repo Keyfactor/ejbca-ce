@@ -100,14 +100,11 @@ function roleupdated() {
 		selectAll(selectinternalkeybindingrules, true, false);
 		selectAll(selectother, true, false);
 	} else if (currentrole === '<%= DefaultRoles.CAADMINISTRATOR.getName()%>') {
-		selectAll(selectcas, false, false);
 		selectAll(selectendentityrules, true, false);
 		selectAll(selectendentityprofiles, true, false);
 		selectAll(selectinternalkeybindingrules, false, true);
 		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
 	} else if (currentrole === '<%= DefaultRoles.RAADMINISTRATOR.getName()%>') {
-		selectAll(selectcas, false, false);
-		selectAll(selectendentityprofiles, false, false);
 		selectSome(selectendentityrules, [
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
@@ -119,8 +116,6 @@ function roleupdated() {
 		selectAll(selectinternalkeybindingrules, true, false);
 		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
 	} else if(currentrole === '<%= DefaultRoles.SUPERVISOR.getName()%>') {
-		selectAll(selectcas, false, false);
-		selectAll(selectendentityprofiles, false, false);
 		selectSome(selectendentityrules, [
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
