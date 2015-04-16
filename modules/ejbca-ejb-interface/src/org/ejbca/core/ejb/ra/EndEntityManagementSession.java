@@ -437,4 +437,18 @@ public interface EndEntityManagementSession {
      */
     List<EndEntityInformation> findUsers(List<Integer> caIds, long timeModified, int status);
 
+    /**
+     * Rename an end entity.
+     * Updates existing references in the database to this username.
+     * 
+     * No re-publishing with updated username will take place.
+     * 
+     * @param admin administrator that 
+     * @param currentUsername
+     * @param newUsername
+     * @return true if an end entity with such name existed
+     * @throws AuthorizationDeniedException if the user was not authorized to edit this end entity
+     * @throws EndEntityExistsException the newUsername is already taken by another end entity
+     */
+    boolean renameEndEntity(AuthenticationToken admin, String currentUsername, String newUsername) throws AuthorizationDeniedException, EndEntityExistsException;
 }
