@@ -588,6 +588,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         EndEntityInformation userdata = new EndEntityInformation(authUsername, "C=SE, O=AnaTom, CN=" + username, caid, null, email, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         // Test CA authorization
+        usernames.add(authUsername+"_renamed");
         try {
             try {
                 endEntityManagementSession.addUser(adminTokenNoAuth, userdata, false);
@@ -595,22 +596,26 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
-
             try {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, true);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
-
+            endEntityManagementSession.addUser(admin, userdata, false);
             try {
-                endEntityManagementSession.addUser(admin, userdata, false);
+                boolean result = endEntityManagementSession.renameEndEntity(adminTokenNoAuth, authUsername, authUsername+"_renamed");
+                log.debug("Rename result: " + result);
+                fail("should throw");
+            } catch (AuthorizationDeniedException e) {
+                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+            }
+            try {
                 endEntityManagementSession.deleteUser(adminTokenNoAuth, authUsername);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
-            
             // Now add the administrator to a role that has access to /ca/* but not ee profiles
             RoleData role = roleAccessSession.findRole(testRole);
             if (role == null) {
@@ -630,6 +635,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             globalConfSession.saveConfiguration(roleMgmgToken, gc);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
             endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
+            endEntityManagementSession.renameEndEntity(adminTokenNoAuth, authUsername, authUsername+"_renamed");
+            endEntityManagementSession.renameEndEntity(adminTokenNoAuth, authUsername+"_renamed", authUsername);
             // Enforce EE profile limitations
             gc.setEnableEndEntityProfileLimitations(true);
             globalConfSession.saveConfiguration(roleMgmgToken, gc);
@@ -640,7 +647,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
             }
-
+            try {
+                endEntityManagementSession.renameEndEntity(adminTokenNoAuth, authUsername, authUsername+"_renamed");
+                fail("should throw");
+            } catch (AuthorizationDeniedException e) {
+                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
+            }
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
             globalConfSession.saveConfiguration(roleMgmgToken, gc);
@@ -656,5 +668,32 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         }
     }
 
+    /** Test rename of an end entity. */
+    @Test
+    public void testRenameEndEntity() throws Exception {
+        final String username1 = "testRenameEndEntityA";
+        final String username2 = "testRenameEndEntityB";
+        final String username3 = "testRenameEndEntityC";
+        endEntityManagementSession.addUser(admin, username1, pwd, "C=SE, O=PrimeKey, CN=" + username1, null, null, true,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+        endEntityManagementSession.addUser(admin, username2, pwd, "C=SE, O=PrimeKey, CN=" + username2, null, null, true,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+        usernames.add(username1);
+        usernames.add(username2);
+        usernames.add(username3);
+        try {
+            endEntityManagementSession.renameEndEntity(admin, username1, username2);
+            fail("Was able to rename an end entity using an already occupied username.");
+        } catch (EndEntityExistsException e) {
+            // Expected
+        }
+        endEntityManagementSession.renameEndEntity(admin, username1, username3);
+        final EndEntityInformation endEntityInformation1 = endEntityAccessSession.findUser(admin, username1);
+        assertNull("Renamed user should no longer exist under old username.", endEntityInformation1);
+        final EndEntityInformation endEntityInformation2 = endEntityAccessSession.findUser(admin, username3);
+        assertNotNull("End entity should still exist after a failed rename to its username.", endEntityInformation2);
+        final EndEntityInformation endEntityInformation3 = endEntityAccessSession.findUser(admin, username3);
+        assertNotNull("Renamed user should exist under new username.", endEntityInformation3);
+    }
 
 }
