@@ -23,6 +23,7 @@
     static final String BUTTON_SAVE = "buttonedituser";
     static final String BUTTON_CLOSE = "buttonclose";
 
+    static final String TEXTFIELD_NEWUSERNAME = "textfieldnewusername";
     static final String TEXTFIELD_PASSWORD = "textfieldpassword";
     static final String TEXTFIELD_CONFIRMPASSWORD = "textfieldconfirmpassword";
     static final String TEXTFIELD_SUBJECTDN = "textfieldsubjectdn";
@@ -136,6 +137,20 @@
         if (request.getParameter(ACTION) != null) {
             if (request.getParameter(ACTION).equals(ACTION_EDITUSER)) {
                 if (request.getParameter(BUTTON_SAVE) != null) {
+                    String newUsername = request.getParameter(TEXTFIELD_NEWUSERNAME);
+                    if (!username.equals(newUsername)) {
+                        // Rename the end entity
+                        try {
+                            if (!rabean.renameUser(username, newUsername)) {
+                                approvalmessage = ejbcawebbean.getText("ENDENTITYDOESNTEXIST");
+                            }
+                        } catch (org.cesecore.authorization.AuthorizationDeniedException e) {
+                        	notauthorized = true;
+                        } catch (org.ejbca.core.ejb.ra.EndEntityExistsException e) {
+                            approvalmessage = ejbcawebbean.getText("ENDENTITYALREADYEXISTS");
+                        }
+                        username = newUsername;
+                    }
                     UserView newuser = new UserView();
                     newuser.setEndEntityProfileId(profileid);
                     newuser.setUsername(username);
@@ -568,7 +583,9 @@
     }
 
     Map<Integer, List<Integer>> availablecas = ejbcawebbean.getInformationMemory().getCasAvailableToEndEntity(profileid);
-    editendentitybean.setExtendedInformation(userdata.getExtendedInformation());
+    if (userdata!=null) {
+        editendentitybean.setExtendedInformation(userdata.getExtendedInformation());
+    }
     pageContext.setAttribute("profile", profile);
 
     int row = 0;
@@ -1007,8 +1024,11 @@ function checkUseInBatch(){
 
       <tr id="Row<%=(row++)%2%>" class="title">
 	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
-	<td><strong><c:out value="<%= userdata.getUsername() %>"/>
-        </strong></td>
+	<td>
+		<strong>
+			<input type="text" name="<%= TEXTFIELD_NEWUSERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= userdata.getUsername() %>"/>'>
+        </strong>
+    </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" CHECKED></td>
       </tr>
 
