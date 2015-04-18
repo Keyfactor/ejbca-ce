@@ -24,11 +24,11 @@
 <div class="frame">
 <div class="label">
 <a style="color:white; padding:1em;" href="http://blog.ejbca.org" target="ejbcablog">EJBCA Blog</a>
-<a style="color:white; padding:1em;" href="https://www.primekey.se/Products/EJBCA+PKI/PKI+Appliance/?pk_campaign=org&amp;pk_kwd=safesimp" target="pk">Safer &amp; Simpler PKI</a>
-<a style="color:white; padding:1em;" href="https://www.primekey.se/Products/EJBCA+PKI/" target="pk">EJBCA Enterprise</a>
-<a style="color:white; padding:1em;" href="https://www.primekey.se/Services/Support/" target="pk">Enterprise Support</a>
+<a style="color:white; padding:1em;" href="https://www.primekey.se/technologies/products-overview/pki-appliance/?pk_campaign=org&amp;pk_kwd=box/?pk_campaign=org&amp;pk_kwd=safesimp" target="pk">Safer &amp; Simpler PKI</a>
+<a style="color:white; padding:1em;" href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/" target="pk">EJBCA Enterprise</a>
+<a style="color:white; padding:1em;" href="https://www.primekey.se/service-support/support/" target="pk">Enterprise Support</a>
 <!-- 
-<a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Training/" target="pk">EJBCA PKI Training</a>
+<a style="color:white; padding:1em;" href="https://www.primekey.se/service-support/training/" target="pk">EJBCA PKI Training</a>
  -->
 </div>
 <div class="content">
@@ -42,11 +42,11 @@
   <span class="date"> Posted: 2014-06-19</span>  
   </p>  
   <p><strong>PKI-in-a-box!</strong> By integrating secure hardware technology with the flexibility, reliability and feature set of EJBCA Enterprise, 
-  the turnkey Appliance features an easy to install PKI-in-a-box, offering predictable costs and increased quality to your PKI solution. Check out the simpler, yet safer, <a href="https://www.primekey.se/Products/EJBCA+PKI/PKI+Appliance/?pk_campaign=org&amp;pk_kwd=box">PrimeKey PKI Appliance</a>.
+  the turnkey Appliance features an easy to install PKI-in-a-box, offering predictable costs and increased quality to your PKI solution. Check out the simpler, yet safer, <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/?pk_campaign=org&amp;pk_kwd=box">PrimeKey PKI Appliance</a>.
   </p>
   <p><strong>EJBCA Enterprise 6.2.9 and 6.3.1!</strong>
- PrimeKey's EJBCA Enterprise is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. The latest releases are <a href="https://www.primekey.se/Company/News/Product+news/Product+News+detail//EJBCA_Enterprise_6.2.9_and_6.3.1_-_Mar_2015.cid3401">
- EJBCA Enterprise 6.2.9</a> and <a href="https://www.primekey.se/Company/News/Product+news/Product+News+detail//EJBCA_Enterprise_6.2.9_and_6.3.1_-_Mar_2015.cid3401">
+ PrimeKey's EJBCA Enterprise is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. The latest releases are <a href="https://www.primekey.se/news-events/">
+ EJBCA Enterprise 6.2.9</a> and <a href="https://www.primekey.se/news-events/">
  EJBCA Enterprise 6.3.1</a>. For entire non-community features, only available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise Edition features" in the features list</a>.
  <br />
   <span class="date"> Posted: 2015-03-27</span>
