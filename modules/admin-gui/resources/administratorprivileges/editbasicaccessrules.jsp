@@ -92,6 +92,7 @@ function roleupdated() {
 	var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');
 	var selectother = document.getElementById('basicRules:selectother');
 	var selectinternalkeybindingrules = document.getElementById('basicRules:selectinternalkeybindingrules');
+	
 	var currentrole = selectrole.options[selectrole.options.selectedIndex].value;
 	if (currentrole === '<%=DefaultRoles.CUSTOM.getName() %>' || currentrole === '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>' ) {
 		selectAll(selectcas, true, false);
@@ -100,11 +101,14 @@ function roleupdated() {
 		selectAll(selectinternalkeybindingrules, true, false);
 		selectAll(selectother, true, false);
 	} else if (currentrole === '<%= DefaultRoles.CAADMINISTRATOR.getName()%>') {
+		selectcas.disabled = false;
 		selectAll(selectendentityrules, true, false);
 		selectAll(selectendentityprofiles, true, false);
 		selectAll(selectinternalkeybindingrules, false, true);
 		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
 	} else if (currentrole === '<%= DefaultRoles.RAADMINISTRATOR.getName()%>') {
+		selectcas.disabled = false;
+		selectendentityprofiles.disabled = false;
 		selectSome(selectendentityrules, [
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
@@ -116,6 +120,8 @@ function roleupdated() {
 		selectAll(selectinternalkeybindingrules, true, false);
 		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
 	} else if(currentrole === '<%= DefaultRoles.SUPERVISOR.getName()%>') {
+		selectcas.disabled = false;
+		selectendentityprofiles.disabled = false;
 		selectSome(selectendentityrules, [
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
