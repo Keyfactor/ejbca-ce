@@ -97,8 +97,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # If you are not sure that you know how to add a new language (languagefile.xx.properties, etc.), 
 # we suggest you stick with the default the first time you install if you wan't to add your own language.
 # Otherwise you may not be able to log in to the Admin GUI.
-# Default: en,bs,de,es,fr,it,ja,pt,sv,uk,zh
-#web.availablelanguages=en,bs,de,es,fr,it,ja,pt,sv,uk,zh
+# Default: en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh
+#web.availablelanguages=en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh
 
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: UTF-8
