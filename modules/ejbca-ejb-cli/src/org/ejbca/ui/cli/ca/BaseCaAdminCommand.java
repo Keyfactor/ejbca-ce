@@ -211,41 +211,41 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
     }
 
     protected String getAvailableEepsString() {
-        // List available CAs by name
-        final StringBuilder existingCas = new StringBuilder();
+        // List available EndEntityProfiles by name
+        final StringBuilder availableEEPs = new StringBuilder();
         try {
             for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
                     .getAuthorizedEndEntityProfileIds(getAuthenticationToken())) {
-                final String caName = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(
+                final String eepName = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(
                         nextId.intValue());
-                if (existingCas.length() > 0) {
-                    existingCas.append(", ");
+                if (availableEEPs.length() > 0) {
+                    availableEEPs.append(", ");
                 }
-                existingCas.append("\"").append(caName).append("\"");
+                availableEEPs.append("\"").append(eepName).append("\"");
             }
         } catch (Exception e) {
-            existingCas.append("<unable to fetch available End Entity Profile(s)>");
+            availableEEPs.append("<unable to fetch available End Entity Profile(s)>");
         }
-        return existingCas.toString();
+        return availableEEPs.toString();
     }
 
     protected String getAvailableEndUserCpsString() {
-        // List available CAs by name
-        final StringBuilder existingCas = new StringBuilder();
+        // List available CertificateProfiles by name
+        final StringBuilder availableCPs = new StringBuilder();
         try {
             for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                     .getAuthorizedCertificateProfileIds(getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY)) {
-                final String caName = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(
+                final String cpName = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(
                         nextId.intValue());
-                if (existingCas.length() > 0) {
-                    existingCas.append(", ");
+                if (availableCPs.length() > 0) {
+                    availableCPs.append(", ");
                 }
-                existingCas.append("\"").append(caName).append("\"");
+                availableCPs.append("\"").append(cpName).append("\"");
             }
         } catch (Exception e) {
-            existingCas.append("<unable to fetch available Certificate Profile(s)>");
+            availableCPs.append("<unable to fetch available Certificate Profile(s)>");
         }
-        return existingCas.toString();
+        return availableCPs.toString();
     }
     
     protected String getCaList() {
