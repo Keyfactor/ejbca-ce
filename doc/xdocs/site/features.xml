@@ -128,6 +128,8 @@
 <li><a href="docs/userguide.html#Managing EJBCA Peer Systems">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
 <li>Create Crypto Tokens and CAs, generate keys and add and remove administrators through the Web Service API.</li>
 <li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality State and Country).</li>
+<li>Additional algorithms using HSMs through PKCS#11, <a href="docs/adminguide.html#Using%20SHA256WithRSAandMGF1%20(RSASSA-PSS)">RSASSA-PSS (SHA256WithRSAAndMGF1)</a>. Available through patches for Java.</li>
+<li>Support for Windows Autoenrollment with add-on autoenrollment proxy module.</li>
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 <li>Penetration tested with improved security.</li>
 </ul>
