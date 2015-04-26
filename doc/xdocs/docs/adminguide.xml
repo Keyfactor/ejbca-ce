@@ -4034,6 +4034,19 @@ If the HSM is peculiar you may have to provide specific attribute parameters as 
 </p>
 </subsection>
 
+<subsection name="Using SHA256WithRSAandMGF1 (RSASSA-PSS)">
+<p>Out of the box in Java PKCS#11 RSASSA-PSS is not supported. The software in EJBCA supports it, but the Java PKCS#11 provider does not.</p>
+<p>
+At the time of writing, Oracle Java does not have support for SHA256WithRSAandMGF1 (also known as RSASSA-PSS) in the PKCS#11 provider. 
+PrimeKey has made a patch which is waiting for approval in the OpenJDK. 
+You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
+</p>
+<p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
+<p>The patch should work on all HSMs that have support for SHA56WithRSAandMGF1.
+</p><p>With the patch applied you can create CAs using HSMs with the SHA256WithRSAandMGF1 (and SHA384 and SHA512) algorithm.
+</p>
+</subsection>
+
 </section>
 
 <section name="ECDSA keys and signatures">
@@ -4102,18 +4115,6 @@ You can get a compiled patch together with an installation script for Linux oper
   <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2013">ECA-2013</a>.</p>
   <p>The patch should work on all HSMs that have support for SHA224WithECDSA. It has been tested on SafeNet Luna SA and Utimaco CryptoServer.
   </p><p>With the patch applied you can create CAs using HSMs with the SHA224WithECDSA algorithm.
-  </p>
-  </subsubsection>
-
-  <subsubsection name="Using SHA256WithRSAandMGF1 (RSA-PSS) in Java PKCS#11 ">
-  <p>
-  At the time of writing, Oracle Java does not have support for SHA256WithRSAandMGF1 (also known as RSASSA-PSS) in the PKCS#11 provider. 
-  PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
-  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
-  </p>
-  <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
-  <p>The patch should work on all HSMs that have support for SHA56WithRSAandMGF1.
-  </p><p>With the patch applied you can create CAs using HSMs with the SHA256WithRSAandMGF1 (and SHA384 and SHA512) algorithm.
   </p>
   </subsubsection>
   
