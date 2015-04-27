@@ -1018,6 +1018,9 @@
 					<include name="org/ejbca/core/ejb/upgrade/*.java"/>
 				    <include name="org/cesecore/certificates/ca/*.java"/>                    
 				</fileset>
+				<fileset dir="${this.dir}/../edition-specific/src-interface">
+					<include name="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionLocal.java" />
+				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*SessionBean.java"/>
 					<include name="org/ejbca/util/SqlExecutor.java"/>
@@ -1042,8 +1045,7 @@
 					<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>  
 				</fileset>
 			</copy>
-			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"
-        	encoding="UTF-8" target="${java.target.version}">
+			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
