@@ -37,7 +37,7 @@ ant web-configure
 </source>
 </subsection>
 <subsection name="3. On the EJBCA CA - Data Synchronization">
-<subsubsection name="a. Using VA Publisher">
+<subsubsection name="a. Using VA Publisher (Enterprise feature only)">
 <p>
 The EJBCA CA should be configured the same when installing a VA as for any other installation with the addition of setting preferences 
 for the VA database in conf/va-publisher.properties. The VA database is the master database for the standalone VA installations and where 
@@ -67,12 +67,12 @@ rules to be able to check synchronzation data and push missing or outdated certi
 </p>
 </subsubsection>
 </subsection>
-<subsection name="4. On the EJBCA CA - Add a Publisher">
+<subsection name="4. On the EJBCA CA - Add a Publisher (Enterprise feature only)">
 <p>
 Add a new publisher to the main CA server (not the VA). All CAs that publish certificates and CRLs to the VA should have a reference to this 
 publisher. To configure this you must be a super administrator.</p>
 <p>This publisher is added on the "Edit Publishers" page in the Admin GUI.</p>
-<subsubsection name="a. Using VA Publisher">
+<subsubsection name="a. Using VA Publisher (Enterprise feature only)">
 <p>Use publisher type "Validation Authority Publisher". The settings for this publisher are as follows:
 <ul>
     <li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if 
