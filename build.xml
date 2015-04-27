@@ -1064,7 +1064,9 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	/>
 	</target>
 	
-
+	<target name="externalra:check" unless="mod.externalra.exists">
+		<fail>External RA does not exist in EJBCA Community. Please contact a sales representative at Primekey Solutions for information about how to get an Enterprise License.</fail>
+	</target>
 	
 	<target name="ejbca.ear.module-dependencies">
             <ant dir="modules" target="ejbca.ear.module-dependencies"/>
@@ -1186,27 +1188,27 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-xkms"/>
     </target>
 	
-	<target name="externalra-service">
+	<target name="externalra-service" depends="externalra:check" >
     	<ant dir="modules" target="externalra-service"/>
 	</target>
 
-	<target name="externalra-client" depends="deprecated:check" if="mod.externalra.exists" description="Build the EJBCA External RA Service CLI (Enterprise Edition Only).">
+	<target name="externalra-client" depends="deprecated:check, externalra:check" if="mod.externalra.exists" description="Build the EJBCA External RA Service CLI (Enterprise Edition Only).">
     	<ant dir="modules" target="externalra-client"/>
 	</target>
 
-	<target name="externalra-scep" depends="deprecated:check"  if="mod.externalra-scep.exists" description="Build the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only).">
+	<target name="externalra-scep" depends="deprecated:check, externalra:check"  if="mod.externalra-scep.exists" description="Build the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only).">
 		<ant dir="modules" target="externalra-scep"/>
 	</target>
 
-	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only)" depends="externalra-scep,deprecated:check">
+	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only)" depends="externalra:check,externalra-scep,deprecated:check">
 		<antcall target="jee:deploy-scep-war" />
 	</target>
 
-	<target name="externalra-gui"  if="mod.externalra.exists" depends="deprecated:check" description="Build the EJBCA External RA StandAlone GUI application (Enterprise Edition Only).">
+	<target name="externalra-gui"  if="mod.externalra.exists" depends="deprecated:check,externalra:check" description="Build the EJBCA External RA StandAlone GUI application (Enterprise Edition Only).">
     	<ant dir="modules" target="externalra-gui"/>
 	</target>
 
-	<target name="externalra-gui-deploy"  if="mod.externalra.exists" description="Deploy the EJBCA External RA StandAlone GUI application (Enterprise Edition Only)." depends="externalra-gui, deprecated:check">
+	<target name="externalra-gui-deploy"  if="mod.externalra.exists,externalra:check" description="Deploy the EJBCA External RA StandAlone GUI application (Enterprise Edition Only)." depends="externalra-gui, deprecated:check">
         <antcall target="jee:deploy-externalragui-war" />
 	</target>
 
