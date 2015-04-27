@@ -84,7 +84,7 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 </subsection>
 <subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
-<subsubsection name="Using VA Publisher">
+<subsubsection name="Using VA Publisher (Enterprise feature only)">
 <ol>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
@@ -113,7 +113,7 @@ an OCSP signing certificate in the newly created OcspKeyBinding and click "Issue
 </subsubsection>
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
-<subsubsection name="Using VA Publisher">
+<subsubsection name="Using VA Publisher (Enterprise feature only)">
 <ol>
 <li>[Optional] Go to AdminGUI of OCSP -> Internal Key Bindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
@@ -248,7 +248,7 @@ qwe.pem: unknown
 </source>
 <p>
 There is a standalone tool (in EJBCA Enterprise only) that you can use to import certificates received on file. 
-The tool is called crlFetch. The most common way to feed the OCSP responder is to push certificates directly from the CA, in real time, using an EJBCA 'VA Publisher'. 
+The tool is called crlFetch. The most common way to feed the OCSP responder is to push certificates directly from the CA, in real time, using an EJBCA 'VA Publisher' (Enterprise feature only). 
 In this example we will use the crlFetch tool though, as it works for completely off-line CAs.<br/>
 Place the (qwe.pem) certificate in cert dir and run the command:
 </p>
@@ -438,7 +438,7 @@ of the followings: <a href="http://dev.mysql.com/doc/refman/5.0/en/replication-h
   <ol>
     <li>To create the tables in the target OCSP, start JBoss AS with OCSP deployed for the first time (and then stop the server before doing the next step).</li>
     <li>Add an additional DataSource for the target OCSP responder in EJBCA.</li>
-    <li>Configure a new ValidationAuthorityPublisher in EJCBA that uses the target OCSP DataSource. Chose to only publish to queue to accumulate all changes during the cloning.</li>
+    <li>Configure a new ValidationAuthorityPublisher (Enterprise feature only) in EJCBA that uses the target OCSP DataSource. Chose to only publish to queue to accumulate all changes during the cloning.</li>
     <li>Wait one hour and check that there is nothing in the publisher-queue of the source OCSP that is older than one hour.</li>
     <li>Do a MySQL dump from the source database to the target database or use the ClientToolBox DBCOPY-command.</li>
     <li>When the copy operation has finished, configure a new Republisher Service for the target's OCSP Publisher.</li>
