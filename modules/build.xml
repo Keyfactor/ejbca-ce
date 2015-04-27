@@ -99,13 +99,13 @@
 		</delete>
 	</target>
 	
-	<target name="externalraclean" if="${mod.externalra.exists}}">
+	<target name="externalraclean" if="${mod.externalra.exists}">
 		<echo message="Cleaning externalra"/>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
     <condition property="externalra-gui.exists">
-    	<available file="${mod.externalra-gui.path}}/build.xml" />
+    	<available file="${mod.externalra-gui.path}/build.xml" />
     </condition>
 	<target name="externalra-guiclean" if="${externalra-gui.exists}">
 		<echo message="Cleaning externalra-gui"/>
