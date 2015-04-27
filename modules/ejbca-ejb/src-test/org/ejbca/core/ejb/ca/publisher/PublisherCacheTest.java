@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
+import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,9 +49,9 @@ public class PublisherCacheTest {
         final String name1 = PublisherCacheTest.class.getSimpleName() + " Publ1";
         final String name2 = PublisherCacheTest.class.getSimpleName() + " Publ2";
         final String name3 = PublisherCacheTest.class.getSimpleName() + " Publ3";
-        final BasePublisher publ1 = getNewPublisher(name1);
-        final BasePublisher publ2 = getNewPublisher(name2);
-        final BasePublisher publ3 = getNewPublisher(name3);
+        final BasePublisher publ1 = getNewPublisher();
+        final BasePublisher publ2 = getNewPublisher();
+        final BasePublisher publ3 = getNewPublisher();
         // Start out with an empty cache and verify state
         PublisherCache.INSTANCE.flush();
         assertEquals("Expected empty map after flush.", 0, PublisherCache.INSTANCE.getNameToIdMap().entrySet().size());
@@ -106,9 +106,9 @@ public class PublisherCacheTest {
         final String name1 = PublisherCacheTest.class.getSimpleName() + " Publ1";
         final String name2 = PublisherCacheTest.class.getSimpleName() + " Publ2";
         final String name3 = PublisherCacheTest.class.getSimpleName() + " Publ3";
-        final BasePublisher publ1 = getNewPublisher(name1);
-        final BasePublisher publ2 = getNewPublisher(name2);
-        final BasePublisher publ3 = getNewPublisher(name3);
+        final BasePublisher publ1 = getNewPublisher();
+        final BasePublisher publ2 = getNewPublisher();
+        final BasePublisher publ3 = getNewPublisher();
         // Start out with an empty cache and verify state
         PublisherCache.INSTANCE.flush();
         assertEquals("Expected empty map after flush.", 0, PublisherCache.INSTANCE.getNameToIdMap().entrySet().size());
@@ -179,9 +179,9 @@ public class PublisherCacheTest {
         final String name1 = PublisherCacheTest.class.getSimpleName() + " CA1";
         final String name2 = PublisherCacheTest.class.getSimpleName() + " CA2";
         final String name3 = PublisherCacheTest.class.getSimpleName() + " CA3";
-        final BasePublisher publ1 = getNewPublisher(name1);
-        final BasePublisher publ2 = getNewPublisher(name2);
-        final BasePublisher publ3 = getNewPublisher(name3);
+        final BasePublisher publ1 = getNewPublisher();
+        final BasePublisher publ2 = getNewPublisher();
+        final BasePublisher publ3 = getNewPublisher();
         // Start out with an empty cache and verify state
         PublisherCache.INSTANCE.flush();
         assertEquals("Expected empty map after flush.", 0, PublisherCache.INSTANCE.getNameToIdMap().entrySet().size());
@@ -243,9 +243,8 @@ public class PublisherCacheTest {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
     }
 
-    private BasePublisher getNewPublisher(final String dataSource) {
-        ValidationAuthorityPublisher publ = new ValidationAuthorityPublisher();
-        publ.setDataSource(dataSource);
+    private BasePublisher getNewPublisher() {
+        LdapPublisher publ = new LdapPublisher();
         return publ;
     }
 }

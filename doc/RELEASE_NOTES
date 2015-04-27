@@ -1,3 +1,17 @@
+EJBCA 6.3.1.1
+-----------
+This is the community release of EJBCA 6.3.1, and besides containing a couple of bug fixes that didn't make it into 6.3.1, also includes two major 
+changes that affect Community users:
+
+* The External RA has been removed from the Community Edition 
+* The VA Publisher has been removed from the Community Edition
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  A selection of known issues:
+
+
 EJBCA 6.3.1
 -----------
 This maintenance release contains 17 new features, bug fixes and improvements, in addition to all fixes made in 6.2.8 and 6.2.9. Below is a 

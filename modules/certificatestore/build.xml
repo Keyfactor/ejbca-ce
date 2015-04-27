@@ -39,7 +39,7 @@
     	<delete dir="${build-certstore-va.dir}" />
     	<delete dir="${build-crlstore.dir}" />
     	<delete dir="${build-crlstore-va.dir}" />
-    	<delete file="${mod.va-war.war}" />
+    	<delete file="${mod.va.war}" />
     </target>
 	
 	<condition property="certstore.enabled.if.defined"><istrue value="${certstore.enabled}"/></condition>

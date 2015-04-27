@@ -102,7 +102,7 @@ public interface PublisherSessionLocal extends PublisherSession {
     void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
-     * Retrieves a Set of all Publishers
+     * Retrieves a Map of all Publishers
      * 
      * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
      * administrator.
@@ -132,4 +132,12 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @return an error message or an empty String if all are ok.
      */
     String testAllConnections(); // NOPMD: this is not a JUnit test
+    
+    /**
+     * Allows upgrade for Community Users to EJBCA 6.3.1.1 from previous versions of EJBCA by replacing the old 
+     * VA publisher with a placeholder 
+     * 
+     * @return the number of upgraded publishers
+     */
+    int adhocUpgradeTo6_3_1_1();
 }

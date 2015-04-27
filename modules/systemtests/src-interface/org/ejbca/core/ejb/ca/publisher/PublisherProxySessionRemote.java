@@ -103,5 +103,8 @@ public interface PublisherProxySessionRemote {
     /** Change a Publisher without affecting the cache */
     void internalChangeCertificateProfileNoFlushCache(String name, BasePublisher publisher)
             throws AuthorizationDeniedException; 
+    
+    int adhocUpgradeTo6_3_1_1();
+    
 
 }

@@ -902,4 +902,14 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             return getEncoded();
         }
     }
+
+    @Override
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return true;
+    }
+    
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 }

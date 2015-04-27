@@ -320,7 +320,7 @@
 	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files">
 		<map from="${src.dir}/" to=""/>
 	</pathconvert>
-
+	
 	<!--
 		EJBCA Common Web depends on ejbca-util, ejbca-ejb-interface and used by many modules in EJBCA.
 	-->
@@ -362,10 +362,11 @@
 		<include name="org/cesecore/audit/AuditDevicesConfig.java"/>		
 		<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>		
 		<include name="org/ejbca/core/model/log/CsvLogExporter.java"/>
+		<include name="org/ejbca/core/model/ca/publisher/upgrade/BasePublisherConverter.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/ActiveDirectoryPublisher.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/ValidationAuthorityPublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/LdapPublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/LdapSearchPublisher.java"/>
+		<include name="org/ejbca/core/model/ca/publisher/LegacyValidationAuthorityPublisher.java"/>
 		<!-- Dependecies from AdminGUI, EJB, and XMKS -->
 		<include name="org/ejbca/config/XkmsConfiguration.java"/>
 		<!-- Dependecies from EJBCA WS -->
@@ -399,6 +400,7 @@
 		<include name="org/ejbca/core/model/ra/UsernameGenerator.java"/>
 
 	</fileset>
+
 	<pathconvert refid="source.fileset.ejbca-common-web" pathsep=" " property="source.fileset.ejbca-common-web.files">
 		<map from="${src.dir}/" to=""/>
 	</pathconvert>
@@ -526,7 +528,7 @@
 		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-util.files">
 			<map from="${mod.ejbca-util.lib}:" to=""/>
 		</pathconvert>
-
+		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher" file="${build-common-web.dir}" classpath="compile-common-web.classpath"/>
 		<jar destfile="${mod.ejbca-common-web.lib}">
 			<fileset dir="${build-common-web.dir}" excludes="${exclude.fileset.ejbca-util.files}"/>
 			<manifest>

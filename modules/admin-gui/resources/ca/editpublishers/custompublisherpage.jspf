@@ -67,7 +67,7 @@
       <td width="55%" valign="top">          
     	<%	if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_SELECTONE) {
     		%>
-    			<select name="<%=current.getName()%>" id="<%=current.getName()%>" size="1">
+    			<select name="<%=current.getName()%>" id="<%=current.getName()%>" size="1"  <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>>
     			<% for (int i=0; i<current.getOptions().size(); i++) {
     				final String option = current.getOptions().get(i);
     				final String optionText = current.getOptionTexts().get(i);
@@ -80,14 +80,17 @@
     			</select>
     		<%
     		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_TEXTINPUT) { %>
-                <input type="text" name="<%=current.getName()%>" id="<%=current.getName()%>" size="45" maxlength="255"
+                <input type="text" name="<%=current.getName()%>" id="<%=current.getName()%>" size="45" maxlength="255"  <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>
                         value='<c:out value="<%= current.getValue() %>"/>'>
     		<%
     		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_BOOLEAN) { %>
-	            <input type="checkbox" name="<%=current.getName()%>" id="<%=current.getName()%>" value="true"
+	            <input type="checkbox" name="<%=current.getName()%>" id="<%=current.getName()%>" value="true"  <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>
 	           <%  if("true".equals(current.getValue())) { out.write(" CHECKED "); } %>/>
           		<label for="<%=current.getName()%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
-    		<%
+    		<% 
+    		} else if(current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_TEXTOUTPUT) { %>
+    			<textarea name="<%=current.getName()%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> cols="60" rows="12"><c:out value="<%= current.getValue() %>"/></textarea>
+    		<% 
     		} else {
     			// Not yet implemented..
     		}

@@ -1012,6 +1012,7 @@
 			<copy todir="${src-temp.dir}/upgrade">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*.java"/>
+					<include name="org/ejbca/core/ejb/ca/publisher/PublisherSession*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*.java"/>
@@ -1033,7 +1034,12 @@
 				    <include name="org/cesecore/certificates/certificate/certextensions/**/*.java"/>                    
                     <include name="org/cesecore/certificates/ca/*.java"/>                    
 				    <include name="org/cesecore/certificates/util/cert/*.java"/>                    
-                    <include name="org/cesecore/certificates/util/dn/*.java"/>                    
+                    <include name="org/cesecore/certificates/util/dn/*.java"/>      
+					<!-- upgrade of Va Publisher-->
+					<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>  
+					<include name="org/ejbca/core/model/ca/publisher/upgrade/BasePublisherConverter.java"/>  
+					<include name="org/ejbca/core/model/ca/publisher/FullEntityPublisher.java"/>  
+					<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>  
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"

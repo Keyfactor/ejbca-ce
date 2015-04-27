@@ -2953,7 +2953,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Find all publishers, use this set to track unowned publishers
         final Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
 
-        //Firstly, weed out all publishers which we lack authorization to
+        //Firstly, weed out all publishers which we lack authorization to 
         for (Integer key : new HashSet<Integer>(allPublishers.keySet())) {
             BasePublisher publisher = allPublishers.get(key);
             if (publisher instanceof CustomPublisherContainer) {

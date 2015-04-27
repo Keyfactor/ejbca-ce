@@ -536,4 +536,9 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         return str==null || str.length()==0;
     }
     
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+    
 }

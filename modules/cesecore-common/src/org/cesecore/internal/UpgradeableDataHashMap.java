@@ -13,6 +13,7 @@
  
 package org.cesecore.internal;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ import org.cesecore.util.Base64GetHashMap;
  *
  * @see org.cesecore.internal.IUpgradeableData
  */
-public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.io.Serializable {
+public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serializable {
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -40,6 +41,11 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      *
      */
 	private static final long serialVersionUID = -1766329888474901945L;
+	
+    // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
+    protected LinkedHashMap<Object, Object> data;
+    private boolean upgraded = false;
+    public static final String VERSION = "version";
 	
 	/**
      * Creates a new UpgradeableDataHashMap object.
@@ -198,8 +204,5 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
         data.put(key, Boolean.valueOf(value));
     }
 
-    // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
-    protected LinkedHashMap<Object, Object> data;
-    private boolean upgraded = false;
-	public static final String VERSION = "version";
+
 }

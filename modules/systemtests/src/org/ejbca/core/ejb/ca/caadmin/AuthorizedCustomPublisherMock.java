@@ -42,4 +42,9 @@ public class AuthorizedCustomPublisherMock extends CustomPublisherContainer impl
         return true;
     }
 
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
 }

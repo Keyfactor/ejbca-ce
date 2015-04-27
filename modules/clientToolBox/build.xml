@@ -77,7 +77,7 @@
             <src path="${mod.ejbca-ws-cli.path}/src" />
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-entity.path}/src" />
-            <src path="${mod.va-war.path}/src-war" />
+            <src path="${mod.va.path}/src-war" />
             <src path="${mod.cesecore-common.path}/src" />
             <src path="${mod.cesecore-ejb-interface.path}/src" />
         	

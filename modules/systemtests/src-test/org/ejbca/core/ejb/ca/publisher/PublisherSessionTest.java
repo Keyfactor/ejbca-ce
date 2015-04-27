@@ -23,8 +23,8 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,11 +53,11 @@ public class PublisherSessionTest {
 
     @Test
     public void testAddChangeRemovePublisher() throws PublisherExistsException, AuthorizationDeniedException {
-        ValidationAuthorityPublisher publ = new ValidationAuthorityPublisher();
-        publ.setDataSource("foo");
+        LdapPublisher publ = new LdapPublisher();
+        publ.setBaseDN("foo");
         publ.setDescription("foobar");
-        ValidationAuthorityPublisher publ1 = new ValidationAuthorityPublisher();
-        publ1.setDataSource("bar");
+        LdapPublisher publ1 = new LdapPublisher();
+        publ1.setBaseDN("bar");
         publ1.setDescription("barfoo");
         final String name = PublisherSessionTest.class.getSimpleName();
         final String name1 = PublisherSessionTest.class.getSimpleName()+"1";
@@ -72,20 +72,20 @@ public class PublisherSessionTest {
             publisherProxySession.addPublisher(internalAdmin, name1, publ1);
             BasePublisher pub = publisherSession.getPublisher(internalAdmin, name);
             assertEquals("Description is not what we set", "foobar", pub.getDescription());
-            assertEquals("Publisher is not a ValidationAuthorityPublisher", ValidationAuthorityPublisher.class.getName(), pub.getClass().getName());
-            assertEquals("datasource is not what we set", "foo", ((ValidationAuthorityPublisher)pub).getDataSource());
+            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
+            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
             int id = publisherProxySession.getPublisherId(name);
             BasePublisher pub1 = publisherSession.getPublisher(internalAdmin, id);
             assertEquals("Description is not what we set", "foobar", pub1.getDescription());
-            assertEquals("Publisher is not a ValidationAuthorityPublisher", ValidationAuthorityPublisher.class.getName(), pub1.getClass().getName());
-            assertEquals("datasource is not what we set", "foo", ((ValidationAuthorityPublisher)pub1).getDataSource());
+            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub1.getClass().getName());
+            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub1).getBaseDN());
             // Change publisher
             pub.setDescription("newdesc");
             publisherSession.changePublisher(internalAdmin, name, pub);
             pub = publisherSession.getPublisher(internalAdmin, name);
             assertEquals("Description is not what we set", "newdesc", pub.getDescription());
-            assertEquals("Publisher is not a ValidationAuthorityPublisher", ValidationAuthorityPublisher.class.getName(), pub.getClass().getName());
-            assertEquals("datasource is not what we set", "foo", ((ValidationAuthorityPublisher)pub).getDataSource());
+            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
+            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
             int id1 = publisherProxySession.getPublisherId(name);
             assertEquals("Id should be the same after change, but it is not", id, id1);
             // Remove publishers
@@ -109,7 +109,7 @@ public class PublisherSessionTest {
         // First make sure we have the right cache time
         final String oldcachetime = configSession.getProperty("publisher.cachetime");
         configSession.updateProperty("publisher.cachetime", "1000");
-        ValidationAuthorityPublisher publ = new ValidationAuthorityPublisher();
+        LdapPublisher publ = new LdapPublisher();
         publ.setDescription("foobar");
         final String name = PublisherSessionTest.class.getSimpleName();
         try {

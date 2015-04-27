@@ -55,8 +55,8 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
+import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -86,19 +86,19 @@ public class CaAdminSessionBeanTest {
     public void testGetAuthorizedPublisherIds() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException,
             IOException, RoleExistsException, AuthorizationDeniedException, PublisherExistsException, CAExistsException, CertificateProfileExistsException, CADoesntExistsException {
         //Create a publisher to be attached to a CA that the admin has access to
-        ValidationAuthorityPublisher caPublisher = new ValidationAuthorityPublisher();
+        LdapPublisher caPublisher = new LdapPublisher();
         final String caPublisherName = "CA_PUBLISHER";
         int caPublisherId = publisherProxySession.addPublisher(alwaysAllowToken, caPublisherName, caPublisher);
         //Create a publisher to be attached to a CA that the admin doesn't have access to
-        ValidationAuthorityPublisher unauthorizedCaPublisher = new ValidationAuthorityPublisher();
+        LdapPublisher unauthorizedCaPublisher = new LdapPublisher();
         final String unauthorizedCaPublisherName = "UNAUTHORIZED_CA_PUBLISHER";
         int unauthorizedCaPublisherId = publisherProxySession.addPublisher(alwaysAllowToken, unauthorizedCaPublisherName, unauthorizedCaPublisher);
         //Create a publisher to be unattached to any CA or certificate profile
-        ValidationAuthorityPublisher unattachedPublisher = new ValidationAuthorityPublisher();
+        LdapPublisher unattachedPublisher = new LdapPublisher();
         final String unattachedCaPublisherName = "UNATTACHED_PUBLISHER";
         int unattachedCaPublisherId = publisherProxySession.addPublisher(alwaysAllowToken, unattachedCaPublisherName, unattachedPublisher);
         //Create a publisher to be attached to a certificate profile
-        ValidationAuthorityPublisher certificateProfilePublisher = new ValidationAuthorityPublisher();
+        LdapPublisher certificateProfilePublisher = new LdapPublisher();
         final String certificateProfilePublisherName = "CERTIFICATE_PROFILE_PUBLISHER";
         int certificateProfilePublisherId = publisherProxySession.addPublisher(alwaysAllowToken, certificateProfilePublisherName, certificateProfilePublisher);
         UnAuthorizedCustomPublisherMock unAuthorizedCustomPublisher = new UnAuthorizedCustomPublisherMock();

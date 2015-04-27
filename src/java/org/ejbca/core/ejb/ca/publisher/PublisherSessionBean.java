@@ -61,13 +61,13 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
+import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 
 /**
  * Handles management of Publishers.
@@ -147,8 +147,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             }
         }
         final String fingerprint = CertTools.getFingerprintAsString(incert);
-        final List<Object> publisherResults = publisherQueueSession.storeCertificateNonTransactionalInternal(publishersToTryDirect, admin, certWrapper,
-                username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate,
+        final List<Object> publisherResults = publisherQueueSession.storeCertificateNonTransactionalInternal(publishersToTryDirect, admin,
+                certWrapper, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate,
                 extendedinformation);
         final String certSerno = CertTools.getSerialNumberAsString(incert);
         for (int i = 0; i < publishersToTryDirect.size(); i++) {
@@ -198,8 +198,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 new CertificateDataWrapper(certificate, CertificateData.findByFingerprint(entityManager, fingerprint), base64CertData), username,
                 password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
     }
-    
-    
+
     private void addQueueData(final List<BasePublisher> publishersToQueue, final String username, final String password,
             final ExtendedInformation extendedInformation, final String userDN, final Certificate incert, final int status, final int publisherStatus) {
         for (final BasePublisher publ : publishersToQueue) {
@@ -228,11 +227,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certificateWrapper, String username, String userDN,
-            String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate)
-            throws AuthorizationDeniedException {
-        storeCertificate(admin, publisherids, certificateWrapper, username, null, userDN, cafp, CertificateConstants.CERT_REVOKED, type, revocationDate, reason,
-                tag, certificateProfileId, lastUpdate, null);
+    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certificateWrapper,
+            String username, String userDN, String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId,
+            long lastUpdate) throws AuthorizationDeniedException {
+        storeCertificate(admin, publisherids, certificateWrapper, username, null, userDN, cafp, CertificateConstants.CERT_REVOKED, type,
+                revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
     @Override
@@ -372,14 +371,17 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace("<addPublisher()");
         }
     }
-    
+
     @Override
-    public void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException, AuthorizationDeniedException {
+    public void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException,
+            AuthorizationDeniedException {
         final BasePublisher publisher = constructPublisher(((Integer) (data.get(BasePublisher.TYPE))).intValue());
-        publisher.setPublisherId(id);
-        publisher.setName(name);
-        publisher.loadData(data);
-        addPublisher(admin, id, name, publisher);
+        if (publisher != null) {
+            publisher.setPublisherId(id);
+            publisher.setName(name);
+            publisher.loadData(data);
+            addPublisher(admin, id, name, publisher);
+        }
     }
 
     private void addPublisherInternal(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException,
@@ -529,8 +531,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public Map<Integer, BasePublisher> getAllPublishers() {
         Map<Integer, BasePublisher> returnval = new HashMap<Integer, BasePublisher>();
-        for(PublisherData publisher : PublisherData.findAll(entityManager)) {
-            returnval.put(publisher.getId(), getPublisher(publisher));
+        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+            BasePublisher publisher = getPublisher(publisherData);
+            if (publisher != null) {
+                returnval.put(publisherData.getId(), publisher);
+            }
         }
         return returnval;
     }
@@ -538,8 +543,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public HashMap<Integer, String> getPublisherIdToNameMap() {
-        HashMap<Integer,String> returnval = new HashMap<Integer,String>();
-        for(PublisherData publisher : PublisherData.findAll(entityManager)) {
+        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        for (PublisherData publisher : PublisherData.findAll(entityManager)) {
             returnval.put(publisher.getId(), publisher.getName());
         }
         return returnval;
@@ -593,20 +598,20 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         return ret;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherData(id: " + id + ")");
         }
-        
+
         final BasePublisher pub = getPublisherInternal(id, null, true);
         if (pub == null) {
-            throw new PublisherDoesntExistsException("Publisher with id "+id+" doesn't exist");
+            throw new PublisherDoesntExistsException("Publisher with id " + id + " doesn't exist");
         }
         authorizedToEditPublishers(admin);
-        return (Map<?, ?>)pub.saveData();
+        return (Map<?, ?>) pub.saveData();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -643,7 +648,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         };
         return ProfileID.getNotUsedID(db);
     }
-    
+
     /**
      * Internal method for getting Publisher, to avoid code duplication. Tries to find the Publisher even if the id is wrong due to CA certificate DN not being
      * the same as CA DN. Uses PublisherCache directly if configured to do so.
@@ -720,13 +725,16 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             HashMap<?, ?> data = new Base64GetHashMap(h);
 
             publisher = constructPublisher(((Integer) (data.get(BasePublisher.TYPE))).intValue());
-            publisher.setPublisherId(pData.getId());
-            publisher.setName(pData.getName());
-            publisher.loadData(data);
+            if (publisher != null) {
+                publisher.setPublisherId(pData.getId());
+                publisher.setName(pData.getName());
+                publisher.loadData(data);
+            }
         }
         return publisher;
     }
-    
+
+    @SuppressWarnings("deprecation")
     private BasePublisher constructPublisher(final int publisherType) {
         switch (publisherType) {
         case PublisherConst.TYPE_LDAPPUBLISHER:
@@ -735,12 +743,21 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return new LdapSearchPublisher();
         case PublisherConst.TYPE_ADPUBLISHER:
             return new ActiveDirectoryPublisher();
+        case PublisherConst.TYPE_VAPUBLISHER:
+            //Attempt to create the legacy publisher if available, if not return null. 
+            try {
+                return (BasePublisher) Class.forName(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME).newInstance();
+            } catch (InstantiationException e) {
+                return null;
+            } catch (IllegalAccessException e) {
+                return null;
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
         case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
             return new CustomPublisherContainer();
-        case PublisherConst.TYPE_VAPUBLISHER:
-            return new ValidationAuthorityPublisher();
         default:
-            throw new IllegalStateException("Invalid or unimplemented publisher type "+publisherType);
+            throw new IllegalStateException("Invalid or unimplemented publisher type " + publisherType);
         }
     }
 
@@ -750,6 +767,34 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final String msg = intres.getLocalizedMessage("store.editpublishernotauthorized", admin.toString());
             throw new AuthorizationDeniedException(msg);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public int adhocUpgradeTo6_3_1_1() {
+        int numberOfUpgradedPublishers = 0;
+        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
+            // be on the classpath
+            XMLDecoder decoder;
+            try {
+                decoder = new XMLDecoder(new ByteArrayInputStream(publisherData.getData().getBytes("UTF8")));
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+            HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
+            decoder.close();
+            // Handle Base64 encoded string values
+            @SuppressWarnings("unchecked")
+            HashMap<Object, Object> data = new Base64GetHashMap(h);
+            if (PublisherConst.TYPE_VAPUBLISHER == ((Integer) data.get(BasePublisher.TYPE)).intValue()) {
+                numberOfUpgradedPublishers++;
+                publisherData.setPublisher(new LegacyValidationAuthorityPublisher(data));
+                //Purge the entry from the cache
+                PublisherCache.INSTANCE.removeEntry(publisherData.getId());
+            }           
+        }
+        return numberOfUpgradedPublishers;
     }
 
 }

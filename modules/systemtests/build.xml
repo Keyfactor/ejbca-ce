@@ -14,8 +14,6 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src.test.dir" location="${this.dir}/src-test"/>
 	<property name="src.interface.dir" location="${this.dir}/src-interface"/>
-	<property name="test-ejb.jar" location="${systemtests.dist.dir}/systemtests-ejb.jar"/>
-	<property name="test-interface.jar" location="${systemtests.dist.dir}/systemtests-interfaces.jar" />
 
 	<!-- Include endorsed jars from Glassfish -->
 	<condition property="tests.jvmargs" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
@@ -57,8 +55,8 @@
 		<pathelement location="${mod.edition-specific-ejb.lib}"/>
 		<pathelement location="${mod.ejbca-util.lib}"/>
 		<pathelement location="${mysql.lib}"/>
-		<pathelement location="${test-interface.jar}"/>
-		<pathelement location="${test-ejb.jar}"/>
+		<pathelement location="${mod.systemtest-interface.lib}"/>
+		<pathelement location="${mod.systemtest-ejb.lib}"/>
 	</path>
 
 	<path id="systemtests.classpath">
@@ -106,6 +104,7 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<pathelement location="${mod.edition-specific-interface.lib}"/>
 		<pathelement location="${mod.edition-specific-ejb.lib}"/>
+		<path refid="lib.junit.classpath"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="cesecore-ejb, va-ejbca-war, build-libs, compile-tests" /> 
@@ -134,8 +133,8 @@
 	<target name="build-libs" depends="check-inproduction" unless="in-production-mode">
 		<antcall target="systemtest-compile-interfaces" />
 		<antcall target="systemtest-compile-src" />	
-		<jar destfile="${test-interface.jar}" basedir="${build.interface.dir}"/>
-		<jar destfile="${test-ejb.jar}" basedir="${build.src.dir}"/>
+		<jar destfile="${mod.systemtest-interface.lib}" basedir="${build.interface.dir}"/>
+		<jar destfile="${mod.systemtest-ejb.lib}" basedir="${build.src.dir}"/>
 	</target>
 
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-db-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
