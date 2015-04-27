@@ -534,6 +534,7 @@
                 <include name="peerconnector-interface.jar" />
                 <include name="peerconnector-common.jar" />
         		<include name="peerconnector-entity.jar" />
+        		<include name="va-publisher.jar" />
         	</zipfileset>
         	<!-- Include HttpClient for the use from the peerconnector.rar -->
         	<zipfileset prefix="lib" dir="${lib}/ext" includes="commons-httpclient-*.jar"/>
@@ -647,7 +648,7 @@
     <target name="base-upgrade" depends="ejbca-ejb-cli">
         <!-- Get input -->
         <input message="Which version of EJBCA are you upgrading from:" addproperty="ejbca.upgradefromversion"
-        	validargs="3.11.x,4.0.x"/> 
+        	validargs="3.11.x,4.0.x,6.3.1"/> 
         <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
             <arg line="upgrade ${database.name} ${ejbca.upgradefromversion} ${upgrade.post}"/>
         </java>
@@ -658,8 +659,8 @@
     <target name="set-post-upgrade">
         <property name="upgrade.post" value="--post"/>
     </target>
-    <target name="upgrade" depends="set-upgrade,base-upgrade"/>
-    <target name="post-upgrade" depends="set-post-upgrade,base-upgrade"/>
+    <target name="upgrade" description="Run upgrade operations" depends="set-upgrade,base-upgrade"/>
+    <target name="post-upgrade" description="Run post-upgrade operations" depends="set-post-upgrade,base-upgrade"/>
 
 
     <!-- ================================================================ -->

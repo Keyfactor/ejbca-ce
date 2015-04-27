@@ -1775,4 +1775,9 @@ public class LdapPublisher extends BasePublisher {
 		}
 		log.trace("<upgrade");
 	}
+	
+    @Override
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return true;
+    }
 }

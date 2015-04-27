@@ -202,4 +202,9 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
         }
         return set;
     }
+    
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 }

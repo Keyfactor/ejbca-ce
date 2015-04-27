@@ -13,11 +13,13 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -33,13 +35,12 @@ import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
+import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
@@ -48,7 +49,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  *
  * @version $Id$
  */
-public class EditPublisherJSPHelper implements java.io.Serializable {
+public class EditPublisherJSPHelper implements Serializable {
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -100,6 +101,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String SELECT_CUSTOMCLASS        = "selectcustomclass";
     public static final String TEXTFIELD_CUSTOMCLASSPATH = "textfieldcustomclasspath";
     public static final String TEXTAREA_CUSTOMPROPERTIES = "textareacustomproperties";
+    public static final String TEXTAREA_PROPERTIES = "textareaproperties";
 
     public static final String TEXTFIELD_LDAPHOSTNAME          = "textfieldldaphostname";
     public static final String TEXTFIELD_LDAPPORT              = "textfieldldapport";
@@ -268,26 +270,28 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                 this.publishername = publisher;
                 if(publisher != null){
                     if(!publisher.trim().equals("")){
-                        if(request.getParameter(BUTTON_SAVE) != null ||
-                                request.getParameter(BUTTON_TESTCONNECTION) != null){
-
-                            if(publisherdata == null){
+                        if (request.getParameter(BUTTON_SAVE) != null || request.getParameter(BUTTON_TESTCONNECTION) != null) {
+                            if (publisherdata == null) {
                                 int tokentype = Integer.parseInt(request.getParameter(HIDDEN_PUBLISHERTYPE));
-                                if(tokentype == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+                                switch (tokentype) {
+                                case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
                                     publisherdata = new CustomPublisherContainer();
-                                }
-                                if(tokentype == PublisherConst.TYPE_LDAPPUBLISHER) {
+                                    break;
+                                case PublisherConst.TYPE_LDAPPUBLISHER:
                                     publisherdata = new LdapPublisher();
-                                }
-                                if (tokentype == PublisherConst.TYPE_LDAPSEARCHPUBLISHER) {
+                                    break;
+                                case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
                                     publisherdata = new LdapSearchPublisher();
-                                }
-                                if(tokentype == PublisherConst.TYPE_ADPUBLISHER) {
+                                    break;
+                                case PublisherConst.TYPE_ADPUBLISHER:
                                     publisherdata = new ActiveDirectoryPublisher();
-                                }
-                                if(tokentype == PublisherConst.TYPE_VAPUBLISHER) {
-                                    publisherdata = new ValidationAuthorityPublisher();
-                                }
+                                    break;
+                                case PublisherConst.TYPE_VAPUBLISHER:
+                                    publisherdata = null;
+                                    break;
+                                default:
+                                    break;
+                                }                     
                             }
                             // Save changes.
 
@@ -551,28 +555,6 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 }
                             }
                             
-                            // Get parameters for ValidationAuthorityPublisher
-                            if(this.publisherdata instanceof ValidationAuthorityPublisher){
-                            	final ValidationAuthorityPublisher vaPub = (ValidationAuthorityPublisher)this.publisherdata;
-                            	
-                            	final String vDataSource = request.getParameter(TEXTFIELD_VA_DATASOURCE);
-                            	if(vDataSource != null){
-                            		vaPub.setDataSource(vDataSource.trim());
-                            	}
-                            	final String vCert = request.getParameter(CHECKBOX_VA_STORECERT);
-                            	final boolean isCert = vCert!=null && vCert.equals(CHECKBOX_VALUE);
-                            	vaPub.setStoreCert( isCert );
-
-                            	final String vOnlyRevoked = request.getParameter(CHECKBOX_VA_ONLY_PUBLISH_REVOKED);
-                            	final boolean isOnlyRevoked = vOnlyRevoked!=null && vOnlyRevoked.equals(CHECKBOX_VALUE);
-                            	vaPub.setOnlyPublishRevoked(isOnlyRevoked);
-
-                            	final String vCRL = request.getParameter(CHECKBOX_VA_STORECRL);
-                            	// the CA certificate must be in the DB of the VA in order to fetch the CRL for this CA (isCert && !isOnlyRevoked)
-                            	vaPub.setStoreCRL( isCert && !isOnlyRevoked && vCRL!=null && vCRL.equals(CHECKBOX_VALUE) );
-                            }
-
-
                             if(request.getParameter(BUTTON_SAVE) != null){
                                 handler.changePublisher(publisher,publisherdata);
                                 includefile=PAGE_PUBLISHERS;
@@ -619,9 +601,6 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                         case PublisherConst.TYPE_ADPUBLISHER :
                             publisherdata =  new ActiveDirectoryPublisher();
                             break;
-                        case PublisherConst.TYPE_VAPUBLISHER:
-                            publisherdata =  new ValidationAuthorityPublisher();
-                            break;
                         }
                     } else {
                         publisherdata = new CustomPublisherContainer();
@@ -641,13 +620,34 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     
     private static final int[] AVAILABLEPUBLISHER_TYPES = new int[] {
         PublisherConst.TYPE_LDAPPUBLISHER, PublisherConst.TYPE_LDAPSEARCHPUBLISHER, PublisherConst.TYPE_ADPUBLISHER,
-        PublisherConst.TYPE_VAPUBLISHER, PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER
+        PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER
     };
     private static final String[] AVAILABLEPUBLISHER_TYPETEXTS = new String[] {
         "LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER",
-        "VAPUBLISHER", "CUSTOMPUBLISHER"
+         "CUSTOMPUBLISHER"
     };
 
+    public String getPublisherName(String className) {
+        final String klassSimpleName = className.substring(className.lastIndexOf('.')+1);
+        // Present the publisher with a nice name if a language key is present
+        String text = ejbcawebbean.getText(klassSimpleName.toUpperCase());
+        if (text.equals(klassSimpleName.toUpperCase())) {
+            // Present the publisher with the class name when no language key is present
+            text = klassSimpleName + " ("+ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[3])+")";
+        }
+        return text;
+    }
+    
+    public String getCurrentPublisherName() {
+        if (publisherdata instanceof CustomPublisherContainer) {
+            ICustomPublisher iCustomPublisher = ((CustomPublisherContainer) publisherdata).getCustomPublisher();
+            if(iCustomPublisher != null) {
+                return getPublisherName(iCustomPublisher.getClass().getName());
+            } 
+        }
+        return getPublisherName(publisherdata.getClass().getName());
+    }
+    
     /** @return the available publishers as list that can be used by JSF h:datatable in the future. */
     public List<SelectItem> getSelectablePublishers() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
@@ -656,15 +656,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
             final int type = AVAILABLEPUBLISHER_TYPES[i];
             if (type==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
                 for (final String klass : getCustomClasses()) {
-                    final String klassSimpleName = klass.substring(klass.lastIndexOf('.')+1);
-                    final String text = ejbcawebbean.getText(klassSimpleName.toUpperCase());
-                    if (!text.equals(klassSimpleName.toUpperCase())) {
-                        // Present the publisher with a nice name if a language key is present
-                        ret.add(new SelectItem(Integer.valueOf(type).toString()+"-"+klass, text));
-                    } else {
-                        // Present the publisher with the class name when no language key is present
-                        ret.add(new SelectItem(Integer.valueOf(type).toString()+"-"+klass, klassSimpleName + " ("+ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[i])+")"));
-                    }
+                    ret.add(new SelectItem(Integer.valueOf(type).toString()+"-"+klass, getPublisherName(klass)));
                 }
             } else {
                 // Add built in publisher types
@@ -675,7 +667,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
         if (WebConfiguration.isManualClassPathsEnabled()) {
             ret.add(new SelectItem(Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString(), ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[4])));
         }
-        // If an publisher was configure before the plugin mechanism we still want to show it
+        // If an publisher was configured before the plugin mechanism we still want to show it
         boolean customNoLongerAvailable = true;
         final String selectedPublisherValue = getSelectedPublisherValue();
         for (final SelectItem current : ret) {
@@ -721,15 +713,40 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
         if (publisherdata instanceof LdapSearchPublisher) {
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
         }
+        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead. 
+        if (publisherdata.getClass().getName().equals("org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher")) {
+            retval = PublisherConst.TYPE_VAPUBLISHER;
+        }
         if(publisherdata instanceof ActiveDirectoryPublisher) {
             retval = PublisherConst.TYPE_ADPUBLISHER;
-        }
-        if(publisherdata instanceof ValidationAuthorityPublisher) {
-            retval = PublisherConst.TYPE_VAPUBLISHER;
         }
         return retval;
     }
 
+    /**
+     * 
+     * @return true if the publisher type is inherently read-only
+     */
+    public boolean isReadOnly() {
+        if (publisherdata instanceof CustomPublisherContainer) {
+            return ((CustomPublisherContainer) publisherdata).getCustomPublisher().isReadOnly();
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * 
+     * @return true if the publisher is deprecated and shouldn't be editable.
+     */
+    public boolean isDeprecated() {
+       if(publisherdata.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME)) {
+           return true;
+       } else {
+           return false;
+       }
+    }
+    
     public int getPublisherQueueLength() {
     	return getPublisherQueueLength(publishername);
     }
@@ -744,8 +761,16 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     	return cabean.getPublisherQueueLength(cabean.getPublisherDataHandler().getPublisherId(publishername), intervalLower, intervalUpper);
     }
     
-    public <T> List<String> getCustomClasses() {
-        return CustomLoader.getCustomClasses(ICustomPublisher.class);
+    public List<String> getCustomClasses() {        
+        List<String> classes = new ArrayList<String>();
+        ServiceLoader<ICustomPublisher> svcloader = ServiceLoader.load(ICustomPublisher.class);
+        for (ICustomPublisher implInstance : svcloader) {
+            if (!implInstance.isReadOnly()) {
+                String name = implInstance.getClass().getName();
+                classes.add(name);
+            }
+        }
+        return classes;
     }
 
 }

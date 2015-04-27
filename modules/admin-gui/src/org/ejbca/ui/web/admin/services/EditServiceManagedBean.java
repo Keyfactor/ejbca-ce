@@ -345,13 +345,10 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 	public List<SelectItem> getAvailablePublishers(){
 		List<SelectItem> availablePublisherNames = new ArrayList<SelectItem>();
-		Collection<Integer> publisherIds = ejb.getCaAdminSession().getAuthorizedPublisherIds(getAdmin());
-		Iterator<Integer> iter = publisherIds.iterator();
-		while(iter.hasNext()){
-			int next = iter.next().intValue();
-			// Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
-			availablePublisherNames.add(new SelectItem(String.valueOf(next), ejb.getPublisherSession().getPublisherName(next)+" ("+next+")"));
-		}
+        for (int next : ejb.getCaAdminSession().getAuthorizedPublisherIds(getAdmin())) {
+            // Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
+            availablePublisherNames.add(new SelectItem(String.valueOf(next), ejb.getPublisherSession().getPublisherName(next) + " (" + next + ")"));
+        }
 		return availablePublisherNames;		
 	}
 	

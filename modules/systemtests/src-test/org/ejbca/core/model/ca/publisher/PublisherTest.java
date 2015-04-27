@@ -13,9 +13,6 @@
 
 package org.ejbca.core.model.ca.publisher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
@@ -43,12 +40,8 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateInfo;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -57,11 +50,8 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.DatabaseConfiguration;
-import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -80,7 +70,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PublisherTest {
 
-	static final byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+	private static final byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
 			+ "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
 			+ "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
 			+ "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
@@ -94,20 +84,7 @@ public class PublisherTest {
 			+ "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
 			+ "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
-	static final byte[] testcacert = Base64.decode(("MIICLDCCAZWgAwIBAgIISDzEq64yCAcwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
-			+ "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAxMTIw"
-			+ "NDA5MzI1N1oXDTAzMTIwNDA5NDI1N1owLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
-			+ "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
-			+ "hwKBgQCnhOvkaj+9Qmt9ZseVn8Jhl6ewTrAOK3c9usxBhiGs+TalGjuAK37bbnbZ"
-			+ "rlzCZpEsjSZYgXS++3NttiDbPzATkV/c33uIzBHjyk8/paOmTrkIux8hbIYMce+/"
-			+ "WTYnAM3J41mSuDMy2yZxZ72Yntzqg4UUXiW+JQDkhGx8ZtcSSwIBEaNTMFEwDwYD"
-			+ "VR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUy5k/bKQ6TtpTWhsPWFzafOFgLmswHwYD"
-			+ "VR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmswDQYJKoZIhvcNAQEFBQADgYEA"
-			+ "gHzQLoqLobU43lKvQCiZbYWEXHTf3AdzUd6aMOYOM80iKS9kgrMsnKjp61IFCZwr"
-			+ "OcY1lOkpjADUTSqfVJWuF1z5k9c1bXnh5zu48LA2r2dlbHqG8twMQ+tPh1MYa3lV"
-			+ "ugWhKqArGEawICRPUZJrLy/eDbCgVB4QT3rC7rOJOH0=").getBytes());
-
-	static final byte[] testcrl = Base64.decode(("MIIDEzCCAnwCAQEwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UEAxMGVGVzdENBMQ8w"
+	private static final byte[] testcrl = Base64.decode(("MIIDEzCCAnwCAQEwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UEAxMGVGVzdENBMQ8w"
 			+ "DQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFFw0wMjAxMDMxMjExMTFaFw0wMjAx"
 			+ "MDIxMjExMTFaMIIB5jAZAggfi2rKt4IrZhcNMDIwMTAzMTIxMDUxWjAZAghAxdYk"
 			+ "7mJxkxcNMDIwMTAzMTIxMDUxWjAZAgg+lCCL+jumXxcNMDIwMTAzMTIxMDUyWjAZ"
@@ -137,13 +114,10 @@ public class PublisherTest {
 
 	private final static Set<String> publisherNames = new HashSet<String>();
 
-	private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-	private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 	private final PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
 	private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 	private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 	private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-	private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
 	private AuthenticationToken admin;
 
@@ -235,7 +209,7 @@ public class PublisherTest {
 	public void test03AddCustomPublisher() throws AuthorizationDeniedException {
 		log.trace(">test03AddCustomPublisher()");
 		try {
-			CustomPublisherContainer publisher = new CustomPublisherContainer();
+		    CustomPublisherContainer publisher = new CustomPublisherContainer();
 			publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
 			publisher.setDescription("Used in Junit Test, Remove this one");
 			this.publisherProxySession.addPublisher(internalAdmin, orgName, publisher);
@@ -341,186 +315,6 @@ public class PublisherTest {
 
 		log.trace("<test08storeCRLToDummy()");
 	}
-
-	/**
-	 * Test the VA publisher defines as a custom publisher.
-	 * @throws AuthorizationDeniedException
-	 * @throws PublisherConnectionException
-	 * @throws CertificateException
-	 */
-	@Test
-	public void test14VAPublisherCustom() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException {
-		log.trace(">test14ExternalOCSPPublisher()");
-
-		final String publisherName = "TESTEXTOCSP";
-		try {
-			CustomPublisherContainer publisher = new CustomPublisherContainer();
-			publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
-			// We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-			final String jndiPrefix = this.configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
-			final String jndiName = jndiPrefix + this.configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
-			log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
-			publisher.setPropertyData("dataSource " + jndiName);
-			publisher.setDescription("Used in Junit Test, Remove this one");
-			publisherNames.add(publisherName);
-			this.publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
-		} catch (PublisherExistsException pee) {
-			log.error(pee);
-			assertTrue("Creating External OCSP Publisher failed", false);
-		}
-		final int id = this.publisherProxySession.getPublisherId(publisherName);
-		this.publisherProxySession.testConnection(id);
-
-		final Certificate cert = CertTools.getCertfromByteArray(testcert);
-		try {
-			ArrayList<Integer> publishers = new ArrayList<Integer>();
-			publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(publisherName)));
-
-			final boolean ret = this.publisherSession.storeCertificate(
-					this.admin, publishers, cert, "test05", "foo123", null, null,
-					CertificateConstants.CERT_ACTIVE,
-					CertificateConstants.CERTTYPE_ENDENTITY,
-					-1, RevokedCertInfo.NOT_REVOKED, "foo",
-					CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
-			assertTrue("Error storing certificate to external ocsp publisher", ret);
-
-			this.publisherProxySession.revokeCertificate(
-					internalAdmin, publishers, cert, "test05", null, null,
-					CertificateConstants.CERTTYPE_ENDENTITY,
-					RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE,
-					new Date().getTime(), "foo", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
-		} finally {
-			this.internalCertStoreSession.removeCertificate(cert);
-		}
-		log.trace("<test14ExternalOCSPPublisherCustom()");
-	}
-
-	private void storeCert(ArrayList<Integer> publishers, Certificate cert, long lastUpdate, int revokationReason, boolean doDelete) throws AuthorizationDeniedException {
-		final int certProfileID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
-		final String tag = "foo";
-		final String userName = "nytt 1";
-		final String cafp = "CA fingerprint could be anything in this test.";
-		final boolean ret = this.publisherSession.storeCertificate(this.admin, publishers, cert, userName, "foo123", null, cafp, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, -1, revokationReason, tag, certProfileID, lastUpdate, null);
-		assertTrue("Error storing certificate to external ocsp publisher", ret);
-
-		final CertificateInfo info = this.certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
-		if ( doDelete ) {
-			assertNull("The certificate should not exist in the DB.", info);
-			return;
-		}
-        assertNotNull("The certificate must be in DB.", info);
-		
-		assertEquals( CertificateConstants.CERT_ACTIVE, info.getStatus() );
-		assertEquals( revokationReason, info.getRevocationReason() );
-		assertEquals( certProfileID, info.getCertificateProfileId() );
-		assertEquals( tag, info.getTag() );
-		assertEquals( lastUpdate, info.getUpdateTime().getTime() );
-		assertEquals( userName, info.getUsername() );
-		assertEquals( cafp, info.getCAFingerprint() );
-        final byte[] subjectKeyId = KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier();
-        final String keyIdStr = new String(Base64.encode(subjectKeyId));
-		assertEquals( keyIdStr, info.getSubjectKeyId());
-	}
-	private void revokeCert(ArrayList<Integer> publishers, Certificate cert, long lastUpdate) throws AuthorizationDeniedException {
-		final int certProfileID = 12345;
-		final String tag = "foobar";
-		final String userName = "nytt 2";
-		final String cafp = "CA fingerprint could be anything in this test. Could also change value.";
-		this.publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, userName, null, cafp, CertificateConstants.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, new Date().getTime(), tag, certProfileID, lastUpdate);
-		final CertificateInfo info = this.certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
-		assertEquals( CertificateConstants.CERT_REVOKED, info.getStatus() );
-		assertEquals( certProfileID, info.getCertificateProfileId() );
-		assertEquals( tag, info.getTag() );
-		assertEquals( lastUpdate, info.getUpdateTime().getTime() );
-		assertEquals( userName, info.getUsername() );
-		assertEquals( cafp, info.getCAFingerprint() );
-	}
-	/**
-	 * Test the VA publisher. It toggles "OnlyPublishRevoked" to see that no new certificates are published when set.
-	 * @throws AuthorizationDeniedException
-	 * @throws PublisherConnectionException
-	 * @throws CertificateException
-	 * @throws CRLException
-	 * @throws PublisherExistsException 
-	 */
-	@Test
-	public void testVAPublisher() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException, CRLException, PublisherExistsException {
-		log.trace(">testVAPublisher()");
-		final String publisherName = "TESTEXTOCSP2";
-        final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
-
-        // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-        final String jndiPrefix = this.configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
-        final String jndiName = jndiPrefix + this.configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
-        log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
-        publisher.setDataSource(jndiName);
-        publisher.setDescription("Used in Junit Test, Remove this one");
-        publisherNames.add(publisherName);
-        publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
-
-        final int id = this.publisherProxySession.getPublisherId(publisherName);
-		this.publisherProxySession.testConnection(id);
-		final Certificate cert = CertTools.getCertfromByteArray(testcert);
-		try {
-			final ArrayList<Integer> publishers = new ArrayList<Integer>();
-			publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(publisherName)));
-
-			long time = new Date().getTime();// check that certificate is published when added (no only published when revoked).
-			storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, false);
-			time += 12345;// test that the revocation is published
-			revokeCert(publishers, cert, time);
-		} finally {
-			this.internalCertStoreSession.removeCertificate(cert);
-		}
-		log.trace("<testVAPublisher()");
-	}
-		
-    @Test
-    public void testVAPublisherOnlyPublishRevoked() throws AuthorizationDeniedException, PublisherConnectionException, CertificateException,
-            CRLException, PublisherExistsException {
-        log.trace(">testVAPublisherOnlyPublishRevoked()");
-        final String publisherName = "TESTEXTOCSP3";
-        final ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
-
-        // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-        final String jndiPrefix = this.configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
-        final String jndiName = jndiPrefix + this.configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
-        log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
-        publisher.setDataSource(jndiName);
-        publisher.setDescription("Used in Junit Test, Remove this one");
-        publisherNames.add(publisherName);
-        publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
-
-        final int id = this.publisherProxySession.getPublisherId(publisherName);
-        this.publisherProxySession.testConnection(id);
-        final Certificate cert = CertTools.getCertfromByteArray(testcert);
-        try {
-            final ArrayList<Integer> publishers = new ArrayList<Integer>();
-            publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(publisherName)));
-            long time = new Date().getTime();// check that certificate is published when added (no only published when revoked)
-            publisher.setOnlyPublishRevoked(true);// activate only publish when revoked
-            this.publisherSession.changePublisher(internalAdmin, publisherName, publisher);
-            time += 12345;// check that the revoked certificate is removed from DB
-            storeCert(publishers, cert, time, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, true);
-            time += 12345;// check that the certificate is not published when added
-            storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
-            time += 12345;// check that the certificate is published when revoked.
-            revokeCert(publishers, cert, time);
-
-            time += 12345; // just test that it is working a second time
-            storeCert(publishers, cert, time, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, true);
-            time += 12345;
-            storeCert(publishers, cert, time, RevokedCertInfo.NOT_REVOKED, true);
-
-            final String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
-            // Test storing  as well
-            this.publisherSession.storeCRL(this.admin, publishers, testcrl, "test05", 1, issuerDn);
-
-        } finally {
-            this.internalCertStoreSession.removeCertificate(cert);
-        }
-        log.trace("<testVAPublisherOnlyPublishRevoked()");
-    }
 
     @Test
     public void testParallelPublishing() throws Exception {

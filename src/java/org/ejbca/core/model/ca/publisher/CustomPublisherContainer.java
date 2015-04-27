@@ -45,16 +45,24 @@ public class CustomPublisherContainer extends BasePublisher {
 		
 	// Default Values
     
-    protected static final String CLASSPATH                       = "classpath";
-    protected static final String PROPERTYDATA                 = "propertydata";
+    protected static final String CLASSPATH = "classpath";
+    protected static final String PROPERTYDATA = "propertydata";
 		
-    
-    
     public CustomPublisherContainer(){
     	super();
     	data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
     	setClassPath("");
     	setPropertyData("");
+    }
+    
+    /**
+     * Copy constructor taking a BasePublisher returning a CustomPublisherContainer based on its values. 
+     */
+    public CustomPublisherContainer(BasePublisher basePublisher){
+        super(basePublisher);
+        data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
+        setClassPath("");
+        setPropertyData("");
     }
     
     // Public Methods    
@@ -107,20 +115,23 @@ public class CustomPublisherContainer extends BasePublisher {
         return new ArrayList<CustomPublisherProperty>();
     }
 	
-	public Properties getProperties() throws IOException{
-		Properties prop = new Properties();
-		prop.load(new ByteArrayInputStream(getPropertyData().getBytes()));
-		Object description = data.get(BasePublisher.DESCRIPTION);
-		if (description != null && description instanceof String) {
-			prop.setProperty(BasePublisher.DESCRIPTION, (String) description);
-		}
+    public Properties getProperties() throws IOException {
+        Properties prop = new Properties();
+        String propertyData = getPropertyData();
+        if (propertyData != null) {
+            prop.load(new ByteArrayInputStream(propertyData.getBytes()));
+        }
+        for (Object key : data.keySet()) {
+            prop.setProperty((String) key, String.valueOf(data.get(key)));
+        }
+		
 		return prop;
 	}
   
 	@Override
 	public boolean isFullEntityPublishingSupported() {
-	    return this.getCustomPublisher() instanceof FullEntityPublisher
-	            && ((FullEntityPublisher)this.getCustomPublisher()).isFullEntityPublishingSupported();
+	    return getCustomPublisher() instanceof FullEntityPublisher
+	            && ((FullEntityPublisher)getCustomPublisher()).isFullEntityPublishingSupported();
 	}
     
     @Override
@@ -152,9 +163,12 @@ public class CustomPublisherContainer extends BasePublisher {
 	public void testConnection() throws PublisherConnectionException{
         this.getCustomPublisher().testConnection();
 	} 
-    
-    // Private methods
-	private ICustomPublisher getCustomPublisher() {
+
+	/**
+	 * 
+	 * @return the custom publisher wrapped by this class, null if none is defined. 
+	 */
+	public ICustomPublisher getCustomPublisher() {
 		if(custompublisher == null){
 		    final String classPath = getClassPath();
 		    if (classPath==null || classPath.isEmpty()) {
@@ -165,18 +179,15 @@ public class CustomPublisherContainer extends BasePublisher {
                 Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( classPath );
 				this.custompublisher =  implClass.newInstance();
 				this.custompublisher.init(getProperties());				
-			}catch(ClassNotFoundException e){
-				throw new RuntimeException(e);
-			}
-			catch(IllegalAccessException iae){
-				throw new RuntimeException(iae);
-			}
-			catch(IOException ioe){
-				throw new RuntimeException(ioe);
-			}
-			catch(InstantiationException ie){
-				throw new RuntimeException(ie);
-			}
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException iae) {
+                throw new RuntimeException(iae);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            } catch (InstantiationException ie) {
+                throw new RuntimeException(ie);
+            }
 		}
 		
 		return custompublisher;
@@ -214,6 +225,11 @@ public class CustomPublisherContainer extends BasePublisher {
 	public Object saveData() {
 		this.custompublisher = null;
 		return super.saveData();
-	}	
+	}
+
+    @Override
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return getCustomPublisher().willPublishCertificate(status, revocationReason);
+    }	
 
 }

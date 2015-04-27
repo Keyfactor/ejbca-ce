@@ -10,41 +10,24 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ca.caadmin;
+package org.ejbca.core.model.ca.publisher.upgrade;
 
-import java.util.Properties;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.model.ca.publisher.CustomPublisherAccessRulesSupport;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.ICustomPublisher;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 
 /**
+ * Interface to allow instantiation of Publishers from outside the local context.
+ * 
  * @version $Id$
  *
  */
-public class UnAuthorizedCustomPublisherMock extends CustomPublisherContainer implements ICustomPublisher, CustomPublisherAccessRulesSupport {
-
-    private static final long serialVersionUID = 1L;
-
-    public UnAuthorizedCustomPublisherMock() {
-        super();
-        setClassPath(this.getClass().getName());
-    }
+public interface BasePublisherConverter {
     
-    @Override
-    public void init(Properties properties) {
-
-    }
-
-    @Override
-    public boolean isAuthorizedToPublisher(AuthenticationToken authenticationToken) {
-        return false;
-    }
-    
-    @Override
-    public boolean isReadOnly() {
-        return false;
-    }
+    /**
+     * Creates a publisher based on the given BasePublisher
+     * 
+     * @param data a Map containing publisher data.
+     * @return a {@link BasePublisher} from the given publisher, or null if publisher was not viable. 
+     */
+    BasePublisher createPublisher(final BasePublisher publisher);
 
 }

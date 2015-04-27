@@ -50,5 +50,18 @@ public interface ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
      */
     void testConnection() throws PublisherConnectionException;
+    
+    /** Asks the publisher if the certificate with these parameters will be published. Used by the publisher queue to avoid
+     * storing things that will never be published in the publisher queue.
+     * 
+     * @return true if the certificate should be published.
+     */
+    boolean willPublishCertificate(int status, int revocationReason);
+    
+    /**
+     * 
+     * @return true if this publisher type shouldn't be editable
+     */
+    boolean isReadOnly();
 
 }

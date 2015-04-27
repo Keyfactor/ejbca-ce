@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.util.LinkedHashMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
@@ -64,6 +65,15 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     public BasePublisher() {
       setDescription("");	       
       setOnlyUseQueue(DEFAULT_ONLYUSEQUEUE);
+    }
+    
+    /**
+     * Copy constructor for BasePublisher
+     */
+    public BasePublisher(BasePublisher publisher) {
+      this.data = new LinkedHashMap<Object, Object>(publisher.data);
+      this.id = publisher.id;
+      this.name = publisher.name;
     }
 
     // Public Methods
@@ -147,14 +157,10 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     /** Asks the publisher if the certificate with these parameters will be published. Used by the publisher queue to avoid
      * storing things that will never be published in the publisher queue.
      * 
-     * @return default BasePublisher.willCertBePublished returns true, override in sub class to change behavior.
+     * @return true if the certificate should be published.
      */
-    public boolean willPublishCertificate(int status, int revocationReason) {
-        return true;
-    }
-    
-    // Abstact methods.
-    
+    public abstract boolean willPublishCertificate(int status, int revocationReason);
+     
     /**
      * Publishes a certificate to a certificate store. If status is not active for the certificate, the publisher may choose
      * to not publish the certificate, for instance if revoke removes a certificate from LDAP,
