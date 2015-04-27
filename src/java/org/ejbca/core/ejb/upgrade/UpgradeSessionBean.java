@@ -83,7 +83,9 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
@@ -94,6 +96,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServ
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
@@ -133,7 +137,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
+    private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
+    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
@@ -189,6 +197,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         	if (!postMigrateDatabase500(dbtype)) {
         		return false;
         	}
+        }
+        
+        if ((oldVersion < 632)) {
+            if (!postMigrateDatabase632()) {
+                return false;
+            }
         }
 
         return true;
@@ -619,6 +633,53 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
     
     /**
+     * EJBCA 6.3.1.1 moves the VA Publisher from Community to Enterprise, changing its baseclass in the process for Enterprise users. 
+     * This method will fail gracefully if user is not running Enterprise. It will also upgrade any placeholder publishers from 6.3.1.1 Community 
+     * if so required.
+     * 
+     * @return true if the upgrade was successful 
+     */
+    private boolean postMigrateDatabase632() {
+        if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
+            log.error("Upgrade procedure to 6.3.2 can only be run on EJBCA Enterprise.");
+            return false;
+        }
+        log.error("(this is not an error) Starting post upgrade to 6.3.2");
+        //Find all publishers, make copies of them using the new publisher class. 
+        Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
+        Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
+        BasePublisherConverter publisherFactory;
+        try {
+            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").newInstance();
+        } catch (InstantiationException e) {
+            //Shouldn't happen since we've already checked that we're running Enterprise
+            throw new IllegalStateException(e);
+        } catch (IllegalAccessException e) {
+            //Shouldn't happen since we've already checked that we're running Enterprise
+            throw new IllegalStateException(e);
+        } catch (ClassNotFoundException e) {
+            //Shouldn't happen since we've already checked that we're running Enterprise
+            throw new IllegalStateException(e);
+        }
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase631"));
+ 
+        for(Integer publisherId : allPublishers.keySet()) {
+            BasePublisher newPublisher = publisherFactory.createPublisher(allPublishers.get(publisherId));
+            if (newPublisher != null) {
+                try {
+                    String publisherName = publisherNames.get(publisherId);
+                    log.info("Upgrading publisher: " + publisherName);
+                    publisherSession.changePublisher(admin, publisherName, newPublisher);
+                } catch (AuthorizationDeniedException e) {
+                    throw new IllegalStateException("Always allow token was not given access to publishers.", e);
+                }
+            }
+        }
+        return true;
+        
+    }
+    
+    /**
      * In EJBCA 5.0 we have changed classname for CertificatePolicy.
      * In order to allow us to remove the legacy class in the future we want to upgrade all certificate profiles to use the new classname
      * 
@@ -631,7 +692,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.error("(this is not an error) Starting post upgrade from EJBCA 4.0.x to ejbca 5.0.x");
         boolean ret = true;
 
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase500"));
 
     	// post-upgrade "change CertificatePolicy from ejbca class to cesecore class in certificate profiles that have that defined.
         Map<Integer, String> map = certProfileSession.getCertificateProfileIdToNameMap();

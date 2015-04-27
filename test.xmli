@@ -11,6 +11,7 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
     	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritrefs="true"/>
+    	<antcall target="optionaltestvapublisher" inheritrefs="true"/>
     	<antcall target="createreport"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
@@ -47,6 +48,10 @@
     <target name="optionalteststatedump" if="${statedump.exists}"><antcall target="statedump" inheritrefs="true"/><ant antfile="build.xml" dir="modules/statedump" target="test" /></target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
     <target name="optionaltestpeerconnector" if="${peerconnector.exists}"><ant antfile="build.xml" dir="modules/peerconnector" target="test" /></target>
+    <condition property="vapublisher.exists"><available file="modules/va/publisher" /></condition>
+    <target name="optionaltestvapublisher" if="${vapublisher.exists}"><ant antfile="build.xml" dir="modules/va" target="test" /></target>
+
+
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" />
@@ -167,6 +172,11 @@
    
     <target name="test:pc" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/peerconnector" target="test" />
+    	<antcall target="createreport"/>
+    </target>
+    
+    <target name="test:vapub" depends="deleteDirectories">
+    	<ant antfile="build.xml" dir="modules/va" target="test" />
     	<antcall target="createreport"/>
     </target>
     

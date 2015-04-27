@@ -384,4 +384,14 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             }
         }
     } // runWithTempFile
-} // GeneralPurposeCustomPublisher
+
+    @Override
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return true;
+    }
+    
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+} 

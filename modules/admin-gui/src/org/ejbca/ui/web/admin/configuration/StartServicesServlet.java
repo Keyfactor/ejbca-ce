@@ -63,12 +63,14 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -93,29 +95,36 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
+    private CertificateCreateSessionLocal certCreateSession;
+    @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private ServiceSessionLocal serviceSession;
-    @EJB
-    private CertificateCreateSessionLocal certCreateSession;
-    @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
-    @EJB
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
-    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
-    @EJB
-    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
-    private EndEntityAccessSessionLocal endEntityAccessSession;
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
+
+
+
 
     @Resource
     private UserTransaction tx;
@@ -330,6 +339,11 @@ public class StartServicesServlet extends HttpServlet {
                         "An always allow token was not allowed access. Likely cause is that the database hasn't been configured.");
             }
         }
+        // Upgrade the old Validation Authority Publisher in Community Edition (leave it be in Enterprise for the sake of 100% uptime)
+        if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
+            publisherSession.adhocUpgradeTo6_3_1_1();
+        }
+        
         // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
         ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
         // Start key reload timer

@@ -66,5 +66,15 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	public void testConnection() throws PublisherConnectionException {
         log.debug("DummyCustomPublisher, Testing connection");			
 	}
+
+    @Override
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return true;
+    }
+    
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 	
 }

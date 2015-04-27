@@ -29,13 +29,36 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.3.1 up to EJBCA 6.3.2
+-------------------------------
+As the VA Publisher was shifted from Community to Enterprise in EJBCA 6.3.1.1, it had to change baseclass, so will thus require a database 
+upgrade. To keep to the 100% uptime requirement, please follow the following procedure:
+
+1. 	Upgrade EJBCA on all nodes. The old publishers will still function on the new nodes, but they won't be editable in the GUI during the 
+	upgrade procedure. 
+2. 	Run 'ant post-upgrade' on any one of the nodes and enter "6.3.1" (as this is will be the current database version). This operation
+	will replace all of the old publishers with the new ones. 
+3.	Verify that the publishers are correctly configured and can publish certificates and CRLs. 
+
+
+From EJBCA 6.2.0 up to EJBCA 6.3.1.1
+-------------------------------
+EJBCA 6.3.1.1 is the Community release of EJBCA 6.3. Besides including all upgrade steps in previous releases, the biggest database change
+in EJBCA 6.3.1.1 is that the VA Publisher has been moved from Community Edition into Enterprise Edition. Since the previous class (and code 
+supporting it) no longer exist in Community, a placeholder class retaining all the old data will replace old publishers to retain the data, 
+but publishing using this class will do nothing. Should any Community Users wish to migrate to the Enterprise Edition, the placeholder will
+be replaced by the new VA Publisher. 
+
+External RA has also been removed from the Community Edition for 6.3.1.1. If you are running Community and require these features, please 
+contact a sales representative at Primekey Solutions. 
+
 From EJBCA 6.2.7 up to EJBCA 6.3.0
 -------------------------------
 EJBCA 6.3.0 introduces one new table, PeerData. This table is automatically created at deployment to the appserver.  
 If you prefer to do the database upgrade manually, see src/upgrade for SQL scripts for your specific database.
 
 Certain features have been shifted from the Community to Enterprise version of EJBCA, among these are SCEP RA Mode, CMP Proxy and EV Certificate 
-specific DN fields. If you are running community and require these features, please contact a sales representative. 
+specific DN fields. If you are running Community and require these features, please contact a sales representative at Primekey Solutions. 
 
 From EJBCA 6.2.7 to EJBCA 6.2.8
 -------------------------------

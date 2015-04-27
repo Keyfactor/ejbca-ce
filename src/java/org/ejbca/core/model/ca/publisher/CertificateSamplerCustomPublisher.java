@@ -346,4 +346,14 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
         /** Every certificate is sampled with the probability as specified as the pvalue. */
         SAMPLE_PROBABILISTIC,
     }
+
+    @Override
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return true;
+    }
+    
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 }
