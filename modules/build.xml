@@ -99,10 +99,7 @@
 		</delete>
 	</target>
 	
-    <condition property="externalra.exists">
-    	<available file="${mod.externalra.path}}/build.xml" />
-    </condition>
-	<target name="externalraclean" if="${externalra.exists}">
+	<target name="externalraclean" if="${mod.externalra.exists}}">
 		<echo message="Cleaning externalra"/>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
@@ -115,10 +112,7 @@
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-    <condition property="externalra-scep.exists">
-    	<available file="${mod.externalra-scep.path}}/build.xml" />
-    </condition>
-	<target name="externalra-scepclean" if="${externalra-scep.exists}">
+	<target name="externalra-scepclean" if="${mod.externalra-scep.exists}">
 		<echo message="Cleaning externalra-scep"/>
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
