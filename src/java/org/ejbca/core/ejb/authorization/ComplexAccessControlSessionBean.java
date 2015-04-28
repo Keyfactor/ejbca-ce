@@ -227,9 +227,6 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
             roleRules.add(StandardRules.ROLE_ROOT.resource());
         }
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-            roleRules.add(StandardRules.ROLE_ROOT.resource());
-        }
         accessrules.put("ROLEBASEDACCESSRULES", roleRules);
         
         //Standard rules
