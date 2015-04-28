@@ -356,7 +356,7 @@ public class EjbcaWS implements IEjbcaWS {
         	final AuthenticationToken admin = ejbhelper.getAdmin();
         	logAdminName(admin,logger);
         	final Query query = ejbhelper.convertUserMatch(admin, usermatch);		  		  
-        	final Collection<EndEntityInformation> result = endEntityManagementSession.query(admin, query, null,null, MAXNUMBEROFROWS); // also checks authorization
+        	final Collection<EndEntityInformation> result = endEntityManagementSession.query(admin, query, null,null, MAXNUMBEROFROWS, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
         	if (result.size() > 0) {
         		retval = new ArrayList<UserDataVOWS>(result.size());
         		for (final EndEntityInformation userdata : result) {
@@ -2439,7 +2439,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin);
+			Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.CREATE_END_ENTITY);
 			final Map<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();			
 			for (final Integer id : ids) {
 				ret.put(idtonamemap.get(id), id);

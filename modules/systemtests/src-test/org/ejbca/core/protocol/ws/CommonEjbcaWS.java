@@ -144,6 +144,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -2029,7 +2030,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAuthorizedEndEntityProfiles() throws Exception {
         log.trace(">getAuthorizedEndEntityProfiles");
-        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(intAdmin);
+        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(intAdmin, AccessRulesConstants.CREATE_END_ENTITY);
         List<NameAndId> profs = ejbcaraws.getAuthorizedEndEntityProfiles();
         assertNotNull(profs);
         assertEquals(profs.size(), ids.size());

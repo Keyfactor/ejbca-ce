@@ -96,7 +96,7 @@ public interface EndEntityProfileSession {
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 
     /** Retrieves a Collection of id:s (Integer) to authorized profiles. */
-    Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin);
+    Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin, String endentityAccessRule);
 
     /**
      * Retrives a list of ids to profiles with non-existent CA ids, if the admin has root rule access.

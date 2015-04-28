@@ -1,3 +1,4 @@
+<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <%@page import="java.util.Iterator"%>
 <%
    java.util.TreeMap canames = ejbcawebbean.getInformationMemory().getAllCANames();
@@ -426,7 +427,7 @@ function checkallfields() {
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defeep)) { eepselected=true; %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
-          <% java.util.Iterator eeps = ejbcawebbean.getAuthorizedEEProfileNames().iterator();
+          <% java.util.Iterator eeps = ejbcawebbean.getAuthorizedEEProfileNames(AccessRulesConstants.CREATE_END_ENTITY).iterator();
              while(eeps.hasNext()){
             	String eep = (String) eeps.next(); 
           %>   <option <% if(eep.equals(defeep)){ eepselected=true; %> selected <% } %>

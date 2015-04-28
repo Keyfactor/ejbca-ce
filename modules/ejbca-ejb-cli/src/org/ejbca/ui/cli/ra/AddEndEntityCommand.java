@@ -39,6 +39,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -335,7 +336,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
         Map<Integer, String> endentityprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
                 .getEndEntityProfileIdToNameMap();
         for (Integer id : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
-                getAuthenticationToken())) {
+                getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY)) {
             existingEeps.append((existingEeps.length() == 0 ? "" : ", ") + endentityprofileidtonamemap.get(id));
         }
         sb.append("Existing endentity profiles: " + existingEeps + "\n");
