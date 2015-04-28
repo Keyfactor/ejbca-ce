@@ -53,12 +53,14 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -76,10 +78,13 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -116,7 +121,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private CertificateStoreSessionRemote storeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -124,11 +130,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
+    private PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        
         // Make user that we know later...
         username = genRandomUserName();
         pwd = genRandomPwd();
@@ -464,35 +470,35 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, data1, true);
 
         Certificate cert = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()));
-        CertificateStatus status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
         // Revoke the certificate, put on hold
         endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Unrevoke the certificate
         endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.NOT_REVOKED);
-        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
         // Revoke again certificate
         endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Unrevoke the certificate, but with different code
         endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
-        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
         // Revoke again certificate permanently
         endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
-        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
 
         // Unrevoke the certificate, should not work
@@ -502,7 +508,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             assertTrue(false); // should not reach this
         } catch (AlreadyRevokedException e) {
         }
-        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
     }
 
@@ -687,6 +693,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             fail("Was able to rename an end entity using an already occupied username.");
         } catch (EndEntityExistsException e) {
             // Expected
+            final EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username1);
+            assertNotNull("End entity should still exist after a failed rename.", endEntityInformation);
         }
         endEntityManagementSession.renameEndEntity(admin, username1, username3);
         final EndEntityInformation endEntityInformation1 = endEntityAccessSession.findUser(admin, username1);
@@ -697,4 +705,59 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         assertNotNull("Renamed user should exist under new username.", endEntityInformation3);
     }
 
+    /** Test rename of an end entity with issued certificates and publishing queue. */
+    @Test
+    public void testRenameEndEntityWithCerts() throws Exception {
+        final String username1 = "testRenameEndEntityWithCertsA";
+        final String username2 = "testRenameEndEntityWithCertsB";
+        final String username3 = "testRenameEndEntityWithCertsC";
+        usernames.add(username1);
+        usernames.add(username2);
+        usernames.add(username3);
+        // Add users
+        endEntityManagementSession.addUser(admin, username1, pwd, "C=SE, O=PrimeKey, CN=" + username1, null, null, true,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+        endEntityManagementSession.addUser(admin, username2, pwd, "C=SE, O=PrimeKey, CN=" + username2, null, null, true,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+        // Issue certificates
+        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        String fingerprint = null;
+        try {
+            final X509Certificate x509Certificate = (X509Certificate) signSession.createCertificate(admin, username1, pwd, new PublicKeyWrapper(keyPair.getPublic()));
+            assertNotNull("Failed to issue certificate", x509Certificate);
+            fingerprint = CertTools.getFingerprintAsString(x509Certificate);
+            // Create publisher queue data
+            final PublisherQueueVolatileInformation publisherQueueInfo1 = new PublisherQueueVolatileInformation();
+            publisherQueueInfo1.setUsername(username1);
+            publisherQueueSession.addQueueData(4217, PublisherConst.PUBLISH_TYPE_CERT, fingerprint, publisherQueueInfo1, PublisherConst.STATUS_PENDING);
+            // Try to rename a user to an existing username
+            try {
+                endEntityManagementSession.renameEndEntity(admin, username1, username2);
+                fail("Was able to rename an end entity using an already occupied username.");
+            } catch (EndEntityExistsException e) {
+                // Expected
+                final EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username1);
+                assertNotNull("End entity should still exist after a failed rename.", endEntityInformation);
+                assertEquals("Publisher queue data should have retained username after failed rename", username1,
+                        publisherQueueSession.getEntriesByFingerprint(fingerprint).iterator().next().getVolatileData().getUsername());
+                assertEquals("Certificate data should have retained username after failed rename", username1,
+                        certificateStoreSession.getCertificateInfo(fingerprint).getUsername());
+            }
+            endEntityManagementSession.renameEndEntity(admin, username1, username3);
+            final EndEntityInformation endEntityInformation1 = endEntityAccessSession.findUser(admin, username1);
+            assertNull("Renamed user should no longer exist under old username.", endEntityInformation1);
+            final EndEntityInformation endEntityInformation2 = endEntityAccessSession.findUser(admin, username3);
+            assertNotNull("End entity should still exist after a failed rename to its username.", endEntityInformation2);
+            final EndEntityInformation endEntityInformation3 = endEntityAccessSession.findUser(admin, username3);
+            assertNotNull("Renamed user should exist under new username.", endEntityInformation3);
+            assertEquals("Publisher queue data should use new username.", username3,
+                    publisherQueueSession.getEntriesByFingerprint(fingerprint).iterator().next().getVolatileData().getUsername());
+            assertEquals("Certificate data should use new username.", username3,
+                    certificateStoreSession.getCertificateInfo(fingerprint).getUsername());
+        } finally {
+            if (fingerprint!=null) {
+                internalCertStoreSession.removeCertificate(fingerprint);
+            }
+        }
+    }
 }
