@@ -425,7 +425,11 @@ public class RequestInstance {
 					}
 
 					if ((reqBytes != null) && (reqBytes.length>0)) {
-					    pkcs10Req(request, response, username, password, resulttype, helper, reqBytes);
+					    try {
+					        pkcs10Req(request, response, username, password, resulttype, helper, reqBytes);
+					    } catch(Exception exp) {
+                            iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
+                        }
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}
