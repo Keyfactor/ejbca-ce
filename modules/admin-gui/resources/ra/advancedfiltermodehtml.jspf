@@ -1,4 +1,5 @@
-<% TreeMap endentityprofileids = ejbcawebbean.getInformationMemory().getViewAuthorizedEndEntityProfileNames(); 
+<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
+<% TreeMap endentityprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY); 
    TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    Map caids = ejbcawebbean.getInformationMemory().getCANames();
  

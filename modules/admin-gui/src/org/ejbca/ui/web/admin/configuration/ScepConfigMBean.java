@@ -37,6 +37,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -420,7 +421,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return a list of EndEntity profiles that this admin is authorized to */
     public List<SelectItem> getAuthorizedEEProfileNames() {
-        Set<String> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames().keySet();
+        Set<String> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet();
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         Iterator<String> itr = eeps.iterator();
         while (itr.hasNext()) {

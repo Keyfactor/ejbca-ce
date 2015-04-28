@@ -453,8 +453,8 @@ public class RAInterfaceBean implements Serializable {
     	return returnval;
     }
 
-    public UserView[] filterByQuery(Query query, int index, int size) throws IllegalQueryException {
-    	Collection<EndEntityInformation> userlist = endEntityManagementSession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(),0);
+    public UserView[] filterByQuery(Query query, int index, int size, final String endentityAccessRule) throws IllegalQueryException {
+    	Collection<EndEntityInformation> userlist = endEntityManagementSession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(endentityAccessRule),0, endentityAccessRule);
     	usersView.setUsers(userlist, informationmemory.getCAIdToNameMap());
     	return usersView.getUsers(index,size);
     }
@@ -505,8 +505,8 @@ public class RAInterfaceBean implements Serializable {
     }
 
     // Methods dealing with profiles.
-    public TreeMap<String,Integer> getAuthorizedEndEntityProfileNames() {
-    	return informationmemory.getAuthorizedEndEntityProfileNames();
+    public TreeMap<String,Integer> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
+    	return informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
     
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
