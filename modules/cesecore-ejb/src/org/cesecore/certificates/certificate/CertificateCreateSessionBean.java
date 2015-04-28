@@ -41,6 +41,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
@@ -170,16 +171,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (log.isDebugEnabled()) {
                     log.debug("we have extensions, see if we can override KeyUsage by looking for a KeyUsage extension in request");
                 }
-                final Extension ext = exts.getExtension(Extension.keyUsage);
-                if (ext != null) {
-                    final ASN1OctetString os = ext.getExtnValue();
-                        DERBitString bs;
-                        try {
-                            bs = new DERBitString(os.getEncoded());
-                        } catch (IOException e) {
-                            throw new IllegalStateException("Unexpected IOException caught.");
-                        }
-                        keyusage = bs.intValue();
+                final KeyUsage keyUsage = KeyUsage.fromExtensions(exts);
+                if (keyUsage!=null) {
+                    final DERBitString bitString = (DERBitString) keyUsage.toASN1Primitive();
+                    keyusage = bitString.intValue();
                     if (log.isDebugEnabled()) {
                         log.debug("We have a key usage request extension: " + keyusage);
                     }

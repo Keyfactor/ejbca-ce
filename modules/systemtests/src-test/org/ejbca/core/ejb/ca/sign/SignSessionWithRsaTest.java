@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -33,6 +34,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -131,6 +134,20 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             + "bSR02CVFC0F6QO5s2Tx3JYWrm5aAjWkXWJfeYOR6qBSwX0R1US3rDI0Kepsrdco2q7wGSo+235KL"
             + "Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq"
             + "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
+    private static byte[] pkcs10wKUExtension = Base64.decode(("MIICdTCCAV0CAQAwDzENMAsGA1UEAxMEVGVzdDCCASIwDQYJKoZIhvcNAQEBBQAD" +
+            "ggEPADCCAQoCggEBANjpfPgFvjPamcJFUMOX07PkVdNLLB8ZCBOwAJWf3CG2rR6/" +
+            "KnYzk4IHT/dswZv6tPEv3/fMNtdzeVhmPhdSwWdxMt2qaoIxCxE3Z9vsceTh2x3G" +
+            "Jw+Oh7XTEodsFuLNZz0DurQ9GU8ar/qJrtbXSWWjOruBEWyJEuyDS23bgw9NZo3t" +
+            "iwko7Uo9fkr/rZ5Q1XrB/NfqWYOePLoM2cAuQfrVGI2phskFlddrn8jfKMLJyZK8" +
+            "mqP+4bfp2n2xYmv2AC+Ed8keUytqA8YT07JFe7DwCl+faQ177LF6DHVQP36HU067" +
+            "KTxrMc2CXdpjvPs64eRnLbAwJlITfja3Ou8+m4cCAwEAAaAhMB8GCSqGSIb3DQEJ" +
+            "DjESMBAwDgYDVR0PAQH/BAQDAgWgMA0GCSqGSIb3DQEBCwUAA4IBAQBEGebKEFLW" +
+            "3AtyWj+e3CDKVTwMCqX9jxSH/QxTp2MoahmQ1tJs+SDZ/SfHQKwn9EEiot2cODKN" +
+            "kry8oYz3lI0s70ZyzH7uqafNxyJ33AdGm32L1nCcNAjHDoJ6DD1aTcVIrBl4qmzE" +
+            "8EM93brSQnQUJMQCeBK9pUCfb1AQcQ/Py9+9LT3nSbPK9mD+jfMyDZecayezhaKj" +
+            "029oznbriF9cJhUPtQccYjdspKqVdewmSduAA5Q5aMAVLzDvhbdl7fLKgrQmGoON" +
+            "Fj+HDqzi6C/aSRqrVAXQqhUmwSYhFcLPQabkZwfeXq/fDWh0t53DoLnCXuSkOWt2" +
+            "Dmp7+CmOfsMX").getBytes());
 
     private static final String RSA_USERNAME = "RsaUser";
     private static final String RSA_REVERSE_USERNAME = "RsaReverseUser";
@@ -302,6 +319,53 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
         log.debug("Cert=" + cert1.toString());
         log.trace("<test06KeyUsage()");
+    }
+
+    @Test
+    public void testKeyUsageOverrideFromRequest() throws Exception {
+        log.trace(">testKeyUsageOverrideFromRequest()");
+        try {
+            // Allow key usage override
+            final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(DEFAULT_CERTIFICATE_PROFILE);
+            certificateProfile.setAllowKeyUsageOverride(true);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, DEFAULT_CERTIFICATE_PROFILE, certificateProfile);
+            // Issue certificate and check that resulting KU is the same as in the PKCS#10
+            endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
+            final PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(pkcs10wKUExtension);
+            pkcs10req.setUsername(RSA_USERNAME);
+            pkcs10req.setPassword("foo123");
+            final ResponseMessage resp = signSession.createCertificate(internalAdmin, pkcs10req, X509ResponseMessage.class, null);
+            final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+            assertNotNull("Failed to create certificate", cert);
+            log.debug("Cert=" + cert.toString());
+            final int keyUsage = getKeyUsageValueFromCertificate(cert);
+            assertEquals("Wrong KU in returned certificate.", X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment, keyUsage);
+        } finally {
+            // Disallow key usage override
+            final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(DEFAULT_CERTIFICATE_PROFILE);
+            certificateProfile.setAllowKeyUsageOverride(false);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, DEFAULT_CERTIFICATE_PROFILE, certificateProfile);
+        }
+        // Issue certificate and check that resulting KU is the default
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        final PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(pkcs10wKUExtension);
+        pkcs10req.setUsername(RSA_USERNAME);
+        pkcs10req.setPassword("foo123");
+        final ResponseMessage resp = signSession.createCertificate(internalAdmin, pkcs10req, X509ResponseMessage.class, null);
+        final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        final int keyUsage = getKeyUsageValueFromCertificate(cert);
+        assertEquals("Wrong KU in returned certificate.", X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation, keyUsage);
+        log.trace("<testKeyUsageOverrideFromRequest()");
+    }
+    
+    /** @return the key usage extension as an integer */
+    private int getKeyUsageValueFromCertificate(final X509Certificate x509Certificate) throws IOException {
+        final byte[] rawExtensionValue = x509Certificate.getExtensionValue(Extension.keyUsage.getId());
+        final DEROctetString extensionValue = (DEROctetString) DEROctetString.fromByteArray(rawExtensionValue);
+        final DERBitString keyUsage = (DERBitString) DERBitString.fromByteArray(extensionValue.getOctets());
+        return keyUsage.intValue();
     }
 
     /**
