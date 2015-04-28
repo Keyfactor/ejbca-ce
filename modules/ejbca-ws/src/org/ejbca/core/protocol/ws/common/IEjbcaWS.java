@@ -476,7 +476,7 @@ public interface IEjbcaWS {
 	 * be better with a fall back to {@link #revokeCert(String, String, int)}.
 	 * </p>
 	 * @param issuerDN of the certificate to revoke
-	 * @param certificateSN of the certificate to revoke
+	 * @param certificateSN Certificate serial number in hex format of the certificate to revoke (without any "0x", "h" or similar) 
 	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants, 
 	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @param sDate The revocation date. If null then the current date is used. If specified then the profile of the certificate must allow
