@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -391,7 +392,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                 + "standard output, and a summary will contain exact numbers on imported and failed certificates." + "\n\n");
         // List available CAs by name
         sb.append("Available CAs: " + getAvailableCasString() + "\n");
-        sb.append("Available end entity profiles: " + getAvailableEepsString() + "\n");
+        sb.append("Available end entity profiles: " + getAvailableEepsString(AccessRulesConstants.CREATE_END_ENTITY) + "\n");
         sb.append("Available certificate profiles: " + getAvailableEndUserCpsString() + "\n");
         return sb.toString();
     }

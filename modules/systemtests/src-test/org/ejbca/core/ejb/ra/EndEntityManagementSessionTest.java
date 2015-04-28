@@ -79,6 +79,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -409,7 +410,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         String caauthstring = null;
         String eeprofilestr = null;
-        Collection<EndEntityInformation> col = endEntityManagementProxySession.query(admin, query, caauthstring, eeprofilestr, 0);
+        Collection<EndEntityInformation> col = endEntityManagementProxySession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.VIEW_END_ENTITY);
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");

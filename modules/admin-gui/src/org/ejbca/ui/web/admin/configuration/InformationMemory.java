@@ -148,8 +148,8 @@ public class InformationMemory implements Serializable {
     /**
      * Returns authorized end entity profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames() {
-        return this.raauthorization.getAuthorizedEndEntityProfileNames();
+    public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
+        return this.raauthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
     
     /**
@@ -157,26 +157,6 @@ public class InformationMemory implements Serializable {
      */
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
         return this.raauthorization.getViewAuthorizedEndEntityProfilesWithMissingCAs();
-    }
-
-    /**
-     * Returns end entity profile names with create rights as a treemap of name (String) -> id (Integer)
-     */
-    public TreeMap<String, Integer> getCreateAuthorizedEndEntityProfileNames() {
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-            return this.raauthorization.getCreateAuthorizedEndEntityProfileNames();
-        }
-        return this.raauthorization.getAuthorizedEndEntityProfileNames();
-    }
-
-    /**
-     * Returns end entity profile names with view rights as a treemap of name (String) -> id (Integer)
-     */
-    public TreeMap<String, Integer> getViewAuthorizedEndEntityProfileNames() {
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-            return this.raauthorization.getViewAuthorizedEndEntityProfileNames();
-        }
-        return this.raauthorization.getAuthorizedEndEntityProfileNames();
     }
 
     /**
@@ -262,8 +242,8 @@ public class InformationMemory implements Serializable {
     /**
      * Returns CA authorization string used in userdata queries.
      */
-    public String getUserDataQueryEndEntityProfileAuthorizationString() {
-        return this.raauthorization.getEndEntityProfileAuthorizationString(true);
+    public String getUserDataQueryEndEntityProfileAuthorizationString(final String endentityAccessRule) {
+        return this.raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule);
     }
 
     /**
@@ -341,7 +321,7 @@ public class InformationMemory implements Serializable {
      * @returns a HashMap of CertificateProfileIds mapped to Lists if CA IDs. It returns a set of available CAs per end entity profile.
      */
 
-    public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid) {
+    public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid, final String endentityAccessRule) {
         if (endentityavailablecas == null) {
             endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();        
             //Create a TreeMap to get a sorted list.
@@ -359,7 +339,7 @@ public class InformationMemory implements Serializable {
             //Cache certificate profiles to save on database transactions
             HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();        
             // 2. Retrieve a list of all authorized end entity profile IDs
-            for (Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator)) {
+            for (Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule)) {
                 EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(nextendentityprofileid.intValue());
                 // 3. Retrieve the list of CA's available to the current end entity profile
                 String[] availableCAs = endentityprofile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
@@ -413,19 +393,19 @@ public class InformationMemory implements Serializable {
      * @return A HashSet containing the administrators authorized available accessrules.
      */
 
-    public Map<String, Set<String>> getAuthorizedAccessRules() {
+    public Map<String, Set<String>> getAuthorizedAccessRules(final String endentityAccessRule) {
         if (authorizedaccessrules == null) {
             authorizedaccessrules = complexAccessControlSession.getAuthorizedAvailableAccessRules(administrator,
                     globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
-                    globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator),
+                    globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule),
                     userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules());
         }
         return authorizedaccessrules;
     }
     
-    public Set<String> getAuthorizedAccessRulesUncategorized() {
+    public Set<String> getAuthorizedAccessRulesUncategorized(final String endentityAccessRule) {
         Set<String> accessRulesSet = new HashSet<String>();
-        for(Entry<String, Set<String>> entry : getAuthorizedAccessRules().entrySet()) {
+        for(Entry<String, Set<String>> entry : getAuthorizedAccessRules(endentityAccessRule).entrySet()) {
             accessRulesSet.addAll(entry.getValue());
         }
         return accessRulesSet;

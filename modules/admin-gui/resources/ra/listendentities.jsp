@@ -420,7 +420,7 @@
                else{
                  Query query = new Query(Query.TYPE_USERQUERY); 
                  query.add(UserMatch.MATCH_WITH_STATUS,BasicMatch.MATCH_TYPE_EQUALS,status);
-                 users = rabean.filterByQuery(query,record,size);
+                 users = rabean.filterByQuery(query,record,size, AccessRulesConstants.VIEW_END_ENTITY);
                }
 
 
@@ -519,7 +519,7 @@
               }
 
               if(query.isLegalQuery()){
-                users = rabean.filterByQuery(query,record,size);  
+                users = rabean.filterByQuery(query,record,size, AccessRulesConstants.VIEW_END_ENTITY);  
               }else{
                  illegalquery = true;
               } 
@@ -550,7 +550,7 @@
                else{
                  Query query = new Query(Query.TYPE_USERQUERY); 
                  query.add(UserMatch.MATCH_WITH_STATUS,BasicMatch.MATCH_TYPE_EQUALS,status);
-                 users = rabean.filterByQuery(query,record,size);
+                 users = rabean.filterByQuery(query,record,size, AccessRulesConstants.VIEW_END_ENTITY);
                }
                oldaction=OLD_ACTION_LISTUSERS;
                oldactionvalue=status;
@@ -722,7 +722,7 @@
               }
 
               if(query.isLegalQuery()){
-                users = rabean.filterByQuery(query,record,size);  
+                users = rabean.filterByQuery(query,record,size, AccessRulesConstants.VIEW_END_ENTITY);  
               }else{
                  illegalquery = true;
               }

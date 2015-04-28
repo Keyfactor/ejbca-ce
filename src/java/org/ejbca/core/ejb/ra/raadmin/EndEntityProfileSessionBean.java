@@ -274,7 +274,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin) {
+    public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin, String endentityAccessRule) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCaIds(admin));
     	final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
@@ -282,7 +282,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
     	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + AccessRulesConstants.CREATE_END_ENTITY)) {
+        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
@@ -304,7 +304,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         			}
                     if (authorizedToProfile
                             && authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey()
-                                    + AccessRulesConstants.CREATE_END_ENTITY)) {
+                                    + endentityAccessRule)) {
                         returnval.add(entry.getKey());
                     }
         		}

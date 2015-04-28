@@ -195,8 +195,8 @@ public class AuthorizationDataHandler implements Serializable {
      * 
      * @returns a map of sets of strings with available access rules, sorted by category
      */
-    public Map<String, Set<String>> getAvailableAccessRules() {
-        return this.informationmemory.getAuthorizedAccessRules();
+    public Map<String, Set<String>> getAvailableAccessRules(final String endentityAccessRule) {
+        return this.informationmemory.getAuthorizedAccessRules(endentityAccessRule);
     }
 
     /**
@@ -204,8 +204,8 @@ public class AuthorizationDataHandler implements Serializable {
      * 
      * @returns a Collection of strings with available access rules.
      */
-    public Set<String> getAvailableAccessRulesUncategorized() {
-        return this.informationmemory.getAuthorizedAccessRulesUncategorized();
+    public Set<String> getAvailableAccessRulesUncategorized(final String endentityAccessRule) {
+        return this.informationmemory.getAuthorizedAccessRulesUncategorized(endentityAccessRule);
     }
     
     /**

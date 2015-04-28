@@ -36,6 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -140,7 +141,7 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 				Query query = genQueryFromUseKeyWith(queryKeyBindingType.getUseKeyWith());
                 
 				try {            		
-					Collection<EndEntityInformation> userDatas = endEntityManagementSession.query(pubAdmin, query, null, null, resSize);
+					Collection<EndEntityInformation> userDatas = endEntityManagementSession.query(pubAdmin, query, null, null, resSize, AccessRulesConstants.VIEW_END_ENTITY);
 					if (log.isDebugEnabled()) {
 						log.debug("endEntityManagementSession.query returned " + userDatas.size() + " results for query \"" + query.getQueryString() + "\"");
 					}

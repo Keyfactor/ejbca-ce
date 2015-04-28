@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -67,7 +68,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
         Collection<Integer> certprofids = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                 .getAuthorizedCertificateProfileIds(getAuthenticationToken(), 0);
         Collection<Integer> endentityprofids = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
-                .getAuthorizedEndEntityProfileIds(getAuthenticationToken());
+                .getAuthorizedEndEntityProfileIds(getAuthenticationToken(), AccessRulesConstants.VIEW_END_ENTITY);
 
         log.info("Exporting non-fixed certificate profiles: ");
         try {

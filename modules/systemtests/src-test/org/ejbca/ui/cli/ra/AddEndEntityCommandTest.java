@@ -40,6 +40,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -104,7 +105,7 @@ public class AddEndEntityCommandTest {
             query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, USER_NAME);
             String caauthstring = null;
             String eeprofilestr = null;
-            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
             EndEntityInformation eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
@@ -112,7 +113,7 @@ public class AddEndEntityCommandTest {
             assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
             
             command1.execute(HAPPY_PATH_SETPWD_ARGS);
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
             eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
@@ -121,7 +122,7 @@ public class AddEndEntityCommandTest {
             assertFalse(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
 
             command2.execute(HAPPY_PATH_SETCLEARPWD_ARGS);
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
             eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
@@ -146,7 +147,7 @@ public class AddEndEntityCommandTest {
             query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, USER_NAME);
             String caauthstring = null;
             String eeprofilestr = null;
-            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
             EndEntityInformation eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
@@ -159,7 +160,7 @@ public class AddEndEntityCommandTest {
             final Logger logger1 = command1.getLogger();
             logger1.addAppender(appender1);
             command1.execute(INVALIDUSER_PATH_SETPWDPWD_ARGS);
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
             eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
@@ -177,7 +178,7 @@ public class AddEndEntityCommandTest {
             final Logger logger2 = command2.getLogger();
             logger2.addAppender(appender2);
             command2.execute(INVALIDUSER_PATH_SETCLEARPWD_ARGS);
-            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
             eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());

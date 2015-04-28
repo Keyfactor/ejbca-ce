@@ -299,13 +299,15 @@ public interface EndEntityManagementSession {
      *            administrator is authorized to view.
      * @param numberofrows the number of rows to fetch, use 0 for default
      *            EndEntityConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @param endentityAccessRule The end entity access rule that is necessary 
+     *            to execute the query
      * @return a collection of EndEntityInformation.
      * @throws IllegalQueryException when query parameters internal rules isn't
      *            fulfilled.
      * @see org.ejbca.util.query.Query
      */
     Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
-            String endentityprofilestring, int numberofrows) throws IllegalQueryException;
+            String endentityprofilestring, int numberofrows, String endentityAccessRule) throws IllegalQueryException;
     
     /** Revoke and then delete a user. */
     void revokeAndDeleteUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException;

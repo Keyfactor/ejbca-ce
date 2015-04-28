@@ -48,7 +48,7 @@ public class EndEntityManagementProxySessionBean implements EndEntityManagementP
     
     @Override
     public Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
-            String endentityprofilestring, int numberofrows) throws IllegalQueryException {
-        return endEntityManagementSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows);
+            String endentityprofilestring, int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
+        return endEntityManagementSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows, endentityAccessRule);
     }
 }

@@ -210,12 +210,12 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         return existingCas.toString();
     }
 
-    protected String getAvailableEepsString() {
+    protected String getAvailableEepsString(final String endentityAccessRule) {
         // List available EndEntityProfiles by name
         final StringBuilder availableEEPs = new StringBuilder();
         try {
             for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
-                    .getAuthorizedEndEntityProfileIds(getAuthenticationToken())) {
+                    .getAuthorizedEndEntityProfileIds(getAuthenticationToken(), endentityAccessRule)) {
                 final String eepName = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(
                         nextId.intValue());
                 if (availableEEPs.length() > 0) {

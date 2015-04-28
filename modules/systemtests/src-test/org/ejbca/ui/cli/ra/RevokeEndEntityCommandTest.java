@@ -61,6 +61,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.BasicMatch;
@@ -140,14 +141,14 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, USER_NAME);
             final String caauthstring = null;
             final String eeprofilestr = null;
-            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
+            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.REVOKE_END_ENTITY);
             assertEquals(1, col.size());
             EndEntityInformation eei = col.iterator().next();
             assertEquals("CN="+USER_NAME+",O=PrimeKey,C=SE", eei.getDN());
             assertEquals(EndEntityConstants.STATUS_REVOKED, eei.getStatus());
             info = certificateStoreSession.getCertificateInfo(fingerprint);
             assertEquals(CertificateConstants.CERT_REVOKED, info.getStatus());
-            assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, info.getRevocationReason());            
+            assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, info.getRevocationReason());
         } finally {
             /// remove the user's certificate from database
             internalCertStoreSession.removeCertificate(fingerprint);

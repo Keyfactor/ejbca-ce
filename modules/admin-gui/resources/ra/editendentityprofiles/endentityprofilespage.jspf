@@ -1,5 +1,6 @@
+<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <% 
-  TreeMap<String,Integer> profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames();
+  TreeMap<String,Integer> profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
   List<Integer> withMissingCAs = ejbcarabean.getAuthorizedEndEntityProfileIdsWithMissingCAs();
 
 %>

@@ -1645,7 +1645,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
         Collection<EndEntityInformation> returnval = null;
         try {
-            returnval = query(admin, query, false, null, null, 0);
+            returnval = query(admin, query, false, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
         }
         if (log.isDebugEnabled()) {
@@ -1670,7 +1670,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
         Collection<EndEntityInformation> returnval = null;
         try {
-            returnval = query(admin, query, false, null, null, 0);
+            returnval = query(admin, query, false, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
             // Ignore ??
             log.debug("Illegal query", e);
@@ -1725,7 +1725,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         Collection<EndEntityInformation> returnval = null;
         try {
-            returnval = query(admin, null, true, null, null, 0);
+            returnval = query(admin, null, true, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
         }
         if (log.isTraceEnabled()) {
@@ -1757,8 +1757,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<EndEntityInformation> query(final AuthenticationToken admin, final Query query, final String caauthorizationstring,
-            final String endentityprofilestring, final int numberofrows) throws IllegalQueryException {
-        return query(admin, query, true, caauthorizationstring, endentityprofilestring, numberofrows);
+            final String endentityprofilestring, final int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
+        return query(admin, query, true, caauthorizationstring, endentityprofilestring, numberofrows, endentityAccessRule);
     }
 
 
@@ -1770,7 +1770,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @param numberofrows the number of rows to fetch, use 0 for default EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT
      */
     private Collection<EndEntityInformation> query(final AuthenticationToken admin, final Query query, final boolean withlimit, final String caauthorizationstr,
-            final String endentityprofilestr, final int numberofrows) throws IllegalQueryException {
+            final String endentityprofilestr, final int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
         if (log.isTraceEnabled()) {
             log.trace(">query(): withlimit=" + withlimit);
         }
@@ -1803,7 +1803,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     endEntityProfileSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-                endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
+                endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule);
             } else {
                 endentityauth = "";
             }

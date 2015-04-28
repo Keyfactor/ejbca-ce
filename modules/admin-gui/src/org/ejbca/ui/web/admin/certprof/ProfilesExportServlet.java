@@ -41,6 +41,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -131,7 +132,7 @@ public class ProfilesExportServlet extends HttpServlet {
             
             zipfilename = "entityprofiles.zip";
             
-            Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(alwaysAllowAuthenticationToken);
+            Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(alwaysAllowAuthenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
             totalprofiles = endentityprofids.size();
             log.info("Exporting non-fixed end entity profiles");
             for (int profileid : endentityprofids) {

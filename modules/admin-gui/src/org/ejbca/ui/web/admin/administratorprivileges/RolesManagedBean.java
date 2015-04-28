@@ -554,7 +554,7 @@ public class RolesManagedBean extends BaseManagedBean {
 
     private BasicAccessRuleSetEncoder getBasicRuleSetInternal(RoleData role) {
         GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
-        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRulesUncategorized(),
+        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRulesUncategorized(AccessRulesConstants.CREATE_END_ENTITY),
                 globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
     }
 
@@ -570,7 +570,7 @@ public class RolesManagedBean extends BaseManagedBean {
     	}
         if (accessRulesViewCache == null) {
             RoleData role = getCurrentRoleObject();
-            Map<String, Set<String>> allAvailableRules = getAuthorizationDataHandler().getAvailableAccessRules();
+            Map<String, Set<String>> allAvailableRules = getAuthorizationDataHandler().getAvailableAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
             accessRulesViewCache = getCategorizedRuleSet(role, allAvailableRules);
         }
     	if (log.isTraceEnabled()) {

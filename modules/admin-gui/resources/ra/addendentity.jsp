@@ -115,7 +115,7 @@
     int profileid = 0;
     String serialnumber = "";
 
-    profilenames = (String[]) ejbcawebbean.getInformationMemory().getCreateAuthorizedEndEntityProfileNames().keySet().toArray(new String[0]);
+    profilenames = (String[]) ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
 
     if (profilenames == null || profilenames.length == 0)
         noprofiles = true;
@@ -753,7 +753,7 @@
         }
     }
 
-    Map<Integer, List<Integer>> availablecas = ejbcawebbean.getInformationMemory().getCasAvailableToEndEntity(profileid);
+    Map<Integer, List<Integer>> availablecas = ejbcawebbean.getInformationMemory().getCasAvailableToEndEntity(profileid, AccessRulesConstants.CREATE_END_ENTITY);
     Collection authcas = null;
 
     pageContext.setAttribute("useradded", useradded);

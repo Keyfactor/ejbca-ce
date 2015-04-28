@@ -24,6 +24,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -121,7 +122,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
                 .getEndEntityProfileIdToNameMap();
         StringBuilder existingEeps = new StringBuilder();
         for (Integer profileId : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
-                getAuthenticationToken())) {
+                getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY)) {
             existingEeps.append((existingEeps.length() == 0 ? "" : divider) + endentityprofileidtonamemap.get(profileId));
         }
         sb.append("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + " - possible values: " + existingEeps + "\n");

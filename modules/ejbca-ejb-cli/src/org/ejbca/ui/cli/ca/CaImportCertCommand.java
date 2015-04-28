@@ -48,6 +48,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -328,7 +329,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         sb.append("Existing CAs: " + existingCas + "\n");
         String endEntityProfiles = "";
         Collection<Integer> eps = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
-                getAuthenticationToken());
+                getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
         for (int epid : eps) {
             endEntityProfiles += (endEntityProfiles.length() == 0 ? "" : ", ") + "\""
                     + EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(epid) + "\"";
