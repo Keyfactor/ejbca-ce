@@ -67,6 +67,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     private int currentCertProfileId = -1;
     private CertificateProfile certificateProfile = null;
+    @SuppressWarnings("rawtypes")
     private ListDataModel certificatePoliciesModel = null;
     private CertificatePolicy newCertificatePolicy = null;
     private ListDataModel caIssuersModel = null;
@@ -124,7 +125,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return certificateProfile;
     }
-    //public void setCertificateProfile(CertificateProfile certificateProfile) { this.certificateProfile = certificateProfile; }
 
     public String cancel() {
         reset();

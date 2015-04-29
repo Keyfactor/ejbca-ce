@@ -190,6 +190,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECADEFINEDFRESHESTCRL = "usecadefinedfreshestcrl";
     protected static final String FRESHESTCRLURI = "freshestcrluri";
     protected static final String USECERTIFICATEPOLICIES = "usecertificatepolicies";
+    protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String CERTIFICATEPOLICIESCRITICAL = "certificatepoliciescritical";
     /** Policy containing oid, User Notice and Cps Url */
     protected static final String CERTIFICATE_POLICIES = "certificatepolicies";
@@ -874,6 +875,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setUseCertificatePolicies(boolean usecertificatepolicies) {
         data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));
+    }
+    
+    public boolean getUseCertificateStorage() {
+        //Lazy upgrade for profiles created prior to EJBCA 6.2.10
+        Boolean value = (Boolean) data.get(USECERTIFICATESTORAGE);
+        if (value == null) {
+            //Default is true
+            setUseCertificateStorage(true);
+            return true;
+        } else {
+            return value.booleanValue();
+        }
+    }
+    
+    public void setUseCertificateStorage(boolean useCertificateStorage) {
+        data.put(USECERTIFICATESTORAGE, Boolean.valueOf(useCertificateStorage));
     }
 
     public boolean getCertificatePoliciesCritical() {

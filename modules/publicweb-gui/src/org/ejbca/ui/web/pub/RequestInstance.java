@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -591,7 +592,8 @@ public class RequestInstance {
         String issuerDN = CertTools.getIssuerDN(cert);
         int caid = issuerDN.hashCode();
         CAInfo caInfo = caSession.getCAInfoInternal(caid);
-        return !caInfo.isUseCertificateStorage();
+        CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
+        return !caInfo.isUseCertificateStorage() || !certificateProfile.getUseCertificateStorage();
     }
     
 	/**
