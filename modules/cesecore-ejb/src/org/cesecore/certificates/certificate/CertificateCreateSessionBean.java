@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -37,9 +36,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -332,12 +329,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 throw new CertificateCreateException(msg);
             }
             final Certificate cacert = ca.getCACertificate();
-            final String caSubjectDN = CertTools.getSubjectDN(cacert);
-            assertSubjectEnforcements(ca, caSubjectDN, endEntityInformation, pk);
+            final String caSubjectDN = CertTools.getSubjectDN(cacert);       
             // Retrieve the certificate profile this user should have, checking for authorization to the profile
             final int certProfileId = endEntityInformation.getCertificateProfileId();
             final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
-
+            assertSubjectEnforcements(ca, certProfile, caSubjectDN, endEntityInformation, pk);
             // Check that the request public key fulfills policy
             verifyKey(pk, certProfile);
 
@@ -353,7 +349,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             final int maxRetrys;
             if (useCustomSN) {
-                if (ca.isUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
+                if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
                     final String msg = intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex");
                     log.error(msg);
                     throw new CustomCertificateSerialNumberException(msg);
@@ -392,7 +388,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 // Store certificate in the database, if this CA is configured to do so.
-                if (!ca.isUseCertificateStorage()) {
+                if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
                     result = new CertificateDataWrapper(cert, null, null);
                     break; // We have our cert and we don't need to store it.. Move on..
                 }
@@ -436,7 +432,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             	if (revreason != RevokedCertInfo.NOT_REVOKED) {
                     // If we don't store the certificate in the database, we wont support revocation/reactivation so issuing revoked certificates would be
                     // really strange.
-                    if (ca.isUseCertificateStorage()) {
+                    if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage()) {
                         certificateStoreSession.setRevokeStatusNoAuth(admin, cert, new Date(), revreason, endEntityInformation.getDN());
                     } else {
                         log.warn("CA configured to revoke issued certificates directly, but not to store issued the certificates. Revocation will be ignored. Please verify your configuration.");
@@ -550,10 +546,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
      * @param publicKey
      * @throws CertificateCreateException if the certificate couldn't be created. 
      */
-    private void assertSubjectEnforcements(final CA ca, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
+    private void assertSubjectEnforcements(final CA ca, CertificateProfile certificateProfile, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
         boolean enforceUniqueDistinguishedName = false;
         if (ca.isDoEnforceUniqueDistinguishedName()) {
-            if (ca.isUseCertificateStorage()) {
+            if (ca.isUseCertificateStorage() && certificateProfile.getUseCertificateStorage()) {
                 enforceUniqueDistinguishedName = true;
             } else {
                 log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
@@ -561,7 +557,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
         boolean enforceUniquePublicKeys = false;
         if (ca.isDoEnforceUniquePublicKeys()) {
-            if (ca.isUseCertificateStorage()) {
+            if (ca.isUseCertificateStorage() && certificateProfile.getUseCertificateStorage()) {
                 enforceUniquePublicKeys = true;
             } else {
                 log.warn("CA configured to enforce unique entity keys, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
