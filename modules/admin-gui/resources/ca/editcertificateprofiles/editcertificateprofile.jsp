@@ -146,7 +146,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowdnoverridegroup" value="#{web.text.ALLOWDNOVERRIDECSR}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20fields") %>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20Fields") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowdnoverridegroup">
 			<h:selectBooleanCheckbox id="checkallowdnoverride" value="#{certProfileBean.certificateProfile.allowDNOverride}"/>
@@ -155,7 +155,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowdnoverrideeeigroup" value="#{web.text.ALLOWDNOVERRIDEEEI}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20fields") %>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20Fields") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowdnoverrideeeigroup">
 			<h:selectBooleanCheckbox id="checkallowdnoverrideeei" value="#{certProfileBean.certificateProfile.allowDNOverrideByEndEntityInformation}"/>
@@ -176,12 +176,12 @@
 			<h:selectBooleanCheckbox id="checkallowbackdatedrevokation" value="#{certProfileBean.certificateProfile.allowBackdatedRevocation}"/>
 			<h:outputLabel for="checkallowbackdatedrevokation" value="#{web.text.ALLOW} "/>
 		</h:panelGroup>
-		<h:panelGroup>
-			<h:outputLabel for="checkUseCertificateStorageGroup" value="#{web.text.USECERTIFICATESTORAGE}"/>
+		<h:panelGroup rendered="#{!certProfileBean.typeEndEntity}">
+			<h:outputLabel for="checkUseCertificateStorageGroup" value="#{web.text.USECERTIFICATESTORAGE}" />
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Storage%20(Certificate%20Profiles)") %>
 		</h:panelGroup>
-		<h:panelGroup id="checkUseCertificateStorageGroup">
-			<h:selectBooleanCheckbox id="checkUseCertificateStorage" value="#{certProfileBean.certificateProfile.useCertificateStorage}"/>
+		<h:panelGroup id="checkUseCertificateStorageGroup" rendered="#{certProfileBean.typeEndEntity}">
+			<h:selectBooleanCheckbox id="checkUseCertificateStorage" value="#{certProfileBean.certificateProfile.useCertificateStorage}" />
 			<h:outputLabel for="checkUseCertificateStorage" value="#{web.text.USE} "/>
 		</h:panelGroup>
 

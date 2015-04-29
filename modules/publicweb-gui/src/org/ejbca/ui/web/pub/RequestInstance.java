@@ -44,6 +44,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -63,7 +64,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -110,7 +111,8 @@ public class RequestInstance {
 	private SignSessionLocal signSession;
 	private EndEntityManagementSessionLocal endEntityManagementSession;
 	private GlobalConfigurationSession globalConfigurationSession;
-	private EndEntityAccessSession endEntityAccessSession;
+	private EndEntityAccessSessionLocal endEntityAccessSession;
+	private CertificateStoreSessionLocal certificateStoreSession;
 	
 	private String password=null;
 	private String username=null;
@@ -127,9 +129,9 @@ public class RequestInstance {
     @SuppressWarnings("rawtypes")
     private Map params = null;
 	
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSessionLocal caSession,
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession,
-			SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
+			SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession, CertificateStoreSessionLocal certificateStoreSession) {
 		this.servletContext = servletContext;
 		this.servletConfig = servletConfig;
 		this.authenticationSession = authenticationSession;
@@ -592,8 +594,10 @@ public class RequestInstance {
         String issuerDN = CertTools.getIssuerDN(cert);
         int caid = issuerDN.hashCode();
         CAInfo caInfo = caSession.getCAInfoInternal(caid);
-        CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
-        return !caInfo.isUseCertificateStorage() || !certificateProfile.getUseCertificateStorage();
+        String username = certificateStoreSession.findUsernameByCertSerno(CertTools.getSerialNumber(cert), issuerDN);
+        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(username);
+        CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
+        return !caInfo.isUseCertificateStorage() && !certificateProfile.getUseCertificateStorage();
     }
     
 	/**

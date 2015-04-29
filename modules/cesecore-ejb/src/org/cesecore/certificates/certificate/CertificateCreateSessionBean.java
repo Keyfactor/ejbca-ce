@@ -333,7 +333,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // Retrieve the certificate profile this user should have, checking for authorization to the profile
             final int certProfileId = endEntityInformation.getCertificateProfileId();
             final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
-            assertSubjectEnforcements(ca, certProfile, caSubjectDN, endEntityInformation, pk);
+            assertSubjectEnforcements(ca, caSubjectDN, endEntityInformation, pk);
             // Check that the request public key fulfills policy
             verifyKey(pk, certProfile);
 
@@ -349,7 +349,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             final int maxRetrys;
             if (useCustomSN) {
-                if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
+                if (ca.isUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
                     final String msg = intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex");
                     log.error(msg);
                     throw new CustomCertificateSerialNumberException(msg);
@@ -546,10 +546,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
      * @param publicKey
      * @throws CertificateCreateException if the certificate couldn't be created. 
      */
-    private void assertSubjectEnforcements(final CA ca, CertificateProfile certificateProfile, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
+    private void assertSubjectEnforcements(final CA ca, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
         boolean enforceUniqueDistinguishedName = false;
         if (ca.isDoEnforceUniqueDistinguishedName()) {
-            if (ca.isUseCertificateStorage() && certificateProfile.getUseCertificateStorage()) {
+            if (ca.isUseCertificateStorage()) {
                 enforceUniqueDistinguishedName = true;
             } else {
                 log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
@@ -557,7 +557,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
         boolean enforceUniquePublicKeys = false;
         if (ca.isDoEnforceUniquePublicKeys()) {
-            if (ca.isUseCertificateStorage() && certificateProfile.getUseCertificateStorage()) {
+            if (ca.isUseCertificateStorage()) {
                 enforceUniquePublicKeys = true;
             } else {
                 log.warn("CA configured to enforce unique entity keys, but not to store issued certificates. Check will be ignored. Please verify your configuration.");

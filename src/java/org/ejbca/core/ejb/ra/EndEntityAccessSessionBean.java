@@ -24,7 +24,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -125,6 +127,16 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerDN + ")");
         }
         return result;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public EndEntityInformation findUser(final String username) {
+        try {
+            return findUser(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal search for End Entity")), username);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Always allow token was denied authorization.", e);
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
