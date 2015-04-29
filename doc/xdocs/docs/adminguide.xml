@@ -6314,15 +6314,16 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>If you have a lot of certificates (>100M) it might be a good idea to use a separate table for the storage of the encoded certificates. See the database.useSeparateCertificateTable property in ./conf/database.properties.sample</li>
 </ul>
 <subsection name="Throw away CA">
-<p>EJBCA have a configurable function going by the name of "throw away CA". This is an option where EJBCA simply functions as a high speed certificate factory, issuing certificates but not storing any trace of them in the local database.
-</p><p>Using the throw away CA option naturally comes with many limitations,  unless taken care of in another way external to EJBCA.
-</p>
+<p>EJBCA can be configured to function as a <i>Throw Away CA</i>. In this mode EJBCA simply functions as a high speed certificate factory, issuing certificates but not storing 
+any trace of them in the local database.</p>
+<p>
+Using EJBCA in <i>Throw Away CA</i>-mode curtails some functionality, foremost the following:</p>
 <ul>
 <li>You can not search for issued certificates.</li>
 <li>You can not revoke certificates, and thus not use CRLs or OCSP.</li>
 <li>You can not enable some limitations such as <a href="userguide.html#Enforce%20unique%20DN">Enforce unique DN</a> or <a href="userguide.html#Enforce%20unique%20public%20keys">Enforce unique public keys</a>.</li>
 </ul>
-<p>If these limitations are acceptable you can gain some benefits by using the throw away CA option:</p>
+<p>If these limitations are acceptable you can gain some benefits by using <i>Throw Away CA</i>-mode:</p>
 <ul>
 <li>Maximum performance since no database queries are done. Enable to maximum caching and EJBCA will not make a single call to the database.</li>
 <li>Minimal storage requirements. Since no issued certificates are stored in the database only EJBCA configuration needs storage.</li>

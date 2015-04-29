@@ -371,22 +371,23 @@ the Admin GUI will not be very useful.
 The user data storage is enabled by default.
 </p>
 <p>
-If EJBCA is used as a factory and where the functionality of the Admin GUI is not required, this could be disabled to improve performance.
+If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, user data storage be disabled to improve performance. See the 
+<a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> section in the Admin Guide for more information about this mode.
 </p>
-<p>See <a href="adminguide.html#Throw%20away%20CA">Throw away CA</a> in the admin guide for more information about this option.</p>
 </subsubsection>
 
 <subsubsection name="Use Certificate Storage">
 <p>
-Issued certificates are stored in the database to be able to provide them upon request or provide revocation information.
+Issued certificates are stored in the database to be able to provide them upon request or provide revocation information. Certificate storage can also be turned off in
+the Certificate Profiles. Setting either setting to false will lead to certificates not being stored. 
 </p>
 <p>
 The certificate data storage is enabled by default.
 </p>
 <p>
-If EJBCA is used as a factory and where the functionality of the Admin GUI is not required, this could be disabled to improve performance.
+If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, certificate data storage be disabled to improve performance. See the 
+<a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> section in the Admin Guide for more information about this mode.
 </p>
-<p>See <a href="adminguide.html#Throw%20away%20CA">Throw away CA</a> in the admin guide for more information about this option.</p>
 </subsubsection>
 
 <subsubsection name="Certificate Policy Id">
@@ -718,7 +719,7 @@ is in the format certprofile_PROFILENAME-PROFILEID.xml. Any file with a name tha
 </subsubsection>
 </subsection>
 
-<subsection name="Certificate Profile fields">
+<subsection name="Certificate Profile Fields">
 <subsubsection name="Validity">
 <p>
 The validity determines the validity in days of certificates from the time the certificate is issued.
@@ -848,6 +849,19 @@ in your application or with the <a href="adminguide.html#Using the Web Services 
 <note>
 Do not enable this feature if the profile will be used by a CA that is issuing delta CRLs.
 </note>
+</subsubsection>
+<subsubsection name="Use Certificate Storage (Certificate Profiles)">
+<p>
+Issued certificates are stored in the database to be able to provide them upon request or provide revocation information. Certificate storage can also be turned off in
+the CA settings. Setting either setting to false will lead to certificates not being stored. 
+</p>
+<p>
+The certificate data storage is enabled by default.
+</p>
+<p>
+If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, certificate data storage be disabled to improve performance. See the 
+<a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> section in the Admin Guide for more information about this mode.
+</p>
 </subsubsection>
 <subsubsection name="Path Length Constraints">
 <p>

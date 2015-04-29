@@ -176,6 +176,14 @@
 			<h:selectBooleanCheckbox id="checkallowbackdatedrevokation" value="#{certProfileBean.certificateProfile.allowBackdatedRevocation}"/>
 			<h:outputLabel for="checkallowbackdatedrevokation" value="#{web.text.ALLOW} "/>
 		</h:panelGroup>
+		<h:panelGroup>
+			<h:outputLabel for="checkUseCertificateStorageGroup" value="#{web.text.USECERTIFICATESTORAGE}"/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Storage%20(Certificate%20Profiles)") %>
+		</h:panelGroup>
+		<h:panelGroup id="checkUseCertificateStorageGroup">
+			<h:selectBooleanCheckbox id="checkUseCertificateStorage" value="#{certProfileBean.certificateProfile.useCertificateStorage}"/>
+			<h:outputLabel for="checkUseCertificateStorage" value="#{web.text.USE} "/>
+		</h:panelGroup>
 
 	</h:panelGrid>
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">

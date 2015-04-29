@@ -355,7 +355,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Check name constraints
-        if (caInfo instanceof X509CAInfo && !caInfo.getCertificateChain().isEmpty()) {
+        if (caInfo instanceof X509CAInfo && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
             final X509CAInfo x509cainfo = (X509CAInfo) caInfo;
             final X509Certificate cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
