@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
@@ -72,6 +73,8 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
 	private EndEntityAccessSessionLocal endEntityAccessSession;
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
@@ -113,8 +116,9 @@ public class CertReqServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, endEntityAccessSession, caSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
-        		signSession, endEntityManagementSession, globalConfigurationSession).doPost(request, response);
+        new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, endEntityAccessSession, caSession,
+                certificateProfileSession, endEntityProfileSession, keyRecoverySession, signSession, endEntityManagementSession,
+                globalConfigurationSession, certificateStoreSession).doPost(request, response);
     }
 
     /**
