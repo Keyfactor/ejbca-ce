@@ -42,6 +42,7 @@ import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.core.model.services.workers.RenewCAWorker;
+import org.ejbca.core.model.services.workers.RolloverWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -61,6 +62,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.RolloverWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
@@ -202,6 +204,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		if ( (cp != null) && cp.equals(RenewCAWorker.class.getName()) ) {
 			ret = RenewCAWorkerType.NAME;
 		}			
+		if ( (cp != null) && cp.equals(RolloverWorker.class.getName()) ) {
+            ret = RolloverWorkerType.NAME;
+        }
 		if ( (cp != null) && cp.equals(PublishQueueProcessWorker.class.getName()) ) {
 			ret = PublishQueueWorkerType.NAME;
 		}			

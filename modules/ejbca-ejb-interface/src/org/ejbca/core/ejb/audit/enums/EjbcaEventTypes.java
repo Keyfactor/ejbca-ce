@@ -45,6 +45,8 @@ public enum EjbcaEventTypes implements EventType {
     CA_REMOVETOKEN,
     /** Renewal of a Certificate Authority's certificate, optionally using a different key pair. */
     CA_RENEWED,
+    /** Roll over of a Certificates Authority's certificate chain and key. */
+    CA_ROLLEDOVER,
     /** Restoration of a Certificate Authority's previously removed (soft) Crypto Token. */
     CA_RESTORETOKEN,
     /** Revocation of a Certificate Authority and all certificates issued by it. */
