@@ -1100,6 +1100,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias)
             throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException {
+        return makeRequest(authenticationToken, caid, certChain, nextSignKeyAlias, false);
+    }
+
+    @Override
+    public byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias, boolean futureRollover)
+            throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException {
         if (log.isTraceEnabled()) {
             log.trace(">makeRequest: " + caid + ", certChain=" + certChain + ", nextSignKeyAlias=" + nextSignKeyAlias);
         }
@@ -1156,6 +1162,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 nextSignKeyAlias = caToken.generateNextSignKeyAlias();
             }
             caToken.setNextCertSignKey(nextSignKeyAlias);
+            if (futureRollover) {
+                caToken.setFutureRollover(CATokenConstants.ROLLOVER_STATUS_NO_CERT);
+            }
             final int cryptoTokenId = caToken.getCryptoTokenId();
             try {
                 // Test if key already exists
@@ -1286,10 +1295,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             List<Certificate> tmpchain = new ArrayList<Certificate>();
             tmpchain.add(cacert);
   
+            boolean isFutureRollover = false;
+            Date verifydate = new Date();
+            if (CATokenConstants.ROLLOVER_STATUS_NO_CERT.equals(ca.getCAToken().getKeyRolloverStatus())) {
+                log.debug("Receiving a certificate which will only be used for key rollover until it becomes valid.");
+
+                final Date rolloverdate = CertTools.getNotBefore(cacert);
+                if (rolloverdate.after(new Date())) {
+                    isFutureRollover = true;
+                    verifydate = rolloverdate;
+                } else {
+                    log.info("Expected to receive a certificate to use during rollover, but received an already valid certificate.");
+                }
+            }
+
             Collection<Certificate> reqchain = null;
             if (cachain != null && cachain.size() > 0) {
                 //  1. If we have a chain given as parameter, we will use that.
-                reqchain = CertTools.createCertChain(cachain);
+                reqchain = CertTools.createCertChain(cachain, verifydate);
                 log.debug("Using CA certificate chain from parameter of size: " + reqchain.size());
             } else {
                 // 2. If no parameter is given we assume that the request chain was stored when the request was created.
@@ -1324,9 +1347,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                 }
             }
+
             log.debug("Picked up request certificate chain of size: " + reqchain.size());
             tmpchain.addAll(reqchain);
-            final List<Certificate> chain = CertTools.createCertChain(tmpchain);
+            final List<Certificate> chain = CertTools.createCertChain(tmpchain, verifydate);
             log.debug("Storing certificate chain of size: " + chain.size());
             // Before importing the certificate we want to make sure that the public key matches the CAs private key
             PublicKey caCertPublicKey = cacert.getPublicKey();
@@ -1352,104 +1376,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 log.debug("Cert is not CVC, no need to enrich with EC parameters.");
             }
 
-            final CAToken catoken = ca.getCAToken();
-            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-            boolean activatedNextSignKey = false;
-            if (nextKeyAlias != null) {
-                try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("SubjectKeyId for CA cert public key: "
-                                + new String(Hex.encode(KeyTools.createSubjectKeyId(caCertPublicKey).getKeyIdentifier())));
-                        log.debug("SubjectKeyId for CA next public key: "
-                                + new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(nextKeyAlias)).getKeyIdentifier())));
-                    }
-                    KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
-                } catch (InvalidKeyException e) {
-                    throw new EjbcaException(ErrorCode.INVALID_KEY, e);
+            if (isFutureRollover) {
+                testNextKey(authenticationToken, caid, nextKeyAlias, ca, cacert, chain, caCertPublicKey);
+                final CAToken catoken = ca.getCAToken();
+                catoken.setFutureRollover(CATokenConstants.ROLLOVER_STATUS_NOT_YET_VALID);
+                if (nextKeyAlias != null) {
+                    catoken.setNextCertSignKey(nextKeyAlias);
                 }
-                catoken.setNextCertSignKey(nextKeyAlias);
-                catoken.activateNextSignKey();
-                activatedNextSignKey = true;
+                ca.setCAToken(catoken);
+                ca.setRolloverCertificateChain(chain);
+                //ca.setExpireTime(CertTools.getNotAfter(cacert));
+                // Save CA
+                caSession.editCA(authenticationToken, ca, true);
             } else {
-                // Since we don't specified the nextSignKey, we will just try the current or next CA sign key
-                try {
-                    KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), caCertPublicKey,
-                            cryptoToken.getSignProviderName());
-                } catch (Exception e1) {
-                    log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
-                    if (e1 instanceof InvalidKeyException) {
-                        log.trace(e1);
-                    } else {
-                        // If it's not invalid key, we want to see more of the error
-                        log.debug("Error: ", e1);
-                    }
-                    try {
-                        KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
-                                caCertPublicKey, cryptoToken.getSignProviderName());
-                        // This was OK, so we must also activate the next signing key when importing this certificate
-                        catoken.activateNextSignKey();
-                        activatedNextSignKey = true;
-                    } catch (Exception e2) {
-                        log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
-                        if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
-                            log.trace(e2);
-                        } else {
-                            // If it's not invalid key or missing authentication code, we want to see more of the error
-                            log.debug("Error: ", e2);
-                        }
-                        throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
-                    }
-                }
+                // Test and activate new key, publish certificate and generate CRL.
+                activateNextKeyAndCert(authenticationToken, caid, nextKeyAlias, ca, cacert, chain, caCertPublicKey);
             }
-            if (activatedNextSignKey) {
-                // Activated the next signing key(s) so generate audit log
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", intres.getLocalizedMessage("catoken.activatednextkey", caid));
-                details.put("certSignKey", catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-                details.put("crlSignKey", catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
-                details.put("sequence", catoken.getKeySequence());
-                auditSession.log(EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
-                        String.valueOf(caid), null, null, details);
-            }
-            ca.setCAToken(catoken);
-            ca.setCertificateChain(chain);
 
-            // Set status to active, so we can sign certificates for the external services below.
-            ca.setStatus(CAConstants.CA_ACTIVE);
-
-            // activate External CA Services
-            for (int type : ca.getExternalCAServiceTypes()) {
-                try {
-                    ca.initExtendedService(cryptoToken, type, ca);
-                    final ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
-                    if (info instanceof BaseSigningCAServiceInfo) {
-                        // Publish the extended service certificate, but only for active services
-                        if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-                            final List<Certificate> extcacertificate = new ArrayList<Certificate>();
-                            extcacertificate.add(((BaseSigningCAServiceInfo) info).getCertificatePath().get(0));
-                            publishCACertificate(authenticationToken, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
-                        }
-                    }
-                } catch (Exception fe) {
-                    final String detailsMsg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", Integer.valueOf(caid));
-                    auditSession.log(EventTypes.CA_EDITING, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
-                            String.valueOf(caid), null, null, detailsMsg);
-                    throw new EJBException(fe);
-                }
-            }
-            // Set expire time
-            ca.setExpireTime(CertTools.getNotAfter(cacert));
-            // Save CA
-            caSession.editCA(authenticationToken, ca, true);
-            // Publish CA Certificate
-            publishCACertificate(authenticationToken, chain, ca.getCRLPublishers(), ca.getSubjectDN());
-            // Create initial CRL
-            publishingCrlSession.forceCRL(authenticationToken, caid);
-            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             // All OK
             String detailsMsg = intres.getLocalizedMessage("caadmin.certrespreceived", Integer.valueOf(caid));
             auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
+
         } catch (CryptoTokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
@@ -1484,6 +1432,151 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isTraceEnabled()) {
             log.trace("<receiveResponse: " + caid);
         }
+    }
+
+    private void testNextKey(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca,
+            final Certificate cacert, final List<Certificate> chain, PublicKey caCertPublicKey) throws CryptoTokenOfflineException, EjbcaException {
+        final CAToken catoken = ca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+        if (nextKeyAlias != null) {
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug("SubjectKeyId for CA cert public key: "
+                            + new String(Hex.encode(KeyTools.createSubjectKeyId(caCertPublicKey).getKeyIdentifier())));
+                    log.debug("SubjectKeyId for CA next public key: "
+                            + new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(nextKeyAlias)).getKeyIdentifier())));
+                }
+                KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
+            } catch (InvalidKeyException e) {
+                throw new EjbcaException(ErrorCode.INVALID_KEY, e);
+            }
+        } else {
+            // Since we don't specified the nextSignKey, we will just try the current or next CA sign key
+            try {
+                KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), caCertPublicKey,
+                        cryptoToken.getSignProviderName());
+            } catch (Exception e1) {
+                log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
+                if (e1 instanceof InvalidKeyException) {
+                    log.trace(e1);
+                } else {
+                    // If it's not invalid key, we want to see more of the error
+                    log.debug("Error: ", e1);
+                }
+                try {
+                    KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
+                            caCertPublicKey, cryptoToken.getSignProviderName());
+                } catch (Exception e2) {
+                    log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
+                    if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
+                        log.trace(e2);
+                    } else {
+                        // If it's not invalid key or missing authentication code, we want to see more of the error
+                        log.debug("Error: ", e2);
+                    }
+                    throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
+                }
+            }
+        }
+    }
+
+    private void activateNextKeyAndCert(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca,
+            final Certificate cacert, final List<Certificate> chain, PublicKey caCertPublicKey) throws CryptoTokenOfflineException, EjbcaException,
+            InvalidAlgorithmException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
+        final CAToken catoken = ca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+        boolean activatedNextSignKey = false;
+        if (nextKeyAlias != null) {
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug("SubjectKeyId for CA cert public key: "
+                            + new String(Hex.encode(KeyTools.createSubjectKeyId(caCertPublicKey).getKeyIdentifier())));
+                    log.debug("SubjectKeyId for CA next public key: "
+                            + new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(nextKeyAlias)).getKeyIdentifier())));
+                }
+                KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
+            } catch (InvalidKeyException e) {
+                throw new EjbcaException(ErrorCode.INVALID_KEY, e);
+            }
+            catoken.setNextCertSignKey(nextKeyAlias);
+            catoken.activateNextSignKey();
+            activatedNextSignKey = true;
+        } else {
+            // Since we don't specified the nextSignKey, we will just try the current or next CA sign key
+            try {
+                KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), caCertPublicKey,
+                        cryptoToken.getSignProviderName());
+            } catch (Exception e1) {
+                log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
+                if (e1 instanceof InvalidKeyException) {
+                    log.trace(e1);
+                } else {
+                    // If it's not invalid key, we want to see more of the error
+                    log.debug("Error: ", e1);
+                }
+                try {
+                    KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
+                            caCertPublicKey, cryptoToken.getSignProviderName());
+                    // This was OK, so we must also activate the next signing key when importing this certificate
+                    catoken.activateNextSignKey();
+                    activatedNextSignKey = true;
+                } catch (Exception e2) {
+                    log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
+                    if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
+                        log.trace(e2);
+                    } else {
+                        // If it's not invalid key or missing authentication code, we want to see more of the error
+                        log.debug("Error: ", e2);
+                    }
+                    throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
+                }
+            }
+        }
+        if (activatedNextSignKey) {
+            // Activated the next signing key(s) so generate audit log
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", intres.getLocalizedMessage("catoken.activatednextkey", caid));
+            details.put("certSignKey", catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            details.put("crlSignKey", catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+            details.put("sequence", catoken.getKeySequence());
+            auditSession.log(EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                    String.valueOf(caid), null, null, details);
+        }
+        ca.setCAToken(catoken);
+        ca.setCertificateChain(chain);
+
+        // Set status to active, so we can sign certificates for the external services below.
+        ca.setStatus(CAConstants.CA_ACTIVE);
+
+        // activate External CA Services
+        for (int type : ca.getExternalCAServiceTypes()) {
+            try {
+                ca.initExtendedService(cryptoToken, type, ca);
+                final ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
+                if (info instanceof BaseSigningCAServiceInfo) {
+                    // Publish the extended service certificate, but only for active services
+                    if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+                        final List<Certificate> extcacertificate = new ArrayList<Certificate>();
+                        extcacertificate.add(((BaseSigningCAServiceInfo) info).getCertificatePath().get(0));
+                        publishCACertificate(authenticationToken, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+                    }
+                }
+            } catch (Exception fe) {
+                final String detailsMsg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", Integer.valueOf(caid));
+                auditSession.log(EventTypes.CA_EDITING, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                        String.valueOf(caid), null, null, detailsMsg);
+                throw new EJBException(fe);
+            }
+        }
+        // Set expire time
+        ca.setExpireTime(CertTools.getNotAfter(cacert));
+        // Save CA
+        caSession.editCA(authenticationToken, ca, true);
+        // Publish CA Certificate
+        publishCACertificate(authenticationToken, chain, ca.getCRLPublishers(), ca.getSubjectDN());
+        // Create initial CRL
+        publishingCrlSession.forceCRL(authenticationToken, caid);
+        publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
     }
 
     @Override
@@ -2004,6 +2097,62 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         if (log.isTraceEnabled()) {
             log.trace("<CAAdminSession, renewCA(), caid=" + caid);
+        }
+    }
+
+    @Override
+    public void rolloverCA(final AuthenticationToken authenticationToken, final int caid) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        if (log.isTraceEnabled()) {
+            log.trace(">CAAdminSession, rolloverCA(), caid=" + caid);
+        }
+        // check authorization. we require RENEWCA access for this
+        if (!accessSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_RENEWCA)) {
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.notauthorizedtorollover", Integer.valueOf(caid));
+            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                    String.valueOf(caid), null, null, detailsMsg);
+            throw new AuthorizationDeniedException(detailsMsg);
+        }
+        // Get CA info.
+        try {
+            CA ca = caSession.getCAForEdit(authenticationToken, caid);
+            final CAToken caToken = ca.getCAToken();
+            final List<Certificate> rolloverChain = ca.getRolloverCertificateChain();
+            if (rolloverChain == null) {
+                // We should never get here
+                log.error("Can't roll over a CA without a roll over certificate chain");
+                throw new IllegalStateException("Can't roll over a CA without a roll over certificate chain");
+            }
+
+            // Replace certificate chain
+            caToken.activateNextSignKey(); // also clears roll over status
+            ca.setCAToken(caToken);
+            ca.setCertificateChain(rolloverChain);
+            ca.clearRolloverCertificateChain();
+            ca.setExpireTime(CertTools.getNotAfter(rolloverChain.get(0)));
+            // We need to save all this, audit logging that the CA is changed
+            caSession.editCA(authenticationToken, ca, true);
+
+            // Publish the new CA certificate
+            publishCACertificate(authenticationToken, rolloverChain, ca.getCRLPublishers(), ca.getSubjectDN());
+            publishingCrlSession.forceCRL(authenticationToken, caid);
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+            // Audit log
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.rolledoverca", Integer.valueOf(caid));
+            auditSession.log(EjbcaEventTypes.CA_ROLLEDOVER, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                    String.valueOf(caid), null, null, detailsMsg);
+        } catch (CryptoTokenOfflineException e) {
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.errorrolloverca", Integer.valueOf(caid));
+            auditSession.log(EjbcaEventTypes.CA_ROLLEDOVER, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                    String.valueOf(caid), null, null, detailsMsg);
+            throw e;
+        } catch (Exception e) {
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.errorrolloverca", Integer.valueOf(caid));
+            auditSession.log(EjbcaEventTypes.CA_ROLLEDOVER, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                    String.valueOf(caid), null, null, detailsMsg);
+            throw new EJBException(e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<CAAdminSession, rolloverCA(), caid=" + caid);
         }
     }
 

@@ -171,6 +171,7 @@ java.security.InvalidAlgorithmParameterException
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL  = "checkboxcrldistributionpointoncrlcritical";
   static final String CHECKBOX_CREATELINKCERTIFICATE              = "checkboxcreatelinkcertificate";
   static final String CHECKBOX_INCLUDEINHEALTHCHECK               = "checkboxincludeinhealthcheck";
+  static final String CHECKBOX_FUTUREROLLOVER                     = "checkboxfuturerollover";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
@@ -659,7 +660,8 @@ java.security.InvalidAlgorithmParameterException
                 // else with the CA. For creating cross-certificate requests of similar.
                 if (requestMap.get(BUTTON_MAKEREQUEST) != null) {
                     final String nextSignKeyAlias = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY_MAKEREQUEST);
-                    byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, nextSignKeyAlias);
+                    final boolean futureRollover = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FUTUREROLLOVER));
+                    byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, nextSignKeyAlias, futureRollover);
                 	cabean.saveRequestData(certreq);
                     filemode = CERTREQGENMODE;
                     includefile = "displayresult.jspf";
