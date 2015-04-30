@@ -429,6 +429,7 @@ public class CAToken extends UpgradeableDataHashMap {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, currentCertSignKeyLabel);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, nextCertSignKeyLabel);
             caTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
+            caTokenProperties.remove(CATokenConstants.ROLLOVER_STATUS);
             swichedSigningKey = !StringUtils.equals(nextCertSignKeyLabel, currentCertSignKeyLabel);
         }
         // Replace key sequence (if present)
@@ -452,6 +453,8 @@ public class CAToken extends UpgradeableDataHashMap {
             // ..let us just set the previous sequence to the current to at least match the singing key alias
             caTokenProperties.setProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY, currentKeySequence);
         }
+        // Clear roll over flag, if any
+        caTokenProperties.getProperty(CATokenConstants.ROLLOVER_STATUS);
         // Store changes in the CAToken's properties
         setCATokenPropertyData(storeProperties(caTokenProperties));
     }
@@ -463,10 +466,22 @@ public class CAToken extends UpgradeableDataHashMap {
         setCATokenPropertyData(storeProperties(caTokenProperties));
     }
 
+    /** Indicates that a certificate with a validity start date in the future is to be generated for the next signing key */
+    public void setFutureRollover(String rolloverStatus) {
+        final Properties caTokenProperties = getProperties();
+        caTokenProperties.setProperty(CATokenConstants.ROLLOVER_STATUS, rolloverStatus);
+        setCATokenPropertyData(storeProperties(caTokenProperties));
+    }
+
     /** Set the next key sequence */
     public void setNextKeySequence(String newSequence) {
         final Properties caTokenProperties = getProperties();
         caTokenProperties.setProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY, newSequence);
         setCATokenPropertyData(storeProperties(caTokenProperties));
+    }
+
+    public String getKeyRolloverStatus() {
+        final Properties caTokenProperties = getProperties();
+        return caTokenProperties.getProperty(CATokenConstants.ROLLOVER_STATUS);
     }
 }

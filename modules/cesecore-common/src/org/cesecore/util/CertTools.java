@@ -3353,6 +3353,11 @@ public abstract class CertTools {
         return ("".equals(directoryName) ? null : directoryName);
     } // getDirectoryStringFromAltName
 
+    public static List<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
+        return createCertChain(certlistin, new Date());
+    }
+
     /**
      * Method to create certificate path and to check it's validity from a list of certificates. The list of certificates should only contain one root
      * certificate.
@@ -3365,7 +3370,7 @@ public abstract class CertTools {
      * @throws NoSuchAlgorithmException
      * @throws CertificateException
      */
-    public static List<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException, InvalidAlgorithmParameterException,
+    public static List<Certificate> createCertChain(Collection<?> certlistin, Date now) throws CertPathValidatorException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
         final List<Certificate> returnval = new ArrayList<Certificate>();
 
@@ -3407,7 +3412,7 @@ public abstract class CertTools {
 
                 // Disable CRL checking since we are not supplying any CRLs
                 params.setRevocationEnabled(false);
-                params.setDate(new Date());
+                params.setDate(now);
 
                 // Create the validator and validate the path
                 CertPathValidator certPathValidator = CertPathValidator.getInstance(CertPathValidator.getDefaultType(), "BC");

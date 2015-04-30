@@ -266,7 +266,7 @@ public class CADataHandler implements Serializable {
   }
   
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
-  public byte[] makeRequest(int caid, byte[] caChainBytes, String nextSignKeyAlias) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
+  public byte[] makeRequest(int caid, byte[] caChainBytes, String nextSignKeyAlias, boolean futureRollover) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
       List<Certificate> certChain = null;
       if (caChainBytes != null) {
           try {
@@ -287,7 +287,7 @@ public class CADataHandler implements Serializable {
           }
       }
       try {
-          return caadminsession.makeRequest(administrator, caid, certChain, nextSignKeyAlias);
+          return caadminsession.makeRequest(administrator, caid, certChain, nextSignKeyAlias, futureRollover);
       } catch (CertPathValidatorException e) {
           throw new RuntimeException("Unexpected outcome.", e);
       }

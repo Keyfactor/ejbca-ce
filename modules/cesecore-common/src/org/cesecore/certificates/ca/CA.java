@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -87,6 +88,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String VALIDITY = "validity";
     protected static final String EXPIRETIME = "expiretime";
     protected static final String CERTIFICATECHAIN = "certificatechain";
+    protected static final String ROLLOVERCERTIFICATECHAIN = "rollovercertificatechain";
     public static final String CATOKENDATA = "catoken";
     protected static final String SIGNEDBY = "signedby";
     protected static final String DESCRIPTION = "description";
@@ -483,6 +485,46 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         this.certificatechain = new ArrayList<Certificate>();
         this.certificatechain.addAll(certificatechain);
         this.cainfo.setCertificateChain(certificatechain);
+    }
+
+    public void setRolloverCertificateChain(Collection<Certificate> certificatechain) {
+        Iterator<Certificate> iter = certificatechain.iterator();
+        ArrayList<String> storechain = new ArrayList<String>();
+        while (iter.hasNext()) {
+            Certificate cert = iter.next();
+            try {
+                String b64Cert = new String(Base64.encode(cert.getEncoded()));
+                storechain.add(b64Cert);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        data.put(ROLLOVERCERTIFICATECHAIN, storechain);
+    }
+
+    public List<Certificate> getRolloverCertificateChain() {
+        final List<?> storechain = (List<?>)data.get(ROLLOVERCERTIFICATECHAIN);
+        if (storechain == null) {
+            return null;
+        }
+        final List<Certificate> chain = new ArrayList<Certificate>(storechain.size());
+        for (Object o : storechain) {
+            final String b64Cert = (String)o;
+            try {
+                final byte[] decoded = Base64.decode(b64Cert.getBytes("US-ASCII"));
+                final Certificate cert = CertTools.getCertfromByteArray(decoded);
+                chain.add(cert);
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e);
+            } catch (CertificateParsingException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return chain;
+    }
+
+    public void clearRolloverCertificateChain() {
+        data.remove(ROLLOVERCERTIFICATECHAIN);
     }
 
     /** Returns the CAs certificate, or null if no CA-certificates exist. */

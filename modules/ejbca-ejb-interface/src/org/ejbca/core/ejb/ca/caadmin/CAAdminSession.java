@@ -79,6 +79,31 @@ public interface CAAdminSession {
             throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException;
 
     /**
+     * Creates a certificate request that should be sent to External CA for
+     * processing. This command will not affect the current issuing key or
+     * certificate.
+     *
+     * @param authenticationToken
+     *            the administrator performing the action
+     * @param caid
+     *            id of the CA that should create the request
+     * @param cachain
+     *            A Collection of CA-certificates, can be either a collection
+     *            of Certificate or byte[], or even empty collection or null.
+     * @param nextSignKeyAlias
+     *            The next key alias to use for this request.
+     *            If null, then a new key pair will be generated named using
+     *            the key sequence.
+     * @param futureRollover
+     *            If the request is for a certificate that will have a
+     *            validity start date in the future. Issued certificates will
+     *            use the existing CA certificiate/key until it expires.
+     * @return request message in binary format, can be a PKCS10 or CVC request
+     */
+    byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias, boolean futureRollover)
+            throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException;
+
+    /**
      * If the CA can do so, this method signs another entity's CSR, for
      * authentication. Prime example of for EU EAC ePassports where the DVs
      * initial certificate request is signed by the CVCA. The signature
@@ -194,6 +219,17 @@ public interface CAAdminSession {
      */
     void renewCA(AuthenticationToken administrator, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
+
+    /**
+     * Replaces the certificate chain and key in a CA with the roll over chain and key.
+     * Intended to be called after a roll over chain/key, created with {@link CAAdminSession#makeRequest(AuthenticationToken, int, Collection, String, boolean)}
+     * with futureRollover=true, has became valid.
+     *
+     * @param caid The CAId of the CA.
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     */
+    void rolloverCA(AuthenticationToken administrator, int caid) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
      * Renews a existing CA certificate using the requested keys or by

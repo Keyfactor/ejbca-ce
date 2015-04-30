@@ -350,6 +350,7 @@
 		<include name="org/ejbca/core/model/services/workers/HsmKeepAliveWorker.java"/>
 		<include name="org/ejbca/core/model/services/workers/PublishQueueProcessWorker.java"/>
 		<include name="org/ejbca/core/model/services/workers/RenewCAWorker.java"/>
+		<include name="org/ejbca/core/model/services/workers/RolloverWorker.java"/>
 		<include name="org/ejbca/core/model/services/workers/UserPasswordExpireWorker.java"/>
 		<include name="org/ejbca/core/model/services/actions/MailAction.java"/>
 		<include name="org/ejbca/core/model/services/BaseWorker.java"/>
