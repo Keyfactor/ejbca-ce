@@ -2550,7 +2550,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void errorOnGeneratePkcs10() throws Exception {
-
+        log.trace(">errorOnGeneratePkcs10");
         // Add a user for this test purpose.
         UserDataVOWS user1 = new UserDataVOWS();
         user1.setUsername("WSTESTUSER30");
@@ -2565,46 +2565,50 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCertificateProfileName("ENDUSER");
         user1.setCaName(getAdminCAName());
         ejbcaraws.editUser(user1);
-
-        KeyPair keys = null;
-        PKCS10CertificationRequest pkcs10 = null;
         ErrorCode errorCode = null;
-
         // ///// Check Error.LOGIN_ERROR ///////
-        keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
-                keys.getPrivate(), null);
-
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=WSTESTUSER30"),
+                keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         try {
             ejbcaraws.pkcs10Request("WSTESTUSER30", PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
         } catch (EjbcaException_Exception e) {
             errorCode = e.getFaultInfo().getErrorCode();
         }
-
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.LOGIN_ERROR.getInternalErrorCode());
-
+        assertEquals(org.cesecore.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
         errorCode = null;
-
         // ///// Check Error.USER_WRONG_STATUS ///////
         user1.setStatus(EndEntityConstants.STATUS_REVOKED);
         ejbcaraws.editUser(user1);
-
-        keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
-                keys.getPrivate(), null);
-
+        pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=WSTESTUSER30"),
+                keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         try {
             ejbcaraws.pkcs10Request("WSTESTUSER30", "foo1234", new String(Base64.encode(pkcs10.getEncoded())), null,
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
         } catch (EjbcaException_Exception e) {
             errorCode = e.getFaultInfo().getErrorCode();
         }
-
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode());
-
+        assertEquals(org.cesecore.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
+        // PKCS#10 signed by a different key than the public key in the request (Proof Of Possession fail)
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
+        ejbcaraws.editUser(user1);
+        final KeyPair anotherKeyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=WSTESTUSER30"),
+                keys.getPublic(), new DERSet(), anotherKeyPair.getPrivate(), null);
+        log.info("About to request wrongly signed PKCS#10...");
+        try {
+            ejbcaraws.pkcs10Request("WSTESTUSER30", "foo1234", new String(Base64.encode(pkcs10.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("PKCS#10 signed with wrong key should fail Proof Of Possession check.");
+        } catch (EjbcaException_Exception e) {
+            log.info(e.getMessage(), e);
+            errorCode = e.getFaultInfo().getErrorCode();
+            assertEquals(org.cesecore.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), errorCode.getInternalErrorCode());
+        }
+        log.trace("<errorOnGeneratePkcs10");
     }
 
     protected void errorOnGeneratePkcs12() throws Exception {

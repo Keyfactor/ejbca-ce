@@ -85,6 +85,7 @@ public class ErrorCode implements Serializable {
     private static final String _SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED = "SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED"; // when trying to create a new CA signed by an external CA using the WS
     private static final String _BAD_CERTIFICATE_PROFILE_TYPE = "BAD_CERTIFICATE_PROFILE_TYPE"; // when using a cert/endentity profile of the wrong type
     private static final String _ROLE_DOES_NOT_EXIST = "ROLE_DOES_NOT_EXIST"; // When trying to find a role that does not exist
+    private static final String _BAD_REQUEST_SIGNATURE = "BAD_REQUEST_SIGNATURE"; // Failure to verify request signature.
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -185,7 +186,8 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED = new ErrorCode(_SIGNED_BY_EXTERNAL_CA_NOT_SUPPORTED);
     public static final ErrorCode BAD_CERTIFICATE_PROFILE_TYPE = new ErrorCode(_BAD_CERTIFICATE_PROFILE_TYPE);
     public static final ErrorCode ROLE_DOES_NOT_EXIST = new ErrorCode(_ROLE_DOES_NOT_EXIST);
-
+    /** Failure to verify request signature. */
+    public static final ErrorCode BAD_REQUEST_SIGNATURE = new ErrorCode(_BAD_REQUEST_SIGNATURE);
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {

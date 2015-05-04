@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 
 /**
  * Error due to invalid signature on certificate request.
@@ -30,10 +31,10 @@ public class SignRequestSignatureException extends CesecoreException {
      * @param message Human readable error message, can not be NULL.
      */
     public SignRequestSignatureException(final String message) {
-        super(message);
+        super(ErrorCode.BAD_REQUEST_SIGNATURE, message);
     }
     
     public SignRequestSignatureException(final String message, Throwable cause) {
-        super(message, cause);
+        super(ErrorCode.BAD_REQUEST_SIGNATURE, message, cause);
     }
 }
