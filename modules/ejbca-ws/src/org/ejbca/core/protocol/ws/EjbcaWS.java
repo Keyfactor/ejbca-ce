@@ -1156,7 +1156,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
             // Authorization for {StandardRules.CAACCESS.resource() +caid, StandardRules.CREATECERT.resource()} is done in the 
             // CertificateCreateSessionBean.createCertificate call which is called in the end
-			RequestMessage imsg = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, req, reqType);
+			RequestMessage imsg = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
 			if (imsg != null) {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
 			}
@@ -1175,7 +1175,7 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (SignatureException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
 		} catch (SignRequestSignatureException e) {
-            throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, null, Level.ERROR);
+            throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, ErrorCode.BAD_REQUEST_SIGNATURE, Level.ERROR);
 		} catch (InvalidKeySpecException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
 		} catch (NoSuchAlgorithmException e) {
