@@ -24,6 +24,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -266,7 +267,7 @@ public class CADataHandler implements Serializable {
   }
   
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
-  public byte[] makeRequest(int caid, byte[] caChainBytes, String nextSignKeyAlias, boolean futureRollover) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
+  public byte[] makeRequest(int caid, byte[] caChainBytes, String nextSignKeyAlias) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
       List<Certificate> certChain = null;
       if (caChainBytes != null) {
           try {
@@ -287,7 +288,7 @@ public class CADataHandler implements Serializable {
           }
       }
       try {
-          return caadminsession.makeRequest(administrator, caid, certChain, nextSignKeyAlias, futureRollover);
+          return caadminsession.makeRequest(administrator, caid, certChain, nextSignKeyAlias);
       } catch (CertPathValidatorException e) {
           throw new RuntimeException("Unexpected outcome.", e);
       }
@@ -299,7 +300,7 @@ public class CADataHandler implements Serializable {
   }     
   
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean#receiveResponse() */  
-  public void receiveResponse(int caid, byte[] certBytes, String nextSignKeyAlias) throws Exception{
+  public void receiveResponse(int caid, byte[] certBytes, String nextSignKeyAlias, boolean futureRollover) throws Exception{
 	  try {
           final List<Certificate> certChain = new ArrayList<Certificate>();
 		  try {
@@ -315,7 +316,7 @@ public class CADataHandler implements Serializable {
 		  Certificate caCertificate = certChain.get(0);
 		  final X509ResponseMessage resmes = new X509ResponseMessage();
 		  resmes.setCertificate(caCertificate);
-		  caadminsession.receiveResponse(administrator, caid, resmes, certChain.subList(1, certChain.size()), nextSignKeyAlias);
+		  caadminsession.receiveResponse(administrator, caid, resmes, certChain.subList(1, certChain.size()), nextSignKeyAlias, futureRollover);
 		  info.cAsEdited(); 		  
 	  } catch (Exception e) {
 	      // log the error here, since otherwise it may be hidden by web pages...
@@ -418,5 +419,10 @@ public class CADataHandler implements Serializable {
 	 }
 	 return retval;
  }
-   
+ 
+ public Date getRolloverDate(int caid) {
+     final Certificate cacert = caSession.getFutureRolloverCertificate(caid);
+     return cacert != null ? CertTools.getNotBefore(cacert) : null;
+ }
+
 }

@@ -573,7 +573,6 @@ public class CAInterfaceBean implements Serializable {
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasCertSignKey, caSignKeySpec);
             }
-            final boolean futureRollover = false; // Not applicable for new CAs
             return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, signedByString,
                     description, validityString, approvalSettingValues, numofReqApprovalsParam, finishUser,
@@ -585,7 +584,7 @@ public class CAInterfaceBean implements Serializable {
                     nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
                     usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive,
-                    serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest, futureRollover, cryptoTokenId,
+                    serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
                     keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey, keyAliasHardTokenEncryptKey,
                     keyAliasKeyEncryptKey, keyAliasKeyTestKey, fileBuffer);
         } catch (Exception e) {
@@ -614,7 +613,7 @@ public class CAInterfaceBean implements Serializable {
             String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceXkmsActive,
-            boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest, boolean futureRollover,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
@@ -860,7 +859,7 @@ public class CAInterfaceBean implements Serializable {
             cadatahandler.createCA(cainfo);                           
             int caid = cainfo.getCAId();
             try {
-                byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN), futureRollover);
+                byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 saveRequestData(certreq);
             } catch (CryptoTokenOfflineException e) {
                 cadatahandler.removeCA(caid);
