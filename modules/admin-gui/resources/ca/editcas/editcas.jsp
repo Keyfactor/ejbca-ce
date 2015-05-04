@@ -237,6 +237,7 @@ java.security.InvalidAlgorithmParameterException
   boolean issuperadministrator = false;
   boolean editca = false;
   boolean caactivated = false;
+  Date cafuturerolloverdate = null;
   boolean carenewed = false;
   boolean capublished = false;
 
@@ -470,8 +471,10 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(BUTTON_RECEIVEREQUEST) != null) {
             	try {
                     final String nextSignKeyAlias = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY_RECEIVEREQ);
-                    cadatahandler.receiveResponse(caid, fileBuffer, nextSignKeyAlias);
+                    final boolean futureRollover = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FUTUREROLLOVER));
+                    cadatahandler.receiveResponse(caid, fileBuffer, nextSignKeyAlias, futureRollover);
                     caactivated = true;
+                    cafuturerolloverdate = cadatahandler.getRolloverDate(caid);
             	} catch (Exception e) {
             		errormessage = e.getMessage();
             	}
@@ -660,8 +663,7 @@ java.security.InvalidAlgorithmParameterException
                 // else with the CA. For creating cross-certificate requests of similar.
                 if (requestMap.get(BUTTON_MAKEREQUEST) != null) {
                     final String nextSignKeyAlias = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY_MAKEREQUEST);
-                    final boolean futureRollover = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FUTUREROLLOVER));
-                    byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, nextSignKeyAlias, futureRollover);
+                    byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, nextSignKeyAlias);
                 	cabean.saveRequestData(certreq);
                     filemode = CERTREQGENMODE;
                     includefile = "displayresult.jspf";

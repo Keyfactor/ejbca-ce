@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -211,4 +213,9 @@ public interface CaSession {
      */
     boolean existsCa(String name);
 
+    /**
+     * Returns the future key/certificate rollover if a rollover is pending, or otherwise null.
+     * @param caid numerical unique id of CA
+     */
+    Certificate getFutureRolloverCertificate(int caid);
 }

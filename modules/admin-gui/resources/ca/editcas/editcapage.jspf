@@ -1721,16 +1721,6 @@ function checkallfields(){
                         </td>
                     </tr>
 
-                    <tr>
-                        <td><p class="help"><%= ejbcawebbean.getText("EXTERNALLYSIGNED_FUTUREROLLOVER_HELP") %></p></td>
-                        <td>
-                            <label>
-                            	<input type="checkbox" name="<%=CHECKBOX_FUTUREROLLOVER %>" id="<%=CHECKBOX_FUTUREROLLOVER %>" value="<%=CHECKBOX_VALUE %>" />
-                            	<%-- TODO: configurable default value in CAInfo? --%>
-                            	<c:out value="<%= ejbcawebbean.getText(\"EXTERNALLYSIGNED_FUTUREROLLOVER\") %>" />
-                            </label>
-                        </td>
-                    </tr>
                     <%  } %>
                     <tr>
                         <td><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CACHAIN") %><br/>
@@ -1766,6 +1756,16 @@ function checkallfields(){
                             <p class="help"><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CACERT_HELP") %></p></td>
                         <td>
                             <input type="file" name="<%= FILE_RECIEVEFILE_RECEIVEREQUEST %>">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><p class="help"><%= ejbcawebbean.getText("EXTERNALLYSIGNED_FUTUREROLLOVER_HELP") %></p></td>
+                        <td>
+                            <label>
+                            	<input type="checkbox" name="<%=CHECKBOX_FUTUREROLLOVER %>" id="<%=CHECKBOX_FUTUREROLLOVER %>" value="<%=CHECKBOX_VALUE %>" />
+                            	<%-- TODO: configurable default value in CAInfo? --%>
+                            	<c:out value="<%= ejbcawebbean.getText(\"EXTERNALLYSIGNED_FUTUREROLLOVER\") %>" />
+                            </label>
                         </td>
                     </tr>
                     <tr>

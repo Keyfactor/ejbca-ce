@@ -1100,12 +1100,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias)
             throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException {
-        return makeRequest(authenticationToken, caid, certChain, nextSignKeyAlias, false);
-    }
-
-    @Override
-    public byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias, boolean futureRollover)
-            throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException {
         if (log.isTraceEnabled()) {
             log.trace(">makeRequest: " + caid + ", certChain=" + certChain + ", nextSignKeyAlias=" + nextSignKeyAlias);
         }
@@ -1162,9 +1156,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 nextSignKeyAlias = caToken.generateNextSignKeyAlias();
             }
             caToken.setNextCertSignKey(nextSignKeyAlias);
-            if (futureRollover) {
-                caToken.setFutureRollover(CATokenConstants.ROLLOVER_STATUS_NO_CERT);
-            }
             final int cryptoTokenId = caToken.getCryptoTokenId();
             try {
                 // Test if key already exists
@@ -1265,6 +1256,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void receiveResponse(AuthenticationToken authenticationToken, int caid, ResponseMessage responsemessage, Collection<?> cachain,
             String nextKeyAlias) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException {
+        receiveResponse(authenticationToken, caid, responsemessage, cachain, nextKeyAlias, false);
+    }
+    
+    @Override
+    public void receiveResponse(AuthenticationToken authenticationToken, int caid, ResponseMessage responsemessage, Collection<?> cachain,
+            String nextKeyAlias, boolean futureRollover) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">receiveResponse: " + caid);
         }
@@ -1295,17 +1292,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             List<Certificate> tmpchain = new ArrayList<Certificate>();
             tmpchain.add(cacert);
   
-            boolean isFutureRollover = false;
             Date verifydate = new Date();
-            if (CATokenConstants.ROLLOVER_STATUS_NO_CERT.equals(ca.getCAToken().getKeyRolloverStatus())) {
-                log.debug("Receiving a certificate which will only be used for key rollover until it becomes valid.");
+            if (futureRollover) {
+                log.debug("Certificate will only be used for key rollover until it becomes valid.");
 
                 final Date rolloverdate = CertTools.getNotBefore(cacert);
                 if (rolloverdate.after(new Date())) {
-                    isFutureRollover = true;
                     verifydate = rolloverdate;
                 } else {
-                    log.info("Expected to receive a certificate to use during rollover, but received an already valid certificate.");
+                    // Validate using today's date, in case something has expired
+                    log.info("Expected to receive a certificate to use in the future, but received an already valid certificate.");
                 }
             }
 
@@ -1376,16 +1372,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 log.debug("Cert is not CVC, no need to enrich with EC parameters.");
             }
 
-            if (isFutureRollover) {
+            if (futureRollover) {
                 testNextKey(authenticationToken, caid, nextKeyAlias, ca, cacert, chain, caCertPublicKey);
                 final CAToken catoken = ca.getCAToken();
-                catoken.setFutureRollover(CATokenConstants.ROLLOVER_STATUS_NOT_YET_VALID);
                 if (nextKeyAlias != null) {
                     catoken.setNextCertSignKey(nextKeyAlias);
                 }
                 ca.setCAToken(catoken);
                 ca.setRolloverCertificateChain(chain);
-                //ca.setExpireTime(CertTools.getNotAfter(cacert));
                 // Save CA
                 caSession.editCA(authenticationToken, ca, true);
             } else {

@@ -49,8 +49,4 @@ public final class CATokenConstants {
     public static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
     /** Next sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT key) that can be set in CA token properties */
     public static final String NEXT_SEQUENCE_PROPERTY = "nextSequence";
-
-    public static final String ROLLOVER_STATUS = "rolloverStatus";
-    public static final String ROLLOVER_STATUS_NO_CERT = "no_cert";
-    public static final String ROLLOVER_STATUS_NOT_YET_VALID = "not_yet_valid";
 }

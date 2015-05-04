@@ -835,4 +835,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         log.info("CA '" + caName + "' with id " + caid + " is now using CryptoToken with cryptoTokenId " + cryptoTokenId);
         return true;
     }
+
+    @Override
+    public Certificate getFutureRolloverCertificate(int caid) {
+        final CA ca = getCa(caid);
+        final List<Certificate> chain = ca.getRolloverCertificateChain();
+        if (chain == null) { return null; }
+        return chain.get(0);
+    }
 }
