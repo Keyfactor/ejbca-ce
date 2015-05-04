@@ -524,7 +524,7 @@ public class ProtocolScepHttpTest {
         byte[] respBytes = baos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
-        assertEquals(new String(respBytes), "POSTPKIOperation\nRenewal\nSHA-1");
+        assertEquals(new String(respBytes), "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1");
     }
 
     @Test
