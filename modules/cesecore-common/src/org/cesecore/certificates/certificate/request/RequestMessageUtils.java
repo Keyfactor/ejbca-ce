@@ -143,17 +143,15 @@ public abstract class RequestMessageUtils {
 		return buffer;
 	}
 
-    public static RequestMessage getSimpleRequestMessageFromType(final String username, final String password, final String req, final int reqType)
+    public static RequestMessage getRequestMessageFromType(final String username, final String password, final String req, final int reqType)
             throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException,
             SignatureException, InvalidKeySpecException, ParseException, ConstructionException, NoSuchFieldException {
 	    RequestMessage ret = null;
         if (reqType == CertificateConstants.CERT_REQ_TYPE_PKCS10) {
-            final RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
-            final PublicKey pubKey = pkcs10req.getRequestPublicKey();
-            SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
-            final Extensions ext = pkcs10req.getRequestExtensions();
-            simplereq.setRequestExtensions(ext);
-            ret = simplereq;
+            final PKCS10RequestMessage pkcs10RequestMessage = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
+            pkcs10RequestMessage.setUsername(username);
+            pkcs10RequestMessage.setPassword(password);
+            ret = pkcs10RequestMessage;
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_SPKAC) {
             byte[] reqBytes = req.getBytes();
             if (reqBytes != null) {

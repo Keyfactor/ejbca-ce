@@ -130,7 +130,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         try {
             String password = userdata.getPassword();
             String username = userdata.getUsername();
-            RequestMessage imsg = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, req, reqType);
+            RequestMessage imsg = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
             if (imsg != null) {
                 retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, userdata);
             }
