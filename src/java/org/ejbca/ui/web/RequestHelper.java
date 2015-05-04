@@ -493,7 +493,7 @@ public class RequestHelper {
      * @throws Exception on error
      */
     public static void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
-        throws Exception {
+        throws IOException {
         // Set content-type to CA-cert
         sendBinaryBytes(cert, out, "application/x-x509-ca-cert", null);
     } // sendNewX509CaCert
@@ -509,7 +509,7 @@ public class RequestHelper {
      * @throws Exception on error
      */
     public static void sendBinaryBytes(final byte[] bytes, final HttpServletResponse out, final String contentType, final String filename)
-        throws Exception {
+        throws IOException {
         if ( (bytes == null) || (bytes.length == 0) ) {
             log.error("0 length can not be sent to client!");
             return;

@@ -824,7 +824,7 @@ public class EjbcaWSHelper {
 	 * @throws CesecoreException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
 	 */
-	protected void caCertResponse(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) 
+	protected void caCertResponse(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd, boolean futureRollover) 
 		throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException {
 		try {
 			CAInfo cainfo = caSession.getCAInfo(admin, caname);
@@ -835,7 +835,7 @@ public class EjbcaWSHelper {
 			if (keystorepwd!=null) {
 	            cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
 			}
-			caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, null);
+			caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, null, futureRollover);
 		} catch (CertificateException e) {
             throw EjbcaWSHelper.getInternalException(e, null);
 		}

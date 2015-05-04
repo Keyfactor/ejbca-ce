@@ -1069,7 +1069,7 @@ public class EjbcaWS implements IEjbcaWS {
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 		AuthenticationToken admin = ejbhelper.getAdmin();
 		try {
-			ejbhelper.caCertResponse(ejbhelper, admin, caname, cert, cachain, keystorepwd);			
+			ejbhelper.caCertResponse(ejbhelper, admin, caname, cert, cachain, keystorepwd, false);
 		} catch (CertPathValidatorException e) {
 		    throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CERT_PATH_INVALID, Level.DEBUG);
 		} catch (CryptoTokenOfflineException e) {
@@ -1081,6 +1081,29 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		log.trace("<caCertResponse");
 	} // caCertResponse
+	
+	/**
+     * @throws CesecoreException 
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponseWithRollover
+     */
+    public void caCertResponseWithRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException {
+        log.trace(">caCertResponseWithRollover");
+        log.info("Import certificate response with rollover for CA "+caname+", keystorepwd: "+(keystorepwd==null?"null":"hidden"));
+        EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+        AuthenticationToken admin = ejbhelper.getAdmin();
+        try {
+            ejbhelper.caCertResponse(ejbhelper, admin, caname, cert, cachain, keystorepwd, true);
+        } catch (CertPathValidatorException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CERT_PATH_INVALID, Level.DEBUG);
+        } catch (CryptoTokenOfflineException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
+        } catch (CryptoTokenAuthenticationFailedException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_INVALID_TOKEN_PIN, Level.INFO);
+        } catch (RuntimeException e) {  // EJBException, ...
+            throw EjbcaWSHelper.getInternalException(e, null);
+        }
+        log.trace("<caCertResponseWithRollover");
+    } // caCertResponse
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Request(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)

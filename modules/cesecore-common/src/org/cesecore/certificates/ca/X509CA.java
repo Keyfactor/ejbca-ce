@@ -549,7 +549,62 @@ public class X509CA extends CA implements Serializable {
                 s = gen.generate(msg, true);
             } else {
                 String msg1 = "CA Token does not exist!";
-                log.debug(msg);
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            return s.getEncoded();
+        } catch (CryptoTokenOfflineException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            //FIXME: This right here is just nasty
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    public byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) throws SignRequestSignatureException {
+        final List<Certificate> nextChain = getRolloverCertificateChain();
+        if (nextChain == null) {
+            log.debug("CA does not have a rollover chain");
+            return null;
+        }
+        
+        ArrayList<X509CertificateHolder> certList = new ArrayList<X509CertificateHolder>();
+        try {
+            for (Certificate certificate : nextChain) {
+                certList.add(new JcaX509CertificateHolder((X509Certificate) certificate));
+            }
+        } catch (CertificateEncodingException e) {
+            throw new SignRequestSignatureException("Could not encode certificate", e);
+        } 
+        try {
+            CMSTypedData msg = new CMSProcessableByteArray("EJBCA".getBytes());
+            CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+            final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (privateKey == null) {
+                String msg1 = "createPKCS7Rollover: Private key does not exist!";
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privateKey.getAlgorithm());
+            try {
+                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
+                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+                gen.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) getCACertificate()));
+            } catch (OperatorCreationException e) {
+                throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
+            }            
+            gen.addCertificates(new CollectionStore(certList));
+            CMSSignedData s = null;
+            CAToken catoken = getCAToken();
+            if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
+                log.debug("createPKCS7Rollover: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
+                        + privateKey.getAlgorithm());
+                s = gen.generate(msg, true);
+            } else {
+                String msg1 = "CA Token does not exist!";
+                log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
             return s.getEncoded();

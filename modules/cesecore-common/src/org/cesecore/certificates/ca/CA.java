@@ -818,6 +818,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
      */
     public abstract byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException;
+    
+    /**
+     * Creates a roll over PKCS7 for the next CA certificate, signed with the current CA key. Used by ScepServlet.
+     * @return A DER-encoded PKCS7 message, or null if there's no next CA certificate.
+     */
+    public abstract byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) throws SignRequestSignatureException;
 
     /**
      * Creates a certificate signature request CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For
