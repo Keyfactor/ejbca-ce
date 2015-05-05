@@ -184,21 +184,24 @@ function isExternalX509(){
 }
 
 function isExternalGeneric(){
-   var makebutton         =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
+   var makebutton         =  document.ca.<%= BUTTON_MAKEREQUEST %>;
    var createorinitbutton =  document.ca.<%= isUninitialized ? BUTTON_INITIALIZE : BUTTON_CREATE %>; 
-   var validityfield      =  document.ca.<%=TEXTFIELD_VALIDITY%>;
    var certproffield      =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
+   var validityfield      =  document.ca.<%=TEXTFIELD_VALIDITY%>;
+   var utf8policytxtfield =  document.ca.<%=CHECKBOX_USEUTF8POLICYTEXT%>;
 
    makebutton.disabled = true;
    createorinitbutton.disabled = false;
-   validityfield.disabled = false; 
-   certproffield.disabled = false; 
+   certproffield.disabled = false;
+   validityfield.disabled = false;
+   utf8policytxtfield.disabled = false;
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;
-      <% if (!isUninitialized) { %>createorinitbutton.disabled = true;<% } %> 
-      validityfield.disabled = true; 
-      certproffield.disabled = true; 
+      <% if (!isUninitialized) { %>createorinitbutton.disabled = true;<% } %>
+      certproffield.disabled = true;
+      validityfield.disabled = true;
+      utf8policytxtfield.disabled = true;
    } 
 }
 <% } %>
@@ -863,33 +866,6 @@ function checkallfields(){
         <strong><%= ejbcawebbean.getText("CACERTIFICATEDATA") %></strong></td>
         <td width="50%">&nbsp;</td>
     </tr>
-
-    <% if (!isexternal) { %>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("ORENDDATE") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
-      </td>
-      <td width="50%"> 
-        <% if(isexternal || (editca && !isUninitialized && signbyexternal)){
-              if (cainfo.getValidity() != 0) {
-                out.write("" + cainfo.getValidity() + YearMonthDayTime.TYPE_DAYS);
-              } else {
-                out.write(ejbcawebbean.getText("NOTUSED"));
-              }
-           }else{ %>
-        <input type="obligatory" name="<%=TEXTFIELD_VALIDITY%>" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
-           <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> />
-           <% if(editca) { %>
-        &nbsp;
-        <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
-           <% } %>
-        <% } %>
-        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
-      </td>
-    </tr>
-    <% } %>
-
     
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -1002,6 +978,31 @@ function checkallfields(){
             </td>	
         </tr>
 
+    <% if (!isexternal) { %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("ORENDDATE") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
+      </td>
+      <td width="50%"> 
+        <% if(isexternal || (editca && !isUninitialized && signbyexternal)){
+              if (cainfo.getValidity() != 0) {
+                out.write("" + cainfo.getValidity() + YearMonthDayTime.TYPE_DAYS);
+              } else {
+                out.write(ejbcawebbean.getText("NOTUSED"));
+              }
+           }else{ %>
+        <input type="obligatory" name="<%=TEXTFIELD_VALIDITY%>" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
+           <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> />
+           <% if(editca) { %>
+        &nbsp;
+        <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
+           <% } %>
+        <% } %>
+        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
+      </td>
+    </tr>
+    <% } %>
 
    <% if(catype == CAInfo.CATYPE_X509){ 
 	     X509CAInfo x509cainfo = (X509CAInfo) cainfo;
@@ -1106,7 +1107,7 @@ function checkallfields(){
              <label for="<%=CHECKBOX_USELDAPDNORDER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
-    
+
     <%
     String nameConstraintsPermittedString = !editca ? "" : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsPermitted());
     String nameConstraintsExcludedString = !editca ? "" : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsExcluded());
