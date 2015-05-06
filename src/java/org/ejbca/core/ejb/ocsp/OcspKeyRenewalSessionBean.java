@@ -574,7 +574,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     // should not be run from within a transaction.
     private Timer addTimer(long intervalInSeconds) {
         if (log.isDebugEnabled()) {
-            log.debug("addTimer: " + timerId);
+            log.debug("addTimer: " + timerId+", "+intervalInSeconds);
         }
         return timerService.createTimer(intervalInSeconds*1000, timerId);
     }
