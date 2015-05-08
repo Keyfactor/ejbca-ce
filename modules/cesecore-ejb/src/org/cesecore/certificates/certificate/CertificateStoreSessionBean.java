@@ -162,7 +162,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final boolean useBase64CertTable = CesecoreConfiguration.useBase64CertTable();
         Base64CertData base64CertData = null;
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
-        final boolean storeCertificateData = certificateProfile.getStoreCertificateData();
+        final boolean storeCertificateData = certificateProfile==null || certificateProfile.getStoreCertificateData();
         if (useBase64CertTable && storeCertificateData) {
             // use special table for encoded data if told so.
             base64CertData = new Base64CertData(incert);
