@@ -285,6 +285,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test03_7ThrowAwayConfiguration() throws Exception {
         certificateRequestThrowAway();
     }
+    
+    @Test
+    public void test03_8DontStoreFullCert() throws Exception {
+        certificateRequestDontStoreFullCert();
+    }
 
     @Test
     public void test04GeneratePkcs12() throws Exception {

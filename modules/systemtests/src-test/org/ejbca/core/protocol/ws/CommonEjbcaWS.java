@@ -100,6 +100,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -1048,6 +1049,84 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
             caInfoToRestore.setUseUserStorage(originalUseUserStorage);
             caSession.editCA(authenticationToken, caInfoToRestore);
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(authenticationToken, username);
+            }
+            if (certificateFingerprint!=null && certificateStoreSession.findCertificateByFingerprint(certificateFingerprint)!=null) {
+                internalCertStoreSession.removeCertificate(certificateFingerprint);
+            }
+            if (certReqHistorySession.retrieveCertReqHistory(username).size()>0) {
+                certReqHistorySession.removeCertReqHistoryData(certificateFingerprint);
+            }
+        }
+    }
+    
+    protected void certificateRequestDontStoreFullCert() throws Exception {
+        final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST-certificateRequestDontStoreFullCert"));
+        final String username = "CA1_WSTESTUSER_DontStoreFullCert";
+        String certificateFingerprint = null;
+        BigInteger certSerNo = null;
+        // Disable storage of certificate in certificate profile
+        final CertificateProfile certprof = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        final boolean origStoreCertData = certprof.getStoreCertificateData();
+        try {
+            certprof.setStoreCertificateData(false);
+            certificateProfileSession.changeCertificateProfile(authenticationToken, WS_CERTPROF_EI, certprof);
+            // Setup user data to make the request
+            final UserDataVOWS userDataVOWS = new UserDataVOWS();
+            userDataVOWS.setUsername(username);
+            userDataVOWS.setPassword(PASSWORD);
+            userDataVOWS.setClearPwd(true);
+            userDataVOWS.setSubjectDN("CN=" + username);
+            userDataVOWS.setCaName(CA1);
+            userDataVOWS.setEmail(null);
+            userDataVOWS.setSubjectAltName(null);
+            userDataVOWS.setStatus(UserDataVOWS.STATUS_NEW);
+            userDataVOWS.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            userDataVOWS.setEndEntityProfileName(WS_EEPROF_EI);
+            userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
+            // Generate a certificate request
+            final String pkcs10AsBase64 = getP10();
+            // Request a certificate via the WS API
+            final CertificateResponse certificateResponse;
+            try {
+                certificateResponse = ejbcaraws.certificateRequest(userDataVOWS, pkcs10AsBase64, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            } catch (EjbcaException_Exception e) {
+                final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
+                log.info(errorCode.getInternalErrorCode(), e);
+                fail("Certificate request failed with error code " + errorCode);
+                throw new Error("JUnit test should have bailed out before this happens.");
+            }
+            // Verify that the response is of the right type and that a certificate was issued correctly
+            assertNotNull(certificateResponse);
+            assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+            final X509Certificate x509Certificate = certificateResponse.getCertificate();
+            assertNotNull(x509Certificate);
+            assertTrue(x509Certificate.getSubjectDN().toString().equals(userDataVOWS.getSubjectDN()));
+            certificateFingerprint = CertTools.getFingerprintAsString(x509Certificate);
+            certSerNo = CertTools.getSerialNumber(x509Certificate);
+            // The user, the CertificateData and the CertReqHistoryData should exist, but not the certificate itself.
+            assertTrue("User wasn't created.", endEntityManagementSession.existsUser(username));
+            final List<CertReqHistory> certReqHistoryList = certReqHistorySession.retrieveCertReqHistory(username);
+            assertEquals("CertReqHistoryData should be created unless explicitly disabled.", 0, certReqHistoryList.size());
+            final List<CertificateDataWrapper> certDataList = certificateStoreSession.getCertificateDataBySerno(certSerNo);
+            assertEquals("No CertificateData entry was created.", 1, certDataList.size());
+            final CertificateDataWrapper certData = certDataList.get(0);
+            assertTrue("Wrong Subject DN in CertificateData", x509Certificate.getSubjectDN().toString().equals(userDataVOWS.getSubjectDN()));
+            // Certificate itself should not exist
+            assertNull("No certificate should exist.", certData.getCertificate());
+            final java.security.cert.Certificate certificate = certificateStoreSession.findCertificateByFingerprint(certificateFingerprint);
+            assertNull("No certificate should exist.", certificate);
+            
+            // Now try to revoke the certificate (to "on hold" status so we can test revocation again in the next step)
+            ejbcaraws.revokeCert(CertTools.getIssuerDN(x509Certificate), CertTools.getSerialNumberAsString(x509Certificate), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            
+            // Try to revoke the user
+            ejbcaraws.revokeUser(username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, false);
+        } finally {
+            final CertificateProfile certprofToRestore = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+            certprofToRestore.setStoreCertificateData(origStoreCertData);
+            certificateProfileSession.changeCertificateProfile(authenticationToken, WS_CERTPROF_EI, certprofToRestore);
             if (endEntityManagementSession.existsUser(username)) {
                 endEntityManagementSession.deleteUser(authenticationToken, username);
             }
