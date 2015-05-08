@@ -159,6 +159,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String APPROVALSETTINGS = "approvalsettings";
     protected static final String NUMOFREQAPPROVALS = "numofreqapprovals";
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
+    protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
+    protected static final String STORECERTIFICATEDATA = "storecertificatedata";
     //
     // CRL extensions
     protected static final String USECRLNUMBER = "usecrlnumber";
@@ -190,7 +192,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECADEFINEDFRESHESTCRL = "usecadefinedfreshestcrl";
     protected static final String FRESHESTCRLURI = "freshestcrluri";
     protected static final String USECERTIFICATEPOLICIES = "usecertificatepolicies";
-    protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String CERTIFICATEPOLICIESCRITICAL = "certificatepoliciescritical";
     /** Policy containing oid, User Notice and Cps Url */
     protected static final String CERTIFICATE_POLICIES = "certificatepolicies";
@@ -744,6 +745,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setUseSubjectAlternativeName(boolean usesubjectalternativename) {
         data.put(USESUBJECTALTERNATIVENAME, Boolean.valueOf(usesubjectalternativename));
+    }
+    
+    public boolean getStoreCertificateData() {
+        //Lazy upgrade for profiles created prior to EJBCA 6.2.10
+        Boolean value = (Boolean) data.get(STORECERTIFICATEDATA);
+        if (value == null) {
+            //Default is true
+            setStoreCertificateData(true);
+            return true;
+        } else {
+            return value.booleanValue();
+        }
+    }
+    
+    public void setStoreCertificateData(boolean storeCertificateData) {
+        data.put(STORECERTIFICATEDATA, Boolean.valueOf(storeCertificateData));
     }
 
     public boolean getSubjectAlternativeNameCritical() {

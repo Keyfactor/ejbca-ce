@@ -598,7 +598,7 @@ public class RequestInstance {
         String username = certificateStoreSession.findUsernameByCertSerno(CertTools.getSerialNumber(cert), issuerDN);
         EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(username);
         CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-        return !caInfo.isUseCertificateStorage() && !certificateProfile.getUseCertificateStorage();
+        return (!caInfo.isUseCertificateStorage() && !certificateProfile.getUseCertificateStorage()) || !certificateProfile.getStoreCertificateData();
     }
     
 	/**

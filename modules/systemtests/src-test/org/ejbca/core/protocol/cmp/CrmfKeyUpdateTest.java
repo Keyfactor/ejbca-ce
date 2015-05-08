@@ -30,6 +30,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -418,7 +419,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         assertNotNull("Failed to create a test certificate", certificate);
 
-        this.certificateStoreSession.setRevokeStatus(ADMIN, certificate, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, null);
+        this.certificateStoreSession.setRevokeStatus(ADMIN, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
         assertTrue("Failed to revoke the test certificate", this.certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);

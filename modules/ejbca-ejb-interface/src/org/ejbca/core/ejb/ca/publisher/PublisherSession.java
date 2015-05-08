@@ -13,7 +13,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Map;
 
@@ -93,38 +92,16 @@ public interface PublisherSession {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
-            String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
-            int revocationReason, String tag, int certificateProfileId, long lastUpdate,
-            ExtendedInformation extendedinformation) throws AuthorizationDeniedException;
-    
-    
+            String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException;
+
     /**
      * Performs the same operation as the other storeCertificate method in this class, but performs a lookup for a CertificateData and Base64CertData object.
      * 
      * To avoid unnecessary database lookups, only use this method where the CertificateData object isn't immediately available. 
-     * 
-     * @param admin
-     * @param publisherids
-     * @param certificate
-     * @param username
-     * @param password
-     * @param userDN
-     * @param cafp
-     * @param status
-     * @param type
-     * @param revocationDate
-     * @param revocationReason
-     * @param tag
-     * @param certificateProfileId
-     * @param lastUpdate
-     * @param extendedinformation
-     * @return
-     * @throws AuthorizationDeniedException
      */
-    boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate, String username,
-            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
-            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws AuthorizationDeniedException; 
-    
+    boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, String fingerprint,
+            String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException; 
+
     /**
      * Stores the CRL to the given collection of publishers. See BasePublisher
      * class for further documentation about function

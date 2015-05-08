@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.util.Date;
 import java.util.Enumeration;
 
 import org.bouncycastle.asn1.x509.ReasonFlags;
@@ -159,7 +160,7 @@ public class CaImportCRLCommandTest {
             info = certStoreSession.getCertificateInfo(fingerprint);
             assertEquals("Cert should not be revoked", info.getStatus(), CertificateConstants.CERT_ACTIVE);
             // Now revoke the certificate, create a new CRL and import it, nothing should happen still
-            certStoreSession.setRevokeStatus(admin, cert, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
+            certStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             caCreateCrlCommand.execute(CACREATECRL_ARGS);
             caGetCrlCommand.execute(CAGETCRL_ARGS);
             caImportCrlCommand.execute(CAIMPORTCRL_STRICT_ARGS);
@@ -169,7 +170,7 @@ public class CaImportCRLCommandTest {
             assertEquals("Cert should be revoked", info.getStatus(), CertificateConstants.CERT_REVOKED);
             assertEquals("Revocation reasonn should be on hold", info.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Now unrevoke the certificate and import the CRL, it should be revoked again
-            certStoreSession.setRevokeStatus(admin, cert, RevokedCertInfo.NOT_REVOKED, null);
+            certStoreSession.setRevokeStatus(admin, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
             info = certStoreSession.getCertificateInfo(fingerprint);
             assertEquals("Cert should not be revoked", info.getStatus(), CertificateConstants.CERT_ACTIVE);
             // Strict will do it

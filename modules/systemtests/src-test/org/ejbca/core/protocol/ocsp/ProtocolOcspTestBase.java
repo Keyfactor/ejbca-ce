@@ -36,6 +36,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.CreateException;
@@ -450,7 +451,7 @@ public abstract class ProtocolOcspTestBase {
       
         X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
                 req, X509ResponseMessage.class, null)).getCertificate());
-        certificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        certificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         
         @SuppressWarnings("unused")
         X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,

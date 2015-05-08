@@ -37,6 +37,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1182,7 +1183,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
                 // Step 5, revoke the certificate and try again
                 {
-                    this.certificateStoreSession.setRevokeStatus(ADMIN, cert, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, null);
+                    this.certificateStoreSession.setRevokeStatus(ADMIN, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
                     final byte[] resp3 = sendCmpHttp(ba, 200, ALIAS);
                     // This should have failed
                     checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
@@ -1846,15 +1847,17 @@ public class AuthenticationModulesTest extends CmpTestCase {
             AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
         String rolename = "Super Administrator Role";
 
-        RoleData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");
+        RoleData roledata = this.roleAccessSessionRemote.findRole(rolename);
         if (roledata != null) {
             List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-            accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
-
+            if (cert==null) {
+                log.warn("Unable to removeAuthenticationToken subject for " + adminName + " since cert was null.");
+            } else {
+                accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                        AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
+            }
             this.roleManagementSession.removeSubjectsFromRole(ADMIN, roledata, accessUsers);
         }
-
         this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
 

@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+
+import org.cesecore.util.CertTools;
 
 /**
  * 
@@ -21,19 +26,50 @@ import java.security.cert.Certificate;
  * @version $Id$
  *
  */
-public class CertificateDataWrapper {
+public class CertificateDataWrapper implements Comparable<CertificateDataWrapper>, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final CertificateData certificateData;
     private final Base64CertData base64CertData;
-    private final Certificate certificate;
+    private final byte[] certificateBytes;
+    private transient Certificate certificate = null;
 
     public CertificateDataWrapper(final Certificate certificate, final CertificateData certificateData, final Base64CertData base64CertData) {
         this.certificate = certificate;
+        if (certificate==null) {
+            this.certificateBytes = null;
+        } else {
+            try {
+                this.certificateBytes = certificate.getEncoded();
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+        }
         if (certificateData != null) {
             this.certificateData = new CertificateData(certificateData);
         } else {
             this.certificateData = null;
         }
+        if (base64CertData != null) {
+            this.base64CertData = new Base64CertData(base64CertData);
+        } else {
+            this.base64CertData = null;
+        }
+    }
+
+    public CertificateDataWrapper(final CertificateData certificateData, final Base64CertData base64CertData) {
+        this.certificate = certificateData.getCertificate(base64CertData);
+        if (certificate==null) {
+            this.certificateBytes = null;
+        } else {
+            try {
+                this.certificateBytes = certificate.getEncoded();
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        this.certificateData = new CertificateData(certificateData);
         if (base64CertData != null) {
             this.base64CertData = new Base64CertData(base64CertData);
         } else {
@@ -50,7 +86,25 @@ public class CertificateDataWrapper {
     }
 
     public Certificate getCertificate() {
+        if (certificate==null && certificateBytes!=null) {
+            // Lazy restore in case of deserialization
+            try {
+                certificate = CertTools.getCertfromByteArray(certificateBytes);
+            } catch (CertificateParsingException e) {
+                throw new IllegalStateException(e);
+            }
+        }
         return certificate;
+    }
+
+    @Override
+    public int compareTo(final CertificateDataWrapper other) {
+        // Sort by issuance date if certificates are available
+        if (getCertificate()!=null && other.getCertificate()!=null) {
+            return Long.valueOf(CertTools.getNotBefore(other.getCertificate()).getTime()-CertTools.getNotBefore(getCertificate()).getTime()).intValue();
+        }
+        // Sort by expiration date when certificates are not available
+        return Long.valueOf(other.getCertificateData().getExpireDate()-getCertificateData().getExpireDate()).intValue();
     }
 
 }

@@ -85,20 +85,6 @@ public interface InternalCertificateStoreSessionRemote {
      */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
     
-    /**
-     * 
-     * Changes the revocation date for the certificate identified by the fingerprint. This should only occur in an exceptional circumstance (a revoked 
-     * certificate missing a revocation date) and should not be called during standard operations.
-     * 
-     * This method should only be used in the exceptional circumstance where a revoked certificate lacks a revocation date.  
-     * 
-     * @param authenticationToken the authenticating end entity
-     * @param certificateFingerprint a fingerprint identifying a certificate
-     * @param revocationDate the revocation date
-     * @throws AuthorizationDeniedException 
-     */
-    void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate) throws AuthorizationDeniedException;
-
     /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database
      */
     void setUniqueSernoIndexTrue();

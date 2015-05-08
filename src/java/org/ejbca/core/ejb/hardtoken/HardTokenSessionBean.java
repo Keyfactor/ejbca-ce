@@ -51,6 +51,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -1027,25 +1028,32 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<Certificate> findCertificatesInHardToken(String tokensn) {
+    public Collection<Certificate> findCertificatesInHardToken(final String tokensn) {
         if (log.isTraceEnabled()) {
-            log.trace("<findCertificatesInHardToken(username :" + tokensn + ")");
+            log.trace("<findCertificatesInHardToken(tokensn :" + tokensn + ")");
         }
-        ArrayList<Certificate> returnval = new ArrayList<Certificate>();
+        final List<Certificate> ret = new ArrayList<Certificate>();
+        for (final CertificateDataWrapper cdw : getCertificateDatasFromHardToken(tokensn)) {
+            ret.add(cdw.getCertificate());
+        }
+        log.trace("<findCertificatesInHardToken()");
+        return ret;
+    }
+
+    @Override
+    public List<CertificateDataWrapper> getCertificateDatasFromHardToken(final String tokensn) {
+        final List<CertificateDataWrapper> ret = new ArrayList<CertificateDataWrapper>();
         try {
-            Iterator<HardTokenCertificateMap> i = HardTokenCertificateMap.findByTokenSN(entityManager, tokensn).iterator();
-            while (i.hasNext()) {
-                HardTokenCertificateMap htcm = i.next();
-                Certificate cert = certificateStoreSession.findCertificateByFingerprint(htcm.getCertificateFingerprint());
-                if (cert != null) {
-                    returnval.add(cert);
+            for (final HardTokenCertificateMap htcm : HardTokenCertificateMap.findByTokenSN(entityManager, tokensn)) {
+                final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(htcm.getCertificateFingerprint());
+                if (cdw != null) {
+                    ret.add(cdw);
                 }
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
-        log.trace("<findCertificatesInHardToken()");
-        return returnval;
+        return ret;
     }
 
     @Override

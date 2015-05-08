@@ -140,7 +140,7 @@ public class CertificateRetrievalTest {
         rootCaFp = CertTools.getFingerprintAsString(cert);
         try {
             if (certificateStoreSession.findCertificateByFingerprint(rootCaFp) == null) {
-                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", rootCaFp,
+                certificateStoreSession.storeCertificateRemote(adm, cert, "o=AnaTom,c=SE", rootCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ROOTCA,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
@@ -152,7 +152,7 @@ public class CertificateRetrievalTest {
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             subCaFp = CertTools.getFingerprintAsString(cert);
             if (certificateStoreSession.findCertificateByFingerprint(subCaFp) == null) {
-                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", subCaFp,
+                certificateStoreSession.storeCertificateRemote(adm, cert, "o=AnaTom,c=SE", subCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_SUBCA,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
@@ -163,7 +163,7 @@ public class CertificateRetrievalTest {
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             endEntityFp = CertTools.getFingerprintAsString(cert);
             if (certificateStoreSession.findCertificateByFingerprint(endEntityFp) == null) {
-                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", endEntityFp,
+                certificateStoreSession.storeCertificateRemote(adm, cert, "o=AnaTom,c=SE", endEntityFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ENDENTITY,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,

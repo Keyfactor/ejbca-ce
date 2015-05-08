@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -33,8 +34,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
@@ -58,7 +60,7 @@ public class CertificateFinderBean {
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
 	private CaSession caSession = ejb.getCaSession();
-	private CertificateStoreSession mStoreSession = ejb.getCertificateStoreSession();
+	private CertificateStoreSessionLocal mStoreSession = ejb.getCertificateStoreSession();
 
 	private boolean mInitialized = false;
 	private AuthenticationToken mAdmin;
@@ -229,15 +231,11 @@ public class CertificateFinderBean {
 		if (subject == null || mInitialized == false) {
 			return; // We can't lookup any certificates, so return with an empty result.
 		}
-		Collection<Certificate> certificates = mStoreSession.findCertificatesBySubject(subject);
-		if (certificates != null) {
-			Iterator<Certificate> i = certificates.iterator();
-			while (i.hasNext()) {
-				Certificate cert = i.next();
-				// TODO: CertificateView is located in web.admin package, but this is web.pub package...
-				CertificateView view = new CertificateView(cert,null,null);
-				result.add(view);
-			}
+		final List<CertificateDataWrapper> cdws = mStoreSession.getCertificateDatasBySubject(subject);
+		Collections.sort(cdws);
+		for (final CertificateDataWrapper cdw : cdws) {
+            // TODO: CertificateView is located in web.admin package, but this is web.pub package...
+            result.add(new CertificateView(cdw));
 		}
 	}
 	

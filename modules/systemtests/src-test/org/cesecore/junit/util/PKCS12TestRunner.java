@@ -62,7 +62,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
         //Store the CA Certificate.
-        certificateStoreSession.storeCertificate(alwaysAllowToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         casToRemove.put(x509ca.getCAId(), x509ca);
         return x509ca;
