@@ -28,7 +28,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -123,14 +122,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
                     if (cacertmode) {
                         getLogger().info("Publishing CA certificate to CA publishers.");
-                        String username = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).findUsernameByCertSerno(
-                                cacert.getSerialNumber(), cacert.getIssuerDN().getName());
-                        CertificateInfo certinfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(
-                                fingerprint);
                         EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCertificate(getAuthenticationToken(),
-                                capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo.getStatus(), certinfo.getType(),
-                                certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
-                                certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
+                                capublishers, fingerprint, null, cainfo.getSubjectDN(), null);
                         getLogger().info("Certificate published for " + caname);
                     }
                     if (cacrlmode) {
@@ -216,12 +209,9 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     private void publishCert(AuthenticationToken authenticationToken, EndEntityInformation data, CertificateProfile certProfile, X509Certificate cert) {
         try {
             String fingerprint = CertTools.getFingerprintAsString(cert);
-            CertificateInfo certinfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint);
             final String userDataDN = data.getCertificateDN();
             boolean ret = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCertificate(authenticationToken,
-                    certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN, fingerprint, certinfo.getStatus(),
-                    certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
-                    certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
+                    certProfile.getPublisherList(), fingerprint, data.getPassword(), userDataDN, null);
             if (!ret) {
                 getLogger().error(
                         "Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. Publish returned false.");

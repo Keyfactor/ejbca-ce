@@ -71,20 +71,6 @@ public interface PublisherProxySessionRemote {
     void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
     
     /**
-     * Revokes the certificate in the given collection of publishers. See
-     * BasePublisher class for further documentation about function
-     * 
-     * @param publisherids
-     *            a Collection (Integer) of publisher IDs.
-     * @throws AuthorizationDeniedException 
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher
-     */
-    void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert,
-            String username, String userDN, String cafp, int type, int reason, long revocationDate, String tag,
-            int certificateProfileId, long lastUpdate) throws AuthorizationDeniedException;
-    
-    
-    /**
      * Test the connection to of a publisher
      * 
      * @param publisherid

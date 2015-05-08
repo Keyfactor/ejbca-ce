@@ -64,7 +64,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateData;
-import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -1436,13 +1436,25 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Revoke all certs, one at the time
-        final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsername(username);
-        for (final Certificate cert : certs) {
+        final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username);
+        for (final CertificateDataWrapper cdw : cdws) {
             try {
-                revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), reason);
+                final Certificate certificate = cdw.getCertificate();
+                final BigInteger serialNumber;
+                if (certificate==null) {
+                    try {
+                        // This will work for X.509
+                        serialNumber = new BigInteger(cdw.getCertificateData().getSerialNumber(), 10);
+                    } catch (NumberFormatException e) {
+                        throw new UnsupportedOperationException();
+                    }
+                } else {
+                    serialNumber = CertTools.getSerialNumber(certificate);
+                }
+                revokeCert(admin, serialNumber, cdw.getCertificateData().getIssuerDN(), reason);
             } catch (AlreadyRevokedException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Certificate from issuer '" + CertTools.getIssuerDN(cert) + "' with serial " + CertTools.getSerialNumber(cert)
+                    log.debug("Certificate from issuer '" + cdw.getCertificateData().getIssuerDN() + "' with serial " + cdw.getCertificateData().getSerialNumber()
                             + " was already revoked.");
                 }
             }
@@ -1474,7 +1486,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             revokeCert(admin, certserno, null, issuerdn, reason, false);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
-            throw new IllegalStateException("This is should not happen since there is no back dating.",e);
+            throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
     }
 
@@ -1495,17 +1507,18 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new AuthorizationDeniedException(msg);
         }
         // To be fully backwards compatible we just use the first fingerprint found..
-        final CertificateInfo info = certificateStoreSession.findFirstCertificateInfo(issuerdn, certserno);
-        if (info == null) {
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
+        if (cdw == null) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
             log.info(msg);
             throw new FinderException(msg);
         }
-        final int caid = info.getIssuerDN().hashCode();
-        final String username = info.getUsername();
+        final CertificateData certificateData = cdw.getCertificateData();
+        final int caid = certificateData.getIssuerDN().hashCode();
+        final String username = certificateData.getUsername();
         assertAuthorizedToCA(admin, caid);
-        int certificateProfileId = info.getCertificateProfileId();
-        String userDataDN = info.getSubjectDN();
+        int certificateProfileId = certificateData.getCertificateProfileId();
+        String userDataDN = certificateData.getSubjectDN();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         UserData data = null;
         if (certReqHistory == null || XkmsConfiguration.getEnabled()) {
@@ -1540,17 +1553,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (reason == RevokedCertInfo.NOT_REVOKED || reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
-            if (info.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+            if (certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
                 final String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));
                 log.info(msg);
                 throw new AlreadyRevokedException(msg);
             }
         } else {
-            if (    info.getRevocationReason()!=RevokedCertInfo.NOT_REVOKED &&
+            if (    certificateData.getRevocationReason()!=RevokedCertInfo.NOT_REVOKED &&
                     // it should be possible to revoke a certificate on hold for good.
-                    info.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
+                    certificateData.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
-                    info.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
+                    certificateData.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
                 final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerdn, certserno.toString(16));
                 log.info(msg);
                 throw new AlreadyRevokedException(msg);
@@ -1589,7 +1602,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Revoke certificate in database and all publishers
         try {
-            this.revocationSession.revokeCertificate(admin, issuerdn, certserno, revocationdate!=null ? revocationdate : new Date(), publishers, reason, userDataDN);
+            revocationSession.revokeCertificate(admin, cdw, publishers, revocationdate!=null ? revocationdate : new Date(), reason, userDataDN);
         } catch (CertificateRevokeException e) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
             log.info(msg);

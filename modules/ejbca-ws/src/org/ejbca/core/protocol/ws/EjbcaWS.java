@@ -89,7 +89,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -2261,22 +2260,19 @@ public class EjbcaWS implements IEjbcaWS {
 
 			ejbhelper.isAuthorizedToRepublish(admin, certreqhist.getUsername(),bcIssuerDN.hashCode());
 
-			if(certreqhist != null){
-				CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certreqhist.getEndEntityInformation().getCertificateProfileId());
-				java.security.cert.Certificate cert = certificateStoreSession.findCertificateByFingerprint(certreqhist.getFingerprint());
-				if(certprofile != null){
-					CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(certreqhist.getFingerprint());
-					if(certprofile.getPublisherList().size() > 0){
-						if(publisherSession.storeCertificate(admin, certprofile.getPublisherList(), cert, certreqhist.getEndEntityInformation().getUsername(), certreqhist.getEndEntityInformation().getPassword(), certreqhist.getEndEntityInformation().getCertificateDN(),
-								certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getEndEntityInformation().getExtendedinformation())){
-						}else{
+			if (certreqhist != null) {
+				final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certreqhist.getEndEntityInformation().getCertificateProfileId());
+				if (certprofile != null) {
+					if (certprofile.getPublisherList().size() > 0) {
+						if (publisherSession.storeCertificate(admin, certprofile.getPublisherList(), certreqhist.getFingerprint(),
+						        certreqhist.getEndEntityInformation().getPassword(), certreqhist.getEndEntityInformation().getCertificateDN(), certreqhist.getEndEntityInformation().getExtendedinformation())) {
+						} else {
 							throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
 						}
-					}else{
+					} else {
 						throw new PublisherException("Error no publisher defined for the given certificate.");
 					}
-
-				}else{
+				} else {
 					throw new PublisherException("Error : Certificate profile couldn't be found for the given certificate.");
 				}	  
 			}

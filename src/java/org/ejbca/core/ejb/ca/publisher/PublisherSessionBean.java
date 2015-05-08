@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,12 +40,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.certificate.Base64CertData;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
@@ -89,6 +86,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
@@ -103,11 +102,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper, String username,
-            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
-            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
-        final Certificate incert = certWrapper.getCertificate();
-        final int caid = CertTools.getIssuerDN(incert).hashCode();
+    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
+            String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        final CertificateData certificateData = certWrapper.getCertificateData();
+        final int caid = certificateData.getIssuerDN().hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
@@ -115,6 +113,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (publisherids == null) {
             return true;
         }
+        final int status = certificateData.getStatus();
+        final int revocationReason = certificateData.getRevocationReason();
+        final String username = certificateData.getUsername();
         boolean returnval = true;
         final List<BasePublisher> publishersToTryDirect = new ArrayList<BasePublisher>();
         final List<BasePublisher> publishersToQueuePending = new ArrayList<BasePublisher>();
@@ -146,18 +147,17 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 returnval = false;
             }
         }
-        final String fingerprint = CertTools.getFingerprintAsString(incert);
+        final String fingerprint = certificateData.getFingerprint();
         final List<Object> publisherResults = publisherQueueSession.storeCertificateNonTransactionalInternal(publishersToTryDirect, admin,
-                certWrapper, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate,
-                extendedinformation);
-        final String certSerno = CertTools.getSerialNumberAsString(incert);
+                certWrapper, password, userDN, extendedinformation);
+        final String certSerno = certificateData.getSerialNumber();
         for (int i = 0; i < publishersToTryDirect.size(); i++) {
             final Object publisherResult = publisherResults.get(i);
             final BasePublisher publ = publishersToTryDirect.get(i);
             final int id = publ.getPublisherId();
             final String name = getPublisherName(id);
             if (!(publisherResult instanceof PublisherException)) {
-                final String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(incert), name);
+                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDN(), name);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
@@ -178,29 +178,20 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 returnval = false;
             }
         }
-        addQueueData(publishersToQueueSuccess, username, password, extendedinformation, userDN, incert, status, PublisherConst.STATUS_SUCCESS);
-        addQueueData(publishersToQueuePending, username, password, extendedinformation, userDN, incert, status, PublisherConst.STATUS_PENDING);
+        addQueueData(publishersToQueueSuccess, username, password, extendedinformation, userDN, fingerprint, status, PublisherConst.STATUS_SUCCESS);
+        addQueueData(publishersToQueuePending, username, password, extendedinformation, userDN, fingerprint, status, PublisherConst.STATUS_PENDING);
         return returnval;
     }
 
     @Override
-    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate certificate, String username,
-            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
-            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
-        String fingerprint = CertTools.getFingerprintAsString(certificate);
-        final Base64CertData base64CertData;
-        if (CesecoreConfiguration.useBase64CertTable()) {
-            base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
-        } else {
-            base64CertData = null;
-        }
-        return storeCertificate(admin, publisherids,
-                new CertificateDataWrapper(certificate, CertificateData.findByFingerprint(entityManager, fingerprint), base64CertData), username,
-                password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
+    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, String fingerprint,
+            String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
+        return storeCertificate(admin, publisherids, certificateDataWrapper, password, userDN, extendedinformation);
     }
 
     private void addQueueData(final List<BasePublisher> publishersToQueue, final String username, final String password,
-            final ExtendedInformation extendedInformation, final String userDN, final Certificate incert, final int status, final int publisherStatus) {
+            final ExtendedInformation extendedInformation, final String userDN, final String fingerprint, final int status, final int publisherStatus) {
         for (final BasePublisher publ : publishersToQueue) {
             final int id = publ.getPublisherId();
             final String name = getPublisherName(id);
@@ -214,24 +205,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             pqvd.setPassword(password);
             pqvd.setExtendedInformation(extendedInformation);
             pqvd.setUserDN(userDN);
-            String fp = CertTools.getFingerprintAsString(incert);
             try {
-                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fp, pqvd, publisherStatus);
-                final String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, status);
+                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fingerprint, pqvd, publisherStatus);
+                final String msg = intres.getLocalizedMessage("publisher.storequeue", name, fingerprint, status);
                 log.info(msg);
             } catch (CreateException e) {
-                final String msg = intres.getLocalizedMessage("publisher.errorstorequeue", name, fp, status);
+                final String msg = intres.getLocalizedMessage("publisher.errorstorequeue", name, fingerprint, status);
                 log.info(msg, e);
             }
         }
-    }
-
-    @Override
-    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certificateWrapper,
-            String username, String userDN, String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId,
-            long lastUpdate) throws AuthorizationDeniedException {
-        storeCertificate(admin, publisherids, certificateWrapper, username, null, userDN, cafp, CertificateConstants.CERT_REVOKED, type,
-                revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
     @Override

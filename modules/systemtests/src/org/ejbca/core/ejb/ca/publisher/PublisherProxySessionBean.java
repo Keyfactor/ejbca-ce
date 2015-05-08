@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.security.cert.Certificate;
-import java.util.Collection;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -24,7 +21,7 @@ import javax.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -46,6 +43,8 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
 
     @EJB
     private PublisherSessionLocal publisherSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
     
     @Override
     public int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
@@ -77,13 +76,6 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     @Override
     public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException {
         publisherSession.renamePublisher(admin, oldname, newname);
-
-    }
-
-    @Override
-    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN,
-            String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate) throws AuthorizationDeniedException {
-        publisherSession.revokeCertificate(admin, publisherids, new CertificateDataWrapper(cert, null, null), username, userDN, cafp, type, reason, revocationDate, tag, certificateProfileId, lastUpdate);
 
     }
 

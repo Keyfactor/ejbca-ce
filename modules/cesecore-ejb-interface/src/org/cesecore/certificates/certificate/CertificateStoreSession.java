@@ -35,23 +35,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 public interface CertificateStoreSession {
 
     /**
-     * Stores a certificate.
-     * 
-     * @param admin An authentication token to authorize the action
-     * @param incert The certificate to be stored.
-     * @param cafp Fingerprint (hex) of the CAs certificate.
-     * @param username username of end entity owning the certificate.
-     * @param status the status from the CertificateConstants.CERT_ constants
-     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
-     * @param certificateProfileId the certificate profile id this cert was issued under
-     * @param tag a custom string tagging this certificate for some purpose
-     *
-     * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
-     */
-    void storeCertificate(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
-
-    /**
      * Lists fingerprint (primary key) of ALL certificates in the database.
      * NOTE: Caution should be taken with this method as execution may be very
      * heavy indeed if many certificates exist in the database (imagine what
@@ -220,6 +203,15 @@ public interface CertificateStoreSession {
     Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno);
 
     /**
+     * Gets full certificate meta data for the cert specified by issuer DN and serial number.
+     * 
+     * @param issuerDN issuer DN of the desired certificate.
+     * @param serno serial number of the desired certificate!
+     * @return null when not found
+     */
+    CertificateDataWrapper getCertificateDataByIssuerAndSerno(String issuerDN, BigInteger serno);
+    
+    /**
      * Find a certificate by its subject key ID
      * 
      * @param subjectKeyId subject key ID of the sought certificate
@@ -245,7 +237,7 @@ public interface CertificateStoreSession {
      * @param serno the serialnumber of the certificate(s) that will be retrieved
      * @return Certificate or null if none found.
      */
-    Collection<Certificate> findCertificatesBySerno(BigInteger serno);
+    List<CertificateDataWrapper> getCertificateDataBySerno(BigInteger serno);
 
     /**
      * Find the latest published X509Certificate matching the given subject DN
@@ -272,6 +264,15 @@ public interface CertificateStoreSession {
      */
     List<Certificate> findCertificatesByUsername(String username);
 
+    /**
+     * Finds certificate(s) with meta data for a given username.
+     * 
+     * @param username the username of the certificate(s) that will be retrieved
+     * @return List of wrapped CertificateData and Base64CertData ordered by
+     *         expire date, with last expire date first, or empty list if none found.
+     */
+    List<CertificateDataWrapper> getCertificateDataByUsername(String username);
+    
     /**
      * Finds certificate(s) for a given username and status.
      * 
@@ -329,60 +330,28 @@ public interface CertificateStoreSession {
      * @param serno      the serno of certificate to revoke.
      * @param revokeDate when it was revoked
      * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
+     * @deprecated Only used by tests
      */
-    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate,
-            int reason, String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
+    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
 
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
      * @param admin      AuthenticationToken performing the operation
-     * @param issuerdn   Issuer of certificate to be removed.
      * @param certificate the certificate to revoke or activate.
      * @param revokeDate when it was revoked
      * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
+     * @deprecated Only used by tests
      */
-    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason, String userDataDN)
+    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason)
         throws CertificateRevokeException, AuthorizationDeniedException;
     
-    /**
-     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
-     *
-     * @param admin      AuthenticationToken performing the operation
-     * @param issuerdn   Issuer of certificate to be removed.
-     * @param serno      the serno of certificate to revoke.
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
-     * @throws CertificaterevokeException (rollback) if certificate does not exist
-     * @throws AuthorizationDeniedException (rollback)
-     */
-    boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno,
-            int reason, String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
-
-    /**
-     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
-     *
-     * @param admin      AuthenticationToken performing the operation
-     * @param issuerdn   Issuer of certificate to be removed.
-     * @param certificate the certificate to revoke or activate.
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
-     * @throws CertificaterevokeException (rollback) if certificate does not exist
-     * @throws AuthorizationDeniedException (rollback)
-     */
-    boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, int reason, String userDataDN)
-    	throws CertificateRevokeException, AuthorizationDeniedException;
-
     /**
      * Method revoking all certificates generated by the specified issuerdn. Sets revocationDate to current time. 
      * Should only be called by when a CA is about to be revoked.
@@ -392,14 +361,6 @@ public interface CertificateStoreSession {
      * @param reason   the reason of revocation.
      */
     void revokeAllCertByCA(AuthenticationToken admin, String issuerdn, int reason) throws AuthorizationDeniedException;
-
-    /**
-     * Method that checks if a users all certificates have been revoked.
-     * 
-     * @param username the username to check for.
-     * @return returns true if all certificates are revoked.
-     */
-    boolean checkIfAllRevoked(String username);
 
     /**
      * Checks if a certificate is revoked.

@@ -395,7 +395,7 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
-        certificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        certificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -734,7 +734,7 @@ public class IntegratedOcspResponseTest {
             externalCa.setCAToken(token);
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(internalAdmin, externalCa);
-            certificateStoreSession.storeCertificate(internalAdmin, externalCaCertificate, externalCaName, "1234", CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificateRemote(internalAdmin, externalCaCertificate, externalCaName, "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
@@ -758,7 +758,7 @@ public class IntegratedOcspResponseTest {
                         BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
                 X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
-                certificateStoreSession.storeCertificate(internalAdmin, importedCertificate, externalUsername, "1234",
+                certificateStoreSession.storeCertificateRemote(internalAdmin, importedCertificate, externalUsername, "1234",
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
                 try {

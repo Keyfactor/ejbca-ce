@@ -21,7 +21,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +39,8 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -289,12 +290,12 @@ public class PublisherTest {
 		final ArrayList<Integer> publishers = new ArrayList<Integer>();
 		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
 
-		final boolean ret = this.publisherSession.storeCertificate(
-				this.admin, publishers, cert, "test05", "foo123", null, null,
-				CertificateConstants.CERT_ACTIVE,
-				CertificateConstants.CERTTYPE_ENDENTITY,
-				-1, RevokedCertInfo.NOT_REVOKED, "foo",
-				CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        final CertificateData cd = new CertificateData(cert, cert.getPublicKey(), "test05", null, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "foo", System.currentTimeMillis(), true);
+        cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
+        cd.setRevocationDate(-1L);
+        final CertificateDataWrapper cdw = new CertificateDataWrapper(cd, null);
+        final boolean ret = publisherSession.storeCertificate(internalAdmin, publishers, cdw, "foo123", CertTools.getSubjectDN(cert), null);
 		assertTrue("Storing certificate to dummy publisher failed", ret);
 		log.trace("<test07StoreCertToDummyr()");
 	}
@@ -333,9 +334,12 @@ public class PublisherTest {
         }
         final Certificate testCertificate = CertTools.getCertfromByteArray(testcert);
         final String cafp = "CA fingerprint could be anything in this test.";
-        final boolean ret = publisherSession.storeCertificate(this.admin, publishers, testCertificate, "username", "foo123", null, cafp,
-                CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, -1,  RevokedCertInfo.NOT_REVOKED, "tag",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, System.currentTimeMillis(), null);
+        final CertificateData cd = new CertificateData(testCertificate, testCertificate.getPublicKey(), "username", cafp, CertificateConstants.CERT_ACTIVE,
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "tag", System.currentTimeMillis(), true);
+        cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
+        cd.setRevocationDate(-1L);
+        final CertificateDataWrapper cdw = new CertificateDataWrapper(cd, null);
+        final boolean ret = publisherSession.storeCertificate(internalAdmin, publishers, cdw, "foo123", CertTools.getSubjectDN(testCertificate), null);
         assertTrue("Unable to store certificate for " + publishers.size() + " publishers in one call.", ret);
     }
 

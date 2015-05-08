@@ -24,6 +24,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -367,10 +368,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             // Before storing the new certificate, check if single active certificate constraint is active, and if so let's revoke all active and unexpired certificates
             if (certProfile.isSingleActiveCertificateConstraint()) {
-                for (Certificate certificate : certificateStoreSession.findCertificatesBySubjectAndIssuer(endEntityInformation.getCertificateDN(),
-                        caSubjectDN, true)) {
-                    //Authorization to the CA was already checked at the head of this method, so no need to do so now
-                    certificateStoreSession.setRevokeStatusNoAuth(admin, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED, endEntityInformation.getDN());
+                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDatasBySubjectAndIssuer(endEntityInformation.getCertificateDN(), caSubjectDN, true);
+                for (final CertificateDataWrapper cdw : cdws) {
+                    // Authorization to the CA was already checked at the head of this method, so no need to do so now
+                    certificateStoreSession.setRevokeStatusNoAuth(admin, cdw.getCertificateData(), new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                 }
             }
             
@@ -433,7 +434,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // If we don't store the certificate in the database, we wont support revocation/reactivation so issuing revoked certificates would be
                     // really strange.
                     if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage()) {
-                        certificateStoreSession.setRevokeStatusNoAuth(admin, cert, new Date(), revreason, endEntityInformation.getDN());
+                        certificateStoreSession.setRevokeStatus(admin, result, new Date(), revreason);
                     } else {
                         log.warn("CA configured to revoke issued certificates directly, but not to store issued the certificates. Revocation will be ignored. Please verify your configuration.");
                     }

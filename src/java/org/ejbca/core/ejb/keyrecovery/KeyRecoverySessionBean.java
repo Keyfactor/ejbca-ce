@@ -473,6 +473,10 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     @Override
     public boolean existsKeys(Certificate certificate) {
         log.trace(">existsKeys()");
+        if (certificate==null) {
+            log.debug("Key recovery requires a certificate to be present.");
+            return false;
+        }
         boolean returnval = false;
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);

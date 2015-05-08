@@ -271,7 +271,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 
         int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAuthenticationToken(), certificate,
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(), certificate,
                     username, fingerprint, status, certificateType, certificateprofileid, null, new Date().getTime());
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to import certificate.");

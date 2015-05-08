@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web;
 
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -21,6 +20,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -33,6 +33,9 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStatusHelper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
@@ -42,11 +45,10 @@ import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.HTMLTools;
-
-
 
 /**
  * A class transforming X509 certificate data into more readable form used
@@ -57,116 +59,174 @@ import org.ejbca.util.HTMLTools;
 public class CertificateView implements Serializable {
 
     private static final long serialVersionUID = -3511834437471085177L;
-    // Private fields
-    private Certificate  certificate;
-    private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
-    private RevokedInfoView  revokedinfo;
-    private String           username;
-    private String           subjectaltnamestring;
-    private String           subjectdirattrstring;
+    private Certificate certificate;
+    private DNFieldExtractor subjectDnFieldExtractor;
+    private DNFieldExtractor issuerDnFieldExtractor;
+    private RevokedInfoView revokedinfo;
+    private String username;
+    private String subjectaltnamestring;
+    private String subjectdirattrstring;
+    private CertificateData certificateData;
 
-   public static final String[] KEYUSAGETEXTS = {"KU_DIGITALSIGNATURE","KU_NONREPUDIATION", "KU_KEYENCIPHERMENT", "KU_DATAENCIPHERMENT", "KU_KEYAGREEMENT", "KU_KEYCERTSIGN", "KU_CRLSIGN", "KU_ENCIPHERONLY", "KU_DECIPHERONLY" };
-   
+    public static final String[] KEYUSAGETEXTS = {"KU_DIGITALSIGNATURE","KU_NONREPUDIATION", "KU_KEYENCIPHERMENT", "KU_DATAENCIPHERMENT", "KU_KEYAGREEMENT", "KU_KEYCERTSIGN", "KU_CRLSIGN", "KU_ENCIPHERONLY", "KU_DECIPHERONLY" };
+    public static final String UNKNOWN = "-";
 
-	/** Creates a new instance of CertificateView */
-    public CertificateView(Certificate certificate, RevokedInfoView revokedinfo, String username) {
-      this.certificate=certificate;
-      this.revokedinfo= revokedinfo;
-      this.username=username;
-
-      subjectdnfieldextractor = new DNFieldExtractor(CertTools.getSubjectDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
-      issuerdnfieldextractor  = new DNFieldExtractor(CertTools.getIssuerDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
-      
+    /** Creates a new instance of CertificateView */
+    public CertificateView(final CertificateDataWrapper cdw) {
+        certificateData = cdw.getCertificateData();
+        revokedinfo = new RevokedInfoView(CertificateStatusHelper.getCertificateStatus(certificateData), getSerialNumberBigInt(certificate, certificateData));
+        certificate = cdw.getCertificate();
+        username = certificateData.getUsername();
+        subjectDnFieldExtractor = new DNFieldExtractor(certificateData.getSubjectDN(), DNFieldExtractor.TYPE_SUBJECTDN);
+        issuerDnFieldExtractor = new DNFieldExtractor(certificateData.getIssuerDN(), DNFieldExtractor.TYPE_SUBJECTDN);
     }
 
-
-    // Public methods
     /** Method that returns the version number of the X509 certificate. */
     public String getVersion() {
+        if (certificate==null) {
+            return UNKNOWN;
+        }
         if (certificate instanceof X509Certificate) {
-        	X509Certificate x509cert = (X509Certificate)certificate;
+            X509Certificate x509cert = (X509Certificate)certificate;
             return Integer.toString(x509cert.getVersion());
         } else {
-        	return String.valueOf(CVCertificateBody.CVC_VERSION);
+            return String.valueOf(CVCertificateBody.CVC_VERSION);
         }
     }
 
     public String getType() {
-      return certificate.getType();
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        return certificate.getType();
     }
 
     public String getSerialNumber() {
-      return CertTools.getSerialNumberAsString(certificate);
+        if (certificate==null) {
+            try {
+                // This will work for X.509
+                return new BigInteger(certificateData.getSerialNumber(), 10).toString(16).toUpperCase();
+            } catch (NumberFormatException e) {
+                return certificateData.getSerialNumber();
+            }
+        }
+        return CertTools.getSerialNumberAsString(certificate);
     }
 
     public BigInteger getSerialNumberBigInt() {
-      return CertTools.getSerialNumber(certificate);
+        return getSerialNumberBigInt(certificate, certificateData);
+    }
+
+    private BigInteger getSerialNumberBigInt(final Certificate certificate, final CertificateData certificateData) {
+        if (certificate==null) {
+            try {
+                // This will work for X.509
+                return new BigInteger(certificateData.getSerialNumber(), 10);
+            } catch (NumberFormatException e) {
+                return BigInteger.valueOf(0);
+            }
+        }
+        return CertTools.getSerialNumber(certificate);
     }
 
     public String getIssuerDN() {
+        if (certificate==null) {
+            return HTMLTools.htmlescape(certificateData.getIssuerDN());
+        }
     	return HTMLTools.htmlescape(CertTools.getIssuerDN(certificate));
     }
 
     public String getIssuerDNUnEscaped() {
+        if (certificate==null) {
+            return certificateData.getIssuerDN();
+        }
         return CertTools.getIssuerDN(certificate);
       }
 
     public String getIssuerDNField(int field, int number) {
-      return HTMLTools.htmlescape(issuerdnfieldextractor.getField(field, number));
+      return HTMLTools.htmlescape(issuerDnFieldExtractor.getField(field, number));
     }
 
     public String getSubjectDN() {
+        if (certificate==null) {
+            return HTMLTools.htmlescape(certificateData.getSubjectDN());
+        }
     	return HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
     }
 
     public String getSubjectDNField(int field, int number) {
-      return HTMLTools.htmlescape(subjectdnfieldextractor.getField(field, number));
+      return HTMLTools.htmlescape(subjectDnFieldExtractor.getField(field, number));
     }
 
     public Date getValidFrom() {
-      return CertTools.getNotBefore(certificate);
+        if (certificate==null) {
+            return new Date(0);
+        }
+        return CertTools.getNotBefore(certificate);
+    }
+
+    public String getValidFromString() {
+        if (certificate==null) {
+            return "-";
+        }
+        return ValidityDate.formatAsISO8601(CertTools.getNotBefore(certificate), ValidityDate.TIMEZONE_SERVER);
     }
 
     public Date getValidTo() {
-      return CertTools.getNotAfter(certificate);
+        if (certificate==null) {
+            return new Date(certificateData.getExpireDate());
+        }
+        return CertTools.getNotAfter(certificate);
     }
 
-    public boolean checkValidity(){
-      boolean valid = true;
-      try{
-        CertTools.checkValidity(certificate, new Date());
-      }
-      catch( CertificateExpiredException e){
-        valid=false;
-      }
-      catch(CertificateNotYetValidException e){
-         valid=false;
-      }
-
-      return valid;
+    public String getValidToString() {
+        return ValidityDate.formatAsISO8601(getValidTo(), ValidityDate.TIMEZONE_SERVER);
     }
 
-    public boolean checkValidity(Date date)  {
-      boolean valid = true;
-      try{
-        CertTools.checkValidity(certificate, date);
-      }
-      catch( CertificateExpiredException e){
-        valid=false;
-      }
-      catch(CertificateNotYetValidException e){
-         valid=false;
-      }
+    public boolean checkValidity() {
+        if (certificate==null) {
+            // We can't check not before field in this case, so make a best effort
+            return certificateData.getExpireDate()>=System.currentTimeMillis();
+        }
+        boolean valid = true;
+        try {
+            CertTools.checkValidity(certificate, new Date());
+        } catch (CertificateExpiredException e) {
+            valid = false;
+        } catch (CertificateNotYetValidException e) {
+            valid = false;
+        }
+        return valid;
+    }
 
-      return valid;
+    public boolean checkValidity(final Date date)  {
+        if (certificate==null) {
+            // We can't check not before field in this case, so make a best effort
+            return certificateData.getExpireDate()>=date.getTime();
+        }
+        boolean valid = true;
+        try {
+            CertTools.checkValidity(certificate, date);
+        } catch (CertificateExpiredException e) {
+            valid = false;
+        } catch (CertificateNotYetValidException e) {
+            valid = false;
+        }
+        return valid;
     }
 
     public String getPublicKeyAlgorithm(){
-      return certificate.getPublicKey().getAlgorithm();
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        return certificate.getPublicKey().getAlgorithm();
     }
     
     public String getKeySpec(String localizedBitsText) {
-    	if( certificate.getPublicKey() instanceof ECPublicKey ) {
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+    	if (certificate.getPublicKey() instanceof ECPublicKey) {
     		return AlgorithmTools.getKeySpecification(certificate.getPublicKey());
     	} else {
     		return "" + KeyTools.getKeyLength(certificate.getPublicKey()) + " " + localizedBitsText;
@@ -174,11 +234,17 @@ public class CertificateView implements Serializable {
     }
 
     public String getPublicKeyLength(){
-      int len = KeyTools.getKeyLength(certificate.getPublicKey());
-      return len > 0 ? ""+len : null; 
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        int len = KeyTools.getKeyLength(certificate.getPublicKey());
+        return len > 0 ? ""+len : null; 
     }
 
     public String getPublicKeyModulus(){
+        if (certificate==null) {
+            return UNKNOWN;
+        }
     	String mod = null;
     	if( certificate.getPublicKey() instanceof RSAPublicKey){
     		mod = "" + ((RSAPublicKey)certificate.getPublicKey()).getModulus().toString(16);
@@ -198,12 +264,19 @@ public class CertificateView implements Serializable {
     }
 
     public String getSignatureAlgoritm() {
+        if (certificate==null) {
+            // We could lookup the issuer and show a probably algorithm that was used, but we will never know for sure
+            return UNKNOWN;
+        }
     	// Only used for displaying to user so we can use this value that always works
     	return AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
     }
 
     /** Method that returns if key is allowed for given usage. Usage must be one of this class key usage constants. */
     public boolean getKeyUsage(int usage) {
+        if (certificate==null) {
+            return false;
+        }
     	boolean returnval = false;
     	if (certificate instanceof X509Certificate) {
     		X509Certificate x509cert = (X509Certificate)certificate;
@@ -217,26 +290,31 @@ public class CertificateView implements Serializable {
     }
 
     public String[] getExtendedKeyUsageAsTexts(){
-     List<String> extendedkeyusage = null;  
-      if (certificate instanceof X509Certificate) {
-    	  X509Certificate x509cert = (X509Certificate)certificate;
-          try {  
-              extendedkeyusage = x509cert.getExtendedKeyUsage();  
-            } catch (java.security.cert.CertificateParsingException e) {}  
-      }
-      if(extendedkeyusage == null) {
-        extendedkeyusage = new ArrayList<String>();
-      }
-      String[] returnval = new String[extendedkeyusage.size()]; 
-      Map<String,String> map = CertificateProfile.getAllExtendedKeyUsageTexts();
-      for(int i=0; i < extendedkeyusage.size(); i++){
-        returnval[i] = (String)map.get(extendedkeyusage.get(i));    
-      }
-        
-      return returnval; 
+        if (certificate==null) {
+            return new String[0];
+        }
+        List<String> extendedkeyusage = null;
+        if (certificate instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate)certificate;
+            try {
+                extendedkeyusage = x509cert.getExtendedKeyUsage();  
+            } catch (CertificateParsingException e) {}
+        }
+        if (extendedkeyusage == null) {
+            extendedkeyusage = new ArrayList<String>();
+        }
+        final String[] returnval = new String[extendedkeyusage.size()];
+        final Map<String,String> map = CertificateProfile.getAllExtendedKeyUsageTexts();
+        for (int i=0; i<extendedkeyusage.size(); i++) {
+            returnval[i] = (String)map.get(extendedkeyusage.get(i));
+        }
+        return returnval; 
     }
 
     public String getBasicConstraints(String localizedNoneText, String localizedNolimitText, String localizedEndEntityText, String localizedCaPathLengthText) {
+        if (certificate==null) {
+            return UNKNOWN;
+        }
     	String retval = localizedNoneText;	//ejbcawebbean.getText("EXT_NONE");
     	if (certificate instanceof X509Certificate) {
     		X509Certificate x509cert = (X509Certificate)certificate;
@@ -260,40 +338,52 @@ public class CertificateView implements Serializable {
     }
 
     public String getSignature() {
-      return (new java.math.BigInteger(CertTools.getSignature(certificate))).toString(16);
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        return new BigInteger(CertTools.getSignature(certificate)).toString(16);
     }
 
     public String getSHA1Fingerprint(){
-      String returnval = "";
-      try {
-         byte[] res = CertTools.generateSHA1Fingerprint(certificate.getEncoded());
-         String ret = new String(Hex.encode(res));
-         returnval = ret.toUpperCase();
-      } catch (CertificateEncodingException cee) {
-      }
-      return  returnval;
+        if (certificate==null) {
+            return certificateData.getFingerprint().toUpperCase();
+        }
+        String returnval = "";
+        try {
+            byte[] res = CertTools.generateSHA1Fingerprint(certificate.getEncoded());
+            String ret = new String(Hex.encode(res));
+            returnval = ret.toUpperCase();
+        } catch (CertificateEncodingException e) {
+        }
+        return returnval;
     }
 
     public String getSHA256Fingerprint(){
+        if (certificate==null) {
+            return UNKNOWN;
+        }
         String returnval = "";
         try {
-           byte[] res = CertTools.generateSHA256Fingerprint(certificate.getEncoded());
-           String ret = new String(Hex.encode(res));
-           returnval = ret.toUpperCase();
-        } catch (CertificateEncodingException cee) {
+            byte[] res = CertTools.generateSHA256Fingerprint(certificate.getEncoded());
+            String ret = new String(Hex.encode(res));
+            returnval = ret.toUpperCase();
+        } catch (CertificateEncodingException e) {
         }
-        return  returnval;
-      }
+        return returnval;
+    }
 
     public String getMD5Fingerprint(){
-      String returnval = "";
-      try {
-         byte[] res = CertTools.generateMD5Fingerprint(certificate.getEncoded());
-         String ret = new String(Hex.encode(res));
-         returnval = ret.toUpperCase();
-      } catch (CertificateEncodingException cee) {
-      }
-      return  returnval;
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        String returnval = "";
+        try {
+            byte[] res = CertTools.generateMD5Fingerprint(certificate.getEncoded());
+            String ret = new String(Hex.encode(res));
+            returnval = ret.toUpperCase();
+        } catch (CertificateEncodingException e) {
+        }
+        return returnval;
     }
 
     public boolean isRevokedAndOnHold(){
@@ -301,53 +391,61 @@ public class CertificateView implements Serializable {
     }
 
     public boolean isRevoked(){
-      return revokedinfo != null && revokedinfo.isRevoked();     
+        return revokedinfo != null && revokedinfo.isRevoked();     
     }
 
     public String getRevocationReason(){
-      String returnval = null;
-      if(revokedinfo != null) {
-        returnval = revokedinfo.getRevocationReason();
-      }
-      return returnval;
+        String returnval = null;
+        if (revokedinfo != null) {
+            returnval = revokedinfo.getRevocationReason();
+        }
+        return returnval;
     }
 
     public Date getRevocationDate(){
-      Date returnval = null;
-      if(revokedinfo != null) {
-        returnval = revokedinfo.getRevocationDate();
-      }
-      return returnval;
+        Date returnval = null;
+        if (revokedinfo != null) {
+            returnval = revokedinfo.getRevocationDate();
+        }
+        return returnval;
     }
 
     public String getUsername(){
-      return this.username;
+        return username;
     }
 
     public Certificate getCertificate(){
-      return certificate;
+        return certificate;
     }
     
     public String getSubjectDirAttr() {
-    	if(subjectdirattrstring == null) {
-    		try {
-    			subjectdirattrstring = SubjectDirAttrExtension.getSubjectDirectoryAttributes(certificate);
-    		} catch (Exception e) {
-    			subjectdirattrstring = e.getMessage();		
-    		}
-    	}
-    	return subjectdirattrstring;
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        if (subjectdirattrstring == null) {
+            try {
+                subjectdirattrstring = SubjectDirAttrExtension.getSubjectDirectoryAttributes(certificate);
+            } catch (Exception e) {
+                subjectdirattrstring = e.getMessage();
+            }
+        }
+        return subjectdirattrstring;
     }
     
     public String getSubjectAltName() {
-    	if(subjectaltnamestring == null){  
-    		subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
-    	}        
-
-      return subjectaltnamestring; 	
+        if (certificate==null) {
+            return UNKNOWN;
+        }
+        if (subjectaltnamestring == null) {
+            subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
+        }        
+        return subjectaltnamestring; 	
     }
     
     public boolean hasNameConstraints() {
+        if (certificate==null) {
+            return false;
+        }
         if (certificate instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate)certificate;
             byte[] ext = x509cert.getExtensionValue(Extension.nameConstraints.getId());
@@ -357,6 +455,9 @@ public class CertificateView implements Serializable {
     }
 
     public boolean hasQcStatement() {
+        if (certificate==null) {
+            return false;
+        }
     	boolean ret = false; 
     	try {
 			ret = QCStatementExtension.hasQcStatement(certificate);
@@ -367,6 +468,9 @@ public class CertificateView implements Serializable {
     }
 
     public boolean hasCertificateTransparencySCTs() {
+        if (certificate==null) {
+            return false;
+        }
         CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
         return (ct != null && ct.hasSCTs(certificate));
     }
