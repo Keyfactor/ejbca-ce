@@ -665,8 +665,8 @@ function confirmrepublish(){
        </tr> 
 
        <tr id="Row<%=row%2%>">
-          <td>               
-            <% if(!cacerts){ %>
+          <td>
+            <% if (!cacerts && certificatedata.getCertificate()!=null) { %>
             <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDNUnEscaped() %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a><br/>
             <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDNUnEscaped() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br/>
             <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDNUnEscaped() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
