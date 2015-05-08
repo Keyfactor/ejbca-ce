@@ -185,7 +185,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                                     missing_user_name, EndEntityConstants.STATUS_REVOKED);
                             log.info("User '" + missing_user_name + "' has been updated.");
                         }
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAuthenticationToken(),
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(),
                                 certificate, missing_user_name, fingerprint, CertificateConstants.CERT_ACTIVE,
                                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null,
                                 new Date().getTime());

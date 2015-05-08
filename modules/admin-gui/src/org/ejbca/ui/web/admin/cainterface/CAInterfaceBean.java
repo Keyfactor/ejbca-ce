@@ -31,7 +31,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -65,8 +64,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
-import org.cesecore.certificates.certificate.CertificateInfo;
-import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -76,7 +74,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSession;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -109,7 +106,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
@@ -200,21 +196,11 @@ public class CAInterfaceBean implements Serializable {
 
     public CertificateView[] getCACertificates(int caid) {
     	try {
-    		final Collection<Certificate> chain = signsession.getCertificateChain(authenticationToken, caid);
-    		final CertificateView[] returnval = new CertificateView[chain.size()];
-    		final Iterator<Certificate> iter = chain.iterator();
-    		int i=0;
-    		while(iter.hasNext()){
-    			final Certificate next = iter.next();  
-    			RevokedInfoView revokedinfo = null;
-    			CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
-    			if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
-    				revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
-    			}
-    			returnval[i] = new CertificateView(next, revokedinfo, null);
-    			i++;
+            final List<CertificateView> ret = new ArrayList<CertificateView>();
+    		for (final Certificate certificate : signsession.getCertificateChain(authenticationToken, caid)) {
+    		    ret.add(new CertificateView(certificatesession.getCertificateData(CertTools.getFingerprintAsString(certificate))));
     		}
-    		return returnval;
+    		return ret.toArray(new CertificateView[0]);
     	} catch (AuthorizationDeniedException e) {
     		throw new RuntimeException(e);
     	}
@@ -434,32 +420,24 @@ public class CAInterfaceBean implements Serializable {
 	public String republish(CertificateView certificateView) throws AuthorizationDeniedException {
 		String returnval = "CERTREPUBLISHFAILED";
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
-		String username = null;
 		String password = null;
-		String dn = null;
+		String dn = certificateView.getSubjectDN();
 		ExtendedInformation ei = null;
-		final Certificate certificate = certificateView.getCertificate();
-		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
+		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(certificateView.getSerialNumberBigInt(), certificateView.getIssuerDN());
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
 			// We need this since the certificate subjectDN might be a subset of the subjectDN in the template
 			certificateProfileId = certreqhist.getEndEntityInformation().getCertificateProfileId();
-			username = certreqhist.getEndEntityInformation().getUsername();
 			password = certreqhist.getEndEntityInformation().getPassword();
 			dn = certreqhist.getEndEntityInformation().getCertificateDN();
 			ei = certreqhist.getEndEntityInformation().getExtendedinformation();
 		}
-		final CertificateInfo certinfo = certificatesession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
-		if (certinfo != null) {
+		final String fingerprint = certificateView.getSHA1Fingerprint().toLowerCase();
+		final CertificateDataWrapper cdw = certificatesession.getCertificateData(fingerprint);
+		if (cdw != null) {
 			// If we are missing Certificate Request History for this certificate, we can at least recover some of this info
 			if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-				certificateProfileId = certinfo.getCertificateProfileId();
-			}
-			if (username == null) {
-				username = certinfo.getUsername();
-			}
-			if (dn == null) {
-				dn = certinfo.getSubjectDN();
+				certificateProfileId = cdw.getCertificateData().getCertificateProfileId();
 			}
 		}
 		if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
@@ -469,11 +447,9 @@ public class CAInterfaceBean implements Serializable {
 			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
-					if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), certificateView.getCertificate(), username, password, dn,
-							certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(),
-							certinfo.getTag(), certificateProfileId, certinfo.getUpdateTime().getTime(), ei)) {
-						returnval = "CERTREPUBLISHEDSUCCESS";
-					}
+                    if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), cdw, password, dn, ei)) {
+                        returnval = "CERTREPUBLISHEDSUCCESS";
+                    }
 				} else {
 					returnval = "NOPUBLISHERSDEFINED";
 				}
@@ -484,7 +460,7 @@ public class CAInterfaceBean implements Serializable {
 		return returnval; 
 	}
 
-	/** Class used to sort CertReq History by users modfifytime, with latest first*/
+	/** Class used to sort CertReq History by users modified time, with latest first*/
 	private class CertReqUserCreateComparator implements Comparator<CertReqHistory> {
 		@Override
 		public int compare(CertReqHistory o1, CertReqHistory o2) {

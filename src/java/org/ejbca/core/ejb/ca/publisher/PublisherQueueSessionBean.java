@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +31,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.SessionContext;
@@ -43,12 +43,11 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -79,6 +78,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @Resource
     private SessionContext sessionContext;
     
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
 
@@ -308,12 +310,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         + ", type: " + publishType);
             }
             PublisherQueueVolatileInformation voldata = pqd.getVolatileData();
-            String username = null;
             String password = null;
             ExtendedInformation ei = null;
             String userDataDN = null;
             if (voldata != null) {
-                username = voldata.getUsername();
                 password = voldata.getPassword();
                 ei = voldata.getExtendedInformation();
                 userDataDN = voldata.getUserDN();
@@ -330,23 +330,12 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         // again
                         // TODO: we might need change fetch-type for all but the
                         // actual cert or a native query w SqlResultSetMapping..
-
-                        CertificateData cd = CertificateData.findByFingerprint(entityManager, fingerprint);
-                        final Base64CertData base64CertData;
-                        if(CesecoreConfiguration.useBase64CertTable()) {
-                            base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
-                        } else {
-                            base64CertData = null;
-                        }
-                        if (cd == null) {
+                        final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
+                        if (certificateDataWrapper==null) {
                             throw new FinderException();
                         }
-                        final Certificate cert = cd.getCertificate(this.entityManager);
-                        
                         try {
-                            published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, new CertificateDataWrapper(cert, cd, base64CertData), username, password,
-                                    userDataDN, cd.getCaFingerprint(), cd.getStatus(), cd.getType(), cd.getRevocationDate(),
-                                    cd.getRevocationReason(), cd.getTag(), cd.getCertificateProfileId(), cd.getUpdateTime(), ei);
+                            published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, certificateDataWrapper, password, userDataDN, ei);
                         } catch (EJBException e) {
                             final Throwable t = e.getCause();
                             if (t instanceof PublisherException) {
@@ -430,14 +419,23 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper, String username,
-            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag,
-            int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
+    public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper,
+            String password, String userDN, ExtendedInformation extendedinformation) throws PublisherException {
         if (publisher.isFullEntityPublishingSupported()) {
             return publisher.storeCertificate(admin, certWrapper.getCertificateData(), certWrapper.getBase64CertData());
         } else {
-            return publisher.storeCertificate(admin, certWrapper.getCertificate(), username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag,
-                    certificateProfileId, lastUpdate, extendedinformation);
+            final CertificateData certificateData = certWrapper.getCertificateData();
+            final String cAFingerprint = certificateData.getCaFingerprint();
+            final int status = certificateData.getStatus();
+            final int type = certificateData.getType();
+            final long revocationDate = certificateData.getRevocationDate();
+            final int revocationReason = certificateData.getRevocationReason();
+            final String username = certificateData.getUsername();
+            final String tag  = certificateData.getTag();
+            final Integer certificateProfileId = certificateData.getCertificateProfileId();
+            final Long updateTime = certificateData.getUpdateTime();
+            return publisher.storeCertificate(admin, certWrapper.getCertificate(), username, password, userDN, cAFingerprint, status, type, revocationDate,
+                    revocationReason, tag, certificateProfileId, updateTime, extendedinformation);
         }
     }
 
@@ -452,9 +450,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public List<Object> storeCertificateNonTransactionalInternal(final List<BasePublisher> publishers, final AuthenticationToken admin,
-            final CertificateDataWrapper certWrapper, final String username, final String password, final String userDN, final String cafp, final int status,
-            final int type, final long revocationDate, final int revocationReason, final String tag, final int certificateProfileId,
-            final long lastUpdate, final ExtendedInformation extendedinformation) {
+            final CertificateDataWrapper certWrapper, final String password, final String userDN, final ExtendedInformation extendedinformation) {
         final List<Object> publisherResults = new ArrayList<Object>();
         final boolean parallel = EjbcaConfiguration.isPublishParallelEnabled();
         // Are we doing parallel publishing (only meaningful if there is more than one publisher configured)?
@@ -470,8 +466,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                     final Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            if (!storeCertificateNonTransactional(publisher, admin, certWrapper, username, password, userDN, cafp, status, type,
-                                    revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                            if (!storeCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
                                 throw new PublisherException("Return code from publisher is false.");
                             }
                             return Boolean.TRUE;
@@ -485,8 +480,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             // Execute the first publishing in the calling thread
             Object publisherResultFirst;
             try {
-                if (!storeCertificateNonTransactional(publisherFirst, admin, certWrapper, username, password, userDN, cafp, status, type, revocationDate,
-                        revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                if (!storeCertificateNonTransactional(publisherFirst, admin, certWrapper, password, userDN, extendedinformation)) {
                     throw new PublisherException("Return code from publisher is false.");
                 }
                 publisherResultFirst = Boolean.TRUE;
@@ -509,8 +503,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             // Perform publishing sequentially (old fall back behavior)
             for (final BasePublisher publisher : publishers) {
                 try {
-                    if (!storeCertificateNonTransactional(publisher, admin, certWrapper, username, password, userDN, cafp, status, type, revocationDate,
-                            revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                    if (!storeCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
                         throw new PublisherException("Return code from publisher is false.");
                     }
                     publisherResults.add(Boolean.TRUE);

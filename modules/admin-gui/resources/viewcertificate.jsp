@@ -79,7 +79,7 @@
   if( request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null){
      username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
      tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
-     rabean.loadTokenCertificates(tokensn,username);
+     rabean.loadTokenCertificates(tokensn);
      notauthorized = false;
      noparameter = false;
   }
@@ -149,7 +149,7 @@
 	 }
      try {
        if(tokensn !=null) {
-         rabean.loadTokenCertificates(tokensn,username);
+         rabean.loadTokenCertificates(tokensn);
        } else {
          if(username != null) {
            rabean.loadCertificates(username);
@@ -184,7 +184,7 @@
 		
 		try {
 			if(tokensn !=null) {
-				rabean.loadTokenCertificates(tokensn,username);
+				rabean.loadTokenCertificates(tokensn);
 			} else {
 				if(username != null) {
 					rabean.loadCertificates(username);
@@ -215,7 +215,7 @@
      }       
      try{
        if(tokensn !=null) {
-        rabean.loadTokenCertificates(tokensn,username);
+        rabean.loadTokenCertificates(tokensn);
        } else { 
          if(username != null) {
            rabean.loadCertificates(username);
@@ -237,7 +237,7 @@
      message = cabean.republish(certificatedata); 
      try{
        if(tokensn !=null)
-         rabean.loadTokenCertificates(tokensn,username);
+         rabean.loadTokenCertificates(tokensn);
        else 
          if(username != null)
            rabean.loadCertificates(username);
@@ -424,11 +424,11 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDFROM") %></td>
-		 <td><%= ejbcawebbean.formatAsISO8601(certificatedata.getValidFrom()) %></td>
+		 <td><%= certificatedata.getValidFromString() %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDTO") %></td>
-		 <td><%= ejbcawebbean.formatAsISO8601(certificatedata.getValidTo()) %></td>
+		 <td><%= certificatedata.getValidToString() %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>" class="title">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>

@@ -57,7 +57,6 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -78,10 +77,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -425,7 +422,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         final long updateTime = System.currentTimeMillis();
                         // Issue the certificate from the request
                         ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass, fetchCertGenParams(), updateTime);
-                        postCreateCertificate(admin, data, ca, new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), updateTime);
+                        postCreateCertificate(admin, data, ca, new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()));
                     }
                 } catch (ObjectNotFoundException e) {
                     // If we didn't find the entity return error message
@@ -834,7 +831,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
                 sequence, fetchCertGenParams(), updateTime);
-        postCreateCertificate(admin, data, ca, certWrapper, updateTime);
+        postCreateCertificate(admin, data, ca, certWrapper);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
@@ -860,45 +857,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param endEntity the end entity involved
      * @param ca the relevant CA
      * @param certificate the newly created Certificate
-     * @param updateTime the time when this operation takes place
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
-    private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final CertificateDataWrapper certificateWrapper, final long updateTime) throws AuthorizationDeniedException {
+    private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca, final CertificateDataWrapper certificateWrapper) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
         }
-
-        /* Store certificate in certificate profiles publishers. But check if the certificate was revoked directly on issuance, 
-         * the revocation was then handled by CertificateCreateSession, but that session does not know about publishers to we need 
-         * to manage it here with unfortunately a little duplicated code. We could just look up certificate info to see what the
-         * result was, but that would be very slow since it probably would cause an extra database lookup. Therefore we do it here 
-         * similarly to what we do in CertificateCreateSession. 
-         */
         final int certProfileId = endEntity.getCertificateProfileId();
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         final Collection<Integer> publishers = certProfile.getPublisherList();
         if (!publishers.isEmpty()) {
-            final String username = endEntity.getUsername();
-            final Certificate cacert = ca.getCACertificate();
-            final String cafingerprint = CertTools.getFingerprintAsString(cacert);
-            final String tag = null; // TODO: this should not be hard coded here, but as of now (2012-02-14) tag is not used, but only there for the future.
-            final long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
-            int certstatus = CertificateConstants.CERT_ACTIVE;
-            int revreason = RevokedCertInfo.NOT_REVOKED;
-            final ExtendedInformation ei = endEntity.getExtendedinformation();
-            if (ei != null) {          
-                revreason = ei.getIssuanceRevocationReason();            
-                if (revreason != RevokedCertInfo.NOT_REVOKED) {
-                    certstatus = CertificateConstants.CERT_REVOKED;
-                }
-            }
-
-            publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, username, endEntity.getPassword(),
-                    endEntity.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId,
-                    updateTime, endEntity.getExtendedinformation());
+            publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(), endEntity.getCertificateDN(), endEntity.getExtendedinformation());
         }
     }
-
 }

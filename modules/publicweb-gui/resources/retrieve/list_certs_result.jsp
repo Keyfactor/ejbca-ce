@@ -29,8 +29,8 @@
 <pre>
 <c:out value="Subject:            ${certificate.subjectDN}" />
 <c:out value="Issuer:             ${certificate.issuerDN}" />
-<c:out value="NotBefore:          ${certificate.validFrom}" />
-<c:out value="NotAfter:           ${certificate.validTo}" />
+<c:out value="NotBefore:          ${certificate.validFromString}" />
+<c:out value="NotAfter:           ${certificate.validToString}" />
 <c:out value="Serial number:      ${certificate.serialNumber}" />
 <c:out value="SHA1 fingerprint:   ${certificate.SHA1Fingerprint}" />
 <c:out value="SHA256 fingerprint: ${certificate.SHA256Fingerprint}" />
@@ -41,7 +41,9 @@
                             <c:param name="serno" value="${certificate.serialNumber}" />
                             <c:param name="hidemenu" value="${hidemenu}" />
                         </c:url>
-                        <p><a href="${download}">Download certificate</a></p>
+                        <c:if test="${certificate.certificate != null}">
+	                        <p><a href="${download}">Download certificate</a></p>
+                        </c:if>
                         <c:url var="check_status" value="check_status_result.jsp" >
                             <c:param name="issuer" value="${certificate.issuerDN}" />
                             <c:param name="serno" value="${certificate.serialNumber}" />

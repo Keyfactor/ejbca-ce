@@ -863,6 +863,16 @@ If EJBCA is used as a certificate factory, where the functionality of the Admin 
 <a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> section in the Admin Guide for more information about this mode.
 </p>
 </subsubsection>
+<subsubsection name="Store Certificate">
+<p>
+Disabling this setting allows meta information about certificates be stored, but will omit storing the actual certifate data to the database.
+Meta information about the certificate includes revocation status, expiration information, fingerprint, etc.
+</p>
+<note>
+Enabling this will prevent features that depends on the actual certificate being present from working.
+This setting is by default true and shouldn't be modified unless understood well.
+</note>
+</subsubsection>
 <subsubsection name="Path Length Constraints">
 <p>
 Note: this extension is only applicable for immediate CA certificates

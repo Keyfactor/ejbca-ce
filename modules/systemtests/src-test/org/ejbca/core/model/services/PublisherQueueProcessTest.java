@@ -154,7 +154,7 @@ public class PublisherQueueProcessTest {
         // publisherId before
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         try {
-            certificateStoreSession.storeCertificate(admin, cert, "TestPublishQueueProcessService", null, CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificateRemote(admin, cert, "TestPublishQueueProcessService", null, CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
         } catch (Exception e) {
             // Perhaps the cert already exists

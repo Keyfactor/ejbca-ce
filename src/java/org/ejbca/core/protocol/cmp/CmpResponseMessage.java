@@ -129,7 +129,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient String pbeKey = null;
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
-    
+
+    @Override
     public CertificateData getCertificateData() {
         return certificateData;
     }

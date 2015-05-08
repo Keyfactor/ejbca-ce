@@ -54,7 +54,8 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -67,7 +68,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -88,10 +89,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
-import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
-import org.ejbca.util.cert.CertificateNotBeforeComparator;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -122,7 +121,7 @@ public class RAInterfaceBean implements Serializable {
     private CertificateStoreSession certificatesession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    private HardTokenSession hardtokensession;
+    private HardTokenSessionLocal hardtokensession;
     private KeyRecoverySession keyrecoverysession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private UserDataSourceSession userdatasourcesession;
@@ -398,33 +397,29 @@ public class RAInterfaceBean implements Serializable {
     }
 
     /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. */
-    public UserView[] filterByCertificateSerialNumber(String serialnumber, int index, int size) throws NumberFormatException {
-    	serialnumber = StringTools.stripWhitespace(serialnumber);
-    	BigInteger serno = new BigInteger(serialnumber,16);
-    	Collection<Certificate> certs = certificatesession.findCertificatesBySerno(serno);
-    	ArrayList<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
-    	UserView[] returnval = null;
-    	if (certs != null) {
-    		for(Certificate next : certs) {
-    			try {
-    				String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(next));
-    				if (username != null) {
-    				    EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-    					if (user != null) {
-    						userlist.add(user);
-    					}            	 
-    				}
-    				if (userlist.isEmpty()) {
-    				    // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
-                        List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));     
-                            userlist.addAll(users);
-    				}
-    			} catch(AuthorizationDeniedException e) {}
-    		}
-    		usersView.setUsers(userlist, informationmemory.getCAIdToNameMap());
-    		returnval = usersView.getUsers(index,size);
+    public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size) throws NumberFormatException {
+    	final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
+    	final List<CertificateDataWrapper> cdws = certificatesession.getCertificateDataBySerno(serno);
+    	final List<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
+    	for (final CertificateDataWrapper next : cdws) {
+    	    final CertificateData certdata = next.getCertificateData();
+    	    try {
+    	        final String username = certdata.getUsername();
+    	        if (username != null) {
+    	            final EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
+    	            if (user != null) {
+    	                userlist.add(user);
+    	            }            	 
+    	        }
+    	        if (userlist.isEmpty()) {
+    	            // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
+    	            final List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, certdata.getSubjectDN(), certdata.getIssuerDN());
+    	            userlist.addAll(users);
+    	        }
+    	    } catch(AuthorizationDeniedException e) {}
     	}
-    	return returnval;
+    	usersView.setUsers(userlist, informationmemory.getCAIdToNameMap());
+    	return usersView.getUsers(index, size);
     }
 
     /** Method that lists all users with certificate's that expires within given days. */
@@ -594,43 +589,28 @@ public class RAInterfaceBean implements Serializable {
     	profiles.cloneEndEntityProfile(originalname, newname);
     }
 
-    public void loadCertificates(String username) {
-        Collection<Certificate> certs = certificatesession.findCertificatesByUsername(username);    
-        loadCertificateView(certs, username);
+    public void loadCertificates(final String username) {
+        loadTokenCertificates(certificatesession.getCertificateDataByUsername(username));
     }
 
-    public void loadTokenCertificates(String tokensn, String username) {
-        Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(tokensn);
-        loadCertificateView(certs, username);
+    public void loadTokenCertificates(final String tokensn) {
+        loadTokenCertificates(hardtokensession.getCertificateDatasFromHardToken(tokensn));
     }
-    
-    /** Helper method loading CertificateView and RevokedInfoView arrays given a collection of certificates.
-     * 
-     * @param certs certificates to process
-     * @param username user the certs belong to
-     */
-    private void loadCertificateView(Collection<Certificate> certs, String username) {
-    	if(!certs.isEmpty()){
-    		ArrayList<Certificate> list = new ArrayList<Certificate>(certs);
-        	if (certs.size() < 50) {
-        		Collections.sort(list, new CertificateNotBeforeComparator());        		
-        	} else {
-        		log.debug("User has more than 50 certificates, we will not sort them");
-        	}
-    		Iterator<Certificate> j = list.iterator();
-    		certificates = new CertificateView[list.size()];
-    		for(int i=0; i< certificates.length; i++){
-    			RevokedInfoView revokedinfo = null;
-    			Certificate cert = (Certificate) j.next();
-    			CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-    			if(revinfo != null) {
-    				revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
-    			}
-    			certificates[i] = new CertificateView(cert, revokedinfo, username);
-    		}
-    	} else{
-    		certificates = null;
-    	}
+
+    private void loadTokenCertificates(final List<CertificateDataWrapper> cdws) {
+        if (!cdws.isEmpty()) {
+            if (cdws.size() <= 50) {
+                Collections.sort(cdws);
+            } else {
+                log.debug("User has more than 50 certificates, we will not sort them");
+            }
+            certificates = new CertificateView[cdws.size()];
+            for (int i=0; i<certificates.length; i++) {
+                certificates[i] = new CertificateView(cdws.get(i));
+            }
+        } else{
+            certificates = null;
+        }
     }
 
     public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
@@ -703,20 +683,14 @@ public class RAInterfaceBean implements Serializable {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + issuerdn.hashCode(), "Not authorized to view certificate.");
 	        throw new AuthorizationDeniedException(msg);
         }
-        Certificate cert = certificatesession.findCertificateByIssuerAndSerno(issuerdn, serno);
-        if (cert != null) {
-            RevokedInfoView revokedinfo = null;
-            String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(cert));
-            if (this.endEntityAccessSession.findUser(administrator, username) != null) {
-                int endentityprofileid = this.endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
-                this.endEntityAuthorization(administrator, endentityprofileid, AccessRulesConstants.VIEW_END_ENTITY, true);
+    	final CertificateDataWrapper cdw = certificatesession.getCertificateDataByIssuerAndSerno(issuerdn, serno);
+        if (cdw != null) {
+            final String username = cdw.getCertificateData().getUsername();
+            if (endEntityAccessSession.findUser(administrator, username) != null) {
+                final int endentityprofileid = endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
+                endEntityAuthorization(administrator, endentityprofileid, AccessRulesConstants.VIEW_END_ENTITY, true);
             }
-            CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-            if (revinfo != null) {
-                revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
-            }
-            certificates = new CertificateView[1];
-            certificates[0] = new CertificateView(cert, revokedinfo, username);
+            certificates = new CertificateView[] { new CertificateView(cdw) };
         } else {
             certificates = null;
         }

@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.revoke;
 
-import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -34,7 +33,6 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -75,74 +73,48 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void revokeCertificate(final AuthenticationToken admin, final String issuerdn, final BigInteger serno, final Date revokedate, final Collection<Integer> publishers, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
-    	}
-    	final Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerdn, serno);
-    	if (cert != null) { 
-    		revokeCertificate(admin, cert, publishers, revokedate, reason, userDataDN);
-    	} else {
-    	    final String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
-    		log.info(msg);
-    		throw new CertificateRevokeException(msg);
-    	}
-    	if (log.isTraceEnabled()) {
-            log.trace("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
-    	}
+    public void revokeCertificate(final AuthenticationToken admin, final Certificate cert, final Collection<Integer> publishers, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
+        final Date revokedate = new Date();
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert));
+        if (cdw != null) { 
+            revokeCertificate(admin, cdw, publishers, revokedate, reason, userDataDN);
+        } else {
+            final String msg = intres.getLocalizedMessage("store.errorfindcertserno", CertTools.getSerialNumber(cert));              
+            log.info(msg);
+            throw new CertificateRevokeException(msg);
+        }
+    	revokeCertificate(admin, cdw, publishers, new Date(), reason, userDataDN);
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void revokeCertificate(final AuthenticationToken admin, final Certificate cert, final Collection<Integer> publishers, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	revokeCertificate(admin, cert, publishers, new Date(), reason, userDataDN);
-    }
-    
-    private void revokeCertificate(final AuthenticationToken admin, final Certificate cert, final Collection<Integer> publishers, final Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	if (cert == null) {
-    		return;
-    	}
-    	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cert, revocationDate, reason, userDataDN);
+    public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers, Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
+    	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cdw, revocationDate, reason);
     	// Publish the revocation if it was actually performed
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
     	    // that is part if the transaction in the EntityManager, so we need to get the object from the EntityManager.
-    	    final String fingerprint = CertTools.getFingerprintAsString(cert);
-            final CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
-            final Base64CertData base64CertData;
-            if(CesecoreConfiguration.useBase64CertTable()) {
-                base64CertData = Base64CertData.findByFingerprint(entityManager, fingerprint);
-            } else {
-                base64CertData = null;
-            }
-    	    final String cafp = certificateData.getCaFingerprint();
+    	    final CertificateData certificateData = cdw.getCertificateData();
     	    final String username = certificateData.getUsername();
+    	    final String serialNumber = certificateData.getSerialNumber();
     	    final String password = null;
-    	    final int status = certificateData.getStatus();
-    	    final int type = certificateData.getType();
-    	    final String tag = certificateData.getTag();
-    	    final long updateTime = certificateData.getUpdateTime(); // Set the date to the same as in the database to ensure that publishing works as expected 
-    	    final int certProfile = certificateData.getCertificateProfileId();
     		// Only publish the revocation if it was actually performed
-    	    CertificateDataWrapper certificateDataWrapper = new CertificateDataWrapper(cert, certificateData, base64CertData);
-    		if ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) {
+    		if (reason==RevokedCertInfo.NOT_REVOKED || reason==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
     			// unrevocation, -1L as revocationDate
-    		    final boolean published = publisherSession.storeCertificate(admin, publishers, certificateDataWrapper, username, password, userDataDN,
-        				cafp, status, type, -1L, reason, tag, certProfile, updateTime, null);
+    		    final boolean published = publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
         		if (published) {
-                    final String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));
-        			log.info(msg);
+        			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
         		} else {
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
-        			final String msg = "Unrevoked cert:" + CertTools.getSerialNumberAsString(cert) + " reason: " + reason + " Could not be republished.";
+        			final String msg = "Unrevoked cert:" + certificateData.getSerialNumber() + " reason: " + reason + " Could not be republished.";
         			final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 	details.put("msg", msg);
-                	int caid = CertTools.getIssuerDN(cert).hashCode();
-                	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), CertTools.getSerialNumberAsString(cert), username, details);
+                	final int caid = certificateData.getIssuerDN().hashCode();
+                	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
         		}    			
     		} else {
     			// revocation
-        		publisherSession.revokeCertificate(admin, publishers, certificateDataWrapper, username, userDataDN, cafp, type, reason, revocationDate.getTime(), tag, certProfile, updateTime);    			
+                publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
     		}
     	}
     }

@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,7 +39,24 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return CertificateInfo if found or null
      */
     CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno);
-    
+
+    /**
+     * Stores a certificate.
+     * 
+     * @param admin An authentication token to authorize the action
+     * @param incert The certificate to be stored.
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param username username of end entity owning the certificate.
+     * @param status the status from the CertificateConstants.CERT_ constants
+     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
+     * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param tag a custom string tagging this certificate for some purpose
+     *
+     * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
+     */
+    CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username,
+            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
      * the CA issuing the certificate has already been checked. For efficiency this method can then be used.
@@ -57,42 +73,18 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
             String cafp, int status, int type, int certificateProfileId, String tag, long updateTime);
 
+    /** 
+     * Retrieve the full wrapped CertificateData and Base64CertData objects.
+     * @return null of no data for the specified fingerprint exists
+     */
+    CertificateDataWrapper getCertificateData(final String fingerprint);
+
     /**
      * Update the base64cert column if the database row exists, but the column is empty.
      * @return true if the column was empty and is now populated.
      */
     boolean updateCertificateOnly(AuthenticationToken authenticationToken, Certificate certificate);
 
-    /**
-     * Method to set the status of certificate to revoked or active, without checking for authorization. 
-     * This is why it is important that this method is _local only_. 
-     * 
-     * @param admin Administrator performing the operation
-     * @param certificate the certificate to revoke or activate.
-     * @param revokeDate when it was revoked
-     * @param reason the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
-     * 
-     * @throws CertificaterevokeException (rollback) if certificate does not exist
-     */
-    boolean setRevokeStatusNoAuth(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason, String userDataDN)
-    	throws CertificateRevokeException;
-    
-    /**
-     * 
-     * Changes the revocation date for the certificate identified by the fingerprint. This should only occur in an exceptional circumstance (a revoked 
-     * certificate missing a revocation date) and should not be called during standard operations.
-     * 
-     * This method should only be used in the exceptional circumstance where a revoked certificate lacks a revocation date.  
-     * 
-     * @param authenticationToken the authenticating end entity
-     * @param certificateFingerprint a fingerprint identifying a certificate
-     * @param revocationDate the revocation date
-     * @throws AuthorizationDeniedException 
-     */
-    void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate) throws AuthorizationDeniedException;
-    
     /**
      * Fetch a List of all certificate fingerprints and corresponding username
      * 
@@ -154,7 +146,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     /** Checks for present certificate serial number unique index in a new transaction in order to avoid rollback, since we can expect SQL exceptions here. 
      * Should not be used externally. */
     void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
+            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /** Removed certificates created during checks for present certificate serial number unique index. 
      * Should not be used externally. */
@@ -185,4 +177,43 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /** Initialize all timers and related operations used by this bean. */
     void initTimers();
+
+    /**
+     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
+     *
+     * @param admin      AuthenticationToken performing the operation
+     * @param cdw the certificate data to revoke or activate.
+     * @param revokeDate when it was revoked
+     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
+     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws AuthorizationDeniedException (rollback)
+     */
+    boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+
+    /**
+     * Lists certificate datas for a given subject signed by the given issuer.
+     * 
+     * @param subjectDN the DN of the subject whose certificates will be retrieved.
+     * @param issuerDN the DN of the certificates issuer.
+     * @param onlyActive set to true to limit the search to active (non revoked, unexpired) certificates.
+     * @return List of certificate datas in no specified order or an empty List.
+     */
+    List<CertificateDataWrapper> getCertificateDatasBySubjectAndIssuer(String subjectDN, String issuerDN, boolean onlyActive);
+
+    List<CertificateDataWrapper> getCertificateDatasBySubject(String subjectDN);
+
+    /**
+     * Method to set the status of certificate to revoked or active, without checking for authorization. 
+     * This is why it is important that this method is _local only_. 
+     * 
+     * @param admin Administrator performing the operation
+     * @param fingerprint the fingerprint of the certificate to revoke or activate.
+     * @param revokeDate when it was revoked
+     * @param reason the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
+     * 
+     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     */
+    boolean setRevokeStatusNoAuth(AuthenticationToken admin, CertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException;
 }

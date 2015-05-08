@@ -26,6 +26,7 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -242,7 +243,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
                 }
             } // If no revoked certificates exist at all, this test passed...
 
-            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
+            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Create a new CRL again...
             assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new CRL
@@ -263,7 +264,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertTrue("Certificate with serial " + cert.getSerialNumber().toString(16) + " not revoked", found);
 
             // Unrevoke the certificate that we just revoked
-            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.NOT_REVOKED, null);
+            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
             // Create a new CRL again...
             assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new
@@ -284,7 +285,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
                 assertFalse(found);
             } // If no revoked certificates exist at all, this test passed...
 
-            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, null);
+            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
             assertTrue("Failed to revoke certificate!",
                     certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
             // Create a new CRL again...
@@ -305,7 +306,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             }
             assertTrue(found);
 
-            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.NOT_REVOKED, null);
+            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
             assertTrue("Was able to re-activate permanently revoked certificate!",
                     certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
             // Create a new CRL again...
@@ -345,7 +346,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         X509Certificate cert = createCertWithValidity(1);
         try {
             // Revoke the user
-            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+            certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
             // Change CRLPeriod
             cainfo.setCRLPeriod(Long.MAX_VALUE);
             caSession.editCA(roleMgmgToken, cainfo);

@@ -184,6 +184,14 @@
 			<h:selectBooleanCheckbox id="checkUseCertificateStorage" value="#{certProfileBean.certificateProfile.useCertificateStorage}" />
 			<h:outputLabel for="checkUseCertificateStorage" value="#{web.text.USE} "/>
 		</h:panelGroup>
+		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
+			<h:outputLabel for="checkStoreCertificateDataGroup" value="#{web.text.STORECERTIFICATEDATA}" />
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Store%20Certificate") %>
+		</h:panelGroup>
+		<h:panelGroup id="checkStoreCertificateDataGroup" rendered="#{!certProfileBean.typeCA}">
+			<h:selectBooleanCheckbox id="checkStoreCertificateData" value="#{certProfileBean.certificateProfile.storeCertificateData}" />
+			<h:outputLabel for="checkStoreCertificateData" value="#{web.text.USE} "/>
+		</h:panelGroup>
 
 	</h:panelGrid>
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
