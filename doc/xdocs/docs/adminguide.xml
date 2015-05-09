@@ -1318,7 +1318,7 @@ In some installations it may be desirable to terminate the client connection in 
 network connection to the CA machine. In such a scenario you can use the CMP proxy module. Clients use the CMP proxy, as it would otherwise use EJBCA. 
 The proxy in turn connects to EJBCA gets the answer and forwards it back to the client.
 </p><p> 
-The proxy is a stand alone module that runs on another mahing than the CA itself.
+The proxy is a stand alone module that runs on another machine than the CA itself.
 </p><p>
 See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build and use the proxy.
 </p>
