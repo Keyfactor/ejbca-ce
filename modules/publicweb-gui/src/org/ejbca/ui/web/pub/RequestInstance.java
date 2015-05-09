@@ -381,7 +381,7 @@ public class RequestInstance {
 					        log.debug("Received NS request: "+new String(reqBytes));
 					    }
 						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
-						if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(certs)) {
+						if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(certs, username)) {
 						  // Send info page that redirects to download URL that
 						  // retrieves the new certificate from the database
 						  RequestHelper.sendResultPage(certs, response, "true".equals(getParameter("hidemenu")), "netscape");
@@ -590,12 +590,11 @@ public class RequestInstance {
      * @param certbytes DER encoded certificate.
      * @throws CertificateException
      */
-    private boolean isCertIssuerThrowAwayCA(byte[] certbytes) throws CADoesntExistsException, CertificateException {
+    private boolean isCertIssuerThrowAwayCA(final byte[] certbytes, final String username) throws CADoesntExistsException, CertificateException {
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         String issuerDN = CertTools.getIssuerDN(cert);
         int caid = issuerDN.hashCode();
         CAInfo caInfo = caSession.getCAInfoInternal(caid);
-        String username = certificateStoreSession.findUsernameByCertSerno(CertTools.getSerialNumber(cert), issuerDN);
         EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(username);
         CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
         return (!caInfo.isUseCertificateStorage() && !certificateProfile.getUseCertificateStorage()) || !certificateProfile.getStoreCertificateData();
@@ -664,7 +663,7 @@ public class RequestInstance {
 		CertificateRequestResponse result = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, resulttype);
 		byte[] b64data = result.getEncoded(); // PEM cert, cert-chain or PKCS7
 		byte[] b64subject = result.getCertificate().getEncoded(); // always a PEM cert of the subject
-		if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(b64subject)) {
+		if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(b64subject, username)) {
             RequestHelper.sendResultPage(b64subject, response, "true".equals(getParameter("hidemenu")), resulttype);
         } else {
             switch (resulttype) {
