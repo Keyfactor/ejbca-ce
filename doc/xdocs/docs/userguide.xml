@@ -853,23 +853,27 @@ Do not enable this feature if the profile will be used by a CA that is issuing d
 <subsubsection name="Use Certificate Storage (Certificate Profiles)">
 <p>
 Issued certificates are stored in the database to be able to provide them upon request or provide revocation information. Certificate storage can also be turned off in
-the CA settings. Setting either setting to false will lead to certificates not being stored. 
+the CA settings. Setting either setting to false will lead to certificates not being stored, not even meta information. 
 </p>
 <p>
-The certificate data storage is enabled by default.
+The certificate storage is enabled by default.
 </p>
 <p>
-If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, certificate data storage be disabled to improve performance. See the 
+If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, certificate storage can be disabled to improve performance. See the 
 <a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> section in the Admin Guide for more information about this mode.
 </p>
+<note>
+Disabling this setting will prevent features that depends on the actual certificate data being present from working.
+This setting is by default true and shouldn't be modified unless understood well.
+</note>
 </subsubsection>
-<subsubsection name="Store Certificate">
+<subsubsection name="Store Certificate Data">
 <p>
-Disabling this setting allows meta information about certificates be stored, but will omit storing the actual certifate data to the database.
+Disabling this setting allows meta information about certificates be stored, but will omit storing the actual certificate data (base64Cert) to the database.
 Meta information about the certificate includes revocation status, expiration information, fingerprint, etc.
 </p>
 <note>
-Enabling this will prevent features that depends on the actual certificate being present from working.
+Disabling this setting will prevent features that depends on the actual certificate data being present from working.
 This setting is by default true and shouldn't be modified unless understood well.
 </note>
 </subsubsection>

@@ -186,7 +186,7 @@
 		</h:panelGroup>
 		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
 			<h:outputLabel for="checkStoreCertificateDataGroup" value="#{web.text.STORECERTIFICATEDATA}" />
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Store%20Certificate") %>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#Store%20Certificate%20Data") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkStoreCertificateDataGroup" rendered="#{!certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox id="checkStoreCertificateData" value="#{certProfileBean.certificateProfile.storeCertificateData}" />
