@@ -81,6 +81,15 @@ public class CertificateView implements Serializable {
         issuerDnFieldExtractor = new DNFieldExtractor(certificateData.getIssuerDN(), DNFieldExtractor.TYPE_SUBJECTDN);
     }
 
+    /** Creates a new instance of CertificateView for CA certificates */
+    public CertificateView(Certificate certificate, RevokedInfoView revokedinfo) {
+        this.certificate=certificate;
+        this.revokedinfo= revokedinfo;
+        this.username=null;
+        subjectDnFieldExtractor = new DNFieldExtractor(CertTools.getSubjectDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
+        subjectDnFieldExtractor = new DNFieldExtractor(CertTools.getIssuerDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
+    }
+
     /** Method that returns the version number of the X509 certificate. */
     public String getVersion() {
         if (certificate==null) {

@@ -65,6 +65,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -74,6 +75,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -106,6 +108,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
@@ -195,17 +198,22 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CertificateView[] getCACertificates(int caid) {
-    	try {
+        try {
             final List<CertificateView> ret = new ArrayList<CertificateView>();
-    		for (final Certificate certificate : signsession.getCertificateChain(authenticationToken, caid)) {
-    		    ret.add(new CertificateView(certificatesession.getCertificateData(CertTools.getFingerprintAsString(certificate))));
-    		}
-    		return ret.toArray(new CertificateView[0]);
-    	} catch (AuthorizationDeniedException e) {
-    		throw new RuntimeException(e);
-    	}
+            for (final Certificate certificate : signsession.getCertificateChain(authenticationToken, caid)) {
+                RevokedInfoView revokedinfo = null;
+                CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+                if (revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
+                    revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(certificate));
+                }
+                ret.add(new CertificateView(certificate, revokedinfo));
+            }
+            return ret.toArray(new CertificateView[0]);
+        } catch (AuthorizationDeniedException e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
     /**
      * Method that returns a HashMap connecting available CAIds (Integer) to CA Names (String).
      */ 
