@@ -201,6 +201,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     List<CertificateDataWrapper> getCertificateDatasBySubjectAndIssuer(String subjectDN, String issuerDN, boolean onlyActive);
 
+    /**
+     * Lists certificate datas for a given subject.
+     * 
+     * @param subjectDN the DN of the subject whose certificates will be retrieved.
+     * @return List of certificate datas in no specified order or an empty List.
+     */
     List<CertificateDataWrapper> getCertificateDatasBySubject(String subjectDN);
 
     /**

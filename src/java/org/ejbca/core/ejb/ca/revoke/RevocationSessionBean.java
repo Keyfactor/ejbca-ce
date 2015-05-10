@@ -83,7 +83,6 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             log.info(msg);
             throw new CertificateRevokeException(msg);
         }
-    	revokeCertificate(admin, cdw, publishers, new Date(), reason, userDataDN);
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
