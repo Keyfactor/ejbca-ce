@@ -323,6 +323,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * 
      * @return serial number in hex format
      */
+    @Transient
     public String getSerialNumberHex() throws NumberFormatException {
         try {
             return new BigInteger(serialNumber, 10).toString(16).toUpperCase();
