@@ -872,6 +872,7 @@ This setting is by default true and shouldn't be modified unless understood well
 Disabling this setting allows meta information about certificates be stored, but will omit storing the actual certificate data (base64Cert) to the database.
 Meta information about the certificate includes revocation status, expiration information, fingerprint, etc.
 </p>
+<p>Note: This setting has no effect if 'Use Certificate Storage' is disabled.</p>
 <note>
 Disabling this setting will prevent features that depends on the actual certificate data being present from working.
 This setting is by default true and shouldn't be modified unless understood well.
