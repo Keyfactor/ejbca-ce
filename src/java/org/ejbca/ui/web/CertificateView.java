@@ -112,12 +112,7 @@ public class CertificateView implements Serializable {
 
     public String getSerialNumber() {
         if (certificate==null) {
-            try {
-                // This will work for X.509
-                return new BigInteger(certificateData.getSerialNumber(), 10).toString(16).toUpperCase();
-            } catch (NumberFormatException e) {
-                return certificateData.getSerialNumber();
-            }
+            return certificateData.getSerialNumberHex();
         }
         return CertTools.getSerialNumberAsString(certificate);
     }

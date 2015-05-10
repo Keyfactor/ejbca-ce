@@ -150,7 +150,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         final String fingerprint = certificateData.getFingerprint();
         final List<Object> publisherResults = publisherQueueSession.storeCertificateNonTransactionalInternal(publishersToTryDirect, admin,
                 certWrapper, password, userDN, extendedinformation);
-        final String certSerno = certificateData.getSerialNumber();
+        final String certSerno = certificateData.getSerialNumberHex();
         for (int i = 0; i < publishersToTryDirect.size(); i++) {
             final Object publisherResult = publisherResults.get(i);
             final BasePublisher publ = publishersToTryDirect.get(i);

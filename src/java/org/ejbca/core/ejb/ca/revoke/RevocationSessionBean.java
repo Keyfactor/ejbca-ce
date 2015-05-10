@@ -79,7 +79,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         if (cdw != null) { 
             revokeCertificate(admin, cdw, publishers, revokedate, reason, userDataDN);
         } else {
-            final String msg = intres.getLocalizedMessage("store.errorfindcertserno", CertTools.getSerialNumber(cert));              
+            final String msg = intres.getLocalizedMessage("store.errorfindcertserno", CertTools.getSerialNumberAsString(cert));              
             log.info(msg);
             throw new CertificateRevokeException(msg);
         }
@@ -95,7 +95,6 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	    // that is part if the transaction in the EntityManager, so we need to get the object from the EntityManager.
     	    final CertificateData certificateData = cdw.getCertificateData();
     	    final String username = certificateData.getUsername();
-    	    final String serialNumber = certificateData.getSerialNumber();
     	    final String password = null;
     		// Only publish the revocation if it was actually performed
     		if (reason==RevokedCertInfo.NOT_REVOKED || reason==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
@@ -104,8 +103,9 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		if (published) {
         			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
         		} else {
+        		    final String serialNumber = certificateData.getSerialNumberHex();
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
-        			final String msg = "Unrevoked cert:" + certificateData.getSerialNumber() + " reason: " + reason + " Could not be republished.";
+        			final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
         			final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 	details.put("msg", msg);
                 	final int caid = certificateData.getIssuerDN().hashCode();
