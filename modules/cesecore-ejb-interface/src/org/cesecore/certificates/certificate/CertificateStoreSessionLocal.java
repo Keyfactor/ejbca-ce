@@ -51,6 +51,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
      * @param tag a custom string tagging this certificate for some purpose
+     * @param updateTime epoch millis to use as last update time of the stored object
      *
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
