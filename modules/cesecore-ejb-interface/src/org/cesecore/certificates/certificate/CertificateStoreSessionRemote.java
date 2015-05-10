@@ -28,7 +28,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 public interface CertificateStoreSessionRemote extends CertificateStoreSession {
 
     /**
-     * Stores a certificate.
+     * Stores a certificate (remote EJB interface).
      * 
      * @param admin An authentication token to authorize the action
      * @param incert The certificate to be stored.
