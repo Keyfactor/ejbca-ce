@@ -1157,11 +1157,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         	final Certificate certificate = certificateData.getCertificate(this.entityManager);
         	String serialNo;
         	if (certificate==null) {
-        	    try {
-        	        serialNo = new BigInteger(certificateData.getSerialNumber(), 10).toString(16);
-        	    } catch (NumberFormatException e) {
-        	        serialNo = certificateData.getSerialNumber();
-        	    }
+        	    serialNo = certificateData.getSerialNumberHex();
         	} else {
         	    serialNo = CertTools.getSerialNumberAsString(certificate);
         	}

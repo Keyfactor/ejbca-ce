@@ -319,9 +319,22 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /**
-     * Serialnumber formated as BigInteger.toString()
+     * Serialnumber formated as BigInteger.toString(16).toUpperCase(), or just as it is in DB if not encodable to hex.
      * 
-     * @param serialNumber serial number
+     * @return serial number in hex format
+     */
+    public String getSerialNumberHex() throws NumberFormatException {
+        try {
+            return new BigInteger(serialNumber, 10).toString(16).toUpperCase();
+        } catch (NumberFormatException e) {
+            return serialNumber;
+        }
+    }
+    
+    /**
+     * Sets serial number (formated as BigInteger.toString())
+     * 
+     * @param serialNumber serial number formated as BigInteger.toString()
      */
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
