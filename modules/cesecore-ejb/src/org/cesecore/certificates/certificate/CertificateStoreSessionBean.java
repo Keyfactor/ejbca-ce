@@ -1163,7 +1163,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         	        serialNo = certificateData.getSerialNumber();
         	    }
         	} else {
-        	    serialNo = CertTools.getSerialNumberAsString(certificateData.getCertificate(this.entityManager));
+        	    serialNo = CertTools.getSerialNumberAsString(certificate);
         	}
             final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), fingerprint, status, certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
