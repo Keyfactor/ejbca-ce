@@ -41,6 +41,7 @@ public interface RevocationSessionLocal extends RevocationSession {
      * @param admin      Administrator performing the operation
      * @param cdw        The certificate data
      * @param publishers and array of publisher ids (Integer) of publishers to revoke the certificate in.
+     * @param revocationDate from when the certificates has been revoked
      * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @throws CertificaterevokeException (rollback) if certificate does not exist
