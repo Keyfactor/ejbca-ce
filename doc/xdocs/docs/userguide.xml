@@ -876,6 +876,9 @@ Meta information about the certificate includes revocation status, expiration in
 Disabling this setting will prevent features that depends on the actual certificate data being present from working.
 This setting is by default true and shouldn't be modified unless understood well.
 </note>
+<note>
+This setting, when set false, also disables most OCSP extensions for affected certificates, since these are commonly dependent on the certificate being present in the VA.
+</note>
 </subsubsection>
 <subsubsection name="Path Length Constraints">
 <p>
