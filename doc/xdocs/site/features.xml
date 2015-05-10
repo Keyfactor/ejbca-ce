@@ -126,6 +126,8 @@
 <li><a href="docs/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">Certificate Transparency</a>, RFC6962.</li>
 <li><a href="docs/adminguide.html#Cert%20Safe%20publisher%20for%20a%20HTTPS%20server%20(Enterprise%20only)">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
 <li><a href="docs/userguide.html#Managing EJBCA Peer Systems">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
+<li>Direct Validation Authority (OCSP responder) updates from CA to VA. Ideal for low latency revocation and white listing.</li>
+<li><a href="docs/externalra.html">External RA</a> with a polling model for RA to CA communication, for high security environments.</li>
 <li>Create Crypto Tokens and CAs, generate keys and add and remove administrators through the Web Service API.</li>
 <li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality State and Country).</li>
 <li>Additional algorithms using HSMs through PKCS#11, <a href="docs/adminguide.html#Using%20SHA256WithRSAandMGF1%20(RSASSA-PSS)">RSASSA-PSS (SHA256WithRSAAndMGF1)</a>. Available through patches for Java.</li>

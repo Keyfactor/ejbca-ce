@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <document>
   <properties>
-    <title>The External Registration Authority (Enterprise Edition Only)</title>
+    <title>The External Registration Authority API (Enterprise Edition Only)</title>
   </properties>
 <body>
 
-<section name="Introduction">
+<section name="External RA (Enterprise Edition Only)">
 <p>
 In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA installation and instead let EJBCA periodically 
 fetch and process information from external trusted data sources. For an overview of the solution see the illustration below.
