@@ -183,6 +183,9 @@
 		<h:panelGroup id="checkUseCertificateStorageGroup" rendered="#{!certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox id="checkUseCertificateStorage" value="#{certProfileBean.certificateProfile.useCertificateStorage}" />
 			<h:outputLabel for="checkUseCertificateStorage" value="#{web.text.USE} "/>
+			<h:panelGroup styleClass="help">
+				<h:outputText value="#{web.text.USECERTIFICATESTORAGE_HELP}"/>
+			</h:panelGroup>
 		</h:panelGroup>
 		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
 			<h:outputLabel for="checkStoreCertificateDataGroup" value="#{web.text.STORECERTIFICATEDATA}" />
@@ -191,6 +194,9 @@
 		<h:panelGroup id="checkStoreCertificateDataGroup" rendered="#{!certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox id="checkStoreCertificateData" value="#{certProfileBean.certificateProfile.storeCertificateData}" />
 			<h:outputLabel for="checkStoreCertificateData" value="#{web.text.USE} "/>
+			<h:panelGroup styleClass="help">
+				<h:outputText value="#{web.text.STORECERTIFICATEDATA_HELP}"/>
+			</h:panelGroup>
 		</h:panelGroup>
 
 	</h:panelGrid>
