@@ -370,27 +370,26 @@ public class ScepServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug("Got SCEP next cert request for CA '" + caname + "'");
                 }
-                Certificate nextcert = null;
                 final CAInfo cainfo = casession.getCAInfoInternal(-1, caname, true);
                 if (cainfo == null) {
                     String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
                     log.error(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "No such CA.");
                 } else {
-                    nextcert = casession.getFutureRolloverCertificate(cainfo.getCAId());
-                    if (nextcert != null) {
+                    //if (casession.getFutureRolloverCertificate(cainfo.getCAId()) != null) {
+                        // Send full certificate chain of next CA, in SCEP-PKCS7 format 
                         if (log.isDebugEnabled()) {
-                            log.debug("Sent next certificate for CA '" + caname + "' to SCEP client.");
+                            log.debug("Sending next certificate chain for CA '" + caname + "' to SCEP client.");
                         }
                         final byte[] bytes = signsession.createPKCS7Rollover(administrator, cainfo.getCAId());
                         RequestHelper.sendBinaryBytes(bytes, response, "application/x-x509-next-ca-cert", null);
                         iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
                         log.info(iMsg);
-                    } else {
-                        String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-                        log.error(errMsg);
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "No rollover certificates found for CA.");
-                    }
+                    /*} else {
+                        String errMsg = intres.getLocalizedMessage("scep.errornorollovercert", caname);
+                        log.info(errMsg);
+                        response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "No rollover certificate found for this CA.");
+                    }*/
                 }
             } else if (operation.equals("GetCACaps")) {
                 // The response for GetCACaps is a <lf> separated list of capabilities

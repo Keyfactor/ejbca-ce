@@ -198,11 +198,14 @@ public class CertificateValidity {
 
 	 * @throws CAOfflineException if PrivateKeyUsagePeriod either is not valid yet or has expired, exception message gives details
 	 */
-    public static void checkPrivateKeyUsagePeriod(final X509Certificate cert) throws CAOfflineException {
+	public static void checkPrivateKeyUsagePeriod(final X509Certificate cert) throws CAOfflineException {
+	    checkPrivateKeyUsagePeriod(cert, new Date());
+	}
+	
+    public static void checkPrivateKeyUsagePeriod(final X509Certificate cert, final Date checkDate) throws CAOfflineException {
         if (cert != null) {
             final PrivateKeyUsagePeriod pku = CertTools.getPrivateKeyUsagePeriod(cert);
             if (pku != null) {
-                final Date now = new Date();
                 final ASN1GeneralizedTime notBefore = pku.getNotBefore();
                 final Date pkuNotBefore;
                 final Date pkuNotAfter;
@@ -215,7 +218,7 @@ public class CertificateValidity {
                     if (log.isDebugEnabled()) {
                         log.debug("PrivateKeyUsagePeriod.notBefore is " + pkuNotBefore);
                     }
-                    if (pkuNotBefore != null && now.before(pkuNotBefore)) {
+                    if (pkuNotBefore != null && checkDate.before(pkuNotBefore)) {
                         final String msg = intres.getLocalizedMessage("createcert.privatekeyusagenotvalid", pkuNotBefore.toString(), cert
                                 .getSubjectDN().toString());
                         if (log.isDebugEnabled()) {
@@ -236,7 +239,7 @@ public class CertificateValidity {
                 if (log.isDebugEnabled()) {
                     log.debug("PrivateKeyUsagePeriod.notAfter is " + pkuNotAfter);
                 }
-                if (pkuNotAfter != null && now.after(pkuNotAfter)) {
+                if (pkuNotAfter != null && checkDate.after(pkuNotAfter)) {
                     final String msg = intres.getLocalizedMessage("createcert.privatekeyusageexpired", pkuNotAfter.toString(), cert.getSubjectDN().toString());
                     if (log.isDebugEnabled()) {
                         log.debug(msg);

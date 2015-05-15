@@ -39,12 +39,14 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.CertStoreException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletResponse;
@@ -60,6 +62,7 @@ import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
@@ -80,13 +83,24 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
+import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -96,6 +110,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -105,6 +120,7 @@ import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -137,6 +153,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(CryptoTokenTestRunner.class)
 public class ProtocolScepHttpTest {
+
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
     private static final String scepAlias = "ProtocolHttpTestScepAlias";
@@ -171,6 +188,8 @@ public class ProtocolScepHttpTest {
     private static final String userName2 = "sceptest2";
     private static final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
     private static final String userDN2 = "C=SE,O=PrimeKey,CN=" + userName2;
+    private static final String ROLLOVER_SUB_CA = "RolloverSubCA";
+    private static final String ROLLOVER_SUB_CA_DN = "CN=RolloverSubCA";
     private static String senderNonce = null;
     private static String transId = null;
 
@@ -182,6 +201,10 @@ public class ProtocolScepHttpTest {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
@@ -572,6 +595,89 @@ public class ProtocolScepHttpTest {
         }
         assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
     }
+    
+    // TODO implement for root CA also, and add a test for that
+    @Test
+    public void test13ScepGetNextCACertSubCA() throws Exception {
+        final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
+        final CAInfo rootcainfo = x509ca.getCAInfo();
+        rootcainfo.setDoEnforceUniqueDistinguishedName(false);
+        x509ca.updateCA(null, rootcainfo);
+        caAdminSession.editCA(admin, rootcainfo);
+        try {
+            // Create sub CA
+            final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ROLLOVER_SUB_CA, "1024");
+            final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            X509CAInfo cainfo = new X509CAInfo(ROLLOVER_SUB_CA_DN, ROLLOVER_SUB_CA, CAConstants.CA_ACTIVE,
+                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
+            cainfo.setDescription("JUnit Test Sub CA for SCEP GetNextCACert test");
+            cainfo.setSignedBy(x509ca.getCAId());
+            cainfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+            cainfo.setValidity(3600);
+            cainfo.setDoEnforceUniqueDistinguishedName(false);
+            if (caSession.existsCa(ROLLOVER_SUB_CA)) {
+                caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
+            }
+            caAdminSession.createCA(admin, cainfo);
+            assertEquals("Wrong state of test Sub CA", CAConstants.CA_ACTIVE, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getStatus());
+            assertEquals(ROLLOVER_SUB_CA_DN, cainfo.getSubjectDN());
+            
+            // CA should NOT have any rollover certificate yet 
+            List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA);
+            assertEquals("should return an empty list when theres no roll over cert", 0, nextChain.size()); // actually, the RFC doesn't say what should happen in this case
+            
+            // Create a rollover certificate
+            final int subCAId = cainfo.getCAId();
+            final byte[] requestbytes = caAdminSession.makeRequest(admin, subCAId, null, null);
+            final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
+                    cainfo.getCertificateProfileId(), EndEntityConstants.TOKEN_USERGEN, 0, null);
+            endentity.setStatus(EndEntityConstants.STATUS_NEW);
+            endentity.setPassword("foo123");
+            endEntityManagementSession.addUser(admin, endentity, true);
+            final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
+            final X509ResponseMessage respmsg = (X509ResponseMessage)certificateCreateSession.createCertificate(admin, endentity, req, X509ResponseMessage.class, null);
+            
+            cainfo = (X509CAInfo) caSession.getCAInfo(admin, subCAId);
+            final String nextKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+            caAdminSession.receiveResponse(admin, subCAId, respmsg, null, nextKeyAlias, true/*rollover*/);
+            
+            final Certificate rolloverCert = caSession.getFutureRolloverCertificate(subCAId);
+            assertNotNull("rollover cert was null", rolloverCert);
+            assertEquals("rollover cert has the wrong subject DN", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(rolloverCert));
+            
+            // Now we should get the certificate chain of the rollover cert
+            nextChain = sendGetNextCACert(ROLLOVER_SUB_CA);
+            assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
+            final Certificate nextCert = nextChain.get(0);
+            final Certificate nextRootCert = nextChain.get(1);
+            assertEquals("should get the leaf CA certificate first in the chain", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(nextCert));
+            assertEquals("should get the root CA certiticate first in the chain", x509ca.getSubjectDN(), CertTools.getSubjectDN(nextRootCert));
+            assertEquals("should get the rollover certificate", CertTools.getSerialNumberAsString(rolloverCert), CertTools.getSerialNumberAsString(nextCert));
+        } finally {
+            if (endEntityManagementSession.existsUser("TestScepCARollover")) {
+                endEntityManagementSession.deleteUser(admin, "TestScepCARollover");
+            }
+            
+            rootcainfo.setDoEnforceUniqueDistinguishedName(wasEnforceUniqueDn);
+            x509ca.updateCA(null, rootcainfo);
+            caAdminSession.editCA(admin, rootcainfo);
+            
+            // We will use the new sub CA in the next test, so we don't remove it yet
+        }
+    }
+    
+    @Test
+    public void test14ScepGenerateRolloverCert() throws Exception {
+        try {
+            // TODO
+        } finally {
+            // Done with rollover tests
+            if (caSession.existsCa(ROLLOVER_SUB_CA)) {
+                caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
+            }
+            internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
+        }
+    }
 
     
     //
@@ -617,6 +723,62 @@ public class ProtocolScepHttpTest {
                 }
             }
         }
+    }
+    
+    private List<Certificate> sendGetNextCACert(final String caName) throws Exception {
+        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetNextCACert&message=" + URLEncoder.encode(caName, "UTF-8");
+        URL url = new URL(reqUrl);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.getDoOutput();
+        con.connect();
+        assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
+        assertTrue(con.getContentType().startsWith("application/x-x509-next-ca-cert"));
+        final ByteArrayOutputStream respBaos = new ByteArrayOutputStream();
+        // This works for small requests, and SCEP requests are small enough
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            respBaos.write(b);
+            b = in.read();
+        }
+        respBaos.flush();
+        in.close();
+        byte[] respBytes = respBaos.toByteArray();
+        assertNotNull("Response can not be null.", respBytes);
+        assertTrue(respBytes.length > 0);
+        
+        // Verify PKCS7. It should be signed by the current CA
+        /*final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final VerifyResult result = CMS.verify(con.getInputStream(), baos, cacert);
+        assertTrue("signature of GetNextCACert response does not verify!", result.isVerifying);
+        final byte[] signedBytes = baos.toByteArray();*/
+        
+        /*final CMSSignedDataParser sp = new CMSSignedDataParser(new BcDigestCalculatorProvider(), bis);
+        final CMSTypedStream sc = sp.getSignedContent();
+        final InputStream ris = sc.getContentStream();*/
+        /*CMSSignedData cmsMessageData = new CMSSignedData(content);
+        ContentInfo cmsContentInfo = ContentInfo
+                .getInstance(cmsMessageData.getEncoded());
+
+        final CMSSignedData sd = new CMSSignedData(cmsContentInfo);*/
+        
+        final ContentInfo ci = ContentInfo.getInstance(respBytes);
+//        final CMSSignedData signedData = new CMSSignedData(signedBytes);
+        final CMSSignedData signedData = new CMSSignedData(ci);
+        final Store<?> certStore = signedData.getCertificates();
+        //final CMSSignedDataParser cmssdp = new CMSSignedDataParser(new BcDigestCalculatorProvider(), signedBytes);
+        //final Store<?> certStore = cmssdp.getCertificates();
+        final List<Certificate> ret = new ArrayList<Certificate>();
+        for (final Object obj : certStore.getMatches(null)) {
+            log.error("got an object of type "+obj.getClass().getName()+": "+obj);
+            if (obj instanceof X509CertificateHolder) {
+                final byte[] certbytes = ((X509CertificateHolder)obj).getEncoded();
+                final Certificate cert = CertTools.getCertfromByteArray(certbytes);
+                ret.add(cert);
+            }
+        }
+        return ret;
     }
     
     private EndEntityInformation getEndEntityInformation(String userName, String userDN) {
