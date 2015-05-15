@@ -35,6 +35,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -540,7 +541,7 @@ public class X509CA extends CA implements Serializable {
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
             }            
-            gen.addCertificates(new CollectionStore(certList));
+            gen.addCertificates(new CollectionStore<X509CertificateHolder>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
@@ -554,19 +555,21 @@ public class X509CA extends CA implements Serializable {
             }
             return s.getEncoded();
         } catch (CryptoTokenOfflineException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         } catch (Exception e) {
             //FIXME: This right here is just nasty
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
     
     @Override
     public byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) throws SignRequestSignatureException {
-        final List<Certificate> nextChain = getRolloverCertificateChain();
+        List<Certificate> nextChain = getRolloverCertificateChain();
         if (nextChain == null) {
-            log.debug("CA does not have a rollover chain");
-            return null;
+            log.debug("CA does not have a rollover chain, returning empty PKCS#7");
+            nextChain = Collections.emptyList();
+        } else if (nextChain.isEmpty()) {
+            log.warn("next chain exists but is empty");
         }
         
         ArrayList<X509CertificateHolder> certList = new ArrayList<X509CertificateHolder>();
@@ -576,10 +579,14 @@ public class X509CA extends CA implements Serializable {
             }
         } catch (CertificateEncodingException e) {
             throw new SignRequestSignatureException("Could not encode certificate", e);
-        } 
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("createPKCS7Rollover: Creating a rollover chain with "+certList.size()+" certificates.");
+        }
         try {
             CMSTypedData msg = new CMSProcessableByteArray("EJBCA".getBytes());
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+            // We always sign with the current key, even during rollover, so the new key can be linked to the old key.
             final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             if (privateKey == null) {
                 String msg1 = "createPKCS7Rollover: Private key does not exist!";
@@ -594,8 +601,10 @@ public class X509CA extends CA implements Serializable {
                 gen.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) getCACertificate()));
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
-            }            
-            gen.addCertificates(new CollectionStore(certList));
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+            gen.addCertificates(new CollectionStore<X509CertificateHolder>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
@@ -609,10 +618,11 @@ public class X509CA extends CA implements Serializable {
             }
             return s.getEncoded();
         } catch (CryptoTokenOfflineException e) {
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            //FIXME: This right here is just nasty
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
+        } catch (CMSException e) {
+            throw new IllegalStateException(e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to encode CMS data", e);
         }
     }
 
@@ -702,8 +712,9 @@ public class X509CA extends CA implements Serializable {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
-        final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final int purpose = getUseNextCACert(request) ? CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT : CATokenConstants.CAKEYPURPOSE_CERTSIGN;
+        final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(purpose));
+        final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(purpose));
         final String provider = cryptoToken.getSignProviderName();
         return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
                 caPublicKey, caPrivateKey, provider, certGenParams);
@@ -752,9 +763,12 @@ public class X509CA extends CA implements Serializable {
         // Check if this is a root CA we are creating
         final boolean isRootCA = certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA;
 
-        final X509Certificate cacert = (X509Certificate) getCACertificate();
+        final boolean useNextCACert = getUseNextCACert(request);
+        final X509Certificate cacert = (X509Certificate) (useNextCACert ? getRolloverCertificateChain().get(0) : getCACertificate());
+        final Date now = new Date();
+        final Date checkDate = useNextCACert && cacert.getNotBefore().after(now) ? cacert.getNotBefore() : now;
         // Check CA certificate PrivateKeyUsagePeriod if it exists (throws CAOfflineException if it exists and is not within this time)
-        CertificateValidity.checkPrivateKeyUsagePeriod(cacert);
+        CertificateValidity.checkPrivateKeyUsagePeriod(cacert, checkDate);
         // Get certificate validity time notBefore and notAfter
         final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
 

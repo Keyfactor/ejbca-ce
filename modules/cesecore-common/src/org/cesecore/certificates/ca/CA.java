@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -547,6 +548,43 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
         return ret;
     }
+    
+    /** Returns true if we should use the next CA certificate for rollover, instead of the current CA certificate. */
+    public boolean getUseNextCACert(final RequestMessage request) {
+        final Certificate currentCert = getCACertificate();
+        if (request == null) {
+            // We get here when creating a new CA
+            return false;
+        }
+        
+        final BigInteger requestSerNo = request.getSerialNo();
+        if (requestSerNo == null) {
+            log.debug("No serial number in request. Will use current CA cert.");
+            return false;
+        }
+        
+        final BigInteger currentSerNo = CertTools.getSerialNumber(currentCert);
+        if (currentSerNo == null || currentSerNo.equals(requestSerNo)) {
+            // Normal case
+            return false;
+        }
+        
+        final List<Certificate> rolloverChain = getRolloverCertificateChain();
+        if (rolloverChain == null || rolloverChain.isEmpty()) {
+            log.debug("Serial number in request does not match CA serial number, and no roll over certificate chain is present. Will use current CA cert.");
+            return false;
+        }
+        
+        final Certificate rolloverCert = rolloverChain.get(0);
+        final BigInteger rolloverSerNo = CertTools.getSerialNumber(rolloverCert);
+        if (rolloverSerNo != null && rolloverSerNo.equals(requestSerNo)) {
+            log.debug("Serial number in request matches next (rollover) CA cert. Using next CA cert and key.");
+            return true; // this is the only case where we use the next CA cert
+        }
+        
+        log.debug("Serial number in request does not match CA serial number nor next (rollover) CA cert. Will use current CA cert.");
+        return false;
+    }
 
     protected boolean getFinishUser() {
         return getBoolean(FINISHUSER, true);
@@ -821,7 +859,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     /**
      * Creates a roll over PKCS7 for the next CA certificate, signed with the current CA key. Used by ScepServlet.
-     * @return A DER-encoded PKCS7 message, or null if there's no next CA certificate.
+     * 
+     * @return Encoded signed certificate chain, suitable for use in SCEP.
      */
     public abstract byte[] createPKCS7Rollover(CryptoToken cryptoToken, int caid) throws SignRequestSignatureException;
 
