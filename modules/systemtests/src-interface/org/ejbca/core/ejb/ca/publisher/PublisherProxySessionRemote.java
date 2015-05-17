@@ -33,8 +33,14 @@ public interface PublisherProxySessionRemote {
 
     /**
      * Adds a publisher to the database.
-     * @throws PublisherExistsException if hard token already exists.
-     * @throws AuthorizationDeniedException 
+     * 
+     * @param admin AuthenticationToken of admin
+     * @param name the name of the publisher to add.
+     * @param publisher the publisher to add
+     * @return the publisher ID as added
+     * 
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
     int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
      

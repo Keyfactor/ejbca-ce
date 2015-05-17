@@ -50,21 +50,15 @@ public interface PublisherSessionLocal extends PublisherSession {
     /**
      * Adds a publisher to the database.
      * 
-     * @return the publisher ID
+     * @param admin AuthenticationToken of admin
+     * @param name the name of the publisher to add.
+     * @param publisher the publisher to add
+     * @return the publisher ID as added
      * 
      * @throws PublisherExistsException if publisher already exists.
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
     int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
-
-    /**
-     * Adds a publisher to the database. Used for importing and exporting
-     * profiles from xml-files.
-     * 
-     * @throws PublisherExistsException if publisher already exists.
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
-     */
-    void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
      * Adds a publisher with the same content as the original.
