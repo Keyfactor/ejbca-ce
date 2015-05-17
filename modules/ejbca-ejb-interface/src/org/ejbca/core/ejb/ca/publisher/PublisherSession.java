@@ -57,8 +57,18 @@ public interface PublisherSession {
      */
     Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException;
 
-    /** Adds publisher data. 
-     * @throws AuthorizationDeniedException */
+    /**
+     * Adds a publisher to the database. Used for importing and exporting
+     * profiles from xml-files.
+     *
+     * @param admin AuthenticationToken of admin.
+     * @param id the publisher is.
+     * @param name the name of the publisher to add.
+     * @param publisher the publisher to add.
+     *
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     */
     void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
@@ -70,11 +80,21 @@ public interface PublisherSession {
      */
     void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException, AuthorizationDeniedException;
 
-    /** Updates publisher data. 
+    /** Updates publisher data.
+     *  
+     * @param admin AuthenticationToken of admin.
+     * @param name the name of the publisher to change.
+     * @param publisher the publisher to be added.
+     * 
      * @throws AuthorizationDeniedException */
     void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
 
-    /** Removes publisher data.
+    /** Removes publisher data. Ignores if there are any references to the publisher from CA or certificate profiles, 
+     * just goes ahead and removes it.
+     * 
+     * @param admin AuthenticationToken of admin.
+     * @param name the name of the publisher to remove.
+     * 
      * @throws AuthorizationDeniedException
      */
     void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
