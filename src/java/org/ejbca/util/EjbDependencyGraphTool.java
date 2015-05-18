@@ -62,7 +62,7 @@ public class EjbDependencyGraphTool {
         final List<String> interestingClasses = new ArrayList<String>();
         JarEntry earEntry;
         while ((earEntry = earInputStream.getNextJarEntry()) != null) {
-            if (earEntry.getName().endsWith(".jar")) {
+            if (earEntry.getName().endsWith(".jar") && !earEntry.getName().contains("systemtests")) {
                 final File tempFile = getTempFileFromJar(earJarFile.getInputStream(earEntry));
                 jarUrls.add(tempFile.toURI().toURL());
                 interestingClasses.addAll(getInterestingClasses(tempFile));

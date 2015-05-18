@@ -39,9 +39,9 @@
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-util.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
-                <path location="modules/dist/cesecore-common.jar"/>
-                <path location="modules/dist/cesecore-entity.jar"/>
-                <path location="modules/dist/cesecore-ejb-interface.jar"/>
+        <path location="modules/dist/cesecore-common.jar"/>
+        <path location="modules/dist/cesecore-entity.jar"/>
+       	<path location="modules/dist/cesecore-ejb-interface.jar"/>
 		<path location="lib/bcprov-jdk15on-152.jar" />
 		<path location="lib/bcpkix-jdk15on-152.jar" />
     </path>
@@ -246,6 +246,8 @@ piwikTracker.enableLinkTracking();
     	    <!-- for javax.ejb.Stateless, Local and EJB-->
     		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar client/ejb3-persistence.jar"/>
     		<fileset dir="${appserver.home}" includes="modules/javax/ejb/api/main/jboss-ejb-api_* modules/javax/persistence/api/main/hibernate-jpa-*"/>
+    		<fileset dir="${appserver.home}" includes="modules/system/layers/base/javax/ejb/api/main/jboss-ejb-api_* modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-*"/>
+    		<fileset dir="lib" includes="log4j*.jar" />
     	</path>
     	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" encoding="UTF-8" debug="on" includeantruntime="false"
     		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
@@ -253,12 +255,12 @@ piwikTracker.enableLinkTracking();
        		<path refid="gen-dep.classpath"/>
        		<path location="${gen-depgraph.dir}"/>
        	</path>
-    	<java classname="org.ejbca.util.EjbDependencyGraphTool" classpathref="gen-dep.classpath.run">
+    	<java classname="org.ejbca.util.EjbDependencyGraphTool" classpathref="gen-dep.classpath.run" failonerror="true">
     		<arg line="${ejbca.home}/dist/ejbca.ear ${gen-depgraph.dir}/ejbca_${app.version.number}.dot"/>
     	</java>
     	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.dot was written."/>
     	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.dot was written."/>
-    	<exec executable="dot">
+    	<exec executable="dot" failonerror="true">
     		<arg line="-Tpng -o ${gen-depgraph.dir}/ejbca_${app.version.number}.png ${gen-depgraph.dir}/ejbca_${app.version.number}.dot"/>
     	</exec>
     	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.png was created."/>
