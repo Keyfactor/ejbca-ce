@@ -98,7 +98,7 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
                         }
                     }
                 } catch (CADoesntExistsException e) {
-                    log.error("CA with id "+caid+"suddenly dissapeared...ignoring.");
+                    log.error("CA with id "+caid+"suddenly disappeared...ignoring.");
                 }
             }
             final CertificateProfileSessionRemote cpSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
@@ -122,7 +122,7 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
             // Only remove publisher if we are not only listing or removing references
             if (!removerefmode && !listrefmode) {
                 if (caContains || cpContains) {
-                    log.error("Unable to remove publisher that still have references in CAs or Certificate Profiles.");
+                    log.error("Unable to remove publisher that still still has references in CAs or Certificate Profiles.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 pubsession.removePublisher(getAuthenticationToken(), name);
