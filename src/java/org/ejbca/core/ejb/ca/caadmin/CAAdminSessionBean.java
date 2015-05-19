@@ -2959,10 +2959,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean exitsPublisherInCAs(AuthenticationToken admin, int publisherid) {
+    public boolean exitsPublisherInCAs(int publisherid) {
         try {
-            for (final Integer caid : caSession.getAuthorizedCaIds(admin)) {
-                for (final Integer pubInt : caSession.getCA(admin, caid).getCRLPublishers()) {
+            final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+                    CAAdminSessionBean.class.getSimpleName() + ".exitsPublisherInCAs"));
+            for (final Integer caid : caSession.getAllCaIds()) {
+                for (final Integer pubInt : caSession.getCA(authenticationToken, caid).getCRLPublishers()) {
                     if (pubInt.intValue() == publisherid) {
                         // We have found a match. No point in looking for more..
                         return true;
