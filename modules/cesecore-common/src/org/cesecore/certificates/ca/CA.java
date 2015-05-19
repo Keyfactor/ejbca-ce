@@ -554,35 +554,37 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         final Certificate currentCert = getCACertificate();
         if (request == null) {
             // We get here when creating a new CA
+            log.trace("getUseNextCACert: request is null. most likely this is a new CA");
             return false;
         }
         
         final BigInteger requestSerNo = request.getSerialNo();
         if (requestSerNo == null) {
-            log.debug("No serial number in request. Will use current CA cert.");
+            log.debug("getUseNextCACert: No serial number in request. Will use current CA cert.");
             return false;
         }
         
         final BigInteger currentSerNo = CertTools.getSerialNumber(currentCert);
         if (currentSerNo == null || currentSerNo.equals(requestSerNo)) {
             // Normal case
+            log.trace("getUseNextCACert: CA serial number matches request serial number");
             return false;
         }
         
         final List<Certificate> rolloverChain = getRolloverCertificateChain();
         if (rolloverChain == null || rolloverChain.isEmpty()) {
-            log.debug("Serial number in request does not match CA serial number, and no roll over certificate chain is present. Will use current CA cert.");
+            log.debug("getUseNextCACert: Serial number in request does not match CA serial number, and no roll over certificate chain is present. Will use current CA cert.");
             return false;
         }
         
         final Certificate rolloverCert = rolloverChain.get(0);
         final BigInteger rolloverSerNo = CertTools.getSerialNumber(rolloverCert);
         if (rolloverSerNo != null && rolloverSerNo.equals(requestSerNo)) {
-            log.debug("Serial number in request matches next (rollover) CA cert. Using next CA cert and key.");
+            log.debug("getUseNextCACert: Serial number in request matches next (rollover) CA cert. Using next CA cert and key.");
             return true; // this is the only case where we use the next CA cert
         }
         
-        log.debug("Serial number in request does not match CA serial number nor next (rollover) CA cert. Will use current CA cert.");
+        log.debug("getUseNextCACert: Serial number in request does not match CA serial number nor next (rollover) CA cert. Will use current CA cert.");
         return false;
     }
 
