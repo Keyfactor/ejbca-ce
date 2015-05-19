@@ -44,7 +44,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -112,7 +111,6 @@ public class RequestInstance {
 	private EndEntityManagementSessionLocal endEntityManagementSession;
 	private GlobalConfigurationSession globalConfigurationSession;
 	private EndEntityAccessSessionLocal endEntityAccessSession;
-	private CertificateStoreSessionLocal certificateStoreSession;
 	
 	private String password=null;
 	private String username=null;
@@ -131,7 +129,7 @@ public class RequestInstance {
 	
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession,
-			SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession, CertificateStoreSessionLocal certificateStoreSession) {
+			SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;
 		this.servletConfig = servletConfig;
 		this.authenticationSession = authenticationSession;
@@ -143,7 +141,6 @@ public class RequestInstance {
 		this.endEntityManagementSession = endEntityManagementSession;
 		this.endEntityAccessSession = endEntityAccessSession;
 		this.globalConfigurationSession = globalConfigurationSession;
-		this.certificateStoreSession = certificateStoreSession;
 	}
 
 	/**************************************************************
