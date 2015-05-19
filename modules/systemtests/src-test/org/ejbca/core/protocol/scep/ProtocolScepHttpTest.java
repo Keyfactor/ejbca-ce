@@ -639,7 +639,7 @@ public class ProtocolScepHttpTest {
             // Create a rollover certificate
             final int subCAId = cainfo.getCAId();
             final byte[] requestbytes = caAdminSession.makeRequest(admin, subCAId, null, null);
-            final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
+            final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                     cainfo.getCertificateProfileId(), EndEntityConstants.TOKEN_USERGEN, 0, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
             endentity.setPassword("foo123");
