@@ -22,6 +22,7 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -138,11 +139,22 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         try {
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
-            final String alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            final String alias;
+            final Collection<Certificate> cachain;
+            final Certificate cacert;
+            if (ca.getUseNextCACert(req)) {
+                alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+                cachain = ca.getRolloverCertificateChain();
+                cacert = cachain.iterator().next();
+            } else {
+                alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                cachain = ca.getCertificateChain();
+                cacert = ca.getCACertificate();
+            }
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
+                req.setKeyInfo(cacert, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             }
             // Verify the request
             final PublicKey reqpk;
@@ -191,7 +203,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             CertificateDataWrapper certWrapper = createCertificate(admin, endEntityInformation, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
             // Create the response message with all nonces and checks etc
-            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
+            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, cachain, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
             String failText = null;
@@ -200,7 +212,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 failInfo = FailInfo.BAD_REQUEST;
             } else {
                 ret.setCertificate(certWrapper.getCertificate());
-                ret.setCACert(ca.getCACertificate());
+                ret.setCACert(cacert);
                 ret.setBase64CertData(certWrapper.getBase64CertData());
                 ret.setCertificateData(certWrapper.getCertificateData());
             }

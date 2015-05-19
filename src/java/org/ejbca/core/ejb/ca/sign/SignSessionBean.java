@@ -617,8 +617,15 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
-            req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                    cryptoToken.getSignProviderName());
+            if (ca.getUseNextCACert(req)) {
+                req.setKeyInfo(ca.getRolloverCertificateChain().get(0),
+                        cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
+                        cryptoToken.getSignProviderName());
+            } else {
+                req.setKeyInfo(ca.getCACertificate(),
+                        cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                        cryptoToken.getSignProviderName());
+            }
         }
         // Verify the request
         if (req.verify() == false) {
