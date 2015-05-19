@@ -24,6 +24,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -70,8 +71,11 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
         boolean removerefmode = parameters.containsKey(REMOVE_REF_KEY);
         boolean removeallmode = parameters.containsKey(REMOVE_ALL_KEY);
         try {
-            // Get the publisher info
             final PublisherSessionRemote pubsession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+            final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+            final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+            final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+            // Get the publisher info
             final BasePublisher pub = pubsession.getPublisher(getAuthenticationToken(), name);
             if (pub == null) {
                 getLogger().info("Publisher with name '"+name+"' does not exist.");
@@ -79,7 +83,6 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
             }
             // Find references in CAs and certificate profiles
             final int publisherId = pub.getPublisherId();
-            final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             // Only CAs this admin is authorized to
             List<Integer> caids = caSession.getAuthorizedCaIds(getAuthenticationToken());
             boolean caContains = false;
@@ -124,6 +127,11 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
                 if (caContains || cpContains) {
                     log.error("Unable to remove publisher that still still has references in CAs or Certificate Profiles.");
                     return CommandResult.FUNCTIONAL_FAILURE;
+                }
+                // Check that there are no references left
+                if (caAdminSession.exitsPublisherInCAs(publisherId) || certificateProfileSession.existsPublisherIdInCertificateProfiles(publisherId)) {
+                    log.error("Unable to remove publisher that still still has references in CAs or Certificate Profiles.");
+                    return CommandResult.FUNCTIONAL_FAILURE;                    
                 }
                 pubsession.removePublisher(getAuthenticationToken(), name);
                 getLogger().info("Removed publisher '"+name+"'.");
