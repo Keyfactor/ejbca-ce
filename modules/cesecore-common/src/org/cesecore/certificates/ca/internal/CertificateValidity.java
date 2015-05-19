@@ -176,7 +176,12 @@ public class CertificateValidity {
         if (cacert != null && lastDate.after(CertTools.getNotAfter(cacert)) && !isRootCA) {
         	log.info(intres.getLocalizedMessage("createcert.limitingvalidity", lastDate.toString(), CertTools.getNotAfter(cacert)));
             lastDate = CertTools.getNotAfter(cacert);
-        }            
+        }
+        // Limit validity: We do not allow a certificate to be valid before the the CA becomes valid (unless it's RootCA during renewal)
+        if (cacert != null && firstDate.before(CertTools.getNotBefore(cacert)) && !isRootCA) {
+            log.info(intres.getLocalizedMessage("createcert.limitingvaliditystart", firstDate.toString(), CertTools.getNotBefore(cacert)));
+            firstDate = CertTools.getNotBefore(cacert);
+        } 
         if ( !lastDate.before(CertificateValidity.tooLateExpireDate) ) {
         	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.tooLateExpireDate.toString()); 
         	log.info(msg);
