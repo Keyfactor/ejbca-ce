@@ -101,11 +101,14 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
@@ -117,6 +120,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -195,6 +199,7 @@ public class ProtocolScepHttpTest {
     private static final String ROLLOVER_SUB_CA_DN = "CN=RolloverSubCA";
     private static String senderNonce = null;
     private static String transId = null;
+    private static long rolloverStartTime;
 
     private Random rand = new Random();
     private String httpReqPath;
@@ -208,6 +213,7 @@ public class ProtocolScepHttpTest {
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
@@ -615,6 +621,8 @@ public class ProtocolScepHttpTest {
         x509ca.updateCA(null, rootcainfo);
         caAdminSession.editCA(admin, rootcainfo);
         try {
+            rolloverStartTime = System.currentTimeMillis()+7L*24L*3600L*1000L;
+            
             // Create sub CA
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ROLLOVER_SUB_CA, "1024");
             final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -623,7 +631,7 @@ public class ProtocolScepHttpTest {
             cainfo.setDescription("JUnit Test Sub CA for SCEP GetNextCACert test");
             cainfo.setSignedBy(x509ca.getCAId());
             cainfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
-            cainfo.setValidity(3600);
+            cainfo.setValidity(14L*24L*3600L*1000L);
             cainfo.setDoEnforceUniqueDistinguishedName(false);
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
                 caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
@@ -639,10 +647,18 @@ public class ProtocolScepHttpTest {
             // Create a rollover certificate
             final int subCAId = cainfo.getCAId();
             final byte[] requestbytes = caAdminSession.makeRequest(admin, subCAId, null, null);
+            final CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certProf.setAllowValidityOverride(true);
+            certProf.setValidity(14L*24L*3600L*1000L);
+            final int certProfId = certificateProfileSession.addCertificateProfile(admin, "TestScepCARollover", certProf);
             final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
-                    cainfo.getCertificateProfileId(), EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    certProfId, EndEntityConstants.TOKEN_USERGEN, 0, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
             endentity.setPassword("foo123");
+            final ExtendedInformation ei = new ExtendedInformation();
+            ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(rolloverStartTime));
+            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, ValidityDate.formatAsUTC(rolloverStartTime+14L*24L*3600L*1000L));
+            endentity.setExtendedinformation(ei);
             endEntityManagementSession.addUser(admin, endentity, true);
             final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
             final X509ResponseMessage respmsg = (X509ResponseMessage)certificateCreateSession.createCertificate(admin, endentity, req, X509ResponseMessage.class, null);
@@ -663,6 +679,13 @@ public class ProtocolScepHttpTest {
             assertEquals("should get the leaf CA certificate first in the chain", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(nextCert));
             assertEquals("should get the root CA certiticate first in the chain", x509ca.getSubjectDN(), CertTools.getSubjectDN(nextRootCert));
             assertEquals("should get the rollover certificate", CertTools.getSerialNumberAsString(rolloverCert), CertTools.getSerialNumberAsString(nextCert));
+            
+            long certValidityStart = ((X509Certificate)rolloverCert).getNotBefore().getTime();
+            if (Math.abs(certValidityStart - rolloverStartTime) > 60L*1000L) {
+                assertEquals("rollover certificate has the wrong validity start time", rolloverStartTime, certValidityStart);
+            } else {
+                rolloverStartTime = certValidityStart;
+            }
         } finally {
             if (endEntityManagementSession.existsUser("TestScepCARollover")) {
                 endEntityManagementSession.deleteUser(admin, "TestScepCARollover");
@@ -692,7 +715,7 @@ public class ProtocolScepHttpTest {
             byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
             byte[] retMsg = sendScep(false, msgBytes);
             assertNotNull(retMsg);
-            checkScepResponse(retMsg, rolloverDN, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover);
+            checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover);
             
             // Clean up
             try {
@@ -707,7 +730,7 @@ public class ProtocolScepHttpTest {
             byte[] msgBytes2 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
             byte[] retMsg2 = sendScep(false, msgBytes2);
             assertNotNull(retMsg2);
-            checkScepResponse(retMsg2, rolloverDN, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
+            checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
             
             
         } finally {
@@ -716,6 +739,7 @@ public class ProtocolScepHttpTest {
                 caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
             }
             internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
+            certificateProfileSession.removeCertificateProfile(admin, "TestScepCARollover");
         }
     }
 
@@ -890,10 +914,10 @@ public class ProtocolScepHttpTest {
     private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca)
             throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
             SignatureException, CertificateException {
-        checkScepResponse(retMsg, userDN, _senderNonce, _transId, crlRep, digestOid, noca, cacert, key1);
+        checkScepResponse(retMsg, userDN, -1L, _senderNonce, transId, crlRep, digestOid, noca, cacert, key1);
     }
     
-    private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca,
+    private void checkScepResponse(byte[] retMsg, String userDN, long startValidity, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca,
                                    X509Certificate caCertToUse, KeyPair key)
             throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
             SignatureException, CertificateException {
@@ -1033,6 +1057,13 @@ public class ProtocolScepHttpTest {
                         assertEquals(CertTools.getSubjectDN(caCertToUse), CertTools.getIssuerDN(retcert));
                         retcert.verify(caCertToUse.getPublicKey());
                         assertTrue(checkKeys(key.getPrivate(), retcert.getPublicKey()));
+                        
+                        if (startValidity != -1L) {
+                            long certValidityStart = retcert.getNotBefore().getTime();
+                            if (Math.abs(certValidityStart - startValidity) > 60L*1000L) {
+                                assertEquals("wrong start validity time of issued user certificate", startValidity, certValidityStart);
+                            }
+                        }
                         verified = true;
                     } else {
                         // ca certificate
