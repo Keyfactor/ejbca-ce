@@ -31,7 +31,7 @@
 
 <!-- Information text -->
 <c:if test="${hasOptions}">
-    <p>Please choose a key length, then click OK to fetch your certificate.</p>
+    <p>Please choose a key length, then click 'Enroll' to fetch your certificate.</p>
     <c:if test="${applybean.openVPNInstallerConfigured}">
         <p>Tick the &quot;OpenVPN&quot; checkbox if you want to create an OpenVPN installer.
            This options requires special configuration of the CA.
