@@ -2961,10 +2961,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean exitsPublisherInCAs(int publisherid) {
         try {
-            final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-                    CAAdminSessionBean.class.getSimpleName() + ".exitsPublisherInCAs"));
             for (final Integer caid : caSession.getAllCaIds()) {
-                for (final Integer pubInt : caSession.getCA(authenticationToken, caid).getCRLPublishers()) {
+                for (final Integer pubInt : caSession.getCAInfoInternal(caid).getCRLPublishers()) {
                     if (pubInt.intValue() == publisherid) {
                         // We have found a match. No point in looking for more..
                         return true;
@@ -2973,8 +2971,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         } catch (CADoesntExistsException e) {
             throw new RuntimeException("Available CA is no longer available!");
-        } catch (AuthorizationDeniedException e) {
-            throw new RuntimeException("No longer authorized to authorized CA!");
         }
         return false;
     }
