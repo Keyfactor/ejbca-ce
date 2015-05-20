@@ -53,7 +53,7 @@ public interface CaSessionLocal extends CaSession {
     void flushCACache();
 
     /**
-     * Get the CA object. Does not perform any authorization check. Checks if
+     * Get the CA object performing the regular authorization check. Checks if
      * the CA has expired or the certificate isn't valid yet and in that case
      * sets the correct CA status.
      * NOTE: This method will return a shared CA object from a cache. Not suitable for reading a CA object that you 
