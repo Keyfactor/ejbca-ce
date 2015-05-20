@@ -507,9 +507,7 @@
 			</not>
 		</and>
     </condition>
-	<!--
-	<echo message="peerconnector available: ${mod.peerconnector.exists}"/>
-	-->
+
 	<condition property="mod.externalra.exists">
 		<available file="${mod.externalra.path}/build.xml" />
     </condition>
@@ -517,5 +515,10 @@
 	<condition property="mod.externalra-scep.exists">
 		<available file="${mod.externalra-scep.path}/build.xml" />
     </condition>
+	
+
+	<condition property="ejbca-db-cli.available">
+		<available file="${mod.ejbca-entity.path}/src-cli/org" type="dir"/>
+	</condition>
 
 </project>
