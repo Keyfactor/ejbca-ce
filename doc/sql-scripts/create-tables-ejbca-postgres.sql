@@ -272,6 +272,17 @@ CREATE TABLE KeyRecoveryData (
     issuerDN)
 );
 
+CREATE TABLE PeerData (
+    id INT4 NOT NULL,
+    name TEXT NOT NULL,
+    connectorState INT4 NOT NULL,
+    url TEXT NOT NULL,
+    data TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE PublisherData (
     id INT4 NOT NULL,
     data TEXT,
