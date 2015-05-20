@@ -429,7 +429,7 @@ public class RequestInstance {
 					    try {
 					        pkcs10Req(request, response, username, password, resulttype, helper, reqBytes);
 					    } catch(Exception exp) {
-                            iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq", exp.getLocalizedMessage());
+                            iErrorMessage = intres.getLocalizedMessage("certreq.failed", exp.getLocalizedMessage());
                         }
 					} else {
 						throw new SignRequestException("No request bytes received.");
