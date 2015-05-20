@@ -1075,8 +1075,12 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-entity">
     	<ant dir="modules" target="ejbca-entity" />
     </target>
+	
+	<target name="ejbca-db-cli:check" unless="ejbca-db-cli.available">
+		<fail>EJBCA DB CLI does not exist in EJBCA Community. Please contact a sales representative at Primekey Solutions for information about how to get an Enterprise License.</fail>
+	</target>
 
-    <target name="ejbca-db-cli" depends="deprecated:check" description="Build EJBCA JPA database CLI">
+    <target name="ejbca-db-cli" depends="deprecated:check, ejbca-db-cli:check" description="Build EJBCA JPA database CLI">
     	<ant dir="modules" target="ejbca-db-cli" />
     </target>
 
