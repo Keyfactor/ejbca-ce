@@ -274,6 +274,17 @@ CREATE TABLE KeyRecoveryData (
     issuerDN)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
+CREATE TABLE PeerData (
+    id INT(11) NOT NULL,
+    name VARCHAR(250) BINARY NOT NULL,
+    connectorState INT(11) NOT NULL,
+    url VARCHAR(250) BINARY NOT NULL,
+    data LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (id)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
+
 CREATE TABLE PublisherData (
     id INT(11) NOT NULL,
     data LONGTEXT,
