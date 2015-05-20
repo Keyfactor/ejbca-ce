@@ -170,10 +170,6 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-    <condition property="ejbca-db-cli.available">
-    	<available file="${mod.ejbca-entity.path}/src-cli/org" type="dir"/>
-    </condition>
-
 	<target name="ejbca-db-cli" depends="ejbca-util" if="${ejbca-db-cli.available}" description="Build EJBCA JPA database CLI">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
