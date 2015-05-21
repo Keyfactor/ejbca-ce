@@ -324,7 +324,7 @@ public abstract class CertTools {
             if (!escapeNext && current == '"') {
                 quoted = !quoted;
             }
-            // If there is an unescaped and unquoted =-char the preceeding chars is a part name
+            // If there is an unescaped and unquoted =-char the proceeding chars is a part name
             if (currentStartPosition == -1 && !quoted && !escapeNext && current == '=' && 1 <= i) {
                 // Trim spaces (e.g. "O =value")
                 int endIndexOfPartName = i;
