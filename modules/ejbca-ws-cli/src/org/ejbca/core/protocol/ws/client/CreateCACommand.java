@@ -95,9 +95,10 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
         } catch (Exception e) {
             if (e instanceof EjbcaException_Exception) {
                 EjbcaException_Exception e1 = (EjbcaException_Exception)e;
-                getPrintStream().println("Error code is: " + e1.getFaultInfo().getErrorCode().getInternalErrorCode());
+                getPrintStream().println("Error code: " + e1.getFaultInfo().getErrorCode().getInternalErrorCode());
             }
-            throw new ErrorAdminCommandException(e);
+            ErrorAdminCommandException adminexp = new ErrorAdminCommandException(e);
+            getPrintStream().println("Error message: " + adminexp.getLocalizedMessage());
         }
         
     }
