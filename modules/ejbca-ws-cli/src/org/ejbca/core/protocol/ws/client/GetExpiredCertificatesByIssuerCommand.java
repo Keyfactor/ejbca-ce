@@ -97,7 +97,8 @@ public class GetExpiredCertificatesByIssuerCommand extends EJBCAWSRABaseCommand 
                 getPrintStream().println("Error : " + e.getMessage());
             }           
         } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            ErrorAdminCommandException adminexp = new ErrorAdminCommandException(e);
+            getPrintStream().println("Error: " + adminexp.getLocalizedMessage());
         }
     }
 
