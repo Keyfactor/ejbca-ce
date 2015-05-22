@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,12 +27,15 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
@@ -64,22 +66,31 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
-import org.bouncycastle.asn1.crmf.CertRequest;
-import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
+import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.crmf.CRMFException;
+import org.bouncycastle.cert.crmf.CertificateRequestMessage;
+import org.bouncycastle.cert.crmf.CertificateRequestMessageBuilder;
+import org.bouncycastle.cert.crmf.PKMACBuilder;
+import org.bouncycastle.cert.crmf.PKMACValuesCalculator;
+import org.bouncycastle.cert.crmf.jcajce.JcePKMACValuesCalculator;
 import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
@@ -1139,10 +1150,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
     }
 
-    protected void generateCrmf() throws Exception {
-
+    protected void generateCrmf(boolean useProofOfPossession, boolean usePublicKeyMac, boolean useAuthInfoSender) throws Exception {
+        final String EXTENSION_OID = "1.2.3.4";
+        final String EXTENSION_CONTENT = "foo1234";
         // Edit our favorite test user
-        UserDataVOWS user1 = new UserDataVOWS();
+        final UserDataVOWS user1 = new UserDataVOWS();
         user1.setUsername(CA1_WSTESTUSER1);
         user1.setPassword(PASSWORD);
         user1.setClearPwd(true);
@@ -1153,84 +1165,146 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setEndEntityProfileName(WS_EEPROF_EI);
         user1.setCertificateProfileName(WS_CERTPROF_EI);
         ejbcaraws.editUser(user1);
-
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        KeyPair keys = KeyTools.genKeys("512", "RSA");
-        CAInfo info = caSession.getCAInfo(admin, CA1);
-        CertReqMsg req = createCrmfRequest(info.getSubjectDN(), getDN(CA1_WSTESTUSER1), keys, "1.2.3.4");
-        CertReqMessages msgs = new CertReqMessages(req);
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(msgs);
-        byte[] ba = bao.toByteArray();
-        String reqstr = new String(Base64.encode(ba));
-        //CertificateResponse certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, CRMF, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-        CertificateResponse certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-        assertNotNull(certenv);
-        X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-        assertNotNull(cert);
+        final CAInfo caInfo = caSession.getCAInfo(admin, CA1);
+        // Test happy path CRMF request without expectation of a returned extensions
+        KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        CertReqMsg req = createCrmfRequest(caInfo.getSubjectDN(), getDN(CA1_WSTESTUSER1), keyPair.getPublic(), keyPair.getPrivate(), EXTENSION_OID, EXTENSION_CONTENT, useProofOfPossession, usePublicKeyMac?PASSWORD:null, useAuthInfoSender);
+        String reqstr = new String(Base64.encode(new CertReqMessages(req).getEncoded()));
+        log.debug("CertReqMessages:\n"+reqstr);
+        CertificateResponse certificateResponse = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        assertNotNull("No certificate response from CRMF request.", certificateResponse);
+        X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certificateResponse.getData());
+        assertNotNull("No certificate in response from CRMF request.", cert);
         log.info(cert.getSubjectDN().toString());
         assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
-        byte[] ext = cert.getExtensionValue("1.2.3.4");
         // Certificate profile did not allow extension override
-        assertNull("no extension should exist", ext);
+        assertNull("No extension should exist in response certificate.", cert.getExtensionValue(EXTENSION_OID));
         // Allow extension override
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        final CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
         profile.setAllowExtensionOverride(true);
         certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
         // Now our extension should be possible to get in there
         try {
             ejbcaraws.editUser(user1);
-            keys = KeyTools.genKeys("512", "RSA");
-            info = caSession.getCAInfo(admin, CA1);
-            req = createCrmfRequest(info.getSubjectDN(), getDN(CA1_WSTESTUSER1), keys, "1.2.3.4");
-            msgs = new CertReqMessages(req);
-            bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
-            out.writeObject(msgs);
-            ba = bao.toByteArray();
-            reqstr = new String(Base64.encode(ba));
-            certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            assertNotNull(certenv);
-            cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-            assertNotNull(cert);
+            keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            req = createCrmfRequest(caInfo.getSubjectDN(), getDN(CA1_WSTESTUSER1), keyPair.getPublic(), keyPair.getPrivate(), EXTENSION_OID, EXTENSION_CONTENT, useProofOfPossession, usePublicKeyMac?PASSWORD:null, useAuthInfoSender);
+            reqstr = new String(Base64.encode(new CertReqMessages(req).getEncoded()));
+            certificateResponse = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            assertNotNull("No certificate response from CRMF request.", certificateResponse);
+            cert = (X509Certificate) CertificateHelper.getCertificate(certificateResponse.getData());
+            assertNotNull("No certificate in response from CRMF request.", cert);
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
-            ext = cert.getExtensionValue("1.2.3.4");
-            assertNotNull("there should be an extension", ext);
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
-            try {
-                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
-                assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets()).trim()));
-            } finally {
-                asn1InputStream.close();
-            }
+            final byte[] extensionValue = cert.getExtensionValue(EXTENSION_OID);
+            assertNotNull("There should be an extension in the response certificate.", extensionValue);
+            final DEROctetString extensionOctets = (DEROctetString)DEROctetString.fromByteArray(extensionValue);
+            assertEquals("Extension did not have the correct value", EXTENSION_CONTENT, (new String(extensionOctets.getOctets())).trim());
         } finally {
             // restore
             profile.setAllowExtensionOverride(false);
             certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
         }
+        // Check that a bad proof of possession signature will lead to a failure
+        if (useProofOfPossession) {
+            ejbcaraws.editUser(user1);
+            keyPair = KeyTools.genKeys("512", "RSA");
+            final KeyPair anotherKeyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            req = createCrmfRequest(caInfo.getSubjectDN(), getDN(CA1_WSTESTUSER1), keyPair.getPublic(), anotherKeyPair.getPrivate(), EXTENSION_OID, EXTENSION_CONTENT, useProofOfPossession, usePublicKeyMac?PASSWORD:null, useAuthInfoSender);
+            reqstr = new String(Base64.encode(new CertReqMessages(req).getEncoded()));
+            log.debug("CertReqMessages:\n"+reqstr);
+            try {
+                ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                fail("CRMF request with bad PKMAC should fail with ErrorCode.BAD_REQUEST_SIGNATURE.");
+            } catch (EjbcaException_Exception e) {
+                assertEquals("Unexpected error.", org.cesecore.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
+            }
+        }
+        // Try when the PKMAC is created with the wrong enrollment code
+        if (useProofOfPossession && usePublicKeyMac) {
+            ejbcaraws.editUser(user1);
+            keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            req = createCrmfRequest(caInfo.getSubjectDN(), getDN(CA1_WSTESTUSER1), keyPair.getPublic(), keyPair.getPrivate(), EXTENSION_OID, EXTENSION_CONTENT, true, "bar456", false);
+            reqstr = new String(Base64.encode(new CertReqMessages(req).getEncoded()));
+            log.debug("CertReqMessages:\n"+reqstr);
+            try {
+                ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                fail("CRMF request with bad PKMAC should fail with ErrorCode.BAD_REQUEST_SIGNATURE.");
+            } catch (EjbcaException_Exception e) {
+                assertEquals("Unexpected error.", org.cesecore.ErrorCode.BAD_REQUEST_SIGNATURE.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
+            }
+        }
     }
 
-    private CertReqMsg createCrmfRequest(final String issuerDN, final String userDN, final KeyPair keys, final String extensionOid) throws IOException {
-        CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
-        myCertTemplate.setIssuer(new X500Name(issuerDN));
-        myCertTemplate.setSubject(new X500Name(userDN));
-        byte[] bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream dIn = new ASN1InputStream(bIn);
-        try {
-            SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
-            myCertTemplate.setPublicKey(keyInfo);
-        } finally {
-            dIn.close();
+    private CertReqMsg createCrmfRequest(final String issuerDN, final String userDN, final PublicKey publicKey, final PrivateKey privateKey, final String extensionOid,
+            final String extensionContent, final boolean useProofOfPossession, final String publicKeyMacPassword, final boolean useAuthInfoSender) throws
+            IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CRMFException, OperatorCreationException {
+        final CertificateRequestMessageBuilder crmb = new CertificateRequestMessageBuilder(BigInteger.valueOf(4L)); // ReqId = 4
+        crmb.setIssuer(new X500Name(issuerDN));
+        if (!useAuthInfoSender && publicKeyMacPassword==null) {
+            crmb.setSubject(new X500Name(userDN));
         }
-        // If we did not pass any extensions as parameter, we will create some of our own, standard ones
-        ExtensionsGenerator extgen = new ExtensionsGenerator();
-        extgen.addExtension(new ASN1ObjectIdentifier(extensionOid), false, new DEROctetString("foo123".getBytes()));
-        myCertTemplate.setExtensions(extgen.generate());
-        CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
-        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, null, null);
-        return myCertReqMsg;
+        final SubjectPublicKeyInfo subjectPublicKeyInfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        crmb.setPublicKey(subjectPublicKeyInfo);
+        crmb.addExtension(new ASN1ObjectIdentifier(extensionOid), false, new DEROctetString(extensionContent.getBytes()));
+        if (useProofOfPossession) {
+            /*
+             * RFC 4211: The certificate subject places its name in the Certificate
+             * Template structure along with the public key.  In this case the
+             * poposkInput field is omitted from the POPOSigningKey structure.
+             * The signature field is computed over the DER-encoded certificate
+             * template structure.
+             */
+            ContentSigner contentSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privateKey);
+            crmb.setProofOfPossessionSigningKeySigner(contentSigner);
+            if (publicKeyMacPassword!=null) {
+                /*
+                 * RFC4211 4.1:
+                 *  1. The certificate subject has not yet established an authenticated
+                 *  identity with a CA/RA, but has a password and identity string
+                 *  from the CA/RA.  In this case, the POPOSigningKeyInput structure
+                 *  would be filled out using the publicKeyMAC choice for authInfo,
+                 *  and the password and identity would be used to compute the
+                 *  publicKeyMAC value.
+                */
+                final PKMACValuesCalculator pkmacValuesCalculator = new JcePKMACValuesCalculator().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                final PKMACBuilder pkmacBuilder = new PKMACBuilder(pkmacValuesCalculator);
+                log.info("Creating PKMAC with password " + publicKeyMacPassword);
+                crmb.setAuthInfoPKMAC(pkmacBuilder, publicKeyMacPassword.toCharArray());
+            } else if (useAuthInfoSender) {
+                /*
+                 * 2. The CA/RA has established an authenticated identity for the
+                 * certificate subject, but the requestor is not placing it into the
+                 * certificate request.  In this case, the POPOSigningKeyInput
+                 * structure would be filled out using the sender choice for
+                 * authInfo.  The public key for the certificate being requested
+                 * would be placed in both the POPOSigningKeyInput and the
+                 * Certificate Template structures.  The signature field is computed
+                 * over the DER-encoded POPOSigningKeyInput structure.
+                 */
+                crmb.setAuthInfoSender(new X500Name(userDN));
+            } else {
+                /*
+                 * 3. The certificate subject places its name in the Certificate
+                 * Template structure along with the public key.  In this case the
+                 * poposkInput field is omitted from the POPOSigningKey structure.
+                 * The signature field is computed over the DER-encoded certificate
+                 * template structure.
+                 */
+                // NOOP
+            }
+        } else {
+            crmb.setProofOfPossessionRaVerified();
+        }
+        final CertificateRequestMessage certificateRequestMessage = crmb.build();
+        // Convert to expected format
+        final CertReqMsg certReqMsg = CertReqMsg.getInstance(certificateRequestMessage.getEncoded());
+        // Sanity check the created request
+        if (useProofOfPossession && publicKeyMacPassword!=null) {
+            final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(certReqMsg.getPopo().getObject());
+            assertNotNull("PublicKeyMAC was null in request!", popoSigningKey.getPoposkInput().getPublicKeyMAC());
+            assertNull("Subject should not be set.", certReqMsg.getCertReq().getCertTemplate().getSubject());
+        }
+        return certReqMsg;
     }
     
     protected void generateSpkac() throws Exception {

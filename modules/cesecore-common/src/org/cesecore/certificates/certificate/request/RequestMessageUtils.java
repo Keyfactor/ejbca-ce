@@ -15,22 +15,26 @@ package org.cesecore.certificates.certificate.request;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.X509EncodedKeySpec;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.crmf.CertRequest;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.crmf.POPOSigningKey;
+import org.bouncycastle.cert.crmf.CRMFException;
+import org.bouncycastle.cert.crmf.PKMACBuilder;
+import org.bouncycastle.cert.crmf.jcajce.JcaCertificateRequestMessage;
+import org.bouncycastle.cert.crmf.jcajce.JcePKMACValuesCalculator;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -181,27 +185,77 @@ public abstract class RequestMessageUtils {
                 ret = new SimpleRequestMessage(pubKey, username, password);
             }       
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
-            byte[] request = Base64.decode(req.getBytes());
-            ASN1InputStream in = new ASN1InputStream(request);
+            final byte[] certificateRequestMessages = Base64.decode(req.getBytes());
+            final CertReqMsg certReqMsg = CertReqMsg.getInstance(((ASN1Sequence)ASN1Sequence.fromByteArray(certificateRequestMessages)).getObjectAt(0));
+            final JcaCertificateRequestMessage jcrm = new JcaCertificateRequestMessage(certReqMsg);
             try {
-                ASN1Sequence crmfSeq = (ASN1Sequence) in.readObject();
-                ASN1Sequence reqSeq = (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
-                CertRequest certReq = CertRequest.getInstance(reqSeq);
-                SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
-                KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
-                KeySpec keySpec = new X509EncodedKeySpec(pKeyInfo.getEncoded());
-                PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
-                SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
-                Extensions ext = certReq.getCertTemplate().getExtensions();
-                simplereq.setRequestExtensions(ext);
-                ret = simplereq;
-            } finally {
-                in.close();
+                final PublicKey publicKey = jcrm.getPublicKey();
+                if (jcrm.hasProofOfPossession()) {
+                    switch (jcrm.getProofOfPossessionType()) {
+                    case JcaCertificateRequestMessage.popRaVerified: {
+                        // The requestor claims that it is verified by an RA
+                        break;
+                    }
+                    case JcaCertificateRequestMessage.popSigningKey: {
+                        // RFC 4211 Section 4.1
+                        final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(jcrm.toASN1Structure().getPopo().getObject());
+                        if (log.isDebugEnabled()) {
+                            if (popoSigningKey!=null) {
+                                log.debug("CRMF POPOSigningKey poposkInput:                      " + popoSigningKey.getPoposkInput());
+                                if (popoSigningKey.getPoposkInput()!=null) {
+                                    log.debug("CRMF POPOSigningKey poposkInput PublicKey:            " + popoSigningKey.getPoposkInput().getPublicKey());
+                                    log.debug("CRMF POPOSigningKey poposkInput PublicKeyMAC:         " + popoSigningKey.getPoposkInput().getPublicKeyMAC());
+                                }
+                                log.debug("CRMF POPOSigningKey algorithmIdentifier.algorithm.id: " + popoSigningKey.getAlgorithmIdentifier().getAlgorithm().getId());
+                                log.debug("CRMF POPOSigningKey signature:                        " + popoSigningKey.getSignature());
+                            } else {
+                                log.debug("CRMF POPOSigningKey is not defined even though POP type is popSigningKey. Validation will fail.");
+                            }
+                        }
+                        final ContentVerifierProvider cvp = new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(publicKey);
+                        // Work around for bug in BC where jcrm.hasSigningKeyProofOfPossessionWithPKMAC() will throw NPE if PoposkInput is null
+                        if (popoSigningKey.getPoposkInput()!=null && jcrm.hasSigningKeyProofOfPossessionWithPKMAC()) {
+                            final PKMACBuilder pkmacBuilder = new PKMACBuilder(new JcePKMACValuesCalculator().setProvider(BouncyCastleProvider.PROVIDER_NAME));
+                            if (!jcrm.isValidSigningKeyPOP(cvp, pkmacBuilder, password.toCharArray())) {
+                                throw new SignRequestSignatureException("CRMF POP with PKMAC failed signature or MAC validation.");
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("CRMF POP with PKMAC passed signature and PKMAC validation.");
+                                }
+                            }
+                        } else {
+                            if (!jcrm.isValidSigningKeyPOP(cvp)) {
+                                throw new SignRequestSignatureException("CRMF POP failed signature validation.");
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("CRMF POP passed signature validation.");
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case JcaCertificateRequestMessage.popKeyEncipherment: {
+                        // RFC 4211 Section 4.2 (Not implemented)
+                        log.info("CRMF RFC4211 Section 4.2 KeyEncipherment POP validation is not implemented. Will try to use the request's public key anyway.");
+                        break;
+                    }
+                    case JcaCertificateRequestMessage.popKeyAgreement: {
+                        // RFC 4211 Section 4.3 (Not implemented)
+                        log.info("CRMF RFC4211 Section 4.3 KeyAgreement POP validation is not implemented. Will try to use the request's public key anyway.");
+                        break;
+                    }
+                    default:
+                        throw new SignRequestSignatureException("CRMF POP of type "+jcrm.getProofOfPossessionType()+" is unknown.");
+                    }
+                }
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(publicKey, username, password);
+                simpleRequestMessage.setRequestExtensions(jcrm.getCertTemplate().getExtensions());
+                ret = simpleRequestMessage;
+            } catch (CRMFException e) {
+                throw new SignRequestSignatureException("CRMF POP verification failed.", e);
+            } catch (OperatorCreationException e) {
+                throw new SignRequestSignatureException("CRMF POP verification failed.", e);
             }
-            // a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
-            //PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
-            //CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
-            //imsg = reqmsg;
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
             byte[] request;
             // Request can be Base64 encoded or in PEM format
