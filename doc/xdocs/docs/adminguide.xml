@@ -361,6 +361,8 @@ EJBCA implements features from (at least) draft 11 of the SCEP specification. Th
 <li>GetCACertChain</li>
 <li>GetCACaps</li>
 </ul>
+<p><img src="images/scep_enroll.png" height="616" width="1200" /></p>
+
 Using the <a href="externalra.html">External RA</a> <i><b>(Enterprise Edition Only)</b></i> API the following SCEP message is also supported for polling mode:
 <ul>
 <li>GetCertInitial</li>
