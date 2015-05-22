@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
@@ -109,6 +110,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.Before;
@@ -124,6 +126,9 @@ import org.junit.runner.RunWith;
 @RunWith(CryptoTokenTestRunner.class)
 public class IntegratedOcspResponseTest {
 
+    private final static Logger log = Logger.getLogger(IntegratedOcspResponseTest.class);
+
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -162,12 +167,8 @@ public class IntegratedOcspResponseTest {
         ocspCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, req,
                 X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         // Modify the default value
-        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        originalDefaultResponder = configuration.getOcspDefaultResponderReference();
-        configuration.setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));
-        globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
+        originalDefaultResponder = setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
-
     }
 
     @After
@@ -175,11 +176,75 @@ public class IntegratedOcspResponseTest {
         cryptoTokenRule.cleanUp();
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         // Restore the default value
-        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        configuration.setOcspDefaultResponderReference(originalDefaultResponder);
-        globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
+        setOcspDefaultResponderReference(originalDefaultResponder);
     }
 
+    /** After renewing a CA with a new key pair, the new CA certificate should be used to sign requests */
+    @Test
+    public void testOcspSignerIssuerRenewal() throws Exception {
+        log.trace(">testOcspSignerIssuerRenewal");
+        final X509CA testx509caRenew = cryptoTokenRule.createX509Ca(); 
+        final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCACertificate();
+        final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal", testx509ca.getCAId(), null, null,
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        user.setPassword("foo123");
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509Certificate eeCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, req,
+                X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
+        final String ocspDefaultResponderReference = setOcspDefaultResponderReference(null);
+        try {
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.SUCCESSFUL);
+            // Try the same thing after CA has been renewed
+            caAdminSession.renewCA(internalAdmin, testx509caRenew.getCAId(), true, null, false);
+            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509caRenew.getCAId()).getCertificateChain().iterator().next();
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, OCSPResp.SUCCESSFUL));
+            /*
+             * If we query for EE certificate with the previous issuer cert, the responder will think it is from an unknown CA,
+             * since we do the lookup of the issuer from the combination of issuerName and keyHash.
+             * 
+             * The expected outcome is "unauthorized", since the default responder is disabled during this test.
+             */
+            testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.UNAUTHORIZED);
+        } finally {
+            setOcspDefaultResponderReference(ocspDefaultResponderReference);
+            internalCertificateStoreSession.removeCertificate(eeCertificate.getSerialNumber());
+        }
+        log.trace("<testOcspSignerIssuerRenewal");
+    }
+    
+    private String setOcspDefaultResponderReference(final String dn) throws AuthorizationDeniedException {
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final String originalDefaultResponder = configuration.getOcspDefaultResponderReference();
+        configuration.setOcspDefaultResponderReference(dn);
+        globalConfigurationSession.saveConfiguration(internalAdmin, configuration);
+        return originalDefaultResponder;
+    }
+    
+    private CertificateStatus testOcspSignerIssuerRenewalInternal(X509Certificate eeCertificate, X509Certificate caCertificate, int expectedStatus) throws Exception {
+        OCSPReq ocspReq = new OCSPReqBuilder().addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, eeCertificate.getSerialNumber())).build();
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspReq.getEncoded(), null, "", null, auditLogger, transactionLogger).getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+        OCSPResp response = new OCSPResp(responseBytes);
+        if (expectedStatus == OCSPResp.UNAUTHORIZED) {
+            assertEquals("Response status not zero.", OCSPResp.UNAUTHORIZED, response.getStatus());
+            return null;
+        } else {
+            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+            SingleResp[] singleResponses = basicOcspResponse.getResponses();
+            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+            assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
+            return singleResponses[0].getCertStatus();
+        }
+    }
+    
     /**
      * Tests creating an OCSP response using the root CA cert.
      * Tests using both SHA1, SHA256 and SHA224 CertID. SHA1 and SHA256 should work, while SHA224 should give an error.
