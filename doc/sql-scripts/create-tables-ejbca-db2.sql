@@ -277,7 +277,7 @@ CREATE TABLE PeerData (
     name VARCHAR(254) NOT NULL,
     connectorState INTEGER NOT NULL,
     url VARCHAR(254) NOT NULL,
-    data CLOB(10K),
+    data CLOB,
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
