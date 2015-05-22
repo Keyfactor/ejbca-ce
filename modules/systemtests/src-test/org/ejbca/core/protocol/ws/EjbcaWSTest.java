@@ -252,8 +252,20 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test03_2GenerateCrmf() throws Exception {
-        generateCrmf();
+    public void test03_2GenerateCrmfNoPop() throws Exception {
+        generateCrmf(false, false, false);
+    }
+    @Test
+    public void test03_2GenerateCrmfPopSign() throws Exception {
+        generateCrmf(true, false, false);
+    }
+    @Test
+    public void test03_2GenerateCrmfPopSignPkMac() throws Exception {
+        generateCrmf(true, true, false);
+    }
+    @Test
+    public void test03_2GenerateCrmfPopSignSender() throws Exception {
+        generateCrmf(true, false, true);
     }
 
     @Test
