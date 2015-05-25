@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ocsp.standalone;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -45,6 +46,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
@@ -60,6 +62,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -108,6 +111,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.Before;
@@ -132,6 +136,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
  
     private String originalSigningTruststoreValidTime;
 
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateCreateSessionRemote.class);
@@ -162,7 +167,6 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         originalDefaultResponder = ocspConfiguration.getOcspDefaultResponderReference();
-
     }
     
     @Rule
@@ -185,7 +189,6 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         caCertificate = (X509Certificate) x509ca.getCACertificate();
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
-        
     }
 
     @After
@@ -198,10 +201,133 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         }
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
-        //Make sure default responder is restored
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        ocspConfiguration.setOcspDefaultResponderReference(originalDefaultResponder);
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        // Make sure default responder is restored
+        setOcspDefaultResponderReference(originalDefaultResponder);
+    }
+
+    /**
+     * Behavior when a CA is renewed using a new key pair, but using the same subject DN.
+     * 
+     * This test also acts as "documentation" of how an OCSP responder should be configured to be able to continuously respond
+     * for such an EE certificate even after the CA has been renewed.
+     * (Spoiler: you need to issue a long lived OSCP signing certificate before the CA renewal.)
+     */
+    @Test
+    public void testOcspSignerIssuerRenewal() throws Exception {
+        final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal", x509ca.getCAId(), null, null,
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        user.setPassword("foo123");
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509Certificate eeCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, user, req,
+                X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
+        
+        setOcspDefaultResponderReference(null);
+        try {
+            activateKeyBinding(internalKeyBindingId);
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificate, ocspSigningCertificate, OCSPResp.SUCCESSFUL, true));
+            // Try the same thing after CA has been renewed
+            caAdminSession.renewCA(authenticationToken, x509ca.getCAId(), true, null, false);
+            final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCertificateChain().iterator().next();
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            /*
+             * Since OCSP singing chain leads up to the previous CA certificate, the OCSP key binding exists for "this" CA.
+             * Hence the result should be signed with the OCSP key binding leading up to the old CA cert.
+             */
+            assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificate, ocspSigningCertificate, OCSPResp.SUCCESSFUL, true));
+            /*
+             * Since OCSP singing chain leads up to the previous CA certificate and the new CA exists,
+             * the result will currently be signed by the CA itself.
+             */
+            assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, caCertificateRenewed, OCSPResp.SUCCESSFUL, true));
+            // Setup an additional key binding for later use before we delete the CA
+            int internalKeyBindingIdNew = 0;
+            X509Certificate ocspSigningCertificateNew = null;
+            try {
+                internalKeyBindingIdNew = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                        TESTCLASSNAME+"2", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+                String signerDN = "CN=ocspTestSigner2";
+                ocspSigningCertificateNew = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingIdNew, x509ca.getCAId());
+                // Delete the CA to make the signer "stand alone"
+                OcspTestUtils.deleteCa(authenticationToken, x509ca);
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
+                /*
+                 * Since OCSP singing chain leads up to the previous CA certificate, the OCSP key binding exists for "this" CA.
+                 * Hence the result should be signed with the OCSP key binding leading up to the old CA cert.
+                 */
+                assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificate, ocspSigningCertificate, OCSPResp.SUCCESSFUL, true));
+                /*
+                 * Since OCSP singing chain leads up to the previous CA certificate and this CA does not exist,
+                 * the result will be signed by the OCSP key binding leading up to the old CA.
+                 * 
+                 * NOTE: This only makes sense if the client is smart enough to also verify the signer against the old CA certificate.
+                 */
+                assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, ocspSigningCertificate, OCSPResp.SUCCESSFUL, false));
+                final String ocspSigningCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingIdNew);
+                if (!CertTools.getFingerprintAsString(ocspSigningCertificateNew).equals(ocspSigningCertificateFingerprint)) {
+                    throw new Error("Wrong certificate was found for InternalKeyBinding");
+                }
+                OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingIdNew, InternalKeyBindingStatus.ACTIVE);
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
+                // New chain should be used
+                assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, ocspSigningCertificateNew, OCSPResp.SUCCESSFUL, true));
+                // Old chain should still be used
+                assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificate, ocspSigningCertificate, OCSPResp.SUCCESSFUL, true));
+                // Disable old signer now
+                OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
+                // New chain should work
+                assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenewed, ocspSigningCertificateNew, OCSPResp.SUCCESSFUL, true));
+                /*
+                 * Requests for the old CA certificate as issuer no longer has a valid responder and there is no default.
+                 * 
+                 * NOTE: A client that only has the EE certificate chain would at this point have no way to check OCSP anymore.
+                 */
+                testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificate, null, OCSPResp.UNAUTHORIZED, false);
+            } finally {
+                try {
+                    internalCertificateStoreSession.removeCertificate(ocspSigningCertificateNew);
+                } catch (Exception e) {
+                    //Ignore any failures.
+                }
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingIdNew);
+
+            }
+        } finally {
+            internalCertificateStoreSession.removeCertificate(eeCertificate.getSerialNumber());
+        }
+    }
+    
+    private CertificateStatus testOcspSignerIssuerRenewalInternal(X509Certificate eeCertificate, X509Certificate caCertificate, X509Certificate expectedSigningCertificate, int expectedStatus, boolean shouldVerify) throws Exception {
+        log.debug("EE Subject: " + CertTools.getSubjectDN(eeCertificate));
+        log.debug("EE Issuer:  " + CertTools.getIssuerDN(eeCertificate));
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, eeCertificate.getSerialNumber());
+        final OCSPResp response = sendRequest(ocspRequest);
+        if (expectedStatus == OCSPResp.UNAUTHORIZED) {
+            assertEquals("Response status not zero.", OCSPResp.UNAUTHORIZED, response.getStatus());
+            return null;
+        } else {
+            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            List<X509Certificate> signingChain = CertTools.convertToX509CertificateList(Arrays.asList(basicOcspResponse.getCerts()));
+            log.debug("signingChain.size: " + signingChain.size());
+            final X509Certificate actualSignerCertificate = signingChain.get(0);
+            log.debug("Subject: " + CertTools.getSubjectDN(actualSignerCertificate));
+            log.debug("Issuer:  " + CertTools.getIssuerDN(actualSignerCertificate));
+            assertEquals("Response was not signed by the expected certificate.", CertTools.getFingerprintAsString(expectedSigningCertificate), CertTools.getFingerprintAsString(actualSignerCertificate));
+            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(expectedSigningCertificate.getPublicKey())));
+            try {
+                CertTools.verify(actualSignerCertificate, Arrays.asList(new Certificate[] {caCertificate}));
+                assertTrue("", shouldVerify);
+            } catch (Exception e) {
+                assertFalse("Please update the test when the responder improvement after renewal has improved.", shouldVerify);
+            }
+            SingleResp[] singleResponses = basicOcspResponse.getResponses();
+            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+            assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
+            return singleResponses[0].getCertStatus();
+        }
     }
 
     /** Tests the basic case of a standalone OCSP installation, i.e where this is a classic VA */
@@ -282,81 +408,71 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testResponseWithDefaultResponderForExternal() throws Exception {
         // Make sure that a default responder is set
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        final String originalDefaultResponder = ocspConfiguration.getOcspDefaultResponderReference();
-        ocspConfiguration.setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
+        //Make default responder standalone
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);      
+        // Now, construct an external CA. 
+        final String externalCaName = "testStandAloneOcspResponseExternalCa";
+        final String externalCaSubjectDn = "CN=" + externalCaName;
+        long validity = 3650L;
+        KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
+                externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
+                CertificateProfileConstants.CERTPROFILE_NO_PROFILE, validity, CAInfo.SELFSIGNED, null, null);
+        CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
+        X509CA externalCa = new X509CA(externalCaInfo);
+        externalCa.setCAToken(token);
+        externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
+        caSession.addCA(authenticationToken, externalCa);
+        certificateStoreSession.storeCertificateRemote(authenticationToken, externalCaCertificate, externalCaName, "1234",
+                CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
+                CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         try {
-            //Make default responder standalone
-            OcspTestUtils.deleteCa(authenticationToken, x509ca);
-            activateKeyBinding(internalKeyBindingId);      
-            // Now, construct an external CA. 
-            final String externalCaName = "testStandAloneOcspResponseExternalCa";
-            final String externalCaSubjectDn = "CN=" + externalCaName;
-            long validity = 3650L;
-            KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
-                    externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-            X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
-                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, validity, CAInfo.SELFSIGNED, null, null);
-            CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
-            X509CA externalCa = new X509CA(externalCaInfo);
-            externalCa.setCAToken(token);
-            externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
-            caSession.addCA(authenticationToken, externalCa);
-            certificateStoreSession.storeCertificateRemote(authenticationToken, externalCaCertificate, externalCaName, "1234",
-                    CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
-                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
-            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            final String externalUsername = "testStandAloneOcspResponseExternalUser";
+            final String externalSubjectDn = "CN=" + externalUsername;
+            // Create a certificate signed by the external CA and stuff it in the database (we can pretend it was imported)
+            Date firstDate = new Date();
+            firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+            Date lastDate = new Date();
+            lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+            byte[] serno = new byte[8];
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            random.setSeed(new Date().getTime());
+            random.nextBytes(serno);
+            KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
+            final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair
+                    .getPublic().getEncoded()));
+            X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
+                    new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
+                    BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
+            final X509CertificateHolder certHolder = certbuilder.build(signer);
+            X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+            certificateStoreSession.storeCertificateRemote(authenticationToken, importedCertificate, externalUsername, "1234",
+                    CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
             try {
-                final String externalUsername = "testStandAloneOcspResponseExternalUser";
-                final String externalSubjectDn = "CN=" + externalUsername;
-                // Create a certificate signed by the external CA and stuff it in the database (we can pretend it was imported)
-                Date firstDate = new Date();
-                firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
-                Date lastDate = new Date();
-                lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
-                byte[] serno = new byte[8];
-                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-                random.setSeed(new Date().getTime());
-                random.nextBytes(serno);
-                KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
-                final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair
-                        .getPublic().getEncoded()));
-                X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCaSubjectDn, false),
-                        new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(externalSubjectDn, false), pkinfo);
-                final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
-                        BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
-                final X509CertificateHolder certHolder = certbuilder.build(signer);
-                X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
-                certificateStoreSession.storeCertificateRemote(authenticationToken, importedCertificate, externalUsername, "1234",
-                        CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
-                try {
-                    //Now everything is in place. Perform a request, make sure that the default responder signed it. 
-                    final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
-                            importedCertificate.getSerialNumber());
-                    final OCSPResp response = sendRequest(ocspRequest);
-                    assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-                    final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-                    assertNotNull("Signed request generated null-response.", basicOcspResponse);
-                    assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
-                    final SingleResp[] singleResponses = basicOcspResponse.getResponses();
-                    assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-                    assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
-                    assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
-                } finally {
-                    internalCertificateStoreSession.removeCertificate(importedCertificate);
-                }
+                //Now everything is in place. Perform a request, make sure that the default responder signed it. 
+                final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
+                        importedCertificate.getSerialNumber());
+                final OCSPResp response = sendRequest(ocspRequest);
+                assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+                final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+                assertNotNull("Signed request generated null-response.", basicOcspResponse);
+                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+                final SingleResp[] singleResponses = basicOcspResponse.getResponses();
+                assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+                assertEquals("Response cert did not match up with request cert", importedCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
+                assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
             } finally {
-                caSession.removeCA(authenticationToken, externalCa.getCAId());
-                internalCertificateStoreSession.removeCertificate(externalCaCertificate);
+                internalCertificateStoreSession.removeCertificate(importedCertificate);
             }
         } finally {
-            GlobalOcspConfiguration restoredOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            ocspConfiguration.setOcspDefaultResponderReference(originalDefaultResponder);
-            globalConfigurationSession.saveConfiguration(authenticationToken, restoredOcspConfiguration);
+            caSession.removeCA(authenticationToken, externalCa.getCAId());
+            internalCertificateStoreSession.removeCertificate(externalCaCertificate);
         }
     }
     
@@ -364,9 +480,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testResponseWithDefaultResponderForExternalNoDefaultSet() throws Exception {
         // Make sure that a default responder is set
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        ocspConfiguration.setOcspDefaultResponderReference("");
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        setOcspDefaultResponderReference("");
         String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
         try {
@@ -438,9 +552,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testResponseWithDefaultResponderForExternalRevoked() throws Exception {
         // Make sure that a default responder is set
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        ocspConfiguration.setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
         String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
         try {
@@ -534,9 +646,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testStandAloneOcspResponseDefaultResponder() throws Exception {
         // Make sure that a default responder is set
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        ocspConfiguration.setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
+        setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
         try {
               //Now delete the original CA, making this test completely standalone.
@@ -1003,13 +1113,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws Exception {        
         // Set a fake value
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        ocspConfiguration.setOcspDefaultResponderReference("CN=FancyPants");
-        globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);
-        
+        setOcspDefaultResponderReference("CN=FancyPants");
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
-        
-       
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspSigningCertificate, ocspSigningCertificate
@@ -1154,5 +1259,13 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         assertEquals("Response cert did not match up with request cert", ocspSigningCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
     }
-    
+
+    /** @return the previous default OCSP responder setting */
+    private String setOcspDefaultResponderReference(final String dn) throws AuthorizationDeniedException {
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final String originalDefaultResponder = configuration.getOcspDefaultResponderReference();
+        configuration.setOcspDefaultResponderReference(dn);
+        globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
+        return originalDefaultResponder;
+    }
 }
