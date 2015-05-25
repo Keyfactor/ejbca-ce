@@ -173,8 +173,14 @@ public class CertificateValidityTest {
 
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
 		
-    	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", 100, null, keys.getPrivate(), keys.getPublic(),
-    			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign, true);
+		final Date caFrom = new Date();
+		caFrom.setTime(caFrom.getTime() - 20L*(24L*60L*60L*1000L));
+		final Date caTo = new Date();
+		caTo.setTime(caTo.getTime() + 100L*(24L * 60L * 60L * 1000L));
+		
+    	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keys.getPrivate(), keys.getPublic(),
+    			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign,
+    			null, null, "BC", true, null);
 
     	EndEntityInformation subject = new EndEntityInformation();
 
