@@ -818,7 +818,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (cryptoTokenId == 0) {
             final String cryptoTokenName = "Upgraded CA CryptoToken for " + caName;
             try {
-                cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, upgradedProperties, keyStoreData, caid, cryptoTokenName));
+                cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, upgradedProperties, keyStoreData, caid, cryptoTokenName, true));
             } catch (CryptoTokenNameInUseException e) {
                 final String msg = "Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.";
                 log.info(msg, e);

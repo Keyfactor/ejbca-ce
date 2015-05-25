@@ -147,15 +147,31 @@ public class CryptoTokenFactory {
     
     /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken
      * 
-     * @param classname the full classname of the crypto token implementation class
+     * @param inClassname the full classname of the crypto token implementation class
      * @param properties properties passed to the init method of the CryptoToken
      * @param data byte data passed to the init method of the CryptoToken
-     * @param id id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param cryptoTokenId id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
      * @param tokenName user friendly identifier
      * @throws NoSuchSlotException if no slot as defined in properties could be found.
      */
-    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int id,
+    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int cryptoTokenId,
             String tokenName) throws NoSuchSlotException {
+        final boolean allowNonExistingSlot = Boolean.valueOf(properties.getProperty(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY, Boolean.FALSE.toString()));
+        return createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, allowNonExistingSlot);
+    }
+
+    /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken
+     * 
+     * @param inClassname the full classname of the crypto token implementation class
+     * @param properties properties passed to the init method of the CryptoToken
+     * @param data byte data passed to the init method of the CryptoToken
+     * @param cryptoTokenId id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param tokenName user friendly identifier
+     * @param allowNonExistingSlot if the NoSuchSlotException should be used
+     * @throws NoSuchSlotException if no slot as defined in properties could be found.
+     */
+    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int cryptoTokenId,
+            String tokenName, boolean allowNonExistingSlot) throws NoSuchSlotException {
         final String classname;
         if (inClassname != null) {
             classname = inClassname;
@@ -169,9 +185,18 @@ public class CryptoTokenFactory {
             return null;
         }
         try {
-            token.init(properties, data, id);
+            token.init(properties, data, cryptoTokenId);
         } catch (NoSuchSlotException e) {
-            if (!Boolean.valueOf(properties.getProperty(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY, "false"))) {
+            final String msg = "Unable to access PKCS#11 slot for crypto token '"+tokenName+"' (" + cryptoTokenId + "). Perhaps the token was removed? " + e.getMessage();
+            if (allowNonExistingSlot) {
+                log.warn(msg);
+                if (log.isDebugEnabled()) {
+                    log.debug(msg, e);
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(msg, e);
+                }
                 throw e;
             }
         } catch (Exception e) {
