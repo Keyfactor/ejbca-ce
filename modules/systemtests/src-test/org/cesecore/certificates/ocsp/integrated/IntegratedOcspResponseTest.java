@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
@@ -110,12 +109,15 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 /**
@@ -125,8 +127,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(CryptoTokenTestRunner.class)
 public class IntegratedOcspResponseTest {
-
-    private final static Logger log = Logger.getLogger(IntegratedOcspResponseTest.class);
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -154,6 +154,8 @@ public class IntegratedOcspResponseTest {
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
+    @Rule
+    public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
     @Before
     public void setUp() throws Exception {
@@ -182,7 +184,6 @@ public class IntegratedOcspResponseTest {
     /** After renewing a CA with a new key pair, the new CA certificate should be used to sign requests */
     @Test
     public void testOcspSignerIssuerRenewal() throws Exception {
-        log.trace(">testOcspSignerIssuerRenewal");
         final X509CA testx509caRenew = cryptoTokenRule.createX509Ca(); 
         final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCACertificate();
         final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal", testx509ca.getCAId(), null, null,
@@ -212,7 +213,6 @@ public class IntegratedOcspResponseTest {
             setOcspDefaultResponderReference(ocspDefaultResponderReference);
             internalCertificateStoreSession.removeCertificate(eeCertificate.getSerialNumber());
         }
-        log.trace("<testOcspSignerIssuerRenewal");
     }
     
     private String setOcspDefaultResponderReference(final String dn) throws AuthorizationDeniedException {
