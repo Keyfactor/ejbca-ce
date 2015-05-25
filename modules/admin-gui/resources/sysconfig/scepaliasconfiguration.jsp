@@ -71,11 +71,11 @@ org.cesecore.authorization.control.StandardRules
 		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" />
 		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
 
-		<h:outputLabel for="clientCertificateRenewal" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL}" />
-		<h:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
+		<h:outputLabel for="clientCertificateRenewal" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL} " rendered="#{scepConfigMBean.currentAlias.mode != \"RA\"}" />
+		<h:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}" rendered="#{scepConfigMBean.currentAlias.mode != \"RA\"}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
 		
-		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" />
-		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
+		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" rendered="#{scepConfigMBean.currentAlias.mode != \"RA\"}" />
+		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}" rendered="#{scepConfigMBean.currentAlias.mode != \"RA\"}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
 		
 		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}"/>
 		<h:panelGroup id="eep"  rendered="#{scepConfigMBean.currentAlias.mode == \"RA\"}">
