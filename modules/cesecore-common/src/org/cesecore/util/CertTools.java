@@ -1593,6 +1593,12 @@ public abstract class CertTools {
         // validity in days = validity*24*60*60*1000 milliseconds
         lastDate.setTime(lastDate.getTime() + (validity * (24 * 60 * 60 * 1000)));
 
+        return genSelfCertForPurpose(dn, firstDate, lastDate, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, additionalExtensions);
+    }
+    
+    public static X509Certificate genSelfCertForPurpose(String dn, Date firstDate, Date lastDate, String policyId, PrivateKey privKey, PublicKey pubKey,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
+            List<Extension> additionalExtensions) throws CertificateParsingException, IOException, OperatorCreationException {
         // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
         // a CVC public key that is passed as parameter
         PublicKey publicKey = null;
@@ -2521,10 +2527,11 @@ public abstract class CertTools {
      * 
      * @param certificate cert to verify
      * @param caCertChain collection of X509Certificate
+     * @param date Date to verify at, or null to use current time.
      * @return true if verified OK
      * @throws Exception if verification failed
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain) throws Exception {
+    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain, Date date) throws Exception {
         try {
             ArrayList<Certificate> certlist = new ArrayList<Certificate>();
             // Create CertPath
@@ -2541,6 +2548,7 @@ public abstract class CertTools {
             java.security.cert.PKIXParameters params = new java.security.cert.PKIXParameters(java.util.Collections.singleton(anchor));
             
             params.setRevocationEnabled(false);
+            params.setDate(date);
             java.security.cert.CertPathValidator cpv = java.security.cert.CertPathValidator.getInstance("PKIX", "BC");
             java.security.cert.PKIXCertPathValidatorResult result = (java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
             if (log.isDebugEnabled()) {
@@ -2552,6 +2560,18 @@ public abstract class CertTools {
             throw new Exception("Error checking certificate chain: " + e.getMessage());
         }
         return true;
+    }
+    
+    /**
+     * Check the certificate with CA certificate.
+     * 
+     * @param certificate cert to verify
+     * @param caCertChain collection of X509Certificate
+     * @return true if verified OK
+     * @throws Exception if verification failed
+     */
+    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain) throws Exception {
+        return verify(certificate, caCertChain, null);
     }
     
     /**
