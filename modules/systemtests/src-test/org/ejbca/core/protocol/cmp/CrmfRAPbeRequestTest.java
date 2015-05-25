@@ -215,12 +215,15 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             DEROutputStream out = new DEROutputStream(bao);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
+            // Wait 1 ms so the notBefore time of the CA becomes different from the current time, so we can check that validity override works
+            try { Thread.sleep(1); }
+            catch (InterruptedException ie) { throw new IllegalStateException(ie); }
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
             // Check that validity override works
-            assertTrue(cert.getNotBefore().equals(notBefore));
+            assertTrue(cert.getNotBefore().equals(cacert.getNotBefore())); // not before is limited by the CA not before date in this case
             assertTrue(cert.getNotAfter().equals(notAfter));
             String altNames = CertTools.getSubjectAlternativeName(cert);
             assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
