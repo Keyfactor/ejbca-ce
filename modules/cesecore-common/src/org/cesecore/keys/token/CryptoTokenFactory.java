@@ -31,37 +31,25 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 public class CryptoTokenFactory {
 	
     private static transient Logger log = Logger.getLogger(CryptoTokenFactory.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Registry of available hard ca token classes that can be instantiated. */
-    private Map<String, AvailableCryptoToken> availabletokens = new HashMap<String, AvailableCryptoToken>();
+    private Map<String, AvailableCryptoToken> availabletokens = new HashMap<String, AvailableCryptoToken>(4);
 
     /** Implementing the Singleton pattern */
     private static CryptoTokenFactory instance = null;
 
-    /**
-     * Static intialization block used to register all plug-in classes to the manager.
-     * All new plug-ins should add a loadClass call with it's classpath to this method.
-     */
-    static {
-        /** Can't use class.getName() here because this class is not always available */
-        CryptoTokenFactory.instance().addAvailableCryptoToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
-        CryptoTokenFactory.instance().addAvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", false, true);
-        CryptoTokenFactory.instance().addAvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
-        CryptoTokenFactory.instance().addAvailableCryptoToken(NullCryptoToken.class.getName(), "Null", false, false);
-    }
-
-    /** Don't allow external creation of this class, implementing the Singleton pattern. 
-     */
+    /** Don't allow external creation of this class, implementing the Singleton pattern. */
     private CryptoTokenFactory() {}
     
-    /** Get the instance of this singleton
-     * 
-     */
+    /** Get the instance of this singleton */
     public synchronized static CryptoTokenFactory instance() {
         if (instance == null) {
             instance = new CryptoTokenFactory();
+            /** Can't use class.getName() here because this class is not always available */
+            instance.addAvailableCryptoToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
+            instance.addAvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", false, true);
+            instance.addAvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
+            instance.addAvailableCryptoToken(NullCryptoToken.class.getName(), "Null", false, false);
         }
         return instance;
     }
@@ -71,8 +59,8 @@ public class CryptoTokenFactory {
 	 * 
 	 * @return a Collection (AvailableCryptoToken) of registered plug-ins.
 	 */
-	public Collection<AvailableCryptoToken> getAvailableCryptoTokens(){
-	   return availabletokens.values();	
+	public Collection<AvailableCryptoToken> getAvailableCryptoTokens() {
+	    return availabletokens.values();	
 	}
 
 	/**
@@ -80,8 +68,10 @@ public class CryptoTokenFactory {
 	 * 
 	 * @return the corresponding AvailableCryptoToken or null of classpath couldn't be found
 	 */
-	public AvailableCryptoToken getAvailableCryptoToken(String classname){
-        if (classname == null) { return null; }
+	public AvailableCryptoToken getAvailableCryptoToken(final String classname) {
+        if (classname == null) {
+            return null;
+        }
 	    return (AvailableCryptoToken)availabletokens.get(classname);
 	}
 	
@@ -95,22 +85,25 @@ public class CryptoTokenFactory {
 	 * 
 	 * @return true if registration went successful, false if the classpath could not be found or the classpath was already registered.
 	 */
-	public synchronized boolean addAvailableCryptoToken(String classname, String name, boolean translateable, boolean use) {
+	/*package*/ boolean addAvailableCryptoToken(final String classname, final String name, final boolean translateable, final boolean use) {
 		if (log.isTraceEnabled()) {
 			log.trace(">addAvailableCryptoToken: "+classname);
 		}
 		boolean retval = false;	
 		if (!availabletokens.containsKey(classname)) {
-			log.debug("CryptoTokenFactory adding available crypto token " + classname);                
+		    if (log.isDebugEnabled()) {
+	            log.debug("CryptoTokenFactory adding available crypto token " + classname);                
+		    }
 			if (loadClass(classname)) {
 				// Add to the available tokens
 				availabletokens.put(classname, new AvailableCryptoToken(classname, name, translateable, use));         
 				retval = true;
-				log.debug("Registered " + classname + " successfully.");                       
+	            if (log.isDebugEnabled()) {
+	                log.debug("Registered " + classname + " successfully.");                       
+	            }
 			} else {
 				// Normally not an error, since these classes are provided by HSM vendor
-				String msg = intres.getLocalizedMessage("token.inforegisterclasspath", classname);
-				log.info(msg);
+				log.info(InternalResources.getInstance().getLocalizedMessage("token.inforegisterclasspath", classname));
 			}
 		}			
 		if (log.isTraceEnabled()) {
@@ -118,31 +111,27 @@ public class CryptoTokenFactory {
 		}
 		return retval;
 	}
-    /**
-     * Method loading a class in order to test if it can be instansiated.
+
+	/**
+     * Method loading a class in order to test if it can be instantiated.
      * 
      * @param classname 
      */
-    private boolean loadClass(String classname){
+    private boolean loadClass(final String classname){
         try {           
         	Thread.currentThread().getContextClassLoader().loadClass(classname).newInstance();       
+            return true;
         } catch (ClassNotFoundException e) {
-			String msg = intres.getLocalizedMessage("token.classnotfound", classname);
-            log.info(msg); 
-            return false;
+            log.info(InternalResources.getInstance().getLocalizedMessage("token.classnotfound", classname)); 
         } catch (InstantiationException e) {
-			String msg = intres.getLocalizedMessage("token.errorinstansiate", classname, e.getMessage());
-            log.info(msg);
-            return false;
+            log.info(InternalResources.getInstance().getLocalizedMessage("token.errorinstansiate", classname, e.getMessage()));
         } catch (IllegalAccessException e) {
             log.error("IllegalAccessException: "+classname, e);
-            return false;
         } catch (NoClassDefFoundError e) {
             // This happens more rarely and should be flagged as an error
             log.error("NoClassDefFoundError: "+classname, e);
-            return false;        	
         }
-        return true;
+        return false;
     }
     
     /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken
@@ -207,11 +196,11 @@ public class CryptoTokenFactory {
     }
     
     private static final CryptoToken createTokenFromClass(final String classpath) {
-    	try{				
+    	try {
     		Class<?> implClass = Class.forName(classpath);
     		Object obj = implClass.newInstance();
     		return (CryptoToken) obj;
-    	}catch(Throwable e){
+    	} catch (Throwable e) {
     		log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);
     		return null;
     	}
