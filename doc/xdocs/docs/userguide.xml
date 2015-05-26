@@ -205,7 +205,7 @@ and stored/published.
 </p>
 </subsubsection>
 <subsubsection name="Using Admin GUI">
-<p>Creating CAs in the Admin GUI is done by selecting 'Edit Certificate Authorities' in the menu, entering a new CA name in the text field and clicking 'Create'.
+<p>Creating CAs in the Admin GUI is done by selecting 'Certificate Authorities' in the menu, entering a new CA name in the text field and clicking 'Create'.
 </p>
 </subsubsection>
 <subsubsection name="Using EJBCA's web service">
@@ -489,7 +489,7 @@ the CA becomes activated.
 <p>
 In order to have your CA signed by an external CA you have to go through the following steps.
 <ol>
-<li>Go the the 'Edit Certificate Authorities' page in the Administration GUI.</li>
+<li>Go the the 'Certificate Authorities' page in the Administration GUI.</li>
 <ol>
 <li>Create a new CA in the same way as internal CAs, but when selecting signing CA, select 'External CA' instead. The fields 'Certificate Profile', 'Validity', 'Subject Alternative Name' 
 and 'Policy Id' will become gray and are no longer editable.</li>
@@ -617,7 +617,7 @@ You can renew the SubCA in two ways:
 <li>Using the same CA signing keys.</li>
 <li>Generating new CA signing keys.</li>
 </ol>
-To renew a CA go to "Edit Certificate Authorities" select the SubCA and use the button "Renew CA" in the bottom of the page.
+To renew a CA go to "Certificate Authorities" select the SubCA and use the button "Renew CA" in the bottom of the page.
 The CA's Crypto Token must be active to make a certificate signing request (and optionally for key generation).
 </p>
 <p>
@@ -1028,7 +1028,7 @@ There are two places in EJBCA where this can be configured:
 </p>
 <ul>
 <li>In the Certificate profile (Certificate Profiles)</li>
-<li>In the CA configuration (Edit Certificate Authorities)</li>
+<li>In the CA configuration (Certificate Authorities)</li>
 </ul>
 <p>
 The relationship between the settings is that they are both evaluated in a logical AND expression. 
@@ -1635,7 +1635,7 @@ To use a certificate issued by an external CA as Administrator:
 <code>keytool -import -trustcacerts -file externalca.pem -keystore p12/truststore.jks -storepass changeit -alias externalca</code></li>
 <li>Redeploy EJBCA truststore (ant deploy-keystore) and restart the application server to make sure the new
 truststore is in use</li>
-<li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
+<li>Import the CA-certificate under "Admin GUI - Certificate Authorities
  - Import CA Certificate.." or use the CLI</li>
 <li>Add the Administrator to the desired role under "Admin GUI
  - Administrator Roles"</li>
