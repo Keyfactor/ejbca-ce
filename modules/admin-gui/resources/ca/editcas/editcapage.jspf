@@ -1682,6 +1682,24 @@ function checkallfields(){
         </td>
     </tr>
     <% } %>
+    
+    <%
+    Date rolloverDate = cabean.getRolloverNotBefore(caid);
+    if (editca && rolloverDate != null) {
+    	Date now = new Date();
+    	Date currentValidity = cabean.getRolloverNotAfter(caid); %>
+    <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
+    <tr id="Row<%=row++%2%>"> 
+        <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("CAROLLOVER") %></td>
+        <td width="51%" valign="top">
+            <%= ejbcawebbean.getText("CAROLLOVERNOTAFTER") %>: <%= ejbcawebbean.formatAsISO8601(currentValidity) %><br />
+	        <%= ejbcawebbean.getText("CAROLLOVERNOTBEFORE") %>: <%= ejbcawebbean.formatAsISO8601(rolloverDate) %><br />
+            <input type="submit" name="<%= BUTTON_ROLLOVER %>" value="<%= ejbcawebbean.getText("CAROLLOVERBUTTON") %>"
+            	<%= rolloverDate.after(now) ? " onclick=\"return confirm('Next certificate is not yet valid! Are you sure?')\"" : ""  %>
+            >
+        </td>
+    </tr>
+    <% } %> 
 
     <% if (editca && !isexternal && !waitingresponse) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>

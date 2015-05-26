@@ -395,6 +395,15 @@ public class CADataHandler implements Serializable {
     caadminsession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
  }
  
+ /**
+  * Performs a rollover from the current certificate to the next certificate. 
+  * @throws AuthorizationDeniedException 
+  * @throws CryptoTokenOfflineException
+  * */
+ public void rolloverCA(int caid) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+     caadminsession.rolloverCA(administrator, caid);
+ }
+ 
  public void renewAndRevokeXKMSCertificate(int caid) throws CADoesntExistsException, CAOfflineException, CertificateRevokeException, AuthorizationDeniedException {
     caadminsession.renewAndRevokeXKMSCertificate(administrator, caid);
  } 
@@ -418,11 +427,6 @@ public class CADataHandler implements Serializable {
 	   retval = cainfo.getRevocationReason() != RevokedCertInfo.NOT_REVOKED;
 	 }
 	 return retval;
- }
- 
- public Date getRolloverDate(int caid) {
-     final Certificate cacert = caSession.getFutureRolloverCertificate(caid);
-     return cacert != null ? CertTools.getNotBefore(cacert) : null;
  }
 
 }
