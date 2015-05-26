@@ -7,7 +7,7 @@
     <import file="${cesecore-ejb-interface.dir}/../cesecore-common/build.xml"/>
     <import file="${cesecore-ejb-interface.dir}/../cesecore-entity/build.xml"/>
     
-    <target name="jar" depends="cesecore-common.jar, cesecore-entity.jar">
+    <target name="jar" depends="cesecore-entity.jar">
         <mkdir dir="${cesecore-ejb-interface.dir}/build/classes"/>
         <javac srcdir="${cesecore-ejb-interface.dir}/src" destdir="${cesecore-ejb-interface.dir}/build/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
             <classpath refid="lib.jee.classpath" />
@@ -31,7 +31,7 @@
         </jar>
     </target>
         
-    <target name="clean" depends="cesecore-common.clean, cesecore-entity.clean">
+    <target name="clean" depends="cesecore-entity.clean">
         <delete dir="${cesecore-ejb-interface.dir}/dist"/>
         <delete dir="${cesecore-ejb-interface.dir}/build"/>
     </target>
