@@ -390,10 +390,18 @@ public interface IEjbcaWS {
 	/**
 	 * Receives a certificate as a response to a CSR from the CA. This method schedules a certificate roll over in the future.
 	 * A "Roll Over Service" must be configured and activated.
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponseWithRollover
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponse
 	 */
-	public void caCertResponseWithRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
+	public void caCertResponseForRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
 
+	/**
+	 * Performs a certificate rollover for a CA with a rollover certificate previously added with caCertResponseForRollover.
+     * @throws AuthorizationDeniedException if administrator is not authorized to import certificate.
+     * @throws CADoesntExistsException if caname does not exist
+     * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
+     */
+    public void rolloverCACert(String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+	
 	/**
 	 * Generates a certificate for a user.
 	 * 
