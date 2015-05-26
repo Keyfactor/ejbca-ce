@@ -56,6 +56,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.CvcPlugin;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -144,6 +145,7 @@ public class CAInterfaceBean implements Serializable {
 	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private AccessControlSessionLocal accessControlSession;
     private CAAdminSessionLocal caadminsession;
+    private CaSessionLocal casession;
     private CertificateCreateSessionLocal certcreatesession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSessionLocal certificatesession;
@@ -179,6 +181,7 @@ public class CAInterfaceBean implements Serializable {
           crlStoreSession = ejbLocalHelper.getCrlStoreSession();
           cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
+          casession = ejbLocalHelper.getCaSession();
           accessControlSession = ejbLocalHelper.getAccessControlSession();
           signsession = ejbLocalHelper.getSignSession();
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
@@ -1291,5 +1294,24 @@ public class CAInterfaceBean implements Serializable {
      */
     public boolean isUniqueIssuerDNSerialNoIndexPresent() {
         return certificatesession.isUniqueCertificateSerialNumberIndex();
+    }
+    
+    /** Returns the "not before" date of the next certificate during a rollover period, or null if no next certificate exists.
+     */
+    public Date getRolloverNotBefore(int caid) {
+        final Certificate nextCert = casession.getFutureRolloverCertificate(caid);
+        if (nextCert != null) {
+            return CertTools.getNotBefore(nextCert);
+        } else {
+            return null;
+        }
+    }
+    
+    /** Returns the current CA validity "not after" date. 
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException */
+    public Date getRolloverNotAfter(int caid) throws CADoesntExistsException, AuthorizationDeniedException {
+        final Collection<Certificate> chain = casession.getCAInfo(authenticationToken, caid).getCertificateChain();
+        return CertTools.getNotAfter(chain.iterator().next());
     }
 }

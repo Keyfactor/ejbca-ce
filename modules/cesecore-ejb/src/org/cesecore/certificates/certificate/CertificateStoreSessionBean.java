@@ -1160,12 +1160,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws IllegalArgumentException, AuthorizationDeniedException {
 
-    	if ( (status == CertificateConstants.CERT_REVOKED) || (status == CertificateConstants.CERT_ACTIVE) ) {
-            final String msg = INTRES.getLocalizedMessage("store.errorsetstatusargument", fingerprint, status);
-    		throw new IllegalArgumentException(msg);
-    	}
     	CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
     	if (certificateData != null) {
+    	    if (((status == CertificateConstants.CERT_REVOKED) || (status == CertificateConstants.CERT_ACTIVE)) &&
+    	            certificateData.getStatus() != CertificateConstants.CERT_ROLLOVERPENDING) {
+    	        final String msg = INTRES.getLocalizedMessage("store.errorsetstatusargument", fingerprint, status);
+    	        throw new IllegalArgumentException(msg);
+    	    }
             if (log.isDebugEnabled()) {
                 log.debug("Set status " + status + " for certificate with fp: " + fingerprint);
             }
