@@ -1384,6 +1384,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 ca.setRolloverCertificateChain(chain);
                 // Save CA
                 caSession.editCA(authenticationToken, ca, true);
+                // Store certificate, but don't publish it yet (usedpublishers=null)
+                publishCACertificate(authenticationToken, chain, null, ca.getSubjectDN(), true);
             } else {
                 // Test and activate new key, publish certificate and generate CRL.
                 activateNextKeyAndCert(authenticationToken, caid, nextKeyAlias, ca, cacert, chain, caCertPublicKey);
@@ -2128,8 +2130,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // We need to save all this, audit logging that the CA is changed
             caSession.editCA(authenticationToken, ca, true);
 
-            // Publish the new CA certificate
+            // Publish the new CA certificate. Prior to this point it should have been stored but not published.
             publishCACertificate(authenticationToken, rolloverChain, ca.getCRLPublishers(), ca.getSubjectDN());
+            
+            // Change the status of the CA certificate from CERT_ROLLOVERPENDING to CERT_ACTIVE
+            certificateStoreSession.setStatus(authenticationToken, CertTools.getFingerprintAsString(rolloverChain.get(0)), CertificateConstants.CERT_ACTIVE);
             publishingCrlSession.forceCRL(authenticationToken, caid);
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             // Audit log
@@ -2995,10 +3000,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return retval;
     }
-
+    
     @Override
     public void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers,
             String caDataDN) throws AuthorizationDeniedException {
+        publishCACertificate(admin, certificatechain, usedpublishers, caDataDN, false);
+    }
+
+    private void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers,
+            String caDataDN, boolean futureRollover) throws AuthorizationDeniedException {
 
         Object[] certs = certificatechain.toArray();
         for (int i = 0; i < certs.length; i++) {
@@ -3044,7 +3054,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (certificateDataWrapper==null) {
                 // If we don't have it in the database, store it
                 long updateTime = System.currentTimeMillis();
-                certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp, CertificateConstants.CERT_ACTIVE, type, EndEntityInformation.NO_CERTIFICATEPROFILE, null, updateTime);
+                certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp,
+                        futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type, EndEntityInformation.NO_CERTIFICATEPROFILE, null, updateTime);
                 certificateStoreSession.reloadCaCertificateCache();
             }
             if (usedpublishers != null) {
