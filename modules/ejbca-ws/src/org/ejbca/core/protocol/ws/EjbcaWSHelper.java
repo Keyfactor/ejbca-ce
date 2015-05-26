@@ -862,6 +862,11 @@ public class EjbcaWSHelper {
 		}
         return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, nextSignKeyAlias);
 	}
+	
+	public void rolloverCACert(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
+	    int caid = caSession.getCAInfo(admin, caname).getCAId();
+        caAdminSession.rolloverCA(admin, caid);
+    }
 
 	protected  static EjbcaException getInternalException(Throwable t, IPatternLogger logger) {
         return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR);
