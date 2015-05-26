@@ -458,16 +458,38 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     public X509Certificate findLatestX509CertificateBySubject(String subjectDN) {
-        Collection<Certificate> certificates = findCertificatesBySubject(subjectDN);
-
+        return findLatestX509CertificateBySubject(subjectDN, null, false);
+    }
+    
+    public X509Certificate findLatestX509CertificateBySubject(String subjectDN, Certificate rolloverCA, boolean findRollover) {
+        final Collection<CertificateDataWrapper> certificateDatas = getCertificateDatasBySubject(subjectDN);
         X509Certificate result = null;
+        Collection<Certificate> trustedChain = null;
+        if (rolloverCA != null) {
+            trustedChain = new ArrayList<Certificate>();
+            trustedChain.add(rolloverCA);
+        }
 
-        /**
-         * Iterate through all certificates, find the X509Certificate with the newest date.
-         */
-        for (Certificate certificate : certificates) {
-            if (certificate instanceof X509Certificate) {
-                X509Certificate x509Certificate = (X509Certificate) certificate;
+        // Find the newest certificate
+        for (CertificateDataWrapper certDataWrapper : certificateDatas) {
+            final int status = certDataWrapper.getCertificateData().getStatus();
+            // Ignore rollover CA certificates unless explicitly requested
+            if (status == CertificateConstants.CERT_ROLLOVERPENDING && !findRollover) {
+                continue;
+            }
+            if (certDataWrapper.getCertificate() instanceof X509Certificate) {
+                final X509Certificate x509Certificate = (X509Certificate) certDataWrapper.getCertificate();
+                if (rolloverCA != null) {
+                    try {
+                        boolean isRollover = CertTools.verify(x509Certificate, trustedChain, CertTools.getNotBefore(x509Certificate));
+                        if (isRollover != findRollover) {
+                            continue;
+                        }
+                    } catch (Exception e) {
+                        log.debug("failed to check if certificate was issed by a rollover CA", e);
+                        continue;
+                    }
+                }
                 if (result == null || CertTools.getNotBefore(x509Certificate).after(CertTools.getNotBefore(result))) {
                     result = x509Certificate;
                 }

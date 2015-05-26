@@ -240,12 +240,24 @@ public interface CertificateStoreSession {
     List<CertificateDataWrapper> getCertificateDataBySerno(BigInteger serno);
 
     /**
-     * Find the latest published X509Certificate matching the given subject DN
+     * Find the latest published X509Certificate matching the given subject DN.
+     * Note that this method does not check if the returned certificate was issued by a rollover CA.
      * 
      * @param subjectDN The subject DN to match.
-     * @return the sought result, or null if none exists. 
+     * @return the sought result, or null if none exists.
      */
     X509Certificate findLatestX509CertificateBySubject(String subjectDN);
+    
+    /**
+     * Find the latest published X509Certificate matching the given subject DN.
+     * This method can search for normal or rollover certificates.
+     * 
+     * @param subjectDN The subject DN to match.
+     * @param rolloverCA The rollover certificate of the issuing CA, or null to not check if issued by a rollover certificate.
+     * @param findRollover Whether a rollover or normal certificate should be returned.
+     * @return the sought result, or null if none exists.
+     */
+    public X509Certificate findLatestX509CertificateBySubject(String subjectDN, Certificate rolloverCA, boolean findRollover);
     
     /**
      * Finds username for a given certificate serial number.

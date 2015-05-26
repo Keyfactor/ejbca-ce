@@ -10,6 +10,7 @@
 package org.ejbca.ui.web.protocol;
 
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.bouncycastle.cms.CMSException;
@@ -39,6 +40,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -68,7 +70,7 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
      */
     @Override
     public ResponseMessage performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, ScepConfiguration scepConfig,
-            String alias) throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
+            String scepAlias) throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
             IllegalKeyException, SignatureException, CustomCertificateSerialNumberException, SignRequestException, SignRequestSignatureException,
             AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
@@ -82,10 +84,22 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
         //Investigate if this could be a Client Certificate Renewal request  
         CA ca = signSession.getCAFromRequest(authenticationToken, reqmsg, false);
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+        final Certificate rolloverCACert = (ca.getRolloverCertificateChain() != null ? ca.getRolloverCertificateChain().iterator().next() : null);
+        final String keyAlias;
+        final Certificate cacert;
+        final boolean useRolloverCert;
+        if (ca.getUseNextCACert(reqmsg)) {
+            keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+            cacert = rolloverCACert;
+            useRolloverCert = true;
+        } else {
+            keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            cacert = ca.getCACertificate();
+            useRolloverCert = false;
+        }
+        
         //Initialize request message to get the username.      
-        reqmsg.setKeyInfo(ca.getCACertificate(),
-                cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                cryptoToken.getSignProviderName());
+        reqmsg.setKeyInfo(cacert, cryptoToken.getPrivateKey(keyAlias), cryptoToken.getSignProviderName());
         reqmsg.verify();
         final String username = reqmsg.getUsername();
         if (username == null) {
@@ -95,19 +109,17 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
         if (endEntityInformation == null) {
             throw new NoSuchEndEntityException("End entity with username " + username + " does not exist.");
         }
+        
+        final X509Certificate latestIssued = findLatestX509Certificate(certificateStoreSession, endEntityInformation, reqmsg, useRolloverCert, rolloverCACert);
 
         //Verified that end entity has been enrolled and that renewal is allowed
-        if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
-            // Extract the latest issued certificate (because that's the one we're interested in) and verify that it's expiry date 
-            // is within range. 
-            X509Certificate latestIssued = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN());
-            if (latestIssued == null) {
-                throw new IllegalStateException("End entity with username " + username + " has status generated, but no certificate was found.");
-            }
+        if (latestIssued != null) {
             //Double check that certificate hasn't been revoked
-            if (!certificateStoreSession.getStatus(reqmsg.getIssuerDN(), latestIssued.getSerialNumber()).equals(CertificateStatus.OK)) {
-                throw new AuthStatusException("Certificate for end entity with username " + username + " was revoked.");
+            final CertificateStatus certStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(latestIssued), latestIssued.getSerialNumber());
+            if (!certStatus.equals(CertificateStatus.OK)) {
+                throw new AuthStatusException("Certificate status for end entity with username " + username + " is "+certStatus);
             }
+            
             long expirationTime = latestIssued.getNotAfter().getTime();
             long issueTime = latestIssued.getNotBefore().getTime();
             /* 
@@ -119,10 +131,10 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
              */
             if (System.currentTimeMillis() > (issueTime + (expirationTime - issueTime) / 2)) {
                 // A new keypair may (but should) be used by the client. This can be enforced by the server. 
-                if (!scepConfig.getAllowClientCertificateRenewalWithOldKey(alias)) {
+                if (!scepConfig.getAllowClientCertificateRenewalWithOldKey(scepAlias)) {
                     if (reqmsg.getRequestPublicKey().equals(latestIssued.getPublicKey())) {
                         throw new IllegalKeyException("Configuration prohibits certificate renewal reusing old keys, for username '" + username
-                                + "' and SCEP configuration alias '" + alias + "'");
+                                + "' and SCEP configuration alias '" + scepAlias + "'");
                     }
                 }
                 //The request must be signed by the existing client certificate's private key
@@ -154,6 +166,21 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             // Get the certificate 
             return signSession.createCertificate(authenticationToken, reqmsg, ScepResponseMessage.class, null);
 
+        }
+    }
+
+    private X509Certificate findLatestX509Certificate(CertificateStoreSessionLocal certificateStoreSession, EndEntityInformation endEntityInformation, ScepRequestMessage reqmsg,
+            boolean useRolloverCert, Certificate rolloverCA) throws ClientCertificateRenewalException {
+        if (useRolloverCert) {
+            return certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), rolloverCA, true);
+        } else if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+            final X509Certificate latestIssued = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), rolloverCA, false);
+            if (latestIssued == null) {
+                throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has status generated, but no certificate was found.");
+            }
+            return latestIssued;
+        } else {
+            return null;
         }
     }
 

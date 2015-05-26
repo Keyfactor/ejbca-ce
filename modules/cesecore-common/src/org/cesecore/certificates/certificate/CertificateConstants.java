@@ -45,6 +45,8 @@ public final class CertificateConstants {
     public static final int CERT_UNASSIGNED = 0;
     /** Assigned, but not yet active */
     public static final int CERT_INACTIVE = 10;
+    /** Certificate is a new CA certificate which will become valid in the future */
+    public static final int CERT_ROLLOVERPENDING = 11;
     /** Certificate is active and assigned */
     public static final int CERT_ACTIVE = 20;
     /** Certificate is still active and the user is notified that it 

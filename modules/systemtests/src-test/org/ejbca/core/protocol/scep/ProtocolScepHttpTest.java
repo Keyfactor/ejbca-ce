@@ -700,7 +700,7 @@ public class ProtocolScepHttpTest {
     }
     
     @Test
-    public void test14ScepGenerateRolloverCert() throws Exception {
+    public void test14ScepRequestRolloverCert() throws Exception {
         try {
             final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
             final int subCAId = subcainfo.getCAId();
@@ -709,6 +709,9 @@ public class ProtocolScepHttpTest {
             
             scepConfiguration.setIncludeCA(scepAlias, true);
             globalConfigSession.saveConfiguration(admin, scepConfiguration);
+            
+            // Clean up certificates first
+            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
             
             // Make a request to the rollover CA, but with the current CA certificate. Should work as usual
             createScepUser(rolloverUser, rolloverDN, subCAId);
@@ -734,11 +737,56 @@ public class ProtocolScepHttpTest {
             
             
         } finally {
+            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
+        }
+    }
+    
+    @Test
+    public void test15ScepRolloverRenewalMode() throws Exception {
+        try {
+            final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+            final int subCAId = subcainfo.getCAId();
+            final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
+            final X509Certificate subcaCurrentCert = (X509Certificate) caSession.getCAInfo(admin, subCAId).getCertificateChain().iterator().next();
+            
+            scepConfiguration.setIncludeCA(scepAlias, true);
+            scepConfiguration.setClientCertificateRenewal(scepAlias, true);
+            globalConfigSession.saveConfiguration(admin, scepConfiguration);
+            
+            // Make a request to the rollover CA, but with the current CA certificate. Should work as usual
+            createScepUser(rolloverUser, rolloverDN, subCAId);
+            byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
+            byte[] retMsg = sendScep(false, msgBytes);
+            assertNotNull(retMsg);
+            checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover);
+            
+            // Clean up
+            try {
+                endEntityManagementSession.deleteUser(admin, rolloverUser);
+                log.debug("deleted user: " + rolloverUser);
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
+            
+            // Now request a certificate signed by the roll over CA certificate
+            createScepUser(rolloverUser, rolloverDN, subCAId);
+            byte[] msgBytes2 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
+            byte[] retMsg2 = sendScep(false, msgBytes2);
+            assertNotNull(retMsg2);
+            checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
+            
+            // Try to request another roll over certificate. This should not be allowed
+            createScepUser(rolloverUser, rolloverDN, subCAId);
+            byte[] msgBytes3 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
+            sendScep(false, msgBytes3, 400);
+            
+        } finally {
             // Done with rollover tests
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
                 caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
             }
             internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
+            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
             certificateProfileSession.removeCertificateProfile(admin, "TestScepCARollover");
         }
     }
