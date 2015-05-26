@@ -118,6 +118,7 @@ java.security.InvalidAlgorithmParameterException
   static final String BUTTON_RECEIVEREQUEST             = "buttonreceiverequest";
   static final String BUTTON_RENEWCA                    = "buttonrenewca";
   static final String BUTTON_REVOKECA                   = "buttonrevokeca";  
+  static final String BUTTON_ROLLOVER                   = "buttonrollover";
   static final String BUTTON_RECIEVEFILE                = "buttonrecievefile";     
   static final String BUTTON_PUBLISHCA                  = "buttonpublishca";     
   static final String BUTTON_REVOKERENEWXKMSCERTIFICATE = "checkboxrenewxkmscertificate";
@@ -240,6 +241,7 @@ java.security.InvalidAlgorithmParameterException
   Date cafuturerolloverdate = null;
   boolean carenewed = false;
   boolean capublished = false;
+  boolean carolledover = false;
 
   int filemode = 0;
   int row = 0;
@@ -474,7 +476,7 @@ java.security.InvalidAlgorithmParameterException
                     final boolean futureRollover = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FUTUREROLLOVER));
                     cadatahandler.receiveResponse(caid, fileBuffer, nextSignKeyAlias, futureRollover);
                     caactivated = true;
-                    cafuturerolloverdate = cadatahandler.getRolloverDate(caid);
+                    cafuturerolloverdate = cabean.getRolloverNotBefore(caid);
             	} catch (Exception e) {
             		errormessage = e.getMessage();
             	}
@@ -490,6 +492,10 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(BUTTON_PUBLISHCA) != null) {
                 cadatahandler.publishCA(caid);
                 capublished = true;             
+            }
+            if (requestMap.get(BUTTON_ROLLOVER) != null) {
+                cadatahandler.rolloverCA(caid);
+                carolledover = true;             
             }
             if (requestMap.get(BUTTON_SAVE_EXTERNALCA) != null) {
             	if (cadatahandler.getCAInfo(caid).getCAInfo().getCAType()==CAInfo.CATYPE_X509) {
