@@ -1083,9 +1083,9 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	/**
      * @throws CesecoreException 
-     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponseWithRollover
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponseForRollover
      */
-    public void caCertResponseWithRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException {
+    public void caCertResponseForRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException {
         log.trace(">caCertResponseWithRollover");
         log.info("Import certificate response with rollover for CA "+caname+", keystorepwd: "+(keystorepwd==null?"null":"hidden"));
         EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
@@ -1103,6 +1103,27 @@ public class EjbcaWS implements IEjbcaWS {
         }
         log.trace("<caCertResponseWithRollover");
     } // caCertResponse
+    
+    /**
+     * @throws EjbcaException 
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#rolloverCACert
+     */
+    public void rolloverCACert(String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        log.trace(">rolloverCACert");
+        log.info("Rollover to next certificate for CA "+caname);
+        EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+        AuthenticationToken admin = ejbhelper.getAdmin();
+        try {
+            ejbhelper.rolloverCACert(ejbhelper, admin, caname);
+        } catch (CryptoTokenOfflineException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
+        } catch (RuntimeException e) {  // EJBException, ...
+            throw EjbcaWSHelper.getInternalException(e, null);
+        }
+        log.trace("<rolloverCACert");
+    } // rolloverCACert
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Request(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
