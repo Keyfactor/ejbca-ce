@@ -113,6 +113,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setMode(String mode) {
             this.mode = mode;
         }
+        
+        public boolean isModeRa() {
+            return ScepConfiguration.Mode.RA.getResource().equals(mode);
+        }
+        public boolean isModeCa() {
+            return ScepConfiguration.Mode.CA.getResource().equals(mode);
+        }
 
         public boolean isIncludeCA() {
             return includeCA;
@@ -160,6 +167,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setRaNameGenScheme(String scheme) {
             this.raNameGenScheme = scheme;
+        }
+
+        public boolean isRaNameGenSchemeFixed() {
+            return "FIXED".equals(raNameGenScheme);
+        }
+
+        public boolean isRaNameGenSchemeDn() {
+            return "DN".equals(raNameGenScheme);
         }
 
         public String getRaNameGenParams() {
