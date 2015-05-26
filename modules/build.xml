@@ -479,11 +479,11 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, admin-gui, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war"/>
 
-	<target name="ct" depends="ejbca-ejb-interface, cesecore-common, cesecore-ejb-interface" if="mod.ct.exists">
+	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-	<target name="certsafe" depends="ejbca-ejb-interface, cesecore-common, cesecore-ejb-interface" if="mod.certsafe.exists">
+	<target name="certsafe" depends="ejbca-ejb-interface" if="mod.certsafe.exists">
 		<ant antfile="${mod.certsafe.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
