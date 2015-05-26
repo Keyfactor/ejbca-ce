@@ -612,7 +612,6 @@ public class ProtocolScepHttpTest {
         assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
     }
     
-    // TODO implement for root CA also, and add a test for that
     @Test
     public void test13ScepGetNextCACertSubCA() throws Exception {
         final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
@@ -941,6 +940,9 @@ public class ProtocolScepHttpTest {
     private byte[] genScepRolloverCARequest(X509Certificate caRolloverCert, String digestoid, String userDN) throws InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
             IOException, CMSException, OperatorCreationException, CertificateException {
+        assertNotNull(keyTestRollover);
+        assertNotNull(caRolloverCert);
+        
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keyTestRollover, BouncyCastleProvider.PROVIDER_NAME);
         gen.setDigestOid(digestoid);
