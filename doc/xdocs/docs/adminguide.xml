@@ -424,8 +424,8 @@ valid, the PKCS#7 wrapping the CSR must be signed by the old certificate's keypa
 <subsubsection name="Allow Client Certificate Renewal using old key (Enterprise Edition only)">
 <p>The SCEP draft doesn't mandate if old keys may be reused for Client Certificate Renewal or not, so EJBCA includes this as a setting. </p>
 </subsubsection>
-<subsubsection name="CA Key Rollover">
-<p>EJBCA supports creating a rollover certificate for a CA, and issuing certificates via SCEP with this CA. This is described in
+<subsubsection name="CA Certificate Rollover">
+<p>EJBCA supports creating a rollover certificate for a CA, and issuing certificates via SCEP with this new CA certificate. This is useful when changing the CA key during renewal. It is described in
 <a href="http://tools.ietf.org/html/draft-nourse-scep-23#appendix-D">Appendix E</a> of the SCEP draft.</p>
 </subsubsection>
 </subsection>
@@ -2624,6 +2624,7 @@ sends an email notification to the end user and/or the administrator.</li>
 <li>a 'User Password Expire Service' that checks if a user have not enrolled for a new certificate within a 
 certain amount of time after been registered, and expires the users possibility to enroll.</li>
 <li>a 'Renew CA Service' that checks if CA certificates are about to expire and renews them.</li>
+<li>a 'Rollover CA Service' that activates rollover certificates once they become valid.</li>
 <li>a 'Publisher queue process service' that retries failed publishing.</li>
 <li>a 'HSM Keepalive Service' that periodically tests crypto tokens to avoid connection timeouts.</li>
 <li>a 'Remote Internal Key Binding Updater' that automatically renews expiring OCSP signing certificates and keys at a connected VA.</li>
