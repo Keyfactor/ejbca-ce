@@ -1155,39 +1155,42 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return CertificateData.findExpirationInfo(entityManager, cas, certificateProfiles, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax,
                 activeExpireDateMin);
     }
+    
+    private void changeStatus(AuthenticationToken admin, CertificateData certificateData, int status) throws AuthorizationDeniedException {
+        if (log.isDebugEnabled()) {
+            log.debug("Set status " + status + " for certificate with fp: " + certificateData.getFingerprint());
+        }
+        
+        // Must be authorized to CA in order to change status is certificates issued by the CA
+        String bcdn = CertTools.stringToBCDNString(certificateData.getIssuerDN());
+        int caid = bcdn.hashCode();
+        authorizedToCA(admin, caid);
+
+        certificateData.setStatus(status);
+        final Certificate certificate = certificateData.getCertificate(this.entityManager);
+        String serialNo;
+        if (certificate==null) {
+            serialNo = certificateData.getSerialNumberHex();
+        } else {
+            serialNo = CertTools.getSerialNumberAsString(certificate);
+        }
+        final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, certificateData.getUsername(), details);
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws IllegalArgumentException, AuthorizationDeniedException {
-
+        
+        if (status == CertificateConstants.CERT_REVOKED || status == CertificateConstants.CERT_ACTIVE) {
+            final String msg = INTRES.getLocalizedMessage("store.errorsetstatusargument", fingerprint, status);
+            throw new IllegalArgumentException(msg);
+        }
     	CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
     	if (certificateData != null) {
-    	    if (((status == CertificateConstants.CERT_REVOKED) || (status == CertificateConstants.CERT_ACTIVE)) &&
-    	            certificateData.getStatus() != CertificateConstants.CERT_ROLLOVERPENDING) {
-    	        final String msg = INTRES.getLocalizedMessage("store.errorsetstatusargument", fingerprint, status);
-    	        throw new IllegalArgumentException(msg);
-    	    }
-            if (log.isDebugEnabled()) {
-                log.debug("Set status " + status + " for certificate with fp: " + fingerprint);
-            }
-            
-            // Must be authorized to CA in order to change status is certificates issued by the CA
-            String bcdn = CertTools.stringToBCDNString(certificateData.getIssuerDN());
-            int caid = bcdn.hashCode();
-            authorizedToCA(admin, caid);
-
-        	certificateData.setStatus(status);
-        	final Certificate certificate = certificateData.getCertificate(this.entityManager);
-        	String serialNo;
-        	if (certificate==null) {
-        	    serialNo = certificateData.getSerialNumberHex();
-        	} else {
-        	    serialNo = CertTools.getSerialNumberAsString(certificate);
-        	}
-            final String msg = INTRES.getLocalizedMessage("store.setstatus", certificateData.getUsername(), fingerprint, status, certificateData.getSubjectDN(), certificateData.getIssuerDN(), serialNo);
-    		Map<String, Object> details = new LinkedHashMap<String, Object>();
-    		details.put("msg", msg);
-    		logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, certificateData.getUsername(), details);            
+    	    changeStatus(admin, certificateData, status);            
     	} else {
             if (log.isDebugEnabled()) {
                 final String msg = INTRES.getLocalizedMessage("store.setstatusfailed", fingerprint, status);
@@ -1195,6 +1198,26 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }    		
     	}
         return (certificateData != null);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void setRolloverDoneStatus(AuthenticationToken admin, String fingerprint) throws IllegalArgumentException, AuthorizationDeniedException {
+
+        CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
+        if (certificateData == null) {
+            throw new IllegalStateException("CA certificate with fingerprint '"+fingerprint+"' does not exist.");
+        }
+        
+        final int prevStatus = certificateData.getStatus();
+        if (prevStatus == CertificateConstants.CERT_ACTIVE) {
+            return; // Nothing to do
+        }
+        
+        if (prevStatus != CertificateConstants.CERT_ROLLOVERPENDING) {
+            throw new IllegalStateException("Certificate was not in the CERT_ROLLOVERPENDING state");
+        }
+        changeStatus(admin, certificateData, CertificateConstants.CERT_ACTIVE);          
     }
     
     private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
