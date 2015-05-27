@@ -376,7 +376,7 @@ public class ScepServlet extends HttpServlet {
                     log.error(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "No such CA.");
                 } else {
-                    //if (casession.getFutureRolloverCertificate(cainfo.getCAId()) != null) {
+                    if (casession.getFutureRolloverCertificate(cainfo.getCAId()) != null) {
                         // Send full certificate chain of next CA, in SCEP-PKCS7 format 
                         if (log.isDebugEnabled()) {
                             log.debug("Sending next certificate chain for CA '" + caname + "' to SCEP client.");
@@ -385,11 +385,11 @@ public class ScepServlet extends HttpServlet {
                         RequestHelper.sendBinaryBytes(bytes, response, "application/x-x509-next-ca-cert", null);
                         iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
                         log.info(iMsg);
-                    /*} else {
+                    } else {
                         String errMsg = intres.getLocalizedMessage("scep.errornorollovercert", caname);
                         log.info(errMsg);
-                        response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "No rollover certificate found for this CA.");
-                    }*/
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "No rollover certificate found for this CA.");
+                    }
                 }
             } else if (operation.equals("GetCACaps")) {
                 // The response for GetCACaps is a <lf> separated list of capabilities
@@ -407,7 +407,21 @@ public class ScepServlet extends HttpServlet {
                  */
                 log.debug("Got SCEP GetCACaps request");
                 response.setContentType("text/plain");
-                response.getOutputStream().print("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1");
+                
+                final String caname = getCAName(message);
+                boolean hasRolloverCert;
+                try {
+                    final CAInfo cainfo = casession.getCAInfoInternal(-1, caname, true);
+                    hasRolloverCert = (casession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
+                } catch (CADoesntExistsException e) {
+                    hasRolloverCert = false;
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA was not found: "+caname);
+                    }
+                }
+                response.getOutputStream().print(hasRolloverCert ?
+                        "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1" :
+                        "POSTPKIOperation\nRenewal\nSHA-1");
             } else {
                 log.error("Invalid parameter '" + operation);
                 // Send back proper Failure Response
