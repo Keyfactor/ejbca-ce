@@ -1684,10 +1684,11 @@ function checkallfields(){
     <% } %>
     
     <%
-    Date rolloverDate = cabean.getRolloverNotBefore(caid);
-    if (editca && rolloverDate != null) {
-    	Date now = new Date();
-    	Date currentValidity = cabean.getRolloverNotAfter(caid); %>
+    if (editca) {
+	    Date rolloverDate = cabean.getRolloverNotBefore(caid);
+	    if (rolloverDate != null) {
+	    	Date now = new Date();
+	    	Date currentValidity = cabean.getRolloverNotAfter(caid); %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>"> 
         <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("CAROLLOVER") %></td>
@@ -1699,7 +1700,8 @@ function checkallfields(){
             >
         </td>
     </tr>
-    <% } %> 
+      <% } 
+    } %> 
 
     <% if (editca && !isexternal && !waitingresponse) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
