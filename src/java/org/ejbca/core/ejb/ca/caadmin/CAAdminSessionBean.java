@@ -1473,12 +1473,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), caCertPublicKey,
                         cryptoToken.getSignProviderName());
             } catch (Exception e1) {
-                log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
-                if (e1 instanceof InvalidKeyException) {
-                    log.trace(e1);
-                } else {
-                    // If it's not invalid key, we want to see more of the error
-                    log.debug("Error: ", e1);
+                if (log.isDebugEnabled()) {
+                    log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
+                    if (e1 instanceof InvalidKeyException) {
+                        log.trace(e1);
+                    } else {
+                        // If it's not invalid key, we want to see more of the error
+                        log.debug("Error: ", e1);
+                    }
                 }
                 try {
                     KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
