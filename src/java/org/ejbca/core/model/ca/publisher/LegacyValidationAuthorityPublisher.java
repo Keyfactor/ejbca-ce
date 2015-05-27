@@ -179,8 +179,8 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherContainer
     /**
      *  Set to true if only revoked certificates should be published.
      */
-    public void setOnlyPublishRevoked(boolean storecert) {
-        this.data.put(ONLYPUBLISHREVOKED, Boolean.valueOf(storecert));
+    public void setOnlyPublishRevoked(boolean publishRevoked) {
+        this.data.put(ONLYPUBLISHREVOKED, Boolean.valueOf(publishRevoked));
     }
     
     @Override
