@@ -8,15 +8,15 @@
 <section name="Commercial Support">
 <p>
 <i>Ready-made commercial EJBCA PKI support</i><br/>
-<a href="http://www.primekey.se/Services/Support">Support programs</a> and other qualified 
-professional services are provided by <a href="http://www.primekey.se">PrimeKey Solutions AB</a>.
+<a href="https://www.primekey.se/Services/Support">Support programs</a> and other qualified 
+professional services are provided by <a href="https://www.primekey.se">PrimeKey Solutions AB</a>.
 </p>
 </section>
 
 <section name="3rd Party Integration">
 <p>
 Looking to integrate a 3rd party application with EJBCA? EJBCA has the most flexible range of standard, and non standard, protocols for seamless integration.
-<br/>Contact <a href="http://www.primekey.se/Company/Contact/">Primekey</a> is you need more information or assistance.
+<br/>Contact <a href="https://www.primekey.se/Company/Contact/">Primekey</a> if you need more information or assistance.
 </p>
 </section>
 
@@ -28,7 +28,7 @@ If you have a security notification regarding EJBCA, please send an email to <i>
 
 <section name="Contributors">
 <p>
-The best way to contact the project admins are using email.
+The best way to contact the project administrators is by e-mail.
 </p>
 <ul>
 <li>Send an email to the ejbca-develop <a href="#Mailing Lists">mailing list</a> (see below).</li>
@@ -50,7 +50,7 @@ Secondly, examine the EJBCA <a href="docs/faq.html">FAQ</a>.
 <section name="Training">
 <p>
 <i>Established EJBCA PKI Training</i><br/>
-<a href="http://www.primekey.se/Services/Training">Training Courses</a> for advanced users are held 
+<a href="https://www.primekey.se/Services/Training">Training Courses</a> for advanced users are held 
 internationally by PrimeKey and their partners.
 </p>
 </section>
@@ -80,7 +80,7 @@ that are used for EJBCA PKI discussions and requests for help etc.
 
 <section name="IRC">
 <p>
-EJBCA support questions can be asked on the IRC channel (#ejbca) on
+EJBCA community support questions can be asked on the IRC channel (#ejbca) on
 irc.freenode.net. A nice and free-of-charge, web-based IRC client is available 
 <a href="http://chat.mibbit.com/">here</a>. 
 PrimeKey is usually available on the IRC channel during European office hours, 
