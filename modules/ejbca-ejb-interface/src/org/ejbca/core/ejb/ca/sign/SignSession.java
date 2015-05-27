@@ -92,7 +92,7 @@ public interface SignSession {
      * Creates a roll over PKCS7 for the next CA certificate, signed by the current CA key. Used by ScepServlet.
      * @return A DER-encoded PKCS7 message, or null if there's no next CA certificate.
      */
-    public byte[] createPKCS7Rollover(AuthenticationToken admin, int caId) throws CADoesntExistsException, AuthorizationDeniedException;
+    byte[] createPKCS7Rollover(AuthenticationToken admin, int caId) throws CADoesntExistsException, AuthorizationDeniedException;
     
     /**
      * Requests for a certificate to be created for the passed public key with the passed key

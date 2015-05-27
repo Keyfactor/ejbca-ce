@@ -108,6 +108,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -1311,7 +1312,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (cachain != null && cachain.size() > 0) {
                 //  1. If we have a chain given as parameter, we will use that.
                 reqchain = CertTools.createCertChain(cachain, verifydate);
-                log.debug("Using CA certificate chain from parameter of size: " + reqchain.size());
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA certificate chain from parameter of size: " + reqchain.size());
+                }
             } else {
                 // 2. If no parameter is given we assume that the request chain was stored when the request was created.
                 reqchain = ca.getRequestCertificateChain();
@@ -1346,10 +1349,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
             }
 
-            log.debug("Picked up request certificate chain of size: " + reqchain.size());
+            if (log.isDebugEnabled()) {
+                log.debug("Picked up request certificate chain of size: " + reqchain.size());
+            }
             tmpchain.addAll(reqchain);
             final List<Certificate> chain = CertTools.createCertChain(tmpchain, verifydate);
-            log.debug("Storing certificate chain of size: " + chain.size());
+            if (log.isDebugEnabled()) {
+                log.debug("Storing certificate chain of size: " + chain.size());
+            }
             // Before importing the certificate we want to make sure that the public key matches the CAs private key
             PublicKey caCertPublicKey = cacert.getPublicKey();
             // If it is a DV certificate signed by a CVCA, enrich the public key for EC parameters from the CVCA's certificate
@@ -1375,7 +1382,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
 
             if (futureRollover) {
-                testNextKey(authenticationToken, caid, nextKeyAlias, ca, cacert, chain, caCertPublicKey);
+                testNextKey(authenticationToken, ca, cacert, chain, caCertPublicKey, nextKeyAlias);
                 final CAToken catoken = ca.getCAToken();
                 if (nextKeyAlias != null) {
                     catoken.setNextCertSignKey(nextKeyAlias);
@@ -1432,8 +1439,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
     }
 
-    private void testNextKey(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca,
-            final Certificate cacert, final List<Certificate> chain, PublicKey caCertPublicKey) throws CryptoTokenOfflineException, EjbcaException {
+    /**
+     * Verifies that the next signing key of the given CA is working. This is checked with {@link KeyTools#testKey}.
+     * 
+     * @param authenticationToken Admin performing the test. 
+     * @param ca CA to test the key of.
+     * @param cacert CA certificate from the request.
+     * @param chain Certificate chain including the newly issued certificate.
+     * @param caCertPublicKey Public key of CA. Must be fully usable, i.e. CVC DVCA keys must be have the full parameters from the CVCA.
+     * @param nextKeyAlias Key alias to test, or null to test the current key alias given by the CA Token (or the next signing key as a fallback).
+     * @throws CryptoTokenOfflineException
+     * @throws IllegalKeyException 
+     */
+    private void testNextKey(AuthenticationToken authenticationToken, final CA ca, final Certificate cacert, final List<Certificate> chain,
+            PublicKey caCertPublicKey, String nextKeyAlias) throws CryptoTokenOfflineException, IllegalKeyException {
         final CAToken catoken = ca.getCAToken();
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
         if (nextKeyAlias != null) {
@@ -1445,8 +1464,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             + new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(nextKeyAlias)).getKeyIdentifier())));
                 }
                 KeyTools.testKey(cryptoToken.getPrivateKey(nextKeyAlias), caCertPublicKey, cryptoToken.getSignProviderName());
-            } catch (InvalidKeyException e) {
-                throw new EjbcaException(ErrorCode.INVALID_KEY, e);
+            } catch (InvalidKeyException e) { // java exception
+                throw new IllegalKeyException(e); // cesecore exception
             }
         } else {
             // Since we don't specified the nextSignKey, we will just try the current or next CA sign key
@@ -1465,14 +1484,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
                             caCertPublicKey, cryptoToken.getSignProviderName());
                 } catch (Exception e2) {
-                    log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
-                    if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
-                        log.trace(e2);
-                    } else {
-                        // If it's not invalid key or missing authentication code, we want to see more of the error
-                        log.debug("Error: ", e2);
+                    if (log.isDebugEnabled()) {
+                        log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
+                        if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
+                            log.trace(e2);
+                        } else {
+                            // If it's not invalid key or missing authentication code, we want to see more of the error
+                            log.debug("Error: ", e2);
+                        }
                     }
-                    throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
+                    throw new IllegalKeyException(e2);
                 }
             }
         }
