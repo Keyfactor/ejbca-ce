@@ -658,7 +658,6 @@ public class ProtocolScepHttpTest {
             ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(rolloverStartTime));
             ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, ValidityDate.formatAsUTC(rolloverStartTime+14L*24L*3600L*1000L));
             endentity.setExtendedinformation(ei);
-            //endEntityManagementSession.addUser(admin, endentity, true);
             final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
             final X509ResponseMessage respmsg = (X509ResponseMessage)certificateCreateSession.createCertificate(admin, endentity, req, X509ResponseMessage.class, null);
             
