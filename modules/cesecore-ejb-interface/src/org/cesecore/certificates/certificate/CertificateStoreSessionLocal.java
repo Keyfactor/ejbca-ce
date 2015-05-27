@@ -224,4 +224,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      */
     boolean setRevokeStatusNoAuth(AuthenticationToken admin, CertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException;
+
+    /**
+     * Changes a certificate from CERT_ROLLOVERPENDING to CERT_ACTIVE. If the certificate status is already CERT_ACTIVE, then it does nothing.
+     * @param admin Administrator performing the operation
+     * @param fingerprint Fingerprint of the certificate
+     * @throws AuthorizationDeniedException
+     */
+    void setRolloverDoneStatus(AuthenticationToken admin, String fingerprint) throws AuthorizationDeniedException;
 }

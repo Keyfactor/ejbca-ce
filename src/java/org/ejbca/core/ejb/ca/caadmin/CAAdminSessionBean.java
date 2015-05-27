@@ -2134,7 +2134,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishCACertificate(authenticationToken, rolloverChain, ca.getCRLPublishers(), ca.getSubjectDN());
             
             // Change the status of the CA certificate from CERT_ROLLOVERPENDING to CERT_ACTIVE
-            certificateStoreSession.setStatus(authenticationToken, CertTools.getFingerprintAsString(rolloverChain.get(0)), CertificateConstants.CERT_ACTIVE);
+            certificateStoreSession.setRolloverDoneStatus(authenticationToken, CertTools.getFingerprintAsString(rolloverChain.get(0)));
             publishingCrlSession.forceCRL(authenticationToken, caid);
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             // Audit log

@@ -399,6 +399,7 @@ public class CADataHandler implements Serializable {
   * Performs a rollover from the current certificate to the next certificate. 
   * @throws AuthorizationDeniedException 
   * @throws CryptoTokenOfflineException
+  * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSession#rolloverCA
   * */
  public void rolloverCA(int caid) throws CryptoTokenOfflineException, AuthorizationDeniedException {
      caadminsession.rolloverCA(administrator, caid);

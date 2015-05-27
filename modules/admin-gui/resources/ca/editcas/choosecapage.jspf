@@ -30,7 +30,7 @@
   <% } %>
   <% if(caactivated && cafuturerolloverdate != null){ %> 
     <tr> 
-      <td width="40%" class="info"><%= ejbcawebbean.getText("CAROLLOVERPENDING") + ejbcawebbean.formatAsISO8601(cafuturerolloverdate) %></td>
+      <td width="40%" class="info"><%= ejbcawebbean.getText("CAROLLOVERPENDING") %><br /><%= ejbcawebbean.formatAsISO8601(cafuturerolloverdate) %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
