@@ -671,6 +671,20 @@ You can import the CA with the Admin GUI or the CLI. See the section 'Export and
 <br/>
 After importing CAs you can also import users and certificates. See the section 'Import users'. 
 </p></subsection>
+<subsection name="CA Rollover">
+<p>
+It is possible to renew a CA certificate, but not activate the new certificate and key immediately. This is useful for CA certificates that will become valid at some point in the future (in EJBCA, such certificates can be created by checking "Allow Validity Override" in the certificate profile). A such certificate is called a <em>rollover certificate</em> or a <em>next CA certificate</em>, and can be used in the SCEP protocol.
+</p>
+<p>
+First, make a certificate request as usual. Then you may receive the CA certificate response without activating it. To do so, edit the CA and check the "Rollover certificate (activated later)" checkbox. Then select the new CA certificate file its corresponding key. Then click "Receive Certificate Response". A message will appear, which shows when the rollover certificate becomes valid, and may be activated.
+</p>
+<p>
+At a later point, the new rollover certificate may be activated. To activate it, edit the CA and scroll down to "CA Life Cycle". There should be text telling when the current certificate expires and when the rollover certificate becomes valid. If not, the CA doesn't have any rollover certificate. Click the button "Perform CA Rollover", and the new rollover certificate will be activated.
+</p>
+<p>
+There is also a service, <em>Rollover Service</em>, that can be configured to activate rollover certificates automatically once they become valid. There will be a a 10 minute delay in this case to allow for a small amount of clock skew.
+</p>
+</subsection>
 </section>
 
 <section name="Certificate profiles">
