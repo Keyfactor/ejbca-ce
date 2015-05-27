@@ -755,6 +755,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // current time
             // and that we can not get a certificate valid longer than the
             // certificate profile allows.
+            final Date caNotBefore = CertTools.getNotBefore(caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().iterator().next());
+            try { Thread.sleep(5); }
+            catch (InterruptedException ie) { throw new IllegalStateException(ie); }
             prof = certificateProfileSession.getCertificateProfile(cprofile);
             prof.setValidity(50);
             certificateProfileSession.changeCertificateProfile(internalAdmin, validityOverrideProfileName, prof);
@@ -768,14 +771,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
             Date certNotBefore = cert.getNotBefore();
-            // Override was enabled, and we can not get a certificate valid before
-            // current time
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -1);
-            // the certificate should be valid 2 days before current date...
-            assertTrue(certNotBefore.compareTo(cal.getTime()) < 0);
-            cal.add(Calendar.DAY_OF_MONTH, -2);
-            assertTrue(certNotBefore.compareTo(cal.getTime()) > 0);
+            // Override was enabled. But we can still not get a certificate valid before the CA becomes valid.
+            assertEquals("certificate NotBefore date should match the CA, if set to be on or before the CA NotBefore date", certNotBefore, caNotBefore);
             cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 47);
             notAfter = cert.getNotAfter();
