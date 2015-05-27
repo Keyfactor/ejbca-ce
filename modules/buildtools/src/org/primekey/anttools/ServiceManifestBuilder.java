@@ -204,20 +204,20 @@ public class ServiceManifestBuilder {
      * @throws IOException 
      */
     private static List<Class<?>> getImplementingClasses(final File baseLocation, File location, Class<?> interfaceClass) {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        final List<Class<?>> result = new ArrayList<Class<?>>();
         if (location.isDirectory()) {
             //Recurse to find all files in all subdirectories
-            for (File file : location.listFiles()) {
+            final int baseLocationAbsolutePathLength = baseLocation.getAbsolutePath().length() + File.separator.length();
+            for (final File file : location.listFiles()) {
                 if (file.isDirectory()) {
                     result.addAll(getImplementingClasses(baseLocation, file, interfaceClass));
                 } else {
-                    if (file.getName().toLowerCase().endsWith(CLASS_EXTENSION)) {
-                        String className = file
-                                .getAbsolutePath()
-                                .substring(baseLocation.getAbsolutePath().length() + File.separator.length(),
-                                        file.getAbsolutePath().indexOf(CLASS_EXTENSION)).replace(File.separatorChar, '.');
+                    final String absolutePath = file.getAbsolutePath();
+                    final int indexOfExtension = absolutePath.indexOf(CLASS_EXTENSION);
+                    if (indexOfExtension!=-1 && indexOfExtension==absolutePath.length()-CLASS_EXTENSION.length()) {
+                        final String className = absolutePath.substring(baseLocationAbsolutePathLength, indexOfExtension).replace(File.separatorChar, '.');
                         try {
-                            Class<?> candidate = Class.forName(className);
+                            final Class<?> candidate = Class.forName(className);
                             if (interfaceClass.isAssignableFrom(candidate) && !Modifier.isAbstract(candidate.getModifiers())
                                     && !candidate.isInterface()) {                              
                                 result.add(candidate);
@@ -229,9 +229,7 @@ public class ServiceManifestBuilder {
                     }
                 }
             }
-           
         }
         return result;
     }
-
 }
