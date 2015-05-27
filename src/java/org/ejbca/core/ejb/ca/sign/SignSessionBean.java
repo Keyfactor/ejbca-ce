@@ -215,10 +215,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return returnval;
     }
     
-    /**
-     * Creates a roll over PKCS7 for the next CA certificate, signed by the current CA key. Used by ScepServlet.
-     * @return A DER-encoded PKCS7 message, or null if there's no next CA certificate.
-     */
     @Override
     public byte[] createPKCS7Rollover(AuthenticationToken admin, int caId) throws CADoesntExistsException, AuthorizationDeniedException {
         try {

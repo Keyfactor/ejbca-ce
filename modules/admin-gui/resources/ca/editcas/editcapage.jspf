@@ -1779,6 +1779,7 @@ function checkallfields(){
                             <input type="file" name="<%= FILE_RECIEVEFILE_RECEIVEREQUEST %>">
                         </td>
                     </tr>
+                    <% if (catype == CAInfo.CATYPE_X509) { %>
                     <tr>
                         <td><p class="help"><%= ejbcawebbean.getText("EXTERNALLYSIGNED_FUTUREROLLOVER_HELP") %></p></td>
                         <td>
@@ -1789,6 +1790,7 @@ function checkallfields(){
                             </label>
                         </td>
                     </tr>
+                    <% } %>
                     <tr>
                         <td></td>
                         <td>
