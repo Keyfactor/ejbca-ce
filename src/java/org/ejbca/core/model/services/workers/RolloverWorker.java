@@ -51,7 +51,9 @@ public class RolloverWorker extends BaseWorker {
 
 		// Roll over these CAs using the CAAdminSessionBean
 		Collection<Integer> caids = getCAIdsToCheck(false);
-		log.debug("Checking "+caids.size()+" CAs for rollover");
+		if (log.isDebugEnabled()) {
+		    log.debug("Checking "+caids.size()+" CAs for rollover");
+		}
 		for (int caid : caids) {
 			try {
 		        final CA ca = caSession.getCA(getAdmin(), caid);
@@ -60,7 +62,9 @@ public class RolloverWorker extends BaseWorker {
 		            final Certificate cert = rolloverChain.get(0);
 	                if (now.after(CertTools.getNotBefore(cert))) {
 	                    // Replace certificate chain with the roll over chain
-	                    log.debug("New certificate of CA "+caid+" is now valid, switching certificate.");
+	                    if (log.isDebugEnabled()) {
+	                        log.debug("New certificate of CA "+caid+" is now valid, switching certificate.");
+	                    }
 	                    caAdminSession.rolloverCA(getAdmin(), ca.getCAId());
 	                }
 		        }

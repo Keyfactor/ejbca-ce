@@ -541,29 +541,7 @@ public class ProtocolScepHttpTest {
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
-        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(x509ca.getName(), "UTF-8");
-        URL url = new URL(reqUrl);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.getDoOutput();
-        con.connect();
-        assertEquals("Response code", 200, con.getResponseCode());
-        // Some appserver (Weblogic) responds with "text/plain; charset=UTF-8"
-        assertTrue(con.getContentType().startsWith("text/plain"));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and SCEP requests are small enough
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        assertNotNull("Response can not be null.", respBytes);
-        assertTrue(respBytes.length > 0);
-        assertEquals(new String(respBytes), "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1");
+        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-1");
     }
 
     @Test
@@ -639,9 +617,15 @@ public class ProtocolScepHttpTest {
             assertEquals("Wrong state of test Sub CA", CAConstants.CA_ACTIVE, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getStatus());
             assertEquals(ROLLOVER_SUB_CA_DN, cainfo.getSubjectDN());
             
-            // CA should NOT have any rollover certificate yet 
-            List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA);
-            assertEquals("should return an empty list when theres no roll over cert", 0, nextChain.size()); // actually, the RFC doesn't say what should happen in this case
+            // CA should NOT have any rollover certificate yet
+            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetNextCACert&message=" + URLEncoder.encode(ROLLOVER_SUB_CA, "UTF-8");
+            URL url = new URL(reqUrl);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Should get an error response code if no rollover certificate exists", 403, con.getResponseCode());
+            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-1");
             
             // Create a rollover certificate
             final int subCAId = cainfo.getCAId();
@@ -670,7 +654,8 @@ public class ProtocolScepHttpTest {
             assertEquals("rollover cert has the wrong subject DN", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(rolloverCert));
             
             // Now we should get the certificate chain of the rollover cert
-            nextChain = sendGetNextCACert(ROLLOVER_SUB_CA);
+            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1");
+            final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA);
             assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
             final Certificate nextCert = nextChain.get(0);
             final Certificate nextRootCert = nextChain.get(1);
@@ -1203,6 +1188,33 @@ public class ProtocolScepHttpTest {
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         return respBytes;
+    }
+    
+
+    private void checkCACaps(String caname, String expectedCaps) throws IOException {
+        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
+        URL url = new URL(reqUrl);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.getDoOutput();
+        con.connect();
+        assertEquals("Response code", 200, con.getResponseCode());
+        // Some appserver (Weblogic) responds with "text/plain; charset=UTF-8"
+        assertTrue(con.getContentType().startsWith("text/plain"));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and SCEP requests are small enough
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        assertNotNull("Response can not be null.", respBytes);
+        assertTrue(respBytes.length > 0);
+        assertEquals(expectedCaps, new String(respBytes));
     }
 
     private void updatePropertyOnServer(String property, String value) {

@@ -172,7 +172,11 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
     private X509Certificate findLatestX509Certificate(CertificateStoreSessionLocal certificateStoreSession, EndEntityInformation endEntityInformation, ScepRequestMessage reqmsg,
             boolean useRolloverCert, Certificate rolloverCA) throws ClientCertificateRenewalException {
         if (useRolloverCert) {
-            return certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), rolloverCA, true);
+            X509Certificate rolloverCert = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), rolloverCA, true);
+            if (rolloverCert != null) {
+                throw new IllegalStateException("Can't issue more than one rollover certificate.");
+            }
+            return null;
         } else if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             final X509Certificate latestIssued = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), rolloverCA, false);
             if (latestIssued == null) {

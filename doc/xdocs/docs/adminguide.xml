@@ -353,13 +353,14 @@ To manage SCEP aliases in the AdminGUI, go to System Functions -> SCEP Configura
 </subsection>
 <subsection name="Level of SCEP support">
 <p>
-EJBCA implements features from (at least) draft 11 of the SCEP specification. This means that we implement the following SCEP messages:
+EJBCA implements features from (at least) draft 11 of the SCEP specification. We implement the following SCEP messages:
 <ul>
 <li>PKCSReq including Client Certificate Renewal</li>
 <li>GetCRL</li>
 <li>GetCACert</li>
 <li>GetCACertChain</li>
 <li>GetCACaps</li>
+<li>GetNextCACert</li>
 </ul>
 <p><img src="images/scep_enroll.png" height="616" width="1200" /></p>
 
@@ -422,6 +423,10 @@ valid, the PKCS#7 wrapping the CSR must be signed by the old certificate's keypa
 </subsubsection>
 <subsubsection name="Allow Client Certificate Renewal using old key (Enterprise Edition only)">
 <p>The SCEP draft doesn't mandate if old keys may be reused for Client Certificate Renewal or not, so EJBCA includes this as a setting. </p>
+</subsubsection>
+<subsubsection name="CA Key Rollover">
+<p>EJBCA supports creating a rollover certificate for a CA, and issuing certificates via SCEP with this CA. This is described in
+<a href="http://tools.ietf.org/html/draft-nourse-scep-23#appendix-D">Appendix E</a> of the SCEP draft.</p>
 </subsubsection>
 </subsection>
 
