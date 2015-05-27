@@ -25,7 +25,7 @@ public interface BasePublisherConverter {
     /**
      * Creates a publisher based on the given BasePublisher
      * 
-     * @param data a Map containing publisher data.
+     * @param BasePublisher a BasePublisher to convert from
      * @return a {@link BasePublisher} from the given publisher, or null if publisher was not viable. 
      */
     BasePublisher createPublisher(final BasePublisher publisher);
