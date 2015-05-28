@@ -597,6 +597,9 @@ public class ProtocolScepHttpTest {
         assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
     }
     
+    /**
+     * Tests creating and receiving a rollover certificate for a CA. Note that the subsequent tests depend on this one.
+     */
     @Test
     public void test13ScepGetNextCACertSubCA() throws Exception {
         final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
@@ -698,13 +701,23 @@ public class ProtocolScepHttpTest {
         }
     }
     
+    /**
+     * Tests creating a rollover end-user certificate. Depends on the rollover CA being created, otherwise this test will be skipped.
+     */
     @Test
     public void test14ScepRequestRolloverCert() throws Exception {
         try {
-            final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+            final X509CAInfo subcainfo;
+            try {
+                subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+            } catch (CADoesntExistsException cadee) {
+                assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a sub CA", false);
+                throw new IllegalStateException(); // Not reached
+            }
             final int subCAId = subcainfo.getCAId();
             final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
             final X509Certificate subcaCurrentCert = (X509Certificate) caSession.getCAInfo(admin, subCAId).getCertificateChain().iterator().next();
+            assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a rollover CA certificate", subcaRolloverCert != null);
             
             scepConfiguration.setIncludeCA(scepAlias, true);
             globalConfigSession.saveConfiguration(admin, scepConfiguration);
@@ -740,16 +753,26 @@ public class ProtocolScepHttpTest {
         }
     }
     
+    /**
+     * Tests creating a rollover end-user certificate in renewal mode. Depends on the rollover CA being created, otherwise this test will be skipped.
+     */
     @Test
     public void test15ScepRolloverRenewalMode() throws Exception {
         try {
             log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
             assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
             
-            final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+            final X509CAInfo subcainfo;
+            try {
+                subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+            } catch (CADoesntExistsException cadee) {
+                assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a sub CA", false);
+                throw new IllegalStateException(); // Not reached
+            }
             final int subCAId = subcainfo.getCAId();
             final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
             final X509Certificate subcaCurrentCert = (X509Certificate) caSession.getCAInfo(admin, subCAId).getCertificateChain().iterator().next();
+            assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a rollover CA certificate", subcaRolloverCert != null);
             
             scepConfiguration.setIncludeCA(scepAlias, true);
             scepConfiguration.setClientCertificateRenewal(scepAlias, true);
