@@ -99,7 +99,7 @@ before you do an export.
 </p>
 <p>To export a the CA's keys, do the following:
 <ul>
-<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
+<li>Select "Certificate Authorities" from the administrator menu.</li>
 <li>Select the CA you want to export and press the "Edit"-button.</li>
 <li>Go to the line where the help-text say "CA export requires the keystore password".</li>
 <li>Enter the keystore password in the box to the right of the help-text.</li>
@@ -109,7 +109,7 @@ before you do an export.
 </p>
 <p>To import a CA's keys, do the following:
 <ul>
-<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
+<li>Select "Certificate Authorities" from the administrator menu.</li>
 <li>Press the "Import CA keystore.."-button.</li>
 <li>Fill out the form with the CA's name, full pathname to the PKCS#12-file and keystore password.</li>
 <li>Keep the two "Alias.."-fields to the default value, if you used EJBCA to export the CA's keys.</li>
@@ -170,7 +170,7 @@ to use the new key. After the new key has been configured you can simply press "
 
 <subsection name="Revoke CAs">
 <p>
-If you want to revoke a CA you can do so by going to "Edit Certificate Authorities" in the admin GUI. There is a button "Revoke CA".
+If you want to revoke a CA you can do so by going to "Certificate Authorities" in the admin GUI. There is a button "Revoke CA".
 <ul>
 <li>If you revoke a Root CA it will revoke all certificates in the database issued by the root CA, and create a CRL.</li>
 <li>If you revoke a Sub CA it will revoke all certificates in the database issued by the sub CA, and to the sub CA, and create a CRL.
@@ -2450,7 +2450,7 @@ gives his approval or reject the action.
 <i>Configuring Approvals</i>
 </p><p>
 
-Approvals are configured for each CA, in the 'Edit Certificate Authorities' page and for each certificate profile in 
+Approvals are configured for each CA, in the 'Certificate Authorities' page and for each certificate profile in 
 the 'Certificate Profiles' page. 
 Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
 'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'. 'Revoke End Entity',
@@ -5107,14 +5107,14 @@ publisher "GPCP" and then "Edit" the same. Choose
 </ul>
 <p>
 and click "Save and Test Connection" to save the entered information and validate
-that the specified applications exist. Select "Edit Certificate Authorities" in
+that the specified applications exist. Select "Certificate Authorities" in
 the Administration GUI and select "GPCP" as your new CRL publisher. Click "Save". 
 </p>
 <p>
 <ul>
 <li>Test CRL publishing by selecting "Basic Functions" in the Administration GUI and
 click "Create CRL".</li>
-<li>Test certificate publishing by selecting "Edit Certificate Authorities" in the
+<li>Test certificate publishing by selecting "Certificate Authorities" in the
 Administration GUI, select a CA, click "Edit" and then "Republish CA Certificates".</li>
 </ul>
 </p>
