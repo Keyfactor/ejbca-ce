@@ -21,7 +21,9 @@ import java.util.Iterator;
 
 import javax.net.ssl.X509TrustManager;
 
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
 /**
  * 
@@ -43,7 +45,7 @@ public class ClientX509TrustManager implements X509TrustManager {
     @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         X509Certificate cert = chain[0];
-        if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains)) {
+        if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_clientAuth.getId()))) {
             String subjectdn = CertTools.getSubjectDN(cert);
             String issuerdn = CertTools.getIssuerDN(cert);
             String sn = CertTools.getSerialNumberAsString(cert);
@@ -56,7 +58,7 @@ public class ClientX509TrustManager implements X509TrustManager {
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         X509Certificate cert = chain[0];
-        if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains)) {
+        if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_serverAuth.getId()))) {
             String subjectdn = CertTools.getSubjectDN(cert);
             String issuerdn = CertTools.getIssuerDN(cert);
             String sn = CertTools.getSerialNumberAsString(cert);
