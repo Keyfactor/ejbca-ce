@@ -160,6 +160,21 @@ div#footer {
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 
+h0 {
+	margin-top: 0em;
+	margin-bottom: .2em;
+	margin-left: .3em;
+	text-align: left;
+	font-size: 1.3em;
+	font-style: italic;
+	color: #000000;
+	text-shadow: .05em .05em 0em rgba(0,0,0,.1);
+	-o-text-shadow: .05em .05em 0em #DDD;
+	-moz-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
+	-khtml-text-shadow: .05em .05em 0em #DDD;
+	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
+}
+
 h1 {
 	margin-top: 0em;
 	margin-bottom: .2em;
