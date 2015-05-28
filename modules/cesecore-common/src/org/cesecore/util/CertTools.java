@@ -47,6 +47,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
@@ -2528,10 +2529,11 @@ public abstract class CertTools {
      * @param certificate cert to verify
      * @param caCertChain collection of X509Certificate
      * @param date Date to verify at, or null to use current time.
+     * @param optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      * @throws Exception if verification failed
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain, Date date) throws Exception {
+    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain, Date date, PKIXCertPathChecker...pkixCertPathCheckers) throws Exception {
         try {
             ArrayList<Certificate> certlist = new ArrayList<Certificate>();
             // Create CertPath
@@ -2546,7 +2548,9 @@ public abstract class CertTools {
             java.security.cert.TrustAnchor anchor = new java.security.cert.TrustAnchor(cac[0], null);
             // Set the PKIX parameters
             java.security.cert.PKIXParameters params = new java.security.cert.PKIXParameters(java.util.Collections.singleton(anchor));
-            
+            for (final PKIXCertPathChecker pkixCertPathChecker : pkixCertPathCheckers) {
+                params.addCertPathChecker(pkixCertPathChecker);
+            }
             params.setRevocationEnabled(false);
             params.setDate(date);
             java.security.cert.CertPathValidator cpv = java.security.cert.CertPathValidator.getInstance("PKIX", "BC");
@@ -2581,9 +2585,10 @@ public abstract class CertTools {
      * 
      * @param certificate cert to verify
      * @param trustedCertificates collection of trusted X509Certificate
+     * @param optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      */
-    public static boolean verifyWithTrustedCertificates(Certificate certificate, Collection< Collection<Certificate> > trustedCertificates) {
+    public static boolean verifyWithTrustedCertificates(Certificate certificate, Collection< Collection<Certificate> > trustedCertificates, PKIXCertPathChecker...pkixCertPathCheckers) {
         
         if(trustedCertificates == null) {
             if(log.isDebugEnabled()) {
@@ -2613,7 +2618,7 @@ public abstract class CertTools {
                 }
             }
             try {
-                verify(certificate, trustedCertChain);
+                verify(certificate, trustedCertChain, null, pkixCertPathCheckers);
                 if(log.isDebugEnabled()) {
                     log.debug("Trusting certificate with SubjectDN '" + getSubjectDN(certificate) + "' and issuerDN '" + getIssuerDN(certificate) + "'.");
                 }
