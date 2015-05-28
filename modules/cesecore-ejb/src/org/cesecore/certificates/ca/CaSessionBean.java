@@ -837,8 +837,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public Certificate getFutureRolloverCertificate(int caid) {
+    public Certificate getFutureRolloverCertificate(int caid) throws CADoesntExistsException {
         final CA ca = getCa(caid);
+        if (ca == null) {
+            throw new CADoesntExistsException("Method called on non-existent CA");
+        }
         final List<Certificate> chain = ca.getRolloverCertificateChain();
         if (chain == null) { return null; }
         return chain.get(0);

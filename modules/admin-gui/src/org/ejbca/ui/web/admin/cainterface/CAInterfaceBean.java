@@ -1297,8 +1297,9 @@ public class CAInterfaceBean implements Serializable {
     }
     
     /** Returns the "not before" date of the next certificate during a rollover period, or null if no next certificate exists.
+     * @throws CADoesntExistsException If the CA doesn't exist.
      */
-    public Date getRolloverNotBefore(int caid) {
+    public Date getRolloverNotBefore(int caid) throws CADoesntExistsException {
         final Certificate nextCert = casession.getFutureRolloverCertificate(caid);
         if (nextCert != null) {
             return CertTools.getNotBefore(nextCert);

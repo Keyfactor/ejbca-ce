@@ -216,6 +216,7 @@ public interface CaSession {
     /**
      * Returns the future key/certificate rollover if a rollover is pending, or otherwise null.
      * @param caid numerical unique id of CA
+     * @throws CADoesntExistsException If no CA with the given CA Id exists.
      */
-    Certificate getFutureRolloverCertificate(int caid);
+    Certificate getFutureRolloverCertificate(int caid) throws CADoesntExistsException;
 }
