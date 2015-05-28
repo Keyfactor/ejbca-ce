@@ -3382,7 +3382,8 @@ public abstract class CertTools {
      * Method to create certificate path and to check it's validity from a list of certificates. The list of certificates should only contain one root
      * certificate.
      * 
-     * @param certlist
+     * @param certlistin List of certificates to create certificate chain from.
+     * @param now Date to use when checking if the CAs chain is valid.
      * @return the certificatepath with the root CA at the end
      * @throws CertPathValidatorException if the certificate chain can not be constructed
      * @throws InvalidAlgorithmParameterException
