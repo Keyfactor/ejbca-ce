@@ -101,6 +101,7 @@ acronym { border-bottom: none; }
 .menucontainer {
 	float: left;
 	background-color: #EEEEEE;
+	border-radius: 0em 1em 1em 0em;
 	margin: 0px;
 	width: 250px;
 	height: 100%;
@@ -172,8 +173,9 @@ acronym { border-bottom: none; }
 	height: 100px;
 	margin: 0em;
 	padding: 0em;
-	border-bottom: 1px solid #DDD;
-	background-color: #005B88;
+	border-bottom: 0px solid #DDD;
+/*	background-color: #005B88; */
+	background-color: #FFFFFF;
 	color: #FFF;
 	overflow: hidden;
 }
