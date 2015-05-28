@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -127,6 +128,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
@@ -218,6 +220,7 @@ public class ProtocolScepHttpTest {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
@@ -740,6 +743,9 @@ public class ProtocolScepHttpTest {
     @Test
     public void test15ScepRolloverRenewalMode() throws Exception {
         try {
+            log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
+            assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
+            
             final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
             final int subCAId = subcainfo.getCAId();
             final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
@@ -770,6 +776,8 @@ public class ProtocolScepHttpTest {
             byte[] retMsg2 = sendScep(false, msgBytes2);
             assertNotNull(retMsg2);
             checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
+            final List<Certificate> userCerts = certificateStoreSession.findCertificatesBySubject(rolloverDN);
+            assertEquals("user should have one normal certificate and one rollover certificate", 2, userCerts.size());
             
             // Try to request another roll over certificate. This should not be allowed
             createScepUser(rolloverUser, rolloverDN, subCAId);
@@ -777,7 +785,7 @@ public class ProtocolScepHttpTest {
             sendScep(false, msgBytes3, 400);
             
         } finally {
-            // Done with rollover tests
+            // Done with all of the rollover tests
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
                 caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
             }
