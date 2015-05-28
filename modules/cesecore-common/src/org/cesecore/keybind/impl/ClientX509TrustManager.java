@@ -45,6 +45,7 @@ public class ClientX509TrustManager implements X509TrustManager {
     @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         X509Certificate cert = chain[0];
+        // Validate the certificate and require a critical EKU extensions (if present) to contain the purpose "clientAuth"
         if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_clientAuth.getId()))) {
             String subjectdn = CertTools.getSubjectDN(cert);
             String issuerdn = CertTools.getIssuerDN(cert);
@@ -58,6 +59,7 @@ public class ClientX509TrustManager implements X509TrustManager {
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         X509Certificate cert = chain[0];
+        // Validate the certificate and require a critical EKU extensions (if present) to contain the purpose "serverAuth"
         if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_serverAuth.getId()))) {
             String subjectdn = CertTools.getSubjectDN(cert);
             String issuerdn = CertTools.getIssuerDN(cert);
