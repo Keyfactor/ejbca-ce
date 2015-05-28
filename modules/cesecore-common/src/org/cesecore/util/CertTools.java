@@ -3373,6 +3373,18 @@ public abstract class CertTools {
         return ("".equals(directoryName) ? null : directoryName);
     } // getDirectoryStringFromAltName
 
+    /**
+     * Method to create certificate path and to check it's validity from a list of certificates. The list of certificates should only contain one root
+     * certificate. The created certificate chain is checked to be valid at the current date and time.
+     * 
+     * @param certlistin List of certificates to create certificate chain from.
+     * @return the certificatepath with the root CA at the end
+     * @throws CertPathValidatorException if the certificate chain can not be constructed or validated
+     * @throws InvalidAlgorithmParameterException
+     * @throws NoSuchProviderException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     */
     public static List<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
         return createCertChain(certlistin, new Date());
