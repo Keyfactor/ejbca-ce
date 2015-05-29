@@ -161,7 +161,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
-                        EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
+                        EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerno, username, details);
                 if (publ.getKeepPublishedInQueue() && publ.getUseQueueForCertificates()) {
                     publishersToQueueSuccess.add(publ);
                 }
@@ -171,7 +171,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 details.put("msg", msg);
                 details.put("error", ((PublisherException) publisherResult).getMessage());
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
-                        EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
+                        EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerno, username, details);
                 if (publ.getUseQueueForCertificates()) {
                     publishersToQueuePending.add(publ);
                 }
