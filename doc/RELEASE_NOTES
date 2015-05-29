@@ -1,16 +1,51 @@
-EJBCA 6.3.1.1
+EJBCA 6.3.2
 -----------
-This is the community release of EJBCA 6.3.1, and besides containing a couple of bug fixes that didn't make it into 6.3.1, also includes two major 
-changes that affect Community users:
+This maintenance release contains 23 new features, bug fixes and improvements, in addition to all fixes made in 6.2.10. Below is a 
+selection of the most noteworthy. Upgrading to this version will require a post-upgrade step. 
 
-* The External RA has been removed from the Community Edition 
-* The VA Publisher has been removed from the Community Edition
+- New Features:
+    *   CA certificate rollover via SCEP has been implemented in accordance to draft-nourse-scep-23
+- Improvements:
+    *   VA Publisher and External RA have become Enterprise features
+    *	Build times have been improved
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
 -  A selection of known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though: https://jira.primekey.se/browse/ECA-4022 
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	Some ECDSA key specifier missing in drop down menu for crypto tokens: https://jira.primekey.se/browse/ECA-4251
+	*	No HTTP Header 'Content-Type' in the Renew public web page: https://jira.primekey.se/browse/ECA-2844
 
+EJBCA 6.2.10
+-----------
+This maintenance release contains 32 features, bug fixes and improvements, below is a selection of the most noteworthy. This branch was 
+released in parallel with EJBCA 6.3.2.
+
+- New Features:
+	*	Certificate Profile settings have been added for optimizing environments without certificate storage, both not storing certificates
+		to the database at all (like the already existent CA setting) and for writing all meta data, but not the certificate itself.
+	*	A CLI command has been added to remove publishers and all references to those publishers. 
+- Improvements:
+	*	EJBCA was upgraded to BouncyCastle 1.52
+- Bug Fixes:
+	* 	Security: POP was not verified properly in WebService requests
+	*	Regression: HealthCheck can again be automatically set for new CAs
+	*	Regression: Certificate keyUsage was invalid when using the allowKeyUsage setting in certificate profiles. 
+	*	Regression: Caching in crypto tokens could cause adhoc upgrades of OCSP responders to fail
+	*	Fixed an issue where deleting an HSM slot rendered the GUI unusable
+	
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  A selection of known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*   CA Certificates using brainpool curves can't be imported from the ClI. GUI works though: https://jira.primekey.se/browse/ECA-4022 
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	Some ECDSA key specifier missing in drop down menu for crypto tokens: https://jira.primekey.se/browse/ECA-4251
+	*	No HTTP Header 'Content-Type' in the Renew public web page: https://jira.primekey.se/browse/ECA-2844
 
 EJBCA 6.3.1
 -----------
