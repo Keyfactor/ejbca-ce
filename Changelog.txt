@@ -1,3 +1,76 @@
+EJBCA 6.3.2, 2015-05-29
+---
+Bug
+	[ECA-4198] - Regression: ScepServlet can't compile in CE
+	[ECA-4202] - Random failure in CMP stress test
+	[ECA-4236] - Peer connection are unable to verify server certificates with critical server auth EKU
+	[ECA-4258] - Table PeerData creation is missing from create-tables-ejbca-*.sql
+	[ECA-4259] - Scep Certificate Renewal is configurable in RA Mode
+
+Improvement
+	[ECA-4038] - Have EJBCA DB CLI fail nicely when built in Community Edition
+	[ECA-4186] - WS - Use the "isRunningEnterprise()" method in EjbcaWSTest
+	[ECA-4201] - SCEP test improvements
+	[ECA-4206] - Add documentation about new WS CLI commands
+	[ECA-4211] - Use ISO8601 date format for CA expiration in initialization log
+	[ECA-4245] - GUI: CA creation page usability
+	[ECA-4255] - Update EJBCA architecture diagrams
+	[ECA-4260] - Add flowchart of SCEP enrollment/renewal to admin docs
+	[ECA-4263] - Move static class load from CryptoTokenFactory singleton to init
+	[ECA-4265] - Small improvements of SCEP config JSF
+	[ECA-4268] - Improve build time
+	[ECA-4269] - Update CMP Proxy README
+
+New Feature
+	[ECA-4168] - SCEP support for CA certificate rollover
+	[ECA-4178] - Admin GUI translated in Czech language
+	[ECA-4199] - Add Enterprise/Community identifier to internal.properties 
+	[ECA-4205] - Add new WS CA Admin commands to the WS CLI
+
+Task
+	[ECA-4119] - Enterprise feature
+	[ECA-4120] - Enterprise feature
+
+EJBCA 6.2.10, 2015-05-29
+---
+Bug
+	[ECA-2138] - External RA GUI cannot handle SubCA certificates with critical CDP
+	[ECA-2282] - Publishing certificate from certificate view GUI to queued publisher causes error message but publishing works anyway
+	[ECA-3789] - Stack trace if CAs in Certificate Profile and End Entity Profile don't match
+	[ECA-3887] - An NPE is thrown at user when submitting invalid CSR during enrollment
+	[ECA-3999] - Make healtcheck setting configurable for new CAs
+	[ECA-4104] - Removing PKCS#11 token makes Cypto Token GUI unusable
+	[ECA-4141] - Several issues regarding End Entity Rules in basic mode
+	[ECA-4147] - Review/fix usage of getAuthorizedEndEntityProfileIds
+	[ECA-4180] - Update FileUpload library used by ExternalRA GUI
+	[ECA-4195] - Ocsp key renewal timer not starting automatically
+	[ECA-4203] - "Check Certificate Status" reports incorrect/misleading status
+	[ECA-4209] - Regression: Ad hoc upgrade of OCSP might be broken by the CachingCryptoToken
+	[ECA-4232] - Regression: Certificate keyUsage invalid from CSR when using allowKeyUsage override
+	[ECA-4243] - POP is not verified properly on WS requests
+	[ECA-4246] - EJBCA Token Certificate Enrollment: Text differs from button name
+	[ECA-4249] - ClientToolBox OCSP test does not work with HTTP GET
+
+Improvement
+	[ECA-4081] - Remove name lookup done by OCSP responder
+	[ECA-4146] - Upgrade BouncyCastle to 1.52
+	[ECA-4157] - Allow import of certificates for non-revoked end entities using importcert command
+	[ECA-4191] - Upgrade cert-cvc project to BC 1.52
+	[ECA-4192] - Replace deprecated methods: constructor for AuthorityKeyIdentifier,  and ECPoint.getX/getY
+	[ECA-4194] - Add possibility to prompt for password in CLI calls to setpwd
+	[ECA-4196] - Replace EJBCA logotypes in documentation	
+	[ECA-4210] - Validate OCSP signing chain
+	[ECA-4223] - Add favicon to ExternalRA GUI
+	[ECA-4227] - Update EJBCA logo and favicon
+	[ECA-4231] - Change variable names in BaseCaAdminCommand.java
+	[ECA-4266] - Small documentation improvements
+
+New Feature
+	[ECA-4214] - Ability to rename end entities
+	[ECA-4226] - CLI command to remove Publisher with dependencies
+	[ECA-4233] - Add Certificate Profiles setting to limit certificate storage
+	[ECA-4242] - Certificate Profile Setting for restricting certificate data being written to the CertificateData/Base64CertData tables
+
 EJBCA 6.3.1, 2015-03-26
 ---
 Bug
