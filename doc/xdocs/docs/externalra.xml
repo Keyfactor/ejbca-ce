@@ -100,11 +100,20 @@ The available worker properties are:
  (Default: ManagementCA)</li>
  <li>externalra-caservice.whitelist: A comma separated list of request class-names that this worker will accept. If this is empty or undefined all kinds of request are accepted.</li>
 </ul>
-</p><p>
+</p>
+<p>
 Both the worker's keystore and the one used on the RA server must be issued by 'externalra-caservice.raissuer'.
 The RA server also needs the certificate of the worker's keystore to be able to encrypt request messages.
 Signing required Key Usage 'Digital Signature' and encryption requires Key Usage 'Key Encipherment'.   
 </p>
+<p>
+Example:
+</p>
+<source>
+externalra-caservice.persistenceunit=RAMessage1DS
+externalra-caservice.encryption.required=false
+externalra-caservice.signature.required=false
+</source>
 </subsection>
 </section>
 
@@ -189,11 +198,12 @@ requests from SCEP clients and uses the External RA API to get the CA to process
  in EJBCA_HOME/conf/scepra.properties. The SCEP CA is this issuer of all SCEP requests.</li>
  <li>Create an End Entity Profile and Certificate Profile to issue SCEP requests from and configure it
  in EJBCA_HOME/conf/scepra.properties.</li>
- <li>Configure the DataSouce in EJBCA_HOME/conf/scepra.properties</li>
+ <li>Configure a CA mapping in EJBCA_HOME/conf/scepra.properties.</li>
+ <li>Configure the database connection in EJBCA_HOME/conf/scepra.properties</li>
  <li>Optional: Configure scep.ra.authPwd in EJBCA_HOME/conf/scepra.properties if you want to authenticate
  SCEP messages based on a password in the request.</li>
- <li>Make sure a database JDBC connector JAR is installed in the application server for your database.</li>
- <li>Run 'ant externalra-scep-deploy' to deploy the DataSource and SCEP RA Server</li>
+ <li>Make sure the correct database JDBC connector JAR is installed in the application server for your database.</li>
+ <li>Run 'ant externalra-scep-deploy' to deploy the DataSource and SCEP RA Server (or run 'ant externalra-scep' and deploy the war file dist/scepraserver.war yourself).</li>
 </ol>
 </p>
 </subsection>
@@ -308,21 +318,7 @@ The external RA GUI currently supports JBoss and MySQL. Additional databases
 supported by Hibernate can easily be added.
 </p>
 <p>
-Known browser that support key generation:
-<ol>
- <li>Ubuntu 9.04 x64: FireFox 3.0.18</li>
- <li>Ubuntu 9.10 x64: FireFox 3.5.8</li>
- <li>OS X 10.5.7: Safari 4.0.2</li>
- <li>Windows XP Professional SP3 x86: FireFox 3.8.5, Internet Explorer 7.0, Internet Explorer 8.0</li>
- <li>Windows XP Professional x64: FireFox 3.8.5, Internet Explorer 7.0</li>
- <li>Windows Vista SP2 Enterprise x86: FireFox 3.8.5, Explorer 7.0, Internet Explorer 8.0</li>
- <li>Windows Vista SP2 Enterprise x64: FireFox 3.8.5, Explorer 7.0, Internet Explorer 8.0</li>
- <li>Windows 7 Ultimate x86: FireFox 3.8.5, Internet Explorer 8.0</li>
- <li>Windows 7 Ultimate x64: FireFox 3.8.5, Internet Explorer 8.0</li>
-</ol>
-The Windows version of Safari 4.0.4 was tested, but does not support browser
-key generation. However, keystore retrieval and generation of certificates from
-a Certificate Signing Request works.
+Known browsers that support key varies over the years, and a list quickly becomes obsolete. Test and report.
 </p>
 </subsection>
 </section>
