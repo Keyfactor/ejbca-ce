@@ -128,15 +128,23 @@ body#header {
 	height: 84px;
 	margin: 8px 8px;
 	padding: 0em;
-	/* For IMG ALT */
-	color: #404040;
-	font-size: 3em;
-	line-height: 1.9em;
+	/* For IMG ALT + SPAN */
+	color: #333;
+	font-size: 4.5em;
 	white-space: nowrap;
+	text-shadow: .04em .04em 0em rgba(0,0,0,.1);
+	-o-text-shadow: .04em .04em 0em #DDD;
+	-moz-text-shadow: .04em .04em 0em rgba(0,0,0,.1);
+	-khtml-text-shadow: .04em .04em 0em #DDD;
+	-webkit-text-shadow: .04em .04em 0em rgba(0,0,0,.1);
 }
 #header div#banner img {
 	max-height: 84px;
 	margin-top: 0px;
+}
+#header div#banner span {
+	vertical-align: 5px;
+	font-size: .8em;
 }
 
 /* --- Footer */
@@ -159,21 +167,6 @@ div#footer {
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
-
-h0 {
-	margin-top: 0em;
-	margin-bottom: .2em;
-	margin-left: .3em;
-	text-align: left;
-	font-size: 1.3em;
-	font-style: italic;
-	color: #000000;
-	text-shadow: .05em .05em 0em rgba(0,0,0,.1);
-	-o-text-shadow: .05em .05em 0em #DDD;
-	-moz-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
-	-khtml-text-shadow: .05em .05em 0em #DDD;
-	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
-}
 
 h1 {
 	margin-top: 0em;
