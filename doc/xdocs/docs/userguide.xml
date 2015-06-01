@@ -2122,14 +2122,28 @@ The identity in outgoing SSL connections is configured as an Internal Key Bindin
 <ul>
 <li>The certificate must have Key Usage: Digital Signature and Key Encipherment.</li>
 <li>The certificate must have Extended Key Usage: Client Authentication.</li>
-<li>The list of trusted certificates will be used to validate the server side SSL certificate.</li>
+<li>The list of trusted certificates will be used to validate the remote server side SSL certificate.</li>
 </ul>
+<p>
+Validation of the remote TLS certificate is subject to basic TLS certificate path validation and for example OCSP checks are currently not supported.
+You can configure the list of trusted remote server side TLS certificats in the following ways:
+<ul>
+<li>By default, any remote server side TLS certificate issued by a CA that exists in the local EJBCA instance will be trusted.</li>
+<li>By specifying a CA, you can choose to trust only TLS certificates issued by this CA.</li>
+<li>By specifying both a CA and a certificate serial number, only the specific TLS certificate will be trusted.</li>
+</ul>
+In the case where an external CA is used and you need to trust a specific TLS certificate, the certificate must be known to the local instance as well.
+You can for example use the
+<code>bin/ejbca.sh ca importcert</code>
+to ensure that this is know.
+</p>
 <p>
 No implementation specific properties exist for this Internal Key Binding.
 </p>
 <p>
-See the section <a href="installation-ocsp.html#Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">OCSP signer renewal</a>
-for an example of how this is used.
+See the section <a href="userguide.html#Setting up Peer Connectors for Outgoing Connections">Setting up Peer Connectors for Outgoing Connections</a>
+or <a href="installation-ocsp.html#Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">OCSP signer renewal</a>
+for examples of how this is used.
 </p>
 </subsection>
 </section>
