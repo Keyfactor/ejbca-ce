@@ -160,10 +160,10 @@ public class ScepServlet extends HttpServlet {
             scepClientCertificateRenewal = null;
         } catch (InstantiationException e) {
             scepClientCertificateRenewal = null;
-            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
+            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
         } catch (IllegalAccessException e) {
             scepClientCertificateRenewal = null;
-            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
+            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
         }
     }
     
