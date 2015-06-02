@@ -139,7 +139,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 		try {
 			req = PKIMessage.getInstance(derObject);
 			if ( req==null ) {
-				throw new Exception("No CMP message could be parsed from received Der object.");
+				throw new Exception("No CMP message could be parsed from received DER object.");
 			}
 		} catch (Throwable t) { // NOPMD: catch all to report errors back to client
 			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
