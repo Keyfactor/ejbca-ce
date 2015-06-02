@@ -85,6 +85,7 @@ import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
  * Session bean that handles adding and editing services as displayed in EJBCA. This bean manages the service configuration as stored in the database,
@@ -170,6 +171,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenSession;
+    @EJB
+    private CmpMessageDispatcherSessionLocal cmpMsgDispatcherSession;
 
     // The administrator that the services should be run as. Internal, allow all.
     private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
@@ -624,6 +627,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(ComplexAccessControlSessionLocal.class, complexAccessControlSession);
             ejbs.put(PublishingCrlSessionLocal.class, publishingCrlSession);
             ejbs.put(CryptoTokenManagementSessionLocal.class, cryptoTokenSession);
+            ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
             worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
             log.info(msg);

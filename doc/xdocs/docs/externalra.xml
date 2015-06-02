@@ -323,5 +323,75 @@ Known browsers that support key varies over the years, and a list quickly become
 </subsection>
 </section>
 
+<section name="CMP Proxy using External RA">
+<p>
+The CMP Proxy can use an External RA API backend.  
+</p><p>
+The CMP Proxy, using External RA backend, will receive CMP messages from clients through HTTP, store them in the External RA database, and wait for a response from the CA to turn up in 
+the External RA database. When the response is received, it will be returned to the client. The client will wait while the External RA polling and processing is taking place, 
+so short polling times should be used (~10 seconds).
+</p>
+<subsection name="Configuring the CMP Proxy on the external RA host">
+<p>
+The CMP Proxy is the module installed on the external RA server.
+</p><p>
+<ol>
+ <li>Setup a message database on the external RA server.</li>
+ <li>Configure the database connection in EJBCA_HOME/conf/scepra.properties</li>
+ <li>Make sure the correct database JDBC connector JAR is installed in the application server on the external RA server.</li>
+ <li>Run 'ant externalra-scep-deploy' to deploy the DataSource and SCEP RA Server (or run 'ant externalra-scep' and deploy the war file dist/scepraserver.war yourself).</li>
+</ol>
+</p>
+</subsection>
+<subsection name="Configuration message polling from EJBCA">
+<p>
+<ol>
+ <li>On the CA host, configure conf/externalra.properties to deploy a new DataSouce for the message database
+ and re-deploy EJBCA.</li>
+ <li>Configure a new worker for this new DataSource (as described in previous sections).</li>
+ <li>Configure CMP aliases, as you would using direct CMP communication.</li>
+ <li>Configure a new worker for this new DataSource and keystore (as described in previous sections). 
+ <ul><li>For an extra layer of security, Uuse white-listing described in the service configuration section to only allow org.ejbca.extra.db.CMPRequest.</li></ul></li>
+ <li>Make sure a database JDBC connector JAR is installed in the local application server for the external RA message database.</li>
+</ol>
+Sample service properties:
+</p>
+<ul>
+<li>Select Worker: Custom Worker</li>
+<li>Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker</li>
+<li>Custom Worker Properties: (copy below)</li>
+<li>Select Interval: Periodical Interval</li>
+<li>Period: 5 seconds</li>
+<li>Select Action: No Action</li>
+<li>Active: Checked</li>
+</ul>
+<source>
+externalra-caservice.whitelist=org.ejbca.extra.db.CMPRequest
+externalra-caservice.keystore.path=/home/ejbca/externalra-caservice.p12
+externalra-caservice.keystore.pwd=foo123
+externalra-caservice.raissuer=ManagementCA
+externalra-caservice.signature.required=true
+externalra-caservice.encryption.required=false
+externalra-caservice.persistenceunit=RAMessage1DS
+</source>
+</subsection>
+<subsection name="Accessing the CMP Proxy on the external RA host">
+<p>
+You can access the CMP Proxy as described in the CMP Proxy instructions. There is no difference from a client
+wether using HTTP backend of External RA backend. Example command, using cmpforopenssl (as in CMP examples in Admin Guide) but through the proxy:
+</p>
+<source>
+./cmpclient --server localhost --port 8080 --path cmpProxy-6.3.3 --srvcert ManagementCA.cacert.pem --ir --user mykeyid --password password --newclcert clcert.der --newkey privkey.pem --subject "CN=user1,O=My Organization,C=SE"
+</source>
+</subsection>
+<subsection name="Security options">
+<p>
+Using the External RA, the CA works in the same was as if a client connects directly, which means you can use client or RA mode etc.
+See CMP documentation for full information about that.
+You can use whitelisting and signed external RA messages to further limit capabilities of the external RA host itself.
+</p>
+</subsection>
+</section>
+
 </body>
 </document>
