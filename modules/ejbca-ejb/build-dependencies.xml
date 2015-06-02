@@ -959,6 +959,7 @@
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/services/*.java"/>
 					<include name="org/ejbca/core/ejb/authentication/web/WebAuthenticationProviderSessionLocal.java"/>				
+					<include name="org/ejbca/core/protocol/cmp/CmpMessageDispatcherSession*.java"/>				
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/services/*.java"/>
