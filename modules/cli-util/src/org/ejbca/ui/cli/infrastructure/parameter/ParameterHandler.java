@@ -160,7 +160,7 @@ public class ParameterHandler {
                     if ((i + 1) >= argumentList.size() || argumentList.get(i + 1).matches("^-[A-z]+$")) {
                         log.info("ERROR: Missing argument.");
                         log.info(TAB + parameterString + " is an argument and requires a parameter following it.");
-                        continue;
+                        return null;
                     } else {
                         value = argumentList.get(i + 1);
                         i++;
