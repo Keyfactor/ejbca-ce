@@ -173,7 +173,9 @@ import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
 
 /**
- * Helper class for CMP Junit tests
+ * Helper class for CMP Junit tests. 
+ * You can run this test against a CMP Proxy instead of directoy to the CA by setting the system property httpCmpProxyURL, 
+ * for example to "http://localhost:8080/cmpProxy-6.3.3"
  * 
  * @version $Id$
  */
