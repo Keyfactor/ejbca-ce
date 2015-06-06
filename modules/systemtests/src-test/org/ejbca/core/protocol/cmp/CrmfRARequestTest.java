@@ -83,6 +83,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
+ * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
+ * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.3.3", which can be set in Run Configurations if running the 
+ * test from Eclipse.
+ * 
  * @version $Id$
  */
 public class CrmfRARequestTest extends CmpTestCase {
