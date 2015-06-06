@@ -245,11 +245,21 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         // TODO: If the current token is active we would like to dig out the code used to activate it and activate the new one as well..
         // For SoftCryptoTokens, a new secret means that we should change it and it can only be done if the token is active
-        final CryptoToken newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
-        // If a new authenticationCode is provided we should verify it before we go ahead and merge
-        if (authenticationCode != null && authenticationCode.length > 0) {
-            newCryptoToken.deactivate();
-            newCryptoToken.activate(authenticationCode);
+        CryptoToken newCryptoToken;
+        try {
+            newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
+            // If a new authenticationCode is provided we should verify it before we go ahead and merge
+            if (authenticationCode != null && authenticationCode.length > 0) {
+                newCryptoToken.deactivate();
+                newCryptoToken.activate(authenticationCode);
+            }
+        } catch (CryptoTokenOfflineException e) {
+            // If the crypto token can not be initialized, we have a problem and can not even disable auto-activation. 
+            // Go ahead and ignore this
+            log.info("CryptoTokenOfflineException getting new crypto token for saving, ignoring this error and saving anyway: ", e);
+            newCryptoToken = currentCryptoToken;
+            newCryptoToken.setProperties(properties);
+            newCryptoToken.setTokenName(tokenName);
         }
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Modified CryptoToken with id " + cryptoTokenId);
