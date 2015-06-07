@@ -22,7 +22,7 @@ The External Registration Authority (RA) API contains the most basic functions l
 </ul>
 From EJBCA 6.3.1 the External RA API is bundled as a part of EJBCA Enterprise Edition and can be enabled in conf/externalra.properties. 
 </p><p>
-<img src="images/extra-architecture.jpg" alt="EJBCA with External RA" />
+<img src="images/external-ra.png" title="EJBCA using external RA, secured by not allowing incoming network traffic" alt="EJBCA with External RA, secured by not allowing incoming network traffic" />
 </p>
 </section>
 
@@ -325,7 +325,7 @@ Known browsers that support key varies over the years, and a list quickly become
 
 <section name="CMP Proxy using External RA">
 <p>
-The CMP Proxy can use an External RA API backend.  
+The <a href="adminguide.html#CMP%20Proxy%20(EJBCA%20Enterprise%20only)">CMP Proxy</a> can use an External RA API backend.  
 </p><p>
 The CMP Proxy, using External RA backend, will receive CMP messages from clients through HTTP, store them in the External RA database, and wait for a response from the CA to turn up in 
 the External RA database. When the response is received, it will be returned to the client. The client will wait while the External RA polling and processing is taking place, 
