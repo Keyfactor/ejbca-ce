@@ -1356,6 +1356,14 @@ signed using RSA with SHA1.
 The 'signature' type of response protection can be used regardless of what authentication module was used to authenticate the CMP request.
 </p>
 </subsubsection>
+<subsection name="Backends">
+<p>The CMP Proxy can use different connection backends to the CA. The most usable are:
+</p>
+<ul>
+<li>Direct HTTP connection. The CMP proxy creates a new HTTP connection to the CA, and return the response to the client, through the client connection, after receiving the response from the CA.</li>
+<li><a href="externalra.html#CMP%20Proxy%20using%20External%20RA">External RA connection</a>. The CMP proxy creates an external RA msg in an external RA database, which the CA polls. When the CA stores a return message in the external RA database, this is picked up by the CMP proxy and returned to the client.</li>
+</ul>
+</subsection>
 </subsection>
 
 </section>
