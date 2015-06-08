@@ -337,7 +337,8 @@ The CMP Proxy is the module installed on the external RA server.
 </p><p>
 <ol>
  <li>Setup a message database on the external RA server.</li>
- <li>Configure the database connection in EJBCA_HOME/conf/scepra.properties</li>
+ <li>Configure the database datasource in the application server.</li>
+ <li>Configure the external RA backend and datasource in EJBCA_HOME/modules/cmpProxy/resources/properties/cmpProxy.properties.</li>
  <li>Make sure the correct database JDBC connector JAR is installed in the application server on the external RA server.</li>
  <li>Run 'ant externalra-scep-deploy' to deploy the DataSource and SCEP RA Server (or run 'ant externalra-scep' and deploy the war file dist/scepraserver.war yourself).</li>
 </ol>
