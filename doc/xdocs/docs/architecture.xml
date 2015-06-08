@@ -2,25 +2,113 @@
 <document>
 
   <properties>
-    <title>Architecture</title>
+    <title>PKI Architectures</title>
   </properties>
 
 <body>
-  <section name="Sample setup architecture">
-    <p>
-    	The following diagram shows a good example setup of a secured CA with external OCSP responders
-    	and an external RA server that receives certificate requests. The request are periodically 
-    	pulled by the CA and responses returned to the <a href="externalra.html">External RA</a>. 
-    	No network traffic flows from the right the left across FW2.
-    </p>
-    <p>
-    <img src="images/sample-full-setup.jpg" alt="EJBCA sample setup" />
-    </p>
-  </section>
+  <section name="PKI Architectures">
+  <p>There are multiple ways that you can implement and architect a PKI solution, ranging from simple and low cost, to very complex and costly.
+  EJBCA can be used to implement virtually any type of PKI architecture you may be considering, and here we show a selection of common architectures deployed in the wild.</p>
 
+  <subsection name="Single CA/RA">
+  <p>
+  You can deploy a complete PKI in a single instance. Since EJBCA has everything built in you can have a single instance functioning as both CA and RA. 
+  This is a very efficient, easy to manage, and cost effective solution that is suitable for many SME enterprise deployments. Multiple CAs for different use-cases can co-exist in the single instance.
+  Security levels can be scaled up and down for example with:   
+  </p>
+  <ul>
+  <li>Administrators can use smart cards or soft tokens for accessing administration interface.</li>
+  <li>The CA can use an HSM or soft tokens for the CA signing keys.</li>
+  <li>Users and machines can be issued with soft tokens or smart cards/USB tokens.</li>
+  <li>Various filtering options can be deployed in firewalls.</li>
+  </ul>
+    <p>
+    <img src="images/simple-ca.png" title="PKI solution with Certificate Authority and Registration Authority in one" alt="Simple EJBCA PKI setup with all in one CA and RA" />
+    </p>
+  </subsection>
+  <subsection name="CA with distributed RAs">
+  <p>
+  To set up a PKI capable of enrolling a diverse set of users and devices, it is usually necessary introduce multiple types of RAs, for different purposes. 
+  Using EJBCA you can connect unlimited amount of distributed RAs, communicating with the CA using standard protocols like CMP, SCEP and Web service. 
+  The RAs can be in the form of EJBCA components, custom developed RAs, or standard products such as MdM or token management products.   
+  Security levels can be scaled up and down as in the previous example, and RAs can use different authentication means such as shared secrets, client certificate authentication etc.
+  The CA employs role based access control to decide what each RA have access to perform. Multiple CAs can be easily configured to serve different purposes (VPN, MdM, TLS, etc).   
+  </p>
+    <p>
+    <img src="images/distributed-ra.png" title="PKI solution with one CA instance (multiple CAs) and multiple RAs (MdM, Token managment), using CMP, SCEP and Web service protocols." alt="EJBCA PKI setup with multiple CA and distributed RAs, using CMP, SCEP and Web service." />
+    </p>
+  </subsection>
+  <subsection name="External RA, only outgoing connections (EJBCA Enterprise only)">
+    <p>
+    	One way of insulating the CA, for security reasons, while still allowing flexible enrollment from entities, is to use the <a href="externalra.html">External RA</a>.
+    	Using this architecture an external RA server receives certificate (and revocation) requests, which are stored in a separate database. 
+    	The request are periodically pulled by the CA and responses returned to the External RA database where they are picked up by the external RA server. 
+    	No incoming network traffic is allowed from the CA, only outgoing connections are allowed through the CA firewall for polling. The External RA can still support multiple protocols such as:
+    </p>
+    <ul>
+    <li>CMP using an external RA backend of the <a href="adminguide.html#CMP%20Proxy%20(EJBCA%20Enterprise%20only)">CMP Proxy</a>.</li>
+    <li>SCEP using the external RA SCEP server.</li>
+    <li>Web GUI enrollment using the external RA GUI.</li>
+    <li>Custom protocols or methods developed on top of the external RA API.</li>
+    </ul>
+    <p>
+    <img src="images/external-ra.png" title="PKI solutions External RA that handle multiple protocols, not allowing incoming connections to the CA." alt="EJBCA PKI setup with External RA, not allowing incoming connections to the CA." />
+    </p>
+  </subsection>
+  <subsection name="Off-line Root CA and multiple Sub CAs">
+  <p>
+  A common model within PKI is to use a secured, off-line, Root CA with subordinate, on-line, issuing CAs. Using EJBCA you can easily deploy such an architecture with multiple Root CAs and issuing SubCAs.
+  All discussed enrollment methods and interfaces are available to the issuing CAs. 
+  </p>
+    <p>
+    <img src="images/off-line-root-ca.png" title="PKI solution with off-line Root CA and on-line issuing SubCA." alt="EJBCA PKI setup with root CAs in separate instance." />
+    </p>
+  </subsection>
+  <subsection name="Validation Authority">
+  <p>
+  Any decent size PKI solution can love without certificate validation to check certificate revocation. EJBCA has built in Validation Authority (VA), meaning that the Single CA/RA setup comes with complete certificate validation capabilities. 
+  When setting up a larger PKI however you typically want to separate the validation authority from the certificate authority. There are several reasons for this where security is the most prominent, but other factors such as performance
+  and organizational factors also play a role. Using a separate Validation Authority you can serve multiple PKIs from a single VA. You can publish revocation information in real time, also called white listing, or using CRLs for periodical revocation updates.      
+  </p>
+    <p>
+    <img src="images/validation-authority-arch.png" title="PKI solution with Validation Authorities serving revocation information from several CAs." alt="EJBCA PKI solution with Validation Authorities serving revocation information from several CAs." />
+    </p>
+  </subsection>
+  <subsection name="Cluster and High Availability">
+  <p>
+  The more mission critical the PKI infrastructure becomes, the more need for high availability and clustering. EJBCA, both CA and VA, can easily be clustered for availability and performance. The PKI architecture itself does not differ between clustered and non clustered 
+  operations, but there are more servers involved.   
+  </p>
+    <p>
+    <img src="images/clustered-arch.png" title="PKI solution clustered for high availability and performance." alt="EJBCA PKI setup with multiple clustered servers." />
+    </p>
+  </subsection>
+  <subsection name="Audited operations">
+  <p>
+  Finally to beef it up for fully audited trust center architecture, you will separate more functions into separate components and introduce more role based access to different part of the system.
+  Some characteristics of such a system is:   
+  </p>
+  <ul>
+  <li>Separated Root CAs and Issuing CAs.</li>
+  <li>Signed audit logs, log aggregation in separate log servers.</li>
+  <li>Separate database instances, with integrity protected database content (role separation between DBA and CA operators).</li>
+  <li>Separate Validation Authorities.</li>
+  <li>Separate network segments for all different components.</li>
+  <li>Monitoring and intrusion detection.</li>
+  <li>and more...</li>
+  </ul>
+  </subsection>
+
+  <subsection name="Software or Appliance, Virtual or Physical">
+  <p>Deploying a PKI issuing properly populated certificates, and with the correct security level (using HSMs etc) can be a daunting task if you have not done it before.
+  Using EJBCA you can deploy most of the architectures above using EJBCA as a software, or packaged as a turn key <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a> from PrimeKey.</p>
+  </subsection>
+    
+  </section>
+  
   <section name="Internal architecture">
     <p>
-    	The following diagram is a very rough schema of the current architecture of EJBCA.
+    	For developers and other interested parties, the following diagrams show an outline of the internal architecture of EJBCA, and dependencies between different modules
     </p>
     <p>
     <img src="images/architecture.png" alt="EJBCA architecture" />
