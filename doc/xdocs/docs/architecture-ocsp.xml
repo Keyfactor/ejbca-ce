@@ -22,7 +22,7 @@
     	The following diagram is a rough schema of the architecture using external OCSP responders.
     </p>
     <p>
-    <img src="images/external-ocsp.png" alt="External OCSP architecture" />
+    <img src="images/validation-authority-arch.png" alt="External OCSP architecture" />
     </p>
     <p>
     The EJBCA external OCSP responder does not rely on CRLs being issued by the CA. Instead the OCSP responder uses it's own database with certificate status 
