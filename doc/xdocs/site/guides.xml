@@ -13,35 +13,35 @@
   </p>
   </section>
 
-  <section name="Djigzo email gateway and EJBCA integration">
+  <section name="Ciphermail email gateway and EJBCA integration">
   <p>
-  This guide explains how to configure a <a href="http://www.djigzo.com">Djigzo</a> gateway to make the gateway request certificates from an external EJBCA server.
-   <a href="http://www.djigzo.com">Djigzo</a> Email Encryption Gateway is a standards based centrally managed email server (MTA) that encrypts and decrypts your incoming and outgoing email at the gateway level.
+  <a href="http://www.ciphermail.com">Ciphermail</a> has a guide that explains how to configure a Ciphermail gateway to make the gateway request certificates from an external EJBCA server.
+   Ciphermail Email Encryption Gateway is a standards based centrally managed email server (MTA) that encrypts and decrypts your incoming and outgoing email at the gateway level.
   </p>
   <p>
-  This is an extract from the complete guide, Djigzo <a href="http://www.djigzo.com/downloads.html">EJBCA Setup Guide</a>. 
+  This is an extract from the complete guide. 
   </p>
   <p>
-  By using the Djigzo-EJBCA integration Djigzo can automatically request certificates from EJBCA for a transparent email encryption experience.
+  By using the Ciphermail-EJBCA integration Ciphermail can automatically request certificates from EJBCA for a transparent email encryption experience.
   </p><p>
-  Setting up Djigzo to work with EJBCA contains of a few simple steps:
+  Setting up Ciphermail to work with EJBCA contains of a few simple steps:
   </p>
-  <subsection name="Create certificate for Djigzo">
-  <p>Djigzo communicates with EJBCA using the WebService interface. This means that Djigzo needs an administrator
+  <subsection name="Create certificate for Ciphermail">
+  <p>Ciphermail communicates with EJBCA using the WebService interface. This means that Ciphermail needs an administrator
   certificate from EJBCA before is can connect to EJBCA.
   </p>
   <p>
-  Create a new administrator keystore for Djigzo in EJBCA.
+  Create a new administrator keystore for Ciphermail in EJBCA.
   </p>
   <ul>
   <li>Create a P12 keystore for administrator.</li>
   <li>Add the administrator certificate to an role in EJBCA with RA provileges, i.e. privileges to add/edit end entities.</li>
   </ul>
   </subsection>
-  <subsection name="Configure Djigzo">
+  <subsection name="Configure Ciphermail">
   <ul>
-  <li>Configure the <i>EJBCA certificate request handler</i> in conf/spring/certificate-request-handlers.xml.</li>
-  <li>Configure properties as described in the Djigzo <a href="http://www.djigzo.com/downloads.html">EJBCA Setup Guide</a>.</li>
+  <li>Configure the <i>EJBCA certificate request handler</i>.</li>
+  <li>Configure properties as described in the Ciphermail-EJBCA Setup Guide.</li>
   </ul>
   </subsection>
   <subsection name="Configure EJBCA">
@@ -59,7 +59,7 @@
   </subsection>
   
   <p>
-  When the setup is done you can select the <i>EJBCA Certificate Request Handler</i> in the CA configuration of Djigzo.
+  When the setup is done you can select the <i>EJBCA Certificate Request Handler</i> in the CA configuration of Ciphermail.
   </p>
   </section>
      
