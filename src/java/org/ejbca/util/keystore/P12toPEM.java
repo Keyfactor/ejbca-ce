@@ -27,12 +27,12 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -53,7 +53,6 @@ public class P12toPEM {
     String password;
     KeyStore ks = null;
     
-    boolean overwrite = false;
     byte[] beginCertificate = "-----BEGIN CERTIFICATE-----".getBytes();
     byte[] endCertificate = "-----END CERTIFICATE-----".getBytes();
     byte[] beginPrivateKey = "-----BEGIN PRIVATE KEY-----".getBytes();
@@ -84,7 +83,7 @@ public class P12toPEM {
                 p12 = new P12toPEM(args[0], args[1]);
             } else {
                 System.out.println(
-                    "Usage: P12toPEM <p12file> <p12password> [overwrite (true/false)(default false)]");
+                    "Usage: P12toPEM <p12file> <p12password>");
                 System.exit(0); // NOPMD this is a cli command
             }
 
@@ -111,12 +110,10 @@ public class P12toPEM {
 	 *
 	 * @param keystore the KeyStore to use.
 	 * @param password password The password for the p12 file.
-	 * @param overwrite overwrite If existing files should be overwritten.    
 	 */
-	public P12toPEM(KeyStore keystore, String password, boolean overwrite) {		
+	public P12toPEM(KeyStore keystore, String password) {		
 		this.password = password;
 		this.ks = keystore;
-		this.overwrite = overwrite;
 	}
 
 
@@ -139,31 +136,39 @@ public class P12toPEM {
     public P12toPEM(String p12File, String password, boolean overwrite) {
         this.p12File = p12File;
         this.password = password;
-        this.overwrite = overwrite;
     }
 
     /**
-     * DOCUMENT ME!
+     * Converts a P12 into a PEM
      *
-     * @throws KeyStoreException DOCUMENT ME!
-     * @throws FileNotFoundException DOCUMENT ME!
-     * @throws IOException DOCUMENT ME!
-     * @throws NoSuchProviderException DOCUMENT ME!
-     * @throws NoSuchAlgorithmException DOCUMENT ME!
-     * @throws CertificateEncodingException DOCUMENT ME!
-     * @throws CertificateException DOCUMENT ME!
-     * @throws UnrecoverableKeyException DOCUMENT ME!
+     * @return the created PEM file, null if file wasn't found and no other exception was thrown. 
+     *
+     * @throws FileNotFoundException if the P12 file supplied to this class in its constructor was not found.
+     * @throws CertificateException if the p12 couldn't be loaded
+     * @throws NoSuchAlgorithmException if the algorithm used to build the P12 couldn't be found
+     * @throws KeyStoreException if the keystore has not been initialised. 
+     * @throws UnrecoverableKeyException if the password was incorrect 
      */
-    public void createPEM()
-        throws KeyStoreException, FileNotFoundException, IOException, NoSuchProviderException, 
-            NoSuchAlgorithmException, CertificateEncodingException, CertificateException, 
-            UnrecoverableKeyException {
-         
+    public File createPEM() throws FileNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException {
          if(this.ks == null){    	
-            ks = KeyStore.getInstance("PKCS12", "BC");
+            try {
+                ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            } catch (KeyStoreException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            } catch (NoSuchProviderException e) {
+              throw new IllegalStateException("BouncyCastle provider not found.", e);
+            }
             InputStream in = new FileInputStream(p12File);
-            ks.load(in, password.toCharArray());
-            in.close();
+            try {
+                try {
+                    ks.load(in, password.toCharArray());
+                } finally {
+                    in.close();
+                }
+            } catch(IOException e) {
+                throw new IllegalStateException("Unexpected IOException was thrown", e);
+            }
         }
         // Fid the key private key entry in the keystore
         Enumeration<String> e = ks.aliases();
@@ -176,26 +181,24 @@ public class P12toPEM {
             if (o instanceof String) {
                 if ((ks.isKeyEntry((String) o)) &&
                         ((serverPrivKey = (PrivateKey) ks.getKey((String) o, password.toCharArray())) != null)) {
-                    log.debug("Aliases " + o + " is KeyEntry.");
-
+                    if (log.isDebugEnabled()) {
+                        log.debug("Aliases " + o + " is KeyEntry.");
+                    }
                     break;
                 }
             }
         }
-
-        log.debug((("Private key encode: " + serverPrivKey) == null) ? null
-                                                                     : serverPrivKey.getFormat());
-
+        if (log.isDebugEnabled()) {
+            log.debug((("Private key encode: " + serverPrivKey) == null) ? null : serverPrivKey.getFormat());
+        }
         byte[] privKeyEncoded = "".getBytes();
-
         if (serverPrivKey != null) {
             privKeyEncoded = serverPrivKey.getEncoded();
         }
-
-        //Certificate chain[] = ks.getCertificateChain((String) o);
         Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
-        log.debug("Loaded certificate chain with length " + chain.length + " from keystore.");
-
+        if (log.isDebugEnabled()) {
+            log.debug("Loaded certificate chain with length " + chain.length + " from keystore.");
+        }
         X509Certificate userX509Certificate = (X509Certificate) chain[0];
 
         byte[] output = userX509Certificate.getEncoded();
@@ -208,79 +211,75 @@ public class P12toPEM {
 
         File tmpFile = new File(path, userFile + filetype);
 
-        if (!overwrite) {
-            if (tmpFile.exists()) {
-                log.error("File '" + tmpFile + "' already exists, don't overwrite.");
-
-                return;
-            }
-        }
-
         OutputStream out = new FileOutputStream(tmpFile);
-        out.write(beginCertificate);
-        out.write(NL);
-
-        byte[] userCertB64 = Base64.encode(output);
-        out.write(userCertB64);
-        out.write(NL);
-        out.write(endCertificate);
-        out.close();
-
+        try {
+            try {
+                out.write(beginCertificate);
+                out.write(NL);
+                byte[] userCertB64 = Base64.encode(output);
+                out.write(userCertB64);
+                out.write(NL);
+                out.write(endCertificate);
+            } finally {
+                out.close();
+            }
+        } catch (IOException e1) {
+            throw new IllegalStateException("Unexpected IOException was thrown", e1);
+        }
+     
         tmpFile = new File(path, userFile + "-Key" + filetype);
 
-        if (!overwrite) {
-            if (tmpFile.exists()) {
-                log.error("File '" + tmpFile + "' already exists, don't overwrite.");
-
-                return;
-            }
-        }
-
         out = new FileOutputStream(tmpFile);
-        out.write(beginPrivateKey);
-        out.write(NL);
-
-        byte[] privKey = Base64.encode(privKeyEncoded);
-        out.write(privKey);
-        out.write(NL);
-        out.write(endPrivateKey);
-        out.close();
+        try {
+            try {
+                out.write(beginPrivateKey);
+                out.write(NL);
+                byte[] privKey = Base64.encode(privKeyEncoded);
+                out.write(privKey);
+                out.write(NL);
+                out.write(endPrivateKey);
+            } finally {
+                out.close();
+            }
+        } catch (IOException e1) {
+            throw new IllegalStateException("Unexpected IOException was thrown", e1);
+        }
+        
 
         tmpFile = new File(path, userFile + "-CA" + filetype);
-
-        if (!overwrite) {
-            if (tmpFile.exists()) {
-                log.error("File '" + tmpFile + "' already exists, don't overwrite.");
-
-                return;
-            }
-        }
 
         if (CertTools.isSelfSigned(userX509Certificate)) {
             log.info(
                 "User certificate is selfsigned, this is a RootCA, no CA certificates written.");
         } else {
             out = new FileOutputStream(tmpFile);
+            try {
+                for (int num = 1; num < chain.length; num++) {
+                    X509Certificate tmpX509Cert = (X509Certificate) chain[num];
+                    byte[] tmpOutput = tmpX509Cert.getEncoded();
+                    try {
+                        out.write(beginCertificate);
+                        out.write(NL);
 
-            for (int num = 1; num < chain.length; num++) {
-                X509Certificate tmpX509Cert = (X509Certificate) chain[num];
-                byte[] tmpOutput = tmpX509Cert.getEncoded();
-                out.write(beginCertificate);
-                out.write(NL);
+                        byte[] tmpCACertB64 = Base64.encode(tmpOutput);
 
-                byte[] tmpCACertB64 = Base64.encode(tmpOutput);
-                out.write(tmpCACertB64);
-                out.write(NL);
-                out.write(endCertificate);
-                out.write(NL);
+                        out.write(tmpCACertB64);
+                        out.write(NL);
+                        out.write(endCertificate);
+                        out.write(NL);
+                    } catch (IOException e1) {
+                        throw new IllegalStateException("Unexpected IOException was thrown", e1);
+                    }
+                }
+
+            } finally {
+                try {
+                    out.close();
+                } catch (IOException e1) {
+                    throw new IllegalStateException("Unexpected IOException was thrown", e1);
+                }
             }
-
-            out.close();
         }
+        return tmpFile;
     }
-
-    // createPEM
 }
-
-
-// P12toPEM

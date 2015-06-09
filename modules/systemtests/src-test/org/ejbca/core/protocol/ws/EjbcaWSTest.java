@@ -94,6 +94,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
@@ -173,14 +174,16 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         try {
             secureRandom = SecureRandom.getInstance("SHA1PRNG");
         } catch (NoSuchAlgorithmException e) {
-            throw new Error(e);
+            throw new IllegalStateException(e);
         }
     }
 
+    private static List<File> fileHandles = new ArrayList<File>();
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         adminBeforeClass();
-        setupAccessRights(WS_ADMIN_ROLENAME);
+        fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
         CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         originalForbiddenChars = cesecoreConfigurationProxySession.getConfigurationValue(forbiddenCharsKey);
@@ -200,6 +203,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, originalForbiddenChars);
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
+        for (File file : fileHandles) {
+            FileTools.delete(file);
+        }
     }
 
     @Override
@@ -1132,7 +1138,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         if(role != null) {
             roleManagementSession.remove(intAdmin, role);
         }
-        
+        File fileHandle = null;
         try {
             CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
             assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
@@ -1160,7 +1166,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 log.info("Changing user: "+adminUser.getUsername());
                 endEntityManagementSession.changeUser(intAdmin, adminUser, true);
             }
-            BatchCreateTool.createUser(intAdmin, "p12", adminUser.getUsername());
+            fileHandle = BatchCreateTool.createUser(intAdmin, new File(P12_FOLDER_NAME), adminUser.getUsername());
             adminUser = endEntityAccessSession.findUser(intAdmin, testAdminUsername);
         
             // Create a new role
@@ -1224,6 +1230,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             if(roleAccessSession.findRole(rolename)!=null) {
                 roleManagementSession.remove(intAdmin, roleAccessSession.findRole(rolename));
             }
+            if( fileHandle != null) {
+                FileTools.delete(fileHandle);
+            }
+                
         }
         log.trace("<test73AddSubjectToRole()");
     }
@@ -1408,8 +1418,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intAdmin, userdata, true);
-        File tmpfile = File.createTempFile("ejbca", "p12");
-        BatchCreateTool.createAllNew(intAdmin, tmpfile.getParent());
+        fileHandles.addAll(BatchCreateTool.createAllNew(intAdmin, new File(P12_FOLDER_NAME)));
         Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         assertTrue(userCerts.size() == 1);
         return (X509Certificate) userCerts.iterator().next();

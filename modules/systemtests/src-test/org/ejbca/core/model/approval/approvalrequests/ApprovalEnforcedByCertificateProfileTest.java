@@ -56,6 +56,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -77,6 +78,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -90,6 +92,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ApprovalEnforcedByCertificateProfileTest.class);
 
+    private static final String P12_FOLDER_NAME = "p12";
+    
     private static final String ENDENTITYPROFILE = ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "EndEntityProfile";
 
     private static final String CERTPROFILE1 = ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "CertProfile1";
@@ -132,9 +136,18 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
+    private static List<File> fileHandles = new ArrayList<File>();
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        for(File file : fileHandles) {
+            FileTools.delete(file);
+        }
     }
 
     @Override
@@ -474,8 +487,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private void createUser(String cliUserName, String cliPassword, EndEntityInformation userdata) throws EndEntityExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         endEntityManagementSession.addUser(admin1, userdata, true);
-        File tmpfile = File.createTempFile("ejbca", "p12");
-        BatchCreateTool.createAllNew(admin1, tmpfile.getParent());
+        fileHandles.addAll(BatchCreateTool.createAllNew(admin1, new File(P12_FOLDER_NAME)));
         EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin1, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
         createdUsers.add(userdata.getUsername());

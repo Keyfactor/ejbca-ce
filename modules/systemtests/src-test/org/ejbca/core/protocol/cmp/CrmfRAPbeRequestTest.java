@@ -24,10 +24,12 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -63,6 +65,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSession;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -92,12 +95,13 @@ import org.junit.Test;
  * 
  * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
- * @author tomas
  * @version $Id: CrmfRAPbeRequestTest.java 9435 2010-07-14 15:18:39Z mikekushner$
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CrmfRAPbeRequestTest.class);
+
+    private static final String P12_FOLDER_NAME = "p12";
 
     private static final String PBEPASSWORD = "password";
 
@@ -432,6 +436,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         String username = "cmpRevocationUser" + randomPostfix;
         X509CAInfo cainfo = null;
         int cryptoTokenId = 0;
+        List<File> fileHandles = new ArrayList<File>();
+
         try {
             // Generate CA with approvals for revocation enabled
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(ADMIN, caname, "1024");
@@ -446,8 +452,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             this.endEntityManagementSession.addUser(ADMIN, userdata, true);
-            File tmpfile = File.createTempFile("ejbca", "p12");
-            BatchCreateTool.createAllNew(ADMIN, tmpfile.getParent());
+            fileHandles.addAll(BatchCreateTool.createAllNew(ADMIN, new File(P12_FOLDER_NAME)));
             Collection<java.security.cert.Certificate> userCerts = this.certificateStoreSession.findCertificatesByUsername(username);
             assertTrue(userCerts.size() == 1);
             X509Certificate cert = (X509Certificate) userCerts.iterator().next();
@@ -518,6 +523,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                     this.caSession.removeCA(ADMIN, cainfo.getCAId());
                 }
             }
+            for(File file : fileHandles) {
+                FileTools.delete(file);
+            }
+            
             CryptoTokenTestUtils.removeCryptoToken(ADMIN, cryptoTokenId);
         }
     } // test04RevocationApprovals

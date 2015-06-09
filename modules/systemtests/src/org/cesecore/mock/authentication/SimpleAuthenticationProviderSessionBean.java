@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.mock.authentication;
 
-import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -135,8 +134,6 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
             } catch (OperatorCreationException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (CertificateException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
-            } catch (IOException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             }        	
             if (log.isDebugEnabled()) {

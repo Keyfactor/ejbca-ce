@@ -27,11 +27,13 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -41,6 +43,7 @@ import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -49,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.ejb.FinderException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
@@ -108,13 +112,22 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -137,6 +150,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
@@ -145,6 +160,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -153,9 +169,12 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
@@ -166,6 +185,7 @@ import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -213,10 +233,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CommonEjbcaWS.class);
 
+    protected static final String P12_FOLDER_NAME = "p12";
     private static final String TEST_ADMIN_USERNAME = "wstest";
-    private static final String TEST_ADMIN_FILE = "p12/"+TEST_ADMIN_USERNAME+".jks";
+    private static final String TEST_ADMIN_FILE = P12_FOLDER_NAME + "/" + TEST_ADMIN_USERNAME+".jks";
     protected static final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
-    protected static final String TEST_NONADMIN_FILE = "p12/" + TEST_NONADMIN_USERNAME + ".jks";
+    protected static final String TEST_NONADMIN_FILE =  P12_FOLDER_NAME + "/" + TEST_NONADMIN_USERNAME + ".jks";
     protected static final String TEST_NONADMIN_CN = "CN="+TEST_NONADMIN_USERNAME;
     protected static final String PASSWORD = "foo123";
     
@@ -321,8 +342,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         this.ejbcaraws = service.getEjbcaWSPort();        
     }
 
-
-    protected static void setupAccessRights(final String wsadminRoleName) throws Exception {
+    protected static List<File> setupAccessRights(final String wsadminRoleName) throws CADoesntExistsException,
+            AuthorizationDeniedException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException,
+            RoleExistsException, RoleNotFoundException, UnrecoverableKeyException, InvalidAlgorithmParameterException, OperatorCreationException,
+            CertificateException, SignRequestSignatureException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
+            InvalidKeySpecException, FinderException, IOException {
         AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
@@ -393,8 +419,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             log.debug("Changing user: "+user2.getUsername());
             endEntityManagementSession.changeUser(intAdmin, user2, true);
         }
-        BatchCreateTool.createUser(intAdmin, "p12", user1.getUsername());
-        BatchCreateTool.createUser(intAdmin, "p12", user2.getUsername());
+        List<File> fileHandles = new ArrayList<File>();
+        File p12Directory = new File(P12_FOLDER_NAME);
+        try {
+            fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, user1.getUsername()));
+            fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, user2.getUsername()));
+        } catch (NoSuchEndEntityException e) {
+            throw new IllegalStateException("End entity not created.", e);
+        }
+        return fileHandles;
     }
 
     private String getDN(String userName) {
@@ -616,7 +649,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
             final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
             assertTrue(userdatas != null);
-            assertTrue(userdatas.size() == 1);
+            assertEquals(1, userdatas.size());
         }
         {// Find by O
             final UserMatch usermatch = new UserMatch();
@@ -625,7 +658,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             usermatch.setMatchvalue("2Te");
             final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
             assertTrue(userdatas != null);
-            assertTrue(userdatas.size() == 1);
+            assertEquals(1, userdatas.size());
             assertTrue(userdatas.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
         }
         {// Find by subjectDN pattern

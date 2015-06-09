@@ -6,9 +6,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -21,6 +24,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -28,6 +32,7 @@ import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -44,7 +49,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberWSTest.class);
 
-    private final String wsadminRoleName = "WsCustomSernoTestRole";
+    private static final String wsadminRoleName = "WsCustomSernoTestRole";
     
 	private static final String END_ENTITY_PROFILE = "customSerialNrCertEndEntityProfile";
 
@@ -62,11 +67,22 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
+    private static List<File> fileHandles = new ArrayList<File>();
+
+    
     @BeforeClass
-    public static void setupAccessRights() {
+    public static void setupAccessRights() throws Exception {
     	adminBeforeClass();
+        fileHandles = setupAccessRights(wsadminRoleName);
     }
 
+    @AfterClass
+    public static void afterClass() {
+        for (File file : fileHandles) {
+            FileTools.delete(file);
+        }
+    }
+    
     @Before
     public void setUpAdmin() throws Exception {
 		adminSetUpAdmin();
@@ -76,11 +92,6 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 	@After
     public void tearDown() throws Exception {
         super.tearDown();
-    }
-
-    @Test
-    public void test00setupAccessRights() throws Exception {
-        super.setupAccessRights(this.wsadminRoleName);
     }
 
     @Test

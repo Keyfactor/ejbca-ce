@@ -32,7 +32,7 @@ import org.junit.runners.MethodSorters;
 public class EjbcaWsCommonCriteriaTest {
 
     private EjbcaWSTest test;
-    
+        
     @BeforeClass
     public static void beforeClass() throws Exception {
         EjbcaWSTest.beforeClass();
@@ -41,13 +41,11 @@ public class EjbcaWsCommonCriteriaTest {
     @Before
     public void setUp() throws Exception {
         test = new EjbcaWSTest();
-        EjbcaWSTest.setupAccessRights(EjbcaWSTest.WS_ADMIN_ROLENAME);
         test.setUpAdmin();
     }
     
     @After
-    public void tearDown() throws Exception {
-     
+    public void tearDown() throws Exception {  
         test.tearDown();
     }
     

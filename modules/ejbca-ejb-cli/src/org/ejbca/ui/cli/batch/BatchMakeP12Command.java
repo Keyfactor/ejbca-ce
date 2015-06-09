@@ -214,7 +214,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         // If we should also create PEM-files, do that
         if (createPEM) {
             String PEMfilename = mainStoreDir + "/pem";
-            P12toPEM p12topem = new P12toPEM(ks, kspassword, true);
+            P12toPEM p12topem = new P12toPEM(ks, kspassword);
             p12topem.setExportPath(PEMfilename);
             p12topem.createPEM();
         } else {

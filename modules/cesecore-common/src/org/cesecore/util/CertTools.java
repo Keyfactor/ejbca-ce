@@ -25,7 +25,6 @@ import java.io.PrintStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,7 +32,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertPath;
@@ -116,6 +114,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -1519,7 +1518,7 @@ public abstract class CertTools {
      * @throws OperatorCreationException 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA) throws OperatorCreationException, CertificateException, IOException {
+            boolean isCA) throws OperatorCreationException, CertificateException  {
         return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, BouncyCastleProvider.PROVIDER_NAME);
     }
 
@@ -1530,7 +1529,7 @@ public abstract class CertTools {
      * 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA, String provider, boolean ldapOrder) throws CertificateParsingException, OperatorCreationException, IOException {
+            boolean isCA, String provider, boolean ldapOrder) throws CertificateParsingException, OperatorCreationException {
         final int keyUsage;
         if (isCA) {
             keyUsage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
@@ -1544,7 +1543,7 @@ public abstract class CertTools {
      * 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA, String provider) throws OperatorCreationException, CertificateException, IOException {
+            boolean isCA, String provider) throws OperatorCreationException, CertificateException {
         return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, provider, true);
     } // genselfCert
 
@@ -1561,28 +1560,31 @@ public abstract class CertTools {
      * @param keyusage as defined by constants in X509KeyUsage
      */
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
-            String sigAlg, boolean isCA, int keyusage, boolean ldapOrder) throws CertificateParsingException, OperatorCreationException, IOException {
+            String sigAlg, boolean isCA, int keyusage, boolean ldapOrder) throws CertificateParsingException, OperatorCreationException {
         return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, "BC", ldapOrder);
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider)
-            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
-            OperatorCreationException, CertificateException {
+            throws CertificateParsingException, OperatorCreationException {
         return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter,
                 provider, true);
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder)
-            throws CertificateParsingException, OperatorCreationException, IOException {
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter,
-                provider, ldapOrder, null);
+            throws CertificateParsingException, OperatorCreationException {
+        try {
+            return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter,
+                    provider, ldapOrder, null);
+        } catch (CertIOException e) {
+          throw new IllegalStateException("CertIOException was thrown due to an invalid extension, but no extensions were provided.", e);
+        }
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
-            List<Extension> additionalExtensions) throws CertificateParsingException, IOException, OperatorCreationException {
+            List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
         // Create self signed certificate
         Date firstDate = new Date();
 
@@ -1599,7 +1601,7 @@ public abstract class CertTools {
     
     public static X509Certificate genSelfCertForPurpose(String dn, Date firstDate, Date lastDate, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
-            List<Extension> additionalExtensions) throws CertificateParsingException, IOException, OperatorCreationException {
+            List<Extension> additionalExtensions) throws CertificateParsingException, OperatorCreationException, CertIOException {
         // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
         // a CVC public key that is passed as parameter
         PublicKey publicKey = null;
@@ -1718,7 +1720,12 @@ public abstract class CertTools {
         }
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        final X509Certificate selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        X509Certificate selfcert;
+        try {
+            selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException was caught.", e);
+        }
 
         return selfcert;
     } // genselfCertForPurpose
