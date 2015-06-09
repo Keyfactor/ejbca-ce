@@ -66,6 +66,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
@@ -102,6 +103,8 @@ public class ApprovalSessionTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
     private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalSessionTest"));
 
+    private static final String P12_FOLDER_NAME = "p12";
+
     private static final String roleName = "ApprovalTest";
 
     private static String reqadminusername = null;
@@ -121,7 +124,6 @@ public class ApprovalSessionTest extends CaTestCase {
     private RoleData role;
 
     private static ArrayList<AccessUserAspectData> adminentities;
-    //private static GlobalConfiguration gc = null;
 
     private int caid = getTestCAId();
 
@@ -142,6 +144,8 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             ApprovalSessionTest.class.getSimpleName()));
+    
+    private static List<File> fileHandles = new ArrayList<File>();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -153,6 +157,10 @@ public class ApprovalSessionTest extends CaTestCase {
     @AfterClass
     public static void afterClass() throws Exception {
         removeTestCA();
+        
+        for(File file : fileHandles) {
+            FileTools.delete(file);
+        }
     }
 
     @Before
@@ -186,9 +194,7 @@ public class ApprovalSessionTest extends CaTestCase {
                     AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
             externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
-            File tmpfile = File.createTempFile("ejbca", "p12");
-            BatchCreateTool.createAllNew(intadmin, "p12");
-            tmpfile.delete();
+            fileHandles.addAll(BatchCreateTool.createAllNew(intadmin,  new File(P12_FOLDER_NAME)));
         }
         role = roleAccessSessionRemote.findRole(roleName);
         if (role == null) {
@@ -222,7 +228,6 @@ public class ApprovalSessionTest extends CaTestCase {
         reqadmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(reqadmincert));
         // TODO: before is had both a cert and username input?
 
-        //gc = globalConfigurationSession.getCachedGlobalConfiguration();
     }
 
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {

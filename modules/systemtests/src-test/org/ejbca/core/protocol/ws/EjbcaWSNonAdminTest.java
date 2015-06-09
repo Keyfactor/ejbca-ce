@@ -59,6 +59,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -116,16 +117,23 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
-
+    private static List<File> fileHandles = new ArrayList<File>();
     
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         setAdminCAName();
-        setupAccessRights(WS_ADMIN_ROLENAME);
+        fileHandles =  setupAccessRights(WS_ADMIN_ROLENAME);
         assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 
+    @AfterClass
+    public static void afterClass() {
+        for (File file : fileHandles) {
+            FileTools.delete(file);
+        }
+    }
+    
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -478,8 +486,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         userData.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intadmin, userData, true);
 
-        File tmpfile = File.createTempFile("ejbca", "p12");
-        BatchCreateTool.createAllNew(intadmin, tmpfile.getParent());
+        fileHandles.addAll(BatchCreateTool.createAllNew(intadmin, new File(P12_FOLDER_NAME)));
         adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
         roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);

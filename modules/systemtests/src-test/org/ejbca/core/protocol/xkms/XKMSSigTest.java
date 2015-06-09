@@ -56,7 +56,9 @@ import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -75,8 +77,6 @@ import org.w3c.dom.Element;
  * "CN=ManagementCA,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
- * @author Philip Vendil 2006 sep 27
- * 
  * @version $Id$
  */
 
@@ -88,6 +88,8 @@ public class XKMSSigTest {
     private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
     private static final String SERVICE_URL = "http://localhost:8080/ejbca/xkms/xkms";	//http://localhost:8080/ejbca/xkms/xkms
+    
+    private static final String P12_FOLDER_NAME = "p12";
     
     private static String baseUsername;
 
@@ -105,41 +107,25 @@ public class XKMSSigTest {
 
 	private AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
 
-    static {
-        try {
-        	CryptoProviderTools.installBCProvider();
-            org.apache.xml.security.Init.init();
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProvider();
+        org.apache.xml.security.Init.init();
 
-            jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
-			marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
-            dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-
-        } catch (JAXBException e) {
-            log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
-        }
-
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        log.trace(">setUp()");
+        jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
+        marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
+        dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        
         caid = CertTools.stringToBCDNString("CN=ManagementCA,O=EJBCA Sample,C=SE").hashCode();
         Random ran = new Random();
         if (baseUsername == null) {
             baseUsername = "xkmstestadmin" + (ran.nextInt() % 1000) + "-";
         }
-        log.trace("<setUp()");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void test00SetupAccessRights() throws Exception {
-    	log.trace(">test00SetupAccessRights");
+        
         username = baseUsername + "1";
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
         try {
             endEntityManagementSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ADMINISTRATOR.toEndEntityType(), SecConst.TOKEN_SOFT_JKS, 0, caid);
@@ -149,11 +135,23 @@ public class XKMSSigTest {
         }
 
         tmpfile = new File("p12");
+        BatchCreateTool.createAllNew(administrator, tmpfile.getParentFile());
 
-        // log.debug("tempdir="+tmpfile.getParent());
-        BatchCreateTool.createAllNew(administrator, tmpfile.getParent());
-    	log.trace("<test00SetupAccessRights");
     }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        endEntityManagementSession.deleteUser(administrator, username);
+        keystorefile.deleteOnExit();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+    }
+
+
 
     @Test
     public void test01ClientSignature() throws Exception {
@@ -557,10 +555,5 @@ public class XKMSSigTest {
     	log.trace("<test06AuthenticationKeyBindingSignature");
     }
 
-    @Test
-    public void test99RemoveUser() throws Exception {
-    	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        endEntityManagementSession.deleteUser(administrator, username);
-        keystorefile.deleteOnExit();
-    }
+
 }

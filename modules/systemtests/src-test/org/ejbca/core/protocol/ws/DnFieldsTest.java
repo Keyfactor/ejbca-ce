@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -19,6 +20,7 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -38,6 +40,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -55,6 +58,7 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,16 +83,28 @@ public class DnFieldsTest extends CommonEjbcaWS {
     
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DnFieldsTest"));
     
-    private final String wsadminRoleName = "WsTEstRole";
+    private static final String wsadminRoleName = "WsTEstRole";
+    
+    private static List<File> fileHandles = new ArrayList<File>();
+
     
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         adminBeforeClass();
+        fileHandles = setupAccessRights(wsadminRoleName);
+
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        for (File file : fileHandles) {
+            FileTools.delete(file);
+        }
     }
  
     @Before
     public void setUp() throws Exception {
-        setupAccessRights(wsadminRoleName);
+        
         adminSetUpAdmin();
         
         if(certificateProfileSession.getCertificateProfile(PROFILE_NAME) == null) {
