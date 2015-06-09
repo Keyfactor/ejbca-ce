@@ -58,6 +58,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -78,6 +79,9 @@ import org.junit.Test;
 
 public class RevocationApprovalTest extends CaTestCase {
 
+    private static final String P12_FOLDER_NAME = "p12";
+
+    
     private static String requestingAdminUsername = null;
     private static String adminUsername = null;
 
@@ -106,6 +110,8 @@ public class RevocationApprovalTest extends CaTestCase {
     private int caid = getTestCAId();
     private int approvalCAID;
     private int cryptoTokenId = 0;
+    
+    private List<File> fileHandles = new ArrayList<File>();
 
     @BeforeClass
     public static void beforeClass() {
@@ -130,8 +136,7 @@ public class RevocationApprovalTest extends CaTestCase {
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, userdata2, true);
-            File tmpfile = File.createTempFile("ejbca", "p12");
-            BatchCreateTool.createAllNew(internalAdmin, tmpfile.getParent());
+            fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));
         }
         RoleData role = roleAccessSession.findRole(getRoleName());
         if (role == null) {
@@ -193,6 +198,10 @@ public class RevocationApprovalTest extends CaTestCase {
         }
         caSession.removeCA(internalAdmin, approvalCAID);
         CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
+        
+        for(File file : fileHandles) {
+            FileTools.delete(file);
+        }
     }
 
     private String genRandomUserName(String usernameBase) {
@@ -206,8 +215,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(admin, userdata, true);
-        File tmpfile = File.createTempFile("ejbca", "p12");
-        BatchCreateTool.createAllNew(internalAdmin, tmpfile.getParent());
+        fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));
     }
 
     /**
@@ -215,7 +223,7 @@ public class RevocationApprovalTest extends CaTestCase {
      * 
      * @return the CA's ID.
      */
-    static public int createApprovalCA(AuthenticationToken internalAdmin, String nameOfCA, int approvalRequirementType,
+    public static int createApprovalCA(AuthenticationToken internalAdmin, String nameOfCA, int approvalRequirementType,
             CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, CAToken caToken) throws Exception {
         final List<Integer> approvalSettings = new ArrayList<Integer>();
         approvalSettings.add(approvalRequirementType);

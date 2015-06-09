@@ -506,7 +506,7 @@ public final class KeyTools {
      *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate[] cachain)
-            throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
                     + ((cachain == null) ? 0 : cachain.length));
@@ -568,27 +568,31 @@ public final class KeyTools {
         } catch (ClassCastException e) {
             log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
+        try {
         // "Clean" private key, i.e. remove any old attributes
-        final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), "BC");
+        final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
         final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(privKey.getEncoded()));
         // Set attributes for private key
-        try {
-            final PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
-            // in this case we just set the local key id to that of the public key
-            keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
-            keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
-        } catch (ClassCastException e) {
-            log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
+            try {
+                final PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
+                // in this case we just set the local key id to that of the public key
+                keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
+                keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
+            } catch (ClassCastException e) {
+                log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
+            }
+            // store the key and the certificate chain
+            final KeyStore store = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            store.load(null, null);
+            store.setKeyEntry(alias, pk, null, chain);
+            if (log.isTraceEnabled()) {
+                log.trace("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
+                        + ((cachain == null) ? 0 : cachain.length));
+            }
+            return store;
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider was not found.", e);
         }
-        // store the key and the certificate chain
-        final KeyStore store = KeyStore.getInstance("PKCS12", "BC");
-        store.load(null, null);
-        store.setKeyEntry(alias, pk, null, chain);
-        if (log.isTraceEnabled()) {
-            log.trace("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
-                    + ((cachain == null) ? 0 : cachain.length));
-        }
-        return store;
     } // createP12
 
     /**
@@ -606,12 +610,13 @@ public final class KeyTools {
      *            CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
      * 
      * @return KeyStore containing JKS-keystore
+     * @throws KeyStoreException is storing the certificate failed, perhaps because the alias is already being used?
      * 
      * @exception Exception
      *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createJKS(final String alias, final PrivateKey privKey, final String password, final X509Certificate cert,
-            final Certificate[] cachain) throws Exception {
+            final Certificate[] cachain) throws KeyStoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
                     + ((cachain == null) ? 0 : cachain.length));
@@ -633,13 +638,31 @@ public final class KeyTools {
         }
 
         // store the key and the certificate chain
-        final KeyStore store = KeyStore.getInstance("JKS");
-        store.load(null, null);
+        final KeyStore store;
+        try {
+            store = KeyStore.getInstance("JKS");
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("No JKS implementation found in provider", e);
+        }
+        try {
+            store.load(null, null);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        } catch (CertificateException e) {
+            throw new IllegalStateException(e);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
 
         // First load the key entry
         final X509Certificate[] usercert = new X509Certificate[1];
         usercert[0] = cert;
-        store.setKeyEntry(alias, privKey, password.toCharArray(), usercert);
+        try {
+            store.setKeyEntry(alias, privKey, password.toCharArray(), usercert);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Keystore apparently hasn't been loaded?", e);
+ 
+        }
 
         // Add the root cert as trusted
         if (cachain != null) {

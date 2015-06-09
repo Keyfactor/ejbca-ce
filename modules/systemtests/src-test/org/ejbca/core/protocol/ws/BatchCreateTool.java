@@ -13,28 +13,50 @@
 package org.ejbca.core.protocol.ws;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.List;
+
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -46,11 +68,17 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchToolProperties;
 import org.ejbca.util.keystore.P12toPEM;
 
@@ -74,13 +102,13 @@ public abstract class BatchCreateTool {
      * @throws Exception
      *             if something goes wrong...
      */
-    public static void createAllNew(AuthenticationToken authenticationToken, String mainStoreDir)
-            throws Exception {
+    public static List<File> createAllNew(AuthenticationToken authenticationToken, File mainStoreDir) throws Exception {
         log.trace(">createAllNew");
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "NEW");
         log.info(iMsg);
-        createAllWithStatus(authenticationToken, mainStoreDir, EndEntityConstants.STATUS_NEW);
+        List<File> result = createAllWithStatus(authenticationToken, mainStoreDir, EndEntityConstants.STATUS_NEW);
         log.trace("<createAllNew");
+        return result;
     }
     
     /**
@@ -92,7 +120,7 @@ public abstract class BatchCreateTool {
      * @throws Exception
      *             if something goes wrong...
      */
-    private static void createAllWithStatus(AuthenticationToken authenticationToken, String mainStoreDir, int status) throws Exception {
+    private static List<File> createAllWithStatus(AuthenticationToken authenticationToken, File mainStoreDir, int status) throws Exception {
         if (log.isTraceEnabled()) {
             log.trace(">createAllWithStatus: " + status);
         }
@@ -100,6 +128,7 @@ public abstract class BatchCreateTool {
         ArrayList<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
 
         boolean stopnow = false;
+        List<File> resultList = new ArrayList<File>();
         do {
             for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
                     .findAllBatchUsersByStatusWithLimit(status)) {
@@ -114,7 +143,6 @@ public abstract class BatchCreateTool {
 
             int failcount = 0;
             int successcount = 0;
-
             if (result.size() > 0) {
                 if (result.size() < EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT) {
                     stopnow = true;
@@ -124,9 +152,11 @@ public abstract class BatchCreateTool {
                 for (EndEntityInformation data : result) {
                     if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                         try {
-                            if (doCreate(authenticationToken, mainStoreDir, data, status)) {
+                            File resultFile = doCreate(authenticationToken, mainStoreDir, data, status);
+                            if (resultFile != null) {
                                 successusers += (":" + data.getUsername());
                                 successcount++;
+                                resultList.add(resultFile);
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED
@@ -176,6 +206,7 @@ public abstract class BatchCreateTool {
         if (log.isTraceEnabled()) {
             log.trace("<createAllWithStatus: " + status);
         }
+        return resultList;
     }
     
     /**
@@ -183,63 +214,78 @@ public abstract class BatchCreateTool {
      * 
      * @param username
      *            username
-     * @throws Exception
-     *             if the user does not exist or something goes wrong during
-     *             generation
+     * @return a file handle to the P12
+     *            
+     * @throws AuthorizationDeniedException 
+     * @throws WaitingForApprovalException 
+     * @throws FinderException 
+     * @throws ApprovalException 
+     * @throws IOException 
+     * @throws UserDoesntFullfillEndEntityProfile 
+     * @throws InvalidKeySpecException 
+     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchProviderException 
+     * @throws KeyStoreException 
+     * @throws CustomCertificateSerialNumberException 
+     * @throws InvalidAlgorithmException 
+     * @throws CAOfflineException 
+     * @throws IllegalValidityException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CertificateSerialNumberException 
+     * @throws CertificateRevokeException 
+     * @throws IllegalNameException 
+     * @throws CertificateCreateException 
+     * @throws IllegalKeyException 
+     * @throws AuthLoginException 
+     * @throws AuthStatusException 
+     * @throws SignRequestSignatureException 
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
+     * @throws CADoesntExistsException 
+     * @throws InvalidAlgorithmParameterException 
+     * @throws UnrecoverableKeyException 
+     * @throws NoSuchEndEntityException 
      */
-    public static void createUser(AuthenticationToken authenticationToken, String mainStoreDir, String username) throws Exception {
-        if (log.isTraceEnabled()) {
+    public static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username) throws AuthorizationDeniedException,
+            ApprovalException, FinderException, WaitingForApprovalException, UnrecoverableKeyException, InvalidAlgorithmParameterException,
+            CADoesntExistsException, OperatorCreationException, CertificateException, SignRequestSignatureException, AuthStatusException,
+            AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
+            UserDoesntFullfillEndEntityProfile, IOException, NoSuchEndEntityException {
+      if (log.isTraceEnabled()) {
             log.trace(">createUser(" + username + ")");
         }
         EndEntityInformation data = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(authenticationToken,
                 username);
         if (data == null) {
-            log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorunknown", username));
-            return;
+            throw new NoSuchEndEntityException(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorunknown", username));
         }
         int status = data.getStatus();
-
+        File result = null;
         if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0)) {
             if ((status == EndEntityConstants.STATUS_NEW) || ((status == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery)) {
-                try {
-                    doCreate(authenticationToken, mainStoreDir, data, status);
-                } catch (Exception e) {
-                    // If things went wrong set status to FAILED
-                    final String newStatusString;
-                    if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(authenticationToken,
-                                data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
-                        newStatusString = "KEYRECOVERY";
-                    } else {
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(authenticationToken,
-                                data.getUsername(), EndEntityConstants.STATUS_FAILED);
-                        newStatusString = "FAILED";
-                    }
-                    if (e instanceof IllegalKeyException) {
-                        final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
-                        log.error(errMsg + " " + e.getMessage());
-                        log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
-                        log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));
-                    } else {
-                        log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
-                        final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
-                        throw new Exception(errMsg);
-                    }
-                }
+                result = doCreate(authenticationToken, mainStoreDir, data, status);
             } else {
                 String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
                 log.error(errMsg);
-                throw new Exception(errMsg);
+                throw new IllegalStateException(errMsg);
             }
         }
         if (log.isTraceEnabled()) {
             log.trace(">createUser(" + username + ")");
         }
+        return result;
     }
 
-    private static boolean doCreate(AuthenticationToken authenticationToken, String mainStoreDir, EndEntityInformation data, int status)
-            throws Exception {
-        boolean ret = false;
+    private static File doCreate(AuthenticationToken authenticationToken, File mainStoreDir, EndEntityInformation data, int status)
+            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, UnrecoverableKeyException,
+            InvalidAlgorithmParameterException, CADoesntExistsException, OperatorCreationException, CertificateException,
+            SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
+            IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException,
+            NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+      File ret = null;
         // get users Token Type.
         int tokentype = data.getTokenType();
         boolean createJKS = (tokentype == SecConst.TOKEN_SOFT_JKS);
@@ -255,7 +301,7 @@ public abstract class BatchCreateTool {
                         data.getUsername());
                 log.info(iMsg);
             }
-            processUser(authenticationToken, mainStoreDir, data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
+            ret = processUser(authenticationToken, mainStoreDir, data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
             // If all was OK, users status is set to GENERATED by the
             // signsession when the user certificate is created.
             // If status is still NEW, FAILED or KEYRECOVER though, it means we
@@ -275,7 +321,6 @@ public abstract class BatchCreateTool {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(authenticationToken,
                         data.getUsername(), null);
             }
-            ret = true;
             String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generateduser", data.getUsername());
             log.info(iMsg);
         } else {
@@ -295,12 +340,15 @@ public abstract class BatchCreateTool {
      *            if pem files should be created
      * @param keyrecoverflag
      *            if we should try to revoer already existing keys
-     * @throws Exception
-     *             If something goes wrong...
      */
-    private static void processUser(AuthenticationToken authenticationToken, String mainStoreDir, EndEntityInformation data, boolean createJKS,
-            boolean createPEM, boolean keyrecoverflag) throws Exception {
-        KeyPair rsaKeys = null;
+    private static File processUser(AuthenticationToken authenticationToken, File mainStoreDir, EndEntityInformation data, boolean createJKS,
+            boolean createPEM, boolean keyrecoverflag) throws AuthorizationDeniedException, UnrecoverableKeyException, CADoesntExistsException,
+            ObjectNotFoundException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, OperatorCreationException, CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            InvalidKeySpecException, IOException, InvalidAlgorithmParameterException {
+      KeyPair rsaKeys = null;
         X509Certificate orgCert = null;
         if (useKeyRecovery && keyrecoverflag) {
             boolean reusecertificate = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
@@ -319,16 +367,15 @@ public abstract class BatchCreateTool {
                 }
             } else {
                 String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errornokeyrecoverydata", data.getUsername());
-                throw new Exception(errMsg);
+                throw new IllegalArgumentException(errMsg);
             }
         } else {
             rsaKeys = KeyTools.genKeys(props.getKeySpec(), props.getKeyAlg());
         }
         // Get certificate for user and create keystore
-        if (rsaKeys != null) {
-            createUser(authenticationToken, mainStoreDir, data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM,
-                    !keyrecoverflag && data.getKeyRecoverable(), orgCert);
-        }
+        return createUser(authenticationToken, mainStoreDir, data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM,
+                !keyrecoverflag && data.getKeyRecoverable(), orgCert);
+        
     }
 
     /**
@@ -352,18 +399,40 @@ public abstract class BatchCreateTool {
      * @param orgCert
      *            if an original key recovered cert should be reused, null
      *            indicates generate new cert.
-     * @throws Exception
-     *             if the certificate is not an X509 certificate
-     * @throws Exception
-     *             if the CA-certificate is corrupt
-     * @throws Exception
-     *             if verification of certificate or CA-cert fails
-     * @throws Exception
-     *             if keyfile (generated by ourselves) is corrupt
+     *            
+     * @return a file handle to the created keystore file
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @throws ObjectNotFoundException 
+     * @throws CustomCertificateSerialNumberException 
+     * @throws InvalidAlgorithmException 
+     * @throws CAOfflineException 
+     * @throws IllegalValidityException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CertificateSerialNumberException 
+     * @throws CertificateRevokeException 
+     * @throws IllegalNameException 
+     * @throws CertificateCreateException 
+     * @throws IllegalKeyException 
+     * @throws AuthLoginException 
+     * @throws AuthStatusException 
+     * @throws SignRequestSignatureException 
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
+     * @throws KeyStoreException 
+     * @throws NoSuchAlgorithmException 
+     * @throws UnrecoverableKeyException 
+     * @throws IOException 
+     * @throws InvalidKeySpecException 
      */
 
-    private static void createUser(AuthenticationToken authenticationToken, String mainStoreDir, String username, String password, int caid,
-            KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys, X509Certificate orgCert) throws Exception {
+    private static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username, String password, int caid,
+            KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys, X509Certificate orgCert) throws CADoesntExistsException,
+            AuthorizationDeniedException, ObjectNotFoundException, SignRequestSignatureException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, OperatorCreationException, CertificateException, UnrecoverableKeyException,
+            NoSuchAlgorithmException, KeyStoreException, InvalidKeySpecException, IOException {
         if (log.isTraceEnabled()) {
             log.trace(">createUser: username=" + username);
         }
@@ -404,20 +473,26 @@ public abstract class BatchCreateTool {
                 .getCertificateChain(authenticationToken, caid).toArray(new Certificate[0]);
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
-            try {
+
                 // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1
                 // will not verify (at least not as of jdk6)
                 Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded());
-                cacert.verify(cacert.getPublicKey());
-                // cachain[cachain.length - 1].verify(cachain[cachain.length -
-                // 1].getPublicKey());
-            } catch (GeneralSecurityException se) {
-                String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorrootnotverify");
-                throw new Exception(errMsg);
-            }
+                try {
+                    cacert.verify(cacert.getPublicKey());
+                } catch (InvalidKeyException e) {
+                    throw new IllegalStateException(e);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new IllegalStateException(e);
+                } catch (NoSuchProviderException e) {
+                    throw new IllegalStateException(e);
+                } catch (SignatureException e) {
+                    throw new IllegalStateException(e);
+                }
+
+
         } else {
             String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorrootnotselfsigned");
-            throw new Exception(errMsg);
+            throw new IllegalStateException(errMsg);
         }
 
         // Verify that the user-certificate is signed by our CA
@@ -429,7 +504,7 @@ public abstract class BatchCreateTool {
             usercert.verify(cacert.getPublicKey());
         } catch (GeneralSecurityException se) {
             String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorgennotverify");
-            throw new Exception(errMsg);
+            throw new IllegalStateException(errMsg, se);
         }
 
         if (useKeyRecovery && savekeys) {
@@ -453,67 +528,69 @@ public abstract class BatchCreateTool {
             ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
         }
 
-        storeKeyStore(mainStoreDir, ks, username, password, createJKS, createPEM);
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.createkeystore", username);
         log.info(iMsg);
         if (log.isTraceEnabled()) {
             log.trace("<createUser: username=" + username);
         }
+        return storeKeyStore(mainStoreDir, ks, username, password, createJKS, createPEM);
+
     }
 
     /**
      * Stores keystore.
      * 
-     * @param ks
-     *            KeyStore
-     * @param username
-     *            username, the owner of the keystore
-     * @param kspassword
-     *            the password used to protect the peystore
-     * @param createJKS
-     *            if a jks should be created
-     * @param createPEM
-     *            if pem files should be created
-     * @throws IOException
-     *             if directory to store keystore cannot be created
+     * @param ks a KeyStore
+     * @param username username, the owner of the keystore
+     * @param kspassword the password used to protect the peystore
+     * @param createJKS true if a jks should be created, otherwise a .p12 will be created. 
+     * @param createPEM true if pem files should be created instead of a p12 or jks
+     * @throws KeyStoreException if the keystore was not initialised 
+     * @throws CertificateException if any of the certificates included in the keystore data couldn't be stored
+     * @throws NoSuchAlgorithmException if the keystore's algorithm couldn't be found
+     * @throws FileNotFoundException if the file couldn't be written
+     * @throws UnrecoverableKeyException 
      */
-    private static void storeKeyStore(String mainStoreDir, KeyStore ks, String username, String kspassword, boolean createJKS, boolean createPEM)
-            throws IOException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
+    private static File storeKeyStore(File mainStoreDir, KeyStore ks, String username, String kspassword, boolean createJKS, boolean createPEM)
+            throws UnrecoverableKeyException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
         if (log.isTraceEnabled()) {
             log.trace(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
         }
-        // Where to store it?
-        if (mainStoreDir == null) {
-            throw new IOException("Can't find directory to store keystore in.");
-        }
-
-        if (!new File(mainStoreDir).exists()) {
-            new File(mainStoreDir).mkdir();
+        if (!mainStoreDir.exists()) {
+            mainStoreDir.mkdir();
             log.info("Directory '" + mainStoreDir + "' did not exist and was created.");
         }
 
-        String keyStoreFilename = mainStoreDir + "/" + username;
+        String keyStoreFilename = mainStoreDir.getName() + "/" + username;
 
         if (createJKS) {
             keyStoreFilename += ".jks";
         } else {
             keyStoreFilename += ".p12";
         }
-
+        File keyStoreFile;
+        
         // If we should also create PEM-files, do that
         if (createPEM) {
             String PEMfilename = mainStoreDir + "/pem";
-            P12toPEM p12topem = new P12toPEM(ks, kspassword, true);
+            P12toPEM p12topem = new P12toPEM(ks, kspassword);
             p12topem.setExportPath(PEMfilename);
-            p12topem.createPEM();
+            keyStoreFile = p12topem.createPEM();
         } else {
-            FileOutputStream os = new FileOutputStream(keyStoreFilename);
-            ks.store(os, kspassword.toCharArray());
+            keyStoreFile = new File(keyStoreFilename);
+            FileOutputStream os = new FileOutputStream(keyStoreFile);
+            try {
+                ks.store(os, kspassword.toCharArray());
+            } catch (IOException e) {
+                throw new IllegalStateException("Unexpected IOException was caught.", e);
+            }
         }
-
-        log.debug("Keystore stored in " + keyStoreFilename);
+        if (log.isDebugEnabled()) {
+            log.debug("Keystore stored in " + keyStoreFilename);
+        }
         if (log.isTraceEnabled()) {
             log.trace("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
         }
+        return keyStoreFile;
     }
 }

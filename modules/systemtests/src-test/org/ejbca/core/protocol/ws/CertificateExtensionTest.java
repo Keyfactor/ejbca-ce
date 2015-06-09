@@ -18,12 +18,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -49,6 +51,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -62,6 +65,7 @@ import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -77,7 +81,7 @@ import org.junit.runners.MethodSorters;
 public class CertificateExtensionTest extends CommonEjbcaWS {
 
 	private static final Logger log = Logger.getLogger(CertificateExtensionTest.class);
-	private final String wsadminRoleName = "CertificateExtensionTest";	
+	private static final String WS_ADMIN_ROLENAME = "CertificateExtensionTest";	
 	private static final String CERTIFICATE_PROFILE = "certExtension";
 	private static final String TEST_USER = "certExtension";
 	private static final String END_ENTITY_PROFILE = "endEntityProfile";
@@ -90,11 +94,21 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     
+    private static List<File> fileHandles = new ArrayList<File>();
+    
 	@BeforeClass
-	public static void setupAccessRights() {
+	public static void setupAccessRights() throws Exception{
 		adminBeforeClass();
+		fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
 	}
 
+	@AfterClass
+    public static void afterClass() {
+        for (File file : fileHandles) {
+            FileTools.delete(file);
+        }
+    }
+	
 	@Before
 	public void setUpAdmin() throws Exception {
 		adminSetUpAdmin();
@@ -105,11 +119,6 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	public void tearDown() throws Exception {
 		super.tearDown();
 	}
-
-    @Test
-    public void test00SetupAccessRights() throws Exception {
-        super.setupAccessRights(this.wsadminRoleName);
-    }
 
 	@Test
 	public void test01AddProfiles() throws Exception {
@@ -204,7 +213,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        // do nothing
 	    }
 	    try {
-	        super.cleanUpAdmins(this.wsadminRoleName);
+	        super.cleanUpAdmins(this.WS_ADMIN_ROLENAME);
 	    } catch (Exception e) {
 	        // do nothing
 	    }
@@ -327,6 +336,6 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	
 	@Override
 	public String getRoleName() {
-		return this.wsadminRoleName+"Mgmt";
+		return this.WS_ADMIN_ROLENAME+"Mgmt";
 	}
 }
