@@ -44,16 +44,12 @@ This product includes software developed by The Apache Software Foundation
 <p>
 Other softwares include:
 <ul>
-<li><a href="http://www.junit.org/">JUnit</a></li>
+<li><a href="http://junit.org/">JUnit</a></li>
 <li><a href="http://httpunit.sourceforge.net/">HttpUnit</a></li>
 <li><a href="http://www.quickserver.org/">Quickserver</a></li>
-<li><a href="http://sourceforge.net/projects/novosec-bc-ext/">Novosec BouncyCastle CMP extension</a></li>
 <li><a href="http://www.gnu.org/software/libidn/">Java GNU IDN Library - Libidn</a></li>
-<li><a href="http://trustedjava.sourceforge.net/index.php?item=xkms/readme">OpenTC Project, SASLprep patch the libidn library</a></li>
+<li><a href="http://trustedjava.sourceforge.net/index.php?item=xkms/readme">OpenTC Project, SASLprep patch for the libidn library</a></li>
 </ul>
-</p>
-<p>
-EJBCA is developed in <a href="http://www.oracle.com/technetwork/java/">Java</a>.
 </p>
 
 </section>

@@ -390,12 +390,9 @@ on a MySQL database. The script will set restricted privileges for every table i
 See the script for in-line documentation.</p>
 </section>
 
-<section name="SSL connections in MySQL">
+<section name="SSL connections in MariaDB">
 <p>
-<a href="http://dev.mysql.com/doc/refman/5.0/en/secure-using-ssl.html">
-http://dev.mysql.com/doc/refman/5.0/en/secure-using-ssl.html</a>
-<a href="http://dev.mysql.com/doc/refman/5.1/en/secure-using-ssl.html">
-http://dev.mysql.com/doc/refman/5.1/en/secure-using-ssl.html</a>
+MariaDB have a <a href="https://mariadb.com/kb/en/mariadb/ssl-connections/">guide</a> regarding usage of SSL connection for the database connection.
 </p>
 </section>
 
@@ -417,8 +414,8 @@ http://dev.mysql.com/doc/refman/5.0/en/binary-log.html</a>
 <p>
 See your distribution for details about their package, below are general links.
 <br/>
-<a href="http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html">
-http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html</a>
+<a href="http://www.linuxsecurity.com/docs/SecurityAdminGuide/SecurityAdminGuide-5.html">
+http://www.linuxsecurity.com/docs/SecurityAdminGuide/SecurityAdminGuide-5.html</a>
 <a href="http://www.hsc.fr/ressources/presentations/linux2000/linux2000-18.html.en">
 </a>
 </p>

@@ -412,9 +412,9 @@ password than 7 characters. Anything longer gives an error?</question>
 		Further information on this can be found in the Sun documentation on the JCE.
         </p>
         <p>
-        Java 1.6.0<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6.0<br/>
-        <a href="http://www.oracle.com/technetwork/java/javase/downloads/">http://www.oracle.com/technetwork/java/javase/downloads/</a>
+        Java 1.7.0<br/>
+        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 7.0<br/>
+        <a href="http://www.oracle.com/technetwork/java/index.html">http://www.oracle.com/technetwork/java/index.html</a>
         </p>
       </answer>
     </faq>

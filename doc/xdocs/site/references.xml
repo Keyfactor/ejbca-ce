@@ -7,11 +7,6 @@
 
 <body>
   <section name="References">
-	<subsection name="Code of conduct">
-	<p>
-	The EJBCA community should try to follow the excellent <a href="http://www.ubuntu.com/community/conduct">Ubuntu Code of Conduct</a>.
-	</p>
-	</subsection>
 
 	<subsection name="IETF Request For Comments and Internet-Drafts">
 	<p>
@@ -117,18 +112,10 @@ Microsoft Knowledge Base documents
 <li><a href="http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245">q281245</a> - Guidelines for Enabling Smart Card Logon with Third-Party Certification Authorities</li>
 <li><a href="http://support.microsoft.com/default.aspx?scid=kb;EN-US;q291010">q291010</a> - Requirements for Domain Controller Certificates from a Third-Party CA</li>
 <li><a href="http://www.microsoft.com/windows2000/en/server/help/default.asp?url=/windows2000/en/server/help/sag_CS_CertTemps.htm">Certificate templates</a></li>
-<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/seccrypto/security/using_the_certificate_enrollment_control_properties.asp">Using the Certificate Enrollment Control Properties</a></li>
 <li><a href="http://msdn2.microsoft.com/en-us/library/ms867026.aspx">Creating Certificate Requests Using the Certificate Enrollment Control and CryptoAPI</a></li>
 </ul>
 </subsection>
 
-<subsection name="Cisco">
-<ul>
-<li><a href="http://www.cod.edu/people/faculty/wagnerjo/labs/NS2_lab_5_3_2_en.pdf">Lab 5.3.2</a> - Configure a PIX Security Appliance Site-to-Site IPSec VPN Tunnel with CA
-support
-</li>
-</ul>
-</subsection>
   </section>
 
 </body>
