@@ -18,7 +18,7 @@ can be used together with PKI to even further improve your PKI experience.
     </p>
     <p>
     The SignServer is an application for automatic signatures called by other systems not able to connect 
-    to crytographic hardware. 
+    to cryptographic hardware. 
     It is a framework that can be customized to specific needs using simple plug-in modules. 
     The SignServer have a ready to use TimeStamp Authority (RFC 3161 compliant) and a MRTD Signer. 
     Another usage is to provide a simplified method to provide signatures in different application 
