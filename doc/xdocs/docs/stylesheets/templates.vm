@@ -176,14 +176,14 @@
       
         <li><div class="menuheader">PKI by PrimeKey</div>
           <p>
-          <br/>
+          <br>
                 <a href="https://www.primekey.se/technologies/products-overview/signserver-enterprise/" target="signserver">
-                <img style="border:none; margin-left:20px" src="$relativePath/images/signserver_pki_by_primekey_w120.png" alt="SignServer by PrimeKey"/>
+                <img style="border:none; margin-left:20px" src="$relativePath/images/signserver_pki_by_primekey_w120.png" alt="SignServer by PrimeKey">
                 </a>
           </p>
           <p>
                 <a href="http://www.primekey.se/" target="primekey">
-                <img style="border:none; margin-left:20px" src="$relativePath/images/logo-PrimeKey.png" alt="PKI by PrimeKey"/>
+                <img style="border:none; margin-left:20px" src="$relativePath/images/logo-PrimeKey.png" alt="PKI by PrimeKey">
                 </a>
           </p>
         </li>
@@ -203,7 +203,7 @@
 	  #set ($descriptions = $root.getChild("properties").getChildren("description"))
 	  #if ($descriptions.size() > 0)
 	    #foreach ( $description in $descriptions )
-        <meta name="description" content="$description.getText()" />
+        <meta name="description" content="$description.getText()">
 	    #end
 	  #end
         <link type="text/css" href="$relativePath/page.css" rel="stylesheet">
@@ -221,19 +221,17 @@
       	<tr>
       	
       	<td>
-      	<a href="http://www.ejbca.org/"><img src="$relativePath/images/ejbca_pki_by_primekey_logo.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"/></a>
+      	<a href="http://www.ejbca.org/"><img src="$relativePath/images/ejbca_pki_by_primekey_logo.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
       	</td>
       	<td style="text-align:right">
       	<div class="searchcaption">
-		Search ejbca.org for:<br />
+		Search ejbca.org for:<br>
 		<form id="searchForm" target="_blank" onsubmit="q.value = query.value + ' site:ejbca.org'" action="http://www.google.com/search" method="get">
 		<input name="q" type="hidden">
-		<nobr>
 		<div style="height: 18px">
-		<input name="query" id="searchBox" maxlength="255" />
-		<input type="submit" value="Go" />
+		<input name="query" id="searchBox" maxlength="255">
+		<input type="submit" value="Go">
 		</div>
-		</nobr>
 		</form>
       	</div>
 		</tr>

@@ -6108,7 +6108,7 @@ existing file(s) found in the EJBCA_HOME-directory or its subdirectories before
 executing an 'ant'-command. A sample, conf/custom.properties.sample, is provided. 
 </p>
 <p>
-Example usage: <br />
+Example usage: <br/>
 You have a working set of configuration files and database from the latest
 stable release, and want to try the latest trunk snapshot.
 <ul>
