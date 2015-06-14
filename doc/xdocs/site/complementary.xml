@@ -2,6 +2,7 @@
 <document>
   <properties>
     <title>Complementary software</title>
+    <description>Software that together with EJBCA provides additional tools or complete solutions for digital signatures, code signing, token management, PKI clients etc.</description>
   </properties>
 
   <body>
