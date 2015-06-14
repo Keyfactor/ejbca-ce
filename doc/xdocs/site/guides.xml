@@ -659,12 +659,12 @@ JkWorkersFile /etc/libapache2-mod-jk/workers.properties
   To enable an AJP connector in JBoss 7 / EAP 6 you need to run the following command:</p>
   <source>/subsystem=web/connector=ajp:add(socket-binding=ajp, protocol="AJP/1.3", enabled=true, scheme="http")</source>
   <p>
-  If you are using the <a href="manual-ocsp.html">external OCSP responder</a> then you also got to ensure you got this line in the file apache2.conf:
+  If you are using the <a href="docs/architecture-ocsp.html">external OCSP responder</a> then you also got to ensure you got this line in the file apache2.conf:
   </p><source>KeepAlive Off</source><p>
   If not apache will hang.
   </p>
   <p>
-  Also an <a href="manual-ocsp.html">external OCSP responder</a> it could be good to add these lines to the 'Virtual Host' configuration:
+  Also an <a href="docs/architecture-ocsp.html">external OCSP responder</a> it could be good to add these lines to the 'Virtual Host' configuration:
   </p><source>
   RewriteEngine on
   RewriteRule .* /ejbca/publicweb/status/ocsp [PT]

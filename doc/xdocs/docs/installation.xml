@@ -202,7 +202,7 @@ mileage may vary (see further below for details).
 EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
 For this to work you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK download at
-<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle</a>. The text
+<a href="http://www.oracle.com/technetwork/java/index.html">Oracle</a>. The text
 "Using exportable cryptography" is shown on the first page in the Admin GUI if you fail to
 install this package. Further information on this can be found in the Oracle documentation on
 the JCE.
@@ -210,8 +210,8 @@ the JCE.
 <p>
 Needed to build and run are:</p>
 <ul>
-<li>JDK 7 OpenJDK or Oracle JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download</a>), if available OpenJDK is recommended.</li>
-<li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download for Oracle's JDK</a>, not required for OpenJDK).</li>
+<li>JDK 7 OpenJDK or Oracle JDK, if available OpenJDK is recommended.</li>
+<li>Only if using OracleJDK - <i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK.</li>
 <li>JBoss Application Server 7.1.x or later or JBoss EAP 6 or later (<a href="http://www.jboss.org/jbossas/downloads">download</a>, note that the absolute latest may not always be tested).</li>
 <li>Apache Ant 1.8 or later to build (<a href="http://ant.apache.org/">download</a>). Note that javascript support may be needed in ant for some components.</li>
 </ul>

@@ -8,13 +8,7 @@
 
 <body>
   <section name="Screenshots">
-    <p>The following screenshots are the default one from the administration web-application</p>
-    <p>If you need a more polished UI or simply need to adapt it, we highly recommend the use of
-    the following components:</p>
-    <ul>
-    <li><a href="http://www.opensymphony.com/sitemesh/">OpenSymphony SiteMesh</a></li>
-    <li><a href="http://style.tigris.org/">Tigris Style</a> CSS stylesheets.</li>
-    </ul>
+    <p>The following screenshots are the default one from the administration web-application.</p>
     <p>
     <table class="screenshots">
     <!--tr>

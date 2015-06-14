@@ -40,7 +40,7 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="CRL Publish Perl script">
     <p>
-    <a href="http://search.cpan.org/~kcody/EJBCA-CrlPublish-0.50/">CRL Publish</a> perl script by Kevin Cody-Little.
+    <a href="http://search.cpan.org/~kcody/EJBCA-CrlPublish-0.60/">CRL Publish</a> perl script by Kevin Cody-Little.
     </p>
     <p>CRL Publish pushes newly generated CRLs to your distribution web servers. It can be installed from CPAN as module EJBCA::CrlPublish.
     </p>
@@ -107,7 +107,7 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="OpenSC">
 	<p>
-    <a href="http://www.opensc-project.org/">OpenSC project</a>
+    <a href="https://github.com/OpenSC/OpenSC/wiki">OpenSC project</a>
 	</p>
 	<p>
 	OpenSC provides a set of libraries and utilities to work with smart cards. You can use OpenSC to support login and authentication using PKI smart cards.
