@@ -105,7 +105,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Internet of Things (IoT). Need some hundreds of millions of certificates fast? EJBCA will handle it.</li>
 <li>Mobile Device Management (MdM).</li>
 <li>Issue citizen certificates for access to government resources, used in passports etc.</li>
-<li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for EU <a href="cvccas.html">EAC ePassports</a> and eIDs.</li>
+<li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for EU <a href="docs/cvccas.html">EAC ePassports</a> and eIDs.</li>
 <li>... and many many more ...</li>
 </ul>
 <note>
