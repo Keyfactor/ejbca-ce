@@ -208,7 +208,7 @@ var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 5);
 piwikTracker.trackPageView();
 piwikTracker.enableLinkTracking();
 } catch( err ) {}
-</script><noscript><p><img src="//stat.primekey.se/piwik/piwik.php?idsite=5" style="border:0" alt="" /></p></noscript]]>
+</script><noscript><p><img src="//stat.primekey.se/piwik/piwik.php?idsite=5" style="border:0" alt=""></p></noscript]]>
         </replacevalue>
       </replace>
     </target>
