@@ -336,14 +336,39 @@ so short polling times should be used (~10 seconds).
 The CMP Proxy is the module installed on the external RA server.
 </p><p>
 <ol>
+ <li>Unpack an Apache Tomcat server, or a JBoss server.</li>
  <li>Setup a message database on the external RA server.</li>
- <li>Configure the database datasource in the application server.</li>
- <li>Configure the external RA backend and datasource in EJBCA_HOME/modules/cmpProxy/resources/properties/cmpProxy.properties.</li>
+ <li>Configure the database datasource in the application server (see below for Tomcat example).</li>
  <li>Make sure the correct database JDBC connector JAR is installed in the application server on the external RA server. (i.e. copy mariadb-java-client-1.1.5.jar to apache-tomcat-7.0.25/lib/)</li>
+ <li>Configure the external RA backend and datasource in EJBCA_HOME/modules/cmpProxy/resources/properties/cmpProxy.properties (if using default datasource name only cmp.backend.protocol needs to be set).</li>
  <li>Configure logging level in modules/cmpProxy/resources/properties/log4j.xml.</li>
  <li>Run 'ant cmpHttpProxy' to build the CMP Proxy (to dist/cmpHttpProxy) and copy the war file to the deploy directory of the application server.</li>
 </ol>
 </p>
+<p>If you need to trim the configuration of the database connection on the external RA host it is done in modules/cmpProxy/resources/properties/persistence.xml.</p>
+<p>To configure a datasource, using a connection pool, in Tomcat you need to edit <b>conf/server.xml></b>, adding the following Resource to &lt;GlobalNamingResources&gt;:</p>
+<source>
+&lt;Resource 
+  name="jdbc/CMPRAMessageDS" 
+  auth="Container" 
+  type="javax.sql.DataSource" 
+  maxActive="100" 
+  maxIdle="30" 
+  maxWait="10000"
+  username="ejbca" 
+  password="ejbca" 
+  driverClassName="org.mariadb.jdbc.Driver" 
+  url="jdbc:mysql://ca-host:3306/messages"
+  /&gt;
+</source>    
+<p>You need to edit username, password and URL.</p>
+<p>You also need to make the datasource available to the webapp by editing <b>conf/context.xml</b>, adding a resource link in the end (just before &lt;/Context&gt;):</p>
+<source>
+&lt;ResourceLink 
+    name="jdbc/CMPRAMessageDS" 
+    global="jdbc/CMPRAMessageDS"
+    type="javax.sql.DataSource"/&gt;
+</source>
 </subsection>
 <subsection name="Configuration message polling from EJBCA">
 <p>
