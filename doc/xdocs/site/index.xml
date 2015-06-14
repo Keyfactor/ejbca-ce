@@ -14,8 +14,8 @@
 <tr>
 <td valign="top"><!--TWITTER WIDGET-->
 <div class="frame note" id="twitter" style="border:0;">
-<a class="twitter-timeline" width="260" height="275" data-dnt="true" href="https://twitter.com/primekeyPKI" data-widget-id="344774465936306176">Tweets by @primekeyPKI</a>
-<script>
+<a class="twitter-timeline" href="https://twitter.com/primekeyPKI" data-widget-id="344774465936306176" width="260" height="275" data-dnt="true">Tweets by @primekeyPKI</a>
+<script type="text/javascript">
 !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
 </script>
 </div>
@@ -39,14 +39,14 @@
  -->    
  <p><strong>EJBCA Community 6.3.1.1 is now out!</strong> The next generation open source PKI is here, supporting Java 7, JBoss 7 and new advanced features.
   Visit the <a href="download.html">download</a> section. There you will also find a pre-installed VM to try (not necessarily with the latest version though).
-  <br />
+  <br/>
   <span class="date"> Posted: 2015-06-02</span>  
   </p>  
   <p><strong>EJBCA Enterprise 6.2.10 and 6.3.2!</strong>
  PrimeKey's EJBCA Enterprise is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. The latest releases are <a href="https://www.primekey.se/news-events/">
  EJBCA Enterprise 6.2.10</a> and <a href="https://www.primekey.se/news-events/">
  EJBCA Enterprise 6.3.2</a>. For entire non-community features, only available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise Edition features" in the features list</a>.
- <br />
+ <br/>
   <span class="date"> Posted: 2015-06-02</span>
   </p>
   <p><strong>PKI-in-a-box!</strong> By integrating secure hardware technology with the flexibility, reliability and feature set of EJBCA Enterprise, 
@@ -54,10 +54,10 @@
   </p>
    <!-- 
   <a href="http://blog.ejbca.org/2013/11/whats-new-in-ejbca-6-part-4-enterprise.html" target="ejbcablog">EJBCA Enterprise and Community, value and difference.</a>
-  <br />  -->
+  <br/>  -->
   <p><strong>EJBCA Tech Blog!</strong> <a href="http://blog.ejbca.org" target="ejbcablog">High Availability for PKI in 8 Simple Steps
 </a> 
-  <br />
+  <br/>
   <span class="date"> Posted: 2015-04-05</span>
   </p>  
   <p>
@@ -89,7 +89,6 @@ but if you want a serious PKI CA we recommend EJBCA. EJBCA is:
 </ul>
 <p><strong>EJBCA has everything for your trust center. Contact us for more info.</strong>
 </p>
-<p>
 You can use EJBCA to issue certificates for different purposes such as:
 <ul>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
@@ -109,11 +108,10 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for EU <a href="cvccas.html">EAC ePassports</a> and eIDs.</li>
 <li>... and many many more ...</li>
 </ul>
-</p>
 <note>
 You can also use EJBCA to set up a CA independent, high performance, highly available OCSP responder service.
 </note>
-<p>Together with sister projects (see <i><a href="complementary.html">Complementary software</a></i>) of EJBCA you can also:
+<p>Together with sister projects (see <i><a href="complementary.html">Complementary software</a></i>) of EJBCA you can also:</p>
 <ul>
 <li>Get central trusted <a href="http://signserver.org">Time Stamps</a> for you electronically signed documents.</li>
 <li>Perform <a href="http://signserver.org">central signing of documents</a>.</li>
@@ -121,7 +119,6 @@ You can also use EJBCA to set up a CA independent, high performance, highly avai
 <li>Issue hard tokens (<a href="complementary.html#Hardware%20tokens">smart cards</a>) and manage the complete life cycle of cards and certificates.</li>
 <li>... and many many more ...</li>
 </ul>
-</p>
   <note>
   The cert-cvc library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
   feature complete for EU EAC ePassports using all algorithms.
