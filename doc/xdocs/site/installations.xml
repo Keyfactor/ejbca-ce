@@ -3,15 +3,25 @@
 
   <properties>
     <title>Reference installations</title>
+    <description>View a small sample selection of use cases where EJBCA PKI is installed.</description>
   </properties>
 
 <body>
+  <section name="Thousands of installations">
+  <p>EJBCA is downloaded thousands of times every month, and is used in thousands of organizations around the world. Ranging from installations in small companies, to 
+  missions critical installations in multinational companies and governments. If you have a use case for PKI, there is a good chance someone else is already using it for just that.</p>
+  </section>
+  <section name="Commercial references">
+  <p>
+  PrimeKey has a list of <a href="https://www.primekey.se/business-cases/explore-the-world-of-primekey/">commercial business cases</a> where PrimeKey is involved. This list is continuously growing as we produce new material.
+  </p>
+  </section>
   <section name="Reference installations">
-	<p>This section lists a limited selection of sites where EJBCA have been deployed succesfully.
+	<p>This section lists a limited selection of sites where EJBCA have been deployed successfully.
 	As any software installations things move around over time, so the number of users etc should be considered an indication, not an absolute number.
 	</p>
 	<p>
-	If you like to be present on the list of reference installations, please <a href="contact.html">contact</a> us.
+	If you would allow us to present you on the list of reference installations, please <a href="contact.html">contact</a> us.
 	</p>
 	
 	<subsection name="PrimeKey Solutions AB">
