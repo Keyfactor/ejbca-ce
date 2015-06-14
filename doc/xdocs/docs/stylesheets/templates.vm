@@ -200,6 +200,12 @@
     <head>
       <META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
         <title>$project.getChild("title").getText() - $root.getChild("properties").getChild("title").getText()</title>
+	  #set ($descriptions = $root.getChild("properties").getChildren("description"))
+	  #if ($descriptions.size() > 0)
+	    #foreach ( $description in $descriptions )
+        <meta name="description" content="$description.getText()" />
+	    #end
+	  #end
         <link type="text/css" href="$relativePath/page.css" rel="stylesheet">
         <link rel="shortcut icon" href="./images/pk-favIcon.png">
   #set ($authors = $root.getChild("properties").getChildren("author"))
