@@ -18,7 +18,7 @@ reg.submit();
 %>
 
 <c:forEach var="error" items="${reg.errors}">
-    <p><c:out value="${error}" /></p>
+    <p><strong>ERROR:</strong> <c:out value="${error}" /></p>
 </c:forEach>
 
 <c:if test="${empty reg.errors}">

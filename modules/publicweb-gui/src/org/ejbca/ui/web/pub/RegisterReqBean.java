@@ -99,7 +99,22 @@ public class RegisterReqBean {
             if (k instanceof String && v instanceof String) {
                 String key = (String)k;
                 if (key.matches("web\\.selfreg\\.certtypes\\.([^.]+)\\.description")) {
-                    certtypes.put(key.split("\\.")[3], (String)v);
+                    final String name = key.split("\\.")[3];
+                    // Check if the certificate exists
+                    if ("true".equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.selfreg.ignorenonexistingcerttypes"))) {
+                        try {
+                            final String eeprofname = getCertTypeInfoOptional(name, "eeprofile", null);
+                            final String certprofname = getCertTypeInfoOptional(certType, "certprofile", null);
+                            if (eeprofname == null || certprofname == null) { continue; }
+                            endEntityProfileSession.getEndEntityProfileId(eeprofname);
+                            if (certificateProfileSession.getCertificateProfileId(certprofname) == 0) {
+                                continue; // Ignore this certificate
+                            }
+                        } catch (EndEntityProfileNotFoundException e) {
+                            continue; // Ignore this certificate
+                        }
+                    }
+                    certtypes.put(name, (String)v);
                 }
             }
         }
@@ -114,6 +129,15 @@ public class RegisterReqBean {
         String value = EjbcaConfigurationHolder.getString(key);
         if (value == null) {
             internalError("Configuration property "+key+" not defined");
+        }
+        return value;
+    }
+    
+    private String getCertTypeInfoOptional(String certType, String subproperty, String defaultValue) {
+        String key = "web.selfreg.certtypes."+certType+"."+subproperty;
+        String value = EjbcaConfigurationHolder.getString(key);
+        if (value == null) {
+            return defaultValue;
         }
         return value;
     }
@@ -261,19 +285,27 @@ public class RegisterReqBean {
     private void checkCertEEProfilesExist() {
         String eeprofName = getCertTypeInfo(certType, "eeprofile");
         if (eeprofName != null && endEntityProfileSession.getEndEntityProfile(eeprofName) == null) {
-            internalError("End entity profile "+eeprofName+" does not exist. Check web.selfreg.certtypes."+certType+".eeprofile configuration");
+            internalError("End entity profile "+eeprofName+" does not exist. Please ask the administrator to check the web.selfreg.certtypes."+certType+".eeprofile configuration");
         }
         
         String certprofName = getCertTypeInfo(certType, "certprofile");
         if (certprofName != null && certificateProfileSession.getCertificateProfile(certprofName) == null) {
-            internalError("Certificate profile "+certprofName+" does not exist. Check web.selfreg.certtypes."+certType+".certprofile configuration");
+            internalError("Certificate profile "+certprofName+" does not exist. Please ask the administrator to check the web.selfreg.certtypes."+certType+".certprofile configuration");
         }
     }
     
     public void checkConfig() {
         String s = EjbcaConfigurationHolder.getString("web.selfreg.defaultcerttype");
         if (s != null && getCertTypeInfo(s, "description") == null) {
-            internalError("Please check the default certificate type. It is configured by web.selfreg.defaultcerttype.");
+            internalError("Please ask the administrator to check the default certificate type. It is configured by web.selfreg.defaultcerttype.");
+        }
+        
+        if (getCertificateTypes().isEmpty()) {
+            if ("true".equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.selfreg.ignorenonexistingcerttypes")) && getCertificateTypes().isEmpty()) {
+                internalError("No certificate profiles / end-entity profiles for self-registration are available.");
+            } else {
+                internalError("No certificate types have been configured. Please ask the administrator to check that at least one web.selfreg.certtypes.* entry is configured");
+            }
         }
     }
     
@@ -287,6 +319,9 @@ public class RegisterReqBean {
         checkConfig();
         checkCertEEProfilesExist();
         eeprofile = getEndEntityProfile();
+        if (eeprofile == null && !errors.isEmpty()) {
+            return;
+        }
         String usernameMapping = getUsernameMapping();
 
         // Get all fields
