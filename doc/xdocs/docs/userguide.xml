@@ -456,10 +456,9 @@ There are four settings in CA configuration dictating the times when CRL generat
 <subsubsection name="Finish User">
 <p>
 The Finish User configuration defines if the CA calls a process called "finishUser" after a certificate has been issued for an end entity. 
-This process is what makes the user's password a one-time password, i.e. it removes the password and/or decreases the password use count. 
 <ul>
 <li>With this setting enabled (default) an end entity password can only be used once (or as many times as defined in 'Number of allowed requests' when adding the end entity) to enroll for a certificate.
-After the certificate has been issued the user status is set to 'Generated' and the password blanked. When status is 'Generated' a new certificate can not be issued until status is reset to 'New', usually by editing the end entity.
+After the last certificate has been issued the user status is set to 'Generated'. When status is 'Generated' a new certificate can not be issued until status is reset to 'New', usually by editing the end entity.
 </li>
 <li>With this setting disabled the password can be used unlimited number of times to enroll for certificates, and the status stays as 'New' after each time.
 </li> 
