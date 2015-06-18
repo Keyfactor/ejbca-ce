@@ -102,7 +102,7 @@ public class RegisterReqBean {
                     final String name = key.split("\\.")[3];
                     // Check if the certificate exists
                     final String eeprofname = getCertTypeInfoOptional(name, "eeprofile", null);
-                    final String certprofname = getCertTypeInfoOptional(certType, "certprofile", null);
+                    final String certprofname = getCertTypeInfoOptional(name, "certprofile", null);
                     try {
                         if (eeprofname == null || certprofname == null) {
                             if (log.isDebugEnabled()) {
@@ -491,6 +491,10 @@ public class RegisterReqBean {
         globalConfiguration.initializeAdminWeb();
         
         checkFormFields();
+        final String usernamePrefix = getCertTypeInfoOptional(certType, "usernameprefix", null);
+        if (usernamePrefix != null) {
+            username = usernamePrefix + username;
+        }
         
         if (!errors.isEmpty()) {
             return;
