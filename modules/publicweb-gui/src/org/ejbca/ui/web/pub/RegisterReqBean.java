@@ -101,19 +101,29 @@ public class RegisterReqBean {
                 if (key.matches("web\\.selfreg\\.certtypes\\.([^.]+)\\.description")) {
                     final String name = key.split("\\.")[3];
                     // Check if the certificate exists
-                    if ("true".equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.selfreg.ignorenonexistingcerttypes"))) {
-                        try {
-                            final String eeprofname = getCertTypeInfoOptional(name, "eeprofile", null);
-                            final String certprofname = getCertTypeInfoOptional(certType, "certprofile", null);
-                            if (eeprofname == null || certprofname == null) { continue; }
-                            endEntityProfileSession.getEndEntityProfileId(eeprofname);
-                            if (certificateProfileSession.getCertificateProfileId(certprofname) == 0) {
-                                continue; // Ignore this certificate
+                    final String eeprofname = getCertTypeInfoOptional(name, "eeprofile", null);
+                    final String certprofname = getCertTypeInfoOptional(certType, "certprofile", null);
+                    try {
+                        if (eeprofname == null || certprofname == null) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Ignoring certificate type "+name+" due to missing eeprofile/certprofile properties");
                             }
-                        } catch (EndEntityProfileNotFoundException e) {
+                            continue;
+                        }
+                        endEntityProfileSession.getEndEntityProfileId(eeprofname);
+                        if (certificateProfileSession.getCertificateProfileId(certprofname) == 0) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Ignoring certificate type "+name+" due to missing certificate profile '"+certprofname+"'");
+                            }
                             continue; // Ignore this certificate
                         }
+                    } catch (EndEntityProfileNotFoundException e) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Ignoring certificate type "+name+" due to missing end-entity profile '"+eeprofname+"'");
+                        }
+                        continue; // Ignore this certificate
                     }
+                    
                     certtypes.put(name, (String)v);
                 }
             }
@@ -301,11 +311,7 @@ public class RegisterReqBean {
         }
         
         if (getCertificateTypes().isEmpty()) {
-            if ("true".equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.selfreg.ignorenonexistingcerttypes")) && getCertificateTypes().isEmpty()) {
-                internalError("No certificate profiles / end-entity profiles for self-registration are available.");
-            } else {
-                internalError("No certificate types have been configured. Please ask the administrator to check that at least one web.selfreg.certtypes.* entry is configured");
-            }
+            internalError("No certificate types have been configured. Self registration is not available.");
         }
     }
     
