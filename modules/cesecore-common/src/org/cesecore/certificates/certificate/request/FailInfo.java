@@ -47,6 +47,9 @@ public class FailInfo implements Serializable {
      * No certificate could be identified matching the provided criteria
      */
     public static final FailInfo BAD_CERTIFICATE_ID = new FailInfo(4);
+    
+    // The below codes are not specified in the SCEP draft RFC
+    
     /**
      * Request for wrong certificate authority
      */
@@ -63,6 +66,10 @@ public class FailInfo implements Serializable {
      * Not authorized
      */
     public static final FailInfo NOT_AUTHORIZED = new FailInfo(23);
+    /**
+     * Timeout, request timed out
+     */
+    public static final FailInfo TIMEOUT = new FailInfo(24);
     /**
      * The value actually encoded into the response message as the failinfo attribute
      */
