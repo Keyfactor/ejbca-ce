@@ -141,6 +141,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # the username from a field in the subject DN
 #web.selfreg.certtypes.1.usernamemapping=CN
 
+# Optional: Prefix to add before the username
+#web.selfreg.certtypes.1.usernameprefix=Example_
+
 # Deploy the request browser certificate renewal web application and show a 
 # link to it from the EJBCA public web.
 # Default = false
