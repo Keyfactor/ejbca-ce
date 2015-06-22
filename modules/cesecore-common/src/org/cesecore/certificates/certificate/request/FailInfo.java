@@ -15,7 +15,8 @@ package org.cesecore.certificates.certificate.request;
 import java.io.Serializable;
 
 /**
- * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
+ * Encapsulates the possible values for the failinfo part of a SCEP or CMP FAILURE response.
+ * In CMP (RFC4210) the codes are specified in E.7.
  *
  * @version $Id$
  */
@@ -67,9 +68,9 @@ public class FailInfo implements Serializable {
      */
     public static final FailInfo NOT_AUTHORIZED = new FailInfo(23);
     /**
-     * Timeout, request timed out
+     * (Timeout), system was unavailable and could not be reached
      */
-    public static final FailInfo TIMEOUT = new FailInfo(24);
+    public static final FailInfo SYSTEM_UNAVAILABLE = new FailInfo(24);
     /**
      * The value actually encoded into the response message as the failinfo attribute
      */
