@@ -594,6 +594,7 @@ java.security.InvalidAlgorithmParameterException
                         final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
                         final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
                         final Properties caTokenProperties = new Properties();
+                        caTokenProperties.putAll(cainfo.getCAToken().getProperties());
                         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, keyAliasDefaultKey);
                         if (keyAliasCertSignKey.length()>0) {
                             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, keyAliasCertSignKey);
@@ -613,6 +614,9 @@ java.security.InvalidAlgorithmParameterException
                         
                         final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
                         newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
+                        newCAToken.setEncryptionAlgorithm(cainfo.getCAToken().getEncryptionAlgorithm());
+                        newCAToken.setKeySequence(cainfo.getCAToken().getKeySequence());
+                        newCAToken.setKeySequenceFormat(cainfo.getCAToken().getKeySequenceFormat());
                         cainfo.setCAToken(newCAToken);
                     }
                     
