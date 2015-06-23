@@ -619,6 +619,18 @@ public class UserData extends ProtectedData implements Serializable {
         query.setParameter("status", status);
         return query.getResultList();
     }
+    
+    /**
+     * @param entityManager an entity manager
+     * @param caId the CA ID to search for
+     * @return return the query results as a List.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<UserData> findByCAId(EntityManager entityManager, int caId) {
+        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.caId=:caId");
+        query.setParameter("caId", caId);
+        return query.getResultList();
+    }
 
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
