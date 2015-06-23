@@ -137,4 +137,9 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      */
     void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, NoSuchEndEntityException;
 
+    /**
+     * Like {@link EndEntityManagementSession#findAllUsersByCaId}, but performs no auth check.
+     */
+    Collection<EndEntityInformation> findAllUsersByCaIdNoAuth(int caid);
+
 }

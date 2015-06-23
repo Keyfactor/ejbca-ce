@@ -1766,6 +1766,23 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         return returnval;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<EndEntityInformation> findAllUsersByCaIdNoAuth(int caid) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findAllUsersByCaIdNoAuth()");
+        }
+        final List<UserData> userDataList = UserData.findByCAId(entityManager, caid);
+        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
+        for (UserData ud : userDataList) {
+            returnval.add(ud.toEndEntityInformation());
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<findAllUsersByCaIdNoAuth()");
+        }
+        return returnval;
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
