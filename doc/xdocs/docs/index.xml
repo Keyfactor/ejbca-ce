@@ -16,6 +16,9 @@
 <li><a href="architecture-ocsp.html">OCSP Responder</a>.</li>
 </ul>
   <p>
+  We have a page with an overview, non exhaustive, of different <a href="architecture.html">PKI architectures</a> you can implement with EJBCA. This page also has an overview of the internal architecture of EJBCA.
+  </p>
+  <p>
   For more information visit the <a href="http://ejbca.org/">ejbca.org</a> home page.
   </p>
   </section>
