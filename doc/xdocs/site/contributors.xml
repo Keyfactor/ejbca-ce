@@ -108,6 +108,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Andrew Dunn, <!-- ammd77@yahoo.co.uk -->Fix for not adding OCSP GET cache headers for responses with nonce.</li>
 <li>SecureMetric, <!-- securemetric.com -->Fix IE11 enrollment in public web.</li>
 <li>Kaan Kivilcim of The Google Security Team, suggestions for security improvements.</li>
+<li>Stefan Selbitschka, patch to allow HELP text in custom publisher UI.</li>
 </ul>
     </section>
   </body>
