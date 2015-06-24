@@ -14,25 +14,64 @@
 package org.ejbca.ui.cli;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.math.BigInteger;
+import java.security.Key;
 import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cms.CMSEnvelopedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.util.CertTools;
+import org.ejbca.cvc.AccessRights;
+import org.ejbca.cvc.AlgorithmUtil;
+import org.ejbca.cvc.AuthorizationRole;
+import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateGenerator;
+import org.ejbca.cvc.HolderReferenceField;
+import org.ejbca.cvc.OIDField;
 import org.ejbca.util.CMS;
 import org.ejbca.util.CliTools;
 import org.ejbca.util.keystore.KeyStoreContainer;
@@ -65,6 +104,7 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String RENAME = "rename";
     private static final String INSTALL_TRUSTED_ROOT = "installtrusted";
     private static final Object SIGN_SWITCH = "sign";
+    private static final Object LINKCERT_SWITCH = "linkcert";
 
     final static private Logger log = Logger.getLogger(HSMKeyTool.class);
 
@@ -358,6 +398,184 @@ public class HSMKeyTool extends ClientToolBox {
             }
             return true;
         }
+        if ( args[1].toLowerCase().trim().equals(LINKCERT_SWITCH)) {
+            if ( args.length < 10 ) {
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old ca-cert> <new ca-cert> <output link-cert> <key alias> [<sig alg override>]");
+                System.err.println();
+                System.err.println("Creates a link certificate that links the old and new certificate files.");
+                System.err.println("You should use this command with the old HSM key. It does not need any");
+                System.err.println("access to the new key.");
+                System.err.println();
+                tooFewArguments(args);
+            } else {
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                final KeyStoreContainer ksc = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
+                final String alias = args[9];
+                final String oldCertPath = args[6];
+                final String newCertPath = args[7];
+                final String outputPath = args[8];
+                final String signProviderName = ksc.getProviderName();
+                final String sigAlgOverride = (args.length >= 11 ? args[10] : "null");
+                
+                // Parse certificates
+                final byte[] oldCertBytes = IOUtils.toByteArray(new FileInputStream(oldCertPath));
+                final byte[] newCertBytes = IOUtils.toByteArray(new FileInputStream(newCertPath));
+                final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, "BC");
+                final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, "BC");
+                final boolean isCVCA = (oldCert instanceof CardVerifiableCertificate);
+                if (isCVCA != (newCert instanceof CardVerifiableCertificate)) {
+                    log.error("Error: Old and new certificates are not of the same type (X509 / CVC)");
+                    return true; // = valid command-line syntax
+                }
+                System.err.println("Type of certificates: "+(isCVCA ? "CVC" : "X509"));
+                
+                // Detect name change
+                final String oldDN = CertTools.getSubjectDN(oldCert);
+                final String newDN = CertTools.getSubjectDN(newCert);
+                System.err.println("Old DN: "+oldDN);
+                System.err.println("New DN: "+newDN);
+                final boolean nameChange;
+                if (!oldDN.equals(newDN)) {
+                    if (isCVCA) {
+                        System.err.println("Name change detected.");
+                    } else {
+                        System.err.println("Name change detected. Will add Name Change extension.");
+                    }
+                    nameChange = true;
+                } else {
+                    System.err.println("No name change detected.");
+                    nameChange = false;
+                }
+                
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                
+                // Get new and old key
+                PublicKey newPubKey = newCert.getPublicKey();
+                if (newPubKey == null) {
+                    System.err.println("Error: Failed to extract public key from new certificate");
+                    return true;
+                }
+                final Key oldKey = ksc.getKey(alias);
+                if (oldKey == null) {
+                    System.err.println("Error: Could not find the key named "+alias);
+                    return true;
+                }
+                final PrivateKey oldPrivKey = (PrivateKey)oldKey;
+                
+                if (isCVCA) {
+                    final CVCertificate oldCertCVC = ((CardVerifiableCertificate)oldCert).getCVCertificate();
+                    final CVCertificate newCertCVC = ((CardVerifiableCertificate)newCert).getCVCertificate();
+                    
+                    final String linkSigAlg;
+                    if (sigAlgOverride.equalsIgnoreCase("null")) {
+                        final OIDField oldKeyTypeOid = oldCertCVC.getCertificateBody().getPublicKey().getObjectIdentifier();
+                        linkSigAlg = AlgorithmUtil.getAlgorithmName(oldKeyTypeOid);
+                    } else {
+                        System.err.println("Error: Overriding the signature algorithm is not supported for CVC");
+                        return true;
+                    }
+                    System.err.println("Using signature algorithm "+linkSigAlg);
+                    
+                    final HolderReferenceField caHolder = oldCertCVC.getCertificateBody().getHolderReference();
+                    final CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
+                    final HolderReferenceField certHolder = newCertCVC.getCertificateBody().getHolderReference();
+                    final AuthorizationRole authRole = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole();                    
+                    final AccessRights rights = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
+                    final Date validFrom = new Date(new Date().getTime() - 60*15); // back date by 15 minutes to allow for clock skew
+                    final Date validTo = oldCertCVC.getCertificateBody().getValidTo();
+                    
+                    final CVCertificate linkCert = CertificateGenerator.createCertificate(newPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
+                    final DataOutputStream dos = new DataOutputStream(baos);
+                    linkCert.encode(dos);
+                    dos.close();
+                } else {
+                    // X509 CA
+                    final X509Certificate oldCertX509 = (X509Certificate)oldCert;
+                    final X509Certificate newCertX509 = (X509Certificate)newCert;
+                    
+                    final String linkSigAlg;
+                    if (sigAlgOverride.equalsIgnoreCase("null")) {
+                        // Actually, we should use signature algorithm of new cert if the old key allows that.
+                        // Instead of doing that we allow the user to manually override the signature algorithm if needed.
+                        linkSigAlg = oldCertX509.getSigAlgName();
+                    } else {
+                        System.err.println("Warning: Signature algorithm manually overridden!");
+                        linkSigAlg = sigAlgOverride;
+                    }
+                    System.err.println("Using signature algorithm "+linkSigAlg);
+                    
+                    final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+                    final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
+                    final Date validFrom = new Date(new Date().getTime() - 60*15); // back date by 15 minutes to allow for clock skew
+                    final Date validTo = oldCertX509.getNotAfter();
+                    
+                    final X500Name oldDNName = X500Name.getInstance(oldCertX509.getSubjectX500Principal().getEncoded());
+                    final X500Name newDNName = X500Name.getInstance(newCertX509.getSubjectX500Principal().getEncoded());
+                    
+                    final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(oldDNName, serno, validFrom, validTo, newDNName, pkinfo);
+                    
+                    // Copy all extensions except AKID
+                    final ExtensionsGenerator extgen = new ExtensionsGenerator();
+                    final Set<String> oids = new LinkedHashSet<String>();
+                    final Set<String> criticalOids = newCertX509.getCriticalExtensionOIDs();
+                    oids.addAll(criticalOids);
+                    oids.addAll(newCertX509.getNonCriticalExtensionOIDs());
+                    for (final String extOidStr : oids) {
+                        final ASN1ObjectIdentifier extoid = new ASN1ObjectIdentifier(extOidStr);
+                        if (!extoid.equals(Extension.authorityKeyIdentifier)) {
+                            final byte[] extbytes = newCertX509.getExtensionValue(extOidStr);
+                            final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(extbytes);
+                            extgen.addExtension(extoid, criticalOids.contains(extOidStr), ASN1Primitive.fromByteArray(str.getOctets()));
+                        }
+                    }
+                    
+                    if (nameChange) {
+                        // id-icao-mrtd-security-extensions-nameChange = 2.23.136.1.1.6.1
+                        extgen.addExtension(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover, false, DERNull.INSTANCE);
+                    }
+                    
+                    // Some checks
+                    if (newCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId()) == null) {
+                        System.err.println("Warning: Certificate of new CSCA is missing the Subject Key Identifier extension, which is mandatory.");
+                    }
+                    if (newCertX509.getExtensionValue(Extension.authorityKeyIdentifier.getId()) == null) {
+                        System.err.println("Warning: Certificate of new CSCA is missing the Authority Key Identifier extension, which is mandatory.");
+                    }
+                    
+                    // If the new cert has an AKID, then add that extension but with the key id value of the old cert
+                    final byte[] oldSKIDBytes = oldCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+                    if (oldSKIDBytes != null) {
+                        final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSKIDBytes);
+                        final ASN1OctetString innerStr = (ASN1OctetString)ASN1Primitive.fromByteArray(str.getOctets());
+                        final AuthorityKeyIdentifier akidExt = new AuthorityKeyIdentifier(innerStr.getOctets());
+                        extgen.addExtension(Extension.authorityKeyIdentifier, false, akidExt);
+                    } else {
+                        System.err.println("Warning: The old certificate doesn't have any SubjectKeyIdentifier. The link certificate will not have any AuthorityKeyIdentifier.");
+                    }
+                    
+                    // Add extensions to the certificate
+                    final Extensions exts = extgen.generate();
+                    for (final ASN1ObjectIdentifier extoid : exts.getExtensionOIDs()) {
+                        final Extension ext = exts.getExtension(extoid);
+                        certbuilder.addExtension(extoid, ext.isCritical(), ext.getParsedValue());
+                    }
+                    
+                    // Sign the certificate
+                    final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(linkSigAlg).setProvider(signProviderName).build(oldPrivKey), 20480);
+                    final X509CertificateHolder certHolder = certbuilder.build(signer);
+                    baos.write(certHolder.getEncoded());
+                }
+                
+                // Save to output file
+                final FileOutputStream fos = new FileOutputStream(outputPath);
+                baos.writeTo(fos);
+                fos.close();
+            }
+            return true;
+        }
         if ( args[1].toLowerCase().trim().equals(VERIFY_SWITCH)) {
             final CMS.VerifyResult verifyResult;
             if ( args.length < 7 ) {
@@ -473,6 +691,7 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("  "+args[0]+" "+SIGN_SWITCH);
             pw.println("  "+args[0]+" "+VERIFY_SWITCH);
             pw.println("  "+args[0]+" "+MOVE_SWITCH);
+            pw.println("  "+args[0]+" "+LINKCERT_SWITCH);
             pw.println("  The optional -password <password> switch can be specified as a last argument for scripting any of these commands.");
             pw.flush();
             if (args.length > 1) {
