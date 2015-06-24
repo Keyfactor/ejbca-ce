@@ -422,6 +422,22 @@ See CMP documentation for full information about that.
 You can use whitelisting and signed external RA messages to further limit capabilities of the external RA host itself.
 </p>
 </subsection>
+<subsection name="Clustering External RA">
+<p>
+You can have several External RA servers, in order to provide high availability, or increased performance. There are generally two waysto cluster External RA: 
+</p>
+<ul>
+<li>Setting up a shared, HA, database for the External RA servers.</li>
+<li>Setting up independent databases on each External RA server.</li>
+</ul>
+    <p>
+    <img src="images/external-ra-cluster.png" title="External RA clustered in two different ways" alt="External RA clustered in two different ways" />
+    </p>
+<p>
+External RA service workers on the CA side works cluster-wide on the CA. This means that if you have multipple CA nodes, a single service worker will run on one node by default,
+but if this node goes down it will run on other nodes. In addition you can <i>pin</i> service workers to specific nodes, so you can have three workers configured, that always run on their respective nodes.
+</p>
+</subsection>
 </section>
 
 </body>

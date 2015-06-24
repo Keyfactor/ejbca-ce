@@ -26,6 +26,16 @@
     <p>
     <img src="images/simple-ca.png" title="PKI solution with Certificate Authority and Registration Authority in one" alt="Simple EJBCA PKI setup with all in one CA and RA" />
     </p>
+    <p>How to create a CA with EJBCA is described in the <a href="userguide.html#Managing%20CAs">User Guide</a>.</p>
+  </subsection>
+  <subsection name="Protecting CA Signature keys">
+  <p>In the image above CA signature keys are kept in a separate Crypto Token. For installations where a certain level of trust, and security, is required, this Crypto Token 
+  will be in the form of a Hardware Security Module. In installations where security is not of the highest concern, where the organization policy does not mandate it, 
+  where cost is an important factor, or when security can be managed through other means, a soft Crypto Token, i.e. a file in the database protected only by a passphrase, can be used.
+  </p>
+  <p>There is ample documentation how you <a href="adminguide.html#Hardware%20Security%20Modules%20(HSM)">work with HSMs using EJBCA</a>. 
+  <br/>There are several different options for HSMs in the market, 
+  or you can go for a <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a> that comes with a built-in HSM hiding the complexities of managing this.</p>
   </subsection>
   <subsection name="CA with distributed RAs">
   <p>
@@ -38,6 +48,12 @@
     <p>
     <img src="images/distributed-ra.png" title="PKI solution with one CA instance (multiple CAs) and multiple RAs (MdM, Token managment), using CMP, SCEP and Web service protocols." alt="EJBCA PKI setup with multiple CA and distributed RAs, using CMP, SCEP and Web service." />
     </p>
+    <p>Different protocols suitable for RA operations are:</p>
+    <ul>
+    <li><a href="adminguide.html#CMP">CMP</a></li>
+    <li><a href="adminguide.html#EJBCA%20Web%20Service%20Interface">Web Service</a></li>
+    <li><a href="adminguide.html#Scep">SCEP</a></li>
+    </ul>
   </subsection>
   <subsection name="External RA, only outgoing connections (EJBCA Enterprise only)">
     <p>
@@ -48,13 +64,14 @@
     </p>
     <ul>
     <li>CMP using an external RA backend of the <a href="adminguide.html#CMP%20Proxy%20(EJBCA%20Enterprise%20only)">CMP Proxy</a>.</li>
-    <li>SCEP using the external RA SCEP server.</li>
-    <li>Web GUI enrollment using the external RA GUI.</li>
-    <li>Custom protocols or methods developed on top of the external RA API.</li>
+    <li>SCEP using the external <a href="externalra.html#Using%20the%20SCEP%20RA%20Server">RA SCEP server</a>.</li>
+    <li>Web GUI enrollment using the <a href="externalra.html#Using%20the%20External%20RA%20GUI">external RA GUI</a>.</li>
+    <li>Custom protocols or methods developed on top of the <a href="externalra.html#External%20RA%20API%20Clients">external RA API</a>.</li>
     </ul>
     <p>
     <img src="images/external-ra.png" title="PKI solutions External RA that handle multiple protocols, not allowing incoming connections to the CA." alt="EJBCA PKI setup with External RA, not allowing incoming connections to the CA." />
     </p>
+    <p>The External RA is available in <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
   </subsection>
   <subsection name="Off-line Root CA and multiple Sub CAs">
   <p>
@@ -65,6 +82,10 @@
     <img src="images/off-line-root-ca.png" title="PKI solution with off-line Root CA and on-line issuing SubCA." alt="EJBCA PKI setup with root CAs in separate instance." />
     </p>
   </subsection>
+  <subsubsection name="Multi-level PKI architectures">
+  <p>You can extend the architecture with as many levels of Sub CAs as you like, creating 3 or 4 tier architectures. One and two level architectures are very common. Three level architectures are also regularly used, albeit slightly less common. 
+  More than 3 levels are rarely used, unless there is some legacy purpose that needs to be worked around. Each additional level of CAs in the architecture will require clients to do an additional certificate verification and validation when verifying a leaf node certificate.</p>
+  </subsubsection>
   <subsection name="Validation Authority">
   <p>
   Any decent size PKI solution can love without certificate validation to check certificate revocation. EJBCA has built in Validation Authority (VA), meaning that the Single CA/RA setup comes with complete certificate validation capabilities. 
@@ -73,6 +94,15 @@
   </p>
     <p>
     <img src="images/validation-authority-arch.png" title="PKI solution with Validation Authorities serving revocation information from several CAs." alt="EJBCA PKI solution with Validation Authorities serving revocation information from several CAs." />
+    </p>
+  </subsection>
+  <subsection name="Enterprise Integration">
+  <p>
+  Since PKI is really a security infrastructure, it needs to be integrated fitting the security needs of the organization, and use case. Each use case and organization have their own special needs making integration truly universal.
+  One integration point that regularly occurs is integration with corporate directories or databases. EJBCA can publish information to directories, databases or other servers, using <a href="adminguide.html#LDAP%20and%20Publishers">Publishers</a>. One interesting case of publishing that is recently standardized is <a href="adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">Certificate Transparency</a>.       
+  </p>
+    <p>
+    <img src="images/integration-directory.png" title="PKI solution integrating with an Enterprise directory and other databases." alt="EJBCA PKI solution integrating with an Enterprise directory and other databases." />
     </p>
   </subsection>
   <subsection name="Cluster and High Availability">
@@ -84,6 +114,18 @@
     <img src="images/clustered-arch.png" title="PKI solution clustered for high availability and performance." alt="EJBCA PKI setup with multiple clustered servers." />
     </p>
   </subsection>
+  <subsubsection name="Primary and Disaster Recovery site">
+  <p>
+  In mission critical PKIs it is also common to set up the system with a primary site and a disaster recovery (DR) site. During normal operations traffic is directed to the primary site, which contains a clustered configuration
+  as in the previous picture. All data is replicated to a disaster recovery site, holding a mirror of the primary site (commonly with slightly less capacity for cost reasons). 
+  If there is a major problem (disaster) with the primary site, traffic is redirected to the disaster recovery site and operations can continue while the primary site is being rebuilt.   
+  </p>
+  <p>It is technically possible to build a system where both the primary and DR site can be fully operational at the same time. But in practice this is less common.</p>
+    <p>
+    <img src="images/clustered-primary-dr-arch.png" title="PKI setup with a primary and a disaster recovery site." alt="EJBCA PKI setup with a primary and a disaster recovery site." />
+    </p>
+    <p>Clustering for High Availability and Disaster Recovery can easily be set up using the <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a>, as described in the blog post <a href="http://blog.ejbca.org/2015/04/high-availability-for-pki-in-8-simple.html">High Availability for PKI in 8 Simple Steps</a>.</p>
+  </subsubsection>
   <subsection name="Audited operations">
   <p>
   Finally to beef it up for fully audited trust center architecture, you will separate more functions into separate components and introduce more role based access to different part of the system.
@@ -99,7 +141,15 @@
   <li>and more...</li>
   </ul>
   </subsection>
-
+  <subsection name="Automated and large scale operations">
+  <p>In many modern use cases (often coined IoT, Industry 4.0 etc) you really want to have automated industrial processes, in some cases very high speed and with huge volumes.
+  All the integration interfaces named above, CMP, Web service and SCEP are suitable for automated operations. In EJBCA you can configure a multitude of options for different levels of automation, different trust models and policies, etc.
+  Finding the right options you can integrate with virtually everything, issuing certificates for anything.   
+  </p><p>
+  Since EJBCA uses standard relational databases, suitable for large scale and high performance you can easily scale EJBCA to hundreds of millions issued certificates, and with some care even billions. 
+  Depending on the architecture and interfaces chosen you can reach very low latency (sub 100ms) and very high throughput (>100 certs/sec).</p>
+  <p>See the <a href="adminguide.html#Maximizing%20performance">Performance section of the Admin Guide</a> for more inspiration, including the very specialized <a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> mode.</p>
+  </subsection>
   <subsection name="Software or Appliance, Virtual or Physical">
   <p>Deploying a PKI issuing properly populated certificates, and with the correct security level (using HSMs etc) can be a daunting task if you have not done it before.
   Using EJBCA you can deploy most of the architectures above using EJBCA as a software, or packaged as a turn key <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a> from PrimeKey.</p>
