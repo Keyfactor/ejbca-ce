@@ -94,6 +94,10 @@
     		} else {
     			// Not yet implemented..
     		}
+    		// See if there is a HELP message for this custom publisher, i.e. getText does not return the classname
+	if (!ejbcawebbean.getText(currentClassSimple.toUpperCase()+"_" + current.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP").equals(currentClassSimple.toUpperCase()+"_" + current.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP")) { %>
+		<p class="help"><%= ejbcawebbean.getText(currentClassSimple.toUpperCase()+"_" + current.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP") %></p>
+	<% } 
     	} %>
       </td>
     </tr>
