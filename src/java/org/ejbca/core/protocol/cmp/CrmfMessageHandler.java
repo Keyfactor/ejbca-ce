@@ -337,6 +337,13 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
 			final RequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
 			final X500Name dnname = req.getRequestX500Name();
+			if (dnname == null) {
+			    final String nullMsg = "Request DN Name can not be null";
+			    if (LOG.isDebugEnabled()) {
+			        LOG.debug(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, nullMsg));
+			    }
+			    return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, nullMsg, requestId, requestType, null, keyId, this.responseProt);
+			}
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating username from base dn: "+dnname.toString());
 			}
