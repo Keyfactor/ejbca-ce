@@ -239,7 +239,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.debug("CMP is operating in RA mode: " + this.cmpConfiguration.getRAMode(this.confAlias));
             log.debug("CMP is operating in Vendor mode: " + vendormode);
             log.debug("CMP message already been authenticated: " + authenticated);
-            log.debug("Omitting som verifications: " + omitVerifications);
+            log.debug("Omitting some verifications: " + omitVerifications);
         }    
         
         //----------------------------------------------------------------------------------------
