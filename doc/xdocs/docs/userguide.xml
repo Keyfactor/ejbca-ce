@@ -2134,7 +2134,7 @@ You can configure the list of trusted remote server side TLS certificats in the 
 In the case where an external CA is used and you need to trust a specific TLS certificate, the certificate must be known to the local instance as well.
 You can for example use the
 <code>bin/ejbca.sh ca importcert</code>
-to ensure that this is know.
+to ensure that this is known.
 </p>
 <p>
 No implementation specific properties exist for this Internal Key Binding.
