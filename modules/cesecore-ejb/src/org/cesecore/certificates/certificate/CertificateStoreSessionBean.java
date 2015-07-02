@@ -1407,8 +1407,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 deleteLimitedCertificateData(limitedFingerprint);
         	} else {
         	    final CertificateData limitedCertificateData = cdw.getCertificateData();
-        	    if (cdw.getCertificateData().getRevocationDate()!=limitedCertificateData.getRevocationDate() ||
-        	            cdw.getCertificateData().getRevocationReason()!=limitedCertificateData.getRevocationReason()) {
+        	    if (cdw.getCertificateData().getRevocationDate()!=revocationDate.getTime() || cdw.getCertificateData().getRevocationReason()!=reasonCode) {
                     // Update the limited entry
                     log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
