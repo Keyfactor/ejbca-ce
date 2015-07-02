@@ -1,8 +1,5 @@
 <!-- Header -->
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<c:set var="hidemenu" value="${param['hidemenu'] == 'true' ? 'true' : 'false'}" />
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
@@ -32,16 +29,23 @@
                 <a href="enrol/browser.jsp">Create Browser Certificate</a>
               </li>
               <li>
-                <a href="../enrol/server.jsp">Create Certificate from CSR</a>
+                <a href="enrol/server.jsp">Create Certificate from CSR</a>
               </li>
               <li>
-                <a href="../enrol/keystore.jsp">Create Keystore</a>
+                <a href="enrol/keystore.jsp">Create Keystore</a>
               </li>
               <li>
-                <a href="../enrol/cvcert.jsp">Create CV certificate</a>
+                <a href="enrol/cvcert.jsp">Create CV certificate</a>
               </li>
             </ul>
           </li>  
+          <li><div class="menuheader">Register</div>
+            <ul>
+              <li>
+                <a href="enrol/reg.jsp">Request Registration</a>
+              </li>
+            </ul>
+          </li>
           <li><div class="menuheader">Retrieve</div>
             <ul>
               <li>
@@ -51,20 +55,30 @@
                 <a href="retrieve/ca_crls.jsp">Fetch CA CRLs</a>
               </li>
               <li>
+                <a href="retrieve/list_certs.jsp">List User's Certificates</a>
+              </li>
+              <li>
                 <a href="retrieve/latest_cert.jsp">Fetch User's Latest Certificate</a>
               </li>
             </ul>
           </li>  
+          <li><div class="menuheader">Inspect</div>
+            <ul>
+              <li>
+                <a href="inspect/request.jsp">Inspect certificate/CSR</a>
+              </li>
+                <li>
+                <a href="retrieve/check_status.jsp">Check Certificate Status</a>
+              </li>
+            </ul>
+          </li>
           <li><div class="menuheader">Miscellaneous</div>
             <ul>
               <li>
-                <a href="retrieve/list_certs.jsp">List User's Certificates</a>
-              </li>
-              <li>
-                <a href="retrieve/check_status.jsp">Check Certificate Status</a>
-              </li>
-              <li>
               <a href="adminweb/">Administration</a>
+            </li>
+              <li>
+              <a href="doc/concepts.html/">Documentation</a>
             </li>
             </ul>
           </li>  
