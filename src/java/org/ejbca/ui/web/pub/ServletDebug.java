@@ -44,6 +44,12 @@ public class ServletDebug {
         this.response = response;
     }
 
+    /**
+     * Empties the buffer to the page.
+     * 
+     * @throws IOException
+     * @throws ServletException
+     */
     public void printDebugInfo() throws IOException, ServletException {
     	String errorform = request.getParameter ("errorform");
     	String errormessage = new String(buffer.toByteArray());
@@ -66,7 +72,13 @@ public class ServletDebug {
     }
 
     public void printMessage(String msg) {
-        print(msg);
+        //Format message
+        while(msg.length() > 150) {           
+            int offset = msg.substring(0, 150).lastIndexOf(' ');
+            print(msg.substring(0, offset));
+            msg = msg.substring(offset+1);
+        } 
+        print(msg);       
     }
 
     public void printInsertLineBreaks(byte[] bA) {
