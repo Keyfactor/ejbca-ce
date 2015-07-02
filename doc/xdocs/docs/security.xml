@@ -255,7 +255,7 @@ List of these passwords in databaseprotection.properties :
 Some of the passwords are not used by EJBCA but by the application server. If these passwords
 should be encrypted, it must be in a way so that they can be decrypted by the application
 server. You have to consult the documentation of the application server to find out how to
-encrypt them (example: <a href="#Datasource passwords">datasource password in jboss</a>).
+encrypt them (example: <a href="#Datasource Passwords">datasource password in JBoss</a>).
 </p><p>
 These passwords are:
 <br/>mail.password in mail.properties
@@ -367,6 +367,56 @@ there is an article in the JBoss Wiki about encrypting them:
 <a href="http://community.jboss.org/wiki/encryptingdatasourcepasswords">
 http://community.jboss.org/wiki/encryptingdatasourcepasswords</a>
 </p>
+<p>
+There is another explanation for JBoss 7 at <a href="http://stackoverflow.com/questions/10520997/jboss-as-7-1-datasource-how-to-encrypt-password">Stackoverflow</a>.
+</p>
+<p>Summary:</p>
+
+<ul>
+<li>Run the following script to generate an encrypted encoded password (PLACEHOLDER is your password):
+</li>
+</ul>
+<source>
+# java -cp /opt/jboss/modules/system/layers/base/org/picketbox/main/picketbox-4.1.1.Final-redhat-1.jar:/opt/jboss/modules/system/layers/base/org/jboss/logging/main/jboss-logging-3.1.4.GA-redhat-2.jar:$CLASSPATH org.picketbox.datasource.security.SecureIdentityLoginModule PLACEHOLDER
+</source>
+
+<ul>
+<li>Copy the encoded password. Paste it into the standalone.xml configuration file.</li>
+</ul>
+<source>
+$ vim /opt/jboss/standalone/configuration/standalone.xml
+</source>
+<p>
+Paste the following segment into the <i>security-domains</i> segment
+</p>
+<source>
+&lt;security-domain name="EjbcaDsEncryptedPassword">
+         &lt;authentication>
+                  &lt;login-module code="SecureIdentity" flag="required">
+                        &lt;module-option name="username" value="ejbca"/>
+                        &lt;module-option name="password" value="19ee205c18ee7e14b58bc0fe9b77e168"/>
+                  &lt;/login-module>
+         &lt;/authentication>
+&lt;/security-domain>
+</source>
+<p>
+Look for the <i>EjbcaDS</i> datasource segment and replace the <i>security</i> segment:
+</p>
+<source>
+&lt;security>
+        &lt;user-name>ejbca&lt;/user-name>
+        &lt;password>PLACEHOLDER&lt;/password>
+&lt;/security>
+</source>
+<p>
+with the following value:
+</p>
+<source>
+&lt;security>
+         &lt;security-domain>EjbcaDsEncryptedPassword&lt;/security-domain>
+&lt;/security>
+</source>
+<p>You can also look into using the <i>vault.sh</i> script. You should consider if this really increase your security though.</p>
 </section>
 
 <section name="Database privileges">
