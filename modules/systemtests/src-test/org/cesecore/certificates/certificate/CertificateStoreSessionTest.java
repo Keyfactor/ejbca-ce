@@ -716,20 +716,28 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
                 certificateStatus2.equals(CertificateStatus.REVOKED));
         assertEquals("Limited CertificateData entry was not created properly.",
                 certificateStatus2.revocationReason, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        // certificateStoreSession.updateLimitedCertificateDataStatus should be able to update limited CertificateData entries (e.g. ONHOLD→ONHOLD)
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, caFingerprint);
+        final CertificateStatus certificateStatus3 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not created properly.",
+                certificateStatus3.equals(CertificateStatus.REVOKED));
+        assertEquals("Limited CertificateData entry was not created properly.",
+                certificateStatus3.revocationReason, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         // certificateStoreSession.updateLimitedCertificateDataStatus should be able to update limited CertificateData entries (e.g. ONHOLD→REVOKED)
         internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
                 RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, caFingerprint);
-        final CertificateStatus certificateStatus3 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        final CertificateStatus certificateStatus4 = certificateStoreSession.getStatus(issuerDn, serialNumber);
         assertTrue("Limited CertificateData entry was not updated properly.",
-                certificateStatus3.equals(CertificateStatus.REVOKED));
+                certificateStatus4.equals(CertificateStatus.REVOKED));
         assertEquals("Limited CertificateData entry was not updated properly.",
-                certificateStatus3.revocationReason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+                certificateStatus4.revocationReason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         // certificateStoreSession.updateLimitedCertificateDataStatus should be able to remove limited CertificateData entries when REMOVE_FROM_CRL
         internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
                 RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, caFingerprint);
-        final CertificateStatus certificateStatus4 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        final CertificateStatus certificateStatus5 = certificateStoreSession.getStatus(issuerDn, serialNumber);
         assertTrue("Limited CertificateData entry was not removed properly.",
-                certificateStatus4.equals(CertificateStatus.NOT_AVAILABLE));
+                certificateStatus5.equals(CertificateStatus.NOT_AVAILABLE));
     }
     
 	

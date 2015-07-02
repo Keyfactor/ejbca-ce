@@ -1378,25 +1378,43 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
             throw new AuthorizationDeniedException(msg);
         }
-        final CertificateInfo certificateInfo = findFirstCertificateInfo(issuerDn, serialNumber);
         final String limitedFingerprint = getLimitedCertificateDataFingerprint(issuerDn, serialNumber);
-        final CertificateData limitedCertificateData = createLimitedCertificateData(admin, limitedFingerprint, issuerDn, serialNumber, revocationDate, reasonCode, caFingerprint);
-        if (certificateInfo==null) {
+        final CertificateDataWrapper cdw = getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
+        if (cdw==null) {
             if (reasonCode==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
                 deleteLimitedCertificateData(limitedFingerprint);
             } else {
                 // Create a limited entry
+                final CertificateData limitedCertificateData = new CertificateData();
+                limitedCertificateData.setFingerprint(limitedFingerprint);
+                limitedCertificateData.setSerialNumber(serialNumber.toString());
+                limitedCertificateData.setIssuer(issuerDn);
+                // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL, 
+                // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to 
+                // "CN=limited" instead of an empty string
+                limitedCertificateData.setSubjectDN("CN=limited");
+                limitedCertificateData.setCertificateProfileId(new Integer(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
+                limitedCertificateData.setRevocationReason(reasonCode);
+                limitedCertificateData.setRevocationDate(revocationDate);
+                limitedCertificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
+                limitedCertificateData.setCaFingerprint(caFingerprint);
                 log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                 entityManager.persist(limitedCertificateData);
             }
-        } else if (limitedFingerprint.equals(certificateInfo.getFingerprint())) {
+        } else if (limitedFingerprint.equals(cdw.getCertificateData().getFingerprint())) {
         	if (reasonCode==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
                 deleteLimitedCertificateData(limitedFingerprint);
         	} else {
-        	    if (certificateInfo.getStatus()!=limitedCertificateData.getStatus() || certificateInfo.getRevocationDate().getTime()!=limitedCertificateData.getRevocationDate() ||
-        	            certificateInfo.getRevocationReason()!=limitedCertificateData.getRevocationReason()) {
+        	    final CertificateData limitedCertificateData = cdw.getCertificateData();
+        	    if (cdw.getCertificateData().getRevocationDate()!=limitedCertificateData.getRevocationDate() ||
+        	            cdw.getCertificateData().getRevocationReason()!=limitedCertificateData.getRevocationReason()) {
                     // Update the limited entry
                     log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
+                    limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
+                    limitedCertificateData.setRevocationReason(reasonCode);
+                    limitedCertificateData.setRevocationDate(revocationDate);
+                    limitedCertificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
                     entityManager.merge(limitedCertificateData);
         	    } else {
         	        if (log.isDebugEnabled()) {
@@ -1497,26 +1515,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return count;
     }
 
-    /** @return a limited CertificateData object based on the information we have */
-    private CertificateData createLimitedCertificateData(final AuthenticationToken admin, final String limitedFingerprint, final String issuerDn, final BigInteger serialNumber,
-            final Date revocationDate, final int reasonCode, final String caFingerprint) {
-        CertificateData certificateData = new CertificateData();
-        certificateData.setFingerprint(limitedFingerprint);
-        certificateData.setSerialNumber(serialNumber.toString());
-        certificateData.setIssuer(issuerDn);
-        // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL, 
-        // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to 
-        // "CN=limited" instead of an empty string
-        certificateData.setSubjectDN("CN=limited");
-        certificateData.setCertificateProfileId(new Integer(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
-        certificateData.setStatus(CertificateConstants.CERT_REVOKED);
-        certificateData.setRevocationReason(reasonCode);
-        certificateData.setRevocationDate(revocationDate);
-        certificateData.setUpdateTime(new Long(new Date().getTime()));
-        certificateData.setCaFingerprint(caFingerprint);
-        return certificateData;
-    }
-    
     /** @return something that looks like a normal certificate fingerprint and is unique for each certificate entry */
     private String getLimitedCertificateDataFingerprint(final String issuerDn, final BigInteger serialNumber) {
         return CertTools.getFingerprintAsString((issuerDn+";"+serialNumber).getBytes());
