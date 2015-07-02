@@ -372,7 +372,7 @@
 		<jboss:jbosswaitready/>
     </target>
 
-	<target name="jboss:reload">
+	<target name="jboss:reload" depends="jee:check,jee:assert-runJBoss7" if="jboss7">
     	<!-- If the server is not so fast, we have to wait a little before we can reload, otherwise it will be bad -->
 		<jboss:admwaitreload/>
 	</target>
