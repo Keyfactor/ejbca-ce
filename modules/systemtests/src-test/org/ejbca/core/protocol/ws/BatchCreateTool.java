@@ -285,7 +285,7 @@ public abstract class BatchCreateTool {
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException,
             NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-      File ret = null;
+        File ret = null;
         // get users Token Type.
         int tokentype = data.getTokenType();
         boolean createJKS = (tokentype == SecConst.TOKEN_SOFT_JKS);
@@ -348,7 +348,7 @@ public abstract class BatchCreateTool {
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, OperatorCreationException, CertificateException, NoSuchAlgorithmException, KeyStoreException,
             InvalidKeySpecException, IOException, InvalidAlgorithmParameterException {
-      KeyPair rsaKeys = null;
+      KeyPair rsaKeys;
         X509Certificate orgCert = null;
         if (useKeyRecovery && keyrecoverflag) {
             boolean reusecertificate = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
