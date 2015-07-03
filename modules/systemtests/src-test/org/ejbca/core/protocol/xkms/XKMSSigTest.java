@@ -33,7 +33,6 @@ import java.util.Random;
 import javax.crypto.SecretKey;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -57,7 +56,6 @@ import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
@@ -88,9 +86,7 @@ public class XKMSSigTest {
     private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
     private static final String SERVICE_URL = "http://localhost:8080/ejbca/xkms/xkms";	//http://localhost:8080/ejbca/xkms/xkms
-    
-    private static final String P12_FOLDER_NAME = "p12";
-    
+        
     private static String baseUsername;
 
     private static String username;
@@ -105,7 +101,7 @@ public class XKMSSigTest {
 
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
-	private AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
+	private static AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -125,7 +121,6 @@ public class XKMSSigTest {
         
         username = baseUsername + "1";
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
         try {
             endEntityManagementSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ADMINISTRATOR.toEndEntityType(), SecConst.TOKEN_SOFT_JKS, 0, caid);
@@ -141,7 +136,6 @@ public class XKMSSigTest {
     
     @AfterClass
     public static void afterClass() throws Exception {
-        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         endEntityManagementSession.deleteUser(administrator, username);
         keystorefile.deleteOnExit();

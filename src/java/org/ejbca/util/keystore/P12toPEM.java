@@ -71,15 +71,7 @@ public class P12toPEM {
         P12toPEM p12 = null;
 
         try {
-            if (args.length > 2) {
-                boolean overwrite = false;
-
-                if (args[2].equalsIgnoreCase("true")) {
-                    overwrite = true;
-                }
-
-                p12 = new P12toPEM(args[0], args[1], overwrite);
-            } else if (args.length > 1) {
+            if (args.length > 1) {
                 p12 = new P12toPEM(args[0], args[1]);
             } else {
                 System.out.println(
@@ -127,18 +119,6 @@ public class P12toPEM {
     }
 
     /**
-     * Constructor for the P12toPEM class.
-     *
-     * @param p12File p12File The (path +) name of the input p12 file.
-     * @param password password The password for the p12 file.
-     * @param overwrite overwrite If existing files should be overwritten.
-     */
-    public P12toPEM(String p12File, String password, boolean overwrite) {
-        this.p12File = p12File;
-        this.password = password;
-    }
-
-    /**
      * Converts a P12 into a PEM
      *
      * @return the created PEM file, null if file wasn't found and no other exception was thrown. 
@@ -153,9 +133,6 @@ public class P12toPEM {
          if(this.ks == null){    	
             try {
                 ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-            } catch (KeyStoreException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
             } catch (NoSuchProviderException e) {
               throw new IllegalStateException("BouncyCastle provider not found.", e);
             }
