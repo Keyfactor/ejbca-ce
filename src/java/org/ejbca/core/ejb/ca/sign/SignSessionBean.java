@@ -100,6 +100,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * Creates and signs certificates.
@@ -321,16 +322,27 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     
     @Override
     public ResponseMessage createCertificateIgnoreStatus(final AuthenticationToken admin, final RequestMessage req,
-            Class<? extends CertificateResponseMessage> responseClass) throws AuthorizationDeniedException, NoSuchEndEntityException,
+            Class<? extends CertificateResponseMessage> responseClass, boolean ignorePassword) throws AuthorizationDeniedException, NoSuchEndEntityException,
             CertificateCreateException, CertificateRevokeException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException {
         final String username = req.getUsername();
         EndEntityInformation retrievedUser = endEntityAccessSession.findUser(admin, username);
-        if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
-            try {
+        try {
+            if (retrievedUser.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+
                 endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
-            } catch (FinderException e) {
-                throw new NoSuchEndEntityException("End entity with username " + username + " not found.", e);
+
             }
+            if (ignorePassword) {
+                
+                try {
+                    endEntityManagementSession.setPassword(admin, username, req.getPassword());
+                } catch (UserDoesntFullfillEndEntityProfile e) {
+                    //Can be ignored in this case, shouldn't happen.
+                    throw new IllegalStateException(e);
+                }
+            }
+        } catch (FinderException e) {
+            throw new NoSuchEndEntityException("End entity with username " + username + " not found.", e);
         }
         try {
             return createCertificate(admin, req, responseClass, null);

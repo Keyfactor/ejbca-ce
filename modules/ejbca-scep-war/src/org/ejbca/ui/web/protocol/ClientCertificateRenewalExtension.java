@@ -13,6 +13,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -52,6 +53,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.core.protocol.scep.ScepResponseMessage;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * Enterprise plugin containing the SCEP Client Certificate Renewal functionality as defined in http://tools.ietf.org/html/draft-nourse-scep-23#appendix-D
@@ -152,7 +154,12 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
                 // may lead to end entity being left with the NEW status
                 // Get the certificate 
                 try {
-                    return signSession.createCertificateIgnoreStatus(authenticationToken, reqmsg, ScepResponseMessage.class);
+                    boolean ignorePassword = StringUtils.isEmpty(reqmsg.getPassword());
+                    if (ignorePassword) {
+                        reqmsg.setPassword(PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS)
+                                .getNewPassword(12, 12));
+                    }
+                    return signSession.createCertificateIgnoreStatus(authenticationToken, reqmsg, ScepResponseMessage.class, ignorePassword);
                 } catch (ApprovalException e) {
                     throw new ClientCertificateRenewalException(e);
                 } catch (WaitingForApprovalException e) {
