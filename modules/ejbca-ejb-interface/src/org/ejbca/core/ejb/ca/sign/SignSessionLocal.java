@@ -80,6 +80,7 @@ public interface SignSessionLocal extends SignSession {
      * @param responseClass The implementation class that will be used as the response message.
      * @param suppliedUserData Optional (can be null) supplied user data, if we are running without storing UserData this will be used. Should only 
      *  be supplied when we issue certificates in a single transaction.
+     * @param ignorePassword set to true if password authentication isn't available (for example during SCEP certificate renewal). Password will be set from the request.
      *  
      * @return The newly created response
      * 
@@ -91,7 +92,7 @@ public interface SignSessionLocal extends SignSession {
      * @throws WaitingForApprovalException if an approval is already waiting for the status to be changed (does not require rollback)
      */
     ResponseMessage createCertificateIgnoreStatus(final AuthenticationToken admin, final RequestMessage req,
-            Class<? extends CertificateResponseMessage> responseClass) throws AuthorizationDeniedException, NoSuchEndEntityException,
+            Class<? extends CertificateResponseMessage> responseClass,  boolean ignorePassword) throws AuthorizationDeniedException, NoSuchEndEntityException,
             CertificateCreateException, CertificateRevokeException, InvalidAlgorithmException, ApprovalException, WaitingForApprovalException;
     
     /**
