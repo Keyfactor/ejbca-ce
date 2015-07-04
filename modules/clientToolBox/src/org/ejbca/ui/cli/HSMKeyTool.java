@@ -484,7 +484,7 @@ public class HSMKeyTool extends ClientToolBox {
                     final HolderReferenceField certHolder = newCertCVC.getCertificateBody().getHolderReference();
                     final AuthorizationRole authRole = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole();                    
                     final AccessRights rights = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
-                    final Date validFrom = new Date(new Date().getTime() - 60*15); // back date by 15 minutes to allow for clock skew
+                    final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
                     final Date validTo = oldCertCVC.getCertificateBody().getValidTo();
                     
                     final CVCertificate linkCert = CertificateGenerator.createCertificate(newPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
@@ -509,7 +509,7 @@ public class HSMKeyTool extends ClientToolBox {
                     
                     final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
                     final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
-                    final Date validFrom = new Date(new Date().getTime() - 60*15); // back date by 15 minutes to allow for clock skew
+                    final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
                     final Date validTo = oldCertX509.getNotAfter();
                     
                     final X500Name oldDNName = X500Name.getInstance(oldCertX509.getSubjectX500Principal().getEncoded());
