@@ -103,8 +103,8 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String INSTALL_CERT = "installcert";
     private static final String RENAME = "rename";
     private static final String INSTALL_TRUSTED_ROOT = "installtrusted";
-    private static final Object SIGN_SWITCH = "sign";
-    private static final Object LINKCERT_SWITCH = "linkcert";
+    private static final String SIGN_SWITCH = "sign";
+    private static final String LINKCERT_SWITCH = "linkcert";
 
     final static private Logger log = Logger.getLogger(HSMKeyTool.class);
 
@@ -423,8 +423,8 @@ public class HSMKeyTool extends ClientToolBox {
                 // Parse certificates
                 final byte[] oldCertBytes = IOUtils.toByteArray(new FileInputStream(oldCertPath));
                 final byte[] newCertBytes = IOUtils.toByteArray(new FileInputStream(newCertPath));
-                final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, "BC");
-                final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, "BC");
+                final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, BouncyCastleProvider.PROVIDER_NAME);
+                final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, BouncyCastleProvider.PROVIDER_NAME);
                 final boolean isCVCA = (oldCert instanceof CardVerifiableCertificate);
                 if (isCVCA != (newCert instanceof CardVerifiableCertificate)) {
                     log.error("Error: Old and new certificates are not of the same type (X509 / CVC)");
