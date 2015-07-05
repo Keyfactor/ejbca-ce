@@ -361,6 +361,9 @@ row is missing.
 
 <section name="Datasource Passwords">
 <p>
+Before venturing into this chapter, be aware that it increases complexity of management of your system. You should consider if this really increase the security of your system and if it is required from policy.
+</p>
+<p>
 If you do not like to have your DataSource password available in clear text in EjbcaDS.xml, 
 there is an article in the JBoss Wiki about encrypting them:
 <br/>
@@ -387,20 +390,20 @@ There is another explanation for JBoss 7 at <a href="http://stackoverflow.com/qu
 $ vim /opt/jboss/standalone/configuration/standalone.xml
 </source>
 <p>
-Paste the following segment into the <i>security-domains</i> segment
+Paste the following segment into the <i>security-domains</i> segment (where PLACEHOLDER_ENC is the encoded password you got from the above command):
 </p>
 <source>
 &lt;security-domain name="EjbcaDsEncryptedPassword">
          &lt;authentication>
                   &lt;login-module code="SecureIdentity" flag="required">
                         &lt;module-option name="username" value="ejbca"/>
-                        &lt;module-option name="password" value="19ee205c18ee7e14b58bc0fe9b77e168"/>
+                        &lt;module-option name="password" value="PLACEHOLDER_ENC"/>
                   &lt;/login-module>
          &lt;/authentication>
 &lt;/security-domain>
 </source>
 <p>
-Look for the <i>EjbcaDS</i> datasource segment and replace the <i>security</i> segment:
+Look for the <i>EjbcaDS</i> datasource segment and replace the <i>security</i> segment (where PLACEHOLDER is your old clear text database password):
 </p>
 <source>
 &lt;security>
@@ -416,7 +419,7 @@ with the following value:
          &lt;security-domain>EjbcaDsEncryptedPassword&lt;/security-domain>
 &lt;/security>
 </source>
-<p>You can also look into using the <i>vault.sh</i> script. You should consider if this really increase your security though.</p>
+<p>You can also look into using the <i>vault.sh</i> script, which you can find on the Internet.</p>
 </section>
 
 <section name="Database privileges">
