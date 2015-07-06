@@ -68,11 +68,6 @@ public interface PublisherSessionLocal extends PublisherSession {
      */
     void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException;
 
-    /** Removes a publisher from the database. 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
-     */
-    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
-
     /**
      * Renames a publisher.
      * @throws PublisherExistsException if publisher already exists.
