@@ -95,7 +95,7 @@ public interface PublisherSession {
      * @param admin AuthenticationToken of admin.
      * @param name the name of the publisher to remove.
      * 
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
     void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
