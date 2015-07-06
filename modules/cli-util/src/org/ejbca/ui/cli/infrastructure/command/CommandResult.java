@@ -20,7 +20,19 @@ package org.ejbca.ui.cli.infrastructure.command;
  *
  */
 public enum CommandResult {
-    SUCCESS(0), FUNCTIONAL_FAILURE(1), AUTHORIZATION_FAILURE(2), CLI_FAILURE(3);
+    SUCCESS(0), 
+    /**
+     * Represents a case where input parameters were correctly stated, but the operation was incorrect.
+     */
+    FUNCTIONAL_FAILURE(1), 
+    /**
+     * Returned when the CLI used was not authorized to the given operation
+     */
+    AUTHORIZATION_FAILURE(2), 
+    /**
+     * Returned when CLI parameters are incorrect, such as non-existent files, etc. 
+     */
+    CLI_FAILURE(3);
     
     private final int returnCode;
     
