@@ -44,7 +44,6 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
-import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -252,7 +251,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             try {
                 user1Cert = this.signSession.createCertificate(ADMIN, "samednuser1", "foo123", new PublicKeyWrapper(key3.getPublic()));
             } catch(Exception e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
+                throw new IllegalStateException("Error encountered when creating certificate", e);
             }
             assertNotNull("Failed to create a test certificate", user1Cert);
             assertEquals(ISSUER_DN, CertTools.getIssuerDN(user1Cert));
