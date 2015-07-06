@@ -58,7 +58,6 @@
 					<include name="org/cesecore/ErrorCode.java"/>				
 					<include name="org/cesecore/authorization/control/AuditLogRules.java"/>
 					<include name="org/cesecore/authorization/control/StandardRules.java"/>
-					<include name="org/cesecore/certificates/CertificateCreationException.java" />
 					<include name="org/cesecore/certificates/certificate/CertificateConstants.java"/>
 					<include name="org/cesecore/certificates/certificateprofile/CertificateProfileConstants.java"/>
 					<include name="org/cesecore/certificates/ocsp/exception/CryptoProviderException.java"/>

@@ -32,7 +32,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
-import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -128,13 +127,11 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
                 certificate = CertTools.genSelfCert(dn, 365, null, keys.getPrivate(), keys.getPublic(),
                         AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
             } catch (CertificateEncodingException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
-            }catch (IllegalStateException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
+                throw new IllegalStateException("Error encountered when creating certificate", e);
             } catch (OperatorCreationException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
+                throw new IllegalStateException("Error encountered when creating certificate", e);
             } catch (CertificateException e) {
-                throw new CertificateCreationException("Error encountered when creating certificate", e);
+                throw new IllegalStateException("Error encountered when creating certificate", e);
             }        	
             if (log.isDebugEnabled()) {
                 log.debug("Creates a self signed authentication certificate, fp="+CertTools.getFingerprintAsString(certificate));

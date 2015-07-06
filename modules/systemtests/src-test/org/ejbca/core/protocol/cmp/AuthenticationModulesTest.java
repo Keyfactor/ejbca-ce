@@ -75,7 +75,6 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -1805,29 +1804,29 @@ public class AuthenticationModulesTest extends CmpTestCase {
         try {
             createUser(adminName, dn, "foo123", true, _caid, eepid, cpid);
         } catch (AuthorizationDeniedException e1) {
-            throw new CertificateCreationException("Error encountered when creating admin user", e1);
+            throw new IllegalStateException("Error encountered when creating admin user", e1);
         } catch (UserDoesntFullfillEndEntityProfile e1) {
-            throw new CertificateCreationException("Error encountered when creating admin user", e1);
+            throw new IllegalStateException("Error encountered when creating admin user", e1);
         } catch (WaitingForApprovalException e1) {
-            throw new CertificateCreationException("Error encountered when creating admin user", e1);
+            throw new IllegalStateException("Error encountered when creating admin user", e1);
         } catch (EjbcaException e1) {
-            throw new CertificateCreationException("Error encountered when creating admin user", e1);
+            throw new IllegalStateException("Error encountered when creating admin user", e1);
         } catch (Exception e1) {
-            throw new CertificateCreationException("Error encountered when creating admin user", e1);
+            throw new IllegalStateException("Error encountered when creating admin user", e1);
         }
 
         try {
             certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (ObjectNotFoundException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
+            throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
+            throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (EjbcaException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
+            throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (AuthorizationDeniedException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
+            throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CesecoreException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
+            throw new IllegalStateException("Error encountered when creating certificate", e);
         }
 
         assertNotNull(certificate);
