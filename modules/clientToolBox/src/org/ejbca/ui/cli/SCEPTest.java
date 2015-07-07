@@ -103,6 +103,7 @@ import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the SCEP interface.
@@ -126,6 +127,7 @@ class SCEPTest extends ClientToolBox {
 
         StressTest( final String url,
                     final int numberOfThreads,
+                    final int numberOfTests,
                     final int waitTime,
                     final String caName,
                     final String userCNBase
@@ -143,7 +145,7 @@ class SCEPTest extends ClientToolBox {
             this.random.nextInt();
             
             this.performanceTest = new PerformanceTest();
-            this.performanceTest.execute(new MyCommandFactory(userCNBase), numberOfThreads, waitTime, System.out);
+            this.performanceTest.execute(new MyCommandFactory(userCNBase), numberOfThreads, numberOfTests, waitTime, System.out);
         }
 
         private class ScepGetCACertChain implements Command {
@@ -700,7 +702,7 @@ class SCEPTest extends ClientToolBox {
     @Override
 	protected void execute(String[] args) {
         final String url;
-        final int numberOfThreads;
+        final NrOfThreadsAndNrOfTests notanot;
         final int waitTime;
         final String caName;
         final String userCNBase;
@@ -722,12 +724,12 @@ class SCEPTest extends ClientToolBox {
         }
         url = args[1];
         caName = args[2];
-        numberOfThreads = args.length>3 ? Integer.parseInt(args[3].trim()):1;
+        notanot = new NrOfThreadsAndNrOfTests(args.length>3 ? args[3] : null);
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         userCNBase = args.length>5 ? args[5] : null;
 
         try {
-            new StressTest(url, numberOfThreads, waitTime, caName, userCNBase);
+            new StressTest(url, notanot.threads, notanot.tests, waitTime, caName, userCNBase);
         } catch (Exception e) {
             e.printStackTrace();
         }

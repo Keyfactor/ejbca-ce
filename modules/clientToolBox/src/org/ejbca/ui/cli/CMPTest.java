@@ -102,6 +102,7 @@ import org.ejbca.core.protocol.cmp.client.CMPSendTCP;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the CMP interface.
@@ -135,6 +136,7 @@ class CMPTest extends ClientToolBox {
                     final boolean _isHttp,
                     final InputStream certInputStream,
                     final int numberOfThreads,
+                    final int numberOfTests,
                     final int waitTime,
                     final String alias,
                     final String _urlPath,
@@ -152,7 +154,7 @@ class CMPTest extends ClientToolBox {
             this.keyPair = keygen.generateKeyPair();
 
             this.performanceTest = new PerformanceTest();
-            this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
+            this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, numberOfTests, waitTime, System.out);
         }
         private CertRequest genCertReq(final X500Name userDN,
                                        final Extensions extensions) throws IOException {
@@ -890,7 +892,7 @@ class CMPTest extends ClientToolBox {
     @Override
 	protected void execute(String[] args) {
         final String hostName;
-        final int numberOfThreads;
+        final NrOfThreadsAndNrOfTests notanot;
         final int waitTime;
         final String certFileName;
         final File certFile;
@@ -909,7 +911,7 @@ class CMPTest extends ClientToolBox {
         hostName = args[1];
         certFileName = args[2];
         certFile = new File(certFileName);
-        numberOfThreads = args.length>3 ? Integer.parseInt(args[3].trim()):1;
+        notanot = new NrOfThreadsAndNrOfTests(args.length>3 ? args[3] : null);
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         alias = args.length>5 ? args[5].trim():null;
         port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
@@ -923,7 +925,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, alias, urlPath, resultFilePrefix);
+            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), notanot.threads, notanot.tests, waitTime, alias, urlPath, resultFilePrefix);
         } catch (Exception e) {
             e.printStackTrace();
         }

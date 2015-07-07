@@ -21,6 +21,7 @@ import java.net.URL;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to test the EJBCA health check servlet.
@@ -33,9 +34,10 @@ class HealthCheckTest extends ClientToolBox {
         final PerformanceTest performanceTest;
         StressTest( final String httpPath,
                     final int numberOfThreads,
+                    final int nrOfTests,
                     final int waitTime) throws Exception {
             performanceTest = new PerformanceTest();
-            performanceTest.execute(new MyCommandFactory(httpPath), numberOfThreads, waitTime, System.out);
+            performanceTest.execute(new MyCommandFactory(httpPath), numberOfThreads, nrOfTests, waitTime, System.out);
         }
         private class GetStatus implements Command {
             
@@ -100,7 +102,7 @@ class HealthCheckTest extends ClientToolBox {
     @Override
 	protected void execute(String[] args) {
         final String httpPath;
-        final int numberOfThreads;
+        final NrOfThreadsAndNrOfTests notanot;
         final int waitTime;
         if ( args.length < 2 ) {
             System.out.println(args[0]+" <http URL> [<number of threads>] [<wait time (ms) between each thread is started>]");
@@ -108,10 +110,10 @@ class HealthCheckTest extends ClientToolBox {
             return;
         }
         httpPath = args[1];
-        numberOfThreads = args.length>2 ? Integer.parseInt(args[2].trim()):1;
+        notanot = new NrOfThreadsAndNrOfTests(args.length>2 ? args[2] : null);
         waitTime = args.length>3 ? Integer.parseInt(args[3].trim()):0;
         try {
-            new StressTest(httpPath, numberOfThreads, waitTime);
+            new StressTest(httpPath, notanot.threads, notanot.tests, waitTime);
         } catch (Exception e) {
             e.printStackTrace();
         }
