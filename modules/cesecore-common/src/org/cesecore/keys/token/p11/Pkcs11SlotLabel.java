@@ -99,8 +99,17 @@ public class Pkcs11SlotLabel {
         // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
 
-        final long slot;
         log.debug("slot spec: " + this.toString());
+        if ( this.type==Pkcs11SlotLabelType.SUN_FILE ) {// if sun cfg file then we do not know the name of the p11 module and wemust quit.
+            FileInputStream fileInputStream;
+            try {
+                fileInputStream = new FileInputStream(libFile);
+            } catch (FileNotFoundException e) {
+                throw new IllegalArgumentException("File " + libFile + " was not found.");
+            }
+            return getSunP11Provider(fileInputStream);
+        }
+        final long slot;
         final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile); // must be called before any provider is created for libFile
         switch (this.type) {
         case SLOT_LABEL:
@@ -116,14 +125,6 @@ public class Pkcs11SlotLabel {
             //Be generous and allow numbers to act as indexes as well
             slot = Long.parseLong((this.value.charAt(0) == 'i' ? this.value.substring(1) : this.value));
             break;
-        case SUN_FILE:
-            FileInputStream fileInputStream;
-            try {
-                fileInputStream = new FileInputStream(libFile);
-            } catch (FileNotFoundException e) {
-                throw new IllegalArgumentException("File " + libFile + " was not found.");
-            }
-            return getSunP11Provider(fileInputStream);
         default:
             throw new IllegalStateException("This should not ever happen if all type of slots are tested.");
         }
@@ -458,7 +459,7 @@ public class Pkcs11SlotLabel {
      */
     public static Provider getP11Provider(final String sSlot, final Pkcs11SlotLabelType slotLabelType, final String fileName,
             final String attributesFile, final String privateKeyLabel) throws NoSuchSlotException {
-        if ((sSlot == null || sSlot.length() < 1) && !slotLabelType.isEqual(Pkcs11SlotLabelType.SUN_FILE)) {
+        if ((sSlot == null || sSlot.length() < 1) && slotLabelType!=Pkcs11SlotLabelType.SUN_FILE) {
             return null;
         }
         final Pkcs11SlotLabel slotSpec = new Pkcs11SlotLabel(slotLabelType, sSlot);
