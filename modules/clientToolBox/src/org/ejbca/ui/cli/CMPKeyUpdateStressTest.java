@@ -103,6 +103,7 @@ import org.ejbca.core.protocol.cmp.client.CMPSendHTTP;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the CMP interface.
@@ -781,6 +782,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 		final String keystoreFile;
 		final String keystorePassword;
 		final int numberOfThreads;
+		final int numberOfTests;
 		final int waitTime;
 		final int port;
 		//	  final boolean isHttp;
@@ -805,7 +807,9 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			this.hostName = args[1];
 			this.keystoreFile = args[2];
 			this.keystorePassword = args[3];
-			this.numberOfThreads = args.length > 4 ? Integer.parseInt(args[4].trim()) : 1;
+			final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>4 ? args[4] : null);
+			this.numberOfThreads = notanot.threads;
+			this.numberOfTests = notanot.tests;
 			this.waitTime = args.length > 5 ? Integer.parseInt(args[5].trim()) : 0;
 			this.port = args.length > 6 ? Integer.parseInt(args[6].trim()) : 8080;
 			this.urlPath = args.length > 7 && args[7].toLowerCase().indexOf("null") < 0 ? args[7].trim() : null;
@@ -862,8 +866,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 	private static KeyStore[] getKeyStores( final String fileDirectory, final String keystorePassword ) throws Exception {
 		final File dir = new File(fileDirectory);
 		if (dir.listFiles() == null) {
-            System.out.println(fileDirectory+" does not exist or is not a directory.");		    
-            System.exit(-1);
+			System.out.println(fileDirectory+" does not exist or is not a directory.");
+			System.exit(-1);
 		}
 		final List<KeyStore> keyStores = new LinkedList<KeyStore>();
 		for ( final File file : dir.listFiles() ) {
@@ -886,7 +890,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				System.out.println("There are only "+keyStores.length+" key store files but "+cliArgs.numberOfThreads+" threads was specified.");
 				System.exit(-1);
 			}
-			performanceTest.execute(new MyCommandFactory(cliArgs, performanceTest, keyStores), cliArgs.numberOfThreads, cliArgs.waitTime, System.out);
+			performanceTest.execute(new MyCommandFactory(cliArgs, performanceTest, keyStores), cliArgs.numberOfThreads, cliArgs.numberOfTests, cliArgs.waitTime, System.out);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

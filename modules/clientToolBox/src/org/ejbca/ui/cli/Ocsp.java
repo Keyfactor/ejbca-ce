@@ -43,6 +43,7 @@ import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidResponse;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the OCSP interface
@@ -184,7 +185,7 @@ public class Ocsp extends ClientToolBox {
             this.ocspurl = args[2];
             this.serialNrs = new SerialNrs(args[3]);
             this.cacert = getCertFromPemFile(args[4]);
-            final int numberOfThreads = Integer.parseInt(args[5]);
+            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>5 ? args[5] : null);
             final int waitTime = Integer.parseInt(args[6]);
             if (args.length > 7) {
                 final String type = args[7].toUpperCase();
@@ -205,7 +206,7 @@ public class Ocsp extends ClientToolBox {
                 this.keyStorePassword = null;
             }
             this.performanceTest = new PerformanceTest();
-            this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
+            this.performanceTest.execute(new MyCommandFactory(), notanot.threads, notanot.tests, waitTime, System.out);
         }
     }
 

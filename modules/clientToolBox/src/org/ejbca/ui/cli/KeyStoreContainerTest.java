@@ -12,12 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.security.KeyPair;
 import java.security.KeyStore.ProtectionParameter;
@@ -36,6 +34,7 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
+import org.apache.log4j.Logger;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.util.PerformanceTest;
@@ -56,6 +55,7 @@ class KeyStoreContainerTest {
     final private static PrintStream termOut = System.out;
     final private static PrintStream termErr = System.err;
     final private static InputStream termIn = System.in;
+    final static private Logger log = Logger.getLogger(KeyStoreContainerTest.class);
     KeyStoreContainerTest(String a, KeyPair kp, String pn) {
         this.alias = a;
         this.keyPair = kp;
@@ -66,26 +66,20 @@ class KeyStoreContainerTest {
                      final String keyStoreType,
                      final String storeID,
                      final Pkcs11SlotLabelType slotLabelType,
+                     final int nrOfThreads,
                      final int nrOfTests,
                      final String alias,
                      final String typeOfOperation,
                      final ProtectionParameter protectionParameter) throws Exception {
         if ( alias==null ) {
-            while( true ) {
-                startNormal(
-                        providerClassName,
-                        encryptProviderClassName,
-                        keyStoreType,
-                        storeID,
-                        slotLabelType,
-                        nrOfTests,
-                        protectionParameter);
-                termOut.println("Hit RETURN to run again. Type x and hit RETURN to quit.");
-                final int character = termIn.read();
-                if( character=='x' || character== 'X') {
-                    break;
-                }
-            }
+            startNormal(
+                    providerClassName,
+                    encryptProviderClassName,
+                    keyStoreType,
+                    storeID,
+                    slotLabelType,
+                    nrOfTests>0 ? nrOfTests : nrOfThreads,
+                    protectionParameter);
         } else {
             startStress(
                     providerClassName,
@@ -93,6 +87,7 @@ class KeyStoreContainerTest {
                     keyStoreType,
                     storeID,
                     slotLabelType,
+                    nrOfThreads,
                     nrOfTests,
                     alias,
                     typeOfOperation==null || typeOfOperation.toLowerCase().indexOf("sign")>=0,
@@ -148,7 +143,7 @@ class KeyStoreContainerTest {
                 }
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 tests = null;
-                t.printStackTrace(termErr);
+                log.error("Error running test.", t);
             }
         }
     }
@@ -158,6 +153,7 @@ class KeyStoreContainerTest {
                                     final String storeID,
                                     final Pkcs11SlotLabelType slotLabelType,
                                     final int numberOfThreads,
+                                    final int nrOfTests,
                                     final String alias,
                                     final boolean isSign,
                                     final ProtectionParameter protectionParameter) throws Exception {
@@ -172,6 +168,7 @@ class KeyStoreContainerTest {
                 new KeyPair(keyStore.getKeyStore().getCertificate(alias).getPublicKey(), privateKey),
                 keyStore.getProviderName(),
                 numberOfThreads,
+                nrOfTests,
                 -1,
                 isSign);
     }
@@ -187,9 +184,12 @@ class KeyStoreContainerTest {
                 keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
                                                    encryptProviderClassName, storeID, slotLabelType, null, protectionParameter);
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
-                t.printStackTrace(termErr);
-                termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
-                new BufferedReader(new InputStreamReader(System.in)).readLine();
+                log.error("Not possible to load keys.", t);
+                termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed or 'x' enter to quit.");
+                final int character = termIn.read();
+                if( character=='x' || character== 'X') {
+                    System.exit(-1);
+                }
             }
         }
         return keyStore;
@@ -264,38 +264,48 @@ class KeyStoreContainerTest {
         }
     }
 
-    static private abstract class TestData {
+    static private class TestData {
         private static final byte[] STATIC_TEST_DATA = "Lillan gick on the roaden ut.".getBytes();
         private static final String FILENAME = "./testData";
 
-        private static Boolean testFileAvailable = null;
+        private static boolean isFileNotAvailable = false;
+        private static boolean isFileTested = false;
 
+        private static InputStream getInput() {
+            if ( isFileTested && isFileNotAvailable ) {
+                return null;
+            }
+            isFileTested = true;
+            try {
+                final InputStream is = new FileInputStream(FILENAME);
+                isFileNotAvailable = false;
+                return is;
+            } catch (FileNotFoundException e) {
+                // Apparently it never existed or has been removed during the test
+                isFileNotAvailable = true;
+                return null;
+            }
+        }
         /** Load the provided signature with test data from either a file or a hard coded short String. */
         public static void updateWithTestData(final Signature signature) throws Exception {
-            InputStream is = null;
-            if (testFileAvailable==null || testFileAvailable.booleanValue()) {
-                try {
-                    is = new FileInputStream(FILENAME);
-                    testFileAvailable = Boolean.TRUE;
-                } catch (FileNotFoundException e) {
-                    // Apparently it never existed or has been removed during the test
-                    testFileAvailable = Boolean.FALSE;
-                }
-            }
+            final InputStream is = getInput();
+            log.trace("Start updating ...");
             if (is==null) {
                 // Update the signer with hard coded test data, since no file was available
                 signature.update(Arrays.copyOf(STATIC_TEST_DATA, STATIC_TEST_DATA.length));
-            } else {
-                // Load the found file with test data into the signer
-                final byte buffer[] = new byte[16*1024];
-                int length;
-                while ((length = is.read(buffer))!=-1) {
-                    if (length>0) {
-                        signature.update(buffer, 0, length);
-                    }
-                }
-                is.close();
+                return;
             }
+            // Load the found file with test data into the signer
+            final byte buffer[] = new byte[16*1024];
+            while ( true ) {
+                final int length = is.read(buffer);
+                if ( length<0 ) {
+                    break;
+                }
+                log.trace("Updating ...");
+                signature.update(buffer, 0, length);
+            }
+            is.close();
         }
     }
 
@@ -365,18 +375,20 @@ class KeyStoreContainerTest {
                 final KeyPair keyPair,
                 final String providerName,
                 final int numberOfThreads,
+                final int nrOfTests,
                 final int waitTime,
                 final boolean isSignTest) throws Exception {
             final StressTest test = new StressTest(alias, keyPair, providerName);
-            test.execute(numberOfThreads, waitTime, isSignTest);
+            test.execute(numberOfThreads, nrOfTests, waitTime, isSignTest);
         }
         @SuppressWarnings("synthetic-access")
         private void execute(
                 final int numberOfThreads,
+                final int nrOfTests,
                 final int waitTime,
                 final boolean isSignTest
                 ) throws Exception {
-            this.performanceTest.execute(new MyCommandFactory(isSignTest), numberOfThreads, waitTime, termOut);
+            this.performanceTest.execute(new MyCommandFactory(isSignTest), numberOfThreads, nrOfTests, waitTime, termOut);
         }
         private class Prepare implements Command {
             final private Test test;
@@ -465,7 +477,7 @@ class KeyStoreContainerTest {
             final String CSI = "\u001B";
             termOut.println(CSI+"[1;4mTesting of key: "+this.alias+CSI+"[0m");
             if ( KeyTools.isPrivateKeyExtractable(this.keyPair.getPrivate()) ) {
-                termErr.println(CSI+"[1;5;31mPrivate key extractable. Do not ever use this key. Delete it."+CSI+"[0m");
+                termOut.println(CSI+"[1;5;31mPrivate key extractable. Do not ever use this key. Delete it."+CSI+"[0m");
             } else {
                 termOut.println("Private part:"); termOut.println(this.keyPair.getPrivate());
             }

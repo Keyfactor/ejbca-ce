@@ -48,6 +48,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.query.BasicMatch;
 
 /**
@@ -493,7 +494,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				usage();
 				System.exit(-1); // NOPMD, this is not a JEE app
 			}
-			final int numberOfThreads = this.args.length>2 ? Integer.parseInt(this.args[2]) : 1;
+            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(this.args.length>2 ? this.args[2] : null);
 			final int waitTime = this.args.length>3 ? Integer.parseInt(this.args[3]) : -1;
 			final String caName = this.args[1];
 			final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
@@ -511,8 +512,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				}
 				maxCertificateSN = iTmp;
 			}
-			this.performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN),
-										 numberOfThreads, waitTime, getPrintStream());
+			this.performanceTest.execute(new MyCommandFactory(
+			        caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN),
+			        notanot.threads, notanot.tests, waitTime, getPrintStream());
 			getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
 			synchronized(this) {
 				wait();

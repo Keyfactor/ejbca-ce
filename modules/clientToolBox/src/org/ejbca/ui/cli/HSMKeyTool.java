@@ -74,6 +74,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.OIDField;
 import org.ejbca.util.CMS;
 import org.ejbca.util.CliTools;
+import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerBase;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
@@ -183,24 +184,28 @@ public class HSMKeyTool extends ClientToolBox {
             }
             try {
                 keyStoreContainer.generate(keySpec, alias);
-                log.info("Key with specification '"+keySpec+"' generated for alias '"+alias+"'.");
+                System.out.println("Key with specification '"+keySpec+"' generated for alias '"+alias+"'.");
             } catch( Exception e ) {
-                log.error("Failed to generate key for alias '"+alias+"' with key specification '"+keySpec+"'.", e);
+                final String m = "Failed to generate key for alias '"+alias+"' with key specification '"+keySpec+"'.";
+                System.err.println(m);
+                log.error(m, e);
             }
         }
     }
     final static String KEY_SPEC_DESC = "all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn";
-    private boolean doIt(String[] args) throws Exception {
-        final String commandStringNoSharedLib = args[0]+" "+args[1]+" ";
+    private boolean doIt(final String[] orgArgs) throws Exception {
+        final String commandStringNoSharedLib = orgArgs[0]+" "+orgArgs[1]+" ";
         final String commandString = commandStringNoSharedLib+getProviderParameterDescription()+" ";
         // Get and remove optional switches
-        final List<String> argsList = CliTools.getAsModifyableList(args);
-        KeyStore.ProtectionParameter protectionParameter = null;
+        final List<String> argsList = CliTools.getAsModifyableList(orgArgs);
+        final KeyStore.ProtectionParameter protectionParameter;
         final String password = CliTools.getAndRemoveParameter("-password", argsList);
         if (password != null) {
             protectionParameter = new KeyStore.PasswordProtection(password.toCharArray());
+        } else {
+            protectionParameter = null;
         }
-        args = CliTools.getAsArgs(argsList);
+        final String[] args = CliTools.getAsArgs(argsList);
         if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + "<name of batch file> " + '['+'<'+getKeyStoreDescription()+'>'+']');
@@ -209,17 +214,17 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println("Each row is starting with a key alias then the key specification is following.");
                 System.err.println("The specification of the key is done like this: "+KEY_SPEC_DESC);
                 tooFewArguments(args);
-                return true;
             }
             if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                 setModuleProtection();
             }
-            String storeId = null;
-            Pkcs11SlotLabelType slotType = null;
+            final String storeId;
+            final Pkcs11SlotLabelType slotType;
             if(args.length > 6) {
                 storeId = trimStoreId(args[6]);
                 slotType = divineSlotLabelType(args[6]);
             } else {
+                storeId = null;
                 slotType = Pkcs11SlotLabelType.SUN_FILE;
             }
             final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "batch-"+new Date().getTime());
@@ -231,75 +236,70 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<' + KEY_SPEC_DESC + "> <key entry name> [<"+getKeyStoreDescription()+">]");
                 generateComment();
                 tooFewArguments(args);
-            } else {
-                if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
-                    setModuleProtection();
-                }
-                final String keyEntryName = args.length>6 ? args[6] :"myKey";
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                if(args.length > 7) {
-                    storeId = trimStoreId(args[7]);
-                    slotType = divineSlotLabelType(args[7]);
-                } else {
-                    slotType = Pkcs11SlotLabelType.SUN_FILE;
-                }
-                System.err.println("Using Slot Reference Type: "+slotType+'.');
-                final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
-                store.generate(args[5], keyEntryName);
-                System.err.println("Created certificate with entry "+keyEntryName+'.');
             }
+            if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
+                setModuleProtection();
+            }
+            final String keyEntryName = args.length>6 ? args[6] :"myKey";
+            final String storeId;
+            final Pkcs11SlotLabelType slotType;
+            if(args.length > 7) {
+                storeId = trimStoreId(args[7]);
+                slotType = divineSlotLabelType(args[7]);
+            } else {
+                storeId = null;
+                slotType = Pkcs11SlotLabelType.SUN_FILE;
+            }
+            System.out.println("Using Slot Reference Type: "+slotType+'.');
+            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
+            store.generate(args[5], keyEntryName);
+            System.out.println("Created certificate with entry "+keyEntryName+'.');
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<key entry name>]");
                 tooFewArguments(args);
-            } else {
-                String alias = args.length>6 ? args[6] : null;
-                System.err.println("Deleting certificate with alias "+alias+'.');
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-              
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).delete(alias);
             }
+            final String alias = args.length>6 ? args[6] : null;
+            System.out.println("Deleting certificate with alias "+alias+'.');
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).delete(alias);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(CERT_REQ)) {
-        	// First we check if we have a switch for "-explicitecc" for explicit ecc parameters used in ICAO epassports.
-    		List<String> argsListLocal = CliTools.getAsModifyableList(args);
-    		boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
-                final boolean forAllKeys = argsListLocal.remove("-all");
-    		args = argsListLocal.toArray(new String[argsListLocal.size()]);
-            if ( args.length < 6 || (args.length < 7 && !forAllKeys) ) {
+            // First we check if we have a switch for "-explicitecc" for explicit ecc parameters used in ICAO epassports.
+            final List<String> argsListLocal = CliTools.getAsModifyableList(args);
+            final boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
+            final boolean forAllKeys = argsListLocal.remove("-all");
+            final String modArgs[] = argsListLocal.toArray(new String[argsListLocal.size()]);
+            if ( modArgs.length < 6 || (modArgs.length < 7 && !forAllKeys) ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] [-explicitecc]");
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [-all] [-explicitecc]");
-                tooFewArguments(args);
-            } else {
-                String storeId = trimStoreId(args[5]);
-                Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
-                final List<String> entries;
-                if (forAllKeys) {
-                    entries = new LinkedList<String>();
-                    final KeyStore ks = container.getKeyStore();
-                    final Enumeration<String> aliases = ks.aliases();
-                    while (aliases.hasMoreElements()) {
-                        final String alias = aliases.nextElement();
-                        if (ks.isKeyEntry(alias)) {
-                            entries.add(alias);
-                        }
+                tooFewArguments(modArgs);
+            }
+            final String storeId = trimStoreId(modArgs[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(modArgs[5]);
+            final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(modArgs[4], modArgs[2], modArgs[3], storeId, slotType, null, protectionParameter);
+            final List<String> entries;
+            if (forAllKeys) {
+                entries = new LinkedList<String>();
+                final KeyStore ks = container.getKeyStore();
+                final Enumeration<String> aliases = ks.aliases();
+                while (aliases.hasMoreElements()) {
+                    final String alias = aliases.nextElement();
+                    if (ks.isKeyEntry(alias)) {
+                        entries.add(alias);
                     }
-                } else {
-                    entries = Collections.singletonList(args[6]);
                 }
-                
-                for (String entry : entries) {
-                    container.generateCertReq(entry, args.length>7 ? args[7] : null, explicitEccParameters);
-                }
+            } else {
+                entries = Collections.singletonList(modArgs[6]);
+            }
+
+            for (String entry : entries) {
+                container.generateCertReq(entry, modArgs.length>7 ? modArgs[7] : null, explicitEccParameters);
             }
             return true;
         }
@@ -307,24 +307,21 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain files in PEM format (one chain per file)>");
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
-                boolean failure = false;
-                for (int i = 6; i < args.length; i++) {
-                    try {
-                        container.installCertificate(args[i]);
-                    } catch (Exception ex) {
-                        failure = true;
-                        log.error("Failed: " + ex.getMessage());
-                    }
+            }
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
+            boolean failure = false;
+            for (int i = 6; i < args.length; i++) {
+                try {
+                    container.installCertificate(args[i]);
+                } catch (Exception ex) {
+                    failure = true;
+                    log.error("File "+args[i]+" failed.", ex);
                 }
-                if (failure) {
-                    throw new Exception("At least one certificate could not be installed");
-                }
+            }
+            if (failure) {
+                throw new Exception("At least one certificate could not be installed. See the log for more info.");
             }
             return true;
         }
@@ -332,13 +329,10 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <trusted root certificate in PEM format>");
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).installTrustedRoot(args[6]);
             }
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).installTrustedRoot(args[6]);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
@@ -349,13 +343,14 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use> [optional symm algorithm oid]");
                 System.err.println("Optional symmetric encryption algorithm OID can be for example 2.16.840.1.101.3.4.1.42 (AES256_CBC) or 1.2.392.200011.61.1.1.1.4 (CAMELLIA256_CBC). Default is to use AES256_CBC.");
                 tooFewArguments(args);
-            } else if ( args.length < 9 ) {
+            }
+            if ( args.length < 9 ) {
                 Security.addProvider( new BouncyCastleProvider() );
                 if (args.length > 7) {
                     // We have a symmAlg as last parameter
                     symmAlgOid = args[7];
                 }
-                System.err.println("Using symmetric encryption algorithm: "+symmAlgOid);
+                System.out.println("Using symmetric encryption algorithm: "+symmAlgOid);
                 final X509Certificate cert = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
                 CMS.encrypt(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert, symmAlgOid);
             } else {
@@ -363,11 +358,9 @@ public class HSMKeyTool extends ClientToolBox {
                     // We have a symmAlg as last parameter
                     symmAlgOid = args[9];
                 }
-                System.err.println("Using symmstric encryption algorithm: "+symmAlgOid);
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
+                System.out.println("Using symmstric encryption algorithm: "+symmAlgOid);
+                final String storeId = trimStoreId(args[5]);
+                final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
             }
             return true;
@@ -376,26 +369,20 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args.length < 9 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(SIGN_SWITCH)) {
             if ( args.length < 9 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(LINKCERT_SWITCH)) {
@@ -407,167 +394,166 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println("access to the new key.");
                 System.err.println();
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                final KeyStoreContainer ksc = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
-                final String alias = args[9];
-                final String oldCertPath = args[6];
-                final String newCertPath = args[7];
-                final String outputPath = args[8];
-                final String signProviderName = ksc.getProviderName();
-                final String sigAlgOverride = (args.length >= 11 ? args[10] : "null");
-                
-                // Parse certificates
-                final byte[] oldCertBytes = IOUtils.toByteArray(new FileInputStream(oldCertPath));
-                final byte[] newCertBytes = IOUtils.toByteArray(new FileInputStream(newCertPath));
-                final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, BouncyCastleProvider.PROVIDER_NAME);
-                final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, BouncyCastleProvider.PROVIDER_NAME);
-                final boolean isCVCA = (oldCert instanceof CardVerifiableCertificate);
-                if (isCVCA != (newCert instanceof CardVerifiableCertificate)) {
-                    log.error("Error: Old and new certificates are not of the same type (X509 / CVC)");
-                    return true; // = valid command-line syntax
-                }
-                System.err.println("Type of certificates: "+(isCVCA ? "CVC" : "X509"));
-                
-                // Detect name change
-                final String oldDN = CertTools.getSubjectDN(oldCert);
-                final String newDN = CertTools.getSubjectDN(newCert);
-                System.err.println("Old DN: "+oldDN);
-                System.err.println("New DN: "+newDN);
-                final boolean nameChange;
-                if (!oldDN.equals(newDN)) {
-                    if (isCVCA) {
-                        System.err.println("Name change detected.");
-                    } else {
-                        System.err.println("Name change detected. Will add Name Change extension.");
-                    }
-                    nameChange = true;
-                } else {
-                    System.err.println("No name change detected.");
-                    nameChange = false;
-                }
-                
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                
-                // Get new and old key
-                PublicKey newPubKey = newCert.getPublicKey();
-                if (newPubKey == null) {
-                    System.err.println("Error: Failed to extract public key from new certificate");
-                    return true;
-                }
-                final Key oldKey = ksc.getKey(alias);
-                if (oldKey == null) {
-                    System.err.println("Error: Could not find the key named "+alias);
-                    return true;
-                }
-                final PrivateKey oldPrivKey = (PrivateKey)oldKey;
-                
+            }
+            String storeId = null;
+            Pkcs11SlotLabelType slotType = null;
+            storeId = trimStoreId(args[5]);
+            slotType = divineSlotLabelType(args[5]);
+            final KeyStoreContainer ksc = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
+            final String alias = args[9];
+            final String oldCertPath = args[6];
+            final String newCertPath = args[7];
+            final String outputPath = args[8];
+            final String signProviderName = ksc.getProviderName();
+            final String sigAlgOverride = (args.length >= 11 ? args[10] : "null");
+
+            // Parse certificates
+            final byte[] oldCertBytes = IOUtils.toByteArray(new FileInputStream(oldCertPath));
+            final byte[] newCertBytes = IOUtils.toByteArray(new FileInputStream(newCertPath));
+            final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, BouncyCastleProvider.PROVIDER_NAME);
+            final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, BouncyCastleProvider.PROVIDER_NAME);
+            final boolean isCVCA = (oldCert instanceof CardVerifiableCertificate);
+            if (isCVCA != (newCert instanceof CardVerifiableCertificate)) {
+                log.error("Error: Old and new certificates are not of the same type (X509 / CVC)");
+                return true; // = valid command-line syntax
+            }
+            System.err.println("Type of certificates: "+(isCVCA ? "CVC" : "X509"));
+
+            // Detect name change
+            final String oldDN = CertTools.getSubjectDN(oldCert);
+            final String newDN = CertTools.getSubjectDN(newCert);
+            System.err.println("Old DN: "+oldDN);
+            System.err.println("New DN: "+newDN);
+            final boolean nameChange;
+            if (!oldDN.equals(newDN)) {
                 if (isCVCA) {
-                    final CVCertificate oldCertCVC = ((CardVerifiableCertificate)oldCert).getCVCertificate();
-                    final CVCertificate newCertCVC = ((CardVerifiableCertificate)newCert).getCVCertificate();
-                    
-                    final String linkSigAlg;
-                    if (sigAlgOverride.equalsIgnoreCase("null")) {
-                        final OIDField oldKeyTypeOid = oldCertCVC.getCertificateBody().getPublicKey().getObjectIdentifier();
-                        linkSigAlg = AlgorithmUtil.getAlgorithmName(oldKeyTypeOid);
-                    } else {
-                        System.err.println("Error: Overriding the signature algorithm is not supported for CVC");
-                        return true;
-                    }
-                    System.err.println("Using signature algorithm "+linkSigAlg);
-                    
-                    final HolderReferenceField caHolder = oldCertCVC.getCertificateBody().getHolderReference();
-                    final CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
-                    final HolderReferenceField certHolder = newCertCVC.getCertificateBody().getHolderReference();
-                    final AuthorizationRole authRole = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole();                    
-                    final AccessRights rights = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
-                    final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
-                    final Date validTo = oldCertCVC.getCertificateBody().getValidTo();
-                    
-                    final CVCertificate linkCert = CertificateGenerator.createCertificate(newPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
-                    final DataOutputStream dos = new DataOutputStream(baos);
-                    linkCert.encode(dos);
-                    dos.close();
+                    System.err.println("Name change detected.");
                 } else {
-                    // X509 CA
-                    final X509Certificate oldCertX509 = (X509Certificate)oldCert;
-                    final X509Certificate newCertX509 = (X509Certificate)newCert;
-                    
-                    final String linkSigAlg;
-                    if (sigAlgOverride.equalsIgnoreCase("null")) {
-                        // Actually, we should use signature algorithm of new cert if the old key allows that.
-                        // Instead of doing that we allow the user to manually override the signature algorithm if needed.
-                        linkSigAlg = oldCertX509.getSigAlgName();
-                    } else {
-                        System.err.println("Warning: Signature algorithm manually overridden!");
-                        linkSigAlg = sigAlgOverride;
-                    }
-                    System.err.println("Using signature algorithm "+linkSigAlg);
-                    
-                    final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
-                    final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
-                    final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
-                    final Date validTo = oldCertX509.getNotAfter();
-                    
-                    final X500Name oldDNName = X500Name.getInstance(oldCertX509.getSubjectX500Principal().getEncoded());
-                    final X500Name newDNName = X500Name.getInstance(newCertX509.getSubjectX500Principal().getEncoded());
-                    
-                    final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(oldDNName, serno, validFrom, validTo, newDNName, pkinfo);
-                    
-                    // Copy all extensions except AKID
-                    final ExtensionsGenerator extgen = new ExtensionsGenerator();
-                    final Set<String> oids = new LinkedHashSet<String>();
-                    final Set<String> criticalOids = newCertX509.getCriticalExtensionOIDs();
-                    oids.addAll(criticalOids);
-                    oids.addAll(newCertX509.getNonCriticalExtensionOIDs());
-                    for (final String extOidStr : oids) {
-                        final ASN1ObjectIdentifier extoid = new ASN1ObjectIdentifier(extOidStr);
-                        if (!extoid.equals(Extension.authorityKeyIdentifier)) {
-                            final byte[] extbytes = newCertX509.getExtensionValue(extOidStr);
-                            final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(extbytes);
-                            extgen.addExtension(extoid, criticalOids.contains(extOidStr), ASN1Primitive.fromByteArray(str.getOctets()));
-                        }
-                    }
-                    
-                    if (nameChange) {
-                        // id-icao-mrtd-security-extensions-nameChange = 2.23.136.1.1.6.1
-                        extgen.addExtension(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover, false, DERNull.INSTANCE);
-                    }
-                    
-                    // Some checks
-                    if (newCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId()) == null) {
-                        System.err.println("Warning: Certificate of new CSCA is missing the Subject Key Identifier extension, which is mandatory.");
-                    }
-                    if (newCertX509.getExtensionValue(Extension.authorityKeyIdentifier.getId()) == null) {
-                        System.err.println("Warning: Certificate of new CSCA is missing the Authority Key Identifier extension, which is mandatory.");
-                    }
-                    
-                    // If the new cert has an AKID, then add that extension but with the key id value of the old cert
-                    final byte[] oldSKIDBytes = oldCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId());
-                    if (oldSKIDBytes != null) {
-                        final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSKIDBytes);
-                        final ASN1OctetString innerStr = (ASN1OctetString)ASN1Primitive.fromByteArray(str.getOctets());
-                        final AuthorityKeyIdentifier akidExt = new AuthorityKeyIdentifier(innerStr.getOctets());
-                        extgen.addExtension(Extension.authorityKeyIdentifier, false, akidExt);
-                    } else {
-                        System.err.println("Warning: The old certificate doesn't have any SubjectKeyIdentifier. The link certificate will not have any AuthorityKeyIdentifier.");
-                    }
-                    
-                    // Add extensions to the certificate
-                    final Extensions exts = extgen.generate();
-                    for (final ASN1ObjectIdentifier extoid : exts.getExtensionOIDs()) {
-                        final Extension ext = exts.getExtension(extoid);
-                        certbuilder.addExtension(extoid, ext.isCritical(), ext.getParsedValue());
-                    }
-                    
-                    // Sign the certificate
-                    final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(linkSigAlg).setProvider(signProviderName).build(oldPrivKey), 20480);
-                    final X509CertificateHolder certHolder = certbuilder.build(signer);
-                    baos.write(certHolder.getEncoded());
+                    System.err.println("Name change detected. Will add Name Change extension.");
                 }
+                nameChange = true;
+            } else {
+                System.err.println("No name change detected.");
+                nameChange = false;
+            }
+
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            // Get new and old key
+            PublicKey newPubKey = newCert.getPublicKey();
+            if (newPubKey == null) {
+                System.err.println("Error: Failed to extract public key from new certificate");
+                return true;
+            }
+            final Key oldKey = ksc.getKey(alias);
+            if (oldKey == null) {
+                System.err.println("Error: Could not find the key named "+alias);
+                return true;
+            }
+            final PrivateKey oldPrivKey = (PrivateKey)oldKey;
+
+            if (isCVCA) {
+                final CVCertificate oldCertCVC = ((CardVerifiableCertificate)oldCert).getCVCertificate();
+                final CVCertificate newCertCVC = ((CardVerifiableCertificate)newCert).getCVCertificate();
+
+                final String linkSigAlg;
+                if (sigAlgOverride.equalsIgnoreCase("null")) {
+                    final OIDField oldKeyTypeOid = oldCertCVC.getCertificateBody().getPublicKey().getObjectIdentifier();
+                    linkSigAlg = AlgorithmUtil.getAlgorithmName(oldKeyTypeOid);
+                } else {
+                    System.err.println("Error: Overriding the signature algorithm is not supported for CVC");
+                    return true;
+                }
+                System.err.println("Using signature algorithm "+linkSigAlg);
+
+                final HolderReferenceField caHolder = oldCertCVC.getCertificateBody().getHolderReference();
+                final CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
+                final HolderReferenceField certHolder = newCertCVC.getCertificateBody().getHolderReference();
+                final AuthorizationRole authRole = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole();                    
+                final AccessRights rights = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
+                final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
+                final Date validTo = oldCertCVC.getCertificateBody().getValidTo();
+
+                final CVCertificate linkCert = CertificateGenerator.createCertificate(newPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
+                final DataOutputStream dos = new DataOutputStream(baos);
+                linkCert.encode(dos);
+                dos.close();
+            } else {
+                // X509 CA
+                final X509Certificate oldCertX509 = (X509Certificate)oldCert;
+                final X509Certificate newCertX509 = (X509Certificate)newCert;
+
+                final String linkSigAlg;
+                if (sigAlgOverride.equalsIgnoreCase("null")) {
+                    // Actually, we should use signature algorithm of new cert if the old key allows that.
+                    // Instead of doing that we allow the user to manually override the signature algorithm if needed.
+                    linkSigAlg = oldCertX509.getSigAlgName();
+                } else {
+                    System.err.println("Warning: Signature algorithm manually overridden!");
+                    linkSigAlg = sigAlgOverride;
+                }
+                System.err.println("Using signature algorithm "+linkSigAlg);
+
+                final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+                final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
+                final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
+                final Date validTo = oldCertX509.getNotAfter();
+
+                final X500Name oldDNName = X500Name.getInstance(oldCertX509.getSubjectX500Principal().getEncoded());
+                final X500Name newDNName = X500Name.getInstance(newCertX509.getSubjectX500Principal().getEncoded());
+
+                final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(oldDNName, serno, validFrom, validTo, newDNName, pkinfo);
+
+                // Copy all extensions except AKID
+                final ExtensionsGenerator extgen = new ExtensionsGenerator();
+                final Set<String> oids = new LinkedHashSet<String>();
+                final Set<String> criticalOids = newCertX509.getCriticalExtensionOIDs();
+                oids.addAll(criticalOids);
+                oids.addAll(newCertX509.getNonCriticalExtensionOIDs());
+                for (final String extOidStr : oids) {
+                    final ASN1ObjectIdentifier extoid = new ASN1ObjectIdentifier(extOidStr);
+                    if (!extoid.equals(Extension.authorityKeyIdentifier)) {
+                        final byte[] extbytes = newCertX509.getExtensionValue(extOidStr);
+                        final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(extbytes);
+                        extgen.addExtension(extoid, criticalOids.contains(extOidStr), ASN1Primitive.fromByteArray(str.getOctets()));
+                    }
+                }
+
+                if (nameChange) {
+                    // id-icao-mrtd-security-extensions-nameChange = 2.23.136.1.1.6.1
+                    extgen.addExtension(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover, false, DERNull.INSTANCE);
+                }
+
+                // Some checks
+                if (newCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId()) == null) {
+                    System.err.println("Warning: Certificate of new CSCA is missing the Subject Key Identifier extension, which is mandatory.");
+                }
+                if (newCertX509.getExtensionValue(Extension.authorityKeyIdentifier.getId()) == null) {
+                    System.err.println("Warning: Certificate of new CSCA is missing the Authority Key Identifier extension, which is mandatory.");
+                }
+
+                // If the new cert has an AKID, then add that extension but with the key id value of the old cert
+                final byte[] oldSKIDBytes = oldCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+                if (oldSKIDBytes != null) {
+                    final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSKIDBytes);
+                    final ASN1OctetString innerStr = (ASN1OctetString)ASN1Primitive.fromByteArray(str.getOctets());
+                    final AuthorityKeyIdentifier akidExt = new AuthorityKeyIdentifier(innerStr.getOctets());
+                    extgen.addExtension(Extension.authorityKeyIdentifier, false, akidExt);
+                } else {
+                    System.err.println("Warning: The old certificate doesn't have any SubjectKeyIdentifier. The link certificate will not have any AuthorityKeyIdentifier.");
+                }
+
+                // Add extensions to the certificate
+                final Extensions exts = extgen.generate();
+                for (final ASN1ObjectIdentifier extoid : exts.getExtensionOIDs()) {
+                    final Extension ext = exts.getExtension(extoid);
+                    certbuilder.addExtension(extoid, ext.isCritical(), ext.getParsedValue());
+                }
+
+                // Sign the certificate
+                final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(linkSigAlg).setProvider(signProviderName).build(oldPrivKey), 20480);
+                final X509CertificateHolder certHolder = certbuilder.build(signer);
+                baos.write(certHolder.getEncoded());
                 
                 // Save to output file
                 final FileOutputStream fos = new FileOutputStream(outputPath);
@@ -583,20 +569,18 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use>");
                 tooFewArguments(args);
-                return true;
-            } else if ( args.length < 9 ) {
+            }
+            if ( args.length < 9 ) {
                 Security.addProvider( new BouncyCastleProvider() );
                 final X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
                 verifyResult = CMS.verify(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
             } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
+                final String storeId = trimStoreId(args[5]);
+                final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
                 verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             if ( verifyResult==null ) {
-                System.out.println("Not possible to parse signed file.");
+                System.err.println("Not possible to parse signed file.");
                 System.exit(4); // Not verifying // NOPMD, it's not a JEE app
             }
             System.out.println("The signature of the input " +(verifyResult.isVerifying?"has been":"could not be")+" verified. The file was signed on '"+verifyResult.signDate+"'. The public part of the signing key is in a certificate with serial number "+verifyResult.signerId.getSerialNumber()+" issued by '"+verifyResult.signerId.getIssuer()+"'.");
@@ -607,46 +591,41 @@ public class HSMKeyTool extends ClientToolBox {
         }
         if ( args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
             if ( args.length < 6 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [<alias for stress test>] [<type of stress test>]");
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<'m:n' m # of threads, n # of tests>] [<alias for stress test>] [<type of stress test>]");
                 System.err.println("    If a file named \"./testData\" exists then the data that is signed, is read from this file.");
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                KeyStoreContainerTest.test(args[2], args[3], args[4], storeId, slotType,
-                                           args.length>6 ? Integer.parseInt(args[6].trim()) : 1,
-                                           args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null,
-                                           protectionParameter);
             }
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>6 ? args[6] : null);
+            KeyStoreContainerTest.test(
+                    args[2], args[3], args[4], storeId, slotType,
+                    notanot.threads, notanot.tests,
+                    args.length>7 ? args[7].trim() : null,
+                    args.length>8 ? args[8].trim() : null,
+                    protectionParameter);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(RENAME)) {
             if ( args.length < 8 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old key alias> <new key alias>");
                 tooFewArguments(args);
-            } else {
-                String storeId = null;
-                Pkcs11SlotLabelType slotType = null;
-                storeId = trimStoreId(args[5]);
-                slotType = divineSlotLabelType(args[5]);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).renameAlias(args[6], args[7]);
             }
+            final String storeId = trimStoreId(args[5]);
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).renameAlias(args[6], args[7]);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
             if ( args.length < 7 ) {
                 System.err.println(commandString + "<from "+getKeyStoreDescription()+"> <to "+getKeyStoreDescription()+'>');
                 tooFewArguments(args);
-            } else {
-                String fromId = args[5];                    
-                String toId = args[6];
-                Pkcs11SlotLabelType slotType = null;
-                slotType = divineSlotLabelType(args[5]);
-                System.err.println("Moving entry with alias '"+fromId+"' to alias '"+toId+'.');
-                KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, slotType, protectionParameter);
             }
+            final String fromId = args[5];                    
+            final String toId = args[6];
+            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            System.out.println("Moving entry with alias '"+fromId+"' to alias '"+toId+'.');
+            KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, slotType, protectionParameter);
             return true;
         }
         if ( doCreateKeyStore() && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
@@ -667,7 +646,7 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args.length>1 && doIt(args)) {
                 return; // command was found.
             }
-            PrintWriter pw = new PrintWriter(System.err);
+            final PrintWriter pw = new PrintWriter(System.err);
             pw.println("Use one of following commands: ");
 //            pw.println("  "+args[0]+" "+CREATE_CA_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
@@ -696,9 +675,11 @@ public class HSMKeyTool extends ClientToolBox {
             pw.flush();
             if (args.length > 1) {
                 // Don't print this if it is only a general usage message
-                log.error("Command '"+commandString(args)+"' not found.");
+                System.err.println("Command '"+commandString(args)+"' not found.");
             }
             System.exit(1); // Command not found.  // NOPMD, it's not a JEE app
+        } catch( SecurityException e ) {
+            throw e; // in test of the tool System.exit() is throwing exception that should be thrown to the the app.
         } catch (Throwable e) {
             System.err.println("Command could not be executed. See log for stack trace.");
             log.error("Command '"+commandString(args)+"' could not be executed.", e);
@@ -712,36 +693,34 @@ public class HSMKeyTool extends ClientToolBox {
     protected String getName() {
         return "HSMKeyTool";
     }
-    
+
     private static final String trimStoreId(String storeId) {
         if(storeId.contains(":")) {
             return storeId.split(":", 2)[1];
-        } else {
-            return storeId;
         }
+        return storeId;
     }
-    
+
     private static final Pkcs11SlotLabelType divineSlotLabelType(String storeId) {
         if(storeId.contains(":")) {
             String prefix = storeId.split(":", 2)[0].trim();
             if(prefix.equals("TOKEN_LABEL") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
                 return Pkcs11SlotLabelType.SLOT_LABEL;
-            } else if (prefix.equals("SLOT_ID") || prefix.equals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())) {
-                return Pkcs11SlotLabelType.SLOT_NUMBER;
-            } else if (prefix.equals("SLOT_LIST_IX") || prefix.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
-                return Pkcs11SlotLabelType.SLOT_INDEX;
-            } else {
-                throw new IllegalArgumentException("Type " + prefix + " was not valid");
             }
-                
-        } else {
-            if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(storeId)) {
+            if (prefix.equals("SLOT_ID") || prefix.equals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())) {
                 return Pkcs11SlotLabelType.SLOT_NUMBER;
-            } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(storeId)) {
-                return Pkcs11SlotLabelType.SLOT_INDEX;
-            } else {
-                return Pkcs11SlotLabelType.SLOT_LABEL;
             }
+            if (prefix.equals("SLOT_LIST_IX") || prefix.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
+                return Pkcs11SlotLabelType.SLOT_INDEX;
+            }
+            throw new IllegalArgumentException("Type " + prefix + " was not valid");
         }
+        if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(storeId)) {
+            return Pkcs11SlotLabelType.SLOT_NUMBER;
+        }
+        if(Pkcs11SlotLabelType.SLOT_INDEX.validate(storeId)) {
+            return Pkcs11SlotLabelType.SLOT_INDEX;
+        }
+        return Pkcs11SlotLabelType.SLOT_LABEL;
     }
 }
