@@ -6346,12 +6346,20 @@ Using EJBCA in <i>Throw Away CA</i>-mode curtails some functionality, foremost t
 </ul>
 </subsection>
 <subsection name="Clear All Caches">
-<p>This button is located under <i>System Configuration</i> and is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
-nodes in this cluster. In order for this to work, the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
+<p>This button is located under <i>System Configuration</i> and is used to clear the cache on all the nodes in this cluster. In order for this to work, 
+the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
 the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
-<br/>Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list. Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address.
-</p><p>
-On startup of EJBCA each node adds its hostname to the "Nodes in Cluster" list. The list can also be manually edited on the System Configuration page.
+<br/>
+Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list and clears the following caches: 
+Global Configuration Cache, CMP Configurations Cache, SCEP Configuration Cache, End Entity Profile Cache, Certificate Profile Cache, Authorization Cache, CA Cache, 
+CryptoToken Cache, Publisher Cache, Internal KeyBinding Cache, OCSP Signer Cache, OCSP Extensions Cache, CT Caches and Certificate Store Cache.
+</p>
+<note>
+After clearing the cache, if not excluded, all CryptoTokens that are manually activated will go off-line
+</note>
+<p>
+Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address. On startup of 
+EJBCA each node adds its hostname to the "Nodes in Cluster" list. The list can also be manually edited on the System Configuration page.
 </p>
 </subsection>
 </section>

@@ -680,6 +680,12 @@ public class EjbcaWebBean implements Serializable {
         }
         
     }
+    
+    public void saveGlobalConfiguration(GlobalConfiguration gc) throws Exception {
+        globalConfigurationSession.saveConfiguration(administrator, gc);
+        informationmemory.systemConfigurationEdited(gc);
+        reloadGlobalConfiguration();
+    }
 
     public void saveGlobalConfiguration() throws Exception {
         globalConfigurationSession.saveConfiguration(administrator, globalconfiguration);
