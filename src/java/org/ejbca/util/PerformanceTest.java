@@ -44,20 +44,22 @@ public class PerformanceTest {
         this.random = new Random();
         this.isSomeThreadUsingRandom = false;
     }
-    public synchronized long nextLong() {
-        while ( this.isSomeThreadUsingRandom ) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                // should never ever happend
-                throw new Error(e);
+    public long nextLong() {
+        synchronized (this.random) {
+            while ( this.isSomeThreadUsingRandom ) {
+                try {
+                    this.random.wait();
+                } catch (InterruptedException e) {
+                    // should never ever happen
+                    throw new Error(e);
+                }
             }
+            this.isSomeThreadUsingRandom = true;
+            final long result = this.random.nextLong();
+            this.isSomeThreadUsingRandom = false;
+            this.random.notifyAll();
+            return result;        
         }
-        this.isSomeThreadUsingRandom = true;
-        final long result = this.random.nextLong();
-        this.isSomeThreadUsingRandom = false;
-        this.notifyAll();
-        return result;
     }
     public Log getLog() {
         return this.log;
@@ -201,9 +203,11 @@ public class PerformanceTest {
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each "+this.STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
         printStream.println("The test was started at "+ new Date());
+        printStream.format("%d number of threads will be started and %d number of tests will be performed. Each thread will wait between 0 and %d milliseconds between each test.%n", numberOfThreads, numberOfTests, waitTime);
         synchronized(this) {
             wait();
         }
+        printStream.format("Test exited with %d number of failures.%n", statistic.getNrOfFailures());
         System.exit( statistic.getNrOfFailures() );
     }
     private class Statistic implements Runnable { // NOPMD this is a standalone test, not run in jee app
