@@ -312,7 +312,7 @@ public abstract class AlgorithmTools {
 	            }
 	        }
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", providerName);
-            kpg.initialize(new ECGenParameterSpec(ecNamedCurveBc));
+            kpg.initialize(new ECGenParameterSpec(getEcKeySpecOidFromBcName(ecNamedCurveBc)));
             return true;
         } catch (InvalidAlgorithmParameterException e) {
             if (log.isDebugEnabled()) {
@@ -324,6 +324,20 @@ public abstract class AlgorithmTools {
             throw new RuntimeException("EC capable provider " + providerName + " disappeard unexpectedly." ,e);
         }
         return false;
+	}
+	
+	/**
+	 * Convert from BC ECC curve names to the OID.
+	 * 
+	 * @param ecNamedCurveBc the name as BC reports it
+	 * @return the OID of the curve or the input curve name if it is unknown by BC
+	 */
+	public static String getEcKeySpecOidFromBcName(final String ecNamedCurveBc) {
+	    final ASN1ObjectIdentifier oid = org.bouncycastle.asn1.x9.ECNamedCurveTable.getOID(ecNamedCurveBc);
+	    if (oid==null) {
+	        return ecNamedCurveBc;
+	    }
+	    return oid.getId();
 	}
 
 	/** @return a list of aliases for the provided curve name (including the provided name) */
