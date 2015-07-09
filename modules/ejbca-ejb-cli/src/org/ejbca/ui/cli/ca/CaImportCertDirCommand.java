@@ -227,13 +227,13 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                 // Read certificate from the file.
                 try {
                     certificate = (X509Certificate) loadcert(file.getCanonicalPath());
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     log.error("ERROR: A problem was encountered while reading the certificate, file: " + filename);
                     readError++;
                     if (!resumeOnError) {
-                        throw t;
+                        throw e;
                     } else {
-                        log.error(t.getMessage());
+                        log.error(e.getMessage());
                     }
 
                     // We have to continue here since the rest of the code depends
