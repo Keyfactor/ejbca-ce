@@ -18,6 +18,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
@@ -33,6 +35,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -47,8 +50,11 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -76,6 +82,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
     private static final String EE_PROFILE_KEY = "--eeprofile";
     private static final String CERT_PROFILE_KEY = "--certprofile";
     private static final String OVERRIDE_EXISTING_ENDENTITY = "--overwrite";
+    private static final String REVOCATION_REASON = "--revocation-reason";
+    private static final String REVOCATION_TIME = "--revocation-time";
 
     private static final String ACTIVE = "ACTIVE";
     private static final String REVOKED = "REVOKED";
@@ -99,6 +107,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 "E-Mail for imported End Entity, if any."));
         registerParameter(new Parameter(OVERRIDE_EXISTING_ENDENTITY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Overwrite an existing end entity even if it was not revoked."));
+        registerParameter(new Parameter(REVOCATION_REASON, "Reason", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Revocation reason, if the certificate is to be imported as revoked. Will be set to " + RevocationReasons.UNSPECIFIED.getStringValue() + " if this option is not set."));
+        registerParameter(new Parameter(REVOCATION_TIME, CaImportCertDirCommand.DATE_FORMAT, MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Revocation time, if the certificate is to be imported as revoked. Will be set to the current time if this option is not set. Format is "
+                        + CaImportCertDirCommand.DATE_FORMAT + ", i.e. 2015.05.04-10:15"));
     }
 
     @Override
@@ -110,7 +123,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
     public CommandResult execute(ParameterContainer parameters) {
         log.trace(">execute()");
 
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         String username = parameters.get(ENDENTITY_USERNAME_KEY);
         String password = parameters.get(ENDENTITY_PASSWORD_KEY);
         String caname = parameters.get(CA_NAME_KEY);
@@ -119,14 +132,44 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         String certfile = parameters.get(FILE_KEY);
         String eeprofile = parameters.get(EE_PROFILE_KEY);
         String certificateprofile = parameters.get(CERT_PROFILE_KEY);
-
+        final String revocationReasonString = parameters.get(REVOCATION_REASON);
+        final String revocationTimeString = parameters.get(REVOCATION_TIME);
         EndEntityType endEntityType = EndEntityTypes.ENDUSER.toEndEntityType();
         StringBuilder errorString = new StringBuilder();
         int status;
+        RevocationReasons revocationReason = null;
+        Date revocationTime = null;
         if (ACTIVE.equalsIgnoreCase(active)) {
             status = CertificateConstants.CERT_ACTIVE;
+            if(revocationReasonString != null) {
+                log.warn("Revocation reason has been set in spite of certificates being imported as active. Ignoring.");
+            }
+            if(revocationTimeString != null) {
+                log.warn("Revocation time has been set in spite of certificates being imported as active. Ignoring.");
+            }
         } else if (REVOKED.equalsIgnoreCase(active)) {
             status = CertificateConstants.CERT_REVOKED;
+        
+            
+            if(revocationReasonString != null) {
+                revocationReason = RevocationReasons.getFromCliValue(revocationReasonString.toUpperCase());
+                if(revocationReason == null) {
+                    log.error("ERROR: " + revocationReasonString + " is not a valid revocation reason.");
+                    return CommandResult.CLI_FAILURE;
+                }
+            } else {
+                revocationReason = RevocationReasons.UNSPECIFIED;
+            } 
+            if (revocationTimeString != null) {
+                try {
+                    revocationTime = new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT).parse(revocationTimeString);
+                } catch (ParseException e) {
+                    log.error("ERROR: " + revocationTimeString + " was not a valid revocation time.");
+                    return CommandResult.CLI_FAILURE;
+                }
+            } else {
+                revocationTime = new Date();
+            }
         } else {
             errorString.append("Invalid certificate status, must be " + ACTIVE + " or " + REVOKED + "\n");
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -218,18 +261,19 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         log.info("Type: " + endEntityType.getHexValue());
 
         log.debug("Loading/updating user " + username);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         try {
             if (userdata == null) {
 
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(), username,
+                endEntityManagementSession.addUser(getAuthenticationToken(), username,
                         password, CertTools.getSubjectDN(certificate), subjectAltName, email, false, endentityprofileid, certificateprofileid,
                         endEntityType, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, cainfo.getCAId());
                 try {
                     if (status == CertificateConstants.CERT_ACTIVE) {
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
+                        endEntityManagementSession.setUserStatus(getAuthenticationToken(),
                                 username, EndEntityConstants.STATUS_GENERATED);
                     } else {
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
+                        endEntityManagementSession.setUserStatus(getAuthenticationToken(),
                                 username, EndEntityConstants.STATUS_REVOKED);
                     }
                 } catch (FinderException e) {
@@ -245,7 +289,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                         SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
                 endEntityInformation.setPassword(password);
 
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(),
+                endEntityManagementSession.changeUser(getAuthenticationToken(),
                         endEntityInformation, false);
 
                 log.info("User '" + username + "' has been updated.");
@@ -272,7 +316,28 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(), certificate,
-                    username, fingerprint, status, certificateType, certificateprofileid, null, new Date().getTime());
+                    username, fingerprint, CertificateConstants.CERT_ACTIVE, certificateType, certificateprofileid, null, new Date().getTime());
+            if (status == CertificateConstants.CERT_REVOKED) {
+                try {
+                    endEntityManagementSession.revokeCert(getAuthenticationToken(), CertTools.getSerialNumber(certificate), revocationTime, CertTools.getIssuerDN(certificate),
+                            revocationReason.getDatabaseValue(), false);
+                } catch (ApprovalException e) {
+                    log.error(e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } catch (AlreadyRevokedException e) {
+                    log.error(e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } catch (RevokeBackDateNotAllowedForProfileException e) {
+                    log.error(e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } catch (FinderException e) {
+                    log.error(e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } catch (WaitingForApprovalException e) {
+                    log.error(e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
+            }
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to import certificate.");
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -344,6 +409,17 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         }
         sb.append("Certificate profiles: " + certificateProfiles + "\n\n");
         sb.append("If an End entity profile is selected it must allow selected Certificate profiles.\n");
+        sb.append("Valid Revocation reasons: ");
+        RevocationReasons[] values = RevocationReasons.values();
+        for(int i = 0; i < values.length; ++i) {
+            if(!values[i].equals(RevocationReasons.NOT_REVOKED)) {
+                sb.append(values[i].getStringValue());
+                if(i < values.length -1) {
+                    sb.append(" | ");
+                }
+            }
+        }
+        
         return sb.toString();
     }
     

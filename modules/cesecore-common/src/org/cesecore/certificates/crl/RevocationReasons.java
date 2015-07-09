@@ -82,6 +82,9 @@ public enum RevocationReasons {
      * @return the relevant RevocationReasons object, null if none found. 
      */
     public static RevocationReasons getFromCliValue(String cliValue) {
+        if(cliValue == null) {
+            return null;
+        }
         return cliLookupMap.get(cliValue);
     }
 }
