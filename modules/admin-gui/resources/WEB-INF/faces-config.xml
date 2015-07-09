@@ -116,6 +116,12 @@
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   
+    <managed-bean>
+    	<managed-bean-name>systemConfigMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.configuration.SystemConfigMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  
   <validator>
         <validator-id>legalCharsValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.LegalCharsValidator</validator-class>
