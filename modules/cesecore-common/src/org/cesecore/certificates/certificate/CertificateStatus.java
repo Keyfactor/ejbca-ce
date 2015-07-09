@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /** Simple class encapsulating the certificate status information needed when making revocation checks.
@@ -33,7 +34,7 @@ public class CertificateStatus implements Serializable {
 
     private final String name;
     public final Date revocationDate;
-    /** RevokedCertInfo.NOT_REVOKED etc */
+    /** @see RevocationReasons */
     public final int revocationReason;
     public final int certificateProfileId;
     
