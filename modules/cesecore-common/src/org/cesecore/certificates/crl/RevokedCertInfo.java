@@ -29,18 +29,18 @@ public class RevokedCertInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/** Constants defining different revocation reasons. */
-    public static final int NOT_REVOKED                            = -1;
-    public static final int REVOCATION_REASON_UNSPECIFIED          = 0;
-    public static final int REVOCATION_REASON_KEYCOMPROMISE        = 1;
-    public static final int REVOCATION_REASON_CACOMPROMISE         = 2;
-    public static final int REVOCATION_REASON_AFFILIATIONCHANGED   = 3;
-    public static final int REVOCATION_REASON_SUPERSEDED           = 4;
-    public static final int REVOCATION_REASON_CESSATIONOFOPERATION = 5;
-    public static final int REVOCATION_REASON_CERTIFICATEHOLD      = 6;
+    public static final int NOT_REVOKED                            = RevocationReasons.NOT_REVOKED.getDatabaseValue();
+    public static final int REVOCATION_REASON_UNSPECIFIED          = RevocationReasons.UNSPECIFIED.getDatabaseValue();
+    public static final int REVOCATION_REASON_KEYCOMPROMISE        = RevocationReasons.KEYCOMPROMISE.getDatabaseValue();
+    public static final int REVOCATION_REASON_CACOMPROMISE         = RevocationReasons.CACOMPROMISE.getDatabaseValue();
+    public static final int REVOCATION_REASON_AFFILIATIONCHANGED   = RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue();
+    public static final int REVOCATION_REASON_SUPERSEDED           = RevocationReasons.SUPERSEDED.getDatabaseValue();
+    public static final int REVOCATION_REASON_CESSATIONOFOPERATION = RevocationReasons.CESSATIONOFOPERATION.getDatabaseValue();
+    public static final int REVOCATION_REASON_CERTIFICATEHOLD      = RevocationReasons.CERTIFICATEHOLD.getDatabaseValue();
     // Value 7 is not used, see RFC5280
-    public static final int REVOCATION_REASON_REMOVEFROMCRL        = 8;
-    public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = 9;
-    public static final int REVOCATION_REASON_AACOMPROMISE         = 10;
+    public static final int REVOCATION_REASON_REMOVEFROMCRL        = RevocationReasons.REMOVEFROMCRL.getDatabaseValue();
+    public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = RevocationReasons.PRIVILEGESWITHDRAWN.getDatabaseValue();
+    public static final int REVOCATION_REASON_AACOMPROMISE         = RevocationReasons.AACOMPROMISE.getDatabaseValue();
     
     /** BigInteger (serialNumber) in byte format, BigInteger.toByteArray() */
     private byte[]      userCertificate;
@@ -176,36 +176,17 @@ public class RevokedCertInfo implements Serializable {
     
     /**
      * This method returns the revocation reason as a text string that is understandable.
-     * TODO: The strings in this method should be easier for users to change, used from "publicweb/retrieve/check_status_result.jsp"
+     * TODO: The strings in the enum should be easier for users to change, used from "publicweb/retrieve/check_status_result.jsp"
      * 
      * @return A string describing the reason for revocation.
      */
     public String getHumanReadableReason() {
-    	switch (reason) {
-    	case NOT_REVOKED:
-    		return "the certificate is not revoked";
-    	case REVOCATION_REASON_UNSPECIFIED:
-    		return "unspecified";
-    	case REVOCATION_REASON_KEYCOMPROMISE:
-    		return "key compromise";
-    	case REVOCATION_REASON_CACOMPROMISE:
-    		return "CA compromise";
-    	case REVOCATION_REASON_AFFILIATIONCHANGED:
-    		return "affiliation changed";
-    	case REVOCATION_REASON_SUPERSEDED:
-    		return "superseded";
-    	case REVOCATION_REASON_CESSATIONOFOPERATION:
-    		return "cessation of operation";
-    	case REVOCATION_REASON_CERTIFICATEHOLD:
-    		return "certificate hold";
-    	case REVOCATION_REASON_REMOVEFROMCRL:
-    		return "remove from CRL";
-    	case REVOCATION_REASON_PRIVILEGESWITHDRAWN:
-    		return "privileges withdrawn";
-    	case REVOCATION_REASON_AACOMPROMISE:
-    		return "AA compromise";
-    	default:
-    		return "unknown";
-         	}
+        RevocationReasons revocationReason = RevocationReasons.getFromDatabaseValue(reason);
+        if (revocationReason != null) {
+            return revocationReason.getHumanReadable();
+
+        } else {
+            return "unknown";
+        }
     }
 }
