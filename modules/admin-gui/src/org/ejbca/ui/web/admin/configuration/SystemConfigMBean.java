@@ -464,9 +464,25 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableLanguages() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        final String[] languages = getEjbcaWebBean().getAvailableLanguages();
-        for(int i=0; i<languages.length; i++) {
-            ret.add(new SelectItem(i, languages[i]));
+        final String[] availableLanguages = getEjbcaWebBean().getAvailableLanguages();
+        final String[] availableLanguagesEnglishNames = getEjbcaWebBean().getLanguagesEnglishNames();
+        final String[] availableLanguagesNativeNames = getEjbcaWebBean().getLanguagesNativeNames();
+        for(int i=0; i<availableLanguages.length; i++) {
+            String output = availableLanguagesEnglishNames[i];
+            if((availableLanguagesEnglishNames!=null) && (availableLanguagesNativeNames[i] != null)) {
+                output += " - " + availableLanguagesNativeNames[i];
+            }
+            output += "[" + availableLanguages[i] + "]";
+            ret.add(new SelectItem(i, output));
+        }
+        return ret;
+    }
+    
+    public List<SelectItem> getAvailableThemes() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final String[] themes = globalConfig.getAvailableThemes();
+        for(String theme : themes) {
+            ret.add(new SelectItem(theme, theme));
         }
         return ret;
     }
