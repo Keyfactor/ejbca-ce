@@ -294,6 +294,11 @@ form table fieldset {
 	background-color: rgba(0,0,0,.02);
 }
 
+/* --- Forms: System Configurations titles */
+table .titles {
+	font-weight:bold;
+}
+
 /* --- Forms: Help */
 table .help {
 /*	display: none;		/* Hide all in-line help */
@@ -360,6 +365,10 @@ table.edit tr td {
 .editColumn1 {
 	width: 35%;
 	text-align: right;
+}
+.editColumnSystem1 {
+	width: 35%;
+	text-align: left;
 }
 .editColumn2 {
 	width: 65%;
