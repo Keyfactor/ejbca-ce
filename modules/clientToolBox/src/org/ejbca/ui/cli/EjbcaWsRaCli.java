@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.cli;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,12 @@ public class EjbcaWsRaCli extends ClientToolBox {
         try {
         	// the ejbcawsracli can not be compiled when building EJBCA.
             Class.forName("org.ejbca.core.protocol.ws.client.ejbcawsracli").getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{lArgs.toArray(new String[]{})});
+        } catch (InvocationTargetException e) {
+            final Throwable cause = e.getCause();
+            if ( Thread.currentThread().getStackTrace().length > 7 && cause instanceof SecurityException ) {
+                throw (SecurityException)cause; // throw it if called by clientToolBoxTest and exit exception. clientToolBox call has a length of 3. 7 gives some margin for code changes.
+            }
+            e.printStackTrace(System.err);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
