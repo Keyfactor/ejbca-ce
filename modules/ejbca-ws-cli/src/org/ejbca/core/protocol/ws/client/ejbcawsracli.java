@@ -15,7 +15,9 @@ package org.ejbca.core.protocol.ws.client;
 
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
+import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 /**
  * Implements the EJBCA RA WS command line interface
@@ -42,17 +44,23 @@ public class ejbcawsracli  {
                     "generatectkeys | createca | addadmintorole | removeadminfromrole | getexpiredcerts | " +
                     "getexpiredcertsbyissuer | getexpiredcertsbytype | stress");
             }
-        } catch (Exception e) {
-        	Throwable cause = e.getCause();
-        	if (cause instanceof EjbcaException_Exception) {
-        		EjbcaException_Exception ejbcaex = (EjbcaException_Exception)cause;
-        		EjbcaException ee = ejbcaex.getFaultInfo();
-        		System.out.println("Error: "+ee.getErrorCode().getInternalErrorCode()+": "+ee.getMessage());
-			} else {
-	            System.out.println(e.getMessage());
-			}
-            e.printStackTrace();				
+        } catch (ErrorAdminCommandException e) {
+            final Throwable cause = e.getCause();
+            if ( Thread.currentThread().getStackTrace().length > 12 && cause instanceof SecurityException ) {
+                throw (SecurityException)cause; // throw it if called by clientToolBoxTest and exit exception. clientToolBox call has a length of 8. 12 gives some margin for code changes.
+            }
+            if (cause instanceof EjbcaException_Exception) {
+                final EjbcaException_Exception ejbcaex = (EjbcaException_Exception)cause;
+                final EjbcaException ee = ejbcaex.getFaultInfo();
+                System.out.println("Error: "+ee.getErrorCode().getInternalErrorCode()+": "+ee.getMessage());
+            } else {
+                System.out.println(e.getMessage());
+            }
+            e.printStackTrace(System.err);
             System.exit(-1); // NOPMD, this is not a JEE app
+        } catch (IllegalAdminCommandException e) {
+            System.out.println(e.getMessage());
+            System.exit(-2); // NOPMD, this is not a JEE app
         }
     }
 }
