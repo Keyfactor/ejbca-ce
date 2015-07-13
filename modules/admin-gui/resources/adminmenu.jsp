@@ -52,8 +52,6 @@ org.cesecore.keybind.InternalKeyBindingRules
                                                     + "/logconfiguration/logconfiguration.jsp";
     final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
                                                     + "/systemconfiguration.jsf";
-    final String OLDCONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
-            										+ "/configuration.jsp";
     final String CMPCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()
            											+ "/cmpconfiguration.jsp";
     
@@ -448,19 +446,6 @@ org.cesecore.keybind.InternalKeyBindingRules
         configheaderprinted = true;
           } %>
 				<li><a href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-%>
-
-<%
-    // If authorized to configure Ejbca then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
-          if(!configheaderprinted){      
-        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
-        configheaderprinted = true;
-          } %>
-				<li><a href="<%= OLDCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>">Old SysConfig</a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
 %>
