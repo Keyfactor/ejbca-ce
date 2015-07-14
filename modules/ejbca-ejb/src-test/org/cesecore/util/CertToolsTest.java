@@ -1713,7 +1713,20 @@ public class CertToolsTest {
         Arrays.sort(result);
         assertEquals("[permanentIdentifier=abcd 456/1.2.7, permanentIdentifier=def321/1.2.5, upn=upn@example.com]", Arrays.toString(result));
     }
-    
+
+    @Test
+    public void testGetGeneralNamesFromAltName5DirectoryName() throws Exception {
+        // One permanentIdentifier
+        String altName = "directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE";
+        GeneralNames gn = CertTools.getGeneralNamesFromAltName(altName);
+        assertNotNull("getGeneralNamesFromAltName failed for " + altName, gn);
+        String[] result = new String[] { 
+            CertTools.getGeneralNameString(4, gn.getNames()[0].getName()), 
+        };
+        Arrays.sort(result);
+        assertEquals("[directoryName=CN=Tomas,O=PrimeKey,C=SE]", Arrays.toString(result));
+    }
+
     @Test
     public void testStringToBcX500WithIncompleteLoneValue() {
         //Legal as a name even if it won't be legal as a DN
