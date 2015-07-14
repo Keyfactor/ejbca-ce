@@ -185,7 +185,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        assertEquals("dNSName=top.secret.domain.se", CertTools.getSubjectAlternativeName(cert));  
 	        
 	        // Check that the number-of-redacted-lables-extension was added
-	        byte[] extValue = cert.getExtensionValue("1.3.6.1.4.1.11129.2.4.6");
+	        byte[] extValue = cert.getExtensionValue(CertTools.id_ct_redacted_domains);
 	        assertNotNull("Number of redacted labels (1.3.6.1.4.1.11129.2.4.6) didn't get added", extValue);
 	        
 	        // Check that the number-of-redacted-lables-extension has the write value

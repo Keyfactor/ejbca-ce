@@ -232,6 +232,9 @@ public abstract class CertTools {
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
 
+    /** Object ID for CT (Certificate Transparency) specific extensions */
+    public static final String id_ct_redacted_domains = "1.3.6.1.4.1.11129.2.4.6";
+    
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
 
     public static final String BEGIN_CERTIFICATE_REQUEST = "-----BEGIN CERTIFICATE REQUEST-----";
@@ -2174,11 +2177,10 @@ public abstract class CertTools {
      */
     public static String getAltNameStringFromExtension(Extension ext) {
         String altName = null;
-        // GeneralNames
-        ASN1Encodable gnames = ext.getParsedValue();
-        if (gnames != null) {
+        // GeneralNames, the actual encoded name
+        GeneralNames names = getGeneralNamesFromExtension(ext);
+        if (names != null) {
             try {
-                GeneralNames names = GeneralNames.getInstance(gnames);
                 GeneralName[] gns = names.getNames();
                 for (GeneralName gn : gns) {
                     int tag = gn.getTagNo();
@@ -2201,6 +2203,21 @@ public abstract class CertTools {
         return altName;
     }
 
+    /**
+     * Gets GeneralNames from an X509Extension
+     * 
+     * @param ext X509Extension with AlternativeNames
+     * @return GeneralNames with all Alternative Names
+     */
+    public static GeneralNames getGeneralNamesFromExtension(Extension ext) {
+        ASN1Encodable gnames = ext.getParsedValue();
+        if (gnames != null) {
+                GeneralNames names = GeneralNames.getInstance(gnames);
+                return names;
+        }
+        return null;
+    }
+    
     /**
      * SubjectAltName ::= GeneralNames
      * 
@@ -2513,7 +2530,9 @@ public abstract class CertTools {
             break;
         case 3: // SubjectAltName of type x400Address not supported
             break;
-        case 4: // SubjectAltName of type directoryName not supported
+        case 4:
+            final X500Name name = X500Name.getInstance(value);
+            ret = CertTools.DIRECTORYNAME + "=" + name.toString();
             break;
         case 5: // SubjectAltName of type ediPartyName not supported
             break;
