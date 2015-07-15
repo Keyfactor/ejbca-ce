@@ -45,13 +45,8 @@ public class PKCS11CATokenTest extends CATokenTestBase {
     @Test
     public void testCATokenECCprime() throws Exception {
         CryptoToken cryptoToken = createPKCS11Token(true);
-        cryptoToken.deleteEntry("testCATokenECCprime");
-        try {
-            cryptoToken.generateKeyPair("prime256v1", "testCATokenECCprime");
-            fail("We do not expect the SUN PKCS#11 provider to recognize the EC curve 'prime256v1', but if it does it would be a good thing! (Update the test.)");
-        } catch (InvalidAlgorithmParameterException e) {
-            // Expected
-        }
+        // "prime256v1" is an alias for "secp256r1" and NIST's "P-256"
+        doCaTokenECC("prime256v1", cryptoToken, getCaTokenProperties("ecctest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
