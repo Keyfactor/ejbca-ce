@@ -333,6 +333,7 @@ public abstract class AlgorithmTools {
 	 * @return the OID of the curve or the input curve name if it is unknown by BC
 	 */
 	public static String getEcKeySpecOidFromBcName(final String ecNamedCurveBc) {
+	    // Although the below class is in x9 package, it handles all different curves, including TeleTrust (brainpool)
 	    final ASN1ObjectIdentifier oid = org.bouncycastle.asn1.x9.ECNamedCurveTable.getOID(ecNamedCurveBc);
 	    if (oid==null) {
 	        return ecNamedCurveBc;
