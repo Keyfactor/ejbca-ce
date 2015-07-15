@@ -1217,7 +1217,7 @@ public class X509CA extends CA implements Serializable {
         GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
         GeneralName[] gns = names.getNames();
         boolean sanEdited = false;
-        final ArrayList<Integer> nrOfRecactedLables = new ArrayList<Integer>();
+        ASN1EncodableVector nrOfRecactedLables = new ASN1EncodableVector();
         for (int j = 0; j<gns.length; j++) {
             GeneralName generalName = gns[j];
             // Look for DNS name
@@ -1229,28 +1229,23 @@ public class X509CA extends CA implements Serializable {
                     certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, '(');
                     certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, ')');
                     // Replace the old value with the new
-                    generalName = new GeneralName(2, new DERIA5String(certBuilderDNSValue));
-                    gns[j] = generalName;
+                    gns[j] = new GeneralName(2, new DERIA5String(certBuilderDNSValue));
                     sanEdited = true;
-                    if(publishToCT) {
+                    if (publishToCT) {
                         String redactedLable = StringUtils.substring(str, StringUtils.indexOf(str, "("), StringUtils.lastIndexOf(str, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses 
-                        nrOfRecactedLables.add(StringUtils.countMatches(redactedLable, ".")+1);
+                        nrOfRecactedLables.add(new ASN1Integer(StringUtils.countMatches(redactedLable, ".")+1));
                     }
                 } else {
-                    nrOfRecactedLables.add(0);
+                    nrOfRecactedLables.add(new ASN1Integer(0));
                 }
             }
         }
         ExtensionsGenerator gen = new ExtensionsGenerator();
-        // Use the GeneralName from original altName in order to now re-encode anything 
+        // Use the GeneralName from original altName in order to not re-encode anything 
         gen.addExtension(Extension.subjectAlternativeName, subAltNameExt.isCritical(), new GeneralNames(gns));
         // If there actually are redacted parts, add the extension containing the number of redacted labels to the certificate 
         if(publishToCT && sanEdited) {
-            ASN1EncodableVector v = new ASN1EncodableVector();
-            for(int val : nrOfRecactedLables) {
-                v.add(new ASN1Integer(val));
-            }
-            ASN1Encodable seq = new DERSequence(v);
+            ASN1Encodable seq = new DERSequence(nrOfRecactedLables);
             gen.addExtension(new ASN1ObjectIdentifier(CertTools.id_ct_redacted_domains), false, seq);
         }
         
