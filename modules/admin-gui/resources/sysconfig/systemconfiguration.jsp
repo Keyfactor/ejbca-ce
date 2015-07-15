@@ -375,8 +375,11 @@ org.cesecore.authorization.control.StandardRules
    				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
 				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
 				<f:facet name="footer">
-					<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}" 
-								title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
+					<h:panelGroup>
+ 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
+ 	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}"
+ 	 	 	 					       title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
+ 	 	 	 		</h:panelGroup>
 				</f:facet>
 			</h:column>
 			<h:column>
