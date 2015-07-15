@@ -21,7 +21,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -58,7 +57,6 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -68,7 +66,6 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.DistributionPoint;
@@ -529,7 +526,6 @@ public class X509CATest {
 	    assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
         assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas,O=PrimeKey,C=SE", altName);
-        //assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=(hidden).secret.se, dNSName=(hidden1).(hidden2).ultrasecret.no, directoryName=CN=Tomas,O=PrimeKey,C=SE", altName);
 	    // Test with CT publishing
 	    gen = ca.getSubjectAltNameExtensionForCert(ext, true);
 	    exts = gen.generate();
@@ -537,9 +533,7 @@ public class X509CATest {
 	    ctext = exts.getExtension(new ASN1ObjectIdentifier(CertTools.id_ct_redacted_domains));
 	    assertNotNull("A subjectAltName extension should be present", genext);
 	    assertNotNull("A CT redacted extension should be present", ctext);
-        ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ctext.getExtnValue().getOctets()));
-        ASN1Sequence seq = ASN1Sequence.getInstance((ASN1Sequence) octAsn1InputStream.readObject());
-        octAsn1InputStream.close();
+        ASN1Sequence seq = ASN1Sequence.getInstance(ctext.getExtnValue().getOctets());
         assertEquals("should be three dnsNames", 3, seq.size());
         ASN1Integer derInt = ASN1Integer.getInstance(seq.getObjectAt(0));
         assertEquals("first dnsName should have 0 redacted labels", 0, derInt.getValue().intValue());
