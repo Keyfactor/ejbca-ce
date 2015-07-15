@@ -24,6 +24,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -182,7 +183,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public int getEntriesPerPage() { return this.entriesPerPage; }
         public void setEntriesPerPage(int entriesPerPage) { this.entriesPerPage=entriesPerPage; }
     }
-    
+
+    private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
@@ -209,7 +211,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public AdminPreference getAdminPreference() throws Exception {
         if(adminPreference == null) {
-            adminPreference = getEjbcaWebBean().getAdminPreference();
+            adminPreference = getEjbcaWebBean().getDefaultAdminPreference();
         }
         return adminPreference;
     }
@@ -226,6 +228,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         return this.currentConfig;
+    }
+    
+    public String getSelectedTab() {
+        final String tabHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("tab");
+        // First, check if the user has requested a valid tab
+        if (tabHttpParam != null && getAvailableTabs().contains(tabHttpParam)) {
+            // The requested tab is an existing tab. Flush caches so we reload the page content
+            flushCache();
+            selectedTab = tabHttpParam;
+        }
+        if (selectedTab == null) {
+            // If no tab was requested, we use the first available tab as default
+            selectedTab = getAvailableTabs().get(0);
+        }
+        return selectedTab;
     }
     
     public String getCurrentNode() {
@@ -329,6 +346,25 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
     }
+
+    /** Invoked when admin saves the admin preferences */
+    public void saveCurrentAdminPreferences() {
+        if(currentConfig != null) {
+            try {
+                adminPreference.setPreferedLanguage(currentConfig.getPreferedLanguage());
+                adminPreference.setSecondaryLanguage(currentConfig.getSecondaryLanguage());
+                adminPreference.setTheme(currentConfig.getTheme());
+                adminPreference.setEntriesPerPage(currentConfig.getEntriesPerPage());
+                
+                getEjbcaWebBean().saveDefaultAdminPreference(adminPreference);
+            } catch (Exception e) {
+                String msg = "Cannot save Administrator Preferences. " + e.getLocalizedMessage();
+                log.info(msg);
+                super.addNonTranslatedErrorMessage(msg);
+            }
+        }
+    }
+
     
     public void flushCache() {
         globalConfig = null;
@@ -400,7 +436,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public ListDataModel getCtLogs() {
         if(ctLogs == null) {
-            List<CTLogInfo> logs = currentConfig.getCtLogs();
+            List<CTLogInfo> logs = getCurrentConfig().getCtLogs();
             ctLogs = new ListDataModel(logs);
         }
         return ctLogs;
@@ -440,6 +476,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             currentConfig.setCtLogs(ctlogs);
             ctLogs = new ListDataModel(ctlogs);
         }
+        
+        saveCurrentConfig();
     }
 
     public void removeCTLog() {
@@ -448,6 +486,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ctlogs.remove(ctlogToRemove);
         currentConfig.setCtLogs(ctlogs);
         ctLogs = new ListDataModel(ctlogs);
+        saveCurrentConfig();
     }
     
     public void uploadCTLogPublicKeyFile() {
@@ -506,6 +545,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             ret.add(new SelectItem(Integer.parseInt(value), value));
         }
         return ret;
+    }
+    
+    public List<String> getAvailableTabs() {
+        final List<String> availableTabs = new ArrayList<String>();
+        availableTabs.add("Basic Configurations");
+        availableTabs.add("CTLogs");
+        availableTabs.add("Administrator Preferences");
+        return availableTabs;
     }
     
 }
