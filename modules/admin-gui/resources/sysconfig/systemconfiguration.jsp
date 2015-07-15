@@ -63,8 +63,27 @@ org.cesecore.authorization.control.StandardRules
 		<h:outputText value="#{web.text.SYSTEMCONFIGURATION}"/>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
+	
+	<div class="tabLinks">
+		<c:forEach items="#{systemConfigMBean.availableTabs}" var="tab">
+		<span>
+			<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf?tab=#{tab}"
+				styleClass="tabLink#{tab eq systemConfigMBean.selectedTab}">
+				<h:outputText value="#{tab}"/>
+			</h:outputLink>
+		</span>
+		</c:forEach>
+	</div>
 
-	<h:form id="systemconfiguration" enctype="multipart/form-data">
+	<p>
+		<h:panelGroup rendered="#{systemConfigMBean.selectedTab eq 'CTLogs'}">
+			<h:outputText value="#{web.text.CTLOGCONFIGURATION_HELP}"/>
+			<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
+		</h:panelGroup>
+	</p>
+
+
+	<h:form id="systemconfiguration" rendered="#{systemConfigMBean.selectedTab eq 'Basic Configurations'}">
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
 				&nbsp;
@@ -327,62 +346,71 @@ org.cesecore.authorization.control.StandardRules
 			</h:panelGroup>	
 		</h:panelGrid>
 
-
-		<%-- CTLogs --%>
-
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
-				<h:outputLabel for="header_ctlogs" value="#{web.text.CTLOGCONFIGURATION}" style="font-weight: bold; font-size:1.2em;"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
+				&nbsp;
 			</h:panelGroup>
-			<h:panelGroup id="header_ctlogs"/>
+			<h:panelGroup>
+				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" />
+				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" />
+			</h:panelGroup>
+		</h:panelGrid>
+	</h:form>
+	
+	
+	
+	<%-- CTLogs --%>
 
-			<h:outputLabel for="ctlogs" value="#{web.text.CTLOGCONFIGURATION_HELP}"/>
-			<h:panelGrid columns="1">					
-				<h:dataTable id="ctlogs" value="#{systemConfigMBean.ctLogs}" var="ctlog" >
-					<h:column>
-   						<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/></f:facet>
-						<h:outputText value="#{systemConfigMBean.ctLogUrl}" title="#{ctlog.url}"/>
-						<f:facet name="footer">
-							<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" />
-						</f:facet>
-					</h:column>
-					<h:column>
-   						<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
-						<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
-						<f:facet name="footer">
-							<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}" 
-									title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
-						</f:facet>
-					</h:column>
-					<h:column>
-   						<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/></f:facet>
-						<h:outputText value="#{systemConfigMBean.ctLogTimeout}"/>
-						<f:facet name="footer">
-							<h:inputText id="currentTimeout" required="false"
+	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'CTLogs'}">
+		<h:dataTable value="#{systemConfigMBean.ctLogs}" var="ctlog"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/></f:facet>
+				<h:outputText value="#{systemConfigMBean.ctLogUrl}" title="#{web.text.CTLOGCONFIGURATION_URL} #{ctlog.url}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" />
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
+				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
+				<f:facet name="footer">
+					<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}" 
+								title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/></f:facet>
+				<h:outputText value="#{systemConfigMBean.ctLogTimeout}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentTimeout" required="false"
 									value="#{systemConfigMBean.currentCTLogTimeout}"
 									title="#{web.text.CTLOGCONFIGURATION_TIMEOUT}">
-   							</h:inputText>
-							<h:message for="currentTimeout" />
-						</f:facet>
-					</h:column>
-					<h:column>
-   						<f:facet name="header"><h:outputText value="#{web.text.ACTION}"/></f:facet>
-						<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeCTLog}" />
-						<f:facet name="footer">
-							<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" />
-						</f:facet>
-					</h:column>
-				</h:dataTable>
-			</h:panelGrid>
-		</h:panelGrid>
+   					</h:inputText>
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header">
+   					<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+   				</f:facet>
+				<h:commandButton action="#{systemConfigMBean.removeCTLog}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
+				<f:facet name="footer">
+					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" />
+				</f:facet>
+			</h:column>
+		</h:dataTable>
+	</h:form>
 
 
-		<%-- Administrator Preferences --%>
-
+	<%-- Administrator Preferences --%>
+	<h:form id="adminprefform" rendered="#{systemConfigMBean.selectedTab eq 'Administrator Preferences'}">
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-			<h:outputLabel for="header_adminpref" value="#{web.text.DEFAULTADMINPREFERENCES}" style="font-weight: bold; font-size:1.2em;"/>
-			<h:panelGroup id="header_adminpref"/>
+			<h:panelGroup>
+				&nbsp;
+			</h:panelGroup>
+			<h:panelGroup>
+				&nbsp;
+			</h:panelGroup>
 
 			<h:panelGroup>
 				<h:outputLabel for="preferedLanguage" value="#{web.text.PREFEREDLANGUAGE}" styleClass="titles"/>
@@ -434,11 +462,12 @@ org.cesecore.authorization.control.StandardRules
 				&nbsp;
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" />
+				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentAdminPreferences}" />
 				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" />
 			</h:panelGroup>
 		</h:panelGrid>
 	</h:form>
+	
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />
