@@ -521,7 +521,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAliasNotInUse(cryptoToken, alias);
 
         // Support "RSAnnnn" and convert it to the legacy format "nnnn"
-        String keySpecification;
+        final String keySpecification;
         if (keySpecificationParam.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
             keySpecification = keySpecificationParam.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
         } else {
@@ -534,14 +534,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
-        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(KeyTools.keyspecToKeyalg(keySpecification))) {
-            // Convert it to the OID since the human friendly name might differ in the provider
-            final String oid = AlgorithmTools.getEcKeySpecOidFromBcName(keySpecification);
-            if (log.isDebugEnabled()) {
-                log.debug("keySpecification '"+keySpecification+"' transformed into OID " + oid);
-            }
-            keySpecification = oid;
-        }
         cryptoToken.generateKeyPair(keySpecification, alias);
         cryptoToken.testKeyPair(alias);
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
@@ -564,7 +556,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAliasNotInUse(cryptoToken, newAlias);
         final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
         final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-        String keySpecification;
+        final String keySpecification;
         if (AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlgorithm)) {
             keySpecification = AlgorithmConstants.KEYALGORITHM_DSA + AlgorithmTools.getKeySpecification(publicKey);
         } else {
@@ -575,14 +567,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", newAlias);
         details.put("keySpecification", keySpecification);
-        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(KeyTools.keyspecToKeyalg(keySpecification))) {
-            // Convert it to the OID since the human friendly name might differ in the provider
-            final String oid = AlgorithmTools.getEcKeySpecOidFromBcName(keySpecification);
-            if (log.isDebugEnabled()) {
-                log.debug("keySpecification '"+keySpecification+"' transformed into OID " + oid);
-            }
-            keySpecification = oid;
-        }
         cryptoToken.generateKeyPair(keySpecification, newAlias);
         cryptoToken.testKeyPair(newAlias);
         try {
