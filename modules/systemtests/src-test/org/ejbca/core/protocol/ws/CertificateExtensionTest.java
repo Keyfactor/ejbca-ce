@@ -213,7 +213,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        // do nothing
 	    }
 	    try {
-	        super.cleanUpAdmins(this.WS_ADMIN_ROLENAME);
+	        super.cleanUpAdmins(WS_ADMIN_ROLENAME);
 	    } catch (Exception e) {
 	        // do nothing
 	    }
@@ -336,6 +336,6 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	
 	@Override
 	public String getRoleName() {
-		return this.WS_ADMIN_ROLENAME+"Mgmt";
+		return WS_ADMIN_ROLENAME+"Mgmt";
 	}
 }
