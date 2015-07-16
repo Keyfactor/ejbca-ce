@@ -1217,8 +1217,8 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="externalra-gui"/>
 	</target>
 
-    <target name="externalra-gui-deploy"  if="mod.externalra.exists,externalra:check" description="Deploy the EJBCA External RA StandAlone GUI application (Enterprise Edition Only)." depends="externalra-gui, deprecated:check">
-        <antcall target="jee:deploy-externalragui-war" />
+	<target name="externalra-gui-deploy"  if="mod.externalra.exists" description="Deploy the EJBCA External RA StandAlone GUI application (Enterprise Edition Only)." depends="externalra:check, externalra-gui, deprecated:check">
+    	<antcall target="jee:deploy-externalragui-war" />
 	</target>
 
 	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client, deprecated:check">
