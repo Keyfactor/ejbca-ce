@@ -99,20 +99,13 @@ public class CertificateDataWrapper implements Comparable<CertificateDataWrapper
 
     @Override
     public int compareTo(final CertificateDataWrapper other) {
-        // Sort by issuance date if certificates are available
-        long difference;
-        
         if (getCertificate()!=null && other.getCertificate()!=null) {
-             difference = CertTools.getNotBefore(other.getCertificate()).getTime()-CertTools.getNotBefore(getCertificate()).getTime();
-           
+            // Sort descending by issuance date if certificates are available        
+            return Long.compare(CertTools.getNotBefore(other.getCertificate()).getTime(), CertTools.getNotBefore(getCertificate()).getTime());          
         } else {
-            difference = other.getCertificateData().getExpireDate()-getCertificateData().getExpireDate();
-        }
-        if(difference == 0) {
-            return 0;
-        } else {
-            return difference > 0 ? 1 : -1;
-        }
+            // Sort descending by expiration date if certificates are not available        
+            return Long.compare(other.getCertificateData().getExpireDate(), getCertificateData().getExpireDate());
+        }     
     }
 
 }
