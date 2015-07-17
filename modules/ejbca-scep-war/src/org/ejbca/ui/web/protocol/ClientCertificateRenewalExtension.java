@@ -154,6 +154,12 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
                 // may lead to end entity being left with the NEW status
                 // Get the certificate 
                 try {
+                    // The SCEP draft left challenge password in renewal as a MAY:
+                    // "A client that is performing certificate renewal as per Appendix D SHOULD send an empty challenge password 
+                    // (i.e. use the empty string as the challenge password) but MAY send the originally distributed challenge password 
+                    // in the challengePassword attribute. In the former case the SCEP CA MUST authenticate the request based on the 
+                    // certificate used to sign the renewal request. In the latter case the SCEP CA MAY use either the challengePassword 
+                    // or the previously issued certificate (or both) to authenticate the request."
                     boolean ignorePassword = StringUtils.isEmpty(reqmsg.getPassword());
                     if (ignorePassword) {
                         reqmsg.setPassword(PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS)
