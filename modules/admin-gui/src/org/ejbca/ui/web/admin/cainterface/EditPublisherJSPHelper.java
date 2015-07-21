@@ -665,7 +665,7 @@ public class EditPublisherJSPHelper implements Serializable {
         }
         // Allow selection of any class path
         if (WebConfiguration.isManualClassPathsEnabled()) {
-            ret.add(new SelectItem(Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString(), ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[4])));
+            ret.add(new SelectItem(Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString(), ejbcawebbean.getText(AVAILABLEPUBLISHER_TYPETEXTS[3])));
         }
         // If an publisher was configured before the plugin mechanism we still want to show it
         boolean customNoLongerAvailable = true;
