@@ -6009,6 +6009,9 @@ If an error is detected one or several of the following error messages is report
 <li>"MAINT: DOWN_FOR_MAINTENANCE" - This is reported when the healthcheck.maintenancefile is used and the node is set to be off line.</li>
 <li>"Error when testing the connection with publisher: PublisherName" - This is reported when a test connection to one of the publishers failed.</li>
 </ul>
+<p>
+Which CAs that are checked by the health check service can be configured in the admin web on the CA Activation page as well as in the Edit CA page.
+</p>
 <note>To be fully Common Criteria compliant, a different key for signature tests than certificate signing should be used in the CA's HSM token
 configuration (the "testKey" alias should point to a key with no other uses). 
 </note>
