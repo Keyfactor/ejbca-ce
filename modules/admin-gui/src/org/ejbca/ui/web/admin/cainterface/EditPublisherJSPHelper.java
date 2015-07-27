@@ -729,8 +729,7 @@ public class EditPublisherJSPHelper implements Serializable {
      */
     public boolean isReadOnly() {
         if (publisherdata instanceof CustomPublisherContainer) {
-            CustomPublisherContainer cont = (CustomPublisherContainer) publisherdata;
-            ICustomPublisher pub = cont.getCustomPublisher();
+            ICustomPublisher pub = ((CustomPublisherContainer) publisherdata).getCustomPublisher();
             // Can be null if custom publisher has not been set up yet, then it has to be editable
             return pub == null ? false : pub.isReadOnly();
         } else {
