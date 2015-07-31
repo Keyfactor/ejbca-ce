@@ -27,8 +27,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * about PIN/PUK codes, hardtoken serial number
  * certificate stored on the card.
  * 
+ * 
+ * @author Philip Vendil
  *
- * @version $Id$
+ * $Id$
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "hardTokenDataWS", propOrder = {

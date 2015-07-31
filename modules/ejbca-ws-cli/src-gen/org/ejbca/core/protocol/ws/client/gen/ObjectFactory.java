@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 
+
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
@@ -24,9 +25,12 @@ import javax.xml.namespace.QName;
 public class ObjectFactory {
 
     private final static QName _ExistsHardTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "existsHardTokenResponse");
+    private final static QName _GetProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfileResponse");
     private final static QName _RevokeCertBackdated_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCertBackdated");
-    private final static QName _AuthorizationDeniedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AuthorizationDeniedException");
+    private final static QName _GetCertificatesByExpirationTimeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeResponse");
     private final static QName _GetHardTokenDatas_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatas");
+    private final static QName _AuthorizationDeniedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AuthorizationDeniedException");
+    private final static QName _CaCertResponseForRollover_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseForRollover");
     private final static QName _GetAvailableCAsInProfile_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsInProfile");
     private final static QName _CryptoTokenOfflineException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CryptoTokenOfflineException");
     private final static QName _RevokeUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeUser");
@@ -39,14 +43,21 @@ public class ObjectFactory {
     private final static QName _Pkcs12Req_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12Req");
     private final static QName _SpkacRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "spkacRequestResponse");
     private final static QName _RepublishCertificate_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "republishCertificate");
+    private final static QName _RemoveSubjectFromRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRoleResponse");
+    private final static QName _EndEntityProfileNotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "EndEntityProfileNotFoundException");
     private final static QName _DeleteUserDataFromSourceResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "deleteUserDataFromSourceResponse");
     private final static QName _GetAuthorizedEndEntityProfilesResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAuthorizedEndEntityProfilesResponse");
+    private final static QName _CreateCryptoTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoTokenResponse");
+    private final static QName _GenerateCryptoTokenKeys_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeys");
+    private final static QName _GenerateCryptoTokenKeysResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeysResponse");
     private final static QName _CesecoreException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CesecoreException");
     private final static QName _FetchUserDataResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "fetchUserDataResponse");
     private final static QName _FindUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findUser");
+    private final static QName _AddSubjectToRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRoleResponse");
     private final static QName _GetEjbcaVersion_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getEjbcaVersion");
     private final static QName _GenTokenCertificatesResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "genTokenCertificatesResponse");
     private final static QName _FindCerts_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findCerts");
+    private final static QName _GetCertificatesByExpirationTimeAndTypeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndTypeResponse");
     private final static QName _FindCertsResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findCertsResponse");
     private final static QName _CreateCRLResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRLResponse");
     private final static QName _PublisherException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PublisherException");
@@ -62,60 +73,75 @@ public class ObjectFactory {
     private final static QName _SpkacRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "spkacRequest");
     private final static QName _HardTokenExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "HardTokenExistsException");
     private final static QName _GetLastCertChain_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLastCertChain");
+    private final static QName _RolloverCACert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "rolloverCACert");
     private final static QName _CaCertResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponse");
     private final static QName _CheckRevokationStatusResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "checkRevokationStatusResponse");
     private final static QName _RevokeUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeUserResponse");
     private final static QName _CrmfRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "crmfRequestResponse");
+    private final static QName _GetLatestCRLResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLatestCRLResponse");
     private final static QName _SoftTokenRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "softTokenRequestResponse");
     private final static QName _GetAvailableCertificateProfilesResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfilesResponse");
-    private final static QName _GetProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfileResponse");
     private final static QName _EditUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "editUserResponse");
+    private final static QName _RemoveSubjectFromRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRole");
     private final static QName _GetAvailableCAsInProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsInProfileResponse");
-    private final static QName _NotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "NotFoundException");
     private final static QName _MultipleMatchException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "MultipleMatchException");
+    private final static QName _NotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "NotFoundException");
     private final static QName _GetAuthorizedEndEntityProfiles_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAuthorizedEndEntityProfiles");
-    private final static QName _KeyRecoverNewestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverNewestResponse");
     private final static QName _CheckRevokationStatus_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "checkRevokationStatus");
-    private final static QName _Pkcs10RequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs10RequestResponse");
+    private final static QName _KeyRecoverNewestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverNewestResponse");
     private final static QName _IllegalQueryException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "IllegalQueryException");
+    private final static QName _Pkcs10RequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs10RequestResponse");
     private final static QName _CustomLog_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "customLog");
     private final static QName _KeyRecoverNewest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverNewest");
+    private final static QName _CreateCAResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCAResponse");
     private final static QName _GetHardTokenData_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenData");
     private final static QName _CertificateRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "certificateRequest");
     private final static QName _CvcRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "cvcRequestResponse");
     private final static QName _Pkcs12ReqResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12ReqResponse");
     private final static QName _ExistsHardToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "existsHardToken");
+    private final static QName _UnknownProfileTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnknownProfileTypeException");
     private final static QName _RevokeToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeToken");
+    private final static QName _GetProfile_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfile");
     private final static QName _SoftTokenRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "softTokenRequest");
     private final static QName _CrmfRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "crmfRequest");
     private final static QName _GetHardTokenDatasResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatasResponse");
+    private final static QName _GetCertificatesByExpirationTimeAndType_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndType");
     private final static QName _CertificateRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "certificateRequestResponse");
+    private final static QName _GetCertificatesByExpirationTime_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTime");
     private final static QName _SignRequestException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "SignRequestException");
     private final static QName _GetCertificateResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificateResponse");
-    private final static QName _GetAvailableCertificateProfiles_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfiles");
-    private final static QName _GetProfile_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfile");
+    private final static QName _AddSubjectToRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRole");
     private final static QName _IsAuthorizedResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorizedResponse");
+    private final static QName _GetAvailableCertificateProfiles_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfiles");
     private final static QName _RevokeBackDateNotAllowedForProfileException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "RevokeBackDateNotAllowedForProfileException");
+    private final static QName _GetCertificatesByExpirationTimeAndIssuer_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuer");
     private final static QName _AlreadyRevokedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AlreadyRevokedException");
     private final static QName _CvcRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "cvcRequest");
+    private final static QName _GetCertificatesByExpirationTimeAndIssuerResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuerResponse");
     private final static QName _DateNotValidException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "DateNotValidException");
-    private final static QName _UnknownProfileTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnknownProfileTypeException");
+    private final static QName _RolloverCACertResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "rolloverCACertResponse");
     private final static QName _CertificateExpiredException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CertificateExpiredException");
     private final static QName _CaRenewCertRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caRenewCertRequest");
     private final static QName _IsAuthorized_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorized");
     private final static QName _GetPublisherQueueLengthResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getPublisherQueueLengthResponse");
     private final static QName _GetHardTokenDataResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDataResponse");
+    private final static QName _KeyRecover_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecover");
     private final static QName _GenTokenCertificates_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "genTokenCertificates");
+    private final static QName _CaCertResponseForRolloverResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseForRolloverResponse");
+    private final static QName _KeyRecoverResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverResponse");
     private final static QName _Pkcs10Request_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs10Request");
     private final static QName _GetCertificate_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificate");
+    private final static QName _CreateCryptoToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoToken");
     private final static QName _IsApproved_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isApproved");
     private final static QName _GetAvailableCAs_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAs");
+    private final static QName _CreateCA_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCA");
     private final static QName _EditUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "editUser");
     private final static QName _DeleteUserDataFromSource_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "deleteUserDataFromSource");
     private final static QName _CADoesntExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CADoesntExistsException");
     private final static QName _GetLastCAChainResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLastCAChainResponse");
     private final static QName _CustomLogResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "customLogResponse");
     private final static QName _CaRenewCertRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caRenewCertRequestResponse");
+    private final static QName _GetLatestCRL_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLatestCRL");
     private final static QName _EjbcaException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaException");
     private final static QName _GetLastCAChain_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLastCAChain");
     private final static QName _ApprovalRequestExecutionException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "ApprovalRequestExecutionException");
@@ -125,254 +151,14 @@ public class ObjectFactory {
     private final static QName _CaCertResponseResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseResponse");
     private final static QName _CAOfflineException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CAOfflineException");
     private final static QName _CreateCRL_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRL");
-    private final static QName _CaRenewCertRequestResponseReturn_QNAME = new QName("", "return");
-    private final static QName _CaCertResponseArg1_QNAME = new QName("", "arg1");
-    private final static QName _CreateCryptoToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoToken");
-    private final static QName _CreateCryptoTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCryptoTokenResponse");
-    private final static QName _GenerateCryptoTokenKeys_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeys");
-    private final static QName _GenerateCryptoTokenKeysResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "generateCryptoTokenKeysResponse");
-    private final static QName _CreateCA_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCA");
-    private final static QName _CreateCAResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCAResponse");
-    private final static QName _AddSubjectToRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRole");
-    private final static QName _AddSubjectToRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "addSubjectToRoleResponse");
-    private final static QName _RemoveSubjectFromRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRole");
-    private final static QName _RemoveSubjectFromRoleResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRoleResponse");
-    private final static QName _GetCertificatesByExpirationTime_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTime");
-    private final static QName _GetCertificatesByExpirationTimeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeResponse");
-    private final static QName _GetCertificatesByExpirationTimeAndIssuer_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuer");
-    private final static QName _GetCertificatesByExpirationTimeAndIssuerResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuerResponse");
-    private final static QName _GetCertificatesByExpirationTimeAndType_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndType");
-    private final static QName _GetCertificatesByExpirationTimeAndTypeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndTypeResponse");
-    
+    private final static QName _CaCertResponseForRolloverArg1_QNAME = new QName("", "arg1");
+    private final static QName _GetLatestCRLResponseReturn_QNAME = new QName("", "return");
+
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
      * 
      */
     public ObjectFactory() {
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCertificateProfiles }
-     * 
-     */
-    public GetAvailableCertificateProfiles createGetAvailableCertificateProfiles() {
-        return new GetAvailableCertificateProfiles();
-    }
-    
-    /**
-     * Create an instance of {@link GetProfile }
-     *
-     */
-    public GetProfile createGetProfile() {
-        return new GetProfile();
-    }
-    
-    /**
-     * Create an instance of {@link GetCertificate }
-     * 
-     */
-    public GetCertificate createGetCertificate() {
-        return new GetCertificate();
-    }
-
-    /**
-     * Create an instance of {@link CaCertResponse }
-     * 
-     */
-    public CaCertResponse createCaCertResponse() {
-        return new CaCertResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeUserResponse }
-     * 
-     */
-    public RevokeUserResponse createRevokeUserResponse() {
-        return new RevokeUserResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetPublisherQueueLength }
-     * 
-     */
-    public GetPublisherQueueLength createGetPublisherQueueLength() {
-        return new GetPublisherQueueLength();
-    }
-
-    /**
-     * Create an instance of {@link RevokeTokenResponse }
-     * 
-     */
-    public RevokeTokenResponse createRevokeTokenResponse() {
-        return new RevokeTokenResponse();
-    }
-
-    /**
-     * Create an instance of {@link WaitingForApprovalException }
-     * 
-     */
-    public WaitingForApprovalException createWaitingForApprovalException() {
-        return new WaitingForApprovalException();
-    }
-
-    /**
-     * Create an instance of {@link CAOfflineException }
-     * 
-     */
-    public CAOfflineException createCAOfflineException() {
-        return new CAOfflineException();
-    }
-
-    /**
-     * Create an instance of {@link CrmfRequestResponse }
-     * 
-     */
-    public CrmfRequestResponse createCrmfRequestResponse() {
-        return new CrmfRequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenDatas }
-     * 
-     */
-    public GetHardTokenDatas createGetHardTokenDatas() {
-        return new GetHardTokenDatas();
-    }
-
-    /**
-     * Create an instance of {@link UserDataSourceException }
-     * 
-     */
-    public UserDataSourceException createUserDataSourceException() {
-        return new UserDataSourceException();
-    }
-
-    /**
-     * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
-     * 
-     */
-    public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
-        return new UserDoesntFullfillEndEntityProfile();
-    }
-
-    /**
-     * Create an instance of {@link GenTokenCertificates }
-     * 
-     */
-    public GenTokenCertificates createGenTokenCertificates() {
-        return new GenTokenCertificates();
-    }
-
-    /**
-     * Create an instance of {@link HardTokenExistsException }
-     * 
-     */
-    public HardTokenExistsException createHardTokenExistsException() {
-        return new HardTokenExistsException();
-    }
-
-    /**
-     * Create an instance of {@link FindUser }
-     * 
-     */
-    public FindUser createFindUser() {
-        return new FindUser();
-    }
-
-    /**
-     * Create an instance of {@link ApprovalRequestExecutionException }
-     * 
-     */
-    public ApprovalRequestExecutionException createApprovalRequestExecutionException() {
-        return new ApprovalRequestExecutionException();
-    }
-
-    /**
-     * Create an instance of {@link RevokeBackDateNotAllowedForProfileException }
-     * 
-     */
-    public RevokeBackDateNotAllowedForProfileException createRevokeBackDateNotAllowedForProfileException() {
-        return new RevokeBackDateNotAllowedForProfileException();
-    }
-
-    /**
-     * Create an instance of {@link RevokeToken }
-     * 
-     */
-    public RevokeToken createRevokeToken() {
-        return new RevokeToken();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs10RequestResponse }
-     * 
-     */
-    public Pkcs10RequestResponse createPkcs10RequestResponse() {
-        return new Pkcs10RequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeCertResponse }
-     * 
-     */
-    public RevokeCertResponse createRevokeCertResponse() {
-        return new RevokeCertResponse();
-    }
-
-    /**
-     * Create an instance of {@link CryptoTokenOfflineException }
-     * 
-     */
-    public CryptoTokenOfflineException createCryptoTokenOfflineException() {
-        return new CryptoTokenOfflineException();
-    }
-
-    /**
-     * Create an instance of {@link GetLastCertChain }
-     * 
-     */
-    public GetLastCertChain createGetLastCertChain() {
-        return new GetLastCertChain();
-    }
-
-    /**
-     * Create an instance of {@link GetEjbcaVersionResponse }
-     * 
-     */
-    public GetEjbcaVersionResponse createGetEjbcaVersionResponse() {
-        return new GetEjbcaVersionResponse();
-    }
-
-    /**
-     * Create an instance of {@link AlreadyRevokedException }
-     * 
-     */
-    public AlreadyRevokedException createAlreadyRevokedException() {
-        return new AlreadyRevokedException();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs12Req }
-     * 
-     */
-    public Pkcs12Req createPkcs12Req() {
-        return new Pkcs12Req();
-    }
-
-    /**
-     * Create an instance of {@link RepublishCertificateResponse }
-     * 
-     */
-    public RepublishCertificateResponse createRepublishCertificateResponse() {
-        return new RepublishCertificateResponse();
-    }
-
-    /**
-     * Create an instance of {@link UserMatch }
-     * 
-     */
-    public UserMatch createUserMatch() {
-        return new UserMatch();
     }
 
     /**
@@ -384,235 +170,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Certificate }
+     * Create an instance of {@link AddSubjectToRoleResponse }
      * 
      */
-    public Certificate createCertificate() {
-        return new Certificate();
+    public AddSubjectToRoleResponse createAddSubjectToRoleResponse() {
+        return new AddSubjectToRoleResponse();
     }
 
     /**
-     * Create an instance of {@link FetchUserData }
+     * Create an instance of {@link GetCertificatesByExpirationTimeAndTypeResponse }
      * 
      */
-    public FetchUserData createFetchUserData() {
-        return new FetchUserData();
-    }
-
-    /**
-     * Create an instance of {@link EjbcaException }
-     * 
-     */
-    public EjbcaException createEjbcaException() {
-        return new EjbcaException();
-    }
-
-    /**
-     * Create an instance of {@link EditUser }
-     * 
-     */
-    public EditUser createEditUser() {
-        return new EditUser();
-    }
-
-    /**
-     * Create an instance of {@link CustomLogResponse }
-     * 
-     */
-    public CustomLogResponse createCustomLogResponse() {
-        return new CustomLogResponse();
-    }
-
-    /**
-     * Create an instance of {@link PinDataWS }
-     * 
-     */
-    public PinDataWS createPinDataWS() {
-        return new PinDataWS();
-    }
-
-    /**
-     * Create an instance of {@link FetchUserDataResponse }
-     * 
-     */
-    public FetchUserDataResponse createFetchUserDataResponse() {
-        return new FetchUserDataResponse();
-    }
-
-    /**
-     * Create an instance of {@link FindUserResponse }
-     * 
-     */
-    public FindUserResponse createFindUserResponse() {
-        return new FindUserResponse();
-    }
-
-    /**
-     * Create an instance of {@link CaRenewCertRequest }
-     * 
-     */
-    public CaRenewCertRequest createCaRenewCertRequest() {
-        return new CaRenewCertRequest();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAs }
-     * 
-     */
-    public GetAvailableCAs createGetAvailableCAs() {
-        return new GetAvailableCAs();
-    }
-
-    /**
-     * Create an instance of {@link DateNotValidException }
-     * 
-     */
-    public DateNotValidException createDateNotValidException() {
-        return new DateNotValidException();
-    }
-    
-    /**
-     * Create an instance of {@link UnknownProfileTypeException }
-     * 
-     */
-    public UnknownProfileTypeException createUnknownProfileTypeException() {
-        return new UnknownProfileTypeException();
-    }
-
-    /**
-     * Create an instance of {@link UserDataSourceVOWS }
-     * 
-     */
-    public UserDataSourceVOWS createUserDataSourceVOWS() {
-        return new UserDataSourceVOWS();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenDatasResponse }
-     * 
-     */
-    public GetHardTokenDatasResponse createGetHardTokenDatasResponse() {
-        return new GetHardTokenDatasResponse();
-    }
-
-    /**
-     * Create an instance of {@link CertificateResponse }
-     * 
-     */
-    public CertificateResponse createCertificateResponse() {
-        return new CertificateResponse();
-    }
-
-    /**
-     * Create an instance of {@link HardTokenDataWS }
-     * 
-     */
-    public HardTokenDataWS createHardTokenDataWS() {
-        return new HardTokenDataWS();
-    }
-
-    /**
-     * Create an instance of {@link KeyRecoverNewestResponse }
-     * 
-     */
-    public KeyRecoverNewestResponse createKeyRecoverNewestResponse() {
-        return new KeyRecoverNewestResponse();
-    }
-
-    /**
-     * Create an instance of {@link CesecoreException }
-     * 
-     */
-    public CesecoreException createCesecoreException() {
-        return new CesecoreException();
-    }
-
-    /**
-     * Create an instance of {@link FindCertsResponse }
-     * 
-     */
-    public FindCertsResponse createFindCertsResponse() {
-        return new FindCertsResponse();
-    }
-
-    /**
-     * Create an instance of {@link CustomLog }
-     * 
-     */
-    public CustomLog createCustomLog() {
-        return new CustomLog();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCertificateProfilesResponse }
-     * 
-     */
-    public GetAvailableCertificateProfilesResponse createGetAvailableCertificateProfilesResponse() {
-        return new GetAvailableCertificateProfilesResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetProfileResponse }
-     *
-     */
-    public GetProfileResponse createProfileResponse() {
-        return new GetProfileResponse();
-    }
-    
-    /**
-     * Create an instance of {@link RevokeCertBackdatedResponse }
-     * 
-     */
-    public RevokeCertBackdatedResponse createRevokeCertBackdatedResponse() {
-        return new RevokeCertBackdatedResponse();
-    }
-
-    /**
-     * Create an instance of {@link CADoesntExistsException }
-     * 
-     */
-    public CADoesntExistsException createCADoesntExistsException() {
-        return new CADoesntExistsException();
-    }
-
-    /**
-     * Create an instance of {@link RepublishCertificate }
-     * 
-     */
-    public RepublishCertificate createRepublishCertificate() {
-        return new RepublishCertificate();
-    }
-
-    /**
-     * Create an instance of {@link PublisherException }
-     * 
-     */
-    public PublisherException createPublisherException() {
-        return new PublisherException();
-    }
-
-    /**
-     * Create an instance of {@link CreateCRLResponse }
-     * 
-     */
-    public CreateCRLResponse createCreateCRLResponse() {
-        return new CreateCRLResponse();
-    }
-
-    /**
-     * Create an instance of {@link CvcRequestResponse }
-     * 
-     */
-    public CvcRequestResponse createCvcRequestResponse() {
-        return new CvcRequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link KeyRecoverNewest }
-     * 
-     */
-    public KeyRecoverNewest createKeyRecoverNewest() {
-        return new KeyRecoverNewest();
+    public GetCertificatesByExpirationTimeAndTypeResponse createGetCertificatesByExpirationTimeAndTypeResponse() {
+        return new GetCertificatesByExpirationTimeAndTypeResponse();
     }
 
     /**
@@ -624,163 +194,27 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ExtendedInformationWS }
+     * Create an instance of {@link FindCerts }
      * 
      */
-    public ExtendedInformationWS createExtendedInformationWS() {
-        return new ExtendedInformationWS();
+    public FindCerts createFindCerts() {
+        return new FindCerts();
     }
 
     /**
-     * Create an instance of {@link CheckRevokationStatusResponse }
+     * Create an instance of {@link GenerateCryptoTokenKeys }
      * 
      */
-    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
-        return new CheckRevokationStatusResponse();
+    public GenerateCryptoTokenKeys createGenerateCryptoTokenKeys() {
+        return new GenerateCryptoTokenKeys();
     }
 
     /**
-     * Create an instance of {@link MultipleMatchException }
+     * Create an instance of {@link GenerateCryptoTokenKeysResponse }
      * 
      */
-    public MultipleMatchException createMultipleMatchException() {
-        return new MultipleMatchException();
-    }
-
-    /**
-     * Create an instance of {@link EditUserResponse }
-     * 
-     */
-    public EditUserResponse createEditUserResponse() {
-        return new EditUserResponse();
-    }
-
-    /**
-     * Create an instance of {@link IllegalQueryException }
-     * 
-     */
-    public IllegalQueryException createIllegalQueryException() {
-        return new IllegalQueryException();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs12ReqResponse }
-     * 
-     */
-    public Pkcs12ReqResponse createPkcs12ReqResponse() {
-        return new Pkcs12ReqResponse();
-    }
-
-    /**
-     * Create an instance of {@link CvcRequest }
-     * 
-     */
-    public CvcRequest createCvcRequest() {
-        return new CvcRequest();
-    }
-
-    /**
-     * Create an instance of {@link CaCertResponseResponse }
-     * 
-     */
-    public CaCertResponseResponse createCaCertResponseResponse() {
-        return new CaCertResponseResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeUser }
-     * 
-     */
-    public RevokeUser createRevokeUser() {
-        return new RevokeUser();
-    }
-
-    /**
-     * Create an instance of {@link IsAuthorized }
-     * 
-     */
-    public IsAuthorized createIsAuthorized() {
-        return new IsAuthorized();
-    }
-
-    /**
-     * Create an instance of {@link GetCertificateResponse }
-     * 
-     */
-    public GetCertificateResponse createGetCertificateResponse() {
-        return new GetCertificateResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetLastCertChainResponse }
-     * 
-     */
-    public GetLastCertChainResponse createGetLastCertChainResponse() {
-        return new GetLastCertChainResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeCert }
-     * 
-     */
-    public RevokeCert createRevokeCert() {
-        return new RevokeCert();
-    }
-
-    /**
-     * Create an instance of {@link IsApprovedResponse }
-     * 
-     */
-    public IsApprovedResponse createIsApprovedResponse() {
-        return new IsApprovedResponse();
-    }
-
-    /**
-     * Create an instance of {@link ApprovalException }
-     * 
-     */
-    public ApprovalException createApprovalException() {
-        return new ApprovalException();
-    }
-
-    /**
-     * Create an instance of {@link DeleteUserDataFromSource }
-     * 
-     */
-    public DeleteUserDataFromSource createDeleteUserDataFromSource() {
-        return new DeleteUserDataFromSource();
-    }
-
-    /**
-     * Create an instance of {@link RevokeStatus }
-     * 
-     */
-    public RevokeStatus createRevokeStatus() {
-        return new RevokeStatus();
-    }
-
-    /**
-     * Create an instance of {@link KeyStore }
-     * 
-     */
-    public KeyStore createKeyStore() {
-        return new KeyStore();
-    }
-
-    /**
-     * Create an instance of {@link CaRenewCertRequestResponse }
-     * 
-     */
-    public CaRenewCertRequestResponse createCaRenewCertRequestResponse() {
-        return new CaRenewCertRequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link UserDataVOWS }
-     * 
-     */
-    public UserDataVOWS createUserDataVOWS() {
-        return new UserDataVOWS();
+    public GenerateCryptoTokenKeysResponse createGenerateCryptoTokenKeysResponse() {
+        return new GenerateCryptoTokenKeysResponse();
     }
 
     /**
@@ -792,219 +226,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link IsAuthorizedResponse }
+     * Create an instance of {@link CreateCryptoTokenResponse }
      * 
      */
-    public IsAuthorizedResponse createIsAuthorizedResponse() {
-        return new IsAuthorizedResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenDataResponse }
-     * 
-     */
-    public GetHardTokenDataResponse createGetHardTokenDataResponse() {
-        return new GetHardTokenDataResponse();
-    }
-
-    /**
-     * Create an instance of {@link ExistsHardTokenResponse }
-     * 
-     */
-    public ExistsHardTokenResponse createExistsHardTokenResponse() {
-        return new ExistsHardTokenResponse();
-    }
-
-    /**
-     * Create an instance of {@link NotFoundException }
-     * 
-     */
-    public NotFoundException createNotFoundException() {
-        return new NotFoundException();
-    }
-
-    /**
-     * Create an instance of {@link CertificateExpiredException }
-     * 
-     */
-    public CertificateExpiredException createCertificateExpiredException() {
-        return new CertificateExpiredException();
-    }
-
-    /**
-     * Create an instance of {@link CertificateRequest }
-     * 
-     */
-    public CertificateRequest createCertificateRequest() {
-        return new CertificateRequest();
-    }
-
-    /**
-     * Create an instance of {@link TokenCertificateRequestWS }
-     * 
-     */
-    public TokenCertificateRequestWS createTokenCertificateRequestWS() {
-        return new TokenCertificateRequestWS();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAsInProfile }
-     * 
-     */
-    public GetAvailableCAsInProfile createGetAvailableCAsInProfile() {
-        return new GetAvailableCAsInProfile();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAsResponse }
-     * 
-     */
-    public GetAvailableCAsResponse createGetAvailableCAsResponse() {
-        return new GetAvailableCAsResponse();
-    }
-
-    /**
-     * Create an instance of {@link SoftTokenRequest }
-     * 
-     */
-    public SoftTokenRequest createSoftTokenRequest() {
-        return new SoftTokenRequest();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs10Request }
-     * 
-     */
-    public Pkcs10Request createPkcs10Request() {
-        return new Pkcs10Request();
-    }
-
-    /**
-     * Create an instance of {@link SpkacRequestResponse }
-     * 
-     */
-    public SpkacRequestResponse createSpkacRequestResponse() {
-        return new SpkacRequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link ExistsHardToken }
-     * 
-     */
-    public ExistsHardToken createExistsHardToken() {
-        return new ExistsHardToken();
-    }
-
-    /**
-     * Create an instance of {@link CheckRevokationStatus }
-     * 
-     */
-    public CheckRevokationStatus createCheckRevokationStatus() {
-        return new CheckRevokationStatus();
-    }
-
-    /**
-     * Create an instance of {@link HardTokenDoesntExistsException }
-     * 
-     */
-    public HardTokenDoesntExistsException createHardTokenDoesntExistsException() {
-        return new HardTokenDoesntExistsException();
-    }
-
-    /**
-     * Create an instance of {@link GetLastCAChain }
-     * 
-     */
-    public GetLastCAChain createGetLastCAChain() {
-        return new GetLastCAChain();
-    }
-
-    /**
-     * Create an instance of {@link SpkacRequest }
-     * 
-     */
-    public SpkacRequest createSpkacRequest() {
-        return new SpkacRequest();
-    }
-
-    /**
-     * Create an instance of {@link TokenCertificateResponseWS }
-     * 
-     */
-    public TokenCertificateResponseWS createTokenCertificateResponseWS() {
-        return new TokenCertificateResponseWS();
-    }
-
-    /**
-     * Create an instance of {@link SoftTokenRequestResponse }
-     * 
-     */
-    public SoftTokenRequestResponse createSoftTokenRequestResponse() {
-        return new SoftTokenRequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link CertificateRequestResponse }
-     * 
-     */
-    public CertificateRequestResponse createCertificateRequestResponse() {
-        return new CertificateRequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link ApprovalRequestExpiredException }
-     * 
-     */
-    public ApprovalRequestExpiredException createApprovalRequestExpiredException() {
-        return new ApprovalRequestExpiredException();
-    }
-
-    /**
-     * Create an instance of {@link NameAndId }
-     * 
-     */
-    public NameAndId createNameAndId() {
-        return new NameAndId();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAsInProfileResponse }
-     * 
-     */
-    public GetAvailableCAsInProfileResponse createGetAvailableCAsInProfileResponse() {
-        return new GetAvailableCAsInProfileResponse();
-    }
-
-    /**
-     * Create an instance of {@link ErrorCode }
-     * 
-     */
-    public ErrorCode createErrorCode() {
-        return new ErrorCode();
-    }
-
-    /**
-     * Create an instance of {@link GetAuthorizedEndEntityProfiles }
-     * 
-     */
-    public GetAuthorizedEndEntityProfiles createGetAuthorizedEndEntityProfiles() {
-        return new GetAuthorizedEndEntityProfiles();
-    }
-
-    /**
-     * Create an instance of {@link AuthorizationDeniedException }
-     * 
-     */
-    public AuthorizationDeniedException createAuthorizationDeniedException() {
-        return new AuthorizationDeniedException();
-    }
-
-    /**
-     * Create an instance of {@link CrmfRequest }
-     * 
-     */
-    public CrmfRequest createCrmfRequest() {
-        return new CrmfRequest();
+    public CreateCryptoTokenResponse createCreateCryptoTokenResponse() {
+        return new CreateCryptoTokenResponse();
     }
 
     /**
@@ -1016,35 +242,147 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link IsApproved }
+     * Create an instance of {@link FindUser }
      * 
      */
-    public IsApproved createIsApproved() {
-        return new IsApproved();
+    public FindUser createFindUser() {
+        return new FindUser();
     }
 
     /**
-     * Create an instance of {@link GetLastCAChainResponse }
+     * Create an instance of {@link CesecoreException }
      * 
      */
-    public GetLastCAChainResponse createGetLastCAChainResponse() {
-        return new GetLastCAChainResponse();
+    public CesecoreException createCesecoreException() {
+        return new CesecoreException();
     }
 
     /**
-     * Create an instance of {@link GetHardTokenData }
+     * Create an instance of {@link FetchUserDataResponse }
      * 
      */
-    public GetHardTokenData createGetHardTokenData() {
-        return new GetHardTokenData();
+    public FetchUserDataResponse createFetchUserDataResponse() {
+        return new FetchUserDataResponse();
     }
 
     /**
-     * Create an instance of {@link CreateCRL }
+     * Create an instance of {@link RevokeCertResponse }
      * 
      */
-    public CreateCRL createCreateCRL() {
-        return new CreateCRL();
+    public RevokeCertResponse createRevokeCertResponse() {
+        return new RevokeCertResponse();
+    }
+
+    /**
+     * Create an instance of {@link IsApprovedResponse }
+     * 
+     */
+    public IsApprovedResponse createIsApprovedResponse() {
+        return new IsApprovedResponse();
+    }
+
+    /**
+     * Create an instance of {@link RevokeTokenResponse }
+     * 
+     */
+    public RevokeTokenResponse createRevokeTokenResponse() {
+        return new RevokeTokenResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCAsResponse }
+     * 
+     */
+    public GetAvailableCAsResponse createGetAvailableCAsResponse() {
+        return new GetAvailableCAsResponse();
+    }
+
+    /**
+     * Create an instance of {@link SpkacRequestResponse }
+     * 
+     */
+    public SpkacRequestResponse createSpkacRequestResponse() {
+        return new SpkacRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link RepublishCertificate }
+     * 
+     */
+    public RepublishCertificate createRepublishCertificate() {
+        return new RepublishCertificate();
+    }
+
+    /**
+     * Create an instance of {@link RemoveSubjectFromRoleResponse }
+     * 
+     */
+    public RemoveSubjectFromRoleResponse createRemoveSubjectFromRoleResponse() {
+        return new RemoveSubjectFromRoleResponse();
+    }
+
+    /**
+     * Create an instance of {@link EndEntityProfileNotFoundException }
+     * 
+     */
+    public EndEntityProfileNotFoundException createEndEntityProfileNotFoundException() {
+        return new EndEntityProfileNotFoundException();
+    }
+
+    /**
+     * Create an instance of {@link UserDataSourceException }
+     * 
+     */
+    public UserDataSourceException createUserDataSourceException() {
+        return new UserDataSourceException();
+    }
+
+    /**
+     * Create an instance of {@link WaitingForApprovalException }
+     * 
+     */
+    public WaitingForApprovalException createWaitingForApprovalException() {
+        return new WaitingForApprovalException();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs12Req }
+     * 
+     */
+    public Pkcs12Req createPkcs12Req() {
+        return new Pkcs12Req();
+    }
+
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTimeResponse }
+     * 
+     */
+    public GetCertificatesByExpirationTimeResponse createGetCertificatesByExpirationTimeResponse() {
+        return new GetCertificatesByExpirationTimeResponse();
+    }
+
+    /**
+     * Create an instance of {@link AuthorizationDeniedException }
+     * 
+     */
+    public AuthorizationDeniedException createAuthorizationDeniedException() {
+        return new AuthorizationDeniedException();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenDatas }
+     * 
+     */
+    public GetHardTokenDatas createGetHardTokenDatas() {
+        return new GetHardTokenDatas();
+    }
+
+    /**
+     * Create an instance of {@link ExistsHardTokenResponse }
+     * 
+     */
+    public ExistsHardTokenResponse createExistsHardTokenResponse() {
+        return new ExistsHardTokenResponse();
     }
 
     /**
@@ -1056,19 +394,371 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SignRequestException }
+     * Create an instance of {@link GetProfileResponse }
      * 
      */
-    public SignRequestException createSignRequestException() {
-        return new SignRequestException();
+    public GetProfileResponse createGetProfileResponse() {
+        return new GetProfileResponse();
     }
 
     /**
-     * Create an instance of {@link FindCerts }
+     * Create an instance of {@link GetAvailableCAsInProfile }
      * 
      */
-    public FindCerts createFindCerts() {
-        return new FindCerts();
+    public GetAvailableCAsInProfile createGetAvailableCAsInProfile() {
+        return new GetAvailableCAsInProfile();
+    }
+
+    /**
+     * Create an instance of {@link RevokeUser }
+     * 
+     */
+    public RevokeUser createRevokeUser() {
+        return new RevokeUser();
+    }
+
+    /**
+     * Create an instance of {@link CryptoTokenOfflineException }
+     * 
+     */
+    public CryptoTokenOfflineException createCryptoTokenOfflineException() {
+        return new CryptoTokenOfflineException();
+    }
+
+    /**
+     * Create an instance of {@link CaCertResponseForRollover }
+     * 
+     */
+    public CaCertResponseForRollover createCaCertResponseForRollover() {
+        return new CaCertResponseForRollover();
+    }
+
+    /**
+     * Create an instance of {@link KeyRecoverNewestResponse }
+     * 
+     */
+    public KeyRecoverNewestResponse createKeyRecoverNewestResponse() {
+        return new KeyRecoverNewestResponse();
+    }
+
+    /**
+     * Create an instance of {@link CheckRevokationStatus }
+     * 
+     */
+    public CheckRevokationStatus createCheckRevokationStatus() {
+        return new CheckRevokationStatus();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs10RequestResponse }
+     * 
+     */
+    public Pkcs10RequestResponse createPkcs10RequestResponse() {
+        return new Pkcs10RequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link IllegalQueryException }
+     * 
+     */
+    public IllegalQueryException createIllegalQueryException() {
+        return new IllegalQueryException();
+    }
+
+    /**
+     * Create an instance of {@link GetAuthorizedEndEntityProfiles }
+     * 
+     */
+    public GetAuthorizedEndEntityProfiles createGetAuthorizedEndEntityProfiles() {
+        return new GetAuthorizedEndEntityProfiles();
+    }
+
+    /**
+     * Create an instance of {@link CreateCAResponse }
+     * 
+     */
+    public CreateCAResponse createCreateCAResponse() {
+        return new CreateCAResponse();
+    }
+
+    /**
+     * Create an instance of {@link CertificateRequest }
+     * 
+     */
+    public CertificateRequest createCertificateRequest() {
+        return new CertificateRequest();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenData }
+     * 
+     */
+    public GetHardTokenData createGetHardTokenData() {
+        return new GetHardTokenData();
+    }
+
+    /**
+     * Create an instance of {@link CustomLog }
+     * 
+     */
+    public CustomLog createCustomLog() {
+        return new CustomLog();
+    }
+
+    /**
+     * Create an instance of {@link KeyRecoverNewest }
+     * 
+     */
+    public KeyRecoverNewest createKeyRecoverNewest() {
+        return new KeyRecoverNewest();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCertificateProfilesResponse }
+     * 
+     */
+    public GetAvailableCertificateProfilesResponse createGetAvailableCertificateProfilesResponse() {
+        return new GetAvailableCertificateProfilesResponse();
+    }
+
+    /**
+     * Create an instance of {@link RemoveSubjectFromRole }
+     * 
+     */
+    public RemoveSubjectFromRole createRemoveSubjectFromRole() {
+        return new RemoveSubjectFromRole();
+    }
+
+    /**
+     * Create an instance of {@link EditUserResponse }
+     * 
+     */
+    public EditUserResponse createEditUserResponse() {
+        return new EditUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link SoftTokenRequestResponse }
+     * 
+     */
+    public SoftTokenRequestResponse createSoftTokenRequestResponse() {
+        return new SoftTokenRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCAsInProfileResponse }
+     * 
+     */
+    public GetAvailableCAsInProfileResponse createGetAvailableCAsInProfileResponse() {
+        return new GetAvailableCAsInProfileResponse();
+    }
+
+    /**
+     * Create an instance of {@link MultipleMatchException }
+     * 
+     */
+    public MultipleMatchException createMultipleMatchException() {
+        return new MultipleMatchException();
+    }
+
+    /**
+     * Create an instance of {@link NotFoundException }
+     * 
+     */
+    public NotFoundException createNotFoundException() {
+        return new NotFoundException();
+    }
+
+    /**
+     * Create an instance of {@link SpkacRequest }
+     * 
+     */
+    public SpkacRequest createSpkacRequest() {
+        return new SpkacRequest();
+    }
+
+    /**
+     * Create an instance of {@link HardTokenExistsException }
+     * 
+     */
+    public HardTokenExistsException createHardTokenExistsException() {
+        return new HardTokenExistsException();
+    }
+
+    /**
+     * Create an instance of {@link GetLastCertChain }
+     * 
+     */
+    public GetLastCertChain createGetLastCertChain() {
+        return new GetLastCertChain();
+    }
+
+    /**
+     * Create an instance of {@link ApprovalRequestExpiredException }
+     * 
+     */
+    public ApprovalRequestExpiredException createApprovalRequestExpiredException() {
+        return new ApprovalRequestExpiredException();
+    }
+
+    /**
+     * Create an instance of {@link GetPublisherQueueLength }
+     * 
+     */
+    public GetPublisherQueueLength createGetPublisherQueueLength() {
+        return new GetPublisherQueueLength();
+    }
+
+    /**
+     * Create an instance of {@link RevokeUserResponse }
+     * 
+     */
+    public RevokeUserResponse createRevokeUserResponse() {
+        return new RevokeUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link CrmfRequestResponse }
+     * 
+     */
+    public CrmfRequestResponse createCrmfRequestResponse() {
+        return new CrmfRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetLatestCRLResponse }
+     * 
+     */
+    public GetLatestCRLResponse createGetLatestCRLResponse() {
+        return new GetLatestCRLResponse();
+    }
+
+    /**
+     * Create an instance of {@link RolloverCACert }
+     * 
+     */
+    public RolloverCACert createRolloverCACert() {
+        return new RolloverCACert();
+    }
+
+    /**
+     * Create an instance of {@link CaCertResponse }
+     * 
+     */
+    public CaCertResponse createCaCertResponse() {
+        return new CaCertResponse();
+    }
+
+    /**
+     * Create an instance of {@link CheckRevokationStatusResponse }
+     * 
+     */
+    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
+        return new CheckRevokationStatusResponse();
+    }
+
+    /**
+     * Create an instance of {@link RepublishCertificateResponse }
+     * 
+     */
+    public RepublishCertificateResponse createRepublishCertificateResponse() {
+        return new RepublishCertificateResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindCertsResponse }
+     * 
+     */
+    public FindCertsResponse createFindCertsResponse() {
+        return new FindCertsResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateCRLResponse }
+     * 
+     */
+    public CreateCRLResponse createCreateCRLResponse() {
+        return new CreateCRLResponse();
+    }
+
+    /**
+     * Create an instance of {@link PublisherException }
+     * 
+     */
+    public PublisherException createPublisherException() {
+        return new PublisherException();
+    }
+
+    /**
+     * Create an instance of {@link ApprovalException }
+     * 
+     */
+    public ApprovalException createApprovalException() {
+        return new ApprovalException();
+    }
+
+    /**
+     * Create an instance of {@link GetLastCertChainResponse }
+     * 
+     */
+    public GetLastCertChainResponse createGetLastCertChainResponse() {
+        return new GetLastCertChainResponse();
+    }
+
+    /**
+     * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
+     * 
+     */
+    public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
+        return new UserDoesntFullfillEndEntityProfile();
+    }
+
+    /**
+     * Create an instance of {@link HardTokenDoesntExistsException }
+     * 
+     */
+    public HardTokenDoesntExistsException createHardTokenDoesntExistsException() {
+        return new HardTokenDoesntExistsException();
+    }
+
+    /**
+     * Create an instance of {@link RevokeCertBackdatedResponse }
+     * 
+     */
+    public RevokeCertBackdatedResponse createRevokeCertBackdatedResponse() {
+        return new RevokeCertBackdatedResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindUserResponse }
+     * 
+     */
+    public FindUserResponse createFindUserResponse() {
+        return new FindUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link CertificateExpiredException }
+     * 
+     */
+    public CertificateExpiredException createCertificateExpiredException() {
+        return new CertificateExpiredException();
+    }
+
+    /**
+     * Create an instance of {@link CaRenewCertRequest }
+     * 
+     */
+    public CaRenewCertRequest createCaRenewCertRequest() {
+        return new CaRenewCertRequest();
+    }
+
+    /**
+     * Create an instance of {@link RolloverCACertResponse }
+     * 
+     */
+    public RolloverCACertResponse createRolloverCACertResponse() {
+        return new RolloverCACertResponse();
     }
 
     /**
@@ -1078,133 +768,535 @@ public class ObjectFactory {
     public GetPublisherQueueLengthResponse createGetPublisherQueueLengthResponse() {
         return new GetPublisherQueueLengthResponse();
     }
-    
+
     /**
-     * Create an instance of {@link CreateCryptoToken }
-     *
+     * Create an instance of {@link IsAuthorized }
+     * 
      */
-    public CreateCryptoToken createCreateCryptoToken() {
-        return new CreateCryptoToken();
-    }
-    
-    /**
-     * Create an instance of {@link CreateCryptoTokenResponse }
-     *
-     */
-    public CreateCryptoTokenResponse createCreateCryptoTokenResponse() {
-        return new CreateCryptoTokenResponse();
-    }
-    
-    /**
-     * Create an instance of {@link GenerateCryptoTokenKeys }
-     *
-     */
-    public GenerateCryptoTokenKeys createGenerateCryptoTokenKeys() {
-        return new GenerateCryptoTokenKeys();
-    }
-    
-    /**
-     * Create an instance of {@link GenerateCryptoTokenKeysResponse }
-     *
-     */
-    public GenerateCryptoTokenKeysResponse createGenerateCryptoTokenKeysResponse() {
-        return new GenerateCryptoTokenKeysResponse();
-    }
-    
-    /**
-     * Create an instance of {@link CreateCA }
-     *
-     */
-    public CreateCA createCreateCA() {
-        return new CreateCA();
-    }
-    
-    /**
-     * Create an instance of {@link CreateCAResponse }
-     *
-     */
-    public CreateCAResponse createCreateCAResponse() {
-        return new CreateCAResponse();
+    public IsAuthorized createIsAuthorized() {
+        return new IsAuthorized();
     }
 
     /**
-     * Create an instance of {@link AddSubjectToRole }
-     *
+     * Create an instance of {@link IsAuthorizedResponse }
+     * 
      */
-    public AddSubjectToRole createAddSubjectToRole() {
-        return new AddSubjectToRole();
-    }
-    
-    /**
-     * Create an instance of {@link AddSubjectToRoleResponse }
-     *
-     */
-    public AddSubjectToRoleResponse createAddSubjectToRoleResponse() {
-        return new AddSubjectToRoleResponse();
+    public IsAuthorizedResponse createIsAuthorizedResponse() {
+        return new IsAuthorizedResponse();
     }
 
     /**
-     * Create an instance of {@link RemoveSubjectFromRole }
-     *
+     * Create an instance of {@link GetAvailableCertificateProfiles }
+     * 
      */
-    public RemoveSubjectFromRole createRemoveSubjectFromRole() {
-        return new RemoveSubjectFromRole();
+    public GetAvailableCertificateProfiles createGetAvailableCertificateProfiles() {
+        return new GetAvailableCertificateProfiles();
     }
-    
+
     /**
-     * Create an instance of {@link RemoveSubjectFromRoleResponse }
-     *
+     * Create an instance of {@link RevokeBackDateNotAllowedForProfileException }
+     * 
      */
-    public RemoveSubjectFromRoleResponse createRemoveSubjectFromRoleResponse() {
-        return new RemoveSubjectFromRoleResponse();
+    public RevokeBackDateNotAllowedForProfileException createRevokeBackDateNotAllowedForProfileException() {
+        return new RevokeBackDateNotAllowedForProfileException();
     }
-    
-    /**
-     * Create an instance of {@link GetCertificatesByExpirationTime }
-     */
-    public GetCertificatesByExpirationTime createGetCertificatesByExpirationTime() {
-        return new GetCertificatesByExpirationTime();
-    }
-    
-    /**
-     * Create an instance of {@link GetCertificatesByExpirationTimeResponse }
-     */
-    public GetCertificatesByExpirationTimeResponse createGetCertificatesByExpirationTimeResponse() {
-        return new GetCertificatesByExpirationTimeResponse();
-    }
-        
+
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndIssuer }
+     * 
      */
     public GetCertificatesByExpirationTimeAndIssuer createGetCertificatesByExpirationTimeAndIssuer() {
         return new GetCertificatesByExpirationTimeAndIssuer();
     }
-        
+
+    /**
+     * Create an instance of {@link AlreadyRevokedException }
+     * 
+     */
+    public AlreadyRevokedException createAlreadyRevokedException() {
+        return new AlreadyRevokedException();
+    }
+
+    /**
+     * Create an instance of {@link AddSubjectToRole }
+     * 
+     */
+    public AddSubjectToRole createAddSubjectToRole() {
+        return new AddSubjectToRole();
+    }
+
+    /**
+     * Create an instance of {@link DateNotValidException }
+     * 
+     */
+    public DateNotValidException createDateNotValidException() {
+        return new DateNotValidException();
+    }
+
+    /**
+     * Create an instance of {@link CvcRequest }
+     * 
+     */
+    public CvcRequest createCvcRequest() {
+        return new CvcRequest();
+    }
+
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndIssuerResponse }
+     * 
      */
     public GetCertificatesByExpirationTimeAndIssuerResponse createGetCertificatesByExpirationTimeAndIssuerResponse() {
         return new GetCertificatesByExpirationTimeAndIssuerResponse();
     }
-        
+
+    /**
+     * Create an instance of {@link SoftTokenRequest }
+     * 
+     */
+    public SoftTokenRequest createSoftTokenRequest() {
+        return new SoftTokenRequest();
+    }
+
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndType }
+     * 
      */
     public GetCertificatesByExpirationTimeAndType createGetCertificatesByExpirationTimeAndType() {
         return new GetCertificatesByExpirationTimeAndType();
     }
-        
+
     /**
-     * Create an instance of {@link GetCertificatesByExpirationTimeAndTypeResponse }
+     * Create an instance of {@link CertificateRequestResponse }
+     * 
      */
-    public GetCertificatesByExpirationTimeAndTypeResponse createGetCertificatesByExpirationTimeAndTypeResponse() {
-        return new GetCertificatesByExpirationTimeAndTypeResponse();
+    public CertificateRequestResponse createCertificateRequestResponse() {
+        return new CertificateRequestResponse();
     }
-        
-        
-        
-        
-        
+
+    /**
+     * Create an instance of {@link GetCertificatesByExpirationTime }
+     * 
+     */
+    public GetCertificatesByExpirationTime createGetCertificatesByExpirationTime() {
+        return new GetCertificatesByExpirationTime();
+    }
+
+    /**
+     * Create an instance of {@link SignRequestException }
+     * 
+     */
+    public SignRequestException createSignRequestException() {
+        return new SignRequestException();
+    }
+
+    /**
+     * Create an instance of {@link GetCertificateResponse }
+     * 
+     */
+    public GetCertificateResponse createGetCertificateResponse() {
+        return new GetCertificateResponse();
+    }
+
+    /**
+     * Create an instance of {@link CrmfRequest }
+     * 
+     */
+    public CrmfRequest createCrmfRequest() {
+        return new CrmfRequest();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenDatasResponse }
+     * 
+     */
+    public GetHardTokenDatasResponse createGetHardTokenDatasResponse() {
+        return new GetHardTokenDatasResponse();
+    }
+
+    /**
+     * Create an instance of {@link ExistsHardToken }
+     * 
+     */
+    public ExistsHardToken createExistsHardToken() {
+        return new ExistsHardToken();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs12ReqResponse }
+     * 
+     */
+    public Pkcs12ReqResponse createPkcs12ReqResponse() {
+        return new Pkcs12ReqResponse();
+    }
+
+    /**
+     * Create an instance of {@link CvcRequestResponse }
+     * 
+     */
+    public CvcRequestResponse createCvcRequestResponse() {
+        return new CvcRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link RevokeToken }
+     * 
+     */
+    public RevokeToken createRevokeToken() {
+        return new RevokeToken();
+    }
+
+    /**
+     * Create an instance of {@link UnknownProfileTypeException }
+     * 
+     */
+    public UnknownProfileTypeException createUnknownProfileTypeException() {
+        return new UnknownProfileTypeException();
+    }
+
+    /**
+     * Create an instance of {@link GetProfile }
+     * 
+     */
+    public GetProfile createGetProfile() {
+        return new GetProfile();
+    }
+
+    /**
+     * Create an instance of {@link CAOfflineException }
+     * 
+     */
+    public CAOfflineException createCAOfflineException() {
+        return new CAOfflineException();
+    }
+
+    /**
+     * Create an instance of {@link CreateCRL }
+     * 
+     */
+    public CreateCRL createCreateCRL() {
+        return new CreateCRL();
+    }
+
+    /**
+     * Create an instance of {@link EjbcaException }
+     * 
+     */
+    public EjbcaException createEjbcaException() {
+        return new EjbcaException();
+    }
+
+    /**
+     * Create an instance of {@link GetLatestCRL }
+     * 
+     */
+    public GetLatestCRL createGetLatestCRL() {
+        return new GetLatestCRL();
+    }
+
+    /**
+     * Create an instance of {@link CaRenewCertRequestResponse }
+     * 
+     */
+    public CaRenewCertRequestResponse createCaRenewCertRequestResponse() {
+        return new CaRenewCertRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link FetchUserData }
+     * 
+     */
+    public FetchUserData createFetchUserData() {
+        return new FetchUserData();
+    }
+
+    /**
+     * Create an instance of {@link GetEjbcaVersionResponse }
+     * 
+     */
+    public GetEjbcaVersionResponse createGetEjbcaVersionResponse() {
+        return new GetEjbcaVersionResponse();
+    }
+
+    /**
+     * Create an instance of {@link CaCertResponseResponse }
+     * 
+     */
+    public CaCertResponseResponse createCaCertResponseResponse() {
+        return new CaCertResponseResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetLastCAChain }
+     * 
+     */
+    public GetLastCAChain createGetLastCAChain() {
+        return new GetLastCAChain();
+    }
+
+    /**
+     * Create an instance of {@link RevokeCert }
+     * 
+     */
+    public RevokeCert createRevokeCert() {
+        return new RevokeCert();
+    }
+
+    /**
+     * Create an instance of {@link ApprovalRequestExecutionException }
+     * 
+     */
+    public ApprovalRequestExecutionException createApprovalRequestExecutionException() {
+        return new ApprovalRequestExecutionException();
+    }
+
+    /**
+     * Create an instance of {@link EditUser }
+     * 
+     */
+    public EditUser createEditUser() {
+        return new EditUser();
+    }
+
+    /**
+     * Create an instance of {@link CreateCA }
+     * 
+     */
+    public CreateCA createCreateCA() {
+        return new CreateCA();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCAs }
+     * 
+     */
+    public GetAvailableCAs createGetAvailableCAs() {
+        return new GetAvailableCAs();
+    }
+
+    /**
+     * Create an instance of {@link GetLastCAChainResponse }
+     * 
+     */
+    public GetLastCAChainResponse createGetLastCAChainResponse() {
+        return new GetLastCAChainResponse();
+    }
+
+    /**
+     * Create an instance of {@link CustomLogResponse }
+     * 
+     */
+    public CustomLogResponse createCustomLogResponse() {
+        return new CustomLogResponse();
+    }
+
+    /**
+     * Create an instance of {@link CADoesntExistsException }
+     * 
+     */
+    public CADoesntExistsException createCADoesntExistsException() {
+        return new CADoesntExistsException();
+    }
+
+    /**
+     * Create an instance of {@link DeleteUserDataFromSource }
+     * 
+     */
+    public DeleteUserDataFromSource createDeleteUserDataFromSource() {
+        return new DeleteUserDataFromSource();
+    }
+
+    /**
+     * Create an instance of {@link KeyRecover }
+     * 
+     */
+    public KeyRecover createKeyRecover() {
+        return new KeyRecover();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenDataResponse }
+     * 
+     */
+    public GetHardTokenDataResponse createGetHardTokenDataResponse() {
+        return new GetHardTokenDataResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetCertificate }
+     * 
+     */
+    public GetCertificate createGetCertificate() {
+        return new GetCertificate();
+    }
+
+    /**
+     * Create an instance of {@link IsApproved }
+     * 
+     */
+    public IsApproved createIsApproved() {
+        return new IsApproved();
+    }
+
+    /**
+     * Create an instance of {@link CreateCryptoToken }
+     * 
+     */
+    public CreateCryptoToken createCreateCryptoToken() {
+        return new CreateCryptoToken();
+    }
+
+    /**
+     * Create an instance of {@link GenTokenCertificates }
+     * 
+     */
+    public GenTokenCertificates createGenTokenCertificates() {
+        return new GenTokenCertificates();
+    }
+
+    /**
+     * Create an instance of {@link CaCertResponseForRolloverResponse }
+     * 
+     */
+    public CaCertResponseForRolloverResponse createCaCertResponseForRolloverResponse() {
+        return new CaCertResponseForRolloverResponse();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs10Request }
+     * 
+     */
+    public Pkcs10Request createPkcs10Request() {
+        return new Pkcs10Request();
+    }
+
+    /**
+     * Create an instance of {@link KeyRecoverResponse }
+     * 
+     */
+    public KeyRecoverResponse createKeyRecoverResponse() {
+        return new KeyRecoverResponse();
+    }
+
+    /**
+     * Create an instance of {@link KeyStore }
+     * 
+     */
+    public KeyStore createKeyStore() {
+        return new KeyStore();
+    }
+
+    /**
+     * Create an instance of {@link TokenCertificateRequestWS }
+     * 
+     */
+    public TokenCertificateRequestWS createTokenCertificateRequestWS() {
+        return new TokenCertificateRequestWS();
+    }
+
+    /**
+     * Create an instance of {@link Certificate }
+     * 
+     */
+    public Certificate createCertificate() {
+        return new Certificate();
+    }
+
+    /**
+     * Create an instance of {@link HardTokenDataWS }
+     * 
+     */
+    public HardTokenDataWS createHardTokenDataWS() {
+        return new HardTokenDataWS();
+    }
+
+    /**
+     * Create an instance of {@link TokenCertificateResponseWS }
+     * 
+     */
+    public TokenCertificateResponseWS createTokenCertificateResponseWS() {
+        return new TokenCertificateResponseWS();
+    }
+
+    /**
+     * Create an instance of {@link ExtendedInformationWS }
+     * 
+     */
+    public ExtendedInformationWS createExtendedInformationWS() {
+        return new ExtendedInformationWS();
+    }
+
+    /**
+     * Create an instance of {@link KeyValuePair }
+     * 
+     */
+    public KeyValuePair createKeyValuePair() {
+        return new KeyValuePair();
+    }
+
+    /**
+     * Create an instance of {@link ErrorCode }
+     * 
+     */
+    public ErrorCode createErrorCode() {
+        return new ErrorCode();
+    }
+
+    /**
+     * Create an instance of {@link UserDataVOWS }
+     * 
+     */
+    public UserDataVOWS createUserDataVOWS() {
+        return new UserDataVOWS();
+    }
+
+    /**
+     * Create an instance of {@link UserMatch }
+     * 
+     */
+    public UserMatch createUserMatch() {
+        return new UserMatch();
+    }
+
+    /**
+     * Create an instance of {@link UserDataSourceVOWS }
+     * 
+     */
+    public UserDataSourceVOWS createUserDataSourceVOWS() {
+        return new UserDataSourceVOWS();
+    }
+
+    /**
+     * Create an instance of {@link CertificateResponse }
+     * 
+     */
+    public CertificateResponse createCertificateResponse() {
+        return new CertificateResponse();
+    }
+
+    /**
+     * Create an instance of {@link RevokeStatus }
+     * 
+     */
+    public RevokeStatus createRevokeStatus() {
+        return new RevokeStatus();
+    }
+
+    /**
+     * Create an instance of {@link PinDataWS }
+     * 
+     */
+    public PinDataWS createPinDataWS() {
+        return new PinDataWS();
+    }
+
+    /**
+     * Create an instance of {@link NameAndId }
+     * 
+     */
+    public NameAndId createNameAndId() {
+        return new NameAndId();
+    }
+
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardTokenResponse }{@code >}}
      * 
@@ -1212,6 +1304,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "existsHardTokenResponse")
     public JAXBElement<ExistsHardTokenResponse> createExistsHardTokenResponse(ExistsHardTokenResponse value) {
         return new JAXBElement<ExistsHardTokenResponse>(_ExistsHardTokenResponse_QNAME, ExistsHardTokenResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetProfileResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfileResponse")
+    public JAXBElement<GetProfileResponse> createGetProfileResponse(GetProfileResponse value) {
+        return new JAXBElement<GetProfileResponse>(_GetProfileResponse_QNAME, GetProfileResponse.class, null, value);
     }
 
     /**
@@ -1224,12 +1325,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationDeniedException }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "AuthorizationDeniedException")
-    public JAXBElement<AuthorizationDeniedException> createAuthorizationDeniedException(AuthorizationDeniedException value) {
-        return new JAXBElement<AuthorizationDeniedException>(_AuthorizationDeniedException_QNAME, AuthorizationDeniedException.class, null, value);
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeResponse")
+    public JAXBElement<GetCertificatesByExpirationTimeResponse> createGetCertificatesByExpirationTimeResponse(GetCertificatesByExpirationTimeResponse value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeResponse>(_GetCertificatesByExpirationTimeResponse_QNAME, GetCertificatesByExpirationTimeResponse.class, null, value);
     }
 
     /**
@@ -1239,6 +1340,24 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatas")
     public JAXBElement<GetHardTokenDatas> createGetHardTokenDatas(GetHardTokenDatas value) {
         return new JAXBElement<GetHardTokenDatas>(_GetHardTokenDatas_QNAME, GetHardTokenDatas.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationDeniedException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "AuthorizationDeniedException")
+    public JAXBElement<AuthorizationDeniedException> createAuthorizationDeniedException(AuthorizationDeniedException value) {
+        return new JAXBElement<AuthorizationDeniedException>(_AuthorizationDeniedException_QNAME, AuthorizationDeniedException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponseForRollover }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caCertResponseForRollover")
+    public JAXBElement<CaCertResponseForRollover> createCaCertResponseForRollover(CaCertResponseForRollover value) {
+        return new JAXBElement<CaCertResponseForRollover>(_CaCertResponseForRollover_QNAME, CaCertResponseForRollover.class, null, value);
     }
 
     /**
@@ -1350,6 +1469,24 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRoleResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRoleResponse")
+    public JAXBElement<RemoveSubjectFromRoleResponse> createRemoveSubjectFromRoleResponse(RemoveSubjectFromRoleResponse value) {
+        return new JAXBElement<RemoveSubjectFromRoleResponse>(_RemoveSubjectFromRoleResponse_QNAME, RemoveSubjectFromRoleResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EndEntityProfileNotFoundException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "EndEntityProfileNotFoundException")
+    public JAXBElement<EndEntityProfileNotFoundException> createEndEntityProfileNotFoundException(EndEntityProfileNotFoundException value) {
+        return new JAXBElement<EndEntityProfileNotFoundException>(_EndEntityProfileNotFoundException_QNAME, EndEntityProfileNotFoundException.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DeleteUserDataFromSourceResponse }{@code >}}
      * 
      */
@@ -1365,6 +1502,33 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAuthorizedEndEntityProfilesResponse")
     public JAXBElement<GetAuthorizedEndEntityProfilesResponse> createGetAuthorizedEndEntityProfilesResponse(GetAuthorizedEndEntityProfilesResponse value) {
         return new JAXBElement<GetAuthorizedEndEntityProfilesResponse>(_GetAuthorizedEndEntityProfilesResponse_QNAME, GetAuthorizedEndEntityProfilesResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoTokenResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoTokenResponse")
+    public JAXBElement<CreateCryptoTokenResponse> createCreateCryptoTokenResponse(CreateCryptoTokenResponse value) {
+        return new JAXBElement<CreateCryptoTokenResponse>(_CreateCryptoTokenResponse_QNAME, CreateCryptoTokenResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoTokenKeys }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeys")
+    public JAXBElement<GenerateCryptoTokenKeys> createGenerateCryptoTokenKeys(GenerateCryptoTokenKeys value) {
+        return new JAXBElement<GenerateCryptoTokenKeys>(_GenerateCryptoTokenKeys_QNAME, GenerateCryptoTokenKeys.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoTokenKeysResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeysResponse")
+    public JAXBElement<GenerateCryptoTokenKeysResponse> createGenerateCryptoTokenKeysResponse(GenerateCryptoTokenKeysResponse value) {
+        return new JAXBElement<GenerateCryptoTokenKeysResponse>(_GenerateCryptoTokenKeysResponse_QNAME, GenerateCryptoTokenKeysResponse.class, null, value);
     }
 
     /**
@@ -1395,6 +1559,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRoleResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRoleResponse")
+    public JAXBElement<AddSubjectToRoleResponse> createAddSubjectToRoleResponse(AddSubjectToRoleResponse value) {
+        return new JAXBElement<AddSubjectToRoleResponse>(_AddSubjectToRoleResponse_QNAME, AddSubjectToRoleResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetEjbcaVersion }{@code >}}
      * 
      */
@@ -1419,6 +1592,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findCerts")
     public JAXBElement<FindCerts> createFindCerts(FindCerts value) {
         return new JAXBElement<FindCerts>(_FindCerts_QNAME, FindCerts.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndTypeResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndTypeResponse")
+    public JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse> createGetCertificatesByExpirationTimeAndTypeResponse(GetCertificatesByExpirationTimeAndTypeResponse value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse>(_GetCertificatesByExpirationTimeAndTypeResponse_QNAME, GetCertificatesByExpirationTimeAndTypeResponse.class, null, value);
     }
 
     /**
@@ -1557,6 +1739,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RolloverCACert }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "rolloverCACert")
+    public JAXBElement<RolloverCACert> createRolloverCACert(RolloverCACert value) {
+        return new JAXBElement<RolloverCACert>(_RolloverCACert_QNAME, RolloverCACert.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponse }{@code >}}
      * 
      */
@@ -1593,6 +1784,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRLResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLatestCRLResponse")
+    public JAXBElement<GetLatestCRLResponse> createGetLatestCRLResponse(GetLatestCRLResponse value) {
+        return new JAXBElement<GetLatestCRLResponse>(_GetLatestCRLResponse_QNAME, GetLatestCRLResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SoftTokenRequestResponse }{@code >}}
      * 
      */
@@ -1609,15 +1809,6 @@ public class ObjectFactory {
     public JAXBElement<GetAvailableCertificateProfilesResponse> createGetAvailableCertificateProfilesResponse(GetAvailableCertificateProfilesResponse value) {
         return new JAXBElement<GetAvailableCertificateProfilesResponse>(_GetAvailableCertificateProfilesResponse_QNAME, GetAvailableCertificateProfilesResponse.class, null, value);
     }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetProfileResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfileResponse")
-    public JAXBElement<GetProfileResponse> createGetProfileResponse(GetProfileResponse value) {
-        return new JAXBElement<GetProfileResponse>(_GetProfileResponse_QNAME, GetProfileResponse.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EditUserResponse }{@code >}}
@@ -1626,6 +1817,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "editUserResponse")
     public JAXBElement<EditUserResponse> createEditUserResponse(EditUserResponse value) {
         return new JAXBElement<EditUserResponse>(_EditUserResponse_QNAME, EditUserResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRole }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRole")
+    public JAXBElement<RemoveSubjectFromRole> createRemoveSubjectFromRole(RemoveSubjectFromRole value) {
+        return new JAXBElement<RemoveSubjectFromRole>(_RemoveSubjectFromRole_QNAME, RemoveSubjectFromRole.class, null, value);
     }
 
     /**
@@ -1638,21 +1838,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link NotFoundException }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "NotFoundException")
-    public JAXBElement<NotFoundException> createNotFoundException(NotFoundException value) {
-        return new JAXBElement<NotFoundException>(_NotFoundException_QNAME, NotFoundException.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link MultipleMatchException }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "MultipleMatchException")
     public JAXBElement<MultipleMatchException> createMultipleMatchException(MultipleMatchException value) {
         return new JAXBElement<MultipleMatchException>(_MultipleMatchException_QNAME, MultipleMatchException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link NotFoundException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "NotFoundException")
+    public JAXBElement<NotFoundException> createNotFoundException(NotFoundException value) {
+        return new JAXBElement<NotFoundException>(_NotFoundException_QNAME, NotFoundException.class, null, value);
     }
 
     /**
@@ -1665,15 +1865,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverNewestResponse }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewestResponse")
-    public JAXBElement<KeyRecoverNewestResponse> createKeyRecoverNewestResponse(KeyRecoverNewestResponse value) {
-        return new JAXBElement<KeyRecoverNewestResponse>(_KeyRecoverNewestResponse_QNAME, KeyRecoverNewestResponse.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}}
      * 
      */
@@ -1683,12 +1874,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs10RequestResponse }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverNewestResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs10RequestResponse")
-    public JAXBElement<Pkcs10RequestResponse> createPkcs10RequestResponse(Pkcs10RequestResponse value) {
-        return new JAXBElement<Pkcs10RequestResponse>(_Pkcs10RequestResponse_QNAME, Pkcs10RequestResponse.class, null, value);
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewestResponse")
+    public JAXBElement<KeyRecoverNewestResponse> createKeyRecoverNewestResponse(KeyRecoverNewestResponse value) {
+        return new JAXBElement<KeyRecoverNewestResponse>(_KeyRecoverNewestResponse_QNAME, KeyRecoverNewestResponse.class, null, value);
     }
 
     /**
@@ -1698,6 +1889,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "IllegalQueryException")
     public JAXBElement<IllegalQueryException> createIllegalQueryException(IllegalQueryException value) {
         return new JAXBElement<IllegalQueryException>(_IllegalQueryException_QNAME, IllegalQueryException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs10RequestResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs10RequestResponse")
+    public JAXBElement<Pkcs10RequestResponse> createPkcs10RequestResponse(Pkcs10RequestResponse value) {
+        return new JAXBElement<Pkcs10RequestResponse>(_Pkcs10RequestResponse_QNAME, Pkcs10RequestResponse.class, null, value);
     }
 
     /**
@@ -1716,6 +1916,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewest")
     public JAXBElement<KeyRecoverNewest> createKeyRecoverNewest(KeyRecoverNewest value) {
         return new JAXBElement<KeyRecoverNewest>(_KeyRecoverNewest_QNAME, KeyRecoverNewest.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCAResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCAResponse")
+    public JAXBElement<CreateCAResponse> createCreateCAResponse(CreateCAResponse value) {
+        return new JAXBElement<CreateCAResponse>(_CreateCAResponse_QNAME, CreateCAResponse.class, null, value);
     }
 
     /**
@@ -1764,12 +1973,30 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link UnknownProfileTypeException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnknownProfileTypeException")
+    public JAXBElement<UnknownProfileTypeException> createUnknownProfileTypeException(UnknownProfileTypeException value) {
+        return new JAXBElement<UnknownProfileTypeException>(_UnknownProfileTypeException_QNAME, UnknownProfileTypeException.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeToken }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeToken")
     public JAXBElement<RevokeToken> createRevokeToken(RevokeToken value) {
         return new JAXBElement<RevokeToken>(_RevokeToken_QNAME, RevokeToken.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetProfile }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfile")
+    public JAXBElement<GetProfile> createGetProfile(GetProfile value) {
+        return new JAXBElement<GetProfile>(_GetProfile_QNAME, GetProfile.class, null, value);
     }
 
     /**
@@ -1800,12 +2027,30 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndType")
+    public JAXBElement<GetCertificatesByExpirationTimeAndType> createGetCertificatesByExpirationTimeAndType(GetCertificatesByExpirationTimeAndType value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndType>(_GetCertificatesByExpirationTimeAndType_QNAME, GetCertificatesByExpirationTimeAndType.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CertificateRequestResponse }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "certificateRequestResponse")
     public JAXBElement<CertificateRequestResponse> createCertificateRequestResponse(CertificateRequestResponse value) {
         return new JAXBElement<CertificateRequestResponse>(_CertificateRequestResponse_QNAME, CertificateRequestResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTime }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTime")
+    public JAXBElement<GetCertificatesByExpirationTime> createGetCertificatesByExpirationTime(GetCertificatesByExpirationTime value) {
+        return new JAXBElement<GetCertificatesByExpirationTime>(_GetCertificatesByExpirationTime_QNAME, GetCertificatesByExpirationTime.class, null, value);
     }
 
     /**
@@ -1827,21 +2072,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCertificateProfiles }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRole }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCertificateProfiles")
-    public JAXBElement<GetAvailableCertificateProfiles> createGetAvailableCertificateProfiles(GetAvailableCertificateProfiles value) {
-        return new JAXBElement<GetAvailableCertificateProfiles>(_GetAvailableCertificateProfiles_QNAME, GetAvailableCertificateProfiles.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetProfile }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfile")
-    public JAXBElement<GetProfile> createGetProfile(GetProfile value) {
-        return new JAXBElement<GetProfile>(_GetProfile_QNAME, GetProfile.class, null, value);
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRole")
+    public JAXBElement<AddSubjectToRole> createAddSubjectToRole(AddSubjectToRole value) {
+        return new JAXBElement<AddSubjectToRole>(_AddSubjectToRole_QNAME, AddSubjectToRole.class, null, value);
     }
 
     /**
@@ -1854,12 +2090,30 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCertificateProfiles }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCertificateProfiles")
+    public JAXBElement<GetAvailableCertificateProfiles> createGetAvailableCertificateProfiles(GetAvailableCertificateProfiles value) {
+        return new JAXBElement<GetAvailableCertificateProfiles>(_GetAvailableCertificateProfiles_QNAME, GetAvailableCertificateProfiles.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeBackDateNotAllowedForProfileException }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "RevokeBackDateNotAllowedForProfileException")
     public JAXBElement<RevokeBackDateNotAllowedForProfileException> createRevokeBackDateNotAllowedForProfileException(RevokeBackDateNotAllowedForProfileException value) {
         return new JAXBElement<RevokeBackDateNotAllowedForProfileException>(_RevokeBackDateNotAllowedForProfileException_QNAME, RevokeBackDateNotAllowedForProfileException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuer }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuer")
+    public JAXBElement<GetCertificatesByExpirationTimeAndIssuer> createGetCertificatesByExpirationTimeAndIssuer(GetCertificatesByExpirationTimeAndIssuer value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndIssuer>(_GetCertificatesByExpirationTimeAndIssuer_QNAME, GetCertificatesByExpirationTimeAndIssuer.class, null, value);
     }
 
     /**
@@ -1881,6 +2135,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuerResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuerResponse")
+    public JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse> createGetCertificatesByExpirationTimeAndIssuerResponse(GetCertificatesByExpirationTimeAndIssuerResponse value) {
+        return new JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse>(_GetCertificatesByExpirationTimeAndIssuerResponse_QNAME, GetCertificatesByExpirationTimeAndIssuerResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DateNotValidException }{@code >}}
      * 
      */
@@ -1888,14 +2151,14 @@ public class ObjectFactory {
     public JAXBElement<DateNotValidException> createDateNotValidException(DateNotValidException value) {
         return new JAXBElement<DateNotValidException>(_DateNotValidException_QNAME, DateNotValidException.class, null, value);
     }
-    
+
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link UnknownProfileTypeException }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link RolloverCACertResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnknownProfileTypeException")
-    public JAXBElement<UnknownProfileTypeException> createUnknownProfileTypeException(UnknownProfileTypeException value) {
-        return new JAXBElement<UnknownProfileTypeException>(_UnknownProfileTypeException_QNAME, UnknownProfileTypeException.class, null, value);
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "rolloverCACertResponse")
+    public JAXBElement<RolloverCACertResponse> createRolloverCACertResponse(RolloverCACertResponse value) {
+        return new JAXBElement<RolloverCACertResponse>(_RolloverCACertResponse_QNAME, RolloverCACertResponse.class, null, value);
     }
 
     /**
@@ -1944,12 +2207,39 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecover }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecover")
+    public JAXBElement<KeyRecover> createKeyRecover(KeyRecover value) {
+        return new JAXBElement<KeyRecover>(_KeyRecover_QNAME, KeyRecover.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenTokenCertificates }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "genTokenCertificates")
     public JAXBElement<GenTokenCertificates> createGenTokenCertificates(GenTokenCertificates value) {
         return new JAXBElement<GenTokenCertificates>(_GenTokenCertificates_QNAME, GenTokenCertificates.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponseForRolloverResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caCertResponseForRolloverResponse")
+    public JAXBElement<CaCertResponseForRolloverResponse> createCaCertResponseForRolloverResponse(CaCertResponseForRolloverResponse value) {
+        return new JAXBElement<CaCertResponseForRolloverResponse>(_CaCertResponseForRolloverResponse_QNAME, CaCertResponseForRolloverResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverResponse")
+    public JAXBElement<KeyRecoverResponse> createKeyRecoverResponse(KeyRecoverResponse value) {
+        return new JAXBElement<KeyRecoverResponse>(_KeyRecoverResponse_QNAME, KeyRecoverResponse.class, null, value);
     }
 
     /**
@@ -1971,6 +2261,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoToken }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoToken")
+    public JAXBElement<CreateCryptoToken> createCreateCryptoToken(CreateCryptoToken value) {
+        return new JAXBElement<CreateCryptoToken>(_CreateCryptoToken_QNAME, CreateCryptoToken.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IsApproved }{@code >}}
      * 
      */
@@ -1986,6 +2285,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCAs")
     public JAXBElement<GetAvailableCAs> createGetAvailableCAs(GetAvailableCAs value) {
         return new JAXBElement<GetAvailableCAs>(_GetAvailableCAs_QNAME, GetAvailableCAs.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCA }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCA")
+    public JAXBElement<CreateCA> createCreateCA(CreateCA value) {
+        return new JAXBElement<CreateCA>(_CreateCA_QNAME, CreateCA.class, null, value);
     }
 
     /**
@@ -2040,6 +2348,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caRenewCertRequestResponse")
     public JAXBElement<CaRenewCertRequestResponse> createCaRenewCertRequestResponse(CaRenewCertRequestResponse value) {
         return new JAXBElement<CaRenewCertRequestResponse>(_CaRenewCertRequestResponse_QNAME, CaRenewCertRequestResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRL }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLatestCRL")
+    public JAXBElement<GetLatestCRL> createGetLatestCRL(GetLatestCRL value) {
+        return new JAXBElement<GetLatestCRL>(_GetLatestCRL_QNAME, GetLatestCRL.class, null, value);
     }
 
     /**
@@ -2127,9 +2444,9 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
-    public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_CaRenewCertRequestResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponseForRollover.class)
+    public JAXBElement<byte[]> createCaCertResponseForRolloverArg1(byte[] value) {
+        return new JAXBElement<byte[]>(_CaCertResponseForRolloverArg1_QNAME, byte[].class, CaCertResponseForRollover.class, ((byte[]) value));
     }
 
     /**
@@ -2138,151 +2455,34 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponse.class)
     public JAXBElement<byte[]> createCaCertResponseArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_CaCertResponseArg1_QNAME, byte[].class, CaCertResponse.class, ((byte[]) value));
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoToken }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoToken")
-    public JAXBElement<CreateCryptoToken> createCreateCryptoToken(CreateCryptoToken value) {
-        return new JAXBElement<CreateCryptoToken>(_CreateCryptoToken_QNAME, CreateCryptoToken.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoTokenResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoTokenResponse")
-    public JAXBElement<CreateCryptoTokenResponse> createCreateCryptoTokenResponse(CreateCryptoTokenResponse value) {
-        return new JAXBElement<CreateCryptoTokenResponse>(_CreateCryptoTokenResponse_QNAME, CreateCryptoTokenResponse.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoToken }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeys")
-    public JAXBElement<GenerateCryptoTokenKeys> createGenerateCryptoTokenKeys(GenerateCryptoTokenKeys value) {
-        return new JAXBElement<GenerateCryptoTokenKeys>(_GenerateCryptoTokenKeys_QNAME, GenerateCryptoTokenKeys.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoTokenKeysResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeysResponse")
-    public JAXBElement<GenerateCryptoTokenKeysResponse> createGenerateCryptoTokenKeysResponse(GenerateCryptoTokenKeysResponse value) {
-        return new JAXBElement<GenerateCryptoTokenKeysResponse>(_GenerateCryptoTokenKeysResponse_QNAME, GenerateCryptoTokenKeysResponse.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCA }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCA")
-    public JAXBElement<CreateCA> createCreateCA(CreateCA value) {
-        return new JAXBElement<CreateCA>(_CreateCA_QNAME, CreateCA.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCAResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCAResponse")
-    public JAXBElement<CreateCAResponse> createCreateCAResponse(CreateCAResponse value) {
-        return new JAXBElement<CreateCAResponse>(_CreateCAResponse_QNAME, CreateCAResponse.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRole }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRole")
-    public JAXBElement<AddSubjectToRole> createAddSubjectToRole(AddSubjectToRole value) {
-        return new JAXBElement<AddSubjectToRole>(_AddSubjectToRole_QNAME, AddSubjectToRole.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRoleResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRoleResponse")
-    public JAXBElement<AddSubjectToRoleResponse> createAddSubjectToRoleResponse(AddSubjectToRoleResponse value) {
-        return new JAXBElement<AddSubjectToRoleResponse>(_AddSubjectToRoleResponse_QNAME, AddSubjectToRoleResponse.class, null, value);
+        return new JAXBElement<byte[]>(_CaCertResponseForRolloverArg1_QNAME, byte[].class, CaCertResponse.class, ((byte[]) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRole }{@code >}}
-     *
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRole")
-    public JAXBElement<RemoveSubjectFromRole> createRemoveSubjectFromRole(RemoveSubjectFromRole value) {
-        return new JAXBElement<RemoveSubjectFromRole>(_RemoveSubjectFromRole_QNAME, RemoveSubjectFromRole.class, null, value);
+    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
+    public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_GetLatestCRLResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, ((byte[]) value));
     }
-    
+
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRoleResponse }{@code >}}
-     *
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRoleResponse")
-    public JAXBElement<RemoveSubjectFromRoleResponse> createRemoveSubjectFromRoleResponse(RemoveSubjectFromRoleResponse value) {
-        return new JAXBElement<RemoveSubjectFromRoleResponse>(_RemoveSubjectFromRoleResponse_QNAME, RemoveSubjectFromRoleResponse.class, null, value);
+    @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
+    public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_GetLatestCRLResponseReturn_QNAME, byte[].class, GetProfileResponse.class, ((byte[]) value));
     }
-    
+
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTime }{@code >}}
-     *
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
      */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTime")
-    public JAXBElement<GetCertificatesByExpirationTime> createGetCertificatesByExpirationTime(GetCertificatesByExpirationTime value) {
-        return new JAXBElement<GetCertificatesByExpirationTime>(_GetCertificatesByExpirationTime_QNAME, GetCertificatesByExpirationTime.class, null, value);
+    @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
+    public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_GetLatestCRLResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
     }
-        
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeResponse")
-    public JAXBElement<GetCertificatesByExpirationTimeResponse> createGetCertificatesByExpirationTimeResponse(GetCertificatesByExpirationTimeResponse value) {
-        return new JAXBElement<GetCertificatesByExpirationTimeResponse>(_GetCertificatesByExpirationTimeResponse_QNAME, GetCertificatesByExpirationTimeResponse.class, null, value);
-    }
-        
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuer }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuer")
-    public JAXBElement<GetCertificatesByExpirationTimeAndIssuer> createGetCertificatesByExpirationTimeAndIssuer(GetCertificatesByExpirationTimeAndIssuer value) {
-        return new JAXBElement<GetCertificatesByExpirationTimeAndIssuer>(_GetCertificatesByExpirationTimeAndIssuer_QNAME, GetCertificatesByExpirationTimeAndIssuer.class, null, value);
-    }
-    
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuerResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuerResponse")
-    public JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse> createGetCertificatesByExpirationTimeAndIssuerResponse(GetCertificatesByExpirationTimeAndIssuerResponse value) {
-        return new JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse>(_GetCertificatesByExpirationTimeAndIssuerResponse_QNAME, GetCertificatesByExpirationTimeAndIssuerResponse.class, null, value);
-    }
-        
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndType }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndType")
-    public JAXBElement<GetCertificatesByExpirationTimeAndType> createGetCertificatesByExpirationTimeAndType(GetCertificatesByExpirationTimeAndType value) {
-        return new JAXBElement<GetCertificatesByExpirationTimeAndType>(_GetCertificatesByExpirationTimeAndType_QNAME, GetCertificatesByExpirationTimeAndType.class, null, value);
-    }
-        
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndTypeResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndTypeResponse")
-    public JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse> createGetCertificatesByExpirationTimeAndTypeResponse(GetCertificatesByExpirationTimeAndTypeResponse value) {
-        return new JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse>(_GetCertificatesByExpirationTimeAndTypeResponse_QNAME, GetCertificatesByExpirationTimeAndTypeResponse.class, null, value);
-    }
-    
+
 }

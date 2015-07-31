@@ -1,9 +1,10 @@
 
 package org.ejbca.core.protocol.ws.client.gen;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -32,17 +33,18 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class GetLatestCRLResponse {
 
-    @XmlElement(name = "return")
-    protected byte[] _return;
+    @XmlElementRef(name = "return", type = JAXBElement.class, required = false)
+    protected JAXBElement<byte[]> _return;
 
     /**
      * Gets the value of the return property.
      * 
      * @return
      *     possible object is
-     *     byte[]
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     
      */
-    public byte[] getReturn() {
+    public JAXBElement<byte[]> getReturn() {
         return _return;
     }
 
@@ -51,10 +53,11 @@ public class GetLatestCRLResponse {
      * 
      * @param value
      *     allowed object is
-     *     byte[]
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     
      */
-    public void setReturn(byte[] value) {
-        this._return = ((byte[]) value);
+    public void setReturn(JAXBElement<byte[]> value) {
+        this._return = value;
     }
 
 }

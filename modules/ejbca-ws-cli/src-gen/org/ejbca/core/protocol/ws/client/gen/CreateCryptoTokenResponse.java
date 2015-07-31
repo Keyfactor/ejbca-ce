@@ -28,4 +28,5 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "createCryptoTokenResponse")
 public class CreateCryptoTokenResponse {
 
+
 }
