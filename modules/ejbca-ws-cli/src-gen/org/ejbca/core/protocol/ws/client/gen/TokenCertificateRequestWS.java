@@ -46,7 +46,6 @@ public class TokenCertificateRequestWS {
 		this.certificateProfileName = certificateProfileName;
 		this.pkcs10Data = pkcs10.getEncoded();
 	}
-	
 	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays,String tokenType, String keyspec, String keyalg) {
 		super();
 		type = HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;

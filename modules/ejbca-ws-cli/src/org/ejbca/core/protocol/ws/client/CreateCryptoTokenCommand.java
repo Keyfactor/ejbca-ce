@@ -25,7 +25,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.KeyValuePair;
+import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 
 
 /**
@@ -76,7 +76,10 @@ public class CreateCryptoTokenCommand extends EJBCAWSRABaseCommand implements IA
                 Iterator<Object> itr = props.keySet().iterator();
                 while(itr.hasNext()) {
                     String key = (String) itr.next();
-                    properties.add(new KeyValuePair(key, props.getProperty(key)));
+                    KeyValuePair kvp = new KeyValuePair();
+                    kvp.setKey(key);
+                    kvp.setValue(props.getProperty(key));
+                    properties.add(kvp);
                 }
                 
             }

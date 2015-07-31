@@ -38,7 +38,7 @@ public class KeyRecover {
     protected String arg0;
     protected String arg1;
     protected String arg2;
-    
+
     /**
      * Gets the value of the arg0 property.
      * 
@@ -86,7 +86,7 @@ public class KeyRecover {
     public void setArg1(String value) {
         this.arg1 = value;
     }
-    
+
     /**
      * Gets the value of the arg2 property.
      * 
