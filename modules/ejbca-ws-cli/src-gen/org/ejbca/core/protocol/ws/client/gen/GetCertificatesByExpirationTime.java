@@ -1,3 +1,4 @@
+
 package org.ejbca.core.protocol.ws.client.gen;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -50,7 +51,7 @@ public class GetCertificatesByExpirationTime {
     public void setArg0(long value) {
         this.arg0 = value;
     }
-    
+
     /**
      * Gets the value of the arg1 property.
      * 

@@ -394,6 +394,13 @@ public interface IEjbcaWS {
      * @param cachain the certificate chain for the CA this request is targeted for, the signing CA is in pos 0, it's CA (if it exists) in pos 1 etc. Certificate format is the binary certificate bytes.
      * @param keystorepwd If there is a new CA key that must be activates the keystore password is needed. Set to null if the request was generated using the existing CA keys.
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponse
+         * 
+         * @throws CADoesntExistsException
+         * @throws AuthorizationDeniedException
+         * @throws EjbcaException
+         * @throws ApprovalException
+         * @throws WaitingForApprovalException
+         * @throws CesecoreException
 	 */
 	void caCertResponseForRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
 

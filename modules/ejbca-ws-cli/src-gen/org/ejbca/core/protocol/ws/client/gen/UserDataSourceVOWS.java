@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class UserDataSourceVOWS implements Serializable{
 
-	private static final long serialVersionUID = 2633423909688084030L;
+	private static final long serialVersionUID = 4582471233805101416L;
     private UserDataVOWS userDataVOWS = null;
 	private List<Integer> isModifyable = null;
 

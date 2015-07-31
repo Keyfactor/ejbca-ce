@@ -1,3 +1,4 @@
+
 package org.ejbca.core.protocol.ws.client.gen;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -26,5 +27,6 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "addSubjectToRoleResponse")
 public class AddSubjectToRoleResponse {
+
 
 }

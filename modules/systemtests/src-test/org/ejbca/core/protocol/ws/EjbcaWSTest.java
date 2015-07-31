@@ -117,6 +117,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
+import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
@@ -126,7 +127,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.util.KeyValuePair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -964,8 +964,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         
         try {
             ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<KeyValuePair>();
-            cryptotokenProperties.add(new KeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false)));
-            cryptotokenProperties.add(new KeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
+            KeyValuePair allowExtract = new KeyValuePair();
+            allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
+            allowExtract.setValue(Boolean.toString(false));
+            cryptotokenProperties.add(allowExtract);
+            KeyValuePair nodefaultPwd = new KeyValuePair();
+            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
+            nodefaultPwd.setValue(Boolean.TRUE.toString());
+            cryptotokenProperties.add(nodefaultPwd);
             
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
@@ -1008,9 +1014,16 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         
         try {
-            ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<KeyValuePair>();
-            cryptotokenProperties.add(new KeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false)));
-            cryptotokenProperties.add(new KeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
+            ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<KeyValuePair>();            
+            KeyValuePair allowExtract = new KeyValuePair();
+            allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
+            allowExtract.setValue(Boolean.toString(false));
+            cryptotokenProperties.add(allowExtract);
+            KeyValuePair nodefaultPwd = new KeyValuePair();
+            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
+            nodefaultPwd.setValue(Boolean.TRUE.toString());
+            cryptotokenProperties.add(nodefaultPwd);
+            
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             
@@ -1054,8 +1067,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         try {
             // create cryptotoken
             ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<KeyValuePair>();
-            cryptotokenProperties.add(new KeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false)));
-            cryptotokenProperties.add(new KeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
+            KeyValuePair allowExtract = new KeyValuePair();
+            allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
+            allowExtract.setValue(Boolean.toString(false));
+            cryptotokenProperties.add(allowExtract);
+            KeyValuePair nodefaultPwd = new KeyValuePair();
+            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
+            nodefaultPwd.setValue(Boolean.TRUE.toString());
+            cryptotokenProperties.add(nodefaultPwd);
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", true, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
 
@@ -1069,10 +1088,22 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             
             // construct the ca token properties
             final ArrayList<KeyValuePair> purposeKeyMapping = new ArrayList<KeyValuePair>();
-            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS));
-            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
-            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS));
-            purposeKeyMapping.add(new KeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));
+            KeyValuePair defaultSign = new KeyValuePair();
+            defaultSign.setKey(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
+            defaultSign.setValue(CAToken.SOFTPRIVATEDECKEYALIAS);
+            purposeKeyMapping.add(defaultSign);
+            KeyValuePair certSign = new KeyValuePair();
+            certSign.setKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
+            certSign.setValue(CAToken.SOFTPRIVATESIGNKEYALIAS);
+            purposeKeyMapping.add(certSign);
+            KeyValuePair crlSign = new KeyValuePair();
+            crlSign.setKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING);
+            crlSign.setValue(CAToken.SOFTPRIVATESIGNKEYALIAS);
+            purposeKeyMapping.add(crlSign);
+            KeyValuePair testKey = new KeyValuePair();
+            testKey.setKey(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
+            testKey.setValue(testKeyAlias);
+            purposeKeyMapping.add(testKey);
             
             // Try to create a CA signed by an external CA. It should fail.
             try {

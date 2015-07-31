@@ -25,7 +25,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.KeyValuePair;
+import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 
 
 /**
@@ -135,7 +135,10 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
         Iterator<Object> itr = properties.keySet().iterator();
         while(itr.hasNext()) {
             String key = (String) itr.next();
-            kvlist.add(new KeyValuePair(key, properties.getProperty(key)));
+            KeyValuePair kvp = new KeyValuePair();
+            kvp.setKey(key);
+            kvp.setValue(properties.getProperty(key));
+            kvlist.add(kvp);
         }
         return kvlist;
     }

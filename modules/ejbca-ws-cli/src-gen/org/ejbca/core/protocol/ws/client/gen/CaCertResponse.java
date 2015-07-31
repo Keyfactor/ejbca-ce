@@ -3,9 +3,10 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -41,7 +42,8 @@ import javax.xml.bind.annotation.XmlType;
 public class CaCertResponse {
 
     protected String arg0;
-    protected byte[] arg1;
+    @XmlElementRef(name = "arg1", type = JAXBElement.class, required = false)
+    protected JAXBElement<byte[]> arg1;
     protected List<byte[]> arg2;
     protected String arg3;
 
@@ -74,9 +76,10 @@ public class CaCertResponse {
      * 
      * @return
      *     possible object is
-     *     byte[]
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     
      */
-    public byte[] getArg1() {
+    public JAXBElement<byte[]> getArg1() {
         return arg1;
     }
 
@@ -85,10 +88,11 @@ public class CaCertResponse {
      * 
      * @param value
      *     allowed object is
-     *     byte[]
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     
      */
-    public void setArg1(byte[] value) {
-        this.arg1 = ((byte[]) value);
+    public void setArg1(JAXBElement<byte[]> value) {
+        this.arg1 = value;
     }
 
     /**

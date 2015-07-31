@@ -1,3 +1,4 @@
+
 package org.ejbca.core.protocol.ws.client.gen;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -11,12 +12,12 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="getCertificatesByExpirationTimeAndType">
+ * &lt;complexType name="getCertificatesByExpirationTimeAndIssuer">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}long"/>
- *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}String"/>
+ *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -57,6 +58,10 @@ public class GetCertificatesByExpirationTimeAndIssuer {
     /**
      * Gets the value of the arg1 property.
      * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
     public String getArg1() {
         return arg1;
@@ -65,11 +70,15 @@ public class GetCertificatesByExpirationTimeAndIssuer {
     /**
      * Sets the value of the arg1 property.
      * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
     public void setArg1(String value) {
         this.arg1 = value;
     }
-    
+
     /**
      * Gets the value of the arg2 property.
      * 
@@ -85,4 +94,5 @@ public class GetCertificatesByExpirationTimeAndIssuer {
     public void setArg2(int value) {
         this.arg2 = value;
     }
+
 }

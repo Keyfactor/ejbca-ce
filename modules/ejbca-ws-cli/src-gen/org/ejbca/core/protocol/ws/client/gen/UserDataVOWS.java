@@ -22,14 +22,14 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 
 /**
  * Class used to represent userdata in the WebService API.
- * Is used instead of UserDataVO because of profilenames is used instead of id's.<br>
+ * Is used instead of EndEntityInformation because of profilenames is used instead of id's.<br>
  * Example code:<pre>
  *   UserDataVOWS user = new UserDataVOWS ();
  *   user.setUsername ("tester");
  *   user.setPassword ("foo123");
  *   user.setClearPwd (false);
  *   user.setSubjectDN ("CN=Tester,C=SE");
- *   user.setCaName ("AdminCA1");
+ *   user.setCaName ("ManagementCA");
  *   user.setEmail (null);
  *   user.setSubjectAltName (null);
  *   user.setStatus (UserDataVOWS.STATUS_NEW);
@@ -49,7 +49,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  */
 public class UserDataVOWS implements Serializable{
 	
-	private static final long serialVersionUID = -3107496436475932790L;
+	private static final long serialVersionUID = 7557071186257332026L;
     public static final java.lang.String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
 	public static final java.lang.String TOKEN_TYPE_JKS           = "JKS";
 	public static final java.lang.String TOKEN_TYPE_PEM           = "PEM";
@@ -241,24 +241,26 @@ public class UserDataVOWS implements Serializable{
 		return tokenType;
 	}
 
+
 	/**
 	 * @return Returns the type.
 	 */
 	public EndEntityType getType() {
-		EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
+		EndEntityType type = new EndEntityType(EndEntityTypes.ENDUSER);
 		
     	if(sendNotification) {
     		type.addType(EndEntityTypes.SENDNOTIFICATION);
     	} else {
-    		type.removeType(EndEntityTypes.SENDNOTIFICATION);
+    		type.removeType(EndEntityTypes.SENDNOTIFICATION); 
     	}
     	if(keyRecoverable) {
-    		type.addType(EndEntityTypes.KEYRECOVERABLE);
+    		type.addType(EndEntityTypes.KEYRECOVERABLE); 
     	} else {
-    		type.removeType(EndEntityTypes.KEYRECOVERABLE);
+    	    type.removeType(EndEntityTypes.KEYRECOVERABLE); 
     	}
 		return type;
 	}
+
 
 	/**
 	 * @return Returns the username.
@@ -404,17 +406,13 @@ public class UserDataVOWS implements Serializable{
 
     /**
      * Generic setter for extendedInformation. Set with values from ExtendedInformation such as:
-     * ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer.toString(RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD)
-     * 
-     * Add certificate extension properties like this by adding a ExtendedInformationWS:
-     * Set the name to the string representation of the OID optionally prepended with '.' and type of property (<oid>[.<type>]). <oid> is same as <oid>.value. Example 1.2.3.4 1.2.3.5.value1
-     * Set the value to what should be used in the implementation class.
+     * ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer.toString(RevokeStatus.REVOCATION_REASON_CERTIFICATEHOLD)
      * @param extendedInformation
      */
 	public void setExtendedInformation(List<ExtendedInformationWS> extendedInformation) {
 		this.extendedInformation = extendedInformation;
 	}
-
+	
     /**
      * @return card number
      */
@@ -430,4 +428,5 @@ public class UserDataVOWS implements Serializable{
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
     }
+
 }
