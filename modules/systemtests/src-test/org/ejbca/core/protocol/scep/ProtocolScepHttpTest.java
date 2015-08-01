@@ -725,7 +725,7 @@ public class ProtocolScepHttpTest {
             // Clean up certificates first
             internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
             
-            // Make a request to the rollover CA, but with the current CA certificate. Should work as usual
+            // Make a request with the current CA certificate. Should work as usual
             createScepUser(rolloverUser, rolloverDN, subCAId);
             byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
             byte[] retMsg = sendScep(false, msgBytes);
@@ -776,14 +776,18 @@ public class ProtocolScepHttpTest {
             
             scepConfiguration.setIncludeCA(scepAlias, true);
             scepConfiguration.setClientCertificateRenewal(scepAlias, true);
+            scepConfiguration.setAllowClientCertificateRenewalWithOldKey(scepAlias, true);
             globalConfigSession.saveConfiguration(admin, scepConfiguration);
             
-            // Make a request to the rollover CA, but with the current CA certificate. Should work as usual
+            // Make a request with the current CA certificate. Should work as usual
             createScepUser(rolloverUser, rolloverDN, subCAId);
             byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
             byte[] retMsg = sendScep(false, msgBytes);
             assertNotNull(retMsg);
             checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover);
+            
+            final X509Certificate clientCertCurrentCA = certificateStoreSession.findLatestX509CertificateBySubject(rolloverDN, subcaRolloverCert, false);
+            assertNotNull("could not find certificate of end-entity after SCEP request", clientCertCurrentCA);
             
             // Clean up
             try {
@@ -793,9 +797,9 @@ public class ProtocolScepHttpTest {
                 // NOPMD: ignore
             }
             
-            // Now request a certificate signed by the roll over CA certificate
+            // Now request a certificate signed by the roll over CA
             createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes2 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
+            byte[] msgBytes2 = genScepRolloverCARequestWithClientCert(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN, clientCertCurrentCA);
             byte[] retMsg2 = sendScep(false, msgBytes2);
             assertNotNull(retMsg2);
             checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
@@ -982,6 +986,29 @@ public class ProtocolScepHttpTest {
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
                 keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate());
+        assertNotNull(msgBytes);
+        senderNonce = gen.getSenderNonce();
+        byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
+        assertTrue(nonceBytes.length == 16);
+        return msgBytes;
+    }
+    
+    /** Makes a request to the Rollover CA, signed with the given CA certificate (current or next/rollover). */
+    private byte[] genScepRolloverCARequestWithClientCert(X509Certificate caRolloverCert, String digestoid, String userDN, X509Certificate userCert) throws InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
+            IOException, CMSException, OperatorCreationException, CertificateException {
+        assertNotNull(keyTestRollover);
+        assertNotNull(caRolloverCert);
+        
+        ScepRequestGenerator gen = new ScepRequestGenerator();
+        gen.setKeys(keyTestRollover, BouncyCastleProvider.PROVIDER_NAME);
+        gen.setDigestOid(digestoid);
+        // Create a transactionId
+        byte[] randBytes = new byte[16];
+        this.rand.nextBytes(randBytes);
+        byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
+        transId = new String(Base64.encode(digest));
+        final byte[] msgBytes = gen.generateCertReq(userDN, "", transId, caRolloverCert, userCert, keyTestRollover.getPrivate());
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
