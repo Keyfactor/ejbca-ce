@@ -480,13 +480,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (certDataWrapper.getCertificate() instanceof X509Certificate) {
                 final X509Certificate x509Certificate = (X509Certificate) certDataWrapper.getCertificate();
                 if (rolloverCA != null) {
+                    // The old and new CA certificate will generally have different keys, but we also handle the case where they don't by checking the date
+                    boolean signedByRolloverCAKey = false;
                     try {
-                        boolean isRollover = CertTools.verify(x509Certificate, trustedChain, CertTools.getNotBefore(x509Certificate));
-                        if (isRollover != findRollover) {
-                            continue;
-                        }
+                        CertTools.verify(x509Certificate, trustedChain, CertTools.getNotBefore(x509Certificate));
+                        signedByRolloverCAKey = true;
                     } catch (Exception e) {
-                        log.debug("failed to check if certificate was issed by a rollover CA", e);
+                        // NOPMD
+                    }
+                    boolean isRollover = signedByRolloverCAKey &&
+                            x509Certificate.getNotBefore().equals(CertTools.getNotBefore(rolloverCA));
+                    if (isRollover != findRollover) {
                         continue;
                     }
                 }
