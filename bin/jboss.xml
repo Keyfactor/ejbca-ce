@@ -397,8 +397,8 @@
         <jboss:adm arg="/subsystem=web/connector=http:add(protocol=HTTP/1.1, scheme=http, socket-binding=http)" />
         <jboss:adm arg='/subsystem=web/connector=http:write-attribute(name=redirect-port, value="${httpserver.privhttps}")' />
     	<!-- Make sure JBoss handles encoded backslashes. -->
-    	<jboss:adm arg='/system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)' />
-    	<jboss:adm arg='/system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)' />
+    	<jboss:adm arg='/system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)' failonerror="false" />
+    	<jboss:adm arg='/system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)' failonerror="false" />
         <!--  Configure URI encoding to to be able to use UTF-8 in URLs, for downloading certificate and CRLs. -->
         <jboss:adm arg='/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="${web.contentencoding}")' />
         <jboss:adm arg="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)" />
