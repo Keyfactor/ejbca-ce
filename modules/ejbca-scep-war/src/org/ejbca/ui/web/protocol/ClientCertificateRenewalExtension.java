@@ -138,6 +138,11 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
 
         log.debug("Found existing certificate, will use client certificate renewal");
         
+        // Verify that certificate is still valid
+        if(!CertTools.isCertificateValid(latestIssued)) {
+            throw new AuthStatusException("Re-enrollment request was attempted using an expired client certificate");
+        }
+        
         // Double check that certificate hasn't been revoked
         final CertificateStatus certStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(latestIssued), latestIssued.getSerialNumber());
         if (!certStatus.equals(CertificateStatus.OK)) {
