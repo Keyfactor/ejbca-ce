@@ -4,7 +4,6 @@
 //We need to set the response encoding before we generated the URL variable that is then used from the header.
 response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
 org.ejbca.ui.web.RequestHelper.setDefaultCharacterEncoding(request);
-finder.initialize(request.getRemoteAddr());
 finder.lookupCertificateInfo(request.getParameter("issuer"), request.getParameter("serno"));
 %>
 <c:set var="THIS_TITLE" value="Certificate Created" />

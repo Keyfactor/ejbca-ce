@@ -20,20 +20,15 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -50,7 +45,6 @@ import org.ejbca.ui.web.CertificateView;
  * To make it easy to use from JSTL pages, most methods take no arguments.
  * The arguments are supplied as member variables instead. <br>
  * 
- * @author Rolf Staflin
  * @version $Id$
  */
 public class CertificateFinderBean {
@@ -59,11 +53,8 @@ public class CertificateFinderBean {
 
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
-	private CaSession caSession = ejb.getCaSession();
+	private CaSessionLocal caSession = ejb.getCaSession();
 	private CertificateStoreSessionLocal mStoreSession = ejb.getCertificateStoreSession();
-
-	private boolean mInitialized = false;
-	private AuthenticationToken mAdmin;
 	
 	/** This member is used by the JSP pages to indicate which CA they are interested in. 
 	 * It is used by getCAInfo().
@@ -81,26 +72,11 @@ public class CertificateFinderBean {
 	 */
 	public CertificateFinderBean() { }
 	
-	/**
-	 * Initializes all the session beans used by this ocject.
-	 * This method must be called before other methods.
-	 * <p>Call it like this:
-	 * <br><tt>&lt;% finder.initialize(request.getRemoteAddr()); %&gt</tt>
-	 * 
-	 * @param remoteAddress The remote address as supplied by the request JSP object.
-	 */
-	public void initialize(String remoteAddress) {
-		log.trace(">initialize()");
-	    //mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
-	    mAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateFinderBean: "+remoteAddress));
-	    mInitialized = true;
-	}
-
 	public Collection<Integer> getAvailableCAs() {
 	    if(log.isTraceEnabled()) {
 		log.trace(">getAvailableCAs()");
 	    }
-		return mInitialized ? caSession.getAuthorizedCaIds(mAdmin) : null;
+		return  caSession.getAllCaIds();
 	}
 
 	public int getCurrentCA() {
@@ -116,62 +92,52 @@ public class CertificateFinderBean {
 
 	public CAInfo getCAInfo() {
 		if (log.isTraceEnabled()) {
-			log.trace(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+			log.trace(">getCAInfo() currentCA = " + mCurrentCA);
 		}
 		CAInfo cainfo = null;
 		try {
-			cainfo = caSession.getCAInfo(mAdmin, mCurrentCA);
+			cainfo = caSession.getCAInfoInternal(mCurrentCA);
 		} catch (CADoesntExistsException e) {
 			log.info("CA does not exist : "+mCurrentCA, e);
-		} catch (AuthorizationDeniedException e) {
-			log.info("Unauthorized to CA : "+mCurrentCA, e);
-		}
-		return mInitialized ?  cainfo : null;
+		} 
+		return cainfo;
 	}
 
 	public Collection<CertificateWrapper> getCACertificateChain() {
 		if (log.isTraceEnabled()) {
-			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
-		}
-		if (!mInitialized) {
-			return null;
+			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA);
 		}
 		// Make a collection of CertificateWrapper instead of the real certificate
 		ArrayList<CertificateWrapper> ret = new ArrayList<CertificateWrapper>();
-		try {
-			Collection<Certificate> certs = mSignSession.getCertificateChain(mAdmin, mCurrentCA);
-			for (Iterator<Certificate> it = certs.iterator(); it.hasNext();) {
-				Certificate cert = (Certificate)it.next();
-				ret.add(new CertificateWrapper(cert));
-			}
-		} catch (AuthorizationDeniedException e) {
-			log.error("Authorization denied getting certificate chain: ", e);
-		}
+        Collection<Certificate> certs = mSignSession.getCertificateChain(mCurrentCA);
+        for (Certificate cert : certs) {
+            ret.add(new CertificateWrapper(cert));
+        }
+		
 		return ret;
 	}
+	
+	   public Collection<CertificateWrapper> getCACertificateChainReversed() {
+	        Collection<CertificateWrapper> ret = getCACertificateChain();
+	        if (ret != null) {
+	            Collections.reverse((ArrayList<CertificateWrapper>) ret);
+	        }
+	        return ret;
+	    }
 
 	public String getCADN() {
 		String ret = "Unauthorized";
-		try {
-			final Collection<Certificate> certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
+			final Collection<Certificate> certs = this.mSignSession.getCertificateChain(this.mCurrentCA);
 			if ( certs==null || certs.isEmpty() ) {
 				return "";
 			}
 			final Certificate cert = (Certificate)certs.iterator().next();
 			ret = CertTools.getSubjectDN(cert);
-		} catch (AuthorizationDeniedException e) {
-			log.error("Authorization denied getting CA DN: ", e);
-		}
+		
 		return ret;
 	}
 
-	public Collection<CertificateWrapper> getCACertificateChainReversed() {
-		Collection<CertificateWrapper> ret = getCACertificateChain();
-		if (ret != null) {
-			Collections.reverse((ArrayList<CertificateWrapper>) ret);
-		}
-		return ret;
-	}
+
 	
 	/**
 	 * Get revocation info for a certificate.
@@ -190,7 +156,7 @@ public class CertificateFinderBean {
 		if (log.isTraceEnabled()) {
 			log.trace(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
 		}
-		if (result == null || mInitialized == false) {
+		if (result == null) {
 			return; // There's nothing we can do here.
 		}
 		try {
@@ -228,7 +194,7 @@ public class CertificateFinderBean {
 			return; // There's nothing we can do here.
 		}
 		result.clear();
-		if (subject == null || mInitialized == false) {
+		if (subject == null) {
 			return; // We can't lookup any certificates, so return with an empty result.
 		}
 		final List<CertificateDataWrapper> cdws = mStoreSession.getCertificateDatasBySubject(subject);

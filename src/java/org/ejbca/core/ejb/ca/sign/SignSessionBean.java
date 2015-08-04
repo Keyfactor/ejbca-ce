@@ -164,9 +164,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<Certificate> getCertificateChain(AuthenticationToken admin, int caid) throws AuthorizationDeniedException {
+    public Collection<Certificate> getCertificateChain(int caid) {
         try {
-            return caSession.getCA(admin, caid).getCertificateChain();
+            return caSession.getCAInfoInternal(caid).getCertificateChain();
         } catch (CADoesntExistsException e) {
             throw new EJBException(e);
         }
