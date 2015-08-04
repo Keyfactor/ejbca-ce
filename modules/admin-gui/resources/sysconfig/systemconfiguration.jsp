@@ -152,6 +152,16 @@ org.cesecore.authorization.control.StandardRules
 					<f:selectItems value="#{systemConfigMBean.availableCAsAndNoEncryptionOption}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
+			<!-- Ordering for certificate chains in public web -->
+			<h:panelGroup>
+				<h:outputLabel for="certChainOrder" value="#{web.text.CERTIFICATECHAINORDER}" styleClass="titles"/>
+				<br/>
+				<h:outputText value="#{web.text.CERTIFICATECHAINROOTFIRST_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="certChainOrder" value="#{systemConfigMBean.currentConfig.publicWebCertChainOrderRootFirst}"/>
+				<h:outputLabel for="certChainOrder" value="#{web.text.CERTIFICATECHAINROOTFIRST}" />
+			</h:panelGroup>
 		</h:panelGrid>
 		
 		

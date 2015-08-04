@@ -95,6 +95,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
     
+    private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
+    
     // Default CT Logs
     private static final Map<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<Integer,CTLogInfo>();
     /* By default the list is empty but it is possible to add logs here. 
@@ -184,6 +186,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String MENUFILENAME          =  "menufilename";
     private static final   String ERRORPAGE             =  "errorpage";
     private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
+    
+    private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
         
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -528,6 +532,14 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        
        public void setEnableCommandLineInterfaceDefaultUser(final boolean value) { putBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, value); }
        public boolean getEnableCommandLineInterfaceDefaultUser() { return getBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER); }
+       
+    public boolean getPublicWebCertChainOrderRootFirst() {
+        return getBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST);
+    }
+    
+    public void setPublicWebCertChainOrderRootFirst(boolean value) {
+        putBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, value);
+    }
        
     @SuppressWarnings("unchecked")
     public Map<Integer,CTLogInfo> getCTLogs() {

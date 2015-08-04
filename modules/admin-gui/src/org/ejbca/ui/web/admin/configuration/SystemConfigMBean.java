@@ -28,12 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -69,6 +66,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
         private List<CTLogInfo> ctLogs;
+        private boolean publicWebCertChainOrderRootFirst;
         
         //Admin Preferences
         private int preferedLanguage;
@@ -82,7 +80,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig = getEjbcaWebBean().getGlobalConfiguration();
             }
             
-            //CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.headBanner = globalConfig.getHeadBanner();
@@ -105,6 +102,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
+                this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 
                 ArrayList<CTLogInfo> ctlogs = new ArrayList<CTLogInfo>();
                 Map<Integer, CTLogInfo> availableCTLogs = globalConfig.getCTLogs();
@@ -172,6 +170,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableCommandLineDefaultUser(boolean enableCommandLineDefaultUser) { this.enableCommandLineDefaultUser=enableCommandLineDefaultUser; }
         public List<CTLogInfo> getCtLogs() {return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs=ctlogs; }
+        public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
+        public void setPublicWebCertChainOrderRootFirst(boolean publicWebCertChainOrderRootFirst) { this.publicWebCertChainOrderRootFirst=publicWebCertChainOrderRootFirst; }
         
         // Admin Preferences
         public int getPreferedLanguage() { return this.preferedLanguage; }
@@ -319,6 +319,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
+                globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 Map<Integer, CTLogInfo> ctlogsMap = new HashMap<Integer, CTLogInfo>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {
                     ctlogsMap.put(ctlog.getLogId(), ctlog);

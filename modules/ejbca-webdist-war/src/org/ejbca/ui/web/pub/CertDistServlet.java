@@ -52,9 +52,11 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
@@ -114,6 +116,8 @@ public class CertDistServlet extends HttpServlet {
     @EJB
     private CrlStoreSessionLocal crlSession;
     @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
     private SignSessionLocal signSession;
 
     /**
@@ -130,7 +134,7 @@ public class CertDistServlet extends HttpServlet {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
-    } //doPost
+    }
 
 	/**
 	 * handles http get
@@ -141,14 +145,13 @@ public class CertDistServlet extends HttpServlet {
 	 * @throws IOException input/output error
 	 * @throws ServletException error
 	 */
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
+    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doGet()");
 
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
 		final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublicWeb: "+remoteAddr));
-        //Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
 
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
@@ -196,7 +199,9 @@ public class CertDistServlet extends HttpServlet {
                     res.setContentLength(crl.length);
                     res.getOutputStream().write(crl);                    
                 }
-                log.debug("Sent latest CRL to client at " + remoteAddr);
+                if (log.isDebugEnabled()) {
+                    log.debug("Sent latest CRL to client at " + remoteAddr);
+                }
             } catch (Exception e) {
                 log.debug("Error sending latest CRL to " + remoteAddr+": ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
@@ -217,7 +222,9 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=eecert?issuer=<issuerdn>&serno=<serialnumber in hex>.");
                 return;
             }
-            log.debug("Looking for certificate with issuer/serno '"+dn+"', '"+serno+"'.");
+            if (log.isDebugEnabled()) {
+                log.debug("Looking for certificate with issuer/serno '" + dn + "', '" + serno + "'.");
+            }
             try {
                 // Serial number in hex
                 Certificate cert = storesession.findCertificateByIssuerAndSerno(dn, new BigInteger(serno, 16));
@@ -327,7 +334,7 @@ public class CertDistServlet extends HttpServlet {
             }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
                 Certificate[] chain = null;
-                chain = getCertificateChain(administrator, caid, issuerdn);
+                chain = getCertificateChain(caid, issuerdn);
                 // chain.length-1 is last cert in chain (root CA)
                 if (chain.length < level) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -398,7 +405,7 @@ public class CertDistServlet extends HttpServlet {
         } else if (command.equalsIgnoreCase(COMMAND_CACHAIN) && ( issuerdn != null || caid != 0)) {
             // Full certificate chain for CA was requested.
             try {
-                handleCaChainCommands(administrator, issuerdn, caid, format, res);
+                handleCaChainCommands(issuerdn, caid, format, res);
             } catch (NoSuchFieldException e) {
                 log.debug("Error getting certificates for '"+caid+"' for "+remoteAddr+": ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
@@ -482,7 +489,7 @@ public class CertDistServlet extends HttpServlet {
             RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
         } else if (StringUtils.equals(format, "chain")) {
             int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();
-            LinkedList<Certificate> chain = new LinkedList<Certificate>(signSession.getCertificateChain(administrator, issuerCAId));
+            LinkedList<Certificate> chain = new LinkedList<Certificate>(signSession.getCertificateChain(issuerCAId));
             chain.addFirst(certcert);
             byte[] chainbytes = CertTools.getPemFromCertificateChain(chain);
             RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
@@ -492,28 +499,33 @@ public class CertDistServlet extends HttpServlet {
         }
     } 
 
-	private Certificate[] getCertificateChain(AuthenticationToken administrator,
-			int caid, String issuerdn) throws AuthorizationDeniedException {
+	private Certificate[] getCertificateChain(int caid, String issuerdn) {
 		Certificate[] chain;
 		if(caid != 0) {
-		    chain = (Certificate[]) signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
+		    chain = (Certificate[]) signSession.getCertificateChain(caid).toArray(new Certificate[0]);
 		}
 		else {
-		    chain = (Certificate[]) signSession.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
+		    chain = (Certificate[]) signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
 		}
 		return chain;
 	}
 
-	private void handleCaChainCommands(AuthenticationToken administrator, String issuerdn, int caid, String format, HttpServletResponse res) throws IOException, NoSuchFieldException {
-			try {
-				Certificate[] chain = getCertificateChain(administrator, caid, issuerdn);
-				// Reverse the chain to get proper ordering for chain file
-				// (top-level CA first, requested CA last).
-				ArrayUtils.reverse(chain);
-
-				// Construct the filename based on requested CA. Fail-back to
-				// name "ca-chain.EXT".
-				String filename = RequestHelper.getFileNameFromCertNoEnding(chain[chain.length-1], "ca") + "-chain." + format.toLowerCase();
+	private void handleCaChainCommands(String issuerdn, int caid, String format, HttpServletResponse res) throws IOException, NoSuchFieldException {
+		try {
+		    // Construct the filename based on requested CA. Fail-back to
+            // name "ca-chain.EXT".
+            String filename;
+			Certificate[] chain = getCertificateChain(caid, issuerdn);
+            if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
+                    .getPublicWebCertChainOrderRootFirst()) {
+                // Reverse the chain to get proper ordering for chain file
+                // (top-level CA first, requested CA last).
+                ArrayUtils.reverse(chain);
+                filename = RequestHelper.getFileNameFromCertNoEnding(chain[chain.length-1], "ca") + "-chain." + format.toLowerCase();
+            } else {
+                filename = RequestHelper.getFileNameFromCertNoEnding(chain[0], "ca") + "-chain." + format.toLowerCase();
+            }
+		
 
 				byte[] outbytes = new byte[0];
 				// Encode and send back
@@ -563,9 +575,6 @@ public class CertDistServlet extends HttpServlet {
 			} catch (EJBException e) {
                 log.debug("CA does not exist: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "CA does not exist: "+HTMLTools.htmlescape(e.getMessage()));
-			} catch (AuthorizationDeniedException e) {
-                log.debug("Authotization denied: ", e);
-                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization denied: "+HTMLTools.htmlescape(e.getMessage()));
 			}
 	}
     

@@ -55,12 +55,10 @@ public interface SignSession {
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
      * RootCA certificate in the last position.
      *
-     * @param admin Information about the administrator or admin performing the event.
      * @param caid  is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
-     * @throws AuthorizationDeniedException 
      */
-    Collection<Certificate> getCertificateChain(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    Collection<Certificate> getCertificateChain(int caid);
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the

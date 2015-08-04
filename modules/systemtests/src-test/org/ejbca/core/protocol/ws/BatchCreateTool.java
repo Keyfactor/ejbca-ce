@@ -470,7 +470,7 @@ public abstract class BatchCreateTool {
 
         // Make a certificate chain from the certificate and the CA-certificate
         Certificate[] cachain = (Certificate[]) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
-                .getCertificateChain(authenticationToken, caid).toArray(new Certificate[0]);
+                .getCertificateChain(caid).toArray(new Certificate[0]);
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
 

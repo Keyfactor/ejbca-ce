@@ -4,7 +4,6 @@
 	<h1>Fetch CA CRLs</h1>
 
 	<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
-	<% finder.initialize(request.getRemoteAddr()); %>
 
 	<c:forEach var="ca_id" items="${finder.availableCAs}">
 		<jsp:useBean id="ca_id" type="java.lang.Integer" />

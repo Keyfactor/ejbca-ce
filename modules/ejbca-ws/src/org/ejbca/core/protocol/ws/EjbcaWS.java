@@ -990,7 +990,7 @@ public class EjbcaWS implements IEjbcaWS {
 			if (user != null) {
 				int caid = user.getCAId();
 				caSession.verifyExistenceOfCA(caid);
-				Collection<java.security.cert.Certificate> certs = signSession.getCertificateChain(admin, caid);
+				Collection<java.security.cert.Certificate> certs = signSession.getCertificateChain(caid);
 				Iterator<java.security.cert.Certificate> iter = certs.iterator();
 				while (iter.hasNext()) {
 					java.security.cert.Certificate cert = iter.next();

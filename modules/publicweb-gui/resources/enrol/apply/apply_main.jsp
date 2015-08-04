@@ -27,7 +27,6 @@
 <%
   applybean.initialize(request);
   applybean.setDefaultUsername(username);
-  finder.initialize(request.getRemoteAddr());
 %>
 
 <c:set var="browser" value="${applybean.browser}" />

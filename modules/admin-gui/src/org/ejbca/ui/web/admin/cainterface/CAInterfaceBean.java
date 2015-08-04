@@ -201,20 +201,16 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CertificateView[] getCACertificates(int caid) {
-        try {
-            final List<CertificateView> ret = new ArrayList<CertificateView>();
-            for (final Certificate certificate : signsession.getCertificateChain(authenticationToken, caid)) {
-                RevokedInfoView revokedinfo = null;
-                CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
-                if (revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
-                    revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(certificate));
-                }
-                ret.add(new CertificateView(certificate, revokedinfo));
+        final List<CertificateView> ret = new ArrayList<CertificateView>();
+        for (final Certificate certificate : signsession.getCertificateChain(caid)) {
+            RevokedInfoView revokedinfo = null;
+            CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+            if (revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
+                revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(certificate));
             }
-            return ret.toArray(new CertificateView[0]);
-        } catch (AuthorizationDeniedException e) {
-            throw new RuntimeException(e);
+            ret.add(new CertificateView(certificate, revokedinfo));
         }
+        return ret.toArray(new CertificateView[0]);
     }
 
     /**
