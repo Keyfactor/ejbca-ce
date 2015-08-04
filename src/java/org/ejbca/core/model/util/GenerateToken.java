@@ -117,7 +117,7 @@ public class GenerateToken {
     	   endEntityManagementSession.setClearTextPassword(administrator, username, null);
     	}
         // Make a certificate chain from the certificate and the CA-certificate
-    	Certificate[] cachain = (Certificate[])signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
+    	Certificate[] cachain = (Certificate[])signSession.getCertificateChain(caid).toArray(new Certificate[0]);
         // Verify CA-certificate
     	Certificate rootcert = cachain[cachain.length - 1];
     	if (CertTools.isSelfSigned(rootcert)) {

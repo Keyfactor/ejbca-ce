@@ -22,7 +22,6 @@
 		    <jsp:useBean id="serno" type="java.lang.String" scope="page" />
 		    <jsp:useBean id="certInfo" class="org.cesecore.certificates.crl.RevokedCertInfo" scope="page" />
 		    <%
-		        finder.initialize(request.getRemoteAddr());
 		        finder.lookupRevokedInfo(issuer, serno, certInfo);
 		    %>
 		

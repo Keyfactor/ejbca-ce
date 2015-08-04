@@ -14,7 +14,6 @@
             <jsp:useBean id="certificates" class="java.util.ArrayList" scope="page" />
         
             <%
-                finder.initialize(request.getRemoteAddr());
                 finder.lookupCertificatesBySubject(subject, certificates);
             %>
     
