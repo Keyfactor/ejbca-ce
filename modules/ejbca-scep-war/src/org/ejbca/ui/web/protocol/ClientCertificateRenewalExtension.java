@@ -126,17 +126,17 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             if (latestIssued == null) {
                 throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has a rollover certiticate, but no valid certificate was found.");
             }
+            log.debug("Found existing certificate, will use client certificate renewal for rollover certificate");
         } else if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             latestIssued = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), cacert, false);
             if (latestIssued == null) {
                 throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has status generated, but no certificate was found.");
             }
+            log.debug("Found existing certificate, will use client certificate renewal");
         } else {
-            log.debug("No existing certificate exists. Use normal password authentication");
+            log.debug("No existing certificate exists. Performing normal enrolment with password authentication");
             return signSession.createCertificate(authenticationToken, reqmsg, ScepResponseMessage.class, null);
         }
-
-        log.debug("Found existing certificate, will use client certificate renewal");
         
         // Verify that certificate is still valid
         if(!CertTools.isCertificateValid(latestIssued)) {
@@ -157,7 +157,7 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
          * 
          * See draft-nourse-scep-23 Appendix D
          */
-        if (!useRolloverCert && System.currentTimeMillis() <= (issueTime + (expirationTime - issueTime) / 2)) {
+        if (System.currentTimeMillis() <= (issueTime + (expirationTime - issueTime) / 2)) {
             throw new ClientCertificateRenewalException("Re-enrollment request was sent but last issued certificate for username " + username
                     + " hasn't passed half its validity date yet.");
         }
