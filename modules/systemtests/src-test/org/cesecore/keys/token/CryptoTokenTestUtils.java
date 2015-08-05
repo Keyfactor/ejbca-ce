@@ -25,9 +25,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -57,12 +59,17 @@ public class CryptoTokenTestUtils {
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
+    
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
+      return createTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED);
+    }
+    
+    public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
-        X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
+        X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false, signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
                 + X509KeyUsage.cRLSign);
         // Remove any lingering test CA before starting the tests
         try {
