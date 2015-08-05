@@ -164,14 +164,21 @@ public abstract class CaTestUtils {
         return x509ca;
     }
     
-    public static void removeCA(AuthenticationToken authenticationToken, String cryptoTokenName, String caName) throws AuthorizationDeniedException, CADoesntExistsException {
+    public static void removeCA(AuthenticationToken authenticationToken, String cryptoTokenName, String caName) throws AuthorizationDeniedException {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        int caid = caSession.getCAInfo(authenticationToken, caName).getCAId();
-        caSession.removeCA(authenticationToken, caid);
-        int cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
-        cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
+        int caid;
+        try {
+            caid = caSession.getCAInfo(authenticationToken, caName).getCAId();
+            caSession.removeCA(authenticationToken, caid);
+        } catch (CADoesntExistsException e) {
+            //NOPMD Ignore
+        }
+        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (cryptoTokenId != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
+        }
     }
     
     public static void removeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException {
@@ -187,8 +194,13 @@ public abstract class CaTestUtils {
             throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, IOException {
         return CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, "1024", -1);
     }
-
+    
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, final String keyspec,
+            int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, IOException {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, CAInfo.SELFSIGNED, keyspec, keyusage);
+    }
+
+    public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, int signedBy, final String keyspec,
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, IOException {
         // Create catoken
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -200,7 +212,7 @@ public abstract class CaTestUtils {
         String caname = CertTools.getPartFromDN(cadn, "CN");
         boolean ldapOrder = !CertTools.isDNReversed(cadn);
         X509CAInfo cainfo = new X509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
-                CAInfo.SELFSIGNED, null, catoken);
+                signedBy, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
         cainfo.setUseLdapDnOrder(ldapOrder);
@@ -248,6 +260,7 @@ public abstract class CaTestUtils {
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT , CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
         catoken.setSignatureAlgorithm(sigAlg);
         catoken.setEncryptionAlgorithm(encAlg);
@@ -307,9 +320,18 @@ public abstract class CaTestUtils {
             CryptoTokenOfflineException, OperatorCreationException, IOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11);
     }
-
-
+    
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage) throws CertificateParsingException,
+    CryptoTokenOfflineException, OperatorCreationException, IOException {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, "1024", keyusage);
+    }
+
+    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int signedBy, int keyusage) throws CertificateParsingException,
+    CryptoTokenOfflineException, OperatorCreationException, IOException {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, signedBy, "1024", keyusage);
+    }
+
+    public static X509CA createTestX509CA(String cadn, int signedBy, char[] tokenpin, boolean pkcs11, int keyusage) throws CertificateParsingException,
             CryptoTokenOfflineException, OperatorCreationException, IOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, "1024", keyusage);
     }
