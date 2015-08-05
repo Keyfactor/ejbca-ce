@@ -749,79 +749,15 @@ public class ProtocolScepHttpTest {
             
             
         } finally {
-            internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
-        }
-    }
-    
-    /**
-     * Tests creating a rollover end-user certificate in renewal mode. Depends on the rollover CA being created, otherwise this test will be skipped.
-     */
-    @Test
-    public void test15ScepRolloverRenewalMode() throws Exception {
-        try {
-            log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
-            assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
-            
-            final X509CAInfo subcainfo;
-            try {
-                subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
-            } catch (CADoesntExistsException cadee) {
-                assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a sub CA", false);
-                throw new IllegalStateException(); // Not reached
-            }
-            final int subCAId = subcainfo.getCAId();
-            final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
-            final X509Certificate subcaCurrentCert = (X509Certificate) caSession.getCAInfo(admin, subCAId).getCertificateChain().iterator().next();
-            assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a rollover CA certificate", subcaRolloverCert != null);
-            
-            scepConfiguration.setIncludeCA(scepAlias, true);
-            scepConfiguration.setClientCertificateRenewal(scepAlias, true);
-            scepConfiguration.setAllowClientCertificateRenewalWithOldKey(scepAlias, true);
-            globalConfigSession.saveConfiguration(admin, scepConfiguration);
-            
-            // Make a request with the current CA certificate. Should work as usual
-            createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
-            byte[] retMsg = sendScep(false, msgBytes);
-            assertNotNull(retMsg);
-            checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover);
-            
-            final X509Certificate clientCertCurrentCA = certificateStoreSession.findLatestX509CertificateBySubject(rolloverDN, subcaRolloverCert, false);
-            assertNotNull("could not find certificate of end-entity after SCEP request", clientCertCurrentCA);
-            
-            // Clean up
-            try {
-                endEntityManagementSession.deleteUser(admin, rolloverUser);
-                log.debug("deleted user: " + rolloverUser);
-            } catch (Exception e) {
-                // NOPMD: ignore
-            }
-            
-            // Now request a certificate signed by the roll over CA
-            createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes2 = genScepRolloverCARequestWithClientCert(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN, clientCertCurrentCA);
-            byte[] retMsg2 = sendScep(false, msgBytes2);
-            assertNotNull(retMsg2);
-            checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
-            final List<Certificate> userCerts = certificateStoreSession.findCertificatesBySubject(rolloverDN);
-            assertEquals("user should have one normal certificate and one rollover certificate", 2, userCerts.size());
-            
-            // Try to request another roll over certificate. This should not be allowed
-            createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes3 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
-            sendScep(false, msgBytes3, 400);
-            
-        } finally {
             // Done with all of the rollover tests
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
                 caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
             }
             internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
             internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);
-            certificateProfileSession.removeCertificateProfile(admin, "TestScepCARollover");
-        }
+            certificateProfileSession.removeCertificateProfile(admin, "TestScepCARollover");       
+       }
     }
-
     
     //
     // Private helper methods
