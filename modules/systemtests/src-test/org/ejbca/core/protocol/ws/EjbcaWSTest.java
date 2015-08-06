@@ -65,13 +65,21 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -95,6 +103,7 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
@@ -153,6 +162,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final  CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -162,6 +172,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -242,6 +253,72 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertEquals("Admin web page should return xcsp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; form-action 'self'; plugin-types application/pdf; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
+    @Test
+    public void testCaRolloverCommands() throws Exception {
+        final String rootCaName ="RollOverRootCA";
+        final String rootCaDn = "CN="+rootCaName;
+        final String subCaName = "RollOverSubCA";
+        final String subCaSubjectDn = "CN=" + subCaName;
+        X509CA subCA = null;
+        X509CA rootCA = null;
+
+        try {
+            //rootCA a rootCA
+            rootCA = CaTestUtils.createTestX509CA(rootCaDn, PASSWORD.toCharArray(), false);
+            CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+            caSession.addCA(intAdmin, rootCA);
+            X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
+            certificateStoreSession.storeCertificateRemote(intAdmin, cacert, "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
+            //Create a SubCA for this test. 
+            subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
+            int cryptoTokenId = subCA.getCAToken().getCryptoTokenId();
+            cryptoTokenManagementSession.createKeyPair(intAdmin, cryptoTokenId, "signKeyAlias", "1024");
+            X509Certificate subCaCertificate = (X509Certificate) subCA.getCACertificate();
+            //Store the CA Certificate.
+            certificateStoreSession.storeCertificateRemote(intAdmin, subCaCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_SUBCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "footag", new Date().getTime());
+            final EndEntityInformation endentity = new EndEntityInformation(subCaName, subCaSubjectDn, rootCA.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            endentity.setStatus(EndEntityConstants.STATUS_NEW);
+            endentity.setPassword("foo123");
+            final ExtendedInformation ei = new ExtendedInformation();
+            long rolloverStartTime = System.currentTimeMillis()+7L*24L*3600L*1000L;
+
+            ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(rolloverStartTime));
+            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, ValidityDate.formatAsUTC(rolloverStartTime+14L*24L*3600L*1000L));
+            endentity.setExtendedinformation(ei);
+            
+            //Make sure there is a rollover certificate in store
+            final byte[] requestbytes = caAdminSessionRemote.makeRequest(intAdmin, subCA.getCAId(), null, null);
+            final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
+            final X509ResponseMessage respmsg = (X509ResponseMessage) certificateCreateSession.createCertificate(intAdmin, endentity, req, X509ResponseMessage.class, null);
+            X509Certificate newCertificate =  (X509Certificate) respmsg.getCertificate();
+            ejbcaraws.caCertResponseForRollover(subCaName, newCertificate.getEncoded(), null, "foo123");
+
+            //Check that sub CA has a rollover certificate 
+            Certificate rolloverCertificate = caSession.getFutureRolloverCertificate(subCA.getCAId());
+            assertNotNull("No rollover certificate was found in subCA", rolloverCertificate);
+            X509CAInfo subCAInfo = (X509CAInfo) caSession.getCAInfo(intAdmin, subCA.getCAId());
+            assertFalse("CA was unintentionally rolled over.", subCAInfo.getCertificateChain().iterator().next().equals(rolloverCertificate));
+            //Perform the rollover
+            ejbcaraws.rolloverCACert(subCaName);
+            subCAInfo = (X509CAInfo) caSession.getCAInfo(intAdmin, subCA.getCAId());
+            assertTrue("CA was not rolled over.", subCAInfo.getCertificateChain().iterator().next().equals(rolloverCertificate));
+            
+        } finally {
+            if (subCA != null) {
+                CaTestUtils.removeCa(intAdmin, subCA.getCAInfo());
+            }
+            if(rootCA != null) {
+                CaTestUtils.removeCa(intAdmin, rootCA.getCAInfo());
+            }
+            internalCertificateStoreSession.removeCertificatesBySubject(subCaSubjectDn);
+            internalCertificateStoreSession.removeCertificatesBySubject(rootCaDn);
+
+        }
+    }
+    
     @Test
     public void test01EditUser() throws Exception {
         super.editUser();
