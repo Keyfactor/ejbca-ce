@@ -13,6 +13,6 @@
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10">
-			<f:selectItems value="#{editService.availableCAs}"/>
+			<f:selectItems value="#{editService.availableCAsWithAnyOption}"/>
 		</h:selectManyListbox>
 	</h:panelGroup>
