@@ -192,7 +192,7 @@ EJBCA supports importing certificates into the existing database. This can be us
 In order to import a single certificate, use the command:
 </p>
 <source>
-bin/ejbca.sh ca importcert &lt;username&gt; &lt;password&gt; &lt;caname&gt; &lt;status&gt; --email &lt;email&gt; &lt;certificate file&gt; --eeprofile &lt;endentityprofile&gt; [--certprofile &lt;certificateprofile&gt;]
+bin/ejbca.sh ca importcert &lt;username&gt; &lt;password&gt; &lt;caname&gt; &lt;status&gt; --email &lt;email&gt; &lt;certificate file&gt; [--eeprofile &lt;endentityprofile&gt;] [--certprofile &lt;certificateprofile&gt;] [--revocation-reason &lt;reason&gt;] [--revocation-time &lt;time&gt;]
 </source>
 <p>
 The parameters are as follows:
@@ -204,8 +204,10 @@ The parameters are as follows:
     <li><em>status</em> - Status that should be set for the imported certificate. Supported values are <em>ACTIVE</em> (for valid certificate), and <em>REVOKED</em> (for revoked certificate). The revocation reason for <em>REVOKED</em> certificate will be set to <em>Unspecified</em>.</li>
     <li><em>email</em> - E-mail that will be used for the end entity. If the e-mail is set to string <em>null</em>, it will be taken from the certificate itself.</li>
     <li><em>certificate file</em> - Path to BASE64-encoded PEM file containing the end entity certificate.</li>
-    <li><em>endentityprofile</em> - End entity profile used for the certificate. The certificate will be verified against the constraints set forth by this end entity profile. If the constraints are violated by the certificate, it will not be imported.</li>
+    <li><em>endentityprofile</em> - End entity profile used for the certificate. The certificate will be verified against the constraints set forth by this end entity profile. If the constraints are violated by the certificate, it will not be imported. If no end entity profile is supplied, the default <em>EMPTY</em> profile will be used.</li>
     <li><em>certificateprofile</em> - Certificate profile used for the certificate. Once the certificate is imported, it will be marked as belonging to the specified certificate profile. If the certificate profile is not specified, the fixed <em>ENDUSER</em> certificate profile will be used instead.</li>
+	<li><em>revocation reason</em> - Allows a revoked certificate to be imported with a specific revocation reason. Use the <em>--help</em> switch to see a list of valid revocation reasons. Will be set to <em>UNSPECIFIED</em> if not specified.</li>
+	<li><em>revocation time</em> - Allows a revoked certificate to be imported with a specific revocation time in the format <em>yyyy.MM.dd-HH:mm</em>. Will be set to the current time if not supplied.</li>	
 </ul>
 <p>
 Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>caname</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).
@@ -225,7 +227,7 @@ This command would create a new end entity (or use the existing one) in EJBCA ca
 In order to import certificates in bulk, use the commnad:
 </p>
 <source>
-bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; --eeprofile &lt;endentityprofile&gt; --certprofile &lt;certificateprofile&gt; [-resumeonerror]
+bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; --eeprofile &lt;endentityprofile&gt; --certprofile &lt;certificateprofile&gt; [-resumeonerror]  [--revocation-reason &lt;reason&gt;] [--revocation-time &lt;time&gt;]
 </source>
 <p>
 The parameters are as follows:
@@ -238,6 +240,9 @@ The parameters are as follows:
     <li><em>endentityprofile</em> - End entity profile used for the certificates. The certificates will be verified against the constraints set forth by the end entity profile. If the constraints are violated by the certificate, it will not be imported.</li>
     <li><em>certificateprofile</em> - Certificate profile used for the certificates. Once the certificate is imported, it will be marked as belonging to the specified certificate profile.</li>
     <li><em>-resumeonerror</em> - This optional switch can be used in order to force the import to proceed even if more serious errors are encountered. By default this option is <em>not</em> enabled. The errors that are covered by this switch, amongst others, are end entity profile constraint violations, problems with reading/parsing of certificate files etc.</li>
+	<li><em>revocation reason</em> - Allows a revoked certificate to be imported with a specific revocation reason. Use the <em>--help</em> switch to see a list of valid revocation reasons. Will be set to <em>UNSPECIFIED</em> if not specified.</li>
+	<li><em>revocation time</em> - Allows a revoked certificate to be imported with a specific revocation time in the format <em>yyyy.MM.dd-HH:mm</em>. Will be set to the current time if not supplied.</li>	
+<
 </ul>
 <p>
 Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>username-source</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).

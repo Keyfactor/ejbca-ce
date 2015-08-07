@@ -100,9 +100,9 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(FILE_KEY, "Certificate File", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Must be PEM encoded"));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "End Entity Profile to create end entity with."));
+                "End Entity Profile to create end entity with. If no profile specified then the EMPTY profile will be used."));
         registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Certificate Profile to create end entity with."));
+                "Certificate Profile to create end entity with. If no profile specified then the default End Entity profile will be used."));
         registerParameter(new Parameter(E_MAIL_KEY, "E-Mail", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "E-Mail for imported End Entity, if any."));
         registerParameter(new Parameter(OVERRIDE_EXISTING_ENDENTITY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
