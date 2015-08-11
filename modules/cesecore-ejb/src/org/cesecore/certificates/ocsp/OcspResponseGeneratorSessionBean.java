@@ -74,6 +74,7 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
@@ -157,6 +158,7 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
@@ -650,10 +652,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Requestor name is: " + ocspRequest.getRequestorName().toString());
+                log.debug("Requestor name is: " + new X500Name(new CeSecoreNameStyle(), ocspRequest.getRequestorName().getName().toString()).toString());
             }
             if (transactionLogger.isEnabled()) {
-                transactionLogger.paramPut(TransactionLogger.REQ_NAME, ocspRequest.getRequestorName().toString());
+                String requestorName = new X500Name(new CeSecoreNameStyle(), ocspRequest.getRequestorName().getName().toString()).toString();
+                transactionLogger.paramPut(TransactionLogger.REQ_NAME, requestorName);
             }
         }
 
