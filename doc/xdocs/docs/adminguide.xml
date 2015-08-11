@@ -349,6 +349,7 @@ the set of SCEP configurations that should be used when handling the SCEP reqest
 to configure as many configuration aliases as desired through the command line or the AdminGUI. Documentation on how to 
 create and configure the SCEP aliases in the command line are available when executing the following command from EJBCA home directory:
 </p>
+<p>Creating a SCEP alias with the name 'scep' makes it available using the default URL (same URL as in previous versions), http://HOST:PORT/ejbca/publicweb/apply/scep/pkiclient.exe</p>
 <source>
 ./bin/ejbca.sh config scep
 </source>
