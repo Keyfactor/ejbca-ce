@@ -258,7 +258,7 @@ public class ScepServlet extends HttpServlet {
         String alias = getAlias(pathInfo);
         if(alias == null) {
             log.info("Wrong URL format. The SCEP URL should look like: " +
-            		"'http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclien.exe' " +
+            		"'http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe' " +
             		"but was 'http://HOST:PORT/ejbca/publicweb/apply/scep" + pathInfo + "'");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong URL. No alias found.");
             return;
