@@ -628,7 +628,7 @@ public class IntegratedOcspResponseTest {
                     .getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
             OCSPResp response = new OCSPResp(responseBytes);
-            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", OCSPRespBuilder.UNAUTHORIZED, response.getStatus());
             assertNull("Response should not have contained a response object.", response.getResponseObject());
         } finally {
             // Reset sign trust valid time.
