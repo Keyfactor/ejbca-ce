@@ -242,7 +242,6 @@ The parameters are as follows:
     <li><em>-resumeonerror</em> - This optional switch can be used in order to force the import to proceed even if more serious errors are encountered. By default this option is <em>not</em> enabled. The errors that are covered by this switch, amongst others, are end entity profile constraint violations, problems with reading/parsing of certificate files etc.</li>
 	<li><em>revocation reason</em> - Allows a revoked certificate to be imported with a specific revocation reason. Use the <em>--help</em> switch to see a list of valid revocation reasons. Will be set to <em>UNSPECIFIED</em> if not specified.</li>
 	<li><em>revocation time</em> - Allows a revoked certificate to be imported with a specific revocation time in the format <em>yyyy.MM.dd-HH:mm</em>. Will be set to the current time if not supplied.</li>	
-<
 </ul>
 <p>
 Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>username-source</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).
