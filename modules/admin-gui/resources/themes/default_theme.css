@@ -296,7 +296,8 @@ form table fieldset {
 
 /* --- Forms: System Configurations titles */
 table .titles {
-	font-weight:bold;
+	font-size: 1.05em;
+	font-weight: bold;
 }
 
 /* --- Forms: Help */
