@@ -521,8 +521,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final String[] availableLanguagesNativeNames = getEjbcaWebBean().getLanguagesNativeNames();
         for(int i=0; i<availableLanguages.length; i++) {
             String output = availableLanguagesEnglishNames[i];
-            if((availableLanguagesEnglishNames!=null) && (availableLanguagesNativeNames[i] != null)) {
-                output += " - " + availableLanguagesNativeNames[i];
+            if((availableLanguagesEnglishNames != null) && (availableLanguagesNativeNames[i] != null)) {
+                output += " - ";
+            }
+            output += availableLanguagesNativeNames[i];
+            if((availableLanguagesEnglishNames != null) || (availableLanguagesNativeNames[i] != null)) {
+                output += " ";
             }
             output += "[" + availableLanguages[i] + "]";
             ret.add(new SelectItem(i, output));

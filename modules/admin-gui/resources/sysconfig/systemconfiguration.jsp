@@ -97,21 +97,21 @@ org.cesecore.authorization.control.StandardRules
 				<br/>
 				<h:outputText value="#{web.text.EJBCATITLE_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="title" value="#{systemConfigMBean.currentConfig.title}"/>
+			<h:inputText id="title" value="#{systemConfigMBean.currentConfig.title}" size="45" title="#{web.text.FORMAT_STRING}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="headbanner" value="#{web.text.HEADBANNER}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.HEADBANNER_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="headbanner" value="#{systemConfigMBean.currentConfig.headBanner}"/>
+			<h:inputText id="headbanner" value="#{systemConfigMBean.currentConfig.headBanner}" size="45" title="#{web.text.FORMAT_FILENAME}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="footbanner" value="#{web.text.FOOTBANNER}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.FOOTBANNER_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="footbanner" value="#{systemConfigMBean.currentConfig.footBanner}"/>
+			<h:inputText id="footbanner" value="#{systemConfigMBean.currentConfig.footBanner}" size="45" title="#{web.text.FORMAT_FILENAME}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="enableeeplimit" value="#{web.text.ENABLEENDENTITYPROFILELIM}" styleClass="titles"/>
@@ -180,7 +180,7 @@ org.cesecore.authorization.control.StandardRules
 				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.useApprovalNotifications}" />
 				<h:commandButton id="toggleUseApprovalNotifications" styleClass="checkBoxOverlay" action="#{systemConfigMBean.toggleUseApprovalNotification}"
 					value="#{systemConfigMBean.currentConfig.useApprovalNotifications?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-				<h:outputLabel for="cbbasicconstraints" value="#{web.text.USE}" styleClass="checkBoxOverlay"/>	
+				<h:outputLabel for="toggleUseApprovalNotifications" value="#{web.text.USE}" styleClass="checkBoxOverlay"/>	
 			</h:panelGroup>
 		
 			<h:panelGroup>
@@ -188,14 +188,14 @@ org.cesecore.authorization.control.StandardRules
 				<br/>
 				<h:outputText value="#{web.text.EMAILADDRESSTOAPPROVING_HELP}" styleClass="help"/>
 			</h:panelGroup>	
-			<h:inputText id="emailToApprovalAdmin" disabled="#{!systemConfigMBean.currentConfig.useApprovalNotifications}" value="#{systemConfigMBean.currentConfig.approvalAdminEmail}"/>
+			<h:inputText id="emailToApprovalAdmin" disabled="#{!systemConfigMBean.currentConfig.useApprovalNotifications}" value="#{systemConfigMBean.currentConfig.approvalAdminEmail}" size="45" title="#{web.text.FORMAT_EMAILADDRESS}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="approvalNoteFromAddress" value="#{web.text.APPROVALNOTIFICATIONFROM}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.APPROVALNOTIFICATIONFROM_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="approvalNoteFromAddress" disabled="#{!systemConfigMBean.currentConfig.useApprovalNotifications}" value="#{systemConfigMBean.currentConfig.approvalNoteFromAddress}"/>
+			<h:inputText id="approvalNoteFromAddress" disabled="#{!systemConfigMBean.currentConfig.useApprovalNotifications}" value="#{systemConfigMBean.currentConfig.approvalNoteFromAddress}" size="45" title="#{web.text.FORMAT_EMAILADDRESS}"/>
 		</h:panelGrid>
 	
 	
@@ -217,7 +217,7 @@ org.cesecore.authorization.control.StandardRules
 				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.useAutoEnrollment}" />
 				<h:commandButton id="toggleUseAutoEnrollment" styleClass="checkBoxOverlay" action="#{systemConfigMBean.toggleUseAutoEnrollment}"
 					value="#{systemConfigMBean.currentConfig.useAutoEnrollment?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"/>
-				<h:outputLabel for="cbbasicconstraints" value="#{web.text.USE}" styleClass="checkBoxOverlay"/>
+				<h:outputLabel for="toggleUseAutoEnrollment" value="#{web.text.USE}" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
 		
 			<h:panelGroup>
@@ -238,7 +238,7 @@ org.cesecore.authorization.control.StandardRules
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:selectBooleanCheckbox id="useSSLconnection" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollUseSSLConnection}"/>
-				<h:outputText value="#{web.text.USE}" />
+				<h:outputLabel for="useSSLconnection" value="#{web.text.USE}" />
 			</h:panelGroup>
 		
 			<h:panelGroup>
@@ -246,35 +246,35 @@ org.cesecore.authorization.control.StandardRules
 				<br/>
 				<h:outputText value="#{web.text.AUTOENROLLADSERVER_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="dcserver" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollAdServer}"/>
+			<h:inputText id="dcserver" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollAdServer}" size="45" title="#{web.text.FORMAT_DOMAINNAME}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="dcport" value="#{web.text.AUTOENROLLADPORT}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.AUTOENROLLADPORT_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="dcport" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollAdServerPort}"/>
+			<h:inputText id="dcport" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollAdServerPort}" size="5" title="#{web.text.FORMAT_INTEGER}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="dcdn" value="#{web.text.AUTOENROLLCONNECTIONDN}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.AUTOENROLLCONNECTIONDN_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="dcdn" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollConnectionDN}"/>
+			<h:inputText id="dcdn" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollConnectionDN}" size="45" title="#{web.text.FORMAT_DN}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="dcpwd" value="#{web.text.AUTOENROLLCONNECTIONPWD}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.AUTOENROLLCONNECTIONPWD_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="dcpwd" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollConnectionPassword}"/>
+			<h:inputText id="dcpwd" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollConnectionPassword}" size="20" title="#{web.text.FORMAT_STRING}"/>
 		
 			<h:panelGroup>
 				<h:outputLabel for="dcBaseUserDN" value="#{web.text.AUTOENROLLBASEDNUSER}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.AUTOENROLLBASEDNUSER_HELP}" styleClass="help"/>			
 			</h:panelGroup>
-			<h:inputText id="dcBaseUserDN" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollUserBaseDN}"/>
+			<h:inputText id="dcBaseUserDN" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment}" value="#{systemConfigMBean.currentConfig.autoEnrollUserBaseDN}" size="45" title="#{web.text.FORMAT_DN}"/>
 		</h:panelGrid>
 	
 	
@@ -290,7 +290,7 @@ org.cesecore.authorization.control.StandardRules
 					<h:column>
 						<h:outputText value="#{nodeEntry}"/>
 						<f:facet name="footer">
-							<h:inputText value="#{systemConfigMBean.currentNode}" size="20" maxlength="4096"/>
+							<h:inputText value="#{systemConfigMBean.currentNode}" size="20" maxlength="4096" title="#{web.text.FORMAT_DOMAINNAME}"/>
 						</f:facet>
 					</h:column>
 					<h:column>
@@ -304,23 +304,24 @@ org.cesecore.authorization.control.StandardRules
 		</h:panelGrid>
 	
 	
-		<%-- Clear All Caches --%>
+		<%-- Application Caches --%>
+
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
-			<h:panelGroup>
-				<h:outputLabel for="header_clearAllCaches" value="#{web.text.CLEARALLCACHES}" style="font-weight: bold; font-size:1.2em;"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Clear%20All%20Caches") %>
-			</h:panelGroup>
-			<h:panelGroup id="header_clearAllCaches"/>
+			<h:outputLabel for="header_applicationcaches" value="#{web.text.APPLICATIONCACHES}" style="font-weight: bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_applicationcaches"/>
 
 			<h:panelGroup>
-				<h:outputText value="#{web.text.CLEARALLCACHES_HELP1}"/>
+				<h:outputLabel for="clearAllCaches" value="#{web.text.CLEARALLCACHES}" styleClass="titles"/>
+				<%= ejbcawebbean.getHelpReference("/adminguide.html#Clear%20All%20Caches") %>
+				<br/>
+				<h:outputText value="#{web.text.CLEARALLCACHES_HELP1}" styleClass="help"/>			
 				<br/>
 				<br/>
-				<h:outputText value="#{web.text.CLEARALLCACHES_HELP2}"/>
+				<h:outputText value="#{web.text.CLEARALLCACHES_HELP2}" styleClass="help"/>			
 			</h:panelGroup>
 			<h:panelGroup id="clearAllCaches">
 				<h:selectBooleanCheckbox id="excludetokens" value="#{systemConfigMBean.excludeActiveCryptoTokensFromClearCaches}"/>
-				<h:outputText value="#{web.text.CLEARALLCACHES_EXCLUDE_CRYPTOTOKEN_CACHE}" />
+				<h:outputLabel for="excludetokens" value="#{web.text.CLEARALLCACHES_EXCLUDE_CRYPTOTOKEN_CACHE}" />
 				<br/>
 				<h:commandButton value="#{web.text.CLEARALLCACHES}" action="#{systemConfigMBean.clearAllCaches}" />
 			</h:panelGroup>
@@ -341,7 +342,7 @@ org.cesecore.authorization.control.StandardRules
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:selectBooleanCheckbox id="enableCommandLine" value="#{systemConfigMBean.currentConfig.enableCommandLine}"/>
-				<h:outputText value="#{web.text.ACTIVATE}" />
+				<h:outputLabel for="enableCommandLine" value="#{web.text.ACTIVATE}" />
 			</h:panelGroup>
 		
 			<h:panelGroup>
@@ -352,11 +353,11 @@ org.cesecore.authorization.control.StandardRules
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:selectBooleanCheckbox id="enableCommandLineDefUser" value="#{systemConfigMBean.currentConfig.enableCommandLineDefaultUser}"/>
-				<h:outputText value="#{web.text.ACTIVATE}" />
+				<h:outputLabel for="enableCommandLineDefUser" value="#{web.text.ACTIVATE}" />
 			</h:panelGroup>	
 		</h:panelGrid>
 
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+		<h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
 				&nbsp;
 			</h:panelGroup>
@@ -378,7 +379,7 @@ org.cesecore.authorization.control.StandardRules
    				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/></f:facet>
 				<h:outputText value="#{systemConfigMBean.ctLogUrl}" title="#{web.text.CTLOGCONFIGURATION_URL} #{ctlog.url}"/>
 				<f:facet name="footer">
-					<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" />
+					<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" size="45" title="#{web.text.FORMAT_URI}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
@@ -386,7 +387,7 @@ org.cesecore.authorization.control.StandardRules
 				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
 				<f:facet name="footer">
 					<h:panelGroup>
- 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
+ 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE} " />
  	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}"
  	 	 	 					       title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
  	 	 	 		</h:panelGroup>
@@ -398,7 +399,8 @@ org.cesecore.authorization.control.StandardRules
 				<f:facet name="footer">
 					<h:inputText id="currentTimeout" required="false"
 									value="#{systemConfigMBean.currentCTLogTimeout}"
-									title="#{web.text.CTLOGCONFIGURATION_TIMEOUT}">
+									title="#{web.text.FORMAT_INTEGER}"
+									size="10">
    					</h:inputText>
 				</f:facet>
 			</h:column>
@@ -416,14 +418,11 @@ org.cesecore.authorization.control.StandardRules
 
 
 	<%-- Administrator Preferences --%>
+
 	<h:form id="adminprefform" rendered="#{systemConfigMBean.selectedTab eq 'Administrator Preferences'}">
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-			<h:panelGroup>
-				&nbsp;
-			</h:panelGroup>
-			<h:panelGroup>
-				&nbsp;
-			</h:panelGroup>
+			<h:outputLabel for="header_defaultadminpreferences" value="#{web.text.DEFAULTADMINPREFERENCES}" style="font-weight: bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_defaultadminpreferences"/>
 
 			<h:panelGroup>
 				<h:outputLabel for="preferedLanguage" value="#{web.text.PREFEREDLANGUAGE}" styleClass="titles"/>
@@ -464,13 +463,13 @@ org.cesecore.authorization.control.StandardRules
 				<h:outputText value="#{web.text.NUMBEROFRECORDSPERPAGE_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup id="entriesPerPage">
-				<h:selectOneMenu value="#{systemConfigMBean.currentConfig.entriesPerPage}">
+				<h:selectOneMenu value="#{systemConfigMBean.currentConfig.entriesPerPage}" styleClass="number">
 					<f:selectItems value="#{systemConfigMBean.possibleEntriesPerPage}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
 		</h:panelGrid>
 		
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+		<h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
 				&nbsp;
 			</h:panelGroup>
