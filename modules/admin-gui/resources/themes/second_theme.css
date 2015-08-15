@@ -286,6 +286,12 @@ form table fieldset {
 	background-color: rgba(0,0,0,.02);
 }
 
+/* --- Forms: System Configurations titles */
+table .titles {
+	font-size: 1.05em;
+	font-weight: bold;
+}
+
 /* --- Forms: Help */
 table .help {
 /*	display: none;		/* Hide all in-line help */
