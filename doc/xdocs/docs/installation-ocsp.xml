@@ -487,7 +487,7 @@ LOG_ID, An integer identifying that starts from 1 and is increased for every rec
 SESSION_ID A random 32 Byte long String generated when the OCSP-responder is started.<br/>
 STATUS, The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;<br/>
 CLIENT_IP, IP of the client making the request.<br/>
-REQ_NAME, The Common Name (CN) of the client making the request.<br/>
+REQ_NAME, The Distinguished Name (DN) of the client making the request.<br/>
 SIGN_ISSUER_NAME_DN, DN of the issuer of the certificate used to sign the request.<br/>
 SIGN_SUBJECT_NAME, Subject Name of the certificate used to sign the request.<br/>
 SIGN_SERIAL_NO, Certificate serial number of the certificate used to sign the request.<br/>
