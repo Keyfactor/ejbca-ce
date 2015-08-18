@@ -374,11 +374,15 @@ table.edit tr td {
 .editColumn2 {
 	width: 65%;
 }
+.fixedColumn1 {
+	width: 300;
+}
 /* Titles (and Sections) */
 table tr.section td,
 table tr.title td {
 	font-size: 1.25em;
 }
+
 /* DN & attributes */
 table tr td .dn {
 	white-space: pre-wrap;
