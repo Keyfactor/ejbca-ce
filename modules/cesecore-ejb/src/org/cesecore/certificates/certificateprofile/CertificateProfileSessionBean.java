@@ -225,7 +225,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
     
     @Override
-    public Collection<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken admin, final int certprofiletype) {
+    public List<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken admin, final int certprofiletype) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCaIds(admin));
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
@@ -252,7 +252,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final boolean rootAccess = accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
                 final CertificateProfile profile = cpEntry.getValue();
-            // Check if all profiles available CAs exists in authorizedcaids.          
+                // Check if all profiles available CAs exists in authorizedcaids.          
                 if (certprofiletype == 0 || certprofiletype == profile.getType() || (profile.getType() == CertificateConstants.CERTTYPE_ENDENTITY &&
                         certprofiletype == CertificateConstants.CERTTYPE_HARDTOKEN)) {
                 boolean allexists = true;
@@ -521,7 +521,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final Collection<Integer> ids = profile.getAvailableCAs();
         final String[] rules = new String[ids.size()+1];
         // We need to check that admin also have rights to edit certificate profiles
-        rules[0] = StandardRules.EDITCERTIFICATEPROFILE.resource();
+        rules[0] = StandardRules.CERTIFICATEPROFILEEDIT.resource();
         int i=1;
         // Check that admin is authorized to all CAids
         for (Integer caid : ids) {

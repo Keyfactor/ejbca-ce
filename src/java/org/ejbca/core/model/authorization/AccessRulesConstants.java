@@ -57,12 +57,10 @@ public abstract class AccessRulesConstants {
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
     public static final String REGULAR_CAFUNCTIONALTY                     = StandardRules.CAFUNCTIONALITY.resource();
     public static final String REGULAR_CABASICFUNCTIONS                   = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
-    public static final String REGULAR_ACTIVATECA                         = REGULAR_CABASICFUNCTIONS+"/activate_ca";    
-    public static final String REGULAR_RENEWCA                            = StandardRules.CAFUNCTIONALITY.resource()+"/renew_ca";    
+    public static final String REGULAR_ACTIVATECA                         = REGULAR_CABASICFUNCTIONS+"/activate_ca";     
     public static final String REGULAR_VIEWCERTIFICATE                    = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";    
     public static final String REGULAR_APPROVECAACTION                    = StandardRules.CAFUNCTIONALITY.resource()+"/approve_caaction";
     public static final String REGULAR_CREATECRL                          = StandardRules.CREATECRL.resource();    
-    public static final String REGULAR_EDITCERTIFICATEPROFILES            = StandardRules.EDITCERTIFICATEPROFILE.resource();    
     public static final String REGULAR_CREATECERTIFICATE                  = StandardRules.CREATECERT.resource();
     public static final String REGULAR_STORECERTIFICATE                   = StandardRules.CAFUNCTIONALITY.resource()+"/store_certificate";    
     public static final String REGULAR_EDITPUBLISHER                      = StandardRules.CAFUNCTIONALITY.resource()+"/edit_publisher";    
@@ -102,10 +100,12 @@ public abstract class AccessRulesConstants {
     public static final String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
                                                            REGULAR_CABASICFUNCTIONS,
                                                            REGULAR_ACTIVATECA,
-                                                           REGULAR_RENEWCA,
+                                                           StandardRules.CARENEW.resource(),
+                                                           StandardRules.CAVIEW.resource(),
                                                            REGULAR_VIEWCERTIFICATE, 
                                                            REGULAR_CREATECRL,
-                                                           REGULAR_EDITCERTIFICATEPROFILES,                                                           
+                                                           StandardRules.CERTIFICATEPROFILEEDIT.resource(),   
+                                                           StandardRules.CERTIFICATEPROFILEVIEW.resource(),
                                                            REGULAR_CREATECERTIFICATE,
                                                            REGULAR_STORECERTIFICATE,
                                                            REGULAR_EDITPUBLISHER,

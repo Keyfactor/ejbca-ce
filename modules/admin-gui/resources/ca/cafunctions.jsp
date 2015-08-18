@@ -43,7 +43,7 @@ org.ejbca.util.HTMLTools
   final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
 %>
 <%   // Initialize environment
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource()); 
                                             cabean.initialize(ejbcawebbean); 
 
   final String THIS_FILENAME                = globalconfiguration.getCaPath() 

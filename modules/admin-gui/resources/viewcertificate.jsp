@@ -112,7 +112,7 @@
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
      if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
        try{  
-         ejbcawebbean.isAuthorized(AccessRulesConstants.REGULAR_CABASICFUNCTIONS, StandardRules.CAACCESS.resource() + caid);
+         ejbcawebbean.isAuthorized(StandardRules.CAVIEW.resource(), StandardRules.CAACCESS.resource() + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
          if(numberofcertificates > 0)

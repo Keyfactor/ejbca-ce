@@ -24,6 +24,7 @@
 <%@page import="org.ejbca.core.model.authorization.BasicAccessRuleSet"%>
 <%@page import="org.ejbca.core.model.authorization.DefaultRoles"%>
 <%@page import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean"%>
+<%@page import="org.cesecore.keybind.InternalKeyBindingRules" %>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
  
@@ -128,6 +129,18 @@ function roleupdated() {
 			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS %>'
 		], true);
 		selectAll(selectinternalkeybindingrules, true, false);
+		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
+	} else if(currentrole === '<%= DefaultRoles.AUDITOR.getName()%>') {
+		selectcas.disabled = false;
+		selectendentityprofiles.disabled = false;
+		selectSome(selectendentityrules, [
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
+			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS %>'
+			], true);
+		selectSome(selectinternalkeybindingrules, [
+		    '<%= InternalKeyBindingRules.VIEW.resource() %>'
+			], true);
 		selectSome(selectother, [ '<%=BasicAccessRuleSet.OTHER_VIEWLOG %>' ], true);
 	}
 }

@@ -29,6 +29,42 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+
+From EJBCA 6.3.2 up to EJBCA 6.3.3
+-------------------------------
+A new default Role has been added named "Auditor", which is a role which has view access to all pages but not rights to make any changes or 
+perform any actions. Some new rules had to be added to accommodate this role, and autorization to certain GUI pages has been made more fine 
+grained as a result. During upgrade, all roles which previously had access rights using the previous rules will automatically be given access 
+to the new rule. These are as follows:
+
+Any roles which had access to:								Now also have access to:
+/ca_functionality/basic_functions/activate_ca or			/ca_functionality/view_ca
+/ca_functionality/ (recursive)
+/ca_functionality/edit_certificate_profiles 				/ca_functionality/view_certificate_profiles
+
+The pages that will be available to this new role are the following:
+Page Name:													Notes:
+CA Activation	
+		
+CA Structure & CRLs
+
+Certificate Profiles										Certificate Profiles previously not accessible (due to lack of access to CAs or 
+															root access) will be rendered view only. 
+
+Certification Authorities
+
+End Entity Profiles
+
+Publishers
+
+Crypto Tokens
+
+Services
+
+Internal Key Bindings
+
+Peer Systems
+
 From EJBCA 6.3.1 up to EJBCA 6.3.2
 -------------------------------
 As the VA Publisher was shifted from Community to Enterprise in EJBCA 6.3.1.1, it had to change baseclass, so will thus require a database 
