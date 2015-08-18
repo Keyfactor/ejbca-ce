@@ -36,6 +36,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -290,6 +291,17 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
+    
+    /**
+     * AccessRulesConstants.REGULAR_CABASICFUNCTIONS is not the best rule to check, but will work as a placeholder until authorization is revamped. 
+     * 
+     * @return true if admin is authorized to {@link AccessRulesConstants.REGULAR_CABASICFUNCTIONS}
+     */
+    public boolean isAuthorizedToBasicFunctions() {
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
+    }
+    
+    
     
 	public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
 	public String getAuthenticationCode() { return ""; }

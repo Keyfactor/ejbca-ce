@@ -22,7 +22,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 /** Session bean to manage certificate profiles, i.e. add, remove, find
  * 
  * In order to add or edit CertificateProfiles the admin needs access to:
- * - /ca_functionality/edit_certificate_profiles (StandardRules.EDITCERTIFICATEPROFILE)
+ * - /ca_functionality/edit_certificate_profiles (StandardRules.CERTIFICATEPROFILEEDIT)
  * - the CAs set as "available CAs" with CA rules as /ca/<caid> (StandardRules.CAACCESS)
  * - if "available CAs" contains ANYCA (-1) the -1 caid privilege is needed.
  *
@@ -101,7 +101,7 @@ public interface CertificateProfileSession {
      *            Retrieves certificate profile names sorted.
      * @return Collection of id:s (Integer)
      */
-    Collection<Integer> getAuthorizedCertificateProfileIds(AuthenticationToken admin, int certprofiletype);
+    List<Integer> getAuthorizedCertificateProfileIds(AuthenticationToken admin, int certprofiletype);
 
     /**
      * Retrieves a Collection of id:s (Integer) of all certificate profiles which have non-existent CA Ids.

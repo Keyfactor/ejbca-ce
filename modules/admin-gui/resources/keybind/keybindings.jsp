@@ -27,7 +27,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants,
 org.cesecore.keybind.InternalKeyBindingRules
 "%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.BASE.resource()); %>
+<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.VIEW.resource()); %>
 <html>
 <f:view>
 <head>
@@ -108,30 +108,34 @@ org.cesecore.keybind.InternalKeyBindingRules
    				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
    			</f:facet>
 			<h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandDisable}"
-				value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}"/>
+				value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton rendered="#{guiInfo.status eq 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandEnable}"
-				value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}"/>
+				value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton action="#{internalKeyBindingMBean.commandDelete}"
 				value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"
-				onclick="return confirm('#{web.text.INTERNALKEYBINDING_CONF_DELETE}')"/>
+				onclick="return confirm('#{web.text.INTERNALKEYBINDING_CONF_DELETE}')" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.cryptoTokenAvailable}"
 				action="#{internalKeyBindingMBean.commandGenerateNewKey}"
-				value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}" title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"/>
+				value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}" title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"
+				disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton rendered="#{guiInfo.cryptoTokenAvailable}" action="#{internalKeyBindingMBean.commandGenerateRequest}"
-				value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}" title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"/>
+				value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}" title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"
+				disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton action="#{internalKeyBindingMBean.commandReloadCertificate}"
-				value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"/>
+				value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"
+				disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton rendered="#{guiInfo.issuedByInternalCa}" action="#{internalKeyBindingMBean.commandRenewCertificate}"
-				value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"/>
+				value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"
+				disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 		</h:column>
 	</h:dataTable>
 	<br/>
 	<h:outputLink
-		value="adminweb/keybind/keybinding.jsf?internalKeyBindingId=0&type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
+		value="adminweb/keybind/keybinding.jsf?internalKeyBindingId=0&type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}" rendered="#{internalKeyBindingMBean.allowedToEdit}">
 		<h:outputText value="#{web.text.INTERNALKEYBINDING_CREATENEW}"/>
 	</h:outputLink>
 	</h:form>
-	<h:form id="uploadCertificate" enctype="multipart/form-data" rendered="#{not empty internalKeyBindingMBean.uploadTargets}">
+	<h:form id="uploadCertificate" enctype="multipart/form-data" rendered="#{not empty internalKeyBindingMBean.uploadTargets and internalKeyBindingMBean.allowedToEdit}">
 		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_UPLOADHEADER}"/></h3>
 		<h:panelGrid columns="5">
 			<h:outputLabel for="certificateUploadTarget" value="#{web.text.INTERNALKEYBINDING_UPLOAD_TARGET} #{internalKeyBindingMBean.selectedInternalKeyBindingType}:"/>
@@ -146,10 +150,10 @@ org.cesecore.keybind.InternalKeyBindingRules
 	<h:form id="defaultResponder" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
 		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER} "/><%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %></h3>
 		<h:panelGrid columns="3">
-			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}">
+			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
 				<f:selectItems value="#{internalKeyBindingMBean.defaultResponerTargets}"/>
 			</h:selectOneMenu>
-			<h:commandButton action="#{internalKeyBindingMBean.saveDefaultResponder}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
+			<h:commandButton action="#{internalKeyBindingMBean.saveDefaultResponder}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 		</h:panelGrid>
 	</h:form>
 	<%	// Include Footer 

@@ -56,6 +56,9 @@ public class BasicAccessRuleSetDecoder implements Serializable {
                 if (DefaultRoles.SUPERVISOR.equals(currentRoleTemplate)) {
                     currentruleset.addAll(DefaultRoles.SUPERVISOR.getRuleSet());
                 }
+                if (DefaultRoles.AUDITOR.equals(currentRoleTemplate)) {
+                    currentruleset.addAll(DefaultRoles.AUDITOR.getRuleSet());
+                }
             }
         }
 

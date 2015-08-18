@@ -76,11 +76,8 @@ org.cesecore.keybind.InternalKeyBindingRules
 
     final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
     final String CRYPTOTOKEN_RESOURCE                   = CryptoTokenRules.BASE.resource();
-    final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
-    final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
     final String EDITCAS_RESOURCE                       = StandardRules.CAFUNCTIONALITY.resource();
     final String EDITPUBLISHERS_RESOURCE                = AccessRulesConstants.REGULAR_EDITPUBLISHER;
-    final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
     final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
     final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
     final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
@@ -90,7 +87,7 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
     final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
-    final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
+    final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.VIEW.resource();
     final String SERVICES_RESOURCE                      = StandardRules.ROLE_ROOT.resource();
     final String PEERCONNECTOR_RESOURCE_VIEW            = AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW;
  %>
@@ -131,7 +128,7 @@ org.cesecore.keybind.InternalKeyBindingRules
  %>
  <%
    try{
-     if(ejbcawebbean.isAuthorizedNoLog(ACTIVATECA_RESOURCE)){ 
+     if(ejbcawebbean.isAuthorizedNoLog(StandardRules.CAVIEW.resource())){ 
         if(!caheaderprinted){
           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
            caheaderprinted=true;
@@ -142,7 +139,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 <% 
    try{
-     if(ejbcawebbean.isAuthorizedNoLog(CABASICFUNCTIONS_RESOURCE)){ 
+     if(ejbcawebbean.isAuthorizedNoLog(StandardRules.CAVIEW.resource())){ 
          if(!caheaderprinted){
              out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
               caheaderprinted=true;
@@ -153,7 +150,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 <%
    try{
-     if(ejbcawebbean.isAuthorizedNoLog(EDITCERTIFICATEPROFILES_RESOURCE)){ 
+     if(ejbcawebbean.isAuthorizedNoLog(StandardRules.CERTIFICATEPROFILEVIEW.resource())){ 
         if(!caheaderprinted){
           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
            caheaderprinted=true;

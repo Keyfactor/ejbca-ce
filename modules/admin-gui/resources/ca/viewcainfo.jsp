@@ -1,3 +1,4 @@
+<%@page import="org.cesecore.authorization.control.StandardRules"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
@@ -20,7 +21,7 @@ java.security.cert.X509Certificate
 
 <%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource()); 
                                             cabean.initialize(ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getCaPath()  + "/viewcainfo.jsp";
 

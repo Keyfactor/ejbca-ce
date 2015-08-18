@@ -10,11 +10,12 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <%@page import="org.ejbca.ui.web.RequestHelper" %>
 <%@page import="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" %>
+<%@page import="org.cesecore.authorization.control.StandardRules" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean"/>
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean"/>
 <html>
 <%
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
   cabean.initialize(ejbcawebbean);
 %>
 <f:view>
@@ -32,22 +33,28 @@
 		<h3><h:outputText value="#{web.text.LISTOFCERTIFICATEPROFILES}"/></h3>
 		<h:outputText value="#{certProfilesBean.resetCertificateProfilesTrigger}"/>
 		<h:dataTable value="#{certProfilesBean.certificateProfiles}" var="certificateProfile" styleClass="grid">
-			<h:column>
+			<h:column headerClass="fixedColumn1">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILENAME}" title="#{certificateProfile.id}"/></f:facet>
 				<h:outputText value="#{certificateProfile.name}"/>
 				<h:outputText rendered="#{certificateProfile.missingCa}" value="#{web.text.MISSINGCAIDS}"/>
 				<f:facet name="footer">
-		  			<h:inputText value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+		  			<h:inputText value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255" disabled="#{certProfilesBean.authorizedToOnlyView}"/>
 				</f:facet>
 			</h:column>
-			<h:column>
+			<h:column headerClass="fixedColumn1">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
-				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.RENAME}" action="#{certProfilesBean.actionRename}" disabled="#{certificateProfile.fixed}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{certProfilesBean.actionAddFromTemplate}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<f:facet name="footer">
-					<h:commandButton value="#{web.text.ADD}" action="#{certProfilesBean.actionAdd}" disabled="#{certificateProfile.fixed}" rendered="#{certProfilesBean.authorizedToEdit}"/>
+				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" 
+					rendered="#{certProfilesBean.authorizedToOnlyView or not certificateProfile.authorized}" disabled="#{certificateProfile.fixed}"/>
+				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
+					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
+					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+				<h:commandButton value="#{web.text.RENAME}" action="#{certProfilesBean.actionRename}" disabled="#{certificateProfile.fixed}" 
+					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{certProfilesBean.actionAddFromTemplate}" 
+					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+				<f:facet name="footer" >
+					<h:commandButton value="#{web.text.ADD}" action="#{certProfilesBean.actionAdd}" disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"/>
 				</f:facet>
 			</h:column>
 		</h:dataTable>
@@ -96,14 +103,13 @@
 			</h:panelGrid>
 		</h:panelGroup>
 	</h:form>
-
 	<h:panelGroup rendered="#{not certProfilesBean.operationInProgress}" >
-	<h3><h:outputText value="#{web.text.IMPORT}/#{web.text.EXPORT}"/></h3>
+	<h3><h:outputText value="#{web.text.IMPORT}/" rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.EXPORT}"/></h3>
 	<h:form id="uploadCertificate" enctype="multipart/form-data">
-		<h:panelGrid columns="3">
-			<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}:"/>
-			<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20"/>
-			<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORT}"/>
+		<h:panelGrid columns="3" >
+			<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}:" rendered="#{certProfilesBean.authorizedToEdit}"/>
+			<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
+			<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORT}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="1">
 			<h:outputLink value="adminweb/profilesexport?profileType=cp">
