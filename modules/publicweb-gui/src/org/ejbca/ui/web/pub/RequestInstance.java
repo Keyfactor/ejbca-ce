@@ -498,10 +498,15 @@ public class RequestInstance {
                     throw new Exception("No known request type received.");
 				}
 			}
-		} catch (ObjectNotFoundException oe) {
-			iErrorMessage = intres.getLocalizedMessage("certreq.nosuchusername");
 		} catch (AuthStatusException ase) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
+        } catch (ObjectNotFoundException oe) {
+            // Same error message for user not found and wrong password
+            iErrorMessage = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            // But debug log the real issue if needed
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            }
 		} catch (AuthLoginException ale) {
 			iErrorMessage = intres.getLocalizedMessage("ra.wrongusernameorpassword");
 			log.info(iErrorMessage + " - username: " + username);
