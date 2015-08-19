@@ -323,6 +323,7 @@ org.cesecore.authorization.control.StandardRules
 				<h:selectBooleanCheckbox id="excludetokens" value="#{systemConfigMBean.excludeActiveCryptoTokensFromClearCaches}"/>
 				<h:outputLabel for="excludetokens" value="#{web.text.CLEARALLCACHES_EXCLUDE_CRYPTOTOKEN_CACHE}" />
 				<br/>
+				<br/>
 				<h:commandButton value="#{web.text.CLEARALLCACHES}" action="#{systemConfigMBean.clearAllCaches}" />
 			</h:panelGroup>
 		</h:panelGrid>

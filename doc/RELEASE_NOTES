@@ -1,3 +1,13 @@
+EJBCA 6.3.3
+-----------
+This maintenance release contains XX new features, bug fixes and improvements, below is a selection of the most noteworthy. 
+
+- Improvements:
+    *   System Configuration with sections and tabs, and "Exclude Active Manually-Activated CryptoTokens" check box is checked by default
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 6.3.2
 -----------
 This maintenance release contains 23 new features, bug fixes and improvements, in addition to all fixes made in 6.2.10. Below is a 

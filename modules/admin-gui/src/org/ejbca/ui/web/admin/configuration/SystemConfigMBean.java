@@ -194,7 +194,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private String currentCTLogURL = null;
     private int currentCTLogTimeout;
     private UploadedFile currentCTLogPublicKeyFile = null;
-    private boolean excludeActiveCryptoTokensFromClearCaches = false;
+    private boolean excludeActiveCryptoTokensFromClearCaches = true;
     
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     
@@ -373,7 +373,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         currentConfig = null;
         nodesInCluster = null;
         ctLogs = null;
-        excludeActiveCryptoTokensFromClearCaches = false;
+        excludeActiveCryptoTokensFromClearCaches = true;
     }
     
     public void toggleUseApprovalNotification() {
