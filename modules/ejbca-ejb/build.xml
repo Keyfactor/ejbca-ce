@@ -271,6 +271,7 @@
 		<include name="org/ejbca/core/model/authorization/DefaultRoles.java"/>
        	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
        	<include name="org/ejbca/core/model/ca/publisher/*PublisherContainer.java"/>
+        <include name="org/ejbca/core/model/ca/publisher/custpubl*/*.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
 		<include name="org/ejbca/core/model/hardtoken/profiles/*Profile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
