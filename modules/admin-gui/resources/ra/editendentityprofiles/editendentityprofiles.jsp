@@ -4,9 +4,9 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
                 org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.cesecore.certificates.endentity.EndEntityConstants, org.cesecore.certificates.crl.RevokedCertInfo,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
-                org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException,
+                org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException, org.ejbca.core.model.ra.raadmin.EndEntityValidationHelper,
                 java.io.InputStream, java.io.InputStreamReader,
-                java.io.IOException, java.io.BufferedReader, java.util.Map.Entry,
+                java.io.IOException, java.io.BufferedReader, java.io.Serializable, java.util.Map.Entry,
                 org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, 
                 org.apache.commons.lang.ArrayUtils, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.authorization.control.StandardRules"%>
 
@@ -53,6 +53,7 @@
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
   static final String TEXTFIELD_MINPWDSTRENGTH       = "textfieldminpwdstrength";
   static final String TEXTFIELD_SUBJECTDN            = "textfieldsubjectdn";
+  static final String TEXTFIELD_VALIDATION_SUBJECTDN = "textfieldsubjectdnvalidation";
   static final String TEXTFIELD_SUBJECTALTNAME       = "textfieldsubjectaltname";
   static final String TEXTFIELD_SUBJECTDIRATTR       = "textfieldsubjectdirattr";
   static final String TEXTFIELD_EMAIL                = "textfieldemail";
@@ -121,6 +122,8 @@
   static final String CHECKBOX_USE_NC_PERMITTED      = "checkboxusencpermitted";
   static final String CHECKBOX_USE_NC_EXCLUDED       = "checkboxusencexcluded";
   static final String CHECKBOX_USE_EXTENSIONDATA     = "checkboxuseextensiondata";
+  
+  static final String CHECKBOX_VALIDATION_SUBJECTDN       = "checkboxvalidationsubjectdn";
   
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
   static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
@@ -406,6 +409,25 @@
                                          request.getParameter(TEXTFIELD_EMAIL));                
                     profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
                                               ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_EMAIL)));
+                }
+                
+                final boolean useValidation = ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_VALIDATION_SUBJECTDN + i));
+                final String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTDN + i);
+                if (useValidation) {
+                    if (validationRegex == null) {
+                        // We must accept an empty value in case the user has Javascript turned
+                        // off and has to update the page before the text field appears
+                        validationRegex = "";
+                    }
+                    final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
+                    final String fieldName = DnComponents.dnIdToProfileName(dnId);
+                    EndEntityValidationHelper.checkValidator(fieldName, "RegexFieldValidator", validationRegex);
+                    
+                    LinkedHashMap<String,Serializable> validation = new LinkedHashMap<String,Serializable>();
+                    validation.put("RegexFieldValidator", validationRegex);
+                    profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], validation);
+                } else {
+                    profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], null);
                 }
              }
 
