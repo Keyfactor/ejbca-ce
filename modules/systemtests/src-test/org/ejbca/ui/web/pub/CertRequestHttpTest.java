@@ -238,7 +238,7 @@ public class CertRequestHttpTest extends CaTestCase {
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index + 5, index2);
         log.info(errormsg);
-        String expectedErrormsg = "Username: reqtestunknown\nNon existent username. To generate a certificate a valid username and password must be supplied.\n";
+        String expectedErrormsg = "Username: reqtestunknown\nWrong username or password\n";
         assertEquals(expectedErrormsg.replaceAll("\\s", ""), errormsg.replaceAll("\\s", ""));
         log.trace("<test02RequestUnknownUser()");
     }
