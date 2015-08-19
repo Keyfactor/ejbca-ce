@@ -289,11 +289,12 @@
 			<!-- JBoss 7.1.1 and EAP 6.0 for javax.resource ...-->
 			<include name="modules/javax/resource/api/main/jboss-connector-api_1.6_spec-*.jar"/>
 			
-			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 for javax.peristence, transaction, remote EJB, ...-->
+			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 and 9 for javax.peristence, transaction, remote EJB, ...-->
 			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.?-api*.jar"/>
 			<include name="modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.?_spec*.jar"/>
 			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.2_spec*.jar"/> <!-- WildFly 8 -->
 			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.6_spec*.jar"/>
+			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.7_spec*.jar"/> <!-- WildFly 9 -->
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
