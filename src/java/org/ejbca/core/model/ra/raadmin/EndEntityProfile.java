@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
@@ -175,6 +176,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int USE        = 1;
     private static final int ISREQUIRED = 2;
     private static final int MODIFYABLE = 3;
+    private static final int VALIDATION = 4;
 
     // Private Constants.
     private static final int FIELDBOUNDRARY  = 10000;
@@ -185,6 +187,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int FIELDBOUNDRARY_USE  = FIELDBOUNDRARY * USE;
     private static final int FIELDBOUNDRARY_ISREQUIRED  = FIELDBOUNDRARY * ISREQUIRED;
     private static final int FIELDBOUNDRARY_MODIFYABLE  = FIELDBOUNDRARY * MODIFYABLE;
+    private static final int FIELDBOUNDRARY_VALIDATION  = FIELDBOUNDRARY * VALIDATION;
 
     public static final String SPLITCHAR       = ";";
 
@@ -351,14 +354,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     
     /** Add a field with value="", required=false, use=true, modifyable=true */
     private void addField(final int parameter, final String parameterName) {
-    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, null);
     }
-
+    
     private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
-    	addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable);
+        addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable, null);
     }
 
-    private void addFieldWithDefaults(final int parameter, final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
+    private void addFieldWithDefaults(final int parameter, final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable, final LinkedHashMap<String,Object> validation) {
     	final int size = getNumberOfField(parameter);
     	// Perform operations directly on "data" to save some cycles..
     	final int offset = (NUMBERBOUNDRARY*size) + parameter;
@@ -366,6 +369,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + offset), required);
     	data.put(Integer.valueOf(FIELDBOUNDRARY_USE + offset), use);
     	data.put(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + offset), modifyable);
+    	if (validation != null) {
+    	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
+    	    data.put(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + offset), validation);
+    	} else {
+    	    data.remove(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + offset));
+    	}
     	if (DnComponents.isDnProfileField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
@@ -499,6 +508,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setModifyable(final String parameter, final int number, final boolean changeable) {
     	setModifyable(getParameterNumber(parameter), number, changeable);
     }
+    
+    public void setValidation(final int parameter, final int number, final Map<String,Serializable> validation){
+        Integer paramNum = Integer.valueOf(FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter);
+        if (validation != null) {
+            data.put(paramNum, new LinkedHashMap<String,Serializable>(validation));
+        } else {
+            data.remove(paramNum);
+        }
+    }
+
+    public void setValidation(final String parameter, final int number, final LinkedHashMap<String,Serializable> validation){
+        setValidation(getParameterNumber(parameter), number, validation);
+    }
+
 
     public String getValue(final int parameter, final int number) {
     	return getValueDefaultEmpty(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter));
@@ -530,6 +553,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public boolean isModifyable(final String parameter, final int number) {
     	return isModifyable(getParameterNumber(parameter), number);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public LinkedHashMap<String,Serializable> getValidation(final int parameter, final int number){
+        return (LinkedHashMap<String,Serializable>)data.get(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter));
+    }
+
+    public LinkedHashMap<String,Serializable> getValidation(final String parameter, final int number){
+        return getValidation(getParameterNumber(parameter), number);
     }
 
     @SuppressWarnings("unchecked")
@@ -961,6 +993,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	checkIfAllRequiredFieldsExists(subjectdnfields, subjectaltnames, subjectdirattrs, username, email);
     	// Make sure that there are enough fields to cover all required in profile
     	checkIfForIllegalNumberOfFields(subjectdnfields, subjectaltnames, subjectdirattrs);
+    	// Check that all fields pass the validators (e.g. regex), if any
+    	checkWithValidators(subjectdnfields);
     	// Check contents of username.
     	checkIfDataFullfillProfile(USERNAME,0,username, "Username",null);
     	// Check Email address.
@@ -1928,6 +1962,28 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + dirattrfields.get(i) + " fields in Subject Directory Attributes.");
     		}
     	}
+    }
+    
+    private void checkWithValidators(final DNFieldExtractor subjectdnfields) throws UserDoesntFullfillEndEntityProfile {
+        final List<String> dnfields = DnComponents.getDnProfileFields();
+        final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
+        for (int i=0; i<dnfields.size(); i++) {
+            final int dnId = dnFieldExtractorIds.get(i);
+            final int profileId = DnComponents.dnIdToProfileId(dnId);
+            final String fieldName = dnfields.get(i);
+            final int num = subjectdnfields.getNumberOfFields(dnId);
+            for (int j = 0; j < num; j++) {
+                final Map<String,Serializable> validators = getValidation(profileId, j);
+                if (validators != null) {
+                    final String fieldValue = subjectdnfields.getField(dnId, j);
+                    try {
+                        EndEntityValidationHelper.checkValue(fieldName, validators, fieldValue);
+                    } catch (EndEntityFieldValidatorException e) {
+                        throw new UserDoesntFullfillEndEntityProfile("Did not pass validation of " + fieldName + ". " + e.getMessage());
+                    }
+                }
+            }
+        }
     }
 
 	/** methods for mapping the DN, AltName, DirAttr constants from string->number */
