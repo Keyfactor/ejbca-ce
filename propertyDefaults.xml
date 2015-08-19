@@ -83,7 +83,7 @@
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/client/cxf-api.jar" property="appserver.subtype" value="jboss6"/>
 	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jboss7"/>
-	<!-- WildFly 8 is same as JBoss EAP 6 for building -->
+	<!-- WildFly 8 snd 9 is same as JBoss EAP 6 for building -->
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jbosseap6"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/glassfish/lib/javaee.jar" property="appserver.type" value="glassfish"/>
@@ -96,7 +96,7 @@
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
 	<property name="appserver.type.detected.errormessage"
-		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, Glassfish 4.0, JBoss 5.1.0.GA, JBoss EAP 5.1, JBoss 6.0, JBoss 7.1.1, JBoss EAP 6.1 and 6.2, WildFly 8, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
+		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, Glassfish 4.0, JBoss 5.1.0.GA, JBoss EAP 5.1, JBoss 6.0, JBoss 7.1.1, JBoss EAP 6.1, 6.2, 6.3, 6.4, WildFly 8 and 9, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
 	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message"/>
 	
 	<condition property="bundle-hibernate-jpa">
