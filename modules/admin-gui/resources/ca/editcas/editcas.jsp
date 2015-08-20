@@ -228,7 +228,7 @@ java.security.InvalidAlgorithmParameterException
   boolean  catokenauthfailed    = false;
   String errormessage = null;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAFUNCTIONALITY.resource());
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
   cabean.initialize(ejbcawebbean);
   CADataHandler cadatahandler = cabean.getCADataHandler();
 
@@ -288,7 +288,7 @@ java.security.InvalidAlgorithmParameterException
         	}
             if (caid != 0) {
                 if (requestMap.get(BUTTON_EDIT_CA) != null) {
-                    editca = true;
+                    editca = true; //As opposed to create 
                     catype = cadatahandler.getCAInfo(caid).getCAInfo().getCAType();
                     keySequenceFormat = cadatahandler.getCAInfo(caid).getCAToken().getKeySequenceFormat();
                     includefile = "editcapage.jspf";

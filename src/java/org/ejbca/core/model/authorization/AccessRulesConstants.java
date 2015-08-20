@@ -55,7 +55,6 @@ public abstract class AccessRulesConstants {
 
     public static final String ROLE_PUBLICWEBUSER                         = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
-    public static final String REGULAR_CAFUNCTIONALTY                     = StandardRules.CAFUNCTIONALITY.resource();
     public static final String REGULAR_CABASICFUNCTIONS                   = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
     public static final String REGULAR_ACTIVATECA                         = REGULAR_CABASICFUNCTIONS+"/activate_ca";     
     public static final String REGULAR_VIEWCERTIFICATE                    = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";    
@@ -97,7 +96,7 @@ public abstract class AccessRulesConstants {
     public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS     = "/hardtoken_functionality/issue_hardtoken_administrators";
     
     // Standard Regular Access Rules
-    public static final String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
+    public static final String[] STANDARDREGULARACCESSRULES = {StandardRules.CAFUNCTIONALITY.resource(), 
                                                            REGULAR_CABASICFUNCTIONS,
                                                            REGULAR_ACTIVATECA,
                                                            StandardRules.CARENEW.resource(),

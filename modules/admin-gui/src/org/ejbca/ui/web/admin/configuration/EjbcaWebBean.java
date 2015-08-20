@@ -420,6 +420,17 @@ public class EjbcaWebBean implements Serializable {
         }
         return true;
     }
+    
+    /**
+     * Checks if the admin have authorization to view the resource without performing any logging. Will simply return a boolean, 
+     * no other information 
+     * 
+     * 
+     * @return true if is authorized to resource, false if not
+     */
+    public boolean isAuthorizedNoLogSilent(String... resources) {
+        return authorizationSession.isAuthorizedNoLogging(administrator, resources);
+    }
 
     /**
      * A more optimized authorization version to check if the admin have authorization to view the url without performing any logging. AUTHORIZED_RA..
