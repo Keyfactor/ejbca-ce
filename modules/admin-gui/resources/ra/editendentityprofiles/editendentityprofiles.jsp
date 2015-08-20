@@ -412,7 +412,7 @@
                 }
                 
                 final boolean useValidation = ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_VALIDATION_SUBJECTDN + i));
-                final String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTDN + i);
+                String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTDN + i);
                 if (useValidation) {
                     if (validationRegex == null) {
                         // We must accept an empty value in case the user has Javascript turned
