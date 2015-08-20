@@ -75,6 +75,7 @@
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
+		<path refid="lib.commons-lang.classpath" />
 	</path>
 
 	<path id="compile-ejb.classpath">
