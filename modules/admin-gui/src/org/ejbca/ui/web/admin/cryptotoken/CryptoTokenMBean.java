@@ -367,7 +367,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             flushCaches();
         }
     }
-
+    
     /** @return true if admin may create new or modify existing CryptoTokens. */
     public boolean isAllowedToModify() {
         return accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource());

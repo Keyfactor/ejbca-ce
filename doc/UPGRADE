@@ -51,7 +51,8 @@ CA Structure & CRLs
 Certificate Profiles										Certificate Profiles previously not accessible (due to lack of access to CAs or 
 															root access) will be rendered view only. 
 
-Certification Authorities
+Certification Authorities									All CA's will now be listed (instead of only the ones which the admin had access to, but
+															ones without access will be greyed out. 
 
 End Entity Profiles
 

@@ -25,7 +25,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants,
 org.cesecore.authorization.control.CryptoTokenRules
 "%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, CryptoTokenRules.BASE.resource()); %>
+<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, CryptoTokenRules.VIEW.resource()); %>
 <html>
 <f:view>
 <head>

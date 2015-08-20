@@ -40,6 +40,8 @@
   boolean isRevoked = false;
   boolean waitingresponse = false;  
   boolean isUninitialized = false;
+  boolean hasEditRights = cabean.hasEditRight();
+  boolean hasCreateRights = cabean.hasCreateRight();
   
   XKMSCAServiceInfo xkmscainfo = null; 
   java.security.cert.X509Certificate xkmscert = null; 
@@ -365,9 +367,12 @@ function checkallfields(){
 </script>
 <body <% if(!editca || isUninitialized) out.write(" onload='fillCertProfileField()' "); %>> 
 <div align="center"> 
-  <% if (editca) { %>
+  <% if (editca && hasEditRights) { //Editing %> 
   <h2><%= ejbcawebbean.getText("EDITCA") %></h2>
   <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= cainfo.getName() %>"/></h3>
+  <% } else if(editca){ //Just viewing%>  
+   <h2><%= ejbcawebbean.getText("VIEWCA") %></h2>
+   <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= cainfo.getName() %>"/></h3>
   <% } else { %>
    <h2><%= ejbcawebbean.getText("CREATECA") %></h2>
    <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= caname %>"/></h3>
@@ -705,7 +710,7 @@ function checkallfields(){
                 <%= ejbcawebbean.getText("EXTSERVICESKEYSPEC") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Services%20Key%20Specification") %>
             </td>
             <td width="50%"> 
-                <select name="<%= SELECT_KEYSIZE %>" size="1">
+                <select name="<%= SELECT_KEYSIZE %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
                 <%  if (extendedServicesKeySpecParam == null) {
                         extendedServicesKeySpecParam = "2048";
                     }
@@ -726,7 +731,7 @@ function checkallfields(){
           <%= ejbcawebbean.getText("KEYSEQUENCEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence%20format") %>
         </td>
         <td width="50%" valign="top">
-            <select name="<%=SELECT_KEY_SEQUENCE_FORMAT %>" size="1">                
+            <select name="<%=SELECT_KEY_SEQUENCE_FORMAT %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>                
                  <option value="<%=StringTools.KEY_SEQUENCE_FORMAT_NUMERIC%>" <%if(keySequenceFormat == StringTools.KEY_SEQUENCE_FORMAT_NUMERIC) out.write("selected");%>><%=ejbcawebbean.getText("NUMERIC")%></option>
                  <option value="<%=StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC%>" <%if(keySequenceFormat == StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC) out.write("selected");%>><%=ejbcawebbean.getText("ALPHANUMERIC")%></option>
                  <option value="<%=StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC%>" <%if(keySequenceFormat == StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC) out.write("selected");%>><%=ejbcawebbean.getText("COUNTRYCODEPLUSNUMERIC")%></option>
@@ -744,7 +749,7 @@ function checkallfields(){
            if (catoken != null) {
         	   sequence = catoken.getKeySequence();
            } %>
-        <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="6" <% out.write(" value='"+sequence+"'"); %> maxlength="10">
+        <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="6" <% out.write(" value='"+sequence+"'"); %> maxlength="10" <%= (hasEditRights ? "" : "disabled") %>>
       </td>
     </tr>
     <% } %>
@@ -757,7 +762,7 @@ function checkallfields(){
         <% if(isexternal){ %>
               <c:out value="<%= cainfo.getDescription() %>"/>
          <% }else{ %>
-        <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="2"><% if(editca) { %><c:out value="<%= cainfo.getDescription() %>"/><% } %></textarea>
+        <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="2" <%= (hasEditRights ? "" : "disabled") %>><% if(editca) { %><c:out value="<%= cainfo.getDescription() %>"/><% } %></textarea>
        <% } %>
       </td>
     </tr>
@@ -782,7 +787,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS %>" value="<%=CHECKBOX_VALUE %>" 
             <% if((editca && cainfo.isDoEnforceUniquePublicKeys()) || !editca)
-                 out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS%>" <%= (hasEditRights ? "" : "disabled") %>>
                  <label for="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ENFORCE\") %>" /></label>         
       </td>
     </tr>
@@ -795,7 +800,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEDN %>" value="<%=CHECKBOX_VALUE %>" 
             <% if((editca && cainfo.isDoEnforceUniqueDistinguishedName()) || !editca)
-                 out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUEDN%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUEDN%>" <%= (hasEditRights ? "" : "disabled") %>>
                  <label for="<%=CHECKBOX_DOENFORCEUNIQUEDN%>"><c:out value="<%= ejbcawebbean.getText(\"ENFORCE\") %>" /></label>  
       </td>
     </tr>
@@ -808,7 +813,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER %>" value="<%=CHECKBOX_VALUE %>" 
             <% if((editca && cainfo.isDoEnforceUniqueSubjectDNSerialnumber()))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER%>" <%= (hasEditRights ? "" : "disabled") %>>
                  <label for="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER%>"><c:out value="<%= ejbcawebbean.getText(\"ENFORCE\") %>" /></label>         
       </td>
     </tr>
@@ -821,7 +826,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USECERTREQHISTORY %>" value="<%=CHECKBOX_VALUE %>" 
             <% if(editca && cainfo.isUseCertReqHistory())
-                 out.write("CHECKED");%> id="<%=CHECKBOX_USECERTREQHISTORY%>">         
+                 out.write("CHECKED");%> id="<%=CHECKBOX_USECERTREQHISTORY%>" <%= (hasEditRights ? "" : "disabled") %>>         
                <label for="<%=CHECKBOX_USECERTREQHISTORY%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
@@ -837,7 +842,7 @@ function checkallfields(){
             	  if (cainfo.isUseUserStorage()) out.write("CHECKED"); // edit CA
                } else {
             	  out.write("CHECKED"); // new CA default to true
-               }%> id="<%=CHECKBOX_USEUSERSTORAGE%>">
+               }%> id="<%=CHECKBOX_USEUSERSTORAGE%>" <%= (hasEditRights ? "" : "disabled") %>>
                <label for="<%=CHECKBOX_USEUSERSTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>     
       </td>
     </tr>
@@ -853,7 +858,7 @@ function checkallfields(){
             	  if (cainfo.isUseCertificateStorage()) out.write("CHECKED"); // edit CA
                } else {
             	  out.write("CHECKED"); // new CA default to true
-               }%> id="<%=CHECKBOX_USECERTIFICATESTORAGE%>">
+               }%> id="<%=CHECKBOX_USECERTIFICATESTORAGE%>" <%= (hasEditRights ? "" : "disabled") %>>
                <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
@@ -875,10 +880,12 @@ function checkallfields(){
         <% if (editca && !isUninitialized) { %>
               <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
         <% } else if (editca && isUninitialized) { %>  
-             <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="<%= cainfo.getSubjectDN() %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
+             <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="<%= cainfo.getSubjectDN() %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>" 
+             	<%= (hasEditRights ? "" : "disabled") %> >
           <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
-        <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
+        <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
+        	<%= (hasEditRights ? "" : "disabled") %> >
         <% } %>
       </td>
     </tr>
@@ -922,7 +929,7 @@ function checkallfields(){
                     out.write((String) caidtonamemap.get(Integer.valueOf(cainfo.getSignedBy())));
                 }
             } else if (editca && isUninitialized) { %>  
-                <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternalX509(); isExternalGeneric()" >
+                <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternalX509(); isExternalGeneric()" <%= (hasEditRights ? "" : "disabled") %>>
                 <option value="<%= CAInfo.SELFSIGNED%>" <% if(cainfo.getSignedBy() == CAInfo.SELFSIGNED) { %>selected <% } %> >
                   <%= ejbcawebbean.getText("SELFSIGNED") %>
                 </option>  
@@ -939,7 +946,7 @@ function checkallfields(){
                 <% } %> 
             </select>
          <% } else { %>
-            <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternalX509(); isExternalGeneric()">
+            <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternalX509(); isExternalGeneric()" <%= (hasEditRights ? "" : "disabled") %>>
                 <option value="<%= CAInfo.SELFSIGNED%>" selected><%= ejbcawebbean.getText("SELFSIGNED") %></option>  
                 <option value="<%= CAInfo.SIGNEDBYEXTERNALCA%>"><%= ejbcawebbean.getText("EXTERNALCA") %></option>  
                 <% for (final Object nameOfCa : casigners.keySet()) { %>
@@ -961,7 +968,7 @@ function checkallfields(){
                     }
                  } else if (editca && isUninitialized)  {
                     String currentCertProfileId = String.valueOf(cainfo.getCertificateProfileId()); %>
-                    <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1">
+                    <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
                     <%  for (final Entry<String,String> entry : cabean.getAvailableCaCertificateProfiles()) { %>
                             <option value="<%=entry.getKey() %>" <% if(entry.getKey().equals(currentCertProfileId)) { %> selected <%}%>>
                                 <%= entry.getValue() %>
@@ -969,7 +976,7 @@ function checkallfields(){
                     <%  } %>
                  </select>
                  <%  } else{ %>
-	                <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1">
+	                <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
                     <%  for (final Entry<String,String> entry : cabean.getAvailableCaCertificateProfiles()) { %>
                             <option value="<%=entry.getKey() %>"><%= entry.getValue() %></option>
                     <%  } %>
@@ -993,7 +1000,7 @@ function checkallfields(){
               }
            }else{ %>
         <input type="obligatory" name="<%=TEXTFIELD_VALIDITY%>" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
-           <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> />
+           <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> <%= (hasEditRights ? "" : "disabled") %> />
            <% if(editca) { %>
         &nbsp;
         <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
@@ -1021,7 +1028,7 @@ function checkallfields(){
               <% }
             } else{%>  
          <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255"
-             value="<c:out value="<%= isUninitialized ? x509cainfo.getSubjectAltName() : \"\" %>"/>">
+             value="<c:out value="<%= isUninitialized ? x509cainfo.getSubjectAltName() : \"\" %>"/>" <%= (hasEditRights ? "" : "disabled") %>>
          <% } %>   
       </td>
     </tr> 
@@ -1062,7 +1069,8 @@ function checkallfields(){
                     }
                 }
                 %>
-             <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>" value="<c:out value="<%= policies  %>"/>"/>
+             <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>" value="<c:out value="<%= policies  %>"/>"
+             	<%= (hasEditRights ? "" : "disabled") %>/>
          <% } %>
          <% if(!editca || isUninitialized) out.write("<p class=\"help\">" + ejbcawebbean.getText("EXT_PKIX_CP_POLICYID_HELP") + "</p>"); %>
       </td>
@@ -1077,7 +1085,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USEUTF8POLICYTEXT %>" value="<%=CHECKBOX_VALUE %>" 
             <% if((editca && x509cainfo.getUseUTF8PolicyText()))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_USEUTF8POLICYTEXT%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_USEUTF8POLICYTEXT%>" <%= (hasEditRights ? "" : "disabled") %>>
             <label for="<%=CHECKBOX_USEUTF8POLICYTEXT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>       
       </td>
     </tr>
@@ -1091,7 +1099,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USEPRINTABLESTRINGSUBJECTDN %>" value="<%=CHECKBOX_VALUE %>" 
             <% if((editca && x509cainfo.getUsePrintableStringSubjectDN()))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_USEPRINTABLESTRINGSUBJECTDN%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_USEPRINTABLESTRINGSUBJECTDN%>" <%= (hasEditRights ? "" : "disabled") %>>
              <label for="<%=CHECKBOX_USEPRINTABLESTRINGSUBJECTDN%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
@@ -1103,7 +1111,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
             <% if ( (editca && x509cainfo.getUseLdapDnOrder()) || (!editca) ) // default value when createCA = true (checked)
-                 out.write("CHECKED");%> id="<%=CHECKBOX_USELDAPDNORDER%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_USELDAPDNORDER%>" <%= (hasEditRights ? "" : "disabled") %>>
              <label for="<%=CHECKBOX_USELDAPDNORDER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
@@ -1118,7 +1126,8 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
       </td>
       <td width="50%">
-        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
+        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" rows="4" cols="38" <%= (hasEditRights ? "" : "disabled") %>>
+        	<c:out value="<%= nameConstraintsPermittedString %>"/></textarea>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>" /><br />
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>" /></p>
       </td>
@@ -1129,7 +1138,9 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
       </td>
       <td width="50%">
-        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38"><c:out value="<%= nameConstraintsExcludedString %>"/></textarea>
+        <textarea name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" rows="4" cols="38" <%= (hasEditRights ? "" : "disabled") %>>
+        	<c:out value="<%= nameConstraintsExcludedString %>"/>
+        </textarea>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
       </td>
     </tr>
@@ -1153,7 +1164,7 @@ function checkallfields(){
       </td>
       <td width="50%">
          <input type="text" name="<%=TEXTFIELD_EXTERNALCDP%>" size="40" maxlength="255"
-         <% if (editca) {%>value="<c:out value="<%= x509cainfo.getExternalCdp() %>"/>"<%}%>>
+        	 <% if (editca) {%>value="<c:out value="<%= x509cainfo.getExternalCdp() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> >
       </td>
     </tr>
    <% } %>
@@ -1167,10 +1178,10 @@ function checkallfields(){
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
-           <% if((editca && x509cainfo.getUseAuthorityKeyIdentifier()) || !editca)
-                 out.write("CHECKED");
-              if(isexternal) out.write(" disabled ");
-           %> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>">
+          	 <% if((editca && x509cainfo.getUseAuthorityKeyIdentifier()) || !editca)
+            	     out.write("CHECKED");
+          	    if(isexternal) out.write(" disabled ");
+         	  %> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>" <%= (hasEditRights ? "" : "disabled") %>>
            <label for="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1181,7 +1192,7 @@ function checkallfields(){
                else
                if(x509cainfo.getAuthorityKeyIdentifierCritical())
                  out.write("CHECKED");
-             }%> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL%>">
+             }%> id="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL%>" <%= (hasEditRights ? "" : "disabled") %>>
              <label for="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
@@ -1195,7 +1206,7 @@ function checkallfields(){
            <% if((editca && x509cainfo.getUseCRLNumber()) || !editca)
                  out.write("CHECKED");
               if(isexternal) out.write(" disabled "); 
-           %> id="<%=CHECKBOX_USECRLNUMBER%>">
+           %> id="<%=CHECKBOX_USECRLNUMBER%>" <%= (hasEditRights ? "" : "disabled") %>>
            <label for="<%=CHECKBOX_USECRLNUMBER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
           <input type="checkbox" name="<%=CHECKBOX_CRLNUMBERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1206,7 +1217,7 @@ function checkallfields(){
                else
                if(x509cainfo.getCRLNumberCritical())
                  out.write("CHECKED");
-             }%> id="<%=CHECKBOX_CRLNUMBERCRITICAL%>">
+             }%> id="<%=CHECKBOX_CRLNUMBERCRITICAL%>" <%= (hasEditRights ? "" : "disabled") %>>
              <label for="<%=CHECKBOX_CRLNUMBERCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
@@ -1221,7 +1232,7 @@ function checkallfields(){
                  out.write("CHECKED");
               }
               if(isexternal) out.write(" disabled "); 
-           %> id="<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL%>">
+           %> id="<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL%>" <%= (hasEditRights ? "" : "disabled") %>>
            <label for="<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
            &nbsp;
           <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1232,7 +1243,7 @@ function checkallfields(){
                else
                if(x509cainfo.getCrlDistributionPointOnCrlCritical())
                  out.write("CHECKED");
-             }%> id="<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL%>">
+             }%> id="<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL%>" <%= (hasEditRights ? "" : "disabled") %>>
              <label for="<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
       </td>
     </tr>
@@ -1247,9 +1258,10 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>
               <%}else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="40" maxlength="4096" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%> />
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%>  <%= (hasEditRights ? "" : "disabled") %> />
          <% } %> 
-           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" />
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
+           	<%= (hasEditRights ? "" : "disabled") %> />
 		   <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
@@ -1264,9 +1276,10 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>
              <% }else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
-         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>"<%}%>>
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> >
            <% } %> 
-           <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
+           	<%= (hasEditRights ? "" : "disabled") %>>
       </td>
     </tr>
 
@@ -1280,9 +1293,11 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>
               <%}else{ %>
          <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%> />
+         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%> 
+         	<%= (hasEditRights ? "" : "disabled") %>/>
            <% } %>
-           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" />
+           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
+           	<%= (hasEditRights ? "" : "disabled") %>/>
            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
@@ -1297,7 +1312,7 @@ function checkallfields(){
              } else { %>
         <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
+               else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %>
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
@@ -1313,7 +1328,7 @@ function checkallfields(){
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %>>
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
@@ -1329,7 +1344,7 @@ function checkallfields(){
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %>>
+               else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
@@ -1345,7 +1360,7 @@ function checkallfields(){
              } else { %>
         <input type="obligatory" name="<%=TEXTFIELD_DELTACRLPERIOD%>" id="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %> />
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %> <%= (hasEditRights ? "" : "disabled") %> />
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %>
           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DELTACRLPERIOD_HELP\") %>" /></p>
@@ -1372,7 +1387,7 @@ function checkallfields(){
            }
        }    
        %>
-        <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" value="<c:out value="<%= authorityInformationAccess %>"/>">        
+        <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" value="<c:out value="<%= authorityInformationAccess %>"/>" <%= (hasEditRights ? "" : "disabled") %>>        
       </td>
     </tr>
 
@@ -1381,7 +1396,7 @@ function checkallfields(){
        <%= ejbcawebbean.getText("PUBLISHERS") %> <br />&nbsp;
      </td>
      <td width="50%"> 
-       <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
+       <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
           <%   Collection usedpublishers = null;
                if(editca) usedpublishers = cainfo.getCRLPublishers(); 
                Iterator iter = publisheridtonamemap.keySet().iterator(); 
@@ -1419,8 +1434,9 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>
              <% }else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%> />
-           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" />
+         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> />
+           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" 
+           	value="<%= ejbcawebbean.getText("GENERATE") %>" <%= (hasEditRights ? "" : "disabled") %> />
            <br />
            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
@@ -1435,10 +1451,11 @@ function checkallfields(){
         <input type="checkbox" name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(waitingresponse || (editca && !isUninitialized && xkmscainfo == null)) out.write(" disabled ");%>
             <% if((editca && (xkmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
                  <label for="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
          <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" >
+         <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" 
+         	<%= (hasEditRights ? "" : "disabled") %>>
          <%   if(xkmscert != null){ %> &nbsp;&nbsp;         
          <br />
          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1458,10 +1475,11 @@ function checkallfields(){
         <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(waitingresponse || (editca && !isUninitialized && cmscainfo == null)) out.write(" disabled ");%>
             <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>">
+                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
                  <label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
          <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" >
+         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" 
+         	<%= (hasEditRights ? "" : "disabled") %>>
          <%   if(cmscert != null){ %> &nbsp;&nbsp;         
          <br />
          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1493,7 +1511,7 @@ function checkallfields(){
     <tr id="Row<%=row%2%>"> 
         <td width="50%"  align="right"><%= ejbcawebbean.getText("APPROVALSETTINGS") %></td>
         <td width="50%"> 
-            <select name="<%=SELECT_APPROVALSETTINGS%>" size="5" multiple >
+            <select name="<%=SELECT_APPROVALSETTINGS%>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
             <% for (int i=0; i< CAInfo.AVAILABLE_APPROVALSETTINGS.length; i++) {
             	String itemSelected = "";
             	if (editca && cainfo.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i])) {
@@ -1509,7 +1527,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>"> 
         <td width="50%" align="right"><%= ejbcawebbean.getText("NUMOFREQUIREDAPPROVALS") %></td>
         <td width="50%">
-            <select name="<%=SELECT_NUMOFREQUIREDAPPROVALS%>" >
+            <select name="<%=SELECT_NUMOFREQUIREDAPPROVALS%>" <%= (hasEditRights ? "" : "disabled") %> >
             <% for (int i=1; i<=4; i++) {
           	    final String itemSelected = (editca && cainfo.getNumOfReqApprovals() == i) ? " selected " : ""; %>
                 <option  value="<%=i%>" <%=itemSelected%>><%=i%></option>
@@ -1524,7 +1542,7 @@ function checkallfields(){
         <td width="50%"> 
             <input type="checkbox" name="<%=CHECKBOX_FINISHUSER %>" value="<%=CHECKBOX_VALUE %>" 
                 <% if ((editca && cainfo.getFinishUser()) || !editca) { 
-                out.write("CHECKED"); } %> id="<%=CHECKBOX_FINISHUSER%>">
+                out.write("CHECKED"); } %> id="<%=CHECKBOX_FINISHUSER%>" <%= (hasEditRights ? "" : "disabled") %>>
                 <label for="<%=CHECKBOX_FINISHUSER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>         
         </td>
     </tr>
@@ -1536,7 +1554,8 @@ function checkallfields(){
       </td>
       <td width="50%">
         <% String cmpRaAuthSecretValue = (editca?((X509CAInfo)cainfo).getCmpRaAuthSecret():""); %>
-        <input type="password" autocomplete="off" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<c:out value="<%= cmpRaAuthSecretValue %>"/>">
+        <input type="password" autocomplete="off" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<c:out value="<%= cmpRaAuthSecretValue %>"/>"
+        	<%= (hasEditRights ? "" : "disabled") %>>
       </td>
     </tr>
     <% } %>
@@ -1547,7 +1566,7 @@ function checkallfields(){
         <td width="50%">
             <input type="checkbox" name="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>" value="<%=CHECKBOX_VALUE%>" id="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>"
                 <% if (cainfo!=null && cainfo.getIncludeInHealthCheck()) { out.write("CHECKED"); } %>
-                >
+                <%= (hasEditRights ? "" : "disabled") %> >
                 <label for="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
         </td>
     </tr>
@@ -1568,9 +1587,9 @@ function checkallfields(){
         <td width="49%" valign="top" align="right"></td>
         <td width="51%" valign="top">
         <% if (!isexternal) {
-            if (editca && !isUninitialized) { %>
+            if (editca && !isUninitialized && hasEditRights) { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-        <%  } else if (editca && isUninitialized) {
+        <%  } else if (editca && isUninitialized && hasEditRights) {
                 if (cryptoTokenIdParam != null) { %>
                     <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
                     <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>"> 
@@ -1580,14 +1599,14 @@ function checkallfields(){
                 <% } else { %>
                     <p><strong><%= ejbcawebbean.getText("CRYPTOTOKEN_DOESNT_EXIST_CANT_SAVE") %></strong></p> 
                 <% } %>
-        <%  } else { %>
+        <%  } else if (hasCreateRights){ %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
-        <%  } %>
-        &nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;
+        <%  } %>     
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <% } else { %>
         &nbsp;&nbsp;&nbsp;
-        <%  if (catype==CAInfo.CATYPE_X509) {  %>
+        <%  if (catype==CAInfo.CATYPE_X509 && hasEditRights) {  %>
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE_EXTERNALCA %>"  value="<%= ejbcawebbean.getText("SAVE") %>">
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <%  } else { %>
@@ -1599,7 +1618,7 @@ function checkallfields(){
 
     <%-- ---------- Other CA actions -------------------- --%>
 
-    <% if (editca && revokable) { %>
+    <% if (editca && revokable && hasEditRights) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>" class="section">
         <td width="50%" align="right">
@@ -1703,7 +1722,7 @@ function checkallfields(){
       <% } 
     } %> 
 
-    <% if (editca && !isexternal && !waitingresponse) { %>
+    <% if (editca && !isexternal && !waitingresponse && hasEditRights) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>"> 
         <td width="49%" valign="top" align="right"></td>
@@ -1713,7 +1732,7 @@ function checkallfields(){
     </tr>
     <% } %> 
 
-    <% if (!isexternal && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId)) { %>
+    <% if (!isexternal && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId) && hasEditRights) { %>
     <tr id="Row<%=row++%2%>" class="section">
         <td width="50%" align="right">
         <strong><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CA_CREATERENEW") %></strong>
@@ -1804,7 +1823,7 @@ function checkallfields(){
     </tr>
     <% } %>
 
-    <% if (isexternal && editca) { %>
+    <% if (isexternal && editca && hasEditRights) { %>
     <tr id="Row<%=row++%2%>" class="section">
         <td width="50%" align="right">
         <strong><%= ejbcawebbean.getText("IMPORTED_CA_RENEWAL") %></strong>
@@ -1840,7 +1859,7 @@ function checkallfields(){
     <%/* close CA form */%>
     </form>
 
-    <% if (editca && !isexternal) { %>
+    <% if (editca && !isexternal && hasEditRights) { %>
     <tr id="Row<%=row++%2%>" class="section">
         <td width="49%" valign="top" align="right"><strong><%= ejbcawebbean.getText("EXPORTCA_HEADER") %></strong></td><td width="50%">&nbsp;</td>
     </tr>
