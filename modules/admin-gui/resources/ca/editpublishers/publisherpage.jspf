@@ -1,5 +1,5 @@
 <%               
-  BasePublisher publisherdata = publisherhelper.publisherdata;
+  BasePublisher publisherdata = publisherhelper.getPublisherdata();
    
 
   Map authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
@@ -124,15 +124,15 @@ function checkallfields(){
 
 </script>
 <div align="center">
-  <h2><%= ejbcawebbean.getText("EDITPUBLISHER") %></h2>
-  <h3><%= ejbcawebbean.getText("PUBLISHER")+ " : "%><c:out value="<%= publisherhelper.publishername %>"/></h3>
-<% if(publisherhelper.connectionmessage){
-     publisherhelper.connectionmessage = false;
-     if(publisherhelper.connectionsuccessful){
-        publisherhelper.connectionsuccessful = false;
+  <h2><%= ejbcawebbean.getText(( publisherhelper.hasEditRights() ?  "EDITPUBLISHER" :  "VIEWPUBLISHER")   ) %></h2>
+  <h3><%= ejbcawebbean.getText("PUBLISHER")+ " : "%><c:out value="<%= publisherhelper.getPublisherName() %>"/></h3>
+<% if(publisherhelper.getConnectionmessage()){
+     publisherhelper.setConnectionmessage(false);
+     if(publisherhelper.isConnectionsuccessful()){
+        publisherhelper.setConnectionsuccessful(false);
         out.write("<h3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</h3>");
      }else{
-       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : ");%> <c:out value="<%= publisherhelper.connectionerrormessage %>"/></h3>
+       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : ");%> <c:out value="<%= publisherhelper.getConnectionerrormessage() %>"/></h3>
      <%}
    } %>
 </div>
@@ -153,12 +153,12 @@ function checkallfields(){
         <strong><%= ejbcawebbean.getText("NAME") %></strong>
       </td>
       <td width="55%"> 
-        <strong><c:out value="<%= publisherhelper.publishername %>"/></strong>
+        <strong><c:out value="<%= publisherhelper.getPublisherName() %>"/></strong>
       </td>
     </tr>
     <form name="publishertype" method="post" action="<%=THIS_FILENAME %>">
       <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_CHANGE_PUBLISHERTYPE %>'>
-      <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.publishername %>"/>'>
+      <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.getPublisherName() %>"/>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="45%"  align="right"> 
         <%= ejbcawebbean.getText("PUBLISHERTYPE") %>
@@ -188,20 +188,20 @@ function checkallfields(){
    
    <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_EDIT_PUBLISHER %>'>
-    <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.publishername %>"/>'>
+    <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.getPublisherName() %>"/>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERTYPE %>' value='<c:out value="<%= publisherhelper.getPublisherType() %>"/>'>
    <table class="edit-bottom" width="100%" border="0" cellspacing="3" cellpadding="3">
 
-    <% if(publisherhelper.publisherdata instanceof LdapPublisher){%>
+    <% if(publisherhelper.getPublisherdata() instanceof LdapPublisher){%>
          <%@ include file="ldappublisherpage.jspf" %> 
     <% }
-      if(publisherhelper.publisherdata instanceof LdapSearchPublisher){%>
+      if(publisherhelper.getPublisherdata() instanceof LdapSearchPublisher){%>
          <%@ include file="ldapsearchpublisherpage.jspf" %> 
     <% }
-      if(publisherhelper.publisherdata instanceof ActiveDirectoryPublisher){%>
+      if(publisherhelper.getPublisherdata() instanceof ActiveDirectoryPublisher){%>
          <%@ include file="adpublisherpage.jspf" %> 
     <% }
-       if(publisherhelper.publisherdata instanceof CustomPublisherContainer){%>
+       if(publisherhelper.getPublisherdata() instanceof CustomPublisherContainer){%>
          <%@ include file="custompublisherpage.jspf" %> 
     <% } %>
    

@@ -76,7 +76,7 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
             final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
             final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
             // Get the publisher info
-            final BasePublisher pub = pubsession.getPublisher(getAuthenticationToken(), name);
+            final BasePublisher pub = pubsession.getPublisher(name);
             if (pub == null) {
                 getLogger().info("Publisher with name '"+name+"' does not exist.");
                 return CommandResult.FUNCTIONAL_FAILURE;

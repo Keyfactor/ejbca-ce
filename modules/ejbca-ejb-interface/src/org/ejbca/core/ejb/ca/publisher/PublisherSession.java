@@ -36,15 +36,14 @@ public interface PublisherSession {
      * @return a BasePublisher or null if a publisher with the given id does not
      *         exist. Uses cache to get the object as quickly as possible.
      *         
-     * @throws AuthorizationDeniedException if requester does not have access to publishers
      */
-    BasePublisher getPublisher(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException;
+    BasePublisher getPublisher(int id);
     
     /**
      * @return a BasePublisher or null if a publisher with the given name does
      *         not exist. Uses cache to get the object as quickly as possible.
      */
-    BasePublisher getPublisher(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException;
+    BasePublisher getPublisher(String name);
     
     /**
      * @return the name of the publisher with the given id, null if none was found.
@@ -55,7 +54,7 @@ public interface PublisherSession {
      * @return the data hashmap of the publisher with the given id.
      * @throws PublisherDoesntExistsException if there's no publisher with the given id.
      */
-    Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException;
+    Map<?, ?> getPublisherData(int id) throws PublisherDoesntExistsException;
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
