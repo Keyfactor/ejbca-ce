@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,8 +24,8 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -49,18 +48,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  *
  * @version $Id$
  */
-public class EditPublisherJSPHelper implements Serializable {
-
-    /**
-     * Determines if a de-serialized file is compatible with this class.
-     *
-     * Maintainers must change this value if and only if the new version
-     * of this class is not compatible with old versions. See Sun docs
-     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
-     * /serialization/spec/version.doc.html> details. </a>
-     *
-     */
-	private static final long serialVersionUID = 436830207093078435L;
+public class EditPublisherJSPHelper {
 	
     public static final String ACTION                              = "action";
     public static final String ACTION_EDIT_PUBLISHERS              = "editpublishers";
@@ -154,14 +142,15 @@ public class EditPublisherJSPHelper implements Serializable {
     
     private CAInterfaceBean cabean;
     private boolean initialized=false;
-    public boolean  publisherexists       = false;
-    public boolean  publisherdeletefailed = false;
-    public boolean  connectionmessage = false;
-    public boolean  connectionsuccessful = false;
-    public String   connectionerrormessage = "";
-    public boolean  issuperadministrator = false;
-    public BasePublisher publisherdata = null;
-    public String publishername = null;
+    private boolean  publisherexists       = false;
+    private boolean  publisherdeletefailed = false;
+    private boolean  connectionmessage = false;
+    private boolean  connectionsuccessful = false;
+    private String   connectionerrormessage = "";
+    private BasePublisher publisherdata = null;
+
+
+    private String publishername = null;
 
     /** Creates new LogInterfaceBean */
     public EditPublisherJSPHelper(){
@@ -179,13 +168,11 @@ public class EditPublisherJSPHelper implements Serializable {
             this.cabean = cabean;
             this.ejbcawebbean = ejbcawebbean;
             initialized = true;
-            issuperadministrator = false;
-            try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource());
-            }catch(AuthorizationDeniedException ade){}
+
         }
     }
 
+    @SuppressWarnings({ "deprecation" })
     public String parseRequest(HttpServletRequest request) throws AuthorizationDeniedException, PublisherDoesntExistsException, PublisherExistsException{
         String includefile = PAGE_PUBLISHERS;
         String publisher = null;
@@ -220,7 +207,7 @@ public class EditPublisherJSPHelper implements Serializable {
                     publisher = request.getParameter(SELECT_PUBLISHER);
                     if(publisher != null){
                         if(!publisher.trim().equals("")){
-                            publisherdeletefailed = handler.removePublisher(publisher);
+                            setPublisherdeletefailed(handler.removePublisher(publisher));
                         }
                     }
                     includefile=PAGE_PUBLISHERS;
@@ -234,7 +221,7 @@ public class EditPublisherJSPHelper implements Serializable {
                             try{
                                 handler.renamePublisher(oldpublishername.trim(),newpublishername.trim());
                             }catch( PublisherExistsException e){
-                                publisherexists=true;
+                                setPublisherexists(true);
                             }
                         }
                     }
@@ -247,7 +234,7 @@ public class EditPublisherJSPHelper implements Serializable {
                             try{
                                 handler.addPublisher(publisher.trim(), new LdapPublisher());
                             }catch( PublisherExistsException e){
-                                publisherexists=true;
+                                setPublisherexists(true);
                             }
                         }
                     }
@@ -560,13 +547,13 @@ public class EditPublisherJSPHelper implements Serializable {
                                 includefile=PAGE_PUBLISHERS;
                             }
                             if(request.getParameter(BUTTON_TESTCONNECTION)!= null){
-                                connectionmessage = true;
+                                setConnectionmessage(true);
                                 handler.changePublisher(publisher,publisherdata);
                                 try{
                                     handler.testConnection(publisher);
-                                    connectionsuccessful = true;
+                                    setConnectionsuccessful(true);
                                 }catch(PublisherConnectionException pce){
-                                    connectionerrormessage = pce.getMessage();
+                                    setConnectionerrormessage(pce.getMessage());
                                 }
                                 includefile=PAGE_PUBLISHER;
                             }
@@ -626,7 +613,11 @@ public class EditPublisherJSPHelper implements Serializable {
         "LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER",
          "CUSTOMPUBLISHER"
     };
-
+    
+    public String getPublisherName() {
+        return publishername;
+    }
+    
     public String getPublisherName(String className) {
         final String klassSimpleName = className.substring(className.lastIndexOf('.')+1);
         // Present the publisher with a nice name if a language key is present
@@ -702,6 +693,7 @@ public class EditPublisherJSPHelper implements Serializable {
         return Integer.valueOf(getPublisherType()).toString();
     }
     
+    @SuppressWarnings("deprecation")
     public int getPublisherType(){
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
         if(publisherdata instanceof CustomPublisherContainer) {
@@ -723,12 +715,18 @@ public class EditPublisherJSPHelper implements Serializable {
         return retval;
     }
 
+    public boolean hasEditRights() {
+        return ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITPUBLISHER);
+    }
+    
     /**
      * 
      * @return true if the publisher type is inherently read-only
      */
     public boolean isReadOnly() {
-        if (publisherdata instanceof CustomPublisherContainer) {
+        if(!hasEditRights()) {
+            return true;
+        } else if (publisherdata instanceof CustomPublisherContainer) {
             ICustomPublisher pub = ((CustomPublisherContainer) publisherdata).getCustomPublisher();
             // Can be null if custom publisher has not been set up yet, then it has to be editable
             return pub == null ? false : pub.isReadOnly();
@@ -774,5 +772,42 @@ public class EditPublisherJSPHelper implements Serializable {
         }
         return classes;
     }
+    public boolean isPublisherexists() {
+        return publisherexists;
+    }
+    public void setPublisherexists(boolean publisherexists) {
+        this.publisherexists = publisherexists;
+    }
+    public boolean isPublisherdeletefailed() {
+        return publisherdeletefailed;
+    }
+    public void setPublisherdeletefailed(boolean publisherdeletefailed) {
+        this.publisherdeletefailed = publisherdeletefailed;
+    }
+    public boolean getConnectionmessage() {
+        return connectionmessage;
+    }
+    public void setConnectionmessage(boolean connectionmessage) {
+        this.connectionmessage = connectionmessage;
+    }
+    public boolean isConnectionsuccessful() {
+        return connectionsuccessful;
+    }
+    public void setConnectionsuccessful(boolean connectionsuccessful) {
+        this.connectionsuccessful = connectionsuccessful;
+    }
+    public String getConnectionerrormessage() {
+        return connectionerrormessage;
+    }
+    public void setConnectionerrormessage(String connectionerrormessage) {
+        this.connectionerrormessage = connectionerrormessage;
+    }
 
+    public BasePublisher getPublisherdata() {
+        return publisherdata;
+    }
+    public void setPublisherdata(BasePublisher publisherdata) {
+        this.publisherdata = publisherdata;
+    }
+    
 }

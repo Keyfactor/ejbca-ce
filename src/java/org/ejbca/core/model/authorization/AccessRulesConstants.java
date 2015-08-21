@@ -62,7 +62,8 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_CREATECRL                          = StandardRules.CREATECRL.resource();    
     public static final String REGULAR_CREATECERTIFICATE                  = StandardRules.CREATECERT.resource();
     public static final String REGULAR_STORECERTIFICATE                   = StandardRules.CAFUNCTIONALITY.resource()+"/store_certificate";    
-    public static final String REGULAR_EDITPUBLISHER                      = StandardRules.CAFUNCTIONALITY.resource()+"/edit_publisher";    
+    public static final String REGULAR_EDITPUBLISHER                      = StandardRules.CAFUNCTIONALITY.resource()+"/edit_publisher";   
+    public static final String REGULAR_VIEWPUBLISHER                      = StandardRules.CAFUNCTIONALITY.resource()+"/view_publisher";    
     public static final String REGULAR_RAFUNCTIONALITY                    = "/ra_functionality";
     public static final String REGULAR_EDITENDENTITYPROFILES              = "/ra_functionality/edit_end_entity_profiles";
     public static final String REGULAR_EDITUSERDATASOURCES                = "/ra_functionality/edit_user_data_sources";
@@ -108,6 +109,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_CREATECERTIFICATE,
                                                            REGULAR_STORECERTIFICATE,
                                                            REGULAR_EDITPUBLISHER,
+                                                           REGULAR_VIEWPUBLISHER,
                                                            REGULAR_APPROVECAACTION,
                                                            REGULAR_RAFUNCTIONALITY, 
                                                            REGULAR_EDITENDENTITYPROFILES,

@@ -70,19 +70,19 @@ public class PublisherSessionTest {
             // Add new publisher
             publisherProxySession.addPublisher(internalAdmin, name, publ);
             publisherProxySession.addPublisher(internalAdmin, name1, publ1);
-            BasePublisher pub = publisherSession.getPublisher(internalAdmin, name);
+            BasePublisher pub = publisherSession.getPublisher(name);
             assertEquals("Description is not what we set", "foobar", pub.getDescription());
             assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
             assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
             int id = publisherProxySession.getPublisherId(name);
-            BasePublisher pub1 = publisherSession.getPublisher(internalAdmin, id);
+            BasePublisher pub1 = publisherSession.getPublisher(id);
             assertEquals("Description is not what we set", "foobar", pub1.getDescription());
             assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub1.getClass().getName());
             assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub1).getBaseDN());
             // Change publisher
             pub.setDescription("newdesc");
             publisherSession.changePublisher(internalAdmin, name, pub);
-            pub = publisherSession.getPublisher(internalAdmin, name);
+            pub = publisherSession.getPublisher(name);
             assertEquals("Description is not what we set", "newdesc", pub.getDescription());
             assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
             assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
@@ -91,9 +91,9 @@ public class PublisherSessionTest {
             // Remove publishers
             publisherProxySession.removePublisher(internalAdmin, name);
             publisherProxySession.removePublisher(internalAdmin, name1);
-            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(internalAdmin, name));
-            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(internalAdmin, name1));
-            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(internalAdmin, id));
+            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name));
+            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name1));
+            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(id));
         } finally {
             publisherProxySession.removePublisher(internalAdmin, name);
             publisherProxySession.removePublisher(internalAdmin, name1);            
@@ -116,27 +116,27 @@ public class PublisherSessionTest {
             // Add a publisher
             publisherProxySession.addPublisher(internalAdmin, name, publ);
             // Make sure publisher has the right value from the beginning
-            BasePublisher pub = publisherSession.getPublisher(internalAdmin, name);
+            BasePublisher pub = publisherSession.getPublisher(name);
             assertEquals("Description is not what we set", "foobar", pub.getDescription());
             // Change publisher
             pub.setDescription("bar");
             publisherSession.changePublisher(internalAdmin, name, pub);
             // Read publisher again, cache should have been updated directly
-            pub = publisherSession.getPublisher(internalAdmin, name);
+            pub = publisherSession.getPublisher(name);
             assertEquals("bar", pub.getDescription());
             // Flush caches to reset cache timeout
             publisherProxySession.flushPublisherCache();
             /// Read publisher to ensure it is in cache
-            pub = publisherSession.getPublisher(internalAdmin, name);
+            pub = publisherSession.getPublisher(name);
             assertEquals("bar", pub.getDescription());
             // Change publisher not flushing cache, old value should remain when reading
             pub.setDescription("newvalue");
             publisherProxySession.internalChangeCertificateProfileNoFlushCache(name, pub);
-            pub = publisherSession.getPublisher(internalAdmin, name);
+            pub = publisherSession.getPublisher(name);
             assertEquals("bar", pub.getDescription()); // old value
             // Wait 2 seconds and try again, now the cache should have been updated
             Thread.sleep(2000);
-            pub = publisherSession.getPublisher(internalAdmin, name);
+            pub = publisherSession.getPublisher(name);
             assertEquals("newvalue", pub.getDescription()); // new value
         } finally {
             configSession.updateProperty("publisher.cachetime", oldcachetime);

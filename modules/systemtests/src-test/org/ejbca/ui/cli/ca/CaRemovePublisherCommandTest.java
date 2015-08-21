@@ -90,7 +90,7 @@ public class CaRemovePublisherCommandTest {
         LdapPublisher publisher = new LdapPublisher();
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
         try {
-            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNotNull("Publisher should have been added", pub1);
             // Call CLI with invalid args
             CommandResult result = command.execute(INVALID_ARGS);
@@ -102,7 +102,7 @@ public class CaRemovePublisherCommandTest {
             result = command.execute(HAPPY_PATH_REMOVE_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we removed
-            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNull("Publisher should have been removed", pub2);            
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
@@ -114,7 +114,7 @@ public class CaRemovePublisherCommandTest {
         try {
             LdapPublisher publisher = new LdapPublisher();
             int id = publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
-            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNotNull("Publisher should have been added", pub1);            
             // Add a reference to a CA
             CAInfo info = caSession.getCAInfo(admin, CA_NAME);
@@ -132,14 +132,14 @@ public class CaRemovePublisherCommandTest {
             CommandResult result = command.execute(HAPPY_PATH_REMOVE_ARGS);
             assertEquals("Command was not sucessfully run, it should have given an error trying to remove publisher with references.", CommandResult.FUNCTIONAL_FAILURE, result);
             // Check that we didn't remove
-            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNotNull("Publisher should not have been removed", pub2);            
             
             // List references command, should not remove anything
             result = command.execute(HAPPY_PATH_LISTREF_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we didn't remove
-            pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNotNull("Publisher should not have been removed", pub2);
             CertificateProfile profile1 = profileSession.getCertificateProfile(profileId);
             assertEquals("Profile should still contain reference to publisher.", 1, profile1.getPublisherList().size());
@@ -150,7 +150,7 @@ public class CaRemovePublisherCommandTest {
             result = command.execute(HAPPY_PATH_REMOVEREF_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we didn't remove publisher, but did remove references to it
-            pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNotNull("Publisher should not have been removed", pub2);
             CertificateProfile profile2 = profileSession.getCertificateProfile(profileId);
             assertEquals("Profile should not contain reference to publisher.", 0, profile2.getPublisherList().size());
@@ -161,14 +161,14 @@ public class CaRemovePublisherCommandTest {
             result = command.execute(HAPPY_PATH_REMOVE_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we removed
-            pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNull("Publisher should have been removed", pub2);            
             
             // Remove all should remove references and publisher
             // First, add back publisher and references
             publisher = new LdapPublisher();
             id = publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
-            pub1 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNotNull("Publisher should have been added", pub1);            
             pubs = new ArrayList<Integer>();
             pubs.add(id);
@@ -185,7 +185,7 @@ public class CaRemovePublisherCommandTest {
             result = command.execute(HAPPY_PATH_REMOVEALL_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we removed
-            pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNull("Publisher should have been removed", pub2);            
             profile2 = profileSession.getCertificateProfile(profileId);
             assertEquals("Profile should not contain reference to publisher.", 0, profile2.getPublisherList().size());

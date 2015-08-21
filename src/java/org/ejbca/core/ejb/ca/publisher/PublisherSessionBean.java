@@ -534,15 +534,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BasePublisher getPublisher(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
-        authorizedToEditPublishers(authenticationToken);
+    public BasePublisher getPublisher(String name) {
         return getPublisherInternal(-1, name, true);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BasePublisher getPublisher(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        authorizedToEditPublishers(authenticationToken);
+    public BasePublisher getPublisher(int id) {
         return getPublisherInternal(id, null, true);
     }
 
@@ -583,7 +581,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<?, ?> getPublisherData(AuthenticationToken admin, int id) throws AuthorizationDeniedException, PublisherDoesntExistsException {
+    public Map<?, ?> getPublisherData(int id) throws PublisherDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherData(id: " + id + ")");
         }
@@ -592,7 +590,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (pub == null) {
             throw new PublisherDoesntExistsException("Publisher with id " + id + " doesn't exist");
         }
-        authorizedToEditPublishers(admin);
         return (Map<?, ?>) pub.saveData();
     }
 

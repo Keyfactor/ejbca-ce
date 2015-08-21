@@ -38,6 +38,7 @@ public enum DefaultRoles {
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITPUBLISHER, AccessRuleState.RULE_ACCEPT, false), 
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AuditLogRules.LOG.resource(), AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, false), 
@@ -72,7 +73,8 @@ public enum DefaultRoles {
             new AccessRuleTemplate(InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true),
             new AccessRuleTemplate(StandardRules.CAVIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
-            new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true)
+            new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true),
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false)
             ),
     HARDTOKENISSUER("HARDTOKENISSUER");
 

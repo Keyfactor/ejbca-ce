@@ -98,16 +98,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(getSelectedCertProfileId());
     }
 
-    public CertificateProfile getCertificateProfile() throws AuthorizationDeniedException {
+    public CertificateProfile getCertificateProfile() {
         if (currentCertProfileId!=-1 && certificateProfile!=null && getSelectedCertProfileId().intValue() != currentCertProfileId) {
             reset();
         }
         if (certificateProfile==null) {
             currentCertProfileId = getSelectedCertProfileId().intValue();
             final CertificateProfile certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(currentCertProfileId);
-            if (!getEjbcaWebBean().getEjb().getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(getSelectedCertProfileId())) {
-                throw new AuthorizationDeniedException("Not authorized to certificate profile");
-            }
             try {
                 this.certificateProfile = certificateProfile.clone();
                 // Add some defaults
@@ -767,11 +764,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem/*<Integer,String*/> getAvailableCAsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<Integer> allCAs = getEjbcaWebBean().getEjb().getCaSession().getAllCaIds();
         final List<Integer> authorizedCAs = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
         final Map<Integer, String> caIdToNameMap = getEjbcaWebBean().getEjb().getCaSession().getCAIdToNameMap();
         ret.add(new SelectItem(String.valueOf(CertificateProfile.ANYCA), getEjbcaWebBean().getText("ANYCA")));
-        for (final Integer caId : authorizedCAs) {
-            ret.add(new SelectItem(caId, caIdToNameMap.get(caId)));
+        for (final Integer caId : allCAs) {
+            ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "foo", (authorizedCAs.contains(caId) ? false : true)));
         }
         return ret;
     }
@@ -797,7 +795,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void setApprovalEnabledKeyRecover(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_KEYRECOVER, enabled); }
     public void setApprovalEnabledRevocation(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_REVOCATION, enabled); }
     public void setApprovalEnabledActivateCa(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_ACTIVATECA, enabled); }
-
+  
     private boolean isApprovalEnabled(final int approvalType) throws AuthorizationDeniedException {
         return getCertificateProfile().getApprovalSettings().contains(Integer.valueOf(approvalType));
     }
