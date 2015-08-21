@@ -70,17 +70,17 @@ public class CaEditPublisherCommandTest {
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
         try {
-            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             CommandResult result = command.execute(HAPPY_PATH_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
-            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not changed as it should", "myhost.com", pub2.getHostnames());
             result = command.execute(HAPPY_PATH_WITH_TYPE_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
-            pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("AddMultipleCertificates was not changed as it should", true, pub2.getAddMultipleCertificates());
 
             // Try to get value and list fields without exceptions...
@@ -97,12 +97,12 @@ public class CaEditPublisherCommandTest {
             gcp.setClassPath(GeneralPurposeCustomPublisher.class.getName());
             gcp.setPropertyData("foo=bar");
             publisherProxySession.addPublisher(admin, GCP_PUBLISHER_NAME, gcp);
-            CustomPublisherContainer pub1 = (CustomPublisherContainer) publisherSession.getPublisher(admin, GCP_PUBLISHER_NAME);
+            CustomPublisherContainer pub1 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
             assertEquals("Propertydata was not added as it should", "foo=bar", pub1.getPropertyData());
             CommandResult result = command.execute(HAPPY_PATH_GCP_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
-            CustomPublisherContainer pub2 = (CustomPublisherContainer) publisherSession.getPublisher(admin, GCP_PUBLISHER_NAME);
+            CustomPublisherContainer pub2 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
             assertEquals("Propertydata was not changed as it should", "primekey http://www.primekey.se", pub2.getPropertyData());
         } finally {
             publisherProxySession.removePublisher(admin, GCP_PUBLISHER_NAME);
@@ -116,11 +116,11 @@ public class CaEditPublisherCommandTest {
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
         try {
-            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(MISSING_ARGS);
             // Check that nothing happened
-            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not changed as it should", "myhost1", pub2.getHostnames());
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
@@ -133,7 +133,7 @@ public class CaEditPublisherCommandTest {
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
         try {
-            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(admin, PUBLISHER_NAME);
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(INVALID_FIELD_ARGS);
             //TODO: Verify that publisher is unchanged

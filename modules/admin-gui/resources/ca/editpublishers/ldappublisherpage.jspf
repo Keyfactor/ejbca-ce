@@ -1,6 +1,6 @@
 <%               
 
-   LdapPublisher ldappublisher = (LdapPublisher) publisherhelper.publisherdata;
+   LdapPublisher ldappublisher = (LdapPublisher) publisherhelper.getPublisherdata();
 
 %> 
 
@@ -22,7 +22,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPHOSTNAME%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_HOSTNAMES") %>"
-               value='<c:out value="<%= ldappublisher.getHostnames() %>"/>'>
+               value='<c:out value="<%= ldappublisher.getHostnames() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> >
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -31,23 +31,23 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPPORT%>" size="5" maxlength="255" 
-               value='<%= ldappublisher.getPort ()%>'>
+               value='<%= ldappublisher.getPort ()%>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>>
 		 <input type="radio" name="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>" value="PLAIN"
 			onClick="setUseSSLPort()"
 			<% if (ldappublisher.getConnectionSecurity() == ConnectionSecurity.PLAIN) out.write("checked"); %>
-			id="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>plain" />
+			id="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>plain" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
 			<label for="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>plain"><c:out value="<%= ejbcawebbean.getText(\"PLAIN\") %>" /></label>
 		 
 		 <input type="radio" name="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>" value="STARTTLS"
 			onClick="setUseSSLPort()"
 			<% if (ldappublisher.getConnectionSecurity() == ConnectionSecurity.STARTTLS) out.write("checked"); %>
-			id="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>starttls" />
+			id="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>starttls" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
 			<label for="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>starttls"><c:out value="<%= ejbcawebbean.getText(\"STARTTLS\") %>" /></label>
 	
 		 <input type="radio" name="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>" value="SSL"
 			onClick="setUseSSLPort()"
 			<% if (ldappublisher.getConnectionSecurity() == ConnectionSecurity.SSL) out.write("checked"); %> 
-			id="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>ssl" />
+			id="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>ssl" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
 			<label for="<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>ssl"><c:out value="<%= ejbcawebbean.getText(\"SSL\") %>" /></label>
       </td>
     </tr>
@@ -58,7 +58,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPBASEDN%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
-               value='<c:out value="<%= ldappublisher.getBaseDN() %>"/>' /> 
+               value='<c:out value="<%= ldappublisher.getBaseDN() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> /> 
          <p class="help"><%= ejbcawebbean.getText("BASEDN_HELP") %></p>
       </td>
     </tr>
@@ -68,7 +68,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPLOGINDN%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
-               value='<c:out value="<%= ldappublisher.getLoginDN() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getLoginDN() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> > 
       </td>
     </tr>
     <tr id="Row<%=row%2%>"> 
@@ -77,7 +77,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="password" autocomplete="off" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORD%>" size="20" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> > 
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -86,7 +86,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="password" autocomplete="off" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPCONFIRMLOGINPWD%>" size="20" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     <tr id="Row<%=row%2%>"> 
@@ -95,7 +95,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPTIMEOUT%>" size="10" maxlength="255" title="<%= ejbcawebbean.getText("UNIT_MSEC") %>"
-               value='<c:out value="<%= ldappublisher.getConnectionTimeOut() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getConnectionTimeOut() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     <tr id="Row<%=row%2%>"> 
@@ -104,7 +104,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPREADTIMEOUT%>" size="10" maxlength="255" title="<%= ejbcawebbean.getText("UNIT_MSEC") %>"
-               value='<c:out value="<%= ldappublisher.getReadTimeOut() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getReadTimeOut() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -113,7 +113,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPSTORETIMEOUT%>" size="10" maxlength="255" title="<%= ejbcawebbean.getText("UNIT_MSEC") %>" 
-               value='<c:out value="<%= ldappublisher.getStoreTimeOut() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getStoreTimeOut() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     
@@ -136,7 +136,7 @@
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPCREATENONEXISTING %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(ldappublisher.getCreateNonExistingUsers())
                  out.write(" CHECKED ");
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPCREATENONEXISTING%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPCREATENONEXISTING%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAPCREATENONEXISTING%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -148,7 +148,7 @@
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTING %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(ldappublisher.getModifyExistingUsers())
                  out.write(" CHECKED ");
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTING%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTING%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTING%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -160,7 +160,7 @@
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(ldappublisher.getModifyExistingAttributes())
                  out.write(" CHECKED ");
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -172,7 +172,7 @@
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPADDNONEXISTING %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(ldappublisher.getAddNonExistingAttributes())
                  out.write(" CHECKED ");
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPADDNONEXISTING%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPADDNONEXISTING%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAPADDNONEXISTING%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -185,7 +185,7 @@
            <%  if(ldappublisher.getCreateIntermediateNodes()) {
                  out.write(" CHECKED ");
 			   }
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_CREATEINTERMEDIATENODES%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_CREATEINTERMEDIATENODES%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_CREATEINTERMEDIATENODES%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -197,7 +197,7 @@
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPADDMULTIPLECERTIFICATES %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(ldappublisher.getAddMultipleCertificates())
                  out.write(" CHECKED ");
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPADDMULTIPLECERTIFICATES%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAPADDMULTIPLECERTIFICATES%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAPADDMULTIPLECERTIFICATES%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -210,7 +210,7 @@
            <%  if(ldappublisher.getRemoveRevokedCertificates()) {
                  out.write(" CHECKED ");
 			   }
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -223,7 +223,7 @@
            <%  if(ldappublisher.getRemoveUsersWhenCertRevoked()) {
                  out.write(" CHECKED ");
 			   }
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -236,7 +236,7 @@
            <%  if(ldappublisher.getSetUserPassword()) {
                  out.write(" CHECKED ");
 			   }
-           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_SET_USERPASSWORD%>" />
+           %> id="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_SET_USERPASSWORD%>" <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> />
           <label for="<%=EditPublisherJSPHelper.CHECKBOX_LDAP_SET_USERPASSWORD%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
@@ -257,7 +257,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSEROBJECTCLASS%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getUserObjectClass() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getUserObjectClass() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
    <tr id="Row<%=row++%2%>"> 
@@ -266,7 +266,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCAOBJECTCLASS%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getCAObjectClass() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getCAObjectClass() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
    <tr id="Row<%=row%2%>"> 
@@ -275,7 +275,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSERCERTATTRIBUTE%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getUserCertAttribute() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getUserCertAttribute() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
    <tr id="Row<%=row%2%>"> 
@@ -284,7 +284,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCACERTATTRIBUTE%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getCACertAttribute() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getCACertAttribute() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
    <tr id="Row<%=row%2%>"> 
@@ -293,7 +293,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCRLATTRIBUTE%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getCRLAttribute() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getCRLAttribute() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     <tr id="Row<%=row%2%>"> 
@@ -302,7 +302,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPDELTACRLATTRIBUTE%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getDeltaCRLAttribute() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getDeltaCRLAttribute() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -311,7 +311,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPARLATTRIBUTE%>" size="45" maxlength="255" 
-               value='<c:out value="<%= ldappublisher.getARLAttribute() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getARLAttribute() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>> 
       </td>
     </tr>
     
@@ -320,7 +320,7 @@
          <%= ejbcawebbean.getText("USEFIELDSINDN") %>
       </td>
       <td width="55%" valign="top">   
-        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="10" multiple >       
+        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="10" multiple <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> >       
             <% HashSet currentfields = new HashSet(ldappublisher.getUseFieldInLdapDN());
                Integer[] usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
                String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);

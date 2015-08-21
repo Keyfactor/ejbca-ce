@@ -1,5 +1,5 @@
 <%
-  TreeMap publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames(); 
+	TreeMap<String, Integer> publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames(); 
 
 %>
 
@@ -14,15 +14,15 @@
   <input type="hidden" name='<%= publisherhelper.ACTION %>' value='<%=publisherhelper.ACTION_EDIT_PUBLISHERS %>'>
 
   <table class="list">
-  <% if(publisherhelper.publisherexists){ 
-        publisherhelper.publisherexists= false;%> 
+  <% if(publisherhelper.isPublisherexists()){ 
+        publisherhelper.setPublisherexists(false);%> 
     <tr> 
       <td width="40%" class="alert"><%= ejbcawebbean.getText("PUBLISHERALREADY") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
-  <% if(publisherhelper.publisherdeletefailed){
-        publisherhelper.publisherdeletefailed = false; 
+  <% if(publisherhelper.isPublisherdeletefailed()){
+        publisherhelper.setPublisherdeletefailed(false); 
         %> 
     <tr> 
       <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEPUBLISHER") %></td>
@@ -36,10 +36,7 @@
     <tr> 
       <td width="40%">
         <select name="<%=EditPublisherJSPHelper.SELECT_PUBLISHER%>" style="width: 50em" size="15"  >
-          <% Iterator iter = publishernames.keySet().iterator();
-             while(iter.hasNext()){
-               String publishername = (String) iter.next(); %>
-               
+          <% for(String publishername : publishernames.keySet()){ %>  
             <option value="<c:out value="<%= publishername %>"/>">
                 <c:out value="<%= publishername %>"/> 
              </option>
@@ -53,21 +50,23 @@
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td align="left">
-              <input type="submit" name="<%= publisherhelper.BUTTON_EDIT_PUBLISHER %>" value="<%= ejbcawebbean.getText("EDITPUBLISHER") %>">
+              <input type="submit" name="<%= publisherhelper.BUTTON_EDIT_PUBLISHER %>" value="<%= ejbcawebbean.getText(( publisherhelper.hasEditRights() ?  "EDITPUBLISHER" :  "VIEWPUBLISHER")   ) %>">
             </td>
             <td align="center">
               &nbsp;
             </td>
+            <% if(publisherhelper.hasEditRights()) { %>
             <td align="right">
               <input class="buttonstyle" type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= publisherhelper.BUTTON_DELETE_PUBLISHER %>" value="<%= ejbcawebbean.getText("DELETEPUBLISHER") %>">
             </td>
+            <% } %>
           </tr>
         </table> 
       </td>
       <td width="60%"></td>
     </tr>
   </table>
-
+  <% if(publisherhelper.hasEditRights()) { %>
   <table class="actions">
     <tr> 
       <td width="100%"><h3><%= ejbcawebbean.getText("ADDPUBLISHER") %></h3></td>
@@ -81,6 +80,6 @@
       </td>
     </tr>
   </table>
-
+  <% } %>
 </form>
 
