@@ -54,12 +54,11 @@ public interface ServiceSession {
      void renameService(AuthenticationToken admin, String oldname, String newname) throws ServiceExistsException;
 
     /**
-     * Retrieves a Collection of id:s (Integer) to visible authorized services.
-     * Currently is the only check if the superadmin can see them all
+     * Retrieves a Collection of id:s (Integer) to visible services.
      * 
      * @return Collection of id:s (Integer)
      */
-    Collection<Integer> getAuthorizedVisibleServiceIds(AuthenticationToken admin);
+    Collection<Integer> getAuthorizedVisibleServiceIds();
 
     /**
      * Retrieves a named service.
@@ -113,6 +112,6 @@ public interface ServiceSession {
      * 
      * @returns the service configuration or null if it doesn't exist.
      */
-    ServiceConfiguration getServiceConfiguration(AuthenticationToken admin, int id);
+    ServiceConfiguration getServiceConfiguration(int id);
 
 }

@@ -97,6 +97,11 @@ public abstract class AccessRulesConstants {
     public static final String HARDTOKEN_ISSUEHARDTOKENS                  = "/hardtoken_functionality/issue_hardtokens";
     public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS     = "/hardtoken_functionality/issue_hardtoken_administrators";
     
+    // Rules for editing/viewing Service workers
+    public static final String SERVICES_BASE                              = "/services";
+    public static final String SERVICES_EDIT                              = SERVICES_BASE+"/edit";
+    public static final String SERVICES_VIEW                              = SERVICES_BASE+"/view";
+    
     // Standard Regular Access Rules
     public static final String[] STANDARDREGULARACCESSRULES = {StandardRules.CAFUNCTIONALITY.resource(), 
                                                            REGULAR_CABASICFUNCTIONS,

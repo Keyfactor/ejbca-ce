@@ -47,7 +47,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.CASTOCHECK}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10">
+		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10" disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.availableCAsWithAnyOption}" />
 		</h:selectManyListbox>
 	</h:panelGroup>
@@ -56,7 +56,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.CERTIFICATEPROFILESTOCHECK}"/><f:verbatim> </f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>							
-		<h:selectManyListbox id="certCheckCertificateProfileSelect" value="#{editService.baseWorkerType.selectedCertificateProfilesToCheck}" size="10">
+		<h:selectManyListbox id="certCheckCertificateProfileSelect" value="#{editService.baseWorkerType.selectedCertificateProfilesToCheck}" size="10" disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.certificateProfiles}"/>
 		</h:selectManyListbox>
 	</h:panelGroup>
@@ -65,8 +65,8 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.TIMEBEFOREEXPIRATION}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5" title="#{web.text.FORMAT_INTEGER}"/><f:verbatim> </f:verbatim>
-			<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.notifyingType.timeUnit}">
+			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5" title="#{web.text.FORMAT_INTEGER}" disabled="#{not editService.hasEditRights}"/><f:verbatim> </f:verbatim>
+			<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.notifyingType.timeUnit}" disabled="#{not editService.hasEditRights}">
 			  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
 		    </h:selectOneMenu>		
 	</h:panelGroup>	

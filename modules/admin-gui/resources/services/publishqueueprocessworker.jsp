@@ -12,7 +12,7 @@
 		<h:outputText value="#{web.text.PUBLISHERSTOCHECK}"/>
 	</h:panelGroup>
 	<h:panelGroup>							
-		<h:selectManyListbox id="checkPublisherIds" value="#{editService.publishWorkerType.selectedPublisherIdsToCheck}" size="10">
+		<h:selectManyListbox id="checkPublisherIds" value="#{editService.publishWorkerType.selectedPublisherIdsToCheck}" size="10" disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.availablePublishers}"/>
 		</h:selectManyListbox>		
 	</h:panelGroup>	

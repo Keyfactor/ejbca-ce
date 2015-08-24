@@ -18,13 +18,14 @@
 if (WebConfiguration.isManualClassPathsEnabled()) {
 %>
         <h:selectOneMenu id="intervalClassPathSelect" value="#{editService.customIntervalType.autoClassPath}"
-                         onchange="document.getElementById('edit:intervalClassPathTextField').disabled = (this.value != &quot;&quot;); return true">
+                         onchange="document.getElementById('edit:intervalClassPathTextField').disabled = (this.value != &quot;&quot;); return true"
+                         disabled="#{not editService.hasEditRights}">
             <f:selectItems value="#{editService.serviceConfigurationView.availableCustomIntervalItems}" />
             <f:selectItem itemValue="" itemLabel="#{web.text.MANUALCLASSPATH}" />
         </h:selectOneMenu>
         
         <f:verbatim><br></f:verbatim>
-        <h:inputText id="intervalClassPathTextField" value="#{editService.customIntervalType.manualClassPath}" size="45"/>
+        <h:inputText id="intervalClassPathTextField" value="#{editService.customIntervalType.manualClassPath}" size="45" disabled="#{not editService.hasEditRights}"/>
         
         <f:verbatim>
             <script type="text/javascript">
@@ -40,7 +41,7 @@ if (WebConfiguration.isManualClassPathsEnabled()) {
 <%
 } else {
 %>
-        <h:selectOneMenu id="intervalClassPathSelect" value="#{editService.customIntervalType.autoClassPath}">
+        <h:selectOneMenu id="intervalClassPathSelect" value="#{editService.customIntervalType.autoClassPath}" disabled="#{not editService.hasEditRights}">
             <f:selectItem itemValue="" itemLabel="#{web.text.PLEASE_SELECT}" />
             <f:selectItems value="#{editService.serviceConfigurationView.availableCustomIntervalItems}" />
             <f:selectItems value="#{editService.manualCustomItems.intervals}" />
@@ -58,6 +59,6 @@ if (WebConfiguration.isManualClassPathsEnabled()) {
 		<h:outputText value="#{web.text.CUSTOMINTERVALPROPERTIES}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputTextarea id="intervalPropsTextArea" value="#{editService.customIntervalType.propertyText}" rows="6" cols="45"/>
+		<h:inputTextarea id="intervalPropsTextArea" value="#{editService.customIntervalType.propertyText}" rows="6" cols="45" disabled="#{not editService.hasEditRights}"/>
 	</h:panelGroup>
 
