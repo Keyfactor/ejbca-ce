@@ -203,7 +203,7 @@
   EndEntityProfile profiledata=null;
   int[] fielddata = null;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES); 
                                             ejbcarabean.initialize(request, ejbcawebbean);
                                             cabean.initialize(ejbcawebbean);
                                             tokenbean.initialize(request, ejbcawebbean);

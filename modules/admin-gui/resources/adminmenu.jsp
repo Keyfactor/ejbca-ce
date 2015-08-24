@@ -76,7 +76,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 
     final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
     final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
-    final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
     final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
     final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
     final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
@@ -192,7 +191,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 <% } %>
 <%
     // If authorized to edit the ra profiles then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(RAEDITENDENTITYPROFILES_RESOURCE)){            
+      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){            
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
            raheaderprinted=true;
