@@ -712,6 +712,10 @@ public class RAInterfaceBean implements Serializable {
     	return returnval;
     }
 
+    public boolean authorizedToEditEndEntityProfiles() {
+        return authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
+    }
+    
     public boolean authorizedToEditUser(int profileid) {
     	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.EDIT_END_ENTITY, false);
     }
