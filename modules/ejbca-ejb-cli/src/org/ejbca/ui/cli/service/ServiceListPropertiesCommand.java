@@ -38,8 +38,7 @@ public class ServiceListPropertiesCommand extends BaseServiceCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters, int serviceId) {
-        ServiceConfiguration serviceConfig = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class).getServiceConfiguration(
-                getAdmin(), serviceId);
+        ServiceConfiguration serviceConfig = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class).getServiceConfiguration(serviceId);
         boolean displayedOne = false;
         displayedOne |= displayPropertiesHelp(serviceConfig.getWorkerProperties());
         displayedOne |= displayPropertiesHelp(serviceConfig.getIntervalProperties());

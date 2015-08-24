@@ -46,7 +46,7 @@ public class ServiceListCommand extends EjbcaCliUserCommandBase {
     public CommandResult execute(ParameterContainer parameters) {
         
         final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
-        Collection<Integer> availableServicesIds = serviceSession.getAuthorizedVisibleServiceIds(getAuthenticationToken());
+        Collection<Integer> availableServicesIds = serviceSession.getAuthorizedVisibleServiceIds();
         if (availableServicesIds.size() == 0) {
             getLogger().info("No services are available.");
             return CommandResult.SUCCESS;
@@ -56,7 +56,7 @@ public class ServiceListCommand extends EjbcaCliUserCommandBase {
         getLogger().info("----+-----------------+------------------+------------------+------------------");
         for (Integer serviceId : availableServicesIds) {
             StringBuilder row = new StringBuilder();
-            ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAuthenticationToken(), serviceId);
+            ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(serviceId);
             
             // Active
             row.append(serviceConfig.isActive() ? "  X |" : "    |");
