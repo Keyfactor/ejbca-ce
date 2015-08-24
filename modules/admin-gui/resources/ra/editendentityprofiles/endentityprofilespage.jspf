@@ -1,12 +1,13 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <% 
-  TreeMap<String,Integer> profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
+  TreeMap<String,Integer> profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
   List<Integer> withMissingCAs = ejbcarabean.getAuthorizedEndEntityProfileIdsWithMissingCAs();
+  boolean authorizedToEdit = ejbcarabean.authorizedToEditEndEntityProfiles();
 
 %>
 
 
-<h1><%= ejbcawebbean.getText("MANAGEENDENTITYPROFILES") %></h1>
+<h1><%= ejbcawebbean.getText(( authorizedToEdit ? "MANAGEENDENTITYPROFILES" : "VIEWENDENTITYPROFILES" )) %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
@@ -18,7 +19,7 @@
   <table class="list">
   <% if(triedtoeditemptyprofile){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTEDITEMPTYPROFILE") %></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText((authorizedToEdit ? "YOUCANTEDITEMPTYPROFILE" : "YOUCANTVIEWEMPTYPROFILE")) %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
@@ -77,21 +78,23 @@
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td align="left">
-              <input type="submit" name="<%= BUTTON_EDIT_PROFILE %>" value="<%= ejbcawebbean.getText("EDITENDENTITYPROFILE") %>">
+              <input type="submit" name="<%= BUTTON_EDIT_PROFILE %>" value="<%= ejbcawebbean.getText((authorizedToEdit ? "EDITENDENTITYPROFILE" : "VIEWENDENTITYPROFILE")) %>">
             </td>
+            <% if(authorizedToEdit) { %>
             <td align="center">
               &nbsp;
             </td>
             <td align="right">
               <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_PROFILE %>" value="<%= ejbcawebbean.getText("DELETEENDENTITYPROFILE") %>">
             </td>
+            <% } %>
           </tr>
         </table> 
       </td>
       <td width="60%"></td>
     </tr>
   </table>
-
+   <% if(authorizedToEdit) { %>
   <table class="actions">
     <tr> 
       <td width="100%"><h3><%= ejbcawebbean.getText("ADDPROFILE") %></h3></td>
@@ -105,6 +108,7 @@
       </td>
     </tr>
   </table>
+   <% } %>
 </form>
 
 <%int row = 0;%>
@@ -112,6 +116,7 @@
 	<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
 		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
 		<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORT_EXPORT %>'>
+		 <% if(authorizedToEdit) { %>
 		<tr id="Row<%=row++%2%>"> 
 			<td width="30%" valign="top" align="right">
 				<%= ejbcawebbean.getText("IMPORTPROFILESFROM") %>&nbsp;
@@ -124,6 +129,7 @@
 				<input type="submit" name="<%= BUTTON_IMPORT_PROFILES %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
 			</td>
 		</tr>
+		<% } %>
 		<tr id="Row<%=row++%2%>"> 
 		    <td width="30%" valign="top" align="right">
 				<c:url var="pem" value="adminweb/profilesexport" >

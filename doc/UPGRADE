@@ -42,6 +42,7 @@ Any roles which had access to:								Now also have access to:
 /ca_functionality/ (recursive)
 /ca_functionality/edit_certificate_profiles 				/ca_functionality/view_certificate_profiles
 /ca_functionality/edit_publisher							/ca_functionality/view_publisher
+/ra_functionality/edit_end_entity_profiles					/ra_functionality/view_end_entity_profiles
 
 The pages that will be available to this new role are the following:
 Page Name:													Notes:
