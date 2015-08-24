@@ -41,7 +41,7 @@ public class ServiceInfoCommand extends BaseServiceCommand {
     public CommandResult execute(ParameterContainer parameters, int serviceId) {
         
         final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
-        ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAdmin(), serviceId);
+        ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(serviceId);
         
         info("Id", serviceId);
         info("Name", serviceSession.getServiceName(serviceId));

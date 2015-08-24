@@ -36,8 +36,7 @@ public class ServiceListFieldsCommand extends BaseServiceCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters, int serviceId) {
-        ServiceConfiguration serviceConfig = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class).getServiceConfiguration(
-                getAdmin(), serviceId);
+        ServiceConfiguration serviceConfig = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class).getServiceConfiguration(serviceId);
         final FieldEditor fieldEditor = new FieldEditor(log);
         fieldEditor.listSetMethods(serviceConfig);
         return CommandResult.SUCCESS;

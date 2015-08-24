@@ -11,7 +11,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
- GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()); 
+ GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW); 
  EjbcaJSFHelper helpbean = EjbcaJSFHelper.getBean();
  helpbean.setEjbcaWebBean(ejbcawebbean);
 %>
@@ -50,13 +50,15 @@
 	        <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	          <tr>
 	            <td align="left">
-	              <h:commandButton id="editButton" action="#{listServicesManagedBean.editService}" value="#{web.text.EDITSERVICE}"/>
+	              <h:commandButton id="editButton" action="#{listServicesManagedBean.editService}" value="#{web.text.EDITSERVICE}" rendered="#{listServicesManagedBean.hasEditRights}" />
+	              <h:commandButton id="viewButton" action="#{listServicesManagedBean.editService}" value="#{web.text.VIEWSERVICE}" rendered="#{!listServicesManagedBean.hasEditRights}"/>
 	            </td>
 	            <td align="center">
 	              &nbsp;
 	            </td>
 	            <td align="right">
-	              <h:commandButton id="deleteButton" action="#{listServicesManagedBean.deleteService}" value="#{web.text.DELETESERVICE}" onclick="return confirm('#{web.text.AREYOUSURE}');"/>
+	              <h:commandButton id="deleteButton" action="#{listServicesManagedBean.deleteService}" value="#{web.text.DELETESERVICE}" onclick="return confirm('#{web.text.AREYOUSURE}');"
+	              	rendered="#{listServicesManagedBean.hasEditRights}"/>
 	            </td>
 	          </tr>
 	        </table> 
@@ -65,7 +67,7 @@
 		</h:panelGroup>
 	</h:panelGrid>
 		
-	<h:panelGrid styleClass="actions" width="100%">
+	<h:panelGrid styleClass="actions" width="100%" rendered="#{listServicesManagedBean.hasEditRights}">
 		<h:panelGroup>
 			<h3><h:outputText value="#{web.text.ADDSERVICE}"/></h3>
 		</h:panelGroup>

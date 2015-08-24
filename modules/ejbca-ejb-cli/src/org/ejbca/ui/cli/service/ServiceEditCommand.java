@@ -54,7 +54,7 @@ public class ServiceEditCommand extends BaseServiceModificationCommand {
     public CommandResult execute(ParameterContainer parameters, int serviceId) {
         final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
         final String serviceName = serviceSession.getServiceName(serviceId);
-        ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAdmin(), serviceId);
+        ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(serviceId);
         final boolean wasActive = serviceConfig.isActive();
         final String[] args;
         if (parameters.get(ARGS_KEY) != null) {

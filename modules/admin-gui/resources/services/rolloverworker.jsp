@@ -12,7 +12,7 @@
 		<h:outputText value="#{web.text.CASTOCHECK}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10">
+		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10" disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.availableCAsWithAnyOption}"/>
 		</h:selectManyListbox>
 	</h:panelGroup>
