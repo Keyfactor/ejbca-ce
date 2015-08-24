@@ -29,8 +29,6 @@ public final class EndEntityValidationHelper {
 
     private static final Logger log = Logger.getLogger(EndEntityValidationHelper.class);
     
-    private static final String VALIDATORS_PACKAGE = "org.ejbca.core.model.ra.raadmin.validators";
-    
     private static Map<String,EndEntityFieldValidator> validatorCache = new HashMap<String,EndEntityFieldValidator>();
     private static Set<String> nonExistentValidatorsCache = new HashSet<String>();
     
@@ -72,24 +70,22 @@ public final class EndEntityValidationHelper {
     }
     
     private static EndEntityFieldValidator getValidator(final String className) {
-        final String fullName = VALIDATORS_PACKAGE + "." + className;
-        
-        final EndEntityFieldValidator existing = validatorCache.get(fullName);
+        final EndEntityFieldValidator existing = validatorCache.get(className);
         if (existing != null) {
             // Already cached
             return existing;
         }
         
-        if (nonExistentValidatorsCache.contains(fullName)) {
+        if (nonExistentValidatorsCache.contains(className)) {
             // Give up early
             return null;
         }
         
         final Class<?> klass;
         try {
-            klass = Class.forName(fullName);
+            klass = Class.forName(className);
         } catch (ClassNotFoundException e) { 
-            log.warn("Failed to load validator class "+fullName, e);
+            log.warn("Failed to load validator class "+className, e);
             nonExistentValidatorsCache.add(className);
             return null;
         }
