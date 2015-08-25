@@ -84,7 +84,6 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.VIEW.resource();
-    final String PEERCONNECTOR_RESOURCE_VIEW            = AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW;
  %>
 <%  
   boolean caheaderprinted     =false;
@@ -313,7 +312,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 
 <%
    // If authorized to edit peerconnectors then display related links.
-     if(ejbcawebbean.isPeerConnectorPresent() && ejbcawebbean.isAuthorizedNoLogSilent(PEERCONNECTOR_RESOURCE_VIEW)){
+     if(ejbcawebbean.isPeerConnectorPresent() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW)){
        if(!systemheaderprinted){
          out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
          systemheaderprinted=true;
