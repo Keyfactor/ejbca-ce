@@ -926,6 +926,8 @@ class CMPTest extends ClientToolBox {
             }
 //            Security.addProvider(new BouncyCastleProvider());
             new StressTest(hostName, port, isHttp, new FileInputStream(certFile), notanot.threads, notanot.tests, waitTime, alias, urlPath, resultFilePrefix);
+        } catch (SecurityException e) {
+            throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {
             e.printStackTrace();
         }
