@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
@@ -224,7 +225,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public abstract float getLatestVersion();
     @Override
-    public abstract void assertCertificateCompatability(Certificate certificate) throws CertificateImportException;
+    public abstract void assertCertificateCompatability(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException;
 
     @Override
     public void upgrade() {

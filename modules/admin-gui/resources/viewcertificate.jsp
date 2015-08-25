@@ -535,11 +535,11 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_EXTENDEDKEYUSAGE") %></td>
-		 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts();
+		 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts(ejbcawebbean.getAvailableExtendedKeyUsagesConfiguration());
 	                for(int i=0; i<extendedkeyusage.length; i++){
 	                  if(i>0)
 	                    out.write(", ");
-	                  out.write( ejbcawebbean.getText(extendedkeyusage[i]));
+	                  out.write(extendedkeyusage[i]);
 	                }                
 	                if(extendedkeyusage == null || extendedkeyusage.length == 0)
 	                  out.write(ejbcawebbean.getText("EKU_NONE"));                       
