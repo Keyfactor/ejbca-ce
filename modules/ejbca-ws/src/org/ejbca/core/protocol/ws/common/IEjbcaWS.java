@@ -386,21 +386,20 @@ public interface IEjbcaWS {
 	
 	/**
 	 * Receives a certificate as a response to a CSR from the CA, but does not activate the certificate yet.
-	 * To activate the certificate at a later point, use the {@link IEjbcaWS#rolloverCACert} method.
+	 * To activate the certificate at a later point, use the rolloverCACert method.
 	 * It is also possible to configure a Rollover Service for automatic activation once the new certificate becomes valid.
 	 * 
 	 * @param caname The name in EJBCA for the CA that will create the CSR
      * @param cert the CA certificate to import. Certificate format is the binary certificate bytes.
      * @param cachain the certificate chain for the CA this request is targeted for, the signing CA is in pos 0, it's CA (if it exists) in pos 1 etc. Certificate format is the binary certificate bytes.
      * @param keystorepwd If there is a new CA key that must be activates the keystore password is needed. Set to null if the request was generated using the existing CA keys.
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caCertResponse
-         * 
-         * @throws CADoesntExistsException
-         * @throws AuthorizationDeniedException
-         * @throws EjbcaException
-         * @throws ApprovalException
-         * @throws WaitingForApprovalException
-         * @throws CesecoreException
+     * 
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException
+     * @throws ApprovalException
+     * @throws WaitingForApprovalException
+     * @throws CesecoreException
 	 */
 	void caCertResponseForRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
 
