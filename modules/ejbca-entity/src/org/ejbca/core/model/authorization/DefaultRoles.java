@@ -76,8 +76,8 @@ public enum DefaultRoles {
             new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true),
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(AccessRulesConstants.SERVICES_VIEW, AccessRuleState.RULE_ACCEPT, false),
-            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false)
-
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false),
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW, AccessRuleState.RULE_ACCEPT, true)
             ),
     HARDTOKENISSUER("HARDTOKENISSUER");
 
