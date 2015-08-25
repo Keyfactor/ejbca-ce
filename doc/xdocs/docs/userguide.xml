@@ -1761,10 +1761,22 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 <li>can view existing end entities and their history</li>
 <li>can have full read access to the audit log</li>
 </ul>
-<li>The Supervisor:</li>
+<li>Supervisor:</li>
 <ul>
 <li>can view created end entities</li>
 <li>has full read access to the audit log</li>
+</ul>
+<li>Auditor:</li>
+<ul>
+<li>has full read access to the audit log</li>
+<li>has full read access to authorized CAs</li>
+<li>has full read access to Certificate Profiles</li>
+<li>has full read access to Crypto Tokens and keys</li>
+<li>has full read access to Publishers</li>
+<li>has full read access to End Entity Profiles</li>
+<li>has full read access to Internal Key Bindings</li>
+<li>has full read access to Peer Systems</li>
+<li>has full read access to Services</li>
 </ul>
 </ul>
 </p>
