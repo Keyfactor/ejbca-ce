@@ -13,9 +13,6 @@
 package org.cesecore.certificates.ca.catoken;
 
 
-import static org.junit.Assert.fail;
-
-import java.security.InvalidAlgorithmParameterException;
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;

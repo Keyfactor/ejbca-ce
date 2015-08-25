@@ -20,7 +20,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.config.ExtendedKeyUsageConfiguration;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingProperty;
@@ -77,8 +77,8 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
     }
 
     @Override
-    public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
-        if (!isClientSSLCertificate(certificate)) {
+    public void assertCertificateCompatability(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException {
+        if (!isClientSSLCertificate(certificate, ekuConfig)) {
             throw new CertificateImportException("Not a vlid Client SSL authentication certificate.");
         }
     }
@@ -88,7 +88,7 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
         // Nothing to do   
     }
 
-    public static boolean isClientSSLCertificate(Certificate certificate) {
+    public static boolean isClientSSLCertificate(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) {
         if (certificate == null) {
             log.debug("No certificate provided.");
             return false;
@@ -112,7 +112,7 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
             }
             for (String extendedKeyUsage : x509Certificate.getExtendedKeyUsage()) {
                 log.debug("EKU: " + extendedKeyUsage + " (" +
-                        ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
+                        ekuConfig.getAllEKUOidsAndNames().get(extendedKeyUsage) + ")");
             }
             if (!x509Certificate.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_clientAuth.getId())) {
                 log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.2 (EKU_PKIX_CLIENTAUTH) is required.");

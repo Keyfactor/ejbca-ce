@@ -82,6 +82,7 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
     final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource();
+    final String EDITAVAILABLEEKU_RESOURCE				= StandardRules.REGULAR_EDITAVAILABLEEKU.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.VIEW.resource();
  %>
@@ -365,7 +366,15 @@ org.cesecore.keybind.InternalKeyBindingRules
 
 <%
     // If authorized to configure Ejbca then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
+    boolean editSysConfigAuthorized = false;
+	boolean editEKUAuthorized = false;
+	try{
+		editSysConfigAuthorized = ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE);
+	}catch(AuthorizationDeniedException e){}
+	try{
+		editEKUAuthorized = ejbcawebbean.isAuthorizedNoLog(EDITAVAILABLEEKU_RESOURCE);
+	}catch(AuthorizationDeniedException e){}
+	if(editSysConfigAuthorized || editEKUAuthorized){
           if(!configheaderprinted){      
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
         configheaderprinted = true;

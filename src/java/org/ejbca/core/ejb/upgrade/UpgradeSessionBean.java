@@ -204,6 +204,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        
+        // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
+        if(oldVersion < 633) {
+            if(!AddNewAccessRulestoRoles()){
+                return false;
+            }
+        }
 
         return true;
     }
@@ -585,6 +592,63 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
 
+        return result;
+    }
+    
+    
+    /**
+     * Upgrade access rules such that every role that already has access to /system_functionality/edit_systemconfiguration 
+     * will also have access to the new access rule /system_functionality/edit_available_extended_key_usages
+     * 
+     * @return true if the upgrade was successful and false otherwise
+     */
+    private boolean AddNewAccessRulestoRoles() {
+        Collection<RoleData> roles = roleAccessSession.getAllRoles();
+        for (RoleData role : roles) {
+            final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
+            final Collection<AccessRuleData> rules = rulemap.values();
+            for (AccessRuleData rule : rules) {
+                if (StringUtils.equals(StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), rule.getAccessRuleName()) && 
+                        rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
+                    // Now we add a new rule
+                    final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource(), AccessRuleState.RULE_ACCEPT, false);
+                    final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
+                    newrules.add(editAvailableEKURule);
+                    try {
+                        addAccessRulesToRole(role, newrules);
+                        log.info("Added rule '" + editAvailableEKURule.toString() + "' to role '"+role.getRoleName()+"' since the role contained the '"+StandardRules.REGULAR_EDITSYSTEMCONFIGURATION+"' rule.");
+                    } catch (Exception e) {
+                        log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+                    }                
+                }
+            }
+        }
+        
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        accessControlSession.forceCacheExpire();
+        
+        log.error("(this is not an error) Finished upgrade from ejbca 6.3.x with result: true");
+        return true;
+        
+    }      
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    private RoleData addAccessRulesToRole(final RoleData role,
+            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException, AuthorizationDeniedException { 
+        
+        RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
+        if (result == null) {
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
+            throw new RoleNotFoundException(msg);
+        }
+        
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.AddNewAccessRulestoRoles"));
+        
+        roleMgmtSession.addAccessRulesToRole(admin, result, accessRules);
+        logAccessRulesAdded(admin, role.getRoleName(), accessRules);
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        accessControlSession.forceCacheExpire();
+        
         return result;
     }
     

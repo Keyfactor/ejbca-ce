@@ -43,6 +43,7 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.cvc.AccessRightAuthTerm;
@@ -275,11 +276,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_x509v3extensions_usages");
     }
 
-    public List<SelectItem/*<String,String*/> getExtendedKeyUsageOidsAvailable() {
+    public List<SelectItem> getExtendedKeyUsageOidsAvailable() throws Exception {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        final Map<String, String> oidToTextMap = CertificateProfile.getAllExtendedKeyUsageTexts();
-        for (final Entry<String,String> current : oidToTextMap.entrySet()) {
-            ret.add(new SelectItem(current.getKey(), getEjbcaWebBean().getText(current.getValue())));
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
+        Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
+        for(Entry<String, String> eku : ekus.entrySet()) {
+            ret.add(new SelectItem(eku.getKey(), eku.getValue()));
         }
         return ret;
     }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.faces.application.FacesMessage;
@@ -28,9 +29,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -182,6 +186,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setTheme(String theme) { this.theme=theme; }
         public int getEntriesPerPage() { return this.entriesPerPage; }
         public void setEntriesPerPage(int entriesPerPage) { this.entriesPerPage=entriesPerPage; }
+    }
+    
+    public class EKUInfo {
+        private String oid;
+        private String name;
+        private EKUInfo(String oid, String name) {
+            this.oid = oid;
+            this.name = name;
+        }
+        public String getOid() { return this.oid; }
+        public void  setOid(String oid) { this.oid=oid; }
+        public String getName() { return this.name; }
+        public void setName(String name) { this.name=name; }
     }
 
     private String selectedTab = null;
@@ -374,6 +391,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         nodesInCluster = null;
         ctLogs = null;
         excludeActiveCryptoTokensFromClearCaches = true;
+        availableExtendedKeyUsages = null;
     }
     
     public void toggleUseApprovalNotification() {
@@ -422,6 +440,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return list;
     }
+    
+    
+    // -------------------------------------------
+    //                 CTLogs
+    // -------------------------------------------
     
     public String getCtLogUrl() {
         return ((CTLogInfo) ctLogs.getRowData()).getUrl();
@@ -495,6 +518,98 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     
+    // --------------------------------------------
+    //               Extended Key Usage
+    // --------------------------------------------
+    
+    private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
+    private ListDataModel availableExtendedKeyUsages = null;
+    private String currentEKUOid = null;
+    private String currentEKUName = null;
+    
+    public String getCurrentEKUOid() { return currentEKUOid; }
+    public void setCurrentEKUOid(String oid) { currentEKUOid=oid; }
+    public String getCurrentEKUReadableName() { return currentEKUName; }
+    public void setCurrentEKUReadableName(String readableName) { currentEKUName=readableName; }
+    
+    private AvailableExtendedKeyUsagesConfiguration getAvailableEKUConfig() throws Exception{
+        if(availableExtendedKeyUsagesConfig == null) {
+            availableExtendedKeyUsagesConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
+        }
+        return availableExtendedKeyUsagesConfig;
+    }
+    
+    public String getEKUOid() {
+        return ((EKUInfo) availableExtendedKeyUsages.getRowData()).getOid();
+    }
+    
+    public String getEKUName() {
+        return ((EKUInfo) availableExtendedKeyUsages.getRowData()).getName();
+    }
+    
+    public ListDataModel getAvailableExtendedKeyUsages() {
+        if(availableExtendedKeyUsages == null) {
+            try {
+                availableExtendedKeyUsages = new ListDataModel(getNewAvailableExtendedKeyUsages());
+            } catch(Exception e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to access AvailableExtendedKeyUsagesConfiguration.", null));
+            }
+        }
+        return availableExtendedKeyUsages;
+    }
+    
+    private ArrayList<EKUInfo> getNewAvailableExtendedKeyUsages() throws Exception {
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
+        ArrayList<EKUInfo> ekus = new ArrayList<EKUInfo>();
+        Map<String, String> allEKU = ekuConfig.getAllEKUOidsAndNames();
+        for(Entry<String, String> entry : allEKU.entrySet()) {
+            ekus.add(new EKUInfo(entry.getKey(), entry.getValue()));
+        }
+        return ekus;
+    }
+    
+    public void addEKU() {
+        
+        if (currentEKUOid == null) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
+            return;
+        }
+        if (currentEKUName == null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage Name is set.", null));
+            return;
+        }
+        
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = null;
+        try {
+            ekuConfig = getAvailableEKUConfig();
+            ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
+            getEjbcaWebBean().saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
+            availableExtendedKeyUsages = new  ListDataModel(getNewAvailableExtendedKeyUsages());
+        } catch(Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to get AvailableExtendedKeyUsagesConfiguration.", e.getLocalizedMessage()));
+            return;
+        }
+    }
+
+    public void removeEKU() {
+        final EKUInfo ekuToRemove = ((EKUInfo) availableExtendedKeyUsages.getRowData());
+        try {
+            AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
+            ekuConfig.removeExtKeyUsage(ekuToRemove.getOid());
+            getEjbcaWebBean().saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
+            availableExtendedKeyUsages = new ListDataModel(getNewAvailableExtendedKeyUsages());
+        } catch(Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to access AvailableExtendedKeyUsagesConfiguration: " + e.getLocalizedMessage(), null));
+            return;
+        }
+    }
+    
+    
+    
+    // ------------------------------------------------
+    //             Drop-down manue options
+    // ------------------------------------------------
     /** @return a list of all CA names */
     public List<SelectItem> getAvailableCAsAndNoEncryptionOption() {
         final List<SelectItem> ret = getAvailableCAs();
@@ -553,10 +668,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public List<String> getAvailableTabs() {
+        AccessControlSession accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
         final List<String> availableTabs = new ArrayList<String>();
-        availableTabs.add("Basic Configurations");
-        availableTabs.add("CTLogs");
-        availableTabs.add("Administrator Preferences");
+        if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+            availableTabs.add("Basic Configurations");
+            availableTabs.add("CTLogs");
+            availableTabs.add("Administrator Preferences");
+        }
+        if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
+            availableTabs.add("Extended Key Usage");
+        }
         return availableTabs;
     }
     
