@@ -73,8 +73,7 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_REVOKEENDENTITY                    = REGULAR_RAFUNCTIONALITY+REVOKE_END_ENTITY;    
     // The rules below seem to be for rights to certificates, and ae mostly used from WS for token certificates and CMP for token certificates
     // You can question if these are valid and right?
-    // Some of them are unused if you check references here, but admin GUI contains directly the string /ra_functionality instead, just to make things hard
-    public static final String REGULAR_VIEWENDENTITY                      = REGULAR_RAFUNCTIONALITY+VIEW_END_ENTITY; // Unused, but exists as "raw" string
+    public static final String REGULAR_VIEWENDENTITY                      = REGULAR_RAFUNCTIONALITY+VIEW_END_ENTITY;
     public static final String REGULAR_CREATEENDENTITY                    = REGULAR_RAFUNCTIONALITY+CREATE_END_ENTITY;
     public static final String REGULAR_EDITENDENTITY                      = REGULAR_RAFUNCTIONALITY+EDIT_END_ENTITY ;
     public static final String REGULAR_DELETEENDENTITY                    = REGULAR_RAFUNCTIONALITY+DELETE_END_ENTITY; // Unused, but exists as "raw" string

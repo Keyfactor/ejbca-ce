@@ -87,7 +87,7 @@
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
@@ -159,7 +159,15 @@
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
           <% String[] availablethemes = globalconfiguration.getAvailableThemes();                                    
-             String theme = ejbcawebbean.getCleanOption(dup.getTheme(), availablethemes);
+             String theme;
+             try {
+             	theme = ejbcawebbean.getCleanOption(dup.getTheme(), availablethemes);
+             } catch(IllegalArgumentException e) {
+                 %>
+                 <c:out value="Chosen theme not found. This may be due to an attempted XSS attack. Setting default theme."/>
+             	<%
+             	theme = availablethemes[0];
+             }
              if(availablethemes != null){
                for(int i = 0; i < availablethemes.length; i++){
           %>     <option <% if(availablethemes[i].equals(theme)){ %> selected <% } %>

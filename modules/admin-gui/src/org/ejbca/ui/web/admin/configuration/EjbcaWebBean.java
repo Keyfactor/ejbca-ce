@@ -314,7 +314,7 @@ public class EjbcaWebBean implements Serializable {
         return certificatefingerprint;
     }
 
-    /** Return the admins selected theme including it's trailing '.css' */
+    /** Return the admins selected theme including its trailing '.css' */
     public String getCssFile() {
         return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentadminpreference.getTheme() + ".css";
     }
@@ -872,13 +872,13 @@ public class EjbcaWebBean implements Serializable {
         return StringTools.parseCertData(certdata);
     }
 
-    public String getCleanOption(String parameter, String[] validOptions) throws Exception {
+    public String getCleanOption(String parameter, String[] validOptions) {
         for (int i = 0; i < validOptions.length; i++) {
             if (parameter.equals(validOptions[i])) {
                 return parameter;
             }
         }
-        throw new Exception("Trying to set an invalid option.");
+        throw new IllegalArgumentException("Parameter " + parameter + " not found among valid options.");
     }
 
     public void clearClusterCache(boolean excludeActiveCryptoTokens) throws Exception {
