@@ -77,7 +77,6 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
     final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
     final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
-    final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
     final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
     final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
@@ -99,7 +98,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
   <!--[if IE]><link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getIeFixesCssFile() %>" /><![endif]-->
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
@@ -199,7 +198,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 <% } %>
 <%
     // If authorized to use the ra then display related links. 
-      if(ejbcawebbean.isAuthorizedNoLogSilent(RALISTEDITENDENTITY_RESOURCE)){ 
+      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
             if(!raheaderprinted){
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
               raheaderprinted=true;
