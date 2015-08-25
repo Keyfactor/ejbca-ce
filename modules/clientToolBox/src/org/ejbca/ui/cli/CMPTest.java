@@ -921,7 +921,7 @@ class CMPTest extends ClientToolBox {
 
         try {
             if ( !certFile.canRead() ) {
-                System.out.println("File "+certFile.getCanonicalPath()+" not a valid file name.");
+                System.err.println("File "+certFile.getCanonicalPath()+" not a valid file name.");
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
