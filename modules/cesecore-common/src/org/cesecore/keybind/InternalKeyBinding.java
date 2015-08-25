@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+
 /**
  * Interface for the InternalKeyBindings.
  * @version $Id$
@@ -51,7 +53,7 @@ public interface InternalKeyBinding extends Serializable {
      * 
      * @throws CertificateImportException if the provided certificate is not compatible with this type of implementation
      */
-    void assertCertificateCompatability(Certificate certificate) throws CertificateImportException;
+    void assertCertificateCompatability(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException;
 
     /** @return the non-changeable id of this instance */
     int getId();

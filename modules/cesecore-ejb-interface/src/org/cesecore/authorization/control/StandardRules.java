@@ -35,7 +35,8 @@ public enum StandardRules {
 	RECOVERY("/recovery"),
 	BACKUP(RECOVERY.resource()+"/backup"),
 	RESTORE(RECOVERY.resource()+"/restore"),
-    REGULAR_EDITSYSTEMCONFIGURATION(SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration");
+    REGULAR_EDITSYSTEMCONFIGURATION(SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration"),
+    REGULAR_EDITAVAILABLEEKU(SYSTEMFUNCTIONALITY.resource()+"/edit_available_extended_key_usages");
 
 	
 	private final String resource;

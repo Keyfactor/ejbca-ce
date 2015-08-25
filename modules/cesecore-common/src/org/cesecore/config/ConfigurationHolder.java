@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +32,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -360,6 +361,15 @@ public final class ConfigurationHolder {
         backupConfiguration(); // Only takes a backup if necessary.
         config.setProperty(key, value);
         return true;
+    }
+    
+    public static boolean isConfigFileExist(String filename) {
+        for(String f : CONFIG_FILES) {
+            if(StringUtils.equalsIgnoreCase(f, filename)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

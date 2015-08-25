@@ -36,13 +36,13 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatusHelper;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
@@ -293,7 +293,7 @@ public class CertificateView implements Serializable {
     	return returnval;
     }
 
-    public String[] getExtendedKeyUsageAsTexts(){
+    public String[] getExtendedKeyUsageAsTexts(AvailableExtendedKeyUsagesConfiguration ekuConfig){
         if (certificate==null) {
             return new String[0];
         }
@@ -308,7 +308,7 @@ public class CertificateView implements Serializable {
             extendedkeyusage = new ArrayList<String>();
         }
         final String[] returnval = new String[extendedkeyusage.size()];
-        final Map<String,String> map = CertificateProfile.getAllExtendedKeyUsageTexts();
+        final Map<String,String> map = ekuConfig.getAllEKUOidsAndNames();
         for (int i=0; i<extendedkeyusage.size(); i++) {
             returnval[i] = (String)map.get(extendedkeyusage.get(i));
         }

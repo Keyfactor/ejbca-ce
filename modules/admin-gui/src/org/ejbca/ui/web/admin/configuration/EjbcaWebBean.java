@@ -60,6 +60,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -146,6 +147,7 @@ public class EjbcaWebBean implements Serializable {
     private GlobalConfiguration globalconfiguration;
     private CmpConfiguration cmpconfiguration = null;
     private CmpConfiguration cmpConfigForEdit = null;
+    private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private ServletContext servletContext = null;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
@@ -176,7 +178,7 @@ public class EjbcaWebBean implements Serializable {
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration);
+                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration, availableExtendedKeyUsagesConfig);
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
                 authorizationSession);
@@ -692,6 +694,13 @@ public class EjbcaWebBean implements Serializable {
         
     }
     
+    public void reloadAvailableExtendedKeyUsagesConfiguration() throws Exception {
+        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+        if (informationmemory != null) {
+            informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
+        }
+    }
+    
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws Exception {
         globalConfigurationSession.saveConfiguration(administrator, gc);
         informationmemory.systemConfigurationEdited(gc);
@@ -706,6 +715,12 @@ public class EjbcaWebBean implements Serializable {
     public void saveCMPConfiguration() throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
         informationmemory.cmpConfigurationEdited(cmpconfiguration);
+    }
+    
+    public void saveAvailableExtendedKeyUsagesConfiguration(AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
+        availableExtendedKeyUsagesConfig = ekuConfig;
+        informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
     }
 
     public boolean existsAdminPreference() throws Exception {
@@ -1048,6 +1063,26 @@ public class EjbcaWebBean implements Serializable {
         }
         return cps;
     }
+    
+    //******************************************
+    //      ExtendedKeyUsagesConfigration
+    //******************************************
+    
+    public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() throws Exception {
+        if(availableExtendedKeyUsagesConfig == null) {
+            reloadAvailableExtendedKeyUsagesConfiguration();
+        }
+        return availableExtendedKeyUsagesConfig;
+    }
+    
+    public void clearAvailableExtendedKeyUsagesConfigCache() throws Exception {
+        globalConfigurationSession.flushConfigurationCache(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+        reloadAvailableExtendedKeyUsagesConfiguration();
+    }
+        
+    //*******************************
+    //         Peer Connector
+    //*******************************
     
     private Boolean peerConnectorPresent = null;
     /** @return true if the PeerConnectors GUI implementation is present. */

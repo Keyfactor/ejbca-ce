@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.config.ExtendedKeyUsageConfiguration;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingProperty;
@@ -78,8 +78,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     
     @Override
-    public void assertCertificateCompatability(final Certificate certificate) throws CertificateImportException {
-        assertCertificateCompatabilityInternal(certificate);
+    public void assertCertificateCompatability(final Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException {
+        assertCertificateCompatabilityInternal(certificate, ekuConfig);
     }
 
     public boolean getNonExistingGood() {
@@ -135,16 +135,16 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         setProperty(PROPERTY_MAX_AGE, Long.valueOf(maxAge));
     }
 
-    public static boolean isOcspSigningCertificate(final Certificate certificate) {
+    public static boolean isOcspSigningCertificate(final Certificate certificate, AvailableExtendedKeyUsagesConfiguration ekuConfig) {
         try {
-            assertCertificateCompatabilityInternal(certificate);
+            assertCertificateCompatabilityInternal(certificate, ekuConfig);
         } catch (CertificateImportException e) {
             return false;
         }
         return true;
     }
 
-    private static void assertCertificateCompatabilityInternal(final Certificate certificate) throws CertificateImportException {
+    private static void assertCertificateCompatabilityInternal(final Certificate certificate, AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException {
         if (certificate == null) {
             throw new CertificateImportException("No certificate provided.");
         }
@@ -168,7 +168,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
             }
             for (String extendedKeyUsage : x509Certificate.getExtendedKeyUsage()) {
                 log.debug("EKU: " + extendedKeyUsage + " (" +
-                        ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
+                        ekuConfig.getAllEKUOidsAndNames().get(extendedKeyUsage) + ")");
             }
             if (!x509Certificate.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_OCSPSigning.getId())) {
                 throw new CertificateImportException("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");

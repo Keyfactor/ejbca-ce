@@ -130,7 +130,8 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_APPROVEENDENTITY,
                                                            REGULAR_SYSTEMFUNCTIONALITY,
                                                            StandardRules.EDITROLES.resource(),
-                                                           StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()};
+                                                           StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(),
+                                                           StandardRules.REGULAR_EDITAVAILABLEEKU.resource()};
                                                        
     // Role Access Rules
     public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()};

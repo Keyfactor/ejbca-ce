@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -35,7 +34,6 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.config.ExtendedKeyUsageConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.CertTools;
@@ -1182,16 +1180,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getExtendedKeyUsageCritical() {
         return ((Boolean) data.get(EXTENDEDKEYUSAGECRITICAL)).booleanValue();
     }
-
-    /** Returns a List<String> of all extended key usage oids, as strings */
-    public static List<String> getAllExtendedKeyUsageOIDStrings() {
-        return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOids();
-    }
-
-    /** Returns a Map<String, String> that maps oid string to displayable/translatable text strings */
-    public static Map<String, String> getAllExtendedKeyUsageTexts() {
-        return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames();
-    }
     
     /**
      * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC. Keep the unchecked java stuff for now, since we
@@ -1214,40 +1202,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Extended Key Usage is an arraylist of Strings with eku oids.
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public ArrayList<String> getExtendedKeyUsageOids() {
-        return getExtendedKeyUsageAsOIDStrings(false);
+        return (ArrayList) data.get(EXTENDEDKEYUSAGE);
     }
     public void setExtendedKeyUsageOids(final ArrayList<String> extendedKeyUsageOids) {
         setExtendedKeyUsage(extendedKeyUsageOids);
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private ArrayList<String> getExtendedKeyUsageAsOIDStrings(boolean fromupgrade) {
-        ArrayList<String> returnval = new ArrayList<String>();
-        // Keep the unchecked java stuff for now, since we have the fallback conversion below
-        ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
-        if ((eku != null) && (eku.size() > 0)) {
-            Object o = eku.get(0);
-            // This is a test for backwards compatibility for the older type of extended key usage
-            if (o instanceof String) {
-                // This is the new extended key usage in the profile, simply return the array with oids
-                returnval = eku;
-            } else {
-                Iterator<Integer> i = eku.iterator();
-                List<String> oids = getAllExtendedKeyUsageOIDStrings();
-                while (i.hasNext()) {
-                    // We fell through to this conversion from Integer to String, which we should not have to
-                    // if upgrade() had done it's job. This is an error!
-                    if (!fromupgrade) {
-                        log.warn("We're forced to convert between old extended key usage format and new. This is an error that we handle so it should work for now. It should be reported as we can not guarantee that it will work in the future. "
-                                + getVersion());
-                    }
-                    int index = (i.next()).intValue();
-                    returnval.add(oids.get(index));
-                }
-            }
-        }
-        return returnval;
     }
 
     public boolean getUseLdapDnOrder() {
@@ -2367,10 +2327,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setAllowDNOverride(false); // v31
             }
 
-            if (Float.compare((float) 32.0, getVersion()) > 0) { // v32
-                // Extended key usage storage changed from ArrayList of Integers to an ArrayList of Strings.
-                setExtendedKeyUsage(getExtendedKeyUsageAsOIDStrings(true));
-            }
+            // This is no longer necessary since we no longer read extended key usages from file
+            // Also, we no longer support the version that had  OIDs as integers
+            //if (Float.compare((float) 32.0, getVersion()) > 0) { // v32
+            //    // Extended key usage storage changed from ArrayList of Integers to an ArrayList of Strings.
+            //    setExtendedKeyUsage(getExtendedKeyUsageAsOIDStrings(true));
+            //}
 
             if (data.get(NUMOFREQAPPROVALS) == null) { // v 33
                 setNumOfReqApprovals(1);

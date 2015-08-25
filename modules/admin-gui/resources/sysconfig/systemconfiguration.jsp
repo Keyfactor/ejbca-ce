@@ -24,10 +24,19 @@
 org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
-org.cesecore.authorization.control.StandardRules
+org.cesecore.authorization.control.StandardRules,
+org.cesecore.authorization.control.AccessControlSession
 "%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); %>
+<% 
+	AccessControlSession accessControlSession = ejbcawebbean.getEjb().getAccessControlSession();
+	GlobalConfiguration globalconfiguration = null;
+	if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource());
+	} else if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
+		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITAVAILABLEEKU.resource());
+	}
+%>
 <html>
 <f:view>
 <head>
@@ -479,6 +488,39 @@ org.cesecore.authorization.control.StandardRules
 				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" />
 			</h:panelGroup>
 		</h:panelGrid>
+	</h:form>
+	
+	
+	<%-- Extended Key Usage --%>
+	
+	<h:form id="extkeyusageform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Extended Key Usage'}">
+		<h:dataTable value="#{systemConfigMBean.availableExtendedKeyUsages}" var="eku"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+			<h:column>
+   				<f:facet name="header"><h:outputText value="OID"/></f:facet>
+				<h:outputText value="#{eku.oid}" title="#{eku.oid}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentOid" value="#{systemConfigMBean.currentEKUOid}" />
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="Readable Text"/></f:facet>
+				<h:outputText value="#{eku.name}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}">
+   					</h:inputText>
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header">
+   					<h:outputText value="#{web.text.ACTION}"/>
+   				</f:facet>
+				<h:commandButton action="#{systemConfigMBean.removeEKU}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
+				<f:facet name="footer">
+					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addEKU}" />
+				</f:facet>
+			</h:column>
+		</h:dataTable>
 	</h:form>
 	
 	<%	// Include Footer 
