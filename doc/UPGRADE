@@ -44,6 +44,7 @@ Any roles which had access to:								Now also have access to:
 /ca_functionality/edit_publisher							/ca_functionality/view_publisher
 /ra_functionality/edit_end_entity_profiles					/ra_functionality/view_end_entity_profiles
 /															/services/edit and /services/view 
+/															/peer/view (+recursive)
 
 The pages that will be available to this new role are the following:
 Page Name:													Notes:
