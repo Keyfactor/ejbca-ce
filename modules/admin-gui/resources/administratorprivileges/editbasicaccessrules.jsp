@@ -133,11 +133,7 @@ function roleupdated() {
 	} else if(currentrole === '<%= DefaultRoles.AUDITOR.getName()%>') {
 		selectcas.disabled = false;
 		selectendentityprofiles.disabled = false;
-		selectSome(selectendentityrules, [
-			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
-			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
-			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS %>'
-			], true);
+		selectAll(selectendentityrules, true, false);
 		selectSome(selectinternalkeybindingrules, [
 		    '<%= InternalKeyBindingRules.VIEW.resource() %>'
 			], true);
