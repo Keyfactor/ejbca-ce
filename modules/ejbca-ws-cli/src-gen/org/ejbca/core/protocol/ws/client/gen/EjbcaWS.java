@@ -37,9 +37,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "isAuthorized", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.IsAuthorized")
     @ResponseWrapper(localName = "isAuthorizedResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.IsAuthorizedResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/isAuthorizedRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/isAuthorizedResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/isAuthorized/Fault/EjbcaException")
-    })
     public boolean isAuthorized(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -59,14 +56,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "editUser", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.EditUser")
     @ResponseWrapper(localName = "editUserResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.EditUserResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUserRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUserResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUser/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUser/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = UserDoesntFullfillEndEntityProfile_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUser/Fault/UserDoesntFullfillEndEntityProfile"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUser/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUser/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/editUser/Fault/WaitingForApprovalException")
-    })
     public void editUser(
         @WebParam(name = "arg0", targetNamespace = "")
         UserDataVOWS arg0)
@@ -87,12 +76,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "findUser", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.FindUser")
     @ResponseWrapper(localName = "findUserResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.FindUserResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/findUserRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/findUserResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/findUser/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = IllegalQueryException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/findUser/Fault/IllegalQueryException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/findUser/Fault/EjbcaException"),
-        @FaultAction(className = EndEntityProfileNotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/findUser/Fault/EndEntityProfileNotFoundException")
-    })
     public List<UserDataVOWS> findUser(
         @WebParam(name = "arg0", targetNamespace = "")
         UserMatch arg0)
@@ -112,10 +95,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "findCerts", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.FindCerts")
     @ResponseWrapper(localName = "findCertsResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.FindCertsResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/findCertsRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/findCertsResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/findCerts/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/findCerts/Fault/EjbcaException")
-    })
     public List<Certificate> findCerts(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -136,10 +115,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getLastCertChain", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLastCertChain")
     @ResponseWrapper(localName = "getLastCertChainResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLastCertChainResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCertChainRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCertChainResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCertChain/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCertChain/Fault/EjbcaException")
-    })
     public List<Certificate> getLastCertChain(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -159,10 +134,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "createCryptoToken", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCryptoToken")
     @ResponseWrapper(localName = "createCryptoTokenResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCryptoTokenResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCryptoTokenRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCryptoTokenResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCryptoToken/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCryptoToken/Fault/EjbcaException")
-    })
     public void createCryptoToken(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -188,10 +159,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "generateCryptoTokenKeys", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GenerateCryptoTokenKeys")
     @ResponseWrapper(localName = "generateCryptoTokenKeysResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GenerateCryptoTokenKeysResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/generateCryptoTokenKeysRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/generateCryptoTokenKeysResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/generateCryptoTokenKeys/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/generateCryptoTokenKeys/Fault/EjbcaException")
-    })
     public void generateCryptoTokenKeys(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -220,10 +187,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "createCA", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCA")
     @ResponseWrapper(localName = "createCAResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCAResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCARequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCAResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCA/Fault/EjbcaException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCA/Fault/AuthorizationDeniedException")
-    })
     public void createCA(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -261,10 +224,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "addSubjectToRole", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.AddSubjectToRole")
     @ResponseWrapper(localName = "addSubjectToRoleResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.AddSubjectToRoleResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/addSubjectToRoleRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/addSubjectToRoleResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/addSubjectToRole/Fault/EjbcaException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/addSubjectToRole/Fault/AuthorizationDeniedException")
-    })
     public void addSubjectToRole(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -292,10 +251,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "removeSubjectFromRole", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RemoveSubjectFromRole")
     @ResponseWrapper(localName = "removeSubjectFromRoleResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RemoveSubjectFromRoleResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/removeSubjectFromRoleRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/removeSubjectFromRoleResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/removeSubjectFromRole/Fault/EjbcaException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/removeSubjectFromRole/Fault/AuthorizationDeniedException")
-    })
     public void removeSubjectFromRole(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -322,9 +277,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getCertificatesByExpirationTime", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTime")
     @ResponseWrapper(localName = "getCertificatesByExpirationTimeResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTime/Fault/EjbcaException")
-    })
     public List<Certificate> getCertificatesByExpirationTime(
         @WebParam(name = "arg0", targetNamespace = "")
         long arg0,
@@ -346,9 +298,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getCertificatesByExpirationTimeAndIssuer", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndIssuer")
     @ResponseWrapper(localName = "getCertificatesByExpirationTimeAndIssuerResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndIssuerResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeAndIssuerRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeAndIssuerResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeAndIssuer/Fault/EjbcaException")
-    })
     public List<Certificate> getCertificatesByExpirationTimeAndIssuer(
         @WebParam(name = "arg0", targetNamespace = "")
         long arg0,
@@ -372,9 +321,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getCertificatesByExpirationTimeAndType", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndType")
     @ResponseWrapper(localName = "getCertificatesByExpirationTimeAndTypeResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificatesByExpirationTimeAndTypeResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeAndTypeRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeAndTypeResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificatesByExpirationTimeAndType/Fault/EjbcaException")
-    })
     public List<Certificate> getCertificatesByExpirationTimeAndType(
         @WebParam(name = "arg0", targetNamespace = "")
         long arg0,
@@ -404,13 +350,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "crmfRequest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CrmfRequest")
     @ResponseWrapper(localName = "crmfRequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CrmfRequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequest/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequest/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequest/Fault/EjbcaException"),
-        @FaultAction(className = CesecoreException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/crmfRequest/Fault/CesecoreException")
-    })
     public CertificateResponse crmfRequest(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -444,13 +383,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "spkacRequest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.SpkacRequest")
     @ResponseWrapper(localName = "spkacRequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.SpkacRequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequest/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequest/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequest/Fault/EjbcaException"),
-        @FaultAction(className = CesecoreException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/spkacRequest/Fault/CesecoreException")
-    })
     public CertificateResponse spkacRequest(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -487,18 +419,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "cvcRequest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CvcRequest")
     @ResponseWrapper(localName = "cvcRequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CvcRequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = UserDoesntFullfillEndEntityProfile_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/UserDoesntFullfillEndEntityProfile"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/EjbcaException"),
-        @FaultAction(className = CesecoreException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/CesecoreException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/WaitingForApprovalException"),
-        @FaultAction(className = SignRequestException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/SignRequestException"),
-        @FaultAction(className = CertificateExpiredException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/cvcRequest/Fault/CertificateExpiredException")
-    })
     public List<Certificate> cvcRequest(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -529,13 +449,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "caRenewCertRequest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CaRenewCertRequest")
     @ResponseWrapper(localName = "caRenewCertRequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CaRenewCertRequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequest/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequest/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequest/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caRenewCertRequest/Fault/WaitingForApprovalException")
-    })
     public byte[] caRenewCertRequest(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -567,13 +480,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "caCertResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CaCertResponse")
     @ResponseWrapper(localName = "caCertResponseResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CaCertResponseResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponse/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponse/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponse/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponse/Fault/WaitingForApprovalException"),
-        @FaultAction(className = CesecoreException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponse/Fault/CesecoreException")
-    })
     public void caCertResponse(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -601,13 +507,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "caCertResponseForRollover", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CaCertResponseForRollover")
     @ResponseWrapper(localName = "caCertResponseForRolloverResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CaCertResponseForRolloverResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRolloverRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRolloverResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRollover/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRollover/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRollover/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRollover/Fault/WaitingForApprovalException"),
-        @FaultAction(className = CesecoreException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/caCertResponseForRollover/Fault/CesecoreException")
-    })
     public void caCertResponseForRollover(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -630,11 +529,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "rolloverCACert", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RolloverCACert")
     @ResponseWrapper(localName = "rolloverCACertResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RolloverCACertResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/rolloverCACertRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/rolloverCACertResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/rolloverCACert/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/rolloverCACert/Fault/CADoesntExistsException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/rolloverCACert/Fault/EjbcaException")
-    })
     public void rolloverCACert(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -660,13 +554,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "pkcs10Request", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.Pkcs10Request")
     @ResponseWrapper(localName = "pkcs10RequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.Pkcs10RequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10RequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10RequestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10Request/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10Request/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10Request/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10Request/Fault/EjbcaException"),
-        @FaultAction(className = CesecoreException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs10Request/Fault/CesecoreException")
-    })
     public CertificateResponse pkcs10Request(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -699,12 +586,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "pkcs12Req", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.Pkcs12Req")
     @ResponseWrapper(localName = "pkcs12ReqResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.Pkcs12ReqResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs12ReqRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs12ReqResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs12Req/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs12Req/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs12Req/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/pkcs12Req/Fault/EjbcaException")
-    })
     public KeyStore pkcs12Req(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -735,15 +616,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "revokeCert", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCert")
     @ResponseWrapper(localName = "revokeCertResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/WaitingForApprovalException"),
-        @FaultAction(className = AlreadyRevokedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCert/Fault/AlreadyRevokedException")
-    })
     public void revokeCert(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -773,17 +645,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "revokeCertBackdated", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertBackdated")
     @ResponseWrapper(localName = "revokeCertBackdatedResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertBackdatedResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdatedRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdatedResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/WaitingForApprovalException"),
-        @FaultAction(className = AlreadyRevokedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/AlreadyRevokedException"),
-        @FaultAction(className = RevokeBackDateNotAllowedForProfileException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/RevokeBackDateNotAllowedForProfileException"),
-        @FaultAction(className = DateNotValidException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeCertBackdated/Fault/DateNotValidException")
-    })
     public void revokeCertBackdated(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -812,15 +673,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "revokeUser", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeUser")
     @ResponseWrapper(localName = "revokeUserResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeUserResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUserRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUserResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/NotFoundException"),
-        @FaultAction(className = AlreadyRevokedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/AlreadyRevokedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeUser/Fault/WaitingForApprovalException")
-    })
     public void revokeUser(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -844,14 +696,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "keyRecoverNewest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.KeyRecoverNewest")
     @ResponseWrapper(localName = "keyRecoverNewestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.KeyRecoverNewestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewest/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewest/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewest/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewest/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverNewest/Fault/WaitingForApprovalException")
-    })
     public void keyRecoverNewest(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -873,14 +717,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "keyRecover", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.KeyRecover")
     @ResponseWrapper(localName = "keyRecoverResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.KeyRecoverResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecoverResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecover/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecover/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecover/Fault/NotFoundException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecover/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecover/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/keyRecover/Fault/WaitingForApprovalException")
-    })
     public void keyRecover(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -906,15 +742,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "revokeToken", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeToken")
     @ResponseWrapper(localName = "revokeTokenResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeTokenResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeTokenRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeTokenResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/NotFoundException"),
-        @FaultAction(className = AlreadyRevokedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/AlreadyRevokedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/revokeToken/Fault/WaitingForApprovalException")
-    })
     public void revokeToken(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -937,11 +764,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "checkRevokationStatus", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CheckRevokationStatus")
     @ResponseWrapper(localName = "checkRevokationStatusResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CheckRevokationStatusResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/checkRevokationStatusRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/checkRevokationStatusResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/checkRevokationStatus/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/checkRevokationStatus/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/checkRevokationStatus/Fault/EjbcaException")
-    })
     public RevokeStatus checkRevokationStatus(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -964,11 +786,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "fetchUserData", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.FetchUserData")
     @ResponseWrapper(localName = "fetchUserDataResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.FetchUserDataResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/fetchUserDataRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/fetchUserDataResponse", fault = {
-        @FaultAction(className = UserDataSourceException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/fetchUserData/Fault/UserDataSourceException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/fetchUserData/Fault/EjbcaException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/fetchUserData/Fault/AuthorizationDeniedException")
-    })
     public List<UserDataSourceVOWS> fetchUserData(
         @WebParam(name = "arg0", targetNamespace = "")
         List<String> arg0,
@@ -1000,17 +817,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "genTokenCertificates", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GenTokenCertificates")
     @ResponseWrapper(localName = "genTokenCertificatesResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GenTokenCertificatesResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificatesRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificatesResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/WaitingForApprovalException"),
-        @FaultAction(className = HardTokenExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/HardTokenExistsException"),
-        @FaultAction(className = UserDoesntFullfillEndEntityProfile_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/UserDoesntFullfillEndEntityProfile"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/ApprovalException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalRequestExpiredException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/ApprovalRequestExpiredException"),
-        @FaultAction(className = ApprovalRequestExecutionException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/genTokenCertificates/Fault/ApprovalRequestExecutionException")
-    })
     public List<TokenCertificateResponseWS> genTokenCertificates(
         @WebParam(name = "arg0", targetNamespace = "")
         UserDataVOWS arg0,
@@ -1036,9 +842,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "existsHardToken", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.ExistsHardToken")
     @ResponseWrapper(localName = "existsHardTokenResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.ExistsHardTokenResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/existsHardTokenRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/existsHardTokenResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/existsHardToken/Fault/EjbcaException")
-    })
     public boolean existsHardToken(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -1065,16 +868,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getHardTokenData", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetHardTokenData")
     @ResponseWrapper(localName = "getHardTokenDataResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetHardTokenDataResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDataRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDataResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = HardTokenDoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/HardTokenDoesntExistsException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/NotFoundException"),
-        @FaultAction(className = ApprovalRequestExpiredException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/ApprovalRequestExpiredException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/WaitingForApprovalException"),
-        @FaultAction(className = ApprovalRequestExecutionException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/ApprovalRequestExecutionException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenData/Fault/EjbcaException")
-    })
     public HardTokenDataWS getHardTokenData(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -1100,11 +893,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getHardTokenDatas", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetHardTokenDatas")
     @ResponseWrapper(localName = "getHardTokenDatasResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetHardTokenDatasResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDatasRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDatasResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDatas/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDatas/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getHardTokenDatas/Fault/EjbcaException")
-    })
     public List<HardTokenDataWS> getHardTokenDatas(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -1127,12 +915,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "republishCertificate", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RepublishCertificate")
     @ResponseWrapper(localName = "republishCertificateResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RepublishCertificateResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/republishCertificateRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/republishCertificateResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/republishCertificate/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/republishCertificate/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = PublisherException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/republishCertificate/Fault/PublisherException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/republishCertificate/Fault/EjbcaException")
-    })
     public void republishCertificate(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -1156,11 +938,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "customLog", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CustomLog")
     @ResponseWrapper(localName = "customLogResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CustomLogResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/customLogRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/customLogResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/customLog/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/customLog/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/customLog/Fault/EjbcaException")
-    })
     public void customLog(
         @WebParam(name = "arg0", targetNamespace = "")
         int arg0,
@@ -1193,12 +970,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "deleteUserDataFromSource", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.DeleteUserDataFromSource")
     @ResponseWrapper(localName = "deleteUserDataFromSourceResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.DeleteUserDataFromSourceResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/deleteUserDataFromSourceRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/deleteUserDataFromSourceResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/deleteUserDataFromSource/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = MultipleMatchException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/deleteUserDataFromSource/Fault/MultipleMatchException"),
-        @FaultAction(className = UserDataSourceException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/deleteUserDataFromSource/Fault/UserDataSourceException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/deleteUserDataFromSource/Fault/EjbcaException")
-    })
     public boolean deleteUserDataFromSource(
         @WebParam(name = "arg0", targetNamespace = "")
         List<String> arg0,
@@ -1222,11 +993,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "isApproved", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.IsApproved")
     @ResponseWrapper(localName = "isApprovedResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.IsApprovedResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/isApprovedRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/isApprovedResponse", fault = {
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/isApproved/Fault/ApprovalException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/isApproved/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalRequestExpiredException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/isApproved/Fault/ApprovalRequestExpiredException")
-    })
     public int isApproved(
         @WebParam(name = "arg0", targetNamespace = "")
         int arg0)
@@ -1247,11 +1013,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getCertificate", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificate")
     @ResponseWrapper(localName = "getCertificateResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetCertificateResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificateRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificateResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificate/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificate/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getCertificate/Fault/EjbcaException")
-    })
     public Certificate getCertificate(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -1271,10 +1032,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getAvailableCAs", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAvailableCAs")
     @ResponseWrapper(localName = "getAvailableCAsResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAvailableCAsResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAsRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAsResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAs/Fault/EjbcaException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAs/Fault/AuthorizationDeniedException")
-    })
     public List<NameAndId> getAvailableCAs()
         throws AuthorizationDeniedException_Exception, EjbcaException_Exception
     ;
@@ -1290,10 +1047,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getAuthorizedEndEntityProfiles", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAuthorizedEndEntityProfiles")
     @ResponseWrapper(localName = "getAuthorizedEndEntityProfilesResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAuthorizedEndEntityProfilesResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAuthorizedEndEntityProfilesRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAuthorizedEndEntityProfilesResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAuthorizedEndEntityProfiles/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAuthorizedEndEntityProfiles/Fault/EjbcaException")
-    })
     public List<NameAndId> getAuthorizedEndEntityProfiles()
         throws AuthorizationDeniedException_Exception, EjbcaException_Exception
     ;
@@ -1310,10 +1063,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getAvailableCertificateProfiles", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAvailableCertificateProfiles")
     @ResponseWrapper(localName = "getAvailableCertificateProfilesResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAvailableCertificateProfilesResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCertificateProfilesRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCertificateProfilesResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCertificateProfiles/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCertificateProfiles/Fault/EjbcaException")
-    })
     public List<NameAndId> getAvailableCertificateProfiles(
         @WebParam(name = "arg0", targetNamespace = "")
         int arg0)
@@ -1332,10 +1081,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getAvailableCAsInProfile", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAvailableCAsInProfile")
     @ResponseWrapper(localName = "getAvailableCAsInProfileResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetAvailableCAsInProfileResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAsInProfileRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAsInProfileResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAsInProfile/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getAvailableCAsInProfile/Fault/EjbcaException")
-    })
     public List<NameAndId> getAvailableCAsInProfile(
         @WebParam(name = "arg0", targetNamespace = "")
         int arg0)
@@ -1356,11 +1101,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getProfile", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetProfile")
     @ResponseWrapper(localName = "getProfileResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetProfileResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getProfileRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getProfileResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getProfile/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getProfile/Fault/EjbcaException"),
-        @FaultAction(className = UnknownProfileTypeException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getProfile/Fault/UnknownProfileTypeException")
-    })
     public byte[] getProfile(
         @WebParam(name = "arg0", targetNamespace = "")
         int arg0,
@@ -1382,14 +1122,6 @@ public interface EjbcaWS {
     @WebMethod
     @RequestWrapper(localName = "createCRL", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCRL")
     @ResponseWrapper(localName = "createCRLResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CreateCRLResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRLRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRLResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRL/Fault/CADoesntExistsException"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRL/Fault/ApprovalException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRL/Fault/EjbcaException"),
-        @FaultAction(className = ApprovalRequestExpiredException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRL/Fault/ApprovalRequestExpiredException"),
-        @FaultAction(className = CryptoTokenOfflineException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRL/Fault/CryptoTokenOfflineException"),
-        @FaultAction(className = CAOfflineException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/createCRL/Fault/CAOfflineException")
-    })
     public void createCRL(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -1409,10 +1141,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getLatestCRL", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLatestCRL")
     @ResponseWrapper(localName = "getLatestCRLResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLatestCRLResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLatestCRLRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLatestCRLResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLatestCRL/Fault/CADoesntExistsException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLatestCRL/Fault/EjbcaException")
-    })
     public byte[] getLatestCRL(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -1430,7 +1158,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getEjbcaVersion", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetEjbcaVersion")
     @ResponseWrapper(localName = "getEjbcaVersionResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetEjbcaVersionResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getEjbcaVersionRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getEjbcaVersionResponse")
     public String getEjbcaVersion();
 
     /**
@@ -1444,9 +1171,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getPublisherQueueLength", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetPublisherQueueLength")
     @ResponseWrapper(localName = "getPublisherQueueLengthResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetPublisherQueueLengthResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getPublisherQueueLengthRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getPublisherQueueLengthResponse", fault = {
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getPublisherQueueLength/Fault/EjbcaException")
-    })
     public int getPublisherQueueLength(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
@@ -1473,14 +1197,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "certificateRequest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CertificateRequest")
     @ResponseWrapper(localName = "certificateRequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.CertificateRequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequestResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequest/Fault/NotFoundException"),
-        @FaultAction(className = UserDoesntFullfillEndEntityProfile_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequest/Fault/UserDoesntFullfillEndEntityProfile"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequest/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequest/Fault/WaitingForApprovalException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/certificateRequest/Fault/EjbcaException")
-    })
     public CertificateResponse certificateRequest(
         @WebParam(name = "arg0", targetNamespace = "")
         UserDataVOWS arg0,
@@ -1515,15 +1231,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "softTokenRequest", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.SoftTokenRequest")
     @ResponseWrapper(localName = "softTokenRequestResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.SoftTokenRequestResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequestRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequestResponse", fault = {
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/CADoesntExistsException"),
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = NotFoundException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/NotFoundException"),
-        @FaultAction(className = UserDoesntFullfillEndEntityProfile_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/UserDoesntFullfillEndEntityProfile"),
-        @FaultAction(className = ApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/ApprovalException"),
-        @FaultAction(className = WaitingForApprovalException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/WaitingForApprovalException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/softTokenRequest/Fault/EjbcaException")
-    })
     public KeyStore softTokenRequest(
         @WebParam(name = "arg0", targetNamespace = "")
         UserDataVOWS arg0,
@@ -1549,11 +1256,6 @@ public interface EjbcaWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getLastCAChain", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLastCAChain")
     @ResponseWrapper(localName = "getLastCAChainResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLastCAChainResponse")
-    @Action(input = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCAChainRequest", output = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCAChainResponse", fault = {
-        @FaultAction(className = AuthorizationDeniedException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCAChain/Fault/AuthorizationDeniedException"),
-        @FaultAction(className = CADoesntExistsException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCAChain/Fault/CADoesntExistsException"),
-        @FaultAction(className = EjbcaException_Exception.class, value = "http://ws.protocol.core.ejbca.org/EjbcaWS/getLastCAChain/Fault/EjbcaException")
-    })
     public List<Certificate> getLastCAChain(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0)
