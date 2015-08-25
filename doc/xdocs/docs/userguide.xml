@@ -1227,6 +1227,14 @@ Setting this value to 55 will require the RA admin to set a 9 character password
 this restricts the values that can be used when adding or editing an end entity using all interfaces, be it web GUI, web service, cmp or something else.
 If you define values as required and non-modifyable you can specify one or more values. If you specify multiple values separated by ';', the admin in the web GUI will get a drop-down list to select from.
 </p>
+<p>In the Validation field you may restrict the allowed input, using a regular expression (regex). EJBCA uses <a href="http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html">Java Pattern</a> syntax, which is similar to the Perl regex syntax. Matching is case sensitive by default, but this can be changed by adding (?i) in front of the regex. Here are some examples:</p>
+<ul>
+<li>[0-9]+ allows digits only</li>
+<li>[0-9A-Za-z]+ allows digits and English letters only, no spaces</li>
+<li>[0-9A-Za-z ]+ allows digits and English letters and spaces</li>
+<li>.+@.+ allows strings containing "@", for example e-mail addresses</li>
+<li>[a-zA-Z0-9+._-]+@[a-zA-Z0-9.-]+ allows e-mail addresses with English characters only</li>
+</ul>
 <p>
 When having several fields of a certain type with mixed required and not required fields some special handling might be needed when adding users using web sevrice API.
 If you have for example:
