@@ -32,7 +32,19 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 
 From EJBCA 6.3.2 up to EJBCA 6.3.3
 -------------------------------
-A new default Role has been added named "Auditor", which is a role which has view access to all pages but not rights to make any changes or 
+Upgrading to 6.3.3 will require some minor additions of access rules, which will be performed in post-upgrade. All additions create more granularity, 
+so while role will be given access to anything they didn't have before the upgrade, rules can be restricted manually after the upgrade to make
+access control more restrictive. 
+
+To perform an upgrade:
+
+1. 	Upgrade EJBCA on all nodes. 
+2. 	Run 'ant post-upgrade' on any one of the nodes and enter "6.3.2" as version(or whatever version you're upgrading from). 
+3.	Verify that all custom roles still have their expected rights. 
+
+New Access rules: 
+
+1. A new default Role has been added named "Auditor", which is a role which has view access to all pages but not rights to make any changes or 
 perform any actions. Some new rules had to be added to accommodate this role, and autorization to certain GUI pages has been made more fine 
 grained as a result. During upgrade, all roles which previously had access rights using the previous rules will automatically be given access 
 to the new rule. These are as follows:
@@ -44,31 +56,21 @@ Any roles which had access to:								Now also have access to:
 /ca_functionality/edit_publisher							/ca_functionality/view_publisher
 /ra_functionality/edit_end_entity_profiles					/ra_functionality/view_end_entity_profiles
 /															/services/edit and /services/view 
-/															/peer/view (+recursive)
+/internalkeybinding 										/internalkeybinding/view (recursive)
 
 The pages that will be available to this new role are the following:
-Page Name:													Notes:
+Page Name:						Notes:
 CA Activation	
-		
 CA Structure & CRLs
-
-Certificate Profiles										Certificate Profiles previously not accessible (due to lack of access to CAs or 
-															root access) will be rendered view only. 
-
-Certification Authorities									All CA's will now be listed (instead of only the ones which the admin had access to, but
-															ones without access will be greyed out. 
-
+Certificate Profiles			Certificate Profiles previously not accessible (due to lack of access to CAs or 
+								root access) will be rendered view only. 
+Certification Authorities		All CA's will now be listed (instead of only the ones which the admin had access to, but
+								ones without access will be greyed out. 
 End Entity Profiles
-
 Publishers
-
 Crypto Tokens
-
 Services
-
 Internal Key Bindings
-
-Peer Systems
 
 From EJBCA 6.3.1 up to EJBCA 6.3.2
 -------------------------------
