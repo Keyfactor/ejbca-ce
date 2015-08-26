@@ -536,18 +536,22 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     }
 
     /**
-     * tests deletion of user, and user that does not exist
+     * Test adding a user, merging the DN request in the End Entity with the default DN fields in the end entity profile.
      * 
      * @throws Exception error
      */
     @Test
     public void test07MergeWithWS() throws Exception {
+        // An end entity profile that has CN,DNEMAIL,OU=FooOrgUnit,O,C
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COMMONNAME);
         profile.addField(DnComponents.DNEMAILADDRESS);
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.setUse(DnComponents.ORGANIZATIONALUNIT, 0, true);
         profile.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "FooOrgUnit");
+        // The merge only handles 1 default value for each DN component, i.e. one OU one O etc. You can not have two default OUs to merge.
+        // You can not even define two OUs to be used in the profile, it will be merged with the value of the first duplicated, i.e. FooOrgUnit twice
+        //profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
@@ -556,6 +560,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
         int profileId = endEntityProfileSession.getEndEntityProfileId("TESTMERGEWITHWS");
 
+        // An end entity with CN=username,O=AnaTom,C=SE
+        // Merged with the EE profile default it should become CN=username,OU=FooOrgUnit,OU=BarOrgUnit,O=AnaTom,C=SE
         EndEntityInformation addUser = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
                 SecConst.TOKEN_SOFT_P12, 0, null);
@@ -565,11 +571,60 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
         addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
-        endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        // Changing the user feeding in EMAIL=foo@bar.com,OU=hohoit will actuallybe merged with the existing end entity user DN into
+        // EMAIL:foo@bar.com,CN=username,OU=hoho,O=AnaTom,C=SE
+        // Since there is an order EMAIL and OU gets in their proper order. Since we pass in OU=hoho, it override the profile default OU=FooOrgUnit
         endEntityManagementSession.changeUser(admin, addUser, false, true);
         data = endEntityAccessSession.findUser(admin, username);
         // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
+        
+        endEntityManagementSession.deleteUser(admin, username);
+        // A real use case. Add EV SSL items as default values and merge those into the End Entity
+        profile.addField("JURISDICTIONCOUNTRY");
+        profile.setUse("JURISDICTIONCOUNTRY", 0, true);
+        profile.setValue("JURISDICTIONCOUNTRY", 0, "NO");
+        profile.addField("JURISDICTIONSTATE");
+        profile.setUse("JURISDICTIONSTATE", 0, true);
+        profile.setValue("JURISDICTIONSTATE", 0, "California");
+        profile.addField("JURISDICTIONLOCALITY");
+        profile.setUse("JURISDICTIONLOCALITY", 0, true);
+        profile.setValue("JURISDICTIONLOCALITY", 0, "Stockholm");
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        final String subjectDN = "CN=foo subject,O=Bar";
+        addUser = new EndEntityInformation(username, subjectDN, caid, "dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", null,
+                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
+                SecConst.TOKEN_SOFT_P12, 0, null);
+        addUser.setPassword("foo123");
+        try {
+            endEntityManagementSession.addUserFromWS(admin, addUser, false);
+            fail("Should not be allowed since we have altNames that are not allowed in the profile.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {} // NOPMD
+        // Add the required end entity profile fields
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.RFC822NAME);        
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        endEntityManagementSession.addUserFromWS(admin, addUser, false);
+        data = endEntityAccessSession.findUser(admin, username);
+        assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar", data.getDN());
+        // Make sure altNames are not stripped, they shall actually be merged as well
+        assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+
+        // Try with some altName value to merge
+        endEntityManagementSession.deleteUser(admin, username);
+        profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
+        profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
+        // The merge only handles consecutive default value for each DN component, i.e. defaultname for 0 and 1, not for 0 and 2
+        // The resulting altName will have 4 dnsNames, so we must allow this amount
+        profile.addField(DnComponents.DNSNAME);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        endEntityManagementSession.addUserFromWS(admin, addUser, false);
+        data = endEntityAccessSession.findUser(admin, username);
+        assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar", data.getDN());
+        // Make sure altNames are not stripped, they shall actually be merged as well. Ok cases are different but that does not matter.
+        assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
     }
     
     /** Tests that CA and End Entity profile authorization methods in EndEntityManagementSessionBean works.
