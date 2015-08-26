@@ -41,7 +41,7 @@ if (WebConfiguration.isManualClassPathsEnabled()) {
 <%
 } else {
 %>
-        <h:selectOneMenu id="actionClassPathSelect" value="#{editService.customActionType.autoClassPath} disabled="#{not editService.hasEditRights}"">
+        <h:selectOneMenu id="actionClassPathSelect" value="#{editService.customActionType.autoClassPath} disabled="#{not editService.hasEditRights}">
             <f:selectItem itemValue="" itemLabel="#{web.text.PLEASE_SELECT}" />
             <f:selectItems value="#{editService.serviceConfigurationView.availableCustomActionItems}" />
             <f:selectItems value="#{editService.manualCustomItems.actions}" />
