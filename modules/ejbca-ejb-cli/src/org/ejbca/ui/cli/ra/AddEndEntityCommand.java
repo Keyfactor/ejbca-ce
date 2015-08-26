@@ -113,7 +113,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 "Type (mask): INVALID=0; END-USER=1; " + (globalConfiguration.getEnableKeyRecovery() ? "KEYRECOVERABLE=128; " : "")
                         + "SENDNOTIFICATION=256; PRINTUSERDATA=512"));
         registerParameter(new Parameter(TOKEN_KEY, "Token", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Desired token type for the end entity."));
+                "Desired token type for the end entity: USERGENERATED, P12, JKS, PEM."));
         registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The certificate profile, will default to End User."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -196,10 +196,12 @@ public class AddEndEntityCommand extends BaseRaCommand {
         int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
         if (usehardtokens) {
             final String hardTokenIssuer = parameters.get(HARDTOKEN_ISSUER_KEY);
-            // Use certificate type, end entity profile and hardtokenissuer.
-            hardtokenissuerid = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(hardTokenIssuer);
-            usehardtokenissuer = true;
-            getLogger().info("Using hard token issuer: " + hardTokenIssuer + ", with id: " + hardtokenissuerid);
+            if (hardTokenIssuer != null) {
+                // Use certificate type, end entity profile and hardtokenissuer.
+                hardtokenissuerid = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(hardTokenIssuer);
+                usehardtokenissuer = true;
+                getLogger().info("Using hard token issuer: " + hardTokenIssuer + ", with id: " + hardtokenissuerid);
+            }
         }
 
         int tokenid = getTokenId(tokenname, usehardtokens, EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class));
@@ -347,7 +349,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                     .getHardTokenIssuerAliases(getAuthenticationToken()).toArray(new String[0])) {
                 existingHtis.append((existingHtis.length() == 0 ? "" : ", ") + alias);
             }
-            sb.append("Existing hard token issuers: " + existingEeps + "\n");
+            sb.append("Existing hard token issuers: " + existingHtis + "\n");
         }
 
         return sb.toString();
