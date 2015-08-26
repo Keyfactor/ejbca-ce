@@ -38,13 +38,10 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.configuration.GlobalConfigurationSession;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.easymock.EasyMock;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,9 +87,7 @@ public class OcspKeyBindingTest {
 
     @Test
     public void testOcspSigningCertificateValidationPositives() throws IOException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException {
-        GlobalConfigurationSession gc = EasyMock.createMock(GlobalConfigurationSession.class);
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = (AvailableExtendedKeyUsagesConfiguration) gc.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
-        
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration();
         assertTrue("KU=digitalSignature and EKU=id_kp_OCSPSigning should be treated as a valid OCSP singing certificate.",
                 OcspKeyBinding.isOcspSigningCertificate(getCertificate(X509KeyUsage.digitalSignature, ekuExtensionOnly), ekuConfig));
         assertTrue("KU=digitalSignature and EKU=id_kp_OCSPSigning should be treated as a valid OCSP singing certificate.",
@@ -105,10 +100,8 @@ public class OcspKeyBindingTest {
 
     @Test
     public void testOcspSigningCertificateAssertionPositives() throws IOException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException {
-        GlobalConfigurationSession gc = EasyMock.createMock(GlobalConfigurationSessionLocal.class);
         try {
-            new OcspKeyBinding().assertCertificateCompatability(getCertificate(X509KeyUsage.digitalSignature, ekuExtensionOnly), 
-                    (AvailableExtendedKeyUsagesConfiguration) gc.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID));
+            new OcspKeyBinding().assertCertificateCompatability(getCertificate(X509KeyUsage.digitalSignature, ekuExtensionOnly), new AvailableExtendedKeyUsagesConfiguration());
         } catch (CertificateImportException e) {
             fail("KU=digitalSignature and EKU=id_kp_OCSPSigning should be treated as a valid OCSP singing certificate.");
         }
@@ -116,9 +109,7 @@ public class OcspKeyBindingTest {
 
     @Test
     public void testOcspSigningCertificateValidationNegatives() throws IOException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException {
-        GlobalConfigurationSession gc = EasyMock.createMock(GlobalConfigurationSession.class);
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = (AvailableExtendedKeyUsagesConfiguration) gc.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
-
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration();
         assertFalse("KU!=digitalSignature|nonRepudiation and EKU=id_kp_OCSPSigning should be treated as an invalid OCSP singing certificate.",
                 OcspKeyBinding.isOcspSigningCertificate(getCertificate(X509KeyUsage.keyAgreement + X509KeyUsage.cRLSign, ekuExtensionOnly), ekuConfig));
         assertFalse("KU=digitalSignature and EKU!=id_kp_OCSPSigning should be treated as an invalid OCSP singing certificate.",
@@ -129,10 +120,8 @@ public class OcspKeyBindingTest {
 
     @Test
     public void testOcspSigningCertificateAssertionNegatives() throws IOException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException {
-        GlobalConfigurationSession gc = EasyMock.createMock(GlobalConfigurationSessionLocal.class);
         try {
-            new OcspKeyBinding().assertCertificateCompatability(getCertificate(X509KeyUsage.cRLSign, null), 
-                    (AvailableExtendedKeyUsagesConfiguration) gc.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID) );
+            new OcspKeyBinding().assertCertificateCompatability(getCertificate(X509KeyUsage.cRLSign, null), new AvailableExtendedKeyUsagesConfiguration() );
             fail("KU=cRLSign and EKU!=id_kp_OCSPSigning should be treated as an invalid OCSP singing certificate.");
         } catch (CertificateImportException e) {
             // Expected outcome
