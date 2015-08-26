@@ -78,6 +78,7 @@ public class EndEntityInformationFiller {
         subjectDN = mergeSubjectDnWithDefaultValues(subjectDN, profile, userData.getEmail());
         userData.setDN(subjectDN);
         String subjectAltName = userData.getSubjectAltName();
+        // Processing Subject Altname values
         subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
         userData.setSubjectAltName(subjectAltName);
         if (userData.getType().getHexValue()==EndEntityTypes.INVALID.hexValue()) {
@@ -171,7 +172,7 @@ public class EndEntityInformationFiller {
 			String parameter = DNFieldExtractor.getFieldComponent(
 					DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
 					DNFieldExtractor.TYPE_SUBJECTALTNAME);
-			value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], 0);
+			value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
 			if (value != null) {
 				value = value.trim();
 				if (!value.equals("")) {					
@@ -193,6 +194,6 @@ public class EndEntityInformationFiller {
             dnMap.put(DnComponents.RFC822NAME, entityEmail);
         }
 
-        return  CertTools.stringToBCDNString(profileAltName.mergeDN(userAltName, true, dnMap).toString());
+        return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
     }
 }
