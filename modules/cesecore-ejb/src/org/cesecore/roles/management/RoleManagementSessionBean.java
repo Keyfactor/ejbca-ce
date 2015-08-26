@@ -552,8 +552,13 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
     
     @Override
-    public Collection<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource) {
-        ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
+    public List<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource) {
+        return getAuthorizedRoles(admin, resource, false);
+    }
+    
+    @Override
+    public List<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource, boolean requireRecursive) {
+       ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
         // Look for Roles that have access rules that allows the group access to the rule below.
         Collection<RoleData> roles = getAllRolesAuthorizedToEdit(admin);
         Collection<RoleData> onerole = new ArrayList<RoleData>();
@@ -568,7 +573,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             // an access rule for the requested resource
             AlwaysAllowLocalAuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RoleManagementSessionBean.getAuthorizedRoles"));
             try {
-                if (tree.isAuthorized(token, resource)) {
+                if (tree.isAuthorized(token, resource, requireRecursive)) {
                     authissueingadmgrps.add(role);
                 }
             } catch (AuthenticationFailedException e) {
