@@ -672,7 +672,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final List<String> availableTabs = new ArrayList<String>();
         if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
             availableTabs.add("Basic Configurations");
-            availableTabs.add("CTLogs");
+            availableTabs.add("Certificate Tranceparency Logs");
             availableTabs.add("Administrator Preferences");
         }
         if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
