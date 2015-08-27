@@ -49,6 +49,10 @@ The JBoss CLI turns out not to be too well suited for automated deploys, so func
       See the <a href="installation.html#Quick%20start%20guide">prerequisites</a> section in the the installation guide.
       <br/>Even if you think you have installed them, you have not. This error is simple and unique.
       </p>
+      <p>
+      It may also be that you are trying to enroll for a certificate passing in a public key with length that is shorter than 
+      the required key length specified in the Certificate Profile.
+      </p>
       </answer>    
     </faq>
     <faq id="certificateTypes">
