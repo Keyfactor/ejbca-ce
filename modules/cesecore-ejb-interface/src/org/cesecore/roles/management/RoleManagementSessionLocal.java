@@ -30,6 +30,11 @@ public interface RoleManagementSessionLocal extends RoleManagementSession {
 
     /**
      * @return a Collection of role names authorized to the resource,
+     */
+    List<RoleData> getAuthorizedRoles(String resource, boolean requireRecursive);
+    
+    /**
+     * @return a Collection of role names authorized to the resource,
      * it also only returns only the roles the administrator is authorized to edit.
      */
     List<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource);

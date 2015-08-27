@@ -557,11 +557,14 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
     
     @Override
-    public List<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource, boolean requireRecursive) {
-       ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
-        // Look for Roles that have access rules that allows the group access to the rule below.
-        Collection<RoleData> roles = getAllRolesAuthorizedToEdit(admin);
+    public List<RoleData> getAuthorizedRoles(String resource, boolean requireRecursive) {
+        return getAuthorizedRoles(roleAccessSession.getAllRoles(), resource, requireRecursive);
+    }
+    
+    private  List<RoleData> getAuthorizedRoles(Collection<RoleData> roles, String resource, boolean requireRecursive) {
         Collection<RoleData> onerole = new ArrayList<RoleData>();
+        ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
+
         for (RoleData role : roles) {
             // We want to check all roles if they are authorized, we can do that with a "private" AccessTree.
             // Probably quite inefficient but...
@@ -584,6 +587,13 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             }
         }
         return authissueingadmgrps;
+    }
+    
+    @Override
+    public List<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource, boolean requireRecursive) {
+        // Look for Roles that have access rules that allows the group access to the rule below.
+        Collection<RoleData> roles = getAllRolesAuthorizedToEdit(admin);       
+        return getAuthorizedRoles(roles, resource, requireRecursive);
     }
 
     @Override

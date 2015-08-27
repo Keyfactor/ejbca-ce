@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -642,53 +643,80 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * All access has been made more granular, so performing this step post-upgrade is safe. 
      * 
+     * 
      * The exact changes performed are documented in the UPGRADE document. 
      * @throws UpgradeFailedException if upgrade fails. 
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules() throws UpgradeFailedException {
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.addReadOnlyRules"));
         try {
             // Any roles that had access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive) 
             // should be given access to /ca_functionality/view_ca
-            List<RoleData> viewCaRoles = roleMgmtSession.getAuthorizedRoles(admin, AccessRulesConstants.REGULAR_ACTIVATECA);
-            viewCaRoles.addAll(roleMgmtSession.getAuthorizedRoles(admin, StandardRules.CAFUNCTIONALITY.resource(), true));
+            Set<RoleData> viewCaRoles = new HashSet<RoleData>(roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_ACTIVATECA, false));
+            viewCaRoles.addAll(roleMgmtSession.getAuthorizedRoles(StandardRules.CAFUNCTIONALITY.resource(), true));
             for (RoleData role : viewCaRoles) {
-                addAccessRulesToRole(role,
-                        Arrays.asList(new AccessRuleData(role.getRoleName(), StandardRules.CAVIEW.resource(), AccessRuleState.RULE_ACCEPT, false)));
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.CAVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
+                if (!role.getAccessRules().containsValue(newRule)) {
+                    addAccessRulesToRole(role, Arrays.asList(newRule));
+                }
             }
             // Next, any roles with access to /ca_functionality/edit_certificate_profiles should have be given access to /ca_functionality/view_certificate_profiles
-            List<RoleData> certificateProfileRoles = roleMgmtSession.getAuthorizedRoles(admin, StandardRules.CERTIFICATEPROFILEEDIT.resource());
+            List<RoleData> certificateProfileRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEEDIT.resource(), false);
             for (RoleData role : certificateProfileRoles) {
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
+                if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
-                        Arrays.asList(new AccessRuleData(role.getRoleName(), StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false)));
+                        Arrays.asList(newRule));
+                }
             }
             
             // Any roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
-            List<RoleData> publisherRoles = roleMgmtSession.getAuthorizedRoles(admin, AccessRulesConstants.REGULAR_EDITPUBLISHER);
+            List<RoleData> publisherRoles = roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITPUBLISHER, false);
             for (RoleData role : publisherRoles) {
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false);
+                if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
-                        Arrays.asList(new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false)));
+                        Arrays.asList(newRule));
+                }
             }
             // Any roles with access to /ra_functionality/edit_end_entity_profiles should be given /ra_functionality/view_end_entity_profiles
-            List<RoleData> endEntityProfileRoles = roleMgmtSession.getAuthorizedRoles(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
+            List<RoleData> endEntityProfileRoles = roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, false);
             for (RoleData role : endEntityProfileRoles) {
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false);
+                if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
-                        Arrays.asList(new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false)));
+                        Arrays.asList(newRule));
+                }
             }
             // Any roles with access to "/" should be given /services/edit, /services/view and /peer/view (+recursive)
-            List<RoleData> rootAccessRoles = roleMgmtSession.getAuthorizedRoles(admin, StandardRules.ROLE_ROOT.resource());
+            List<RoleData> rootAccessRoles = roleMgmtSession.getAuthorizedRoles(StandardRules.ROLE_ROOT.resource(), false);
             for (RoleData role : rootAccessRoles) {
-                addAccessRulesToRole(role, Arrays.asList(new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_EDIT,
-                        AccessRuleState.RULE_ACCEPT, false), new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_VIEW,
-                        AccessRuleState.RULE_ACCEPT, false), new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW,
-                        AccessRuleState.RULE_ACCEPT, true)));
-            }            
+                ArrayList<AccessRuleData> accessRulesList = new ArrayList<AccessRuleData>();
+                AccessRuleData servicesEdit = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_EDIT, AccessRuleState.RULE_ACCEPT,
+                        false);
+                AccessRuleData servicesView = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_VIEW, AccessRuleState.RULE_ACCEPT,
+                        false);
+                AccessRuleData peerView = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW,
+                        AccessRuleState.RULE_ACCEPT, true);
+                if (!role.getAccessRules().containsValue(peerView)) {
+                    accessRulesList.add(peerView);
+                }
+                if (!role.getAccessRules().containsValue(servicesEdit)) {
+                    accessRulesList.add(servicesEdit);
+                }
+                if (!role.getAccessRules().containsValue(servicesView)) {
+                    accessRulesList.add(servicesView);
+                }
+                addAccessRulesToRole(role, accessRulesList);
+            }           
             // Any roles with access to /internalkeybinding should be given /internalkeybinding/view (+recursive)
-            List<RoleData> keybindingProfileRoles = roleMgmtSession.getAuthorizedRoles(admin, InternalKeyBindingRules.BASE.resource());
+            List<RoleData> keybindingProfileRoles = roleMgmtSession.getAuthorizedRoles(InternalKeyBindingRules.BASE.resource(), false);
             for (RoleData role : keybindingProfileRoles) {
+                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true);
+                if (!role.getAccessRules().containsValue(newRule)) {
                 addAccessRulesToRole(role,
-                        Arrays.asList(new AccessRuleData(role.getRoleName(), InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true)));
+                        Arrays.asList(newRule));
+                }
             }
 
         } catch (RoleNotFoundException e) {
