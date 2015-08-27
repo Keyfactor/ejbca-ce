@@ -347,6 +347,7 @@ function checkvalidationdnfield(i) {
   
   if (checkbox.checked) {
     editbox.disabled = false;
+    editbox.focus();
   } else {
     editbox.value = "";
     editbox.disabled = true;
@@ -736,7 +737,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <label for="<%=CHECKBOX_VALIDATION_SUBJECTDN + i%>" id="<%=LABEL_VALIDATION_SUBJECTDN + i%>"<% if (!authorizedToEdit || !isModifiable) { out.write(" style=\"color: gray\""); } %>><c:out value="<%= ejbcawebbean.getText(\"VALIDATION\") %>" /></label>
         <% String validationRegex = "";
            if (validation != null) validationRegex = (String)validation.get(RegexFieldValidator.class.getName()); %>
-        <input type="text" name="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" value="<c:out value="<%= validationRegex %>"/>"
+        <input type="text" name="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" value="<c:out value="<%= validationRegex %>"/>" style="font-size: 9pt"
             id="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" <% if (validation == null || !authorizedToEdit) out.write("DISABLED"); %>>
         <% }
            else{ 
