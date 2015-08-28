@@ -388,6 +388,17 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
   <% } %>
 </div>
 
+<%
+if (!editerrors.isEmpty()) {
+    // e.g. invalid regex
+    %><div class="alert"><%
+    for (String editerror : editerrors.values()) {
+        %><c:out value="<%= ejbcawebbean.getText(\"ERROR\") + \": \" + editerror %>" /><br /><%
+    }
+    %></div><%
+}
+%>
+
 <form name="editprofile" method="post" action="<%=THIS_FILENAME %>" >
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_PROFILENAME %>' value='<c:out value="<%= profile %>"/>'>
@@ -739,7 +750,12 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            if (validation != null) validationRegex = (String)validation.get(RegexFieldValidator.class.getName()); %>
         <input type="text" name="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" value="<c:out value="<%= validationRegex %>"/>" style="font-size: 9pt"
             id="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" <% if (validation == null || !authorizedToEdit) out.write("DISABLED"); %>>
-        <% }
+        <%
+             if (editerrors.containsKey(TEXTFIELD_VALIDATION_SUBJECTDN + i)) {
+                 // e.g. invalid regex
+                 %><span class="alert"><c:out value="<%= ejbcawebbean.getText(\"ERROR\") %>" /></span><%
+             }
+           }
            else{ 
              emailfieldexists=true; 
               %>
