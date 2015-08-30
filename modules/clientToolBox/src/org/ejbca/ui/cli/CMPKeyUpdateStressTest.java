@@ -891,6 +891,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				System.exit(-1);
 			}
 			performanceTest.execute(new MyCommandFactory(cliArgs, performanceTest, keyStores), cliArgs.numberOfThreads, cliArgs.numberOfTests, cliArgs.waitTime, System.out);
+		} catch ( SecurityException e ) {
+		    throw e; // this exception was thrown by the clientToolBoxTest at exit. let it be handled by the testing framework.
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
