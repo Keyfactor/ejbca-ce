@@ -793,10 +793,12 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			if (args.length < 5) {
 				System.out.println(
 						args[0] +
-						" <host name> <keystore (p12) directory> <keystore password> [<number of threads>] [<wait time (ms) between each thread is started>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]"
+						" <host name> <keystore (p12) directory> <keystore password> <alias> [<'m:n' m # of threads, n # of tests>] [<wait time (ms) between each thread is started>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]"
 						);
 				System.out.println();
-				System.out.println("EJBCA build configuration requirements: cmp.operationmode=normal, cmp.allowautomatickeyupdate=true, cmp.allowupdatewithsamekey=true");
+				System.out.println("Requirements for the 'CMP Alias':");
+				System.out.println("\t'Operational Mode' must be 'Client Mode'.");
+				System.out.println("\t'Automatic Key Update' must be 'Allow'.");
 				System.out.println();
 				System.out.println("Ejbca expects an end entity with a generated certificate for each thread in the test. ");
 				System.out.println("The certificate and private key of each end entity are stored in a keystore file receding in the directory given by the command line.");
@@ -807,13 +809,14 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			this.hostName = args[1];
 			this.keystoreFile = args[2];
 			this.keystorePassword = args[3];
-			final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>4 ? args[4] : null);
+			final String alias = args[4];
+			final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>5 ? args[5] : null);
 			this.numberOfThreads = notanot.threads;
 			this.numberOfTests = notanot.tests;
-			this.waitTime = args.length > 5 ? Integer.parseInt(args[5].trim()) : 0;
-			this.port = args.length > 6 ? Integer.parseInt(args[6].trim()) : 8080;
-			this.urlPath = args.length > 7 && args[7].toLowerCase().indexOf("null") < 0 ? args[7].trim() : null;
-			this.resultFilePrefix = args.length > 8 ? args[8].trim() : null;
+			this.waitTime = args.length > 6 ? Integer.parseInt(args[6].trim()) : 0;
+			this.port = args.length > 7 ? Integer.parseInt(args[7].trim()) : 8080;
+			this.urlPath = (args.length > 8 && args[8].toLowerCase().indexOf("null") < 0 ? args[8].trim() : "/ejbca/publicweb/cmp") + '/' + alias;
+			this.resultFilePrefix = args.length > 9 ? args[9].trim() : null;
 		}
 	}
 
@@ -892,7 +895,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			}
 			performanceTest.execute(new MyCommandFactory(cliArgs, performanceTest, keyStores), cliArgs.numberOfThreads, cliArgs.numberOfTests, cliArgs.waitTime, System.out);
 		} catch ( SecurityException e ) {
-		    throw e; // this exception was thrown by the clientToolBoxTest at exit. let it be handled by the testing framework.
+			throw e; // this exception was thrown by the clientToolBoxTest at exit. let it be handled by the testing framework.
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
