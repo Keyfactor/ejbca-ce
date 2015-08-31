@@ -44,7 +44,7 @@ public class CMPSendHTTP {
 
 	public static CMPSendHTTP doIt(final byte[] message, final String hostName,
 	        final int port, final String urlPath, final boolean doClose) throws MalformedURLException, IOException {
-	    return doIt(message, "http://"+hostName+":"+port+(urlPath!=null ? urlPath:"/ejbca/publicweb/cmp"), doClose);
+	    return doIt(message, "http://"+hostName+":"+port+urlPath, doClose);
 	}
 
 	public static CMPSendHTTP doIt(final byte[] message, final String url, final boolean doClose) throws MalformedURLException, IOException {

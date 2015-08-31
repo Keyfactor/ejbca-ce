@@ -902,9 +902,12 @@ class CMPTest extends ClientToolBox {
         final String urlPath;
         final String resultFilePrefix;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time (ms) between each thread is started>] [<alias>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
-            System.out.println("EJBCA build configuration requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
-            System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<'m:n' m # of threads, n # of tests>] [<wait time (ms) between each thread is started>] [<alias>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
+            System.out.println("Requirements for the 'CMP Alias':");
+            System.out.println("\t'Operational Mode' must be 'RA Mode'.");
+            System.out.println("\t'RA Verify Proof-of-Possession' must be 'Allow'");
+            System.out.println("\t'Response Protection' must be 'signature'.");
+            System.out.println("\t'Authentication Module' must have 'password' as 'Specify Secret'.");
             System.out.println("EJBCA CA configuration requires 'Enforce unique public keys' to be unchecked, i.e. to not enforce unique public keys. The same key pair is used for all users in order to gain maximum speed in the test client.");
             return;
         }
