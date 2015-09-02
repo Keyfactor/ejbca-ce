@@ -41,9 +41,6 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     /** Creates a new instance of AvailableExtendedKeyUsagesConfiguration */
     public AvailableExtendedKeyUsagesConfiguration()  {
        super();
-       if(data.size() == 1) {
-           fillAvailableExtendedKeyUsages();
-       }
     }
     
     public AvailableExtendedKeyUsagesConfiguration(Serializable dataobj) {
@@ -55,6 +52,13 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     @Override
     public String getConfigurationId() {
         return AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID;
+    }
+    
+    /**
+     * @return true if there is at least one supported ExtendedKeyUsage. False otherwize 
+     */
+    public boolean isConfigurationInitialized() {
+        return data.size() > 1;
     }
     
     public void addExtKeyUsage(String oid, String name) {
@@ -95,48 +99,6 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         return properties;
     }
     
-    private void fillAvailableExtendedKeyUsages() {
-        if(ConfigurationHolder.isConfigFileExist("extendedkeyusage.properties")) {
-            String propsfile = System.getenv("EJBCA_HOME") + "/modules/admin-gui/resources/languages/languagefile.en.properties";
-            Properties language = new Properties();
-            try {
-                InputStream is = new FileInputStream(propsfile);
-                language.load(is);
-            } catch (FileNotFoundException e) {
-                log.error(e);
-            } catch (IOException e) {
-                log.error(e);
-            }
-        
-            final Configuration conf = ConfigurationHolder.instance();
-            final String ekuname = "extendedkeyusage.name.";
-            final String ekuoid = "extendedkeyusage.oid.";
-            int j=0;
-            for (int i = 0; i < 255; i++) {
-                final String oid = conf.getString(ekuoid+i);
-                if (oid != null) {
-                    String name = conf.getString(ekuname+i);
-                    if (name != null) {
-                        // A null value in the properties file means that we should not use this value, so set it to null for real
-                        if (name.equalsIgnoreCase("null")) {
-                            name = null;
-                        } else {
-                            String readableName = language.getProperty(name);
-                            data.put(oid, readableName);
-                            j++;
-                        }
-                    } else {
-                        log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
-                    }
-                } 
-                // No eku with a certain number == continue trying next, we will try 0-255.
-            }
-            if(log.isDebugEnabled()) {
-                log.debug("Read " + j + " extended key usages from the configurations file");
-            }
-        }
-    }
-
     @Override
     public void upgrade() {}
     

@@ -125,8 +125,7 @@ public abstract class CertificateExtension implements Serializable {
 	 * @param id, the uniqueID of the extension
 	 * @param oID, the OID 
 	 * @param criticalFlag if the extension should be marked as critical or not. 
-	 * @param config the complete configuration property file. The init method
-	 * parses it's own property file and creates a proprietary property file.
+	 * @param config the complete configuration property file.
 	 */
 	public void init(int id, String oID, String displayName, boolean criticalFlag, Properties extensionProperties){
 		this.id = id;
