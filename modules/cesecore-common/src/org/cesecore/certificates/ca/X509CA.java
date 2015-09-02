@@ -1451,7 +1451,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         try {
-            final ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().build(verifyKey);
+            final ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().setProvider("BC").build(verifyKey);
             if (!crl.isSignatureValid(verifier)) {
                 throw new SignatureException("Error verifying CRL to be returned.");
             }
