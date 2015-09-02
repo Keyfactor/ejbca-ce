@@ -69,12 +69,12 @@ Contributions to improve the automated installation on JBoss 7 / EAP 6 are welco
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 6.0, JBoss 7.1.1.Final and Java 7, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 6.3, JBoss 7.1.1.Final and Java 7, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 <br/><b>Note</b> that the quick install will create a H2 database as ~/ejbcadb. If you run this multiple times, delete this file in order to remove the old database.
 </p>
 <ol>
-<li>Install Ubuntu 12.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
+<li>Install Ubuntu 14.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
 <ul>
 <li>Add user with username 'user' during install. The path /home/user means the user's home directory below.</li>
 </ul>
@@ -85,17 +85,17 @@ We also assume installation is made in a user account with username "user". In y
 <li>sudo apt-get install openjdk-7-jdk ant ant-optional unzip ntp</li>
 </ul>
 </li>
-<li>Install software not in Ubuntu repositories, JBoss 7.1.1.Final and EJBCA 6.0.<br/>
+<li>Install software not in Ubuntu repositories, JBoss 7.1.1.Final and EJBCA 6.3.<br/>
 <ul>
 <li>wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.zip</li>
-<li>wget http://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_0_3/ejbca_6_0_3.zip</li>
+<li>wget http://downloads.sourceforge.net/project/ejbca/ejbca6/ejbca_6_3_1_1/ejbca_ce_6_3_1_1.zip</li>
 <li>unzip jboss-as-7.1.1.Final.zip</li>
-<li>unzip ejbca_6_0_3.zip</li>
+<li>unzip ejbca_6_3_1_1.zip</li>
 </ul>
 </li>
 <li>Configure EJBCA so it can find the application server (JBoss).
 <ul>
-<li>echo "appserver.home=/home/user/jboss-as-7.1.1.Final" >> ejbca_6_0_3/conf/ejbca.properties</li>
+<li>echo "appserver.home=/home/user/jboss-as-7.1.1.Final" >> ejbca_6_3_1_1/conf/ejbca.properties</li>
 </ul>
 </li>
 <li>Open new terminal "jboss" and start JBoss.<br/>
@@ -105,7 +105,7 @@ We also assume installation is made in a user account with username "user". In y
 </li>
 <li>Build and deploy EJBCA to JBoss.
 <ul>
-<li>cd ejbca_6_0_3</li>
+<li>cd ejbca_6_3_1_1</li>
 <li>ant deploy (just press enter if questions show up)</li>
 <li>(now wait a little for JBoss to reload)</li>
 </ul>
@@ -123,7 +123,7 @@ why it will not start correctly in your environment, See the <a href="adminguide
 <li>jboss-as-7.1.1.Final/bin/standalone.sh</li>
 </ul>
 </li>
-<li>Copy /home/user/ejbca_6_0_3/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
+<li>Copy /home/user/ejbca_6_3_1_1/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
 <li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
 <li>Configure JBoss for logging, see <a href="#JBoss%207%20and%20EAP%206%20logging">JBoss 7 and EAP 6 logging</a> for instructions.</li>
 </ol>
