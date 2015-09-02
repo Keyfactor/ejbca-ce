@@ -32,6 +32,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -1830,6 +1831,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return returnval;
     }
+    
+    @Override
+    public void importCACertificateBase64(AuthenticationToken authenticationToken, String caName, Collection<String> base64Certs)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException, CertificateException {
+        try {
+            final Collection<Certificate> certs = CertTools.base64ChainToCertChain(base64Certs);
+            importCACertificate(authenticationToken, caName, certs);
+        } catch (CertificateParsingException e) {
+            throw new IllegalStateException("Can not create certificate object from BASE64 encoded certificate.", e);
+        }
+    }
 
     @Override
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
@@ -1908,6 +1920,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.addCA(admin, ca);
         // Publish CA certificates.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
+    }
+    
+    @Override
+    public void importCACertificateUpdateBase64(final AuthenticationToken authenticationToken, final int caId, final Collection<String> base64Certs)
+            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CertificateException {
+        try {
+            final Collection<Certificate> certs = CertTools.base64ChainToCertChain(base64Certs);
+            importCACertificateUpdate(authenticationToken, caId, certs);
+        } catch (CertificateParsingException e) {
+            throw new IllegalStateException("Can not create certificate object from BASE64 encoded certificate.", e);
+        }
     }
 
     @Override
