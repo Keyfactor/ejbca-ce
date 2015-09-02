@@ -36,7 +36,7 @@ import org.cesecore.util.StringTools;
  */
 public class X509CAInfo extends CAInfo{
    
-	private static final long serialVersionUID = 1349353519030677161L;
+	private static final long serialVersionUID = 2L;
 	private List<CertificatePolicy> policies;
 	private boolean useauthoritykeyidentifier;
 	private boolean authoritykeyidentifiercritical;
@@ -147,9 +147,9 @@ public class X509CAInfo extends CAInfo{
 			if (certificatechain != null) {
 		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[certificatechain.size()]);
 		        Collection<Certificate> list = CertTools.getCertCollectionFromArray(certs, null);
-		        this.certificatechain = list;        				
+		        setCertificateChain(list);
 			} else {
-				this.certificatechain = null;
+			    setCertificateChain(null);
 			}
 		} catch (CertificateException e) {
 			throw new IllegalArgumentException(e);

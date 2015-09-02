@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
@@ -136,10 +137,22 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	return storeCertificateNoAuth(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
     }
     
+    @Deprecated
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void storeCertificateRemote(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
+        // Check that user is authorized to the CA that issued this certificate
+        int caid = CertTools.getIssuerDN(incert).hashCode();
+        authorizedToCA(admin, caid);
+        storeCertificateNoAuth(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void storeCertificateRemote(AuthenticationToken admin, String b64Cert, String username, String cafp, int status, int type,
+            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException, CertificateParsingException {
+        Certificate incert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
         // Check that user is authorized to the CA that issued this certificate
         int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
