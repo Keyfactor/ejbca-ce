@@ -382,7 +382,7 @@ org.cesecore.authorization.control.AccessControlSession
 	
 	<%-- CTLogs --%>
 
-	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Tranceparency Logs'}">
+	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
 		<h:dataTable value="#{systemConfigMBean.ctLogs}" var="ctlog"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
@@ -491,9 +491,9 @@ org.cesecore.authorization.control.AccessControlSession
 	</h:form>
 	
 	
-	<%-- Extended Key Usage --%>
+	<%-- Extended Key Usages --%>
 	
-	<h:form id="extkeyusageform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Extended Key Usage'}">
+	<h:form id="extkeyusageform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Extended Key Usages'}">
 		<h:dataTable value="#{systemConfigMBean.availableExtendedKeyUsages}" var="eku"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
