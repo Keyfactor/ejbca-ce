@@ -212,7 +212,8 @@ Needed to build and run are:</p>
 <ul>
 <li>JDK 7 OpenJDK or Oracle JDK, if available OpenJDK is recommended.</li>
 <li>Only if using OracleJDK - <i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK.</li>
-<li>JBoss Application Server 7.1.x or later or JBoss EAP 6 or later (<a href="http://www.jboss.org/jbossas/downloads">download</a>, note that the absolute latest may not always be tested).</li>
+<li>JBoss Application Server 7.1.x or later or JBoss EAP 6 or later (<a href="http://www.jboss.org/jbossas/downloads">download</a>, note that the absolute latest may not always be tested). 
+Or <a href="#WildFly">WildFly</a> 8 or later.</li>
 <li>Apache Ant 1.8 or later to build (<a href="http://ant.apache.org/">download</a>). Note that javascript support may be needed in ant for some components.</li>
 </ul>
  <p>
