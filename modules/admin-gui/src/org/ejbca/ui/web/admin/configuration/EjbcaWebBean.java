@@ -42,6 +42,7 @@ import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -62,6 +63,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -178,6 +180,7 @@ public class EjbcaWebBean implements Serializable {
         reloadGlobalConfiguration();
         reloadCMPConfiguration();
         reloadAvailableExtendedKeyUsagesConfiguration();
+        reloadAvailableCustomCertExtensionsConfiguration();
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
@@ -266,6 +269,9 @@ public class EjbcaWebBean implements Serializable {
                     currentadminpreference.getSecondaryLanguage());
             initialized = true;
         }
+        
+        // Read ExtendedKeyUsages from conf/extendedkeyusage.properties
+        fillExtendedKeyUsagesFromFile();
 
         return globalconfiguration;
     }
@@ -1071,7 +1077,8 @@ public class EjbcaWebBean implements Serializable {
     }
         
     public void reloadAvailableExtendedKeyUsagesConfiguration() throws Exception {
-        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
         if (informationmemory != null) {
             informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
         }
@@ -1081,6 +1088,54 @@ public class EjbcaWebBean implements Serializable {
         globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
         availableExtendedKeyUsagesConfig = ekuConfig;
         informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
+    }
+    
+    private void fillExtendedKeyUsagesFromFile() throws Exception {
+        
+        // If the file has already been removed, no need to go further
+        if(!ConfigurationHolder.isConfigFileExist("extendedkeyusage.properties")) {
+            return;
+        }
+            
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableExtendedKeyUsagesConfiguration();
+        
+        // If the file has already been read once, don't read it again so as not to overwrite changes the 
+        // administrator might already have made.
+        if(ekuConfig.isConfigurationInitialized()) {
+            return;
+        }
+            
+        LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
+        
+        final Configuration conf = ConfigurationHolder.instance();
+        final String ekuname = "extendedkeyusage.name.";
+        final String ekuoid = "extendedkeyusage.oid.";
+        int j=0;
+        for (int i = 0; i < 255; i++) {
+            final String oid = conf.getString(ekuoid+i);
+            if (oid != null) {
+                String name = conf.getString(ekuname+i);
+                if (name != null) {
+                    // A null value in the properties file means that we should not use this value, so set it to null for real
+                    if (name.equalsIgnoreCase("null")) {
+                        name = null;
+                    } else {
+                        String readableName = getText(name);
+                        data.put(oid, readableName);
+                        j++;
+                    }
+                } else {
+                    log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
+                }
+            } 
+            // No eku with a certain number == continue trying next, we will try 0-255.
+        }
+        if(log.isDebugEnabled()) {
+            log.debug("Read " + j + " extended key usages from the configurations file");
+        }
+        
+        ekuConfig = new AvailableExtendedKeyUsagesConfiguration(data);
+        saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
     }
     
     //*****************************************************************

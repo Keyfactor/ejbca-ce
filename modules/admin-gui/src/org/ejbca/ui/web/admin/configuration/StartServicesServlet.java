@@ -56,7 +56,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -371,15 +370,6 @@ public class StartServicesServlet extends HttpServlet {
             }
         } catch (AuthorizationDeniedException e) {
             log.warn("Unable to check if the EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please check and correct the status manually. Failed with: " + e.getMessage());
-        }
-        
-        // Read extendedkeyusage.properties into database
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration();
-        try {
-            globalConfigurationSession.saveConfiguration(admin, ekuConfig);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException(
-                    "An always allow token was not allowed access. Likely cause is that the database hasn't been configured.");
         }
         
         // Read certextensions.properties
