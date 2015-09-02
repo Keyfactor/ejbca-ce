@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -229,7 +230,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
     }
 
     @Override
-	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
+	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
+	        final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
 	    byte[] ret = null;
 	    if (createLinkCertificate) {
 	        try {
@@ -263,7 +265,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey,
-            int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, CertificateGenerationParams certGenParams)
+            int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, 
+            CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException {
 	if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");

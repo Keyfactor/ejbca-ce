@@ -110,6 +110,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -965,6 +966,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
         final String aliasCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         int caid = cainfo.getCAId();
+        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession.getCachedConfiguration(
+                AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
         if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
             try {
                 // create selfsigned certificate
@@ -974,7 +977,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
-                        cainfo.getValidity(), certprofile, sequence);
+                        cainfo.getValidity(), certprofile, sequence, cceConfig);
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
                 }
@@ -1011,7 +1014,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
-                        null, cainfo.getValidity(), certprofile, sequence);
+                        null, cainfo.getValidity(), certprofile, sequence, cceConfig);
                 // Build Certificate Chain
                 Collection<Certificate> rootcachain = signca.getCertificateChain();
                 certificatechain = new ArrayList<Certificate>();
@@ -1614,11 +1617,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Set status to active, so we can sign certificates for the external services below.
         ca.setStatus(CAConstants.CA_ACTIVE);
-
+        
+        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+        
         // activate External CA Services
         for (int type : ca.getExternalCAServiceTypes()) {
             try {
-                ca.initExtendedService(cryptoToken, type, ca);
+                ca.initExtendedService(cryptoToken, type, ca, cceConfig);
                 final ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
                 if (info instanceof BaseSigningCAServiceInfo) {
                     // Publish the extended service certificate, but only for active services
@@ -1740,8 +1746,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         sequence = new String(ki);
                     }
                     final CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
+                    final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
+                            globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
                     cacertificate = signca.generateCertificate(signCryptoToken, cadata, publickey, -1, null, cainfo.getValidity(), certprofile,
-                            sequence);
+                            sequence, cceConfig);
                     // X509ResponseMessage works for both X509 CAs and CVC CAs, should really be called CertificateResponsMessage
                     returnval = new X509ResponseMessage();
                     returnval.setCertificate(cacertificate);
@@ -2125,13 +2133,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
             mergeCertificatePoliciesFromCAAndProfile(ca.getCAInfo(), certprofile);
 
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+                    globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+            
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 // create selfsigned certificate
                 EndEntityInformation cainfodata = makeEndEntityInformation(ca.getCAInfo());
                 // get from CAtoken to make sure it is fresh
                 String sequence = caToken.getKeySequence();
                 cacertificate = ca.generateCertificate(cryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getValidity(), certprofile,
-                        sequence);
+                        sequence, cceConfig);
                 // Build Certificate Chain
                 cachain = new ArrayList<Certificate>();
                 cachain.add(cacertificate);
@@ -2148,7 +2159,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
                     CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                     cacertificate = signca.generateCertificate(signCryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getValidity(),
-                            certprofile, sequence);
+                            certprofile, sequence, cceConfig);
                     // Build Certificate Chain
                     Collection<Certificate> rootcachain = signca.getCertificateChain();
                     cachain = new ArrayList<Certificate>();
@@ -2161,7 +2172,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
-            ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile);
+            ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig);
             // We need to save all this, audit logging that the CA is changed
             caSession.editCA(authenticationToken, ca, true);
 
@@ -3353,6 +3364,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     private void activateAndPublishExternalCAServices(AuthenticationToken admin, Collection<ExtendedCAServiceInfo> extendedCAServiceInfos, CA ca)
             throws AuthorizationDeniedException {
+        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+        
         // activate External CA Services
         Iterator<ExtendedCAServiceInfo> iter = extendedCAServiceInfos.iterator();
         while (iter.hasNext()) {
@@ -3361,7 +3375,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (info instanceof XKMSCAServiceInfo) {
                 try {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                    ca.initExtendedService(cryptoToken, ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE, ca);
+                    ca.initExtendedService(cryptoToken, ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE, ca, cceConfig);
                     final List<Certificate> certPath = ((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE)).getCertificatePath();
                     if (certPath != null) {
                         certificates.add(certPath.get(0));
@@ -3375,7 +3389,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (info instanceof CmsCAServiceInfo) {
                 try {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                    ca.initExtendedService(cryptoToken, ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE, ca);
+                    ca.initExtendedService(cryptoToken, ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE, ca, cceConfig);
                     final List<Certificate> certPath = ((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE)).getCertificatePath();
                     if (certPath != null) {
                         certificates.add(certPath.get(0));

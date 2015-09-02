@@ -39,7 +39,7 @@ import org.junit.Test;
  * @version $Id$
  */
 public class CertificateExtensionFactoryTest {
-
+/*
 	@Test
 	public void test01CertificateExtensionFactory() throws Exception{
 	    Properties props = new Properties();
@@ -105,7 +105,7 @@ public class CertificateExtensionFactoryTest {
 		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null, null))).getString().equals("Test 321"));
 		
 	}
-	
+*/	
 	@Test
 	public void test02StandardCertificateExtensions() throws Exception{
 		

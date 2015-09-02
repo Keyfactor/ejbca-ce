@@ -95,7 +95,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         return properties;
     }
     
-    public void fillAvailableExtendedKeyUsages() {
+    private void fillAvailableExtendedKeyUsages() {
         if(ConfigurationHolder.isConfigFileExist("extendedkeyusage.properties")) {
             String propsfile = System.getenv("EJBCA_HOME") + "/modules/admin-gui/resources/languages/languagefile.en.properties";
             Properties language = new Properties();
