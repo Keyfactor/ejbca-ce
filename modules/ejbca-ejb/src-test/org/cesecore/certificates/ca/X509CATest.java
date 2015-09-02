@@ -888,7 +888,7 @@ public class X509CATest {
         final PublicKey publicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         final PrivateKey privateKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        X509Certificate cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true, keyusage, notBefore, notAfter, "BC");
+        X509Certificate cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigAlg, true, keyusage, notBefore, notAfter, "BC");
 		assertNotNull(cacert);
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
