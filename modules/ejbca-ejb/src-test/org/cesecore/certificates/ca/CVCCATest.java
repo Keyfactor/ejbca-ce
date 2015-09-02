@@ -91,7 +91,7 @@ public class CVCCATest {
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
-        Certificate usercert = cvcca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+        Certificate usercert = cvcca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000", null);
         assertNotNull(usercert);
         assertEquals("CN=User001,C=SE", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
@@ -121,7 +121,7 @@ public class CVCCATest {
         EndEntityInformation user = new EndEntityInformation("username", "CN=User001,C=SE", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        Certificate usercert = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+        Certificate usercert = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000", null);
         PublicKey publicKey = cryptoToken.getPublicKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         String keyhash = CertTools.getFingerprintAsString(publicKey.getEncoded());
         usercert.verify(publicKey);
@@ -133,7 +133,7 @@ public class CVCCATest {
 		@SuppressWarnings("unchecked")
 		CvcCA ca1 = CvcCA.getInstance((HashMap<Object, Object>)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date());
 
-		Certificate usercert1 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+		Certificate usercert1 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000", null);
         PublicKey publicKey1 = cryptoToken.getPublicKey(ca1.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         String keyhash1 = CertTools.getFingerprintAsString(publicKey1.getEncoded());
         assertEquals(keyhash, keyhash1);
@@ -145,7 +145,7 @@ public class CVCCATest {
         CAData cadata = new CAData(caInfo.getSubjectDN(), caInfo.getName(), caInfo.getStatus(), ca);
 
         CA ca2 = cadata.getCA();
-		Certificate usercert2 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+		Certificate usercert2 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000", null);
         PublicKey publicKey2 = cryptoToken.getPublicKey(ca2.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         String keyhash2 = CertTools.getFingerprintAsString(publicKey2.getEncoded());
         assertEquals(keyhash, keyhash2);

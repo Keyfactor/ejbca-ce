@@ -114,6 +114,7 @@ import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
@@ -444,8 +445,8 @@ public class X509CA extends CA implements Serializable {
         return o;
     }
 
-    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
-        super.updateCA(cryptoToken, cainfo);
+    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
+        super.updateCA(cryptoToken, cainfo, cceConfig);
         X509CAInfo info = (X509CAInfo) cainfo;
         setPolicies(info.getPolicies());
         setAuthorityInformationAccess(info.getAuthorityInformationAccess());
@@ -673,7 +674,8 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
+    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
         byte[] ret = null;
         if (createLinkCertificate) {
             try {
@@ -692,7 +694,7 @@ public class X509CA extends CA implements Serializable {
                 // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
-                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null);
+                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
@@ -707,7 +709,8 @@ public class X509CA extends CA implements Serializable {
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
-            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
@@ -717,7 +720,7 @@ public class X509CA extends CA implements Serializable {
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(purpose));
         final String provider = cryptoToken.getSignProviderName();
         return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
-                caPublicKey, caPrivateKey, provider, certGenParams);
+                caPublicKey, caPrivateKey, provider, certGenParams, cceConfig);
     }
 
     /**
@@ -735,7 +738,8 @@ public class X509CA extends CA implements Serializable {
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
-            final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, CertificateGenerationParams certGenParams)
+            final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, 
+            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException {
 
@@ -994,7 +998,7 @@ public class X509CA extends CA implements Serializable {
         final Iterator<Integer> certExtIter = usedCertExt.iterator();
         while (certExtIter.hasNext()) {
             final Integer id = certExtIter.next();
-            final CertificateExtension certExt = fact.getCertificateExtensions(id);
+            final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(id); //fact.getCertificateExtensions(id);
             if (certExt != null) {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.

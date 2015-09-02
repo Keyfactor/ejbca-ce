@@ -52,6 +52,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -696,7 +697,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
     }
 
-    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
+    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         data.put(VALIDITY, Long.valueOf(cainfo.getValidity()));
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(CRLPERIOD, Long.valueOf(cainfo.getCRLPeriod()));
@@ -744,7 +745,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                     if (log.isDebugEnabled()) {
                         log.debug("Updating extended CA service of type: "+info.getType());
                     }
-                    service.update(cryptoToken, info, this); // the service's signing certificate might get created at this point!
+                    service.update(cryptoToken, info, this, cceConfig); // the service's signing certificate might get created at this point!
                     setExtendedCAService(service);
                     
                     // Now read back the info object from the service.
@@ -789,7 +790,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws Exception
      */
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore, long validity,
-            CertificateProfile certProfile, String sequence) throws Exception {
+            CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
         // Calculate the notAfter date
         if (notBefore == null) {
             notBefore = new Date(); 
@@ -800,7 +801,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         } else {
             notAfter = null;
         }
-        return generateCertificate(cryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence);
+        return generateCertificate(cryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence, cceConfig);
     }
 
     /**
@@ -832,16 +833,17 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      */
     public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request,
             PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
-            CertificateGenerationParams certGenParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
             SignatureException;
 
     public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
-            final Extensions extensions, final String sequence) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            final Extensions extensions, final String sequence, final AvailableCustomCertificateExtensionsConfiguration cceConfig) 
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
             SignatureException {
-        return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null);
+        return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null, cceConfig);
     }
     
 
@@ -943,10 +945,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param info contains information used to activate the service.
      */
-    public void initExtendedService(CryptoToken cryptoToken, int type, CA ca) throws Exception {
+    public void initExtendedService(CryptoToken cryptoToken, int type, CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
         ExtendedCAService service = getExtendedCAService(type);
         if (service != null) {
-            service.init(cryptoToken, ca);
+            service.init(cryptoToken, ca, cceConfig);
             setExtendedCAService(service);
         }
     }
@@ -1055,7 +1057,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract boolean upgradeExtendedCAServices();
 
     /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
-    public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile) throws CryptoTokenOfflineException;
+    public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile, 
+            AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException;
 
     /** Store the latest link certificate in this object. */
     protected void updateLatestLinkCertificate(byte[] encodedLinkCertificate) {

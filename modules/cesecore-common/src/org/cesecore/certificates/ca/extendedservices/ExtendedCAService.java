@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
 
@@ -77,7 +78,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * @param ca
      *            the CA from which the service can use private keys to generate service certificates etc. This must not be stored.
      */
-    public abstract void init(final CryptoToken cryptoToken, CA ca) throws Exception;
+    public abstract void init(final CryptoToken cryptoToken, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception;
 
     /**
      * Update the ExtendedCAService data
@@ -85,7 +86,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * @param info
      *            contains information used to activate the service.
      */
-    public abstract void update(final CryptoToken cryptoToken, ExtendedCAServiceInfo info, CA ca);
+    public abstract void update(final CryptoToken cryptoToken, ExtendedCAServiceInfo info, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig);
 
     /**
      * Method used to retrieve information about the service.

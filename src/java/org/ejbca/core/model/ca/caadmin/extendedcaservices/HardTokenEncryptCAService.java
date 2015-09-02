@@ -29,6 +29,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -66,7 +67,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
 	}
 
 	@Override
-	public void init(final CryptoToken cryptoToken, final CA ca) throws Exception {
+	public void init(final CryptoToken cryptoToken, final CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
 		log.debug("OCSPCAService : init ");
 		setCA(ca);
 		final ExtendedCAServiceInfo info = getExtendedCAServiceInfo();
@@ -74,7 +75,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
 	}   
 
 	@Override
-	public void update(final CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
+	public void update(final CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) {		   
 		log.debug("OCSPCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
 		setCA(ca);

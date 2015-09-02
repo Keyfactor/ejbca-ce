@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -148,6 +149,7 @@ public class EjbcaWebBean implements Serializable {
     private CmpConfiguration cmpconfiguration = null;
     private CmpConfiguration cmpConfigForEdit = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
+    private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ServletContext servletContext = null;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
@@ -175,10 +177,11 @@ public class EjbcaWebBean implements Serializable {
     private void commonInit() throws Exception {
         reloadGlobalConfiguration();
         reloadCMPConfiguration();
+        reloadAvailableExtendedKeyUsagesConfiguration();
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration, availableExtendedKeyUsagesConfig);
+                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration, availableExtendedKeyUsagesConfig, availableCustomCertExtensionsConfig);
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
                 authorizationSession);
@@ -694,13 +697,6 @@ public class EjbcaWebBean implements Serializable {
         
     }
     
-    public void reloadAvailableExtendedKeyUsagesConfiguration() throws Exception {
-        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
-        if (informationmemory != null) {
-            informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
-        }
-    }
-    
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws Exception {
         globalConfigurationSession.saveConfiguration(administrator, gc);
         informationmemory.systemConfigurationEdited(gc);
@@ -715,12 +711,6 @@ public class EjbcaWebBean implements Serializable {
     public void saveCMPConfiguration() throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
         informationmemory.cmpConfigurationEdited(cmpconfiguration);
-    }
-    
-    public void saveAvailableExtendedKeyUsagesConfiguration(AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
-        availableExtendedKeyUsagesConfig = ekuConfig;
-        informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
     }
 
     public boolean existsAdminPreference() throws Exception {
@@ -1064,9 +1054,9 @@ public class EjbcaWebBean implements Serializable {
         return cps;
     }
     
-    //******************************************
-    //      ExtendedKeyUsagesConfigration
-    //******************************************
+    //*************************************************
+    //      AvailableExtendedKeyUsagesConfigration
+    //*************************************************
     
     public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() throws Exception {
         if(availableExtendedKeyUsagesConfig == null) {
@@ -1080,6 +1070,49 @@ public class EjbcaWebBean implements Serializable {
         reloadAvailableExtendedKeyUsagesConfiguration();
     }
         
+    public void reloadAvailableExtendedKeyUsagesConfiguration() throws Exception {
+        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+        if (informationmemory != null) {
+            informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
+        }
+    }
+    
+    public void saveAvailableExtendedKeyUsagesConfiguration(AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
+        availableExtendedKeyUsagesConfig = ekuConfig;
+        informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
+    }
+    
+    //*****************************************************************
+    //       AvailableCustomCertificateExtensionsConfiguration
+    //*****************************************************************
+    
+    public AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfiguration() throws Exception {
+        if(availableCustomCertExtensionsConfig == null) {
+            reloadAvailableCustomCertExtensionsConfiguration();
+        }
+        return availableCustomCertExtensionsConfig;
+    }
+    
+    public void clearAvailableCustomCertExtensionsConfigCache() throws Exception {
+        globalConfigurationSession.flushConfigurationCache(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+        reloadAvailableCustomCertExtensionsConfiguration();
+    }
+        
+    public void reloadAvailableCustomCertExtensionsConfiguration() throws Exception {
+        availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+        if (informationmemory != null) {
+            informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
+        }
+    }
+    
+    public void saveAvailableCustomCertExtensionsConfiguration(AvailableCustomCertificateExtensionsConfiguration cceConfig) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, cceConfig);
+        availableCustomCertExtensionsConfig = cceConfig;
+        informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
+    }
+    
     //*******************************
     //         Peer Connector
     //*******************************

@@ -35,6 +35,8 @@ org.cesecore.authorization.control.AccessControlSession
 		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource());
 	} else if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
 		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITAVAILABLEEKU.resource());
+	} else if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
+		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource());
 	}
 %>
 <html>
@@ -523,6 +525,41 @@ org.cesecore.authorization.control.AccessControlSession
 		</h:dataTable>
 	</h:form>
 	
+	
+	<%-- Custom Certificate Extensions --%>
+	
+	<h:form id="customcertextensionsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Custom Certificate Extensions'}">
+		<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+			<h:column>
+   				<f:facet name="header"><h:outputText value="ID"/></f:facet>
+				<h:outputText value="#{extension.id}" title="#{extension.id}"/>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="OID"/></f:facet>
+				<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="Display Name"/></f:facet>
+				<!-- <h:outputText value="#{extension.displayName}"/> -->
+				<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=#{extension.id}">
+					<h:outputText value="#{extension.displayName}"/>
+				</h:outputLink>
+			</h:column>
+			<h:column>
+   				<f:facet name="header">
+   					<h:outputText value="#{web.text.ACTION}"/>
+   				</f:facet>
+				<h:commandButton action="#{systemConfigMBean.removeCustomCertExtension}" value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"
+								rendered="#{systemConfigMBean.allowedToDelete}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')" />
+			</h:column>
+		</h:dataTable>
+		<br/>
+		<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=0" rendered="#{systemConfigMBean.allowedToModify}">
+			<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}"/>
+		</h:outputLink>
+	</h:form>
+
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />

@@ -69,6 +69,7 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
@@ -407,6 +408,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	//Upgrade database
     	migrateDatabase("/400_500/400_500-upgrade-"+dbtype+".sql");
     	
+    	final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+    	        globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID );
     	// fix CAs that don't have classpath for extended CA services
     	Collection<Integer> caids = caSession.getAllCaIds();
     	for (Integer caid : caids) {
@@ -478,7 +481,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 					if (!extendedcaserviceinfos.isEmpty()) {
 						cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
 						final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-						ca.updateCA(cryptoToken, cainfo);
+						ca.updateCA(cryptoToken, cainfo, cceConfig);
 					}
 					// Finally store the upgraded CA
 					caSession.editCA(admin, ca, true);
@@ -616,9 +619,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 if (StringUtils.equals(StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), rule.getAccessRuleName()) && 
                         rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
                     // Now we add a new rule
-                    final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource(), AccessRuleState.RULE_ACCEPT, false);
                     final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
+                    final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource(), AccessRuleState.RULE_ACCEPT, false);
+                    final AccessRuleData editCustomCertExtensionsRule = new AccessRuleData(role.getRoleName(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(), AccessRuleState.RULE_ACCEPT, false);
                     newrules.add(editAvailableEKURule);
+                    newrules.add(editCustomCertExtensionsRule);
                     try {
                         addAccessRulesToRole(role, newrules);
                         log.info("Added rule '" + editAvailableEKURule.toString() + "' to role '"+role.getRoleName()+"' since the role contained the '"+StandardRules.REGULAR_EDITSYSTEMCONFIGURATION+"' rule.");

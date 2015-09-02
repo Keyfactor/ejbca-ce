@@ -289,6 +289,7 @@
 		<include name="org/ejbca/core/ejb/config/GlobalConfigurationCache.java"/>
 		<include name="org/ejbca/core/ejb/config/ScepConfigurationCache.java"/>
 		<include name="org/ejbca/core/ejb/config/AvailableExtendedKeyUsagesConfigurationCache.java"/>
+		<include name="org/ejbca/core/ejb/config/AvailableCustomCertificateExtensionsConfigurationCache.java"/>
 		<include name="org/ejbca/util/KeyValuePair.java"/>
 		<!-- Dependecies from EJB CLI and CTB -->
 		<include name="org/ejbca/util/CliTools.java"/>
