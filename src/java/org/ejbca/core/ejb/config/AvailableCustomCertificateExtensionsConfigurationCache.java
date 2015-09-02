@@ -12,22 +12,22 @@ package org.ejbca.core.ejb.config;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
- * Class Holding cache variable for available extended key usages configuration.
+ * Class Holding cache variable for available custom certificate extensions configuration.
  * 
  * Needed because EJB spec does not allow volatile, non-final fields in session beans.
  * 
  * @version $Id$
  */
-public class AvailableExtendedKeyUsagesConfigurationCache implements ConfigurationCache {
+public class AvailableCustomCertificateExtensionsConfigurationCache implements ConfigurationCache {
 
     /**
-     * Cache variable containing the available extended key usages configuration. This cache may be
+     * Cache variable containing the available custom certificate extensions configuration. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
@@ -79,11 +79,11 @@ public class AvailableExtendedKeyUsagesConfigurationCache implements Configurati
     
     @Override
     public ConfigurationBase getNewConfiguration() {
-       return new AvailableExtendedKeyUsagesConfiguration();      
+       return new AvailableCustomCertificateExtensionsConfiguration();      
     }
 
     @Override
     public Properties getAllProperties() {
-        return ((AvailableExtendedKeyUsagesConfiguration)cache).getAsProperties();
+        return null;
     }
 }

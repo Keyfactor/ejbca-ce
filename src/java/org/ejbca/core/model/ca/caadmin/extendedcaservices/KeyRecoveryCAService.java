@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -72,7 +73,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	}
 
 	@Override
-	public void init(CryptoToken cryptoToken, final CA ca) throws Exception {
+	public void init(CryptoToken cryptoToken, final CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
         if (log.isDebugEnabled()) {
             log.debug("KeyRecoveryCAService : init ");
         }
@@ -82,7 +83,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	}   
 
 	@Override
-	public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
+	public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) {		   
         if (log.isDebugEnabled()) {
             log.debug("KeyRecoveryCAService : update " + serviceinfo.getStatus());
         }

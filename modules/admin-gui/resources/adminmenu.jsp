@@ -82,6 +82,7 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
     final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource();
     final String EDITAVAILABLEEKU_RESOURCE				= StandardRules.REGULAR_EDITAVAILABLEEKU.resource();
+    final String EDITCUSTOMCERTEXTENSION_RESOURCE		= StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.VIEW.resource();
  %>
@@ -367,13 +368,17 @@ org.cesecore.keybind.InternalKeyBindingRules
     // If authorized to configure Ejbca then display related links.
     boolean editSysConfigAuthorized = false;
 	boolean editEKUAuthorized = false;
+	boolean editCustomCertExtensionsAuthorized = false;
 	try{
 		editSysConfigAuthorized = ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE);
 	}catch(AuthorizationDeniedException e){}
 	try{
 		editEKUAuthorized = ejbcawebbean.isAuthorizedNoLog(EDITAVAILABLEEKU_RESOURCE);
 	}catch(AuthorizationDeniedException e){}
-	if(editSysConfigAuthorized || editEKUAuthorized){
+	try{
+		editCustomCertExtensionsAuthorized = ejbcawebbean.isAuthorizedNoLog(EDITCUSTOMCERTEXTENSION_RESOURCE);
+	}catch(AuthorizationDeniedException e){}
+	if(editSysConfigAuthorized || editEKUAuthorized || editCustomCertExtensionsAuthorized){
           if(!configheaderprinted){      
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
         configheaderprinted = true;

@@ -102,6 +102,7 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -602,10 +603,12 @@ public class ProtocolScepHttpTest {
      */
     @Test
     public void test13ScepGetNextCACertSubCA() throws Exception {
+        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+                globalConfigSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
         final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
         final CAInfo rootcainfo = x509ca.getCAInfo();
         rootcainfo.setDoEnforceUniqueDistinguishedName(false);
-        x509ca.updateCA(null, rootcainfo);
+        x509ca.updateCA(null, rootcainfo, cceConfig);
         caAdminSession.editCA(admin, rootcainfo);
         try {
             rolloverStartTime = System.currentTimeMillis()+7L*24L*3600L*1000L;
@@ -694,7 +697,7 @@ public class ProtocolScepHttpTest {
             }
             
             rootcainfo.setDoEnforceUniqueDistinguishedName(wasEnforceUniqueDn);
-            x509ca.updateCA(null, rootcainfo);
+            x509ca.updateCA(null, rootcainfo, cceConfig);
             caAdminSession.editCA(admin, rootcainfo);
             
             // We will use the new sub CA in the next test, so we don't remove it yet

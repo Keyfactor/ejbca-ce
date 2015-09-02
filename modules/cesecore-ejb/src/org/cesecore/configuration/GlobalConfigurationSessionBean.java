@@ -43,6 +43,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -95,6 +96,12 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
             throw new AuthorizationDeniedException(msg);
+        } else if (StringUtils.equals(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID, configID) && !accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(), null);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
+            throw new AuthorizationDeniedException(msg);            
         } else if (!accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
             String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -206,6 +213,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             if(!this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
                 throw new AuthorizationDeniedException("Authorization was denied to user " + admin
                         + " to resource " + StandardRules.REGULAR_EDITAVAILABLEEKU.resource() + ". Could not save configuration.");
+            }
+        } else if(StringUtils.equals(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID, configID)) {
+            if(!this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
+                throw new AuthorizationDeniedException("Authorization was denied to user " + admin
+                        + " to resource " + StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource() + ". Could not save configuration.");
             }
         } else if(!this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
             throw new AuthorizationDeniedException("Authorization was denied to user " + admin

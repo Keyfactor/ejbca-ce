@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -147,7 +148,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     }
     
     @Override
-    public void init(CryptoToken cryptoToken, final CA ca) throws Exception {
+    public void init(CryptoToken cryptoToken, final CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
     	m_log.trace(">init");
     	
     	if (info.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
@@ -174,7 +175,8 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
         			-1, // KeyUsage
                     null, // Custom not before date
         			ca.getValidity(), certProfile,
-        			null // sequence
+        			null, // sequence
+        			cceConfig // AvailableCustomCertificateExtensionsConfiguration
         	);
         	xKMScertificatechain = new ArrayList<Certificate>();
         	xKMScertificatechain.add(xKMSCertificate);
@@ -191,7 +193,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     }   
 
     @Override
-    public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {
+    public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         final boolean missingCert = (!data.containsKey(XKMSKEYSTORE) && serviceinfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
     	final XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;
     	m_log.trace(">update: " + serviceinfo.getStatus());
@@ -205,7 +207,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     	if (info.getRenewFlag() || missingCert) {
     		// Renew The XKMS Signers certificate.
     		try {
-				this.init(cryptoToken, ca);
+				this.init(cryptoToken, ca, cceConfig);
 			} catch (Exception e) {
 				m_log.error("Error updating the XKMS service: ", e);
 			}

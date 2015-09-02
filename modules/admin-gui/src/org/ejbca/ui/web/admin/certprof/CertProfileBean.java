@@ -34,8 +34,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
@@ -751,14 +750,19 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
-    public List<SelectItem/*<Integer,String*/> getAvailableCertificateExtensionsAvailable() {
+    public List<SelectItem> getAvailableCertificateExtensionsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        for (final AvailableCertificateExtension current : CertificateExtensionFactory.getInstance().getAvailableCertificateExtensions()) {
-            if (current.isTranslatable()) {
-                ret.add(new SelectItem(Integer.valueOf(current.getId()), getEjbcaWebBean().getText(current.getDisplayName())));
-            } else {
-                ret.add(new SelectItem(Integer.valueOf(current.getId()), current.getDisplayName()));
+        try {
+            for (final CertificateExtension current : getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration().getAllAvailableCustomCertificateExtensions()) {
+                ret.add(new SelectItem(current.getId(), current.getDisplayName()));
+                //if (current.isTranslatable()) {
+                //    ret.add(new SelectItem(Integer.valueOf(current.getId()), getEjbcaWebBean().getText(current.getDisplayName())));
+                //} else {
+                //    ret.add(new SelectItem(Integer.valueOf(current.getId()), current.getDisplayName()));
+                //}
             }
+        } catch (Exception e) {
+            log.error(e);
         }
         return ret;
     }
