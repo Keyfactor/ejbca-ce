@@ -14,6 +14,7 @@ package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.util.Collection;
 import java.util.Date;
 
@@ -30,7 +31,7 @@ import org.cesecore.util.StringTools;
  */
 public abstract class CAInfo implements Serializable {
 
-    private static final long serialVersionUID = -2239787217241985136L;
+    private static final long serialVersionUID = 2L;
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
 
@@ -86,7 +87,8 @@ public abstract class CAInfo implements Serializable {
     protected int catype;
     /** A CAId or CAInfo.SELFSIGNED */
     protected int signedby;
-    protected Collection<Certificate> certificatechain;
+    protected Collection<String> certificatechain;
+    protected transient Collection<Certificate> certificatechainCached;
     protected CAToken catoken;
     protected String description;
     protected int revocationReason;
@@ -191,11 +193,27 @@ public abstract class CAInfo implements Serializable {
      * RootCA certificate in the last position and the CAs certificate in the first.
      */
     public Collection<Certificate> getCertificateChain() {
-        return certificatechain;
+        if (certificatechain == null) {
+            return null;
+        }
+        if (certificatechainCached == null) {
+            try {
+                certificatechainCached = CertTools.base64ChainToCertChain(certificatechain);
+            } catch (CertificateParsingException e) {
+                throw new IllegalStateException("Can not create certificate object from BASE64 in database", e);
+            }
+        }
+        return certificatechainCached;
     }
 
     public void setCertificateChain(Collection<Certificate> certificatechain) {
-        this.certificatechain = certificatechain;
+        if (certificatechain != null) {
+            this.certificatechainCached = certificatechain;
+            this.certificatechain = CertTools.certChainToBase64Chain(certificatechain);
+        } else {
+            this.certificatechainCached = null;
+            this.certificatechain = null;
+        }
     }
 
     public CAToken getCAToken() {

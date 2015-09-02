@@ -153,6 +153,16 @@ public interface CAAdminSession {
             CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
+     * Like importCACertificate, but takes BASE64-encoded certificates to avoid serialization of certificates,
+     * which does not work for e.g. Brainpool certificates.
+     * 
+     * @see CAAdminSession#importCACertificate
+     * @throws CertificateException If the certificates could not be parsed.
+     */
+    void importCACertificateBase64(AuthenticationToken authenticationToken, String caName, Collection<String> base64Certs)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException, CertificateException;
+    
+    /**
      * Add an external CA's certificate as a CA.
      * 
      * @param certificates contains the full certificate chain down to the leaf CA to be imported
@@ -161,6 +171,16 @@ public interface CAAdminSession {
     void importCACertificate(AuthenticationToken authenticationToken, String caName, Collection<Certificate> certificates)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
 
+    /**
+     * Like importCACertificateUpdate, but takes BASE64-encoded certificates to avoid serialization of certificates,
+     * which does not work for e.g. Brainpool certificates.
+     * 
+     * @see CAAdminSession#importCACertificateUpdate
+     * @throws CertificateException If the certificates could not be parsed.
+     */
+    void importCACertificateUpdateBase64(AuthenticationToken authenticationToken, int caId, Collection<String> base64Certs)
+            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CertificateException;
+    
     /**
      * Update an existing external CA's certificate chain.
      * 

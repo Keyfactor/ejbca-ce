@@ -87,7 +87,7 @@ public class CVCCAInfo extends CAInfo {
 		this.expiretime = expiretime;
 		this.catype = catype;
 		this.signedby = signedby;
-        this.certificatechain = certificatechain;	
+		setCertificateChain(certificatechain);
 		this.catoken = catoken; 
 		this.description = description;
 		this.revocationReason = revocationReason;
