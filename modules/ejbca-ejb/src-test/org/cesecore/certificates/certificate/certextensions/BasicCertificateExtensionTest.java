@@ -54,14 +54,14 @@ import org.junit.Test;
  * @version $Id$
  */
 public class BasicCertificateExtensionTest {
-	private static Logger log = Logger.getLogger(BasicCertificateExtensionTest.class);
+    private static Logger log = Logger.getLogger(BasicCertificateExtensionTest.class);
 	
-        private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
         
 	@Test
 	public void test01NullBasicExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERNULL");
+		props.put("encoding", "DERNULL");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -72,12 +72,12 @@ public class BasicCertificateExtensionTest {
 		assertTrue(baseExt.getId() == 1);
 		assertFalse(baseExt.isCriticalFlag());
 	}
-	
+
 	@Test
 	public void test02IntegerBasicExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERINTEGER");
-		props.put("id1.property.value", "1234");
+		props.put("encoding", "DERINTEGER");
+		props.put("value", "1234");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -90,8 +90,8 @@ public class BasicCertificateExtensionTest {
 		assertFalse(baseExt.isCriticalFlag());	
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DERINTEGER");
-		props.put("id1.property.value", "123SA4");
+		props.put("encoding", "DERINTEGER");
+		props.put("value", "123SA4");
 		boolean exceptionThrown = false;
 		try{
 		  baseExt = new BasicCertificateExtension();
@@ -104,14 +104,14 @@ public class BasicCertificateExtensionTest {
 		assertTrue(exceptionThrown);
 	
 	}
-	
+
 	@Test
 	public void test03BitStringBasicExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERBITSTRING");
-		props.put("id1.property.value", "1111"); // this is 15 decimal
+		props.put("encoding", "DERBITSTRING");
+		props.put("value", "1111"); // this is 15 decimal
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
-		baseExt.init(1, "BasicCertificateExtension", "1.2.3", false, props);		
+		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);		
 		byte[] result = {15};
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
@@ -122,10 +122,10 @@ public class BasicCertificateExtensionTest {
 		assertFalse(baseExt.isCriticalFlag());	
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DERBITSTRING");
+		props.put("encoding", "DERBITSTRING");
 		// SSL Client and S/MIME in NetscapeCertType
 		// This will be -96 in decimal, don't ask me why, but it is!
-		props.put("id1.property.value", "10100000"); 
+		props.put("value", "10100000"); 
 		
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -143,8 +143,8 @@ public class BasicCertificateExtensionTest {
 
 		// Test error
 		props = new Properties();
-		props.put("id1.property.encoding", "DERBITSTRING");
-		props.put("id1.property.value", "qqqq");
+		props.put("encoding", "DERBITSTRING");
+		props.put("value", "qqqq");
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		try {
@@ -159,8 +159,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test04BooleanBasicExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERBOOLEAN");
-		props.put("id1.property.value", "true");
+		props.put("encoding", "DERBOOLEAN");
+		props.put("value", "true");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -172,7 +172,7 @@ public class BasicCertificateExtensionTest {
 		assertTrue(baseExt.getId() == 1);
 		assertFalse(baseExt.isCriticalFlag());			
 		
-        props.put("id1.property.value", "false");
+        props.put("value", "false");
 		
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -181,8 +181,8 @@ public class BasicCertificateExtensionTest {
 		assertTrue(((ASN1Boolean)value).toString(),((ASN1Boolean)value).toString().equals("FALSE"));
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DERBOOLEAN");
-		props.put("id1.property.value", "1sdf");
+		props.put("encoding", "DERBOOLEAN");
+		props.put("value", "1sdf");
 		boolean exceptionThrown = false;
 		try{
 		  baseExt = new BasicCertificateExtension();
@@ -198,8 +198,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test05OctetBasicExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DEROCTETSTRING");
-		props.put("id1.property.value", "DBE81232");
+		props.put("encoding", "DEROCTETSTRING");
+		props.put("value", "DBE81232");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -209,8 +209,8 @@ public class BasicCertificateExtensionTest {
 		assertTrue(((DEROctetString)value).toString(),((DEROctetString)value).toString().equalsIgnoreCase("#DBE81232"));
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DEROCTETSTRING");
-		props.put("id1.property.value", "123SA4");
+		props.put("encoding", "DEROCTETSTRING");
+		props.put("value", "123SA4");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -227,8 +227,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test06PritableStringExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "This is a printable string");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("value", "This is a printable string");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -238,8 +238,8 @@ public class BasicCertificateExtensionTest {
 		assertTrue(((DERPrintableString)value).toString(),((DERPrintableString)value).toString().equals("This is a printable string"));
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "This is a non  printable string åäöüè");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("value", "This is a non  printable string åäöüè");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -257,8 +257,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test07UTF8StringExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERUTF8STRING");
-		props.put("id1.property.value", "This is a utf8 åäöüè string");
+		props.put("encoding", "DERUTF8STRING");
+		props.put("value", "This is a utf8 åäöüè string");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -272,8 +272,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test08WrongEncoding() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERUTF8sdfTRING");
-		props.put("id1.property.value", "This is a utf8 åäöüè string");
+		props.put("encoding", "DERUTF8sdfTRING");
+		props.put("value", "This is a utf8 åäöüè string");
 
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -285,8 +285,8 @@ public class BasicCertificateExtensionTest {
 		}
 		
 		Properties props1 = new Properties();
-		props1.put("id1.property.encoding", "DERUTF8STRING");
-		props1.put("id1.property.value", "");
+		props1.put("encoding", "DERUTF8STRING");
+		props1.put("value", "");
 
 		BasicCertificateExtension baseExt1 = new BasicCertificateExtension();
 		baseExt1.init(1, "1.2.3", "BasicCertificateExtension", false, props1);
@@ -301,8 +301,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test09OidExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERBOJECTIDENTIFIER");
-		props.put("id1.property.value", "1.1.1.255.1");
+		props.put("encoding", "DERBOJECTIDENTIFIER");
+		props.put("value", "1.1.1.255.1");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -312,8 +312,8 @@ public class BasicCertificateExtensionTest {
 		assertTrue(((ASN1ObjectIdentifier)value).getId(),((ASN1ObjectIdentifier)value).getId().equals("1.1.1.255.1"));
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DERBOJECTIDENTIFIER");
-		props.put("id1.property.value", "3.1.1.255.1"); // Illegal oid, must be 0-2 in first char
+		props.put("encoding", "DERBOJECTIDENTIFIER");
+		props.put("value", "3.1.1.255.1"); // Illegal oid, must be 0-2 in first char
 	
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);		
@@ -328,11 +328,11 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test10SequencedExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERUTF8STRING "); // Also test that we ignore spaces in the end here
-		props.put("id1.property.nvalues", "3"); 
-		props.put("id1.property.value1", "foo1");
-		props.put("id1.property.value2", "foo2");
-		props.put("id1.property.value3", "foo3");
+		props.put("encoding", "DERUTF8STRING "); // Also test that we ignore spaces in the end here
+		props.put("nvalues", "3"); 
+		props.put("value1", "foo1");
+		props.put("value2", "foo2");
+		props.put("value3", "foo3");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -356,8 +356,8 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test11IA5StringExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERIA5STRING");
-		props.put("id1.property.value", "This is a printable string");
+		props.put("encoding", "DERIA5STRING");
+		props.put("value", "This is a printable string");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -367,8 +367,8 @@ public class BasicCertificateExtensionTest {
 		assertEquals("This is a printable string", ((DERIA5String)value).toString());
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DERIA5STRING");
-		props.put("id1.property.value", "This is a non printable string åäöüè");
+		props.put("encoding", "DERIA5STRING");
+		props.put("value", "This is a non printable string åäöüè");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -383,14 +383,14 @@ public class BasicCertificateExtensionTest {
 	@Test
 	public void test12DERObjectExtension() throws Exception{
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DEROBJECT");
+		props.put("encoding", "DEROBJECT");
 		ASN1EncodableVector vec = new ASN1EncodableVector();
 		vec.add(new DERPrintableString("foo1"));
 		vec.add(new DERPrintableString("foo2"));
 		vec.add(new DERPrintableString("foo3"));
 		DERSet set = new DERSet(vec);
 		String str = new String(Hex.encode(set.getEncoded()));
-		props.put("id1.property.value", str);
+		props.put("value", str);
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
@@ -401,8 +401,8 @@ public class BasicCertificateExtensionTest {
 		assertEquals(3, set1.size());
 		
 		props = new Properties();
-		props.put("id1.property.encoding", "DEROBJECT");
-		props.put("id1.property.value", "This is not an asn1 hex encoded object");
+		props.put("encoding", "DEROBJECT");
+		props.put("value", "This is not an asn1 hex encoded object");
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		try{	
@@ -413,17 +413,17 @@ public class BasicCertificateExtensionTest {
 		}
 	}
         
-        /**
+	/**
 	 * Test with dynamic=true and no static value specified.
 	 *
 	 * There should be an exception if no value was specified in ExtendedInformation.
 	 * But it should succeed if an value was specified in ExtendedInformation.
 	 */
-    @Test
+	@Test
 	public void test13DynamicTrueNoStatic() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.dynamic", "true");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("dynamic", "true");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -459,9 +459,9 @@ public class BasicCertificateExtensionTest {
     @Test
 	public void test14DynamicTrueStatic() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.dynamic", "true");
-		props.put("id1.property.value", "The static value 123");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("dynamic", "true");
+		props.put("value", "The static value 123");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -487,16 +487,16 @@ public class BasicCertificateExtensionTest {
 	 * The static values should be used if no value was specified in ExtendedInformation.
 	 * The values from ExtendedInformation should be used if present.
 	 */
-        @SuppressWarnings("unchecked")
-        @Test
+    @SuppressWarnings("unchecked")
+    @Test
 	public void test15DynamicTrueStaticNvalues() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.dynamic", "true");
-		props.put("id1.property.nvalues", "3");
-		props.put("id1.property.value1", "The static value 1");
-		props.put("id1.property.value2", "The static value 2");
-		props.put("id1.property.value3", "The static value 3");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("dynamic", "true");
+		props.put("nvalues", "3");
+		props.put("value1", "The static value 1");
+		props.put("value2", "The static value 2");
+		props.put("value3", "The static value 3");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -511,7 +511,7 @@ public class BasicCertificateExtensionTest {
         Enumeration<ASN1Encodable> e = seq.getObjects();
 		int i = 1;
 		while (e.hasMoreElements()) {
-			ASN1Encodable v = e.nextElement();
+		    ASN1Encodable v = e.nextElement();
 			assertTrue(v.getClass().toString(), v instanceof DERPrintableString);
 			String str = ((DERPrintableString) v).getString();
 			assertEquals(str, "The static value " + i++);        
@@ -542,11 +542,11 @@ public class BasicCertificateExtensionTest {
 	 * The static value should be used regardless of there was a value in 
 	 * ExtendedInformation or not.
 	 */
-        @Test
+    @Test
 	public void test16DynamicDefaultsToFalse() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "The static value");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("value", "The static value");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -570,12 +570,12 @@ public class BasicCertificateExtensionTest {
 	 * Same as test16DynamicDefaultsToFalse but with dynamic explicitly set to
 	 *  false.
 	 */
-        @Test
+    @Test
 	public void test17DynamicFalse() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "The static value");
-		props.put("id1.property.dynamic", "false");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("value", "The static value");
+		props.put("dynamic", "false");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -598,11 +598,11 @@ public class BasicCertificateExtensionTest {
 	/**
 	 * Test with dynamic=true and value specified with key 1.2.3.value=.
 	 */
-        @Test
+    @Test
 	public void test18DynamicValueValue() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.dynamic", "true");
+		props.put("encoding", "DERPRINTABLESTRING");
+		props.put("dynamic", "true");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -620,15 +620,15 @@ public class BasicCertificateExtensionTest {
         }
 	}
 	
-        /**
-         * Test using encoding=RAW and both dynamic and static value.
-         */
-        @Test
+    /**
+     * Test using encoding=RAW and both dynamic and static value.
+     */
+    @Test
 	public void test19RawValue() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "RAW");
-		props.put("id1.property.dynamic", "true");
-		props.put("id1.property.value", "aabbccdd");
+		props.put("encoding", "RAW");
+		props.put("dynamic", "true");
+		props.put("value", "aabbccdd");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
@@ -644,30 +644,30 @@ public class BasicCertificateExtensionTest {
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
 	}
 
-        @Test
-        public void test20CertExtensionEncoding() throws Exception{
-        	Properties props = new Properties();
-        	props.put("id1.property.encoding", "DERIA5STRING");
-        	props.put("id1.property.value", "This is a printable string");
-
-        	BasicCertificateExtension baseExt = new BasicCertificateExtension();
-        	baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
-
-        	byte[] value = baseExt.getValueEncoded(null, null, null, null, null, null);
-
-        	ExtensionsGenerator extgen = new ExtensionsGenerator();
-        	extgen.addExtension(new ASN1ObjectIdentifier(baseExt.getOID()), baseExt.isCriticalFlag(), value);
-        	Extensions exts = extgen.generate();
-        	ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(baseExt.getOID());
-        	Extension ext = exts.getExtension(oid);
-        	assertNotNull(ext);
-        	// Read the extension value, it's a DERIA5String wrapped in an ASN1OctetString
-        	ASN1OctetString str = ext.getExtnValue();
-        	ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
-        	DERIA5String ia5str = (DERIA5String)aIn.readObject();
-        	aIn.close();
-        	assertEquals("This is a printable string", ia5str.getString());
-        }
+    @Test
+    public void test20CertExtensionEncoding() throws Exception{
+        Properties props = new Properties();
+        props.put("encoding", "DERIA5STRING");
+        props.put("value", "This is a printable string");
+        
+        BasicCertificateExtension baseExt = new BasicCertificateExtension();
+        baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
+        
+        byte[] value = baseExt.getValueEncoded(null, null, null, null, null, null);
+        
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(new ASN1ObjectIdentifier(baseExt.getOID()), baseExt.isCriticalFlag(), value);
+        Extensions exts = extgen.generate();
+        ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(baseExt.getOID());
+        Extension ext = exts.getExtension(oid);
+        assertNotNull(ext);
+        // Read the extension value, it's a DERIA5String wrapped in an ASN1OctetString
+        ASN1OctetString str = ext.getExtnValue();
+        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
+        DERIA5String ia5str = (DERIA5String)aIn.readObject();
+        aIn.close();
+        assertEquals("This is a printable string", ia5str.getString());
+    }
 
     private ASN1Encodable getObject(byte[] valueEncoded) throws IOException {
         ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
@@ -684,70 +684,71 @@ public class BasicCertificateExtensionTest {
     @Test
 	public void test21RawValueNotSpecified() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "RAW");
-		props.put("id1.property.dynamic", "true");
+		props.put("encoding", "RAW");
+		props.put("dynamic", "true");
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
 		userData.setExtendedinformation(new ExtendedInformation());
 		
 		// Without value in userdata it should fail
-                try {
-                    baseExt.getValueEncoded(userData, null, null, null, null, null);
-                    fail("Should have fail as no dynamic value specified");
-                } catch (CertificateExtensionException ex) {
-                    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
-}
+		try {
+		    baseExt.getValueEncoded(userData, null, null, null, null, null);
+		    fail("Should have fail as no dynamic value specified");
+		} catch (CertificateExtensionException ex) {
+		    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
+		}
 		
 		// With value in userdata, that value is used
 		userData.getExtendedinformation().setExtensionData("1.2.3", "eeff0000");
 		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
-	}
+    }
         
-        /**
-         * Test without any value specified.
-         */
-        @Test
-        public void test22ValueNotSpecified() throws Exception{
-		Properties props = new Properties();
-		props.put("id1.property.encoding", "DERINTEGER");
+    /**
+     * Test without any value specified.
+     */
+    @Test
+    public void test22ValueNotSpecified() throws Exception{
+        Properties props = new Properties();
+		props.put("encoding", "DERINTEGER");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		
-                try {
-                    baseExt.getValueEncoded(null, null, null, null, null, null);
-                    fail("Should have fail as no value specified");
-                } catch (CertificateExtensionException ex) {
-                    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
-                }
+		try {
+		    baseExt.getValueEncoded(null, null, null, null, null, null);
+		    fail("Should have fail as no value specified");
+		} catch (CertificateExtensionException ex) {
+		    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
+		}
 	}
         
-        /**
-         * Test using encoding=RAW but nvalues > 1 specified which is a
-         * configuration error.
-         */
-        @Test
+    /**
+     * Test using encoding=RAW but nvalues > 1 specified which is a
+     * configuration error.
+     */
+    @Test
 	public void test23RawValueButNValues() throws Exception {
 		Properties props = new Properties();
-		props.put("id1.property.encoding", "RAW");
-		props.put("id1.property.dynamic", "true");
-                props.put("id1.property.nvalues", "3"); 
-		props.put("id1.property.value1", "foo1");
-		props.put("id1.property.value2", "foo2");
-		props.put("id1.property.value3", "foo3");
+		props.put("encoding", "RAW");
+		props.put("dynamic", "true");
+                props.put("nvalues", "3"); 
+		props.put("value1", "foo1");
+		props.put("value2", "foo2");
+		props.put("value3", "foo3");
                 
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
 		userData.setExtendedinformation(new ExtendedInformation());
 		
-                try {
-                    baseExt.getValueEncoded(userData, null, null, null, null, null);
-                    fail("Should have fail as both raw and nvalues specified");
-                } catch (CertificateExtensionException ex) {
+		try {
+		    baseExt.getValueEncoded(userData, null, null, null, null, null);
+		    fail("Should have fail as both raw and nvalues specified");
+		} catch (CertificateExtensionException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.certextmissconfigured", 1), ex.getMessage());
-                }
-	}
+		}
+    }
+
 }
