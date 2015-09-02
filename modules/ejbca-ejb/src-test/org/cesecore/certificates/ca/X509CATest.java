@@ -127,7 +127,7 @@ public class X509CATest {
 	
 	@Test
 	public void testX509CABasicOperationsRSA() throws Exception {
-	    doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+	    doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 	}
 	
 	@Test
@@ -141,11 +141,16 @@ public class X509CATest {
         assumeTrue(AlgorithmTools.isDstu4145Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
-	
+
+    @Test
+    public void testX509CABasicOperationsBrainpoolECC() throws Exception {
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
+    }
+
     @SuppressWarnings("unchecked")
     private void doTestX509CABasicOperations(String algName) throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
-        final X509CA x509ca = createTestCA(cryptoToken, CADN);
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
         Certificate cacert = x509ca.getCACertificate();
         
         // Start by creating a PKCS7
@@ -399,7 +404,7 @@ public class X509CATest {
 
 	@Test
     public void testStoreAndLoadRSA() throws Exception {
-	    doTestStoreAndLoad(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+	    doTestStoreAndLoad(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
     
     @Test
@@ -416,7 +421,7 @@ public class X509CATest {
 	
 	private void doTestStoreAndLoad(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
-		final X509CA ca = createTestCA(cryptoToken, CADN);
+		final X509CA ca = createTestCA(cryptoToken, CADN, algName, null, null);
 		
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = genTestKeyPair(algName);
@@ -579,7 +584,7 @@ public class X509CATest {
 	
 	public void doTestWrongCAKey(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
-	    X509CA x509ca = createTestCA(cryptoToken, CADN);
+	    X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
 
 	    // Generate a client certificate and check that it was generated correctly
 	    EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
@@ -913,6 +918,8 @@ public class X509CATest {
         } else if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
             final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
             return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_DSTU4145);
+        } else if(algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
+            return KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         } else {
             return KeyTools.genKeys("512", "RSA");
         }
@@ -921,7 +928,8 @@ public class X509CATest {
     /** @return Algorithm name for test key pair */
     private static String getTestKeyPairAlgName(String algName) {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
-            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
+            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) || 
+            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
             return algName;
         } else {
             return "SHA256withRSA";
@@ -933,6 +941,8 @@ public class X509CATest {
             return CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
         } else if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
             return CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
+            return "brainpoolp224r1";
         } else {
             return "512"; // Assume RSA
         }
