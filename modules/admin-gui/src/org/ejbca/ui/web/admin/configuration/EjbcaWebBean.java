@@ -1105,8 +1105,6 @@ public class EjbcaWebBean implements Serializable {
             return;
         }
             
-        LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
-        
         final Configuration conf = ConfigurationHolder.instance();
         final String ekuname = "extendedkeyusage.name.";
         final String ekuoid = "extendedkeyusage.oid.";
@@ -1117,11 +1115,9 @@ public class EjbcaWebBean implements Serializable {
                 String name = conf.getString(ekuname+i);
                 if (name != null) {
                     // A null value in the properties file means that we should not use this value, so set it to null for real
-                    if (name.equalsIgnoreCase("null")) {
-                        name = null;
-                    } else {
+                    if (!name.equalsIgnoreCase("null")) {
                         String readableName = getText(name);
-                        data.put(oid, readableName);
+                        ekuConfig.addExtKeyUsage(oid, readableName);
                         j++;
                     }
                 } else {
@@ -1134,7 +1130,6 @@ public class EjbcaWebBean implements Serializable {
             log.debug("Read " + j + " extended key usages from the configurations file");
         }
         
-        ekuConfig = new AvailableExtendedKeyUsagesConfiguration(data);
         saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
     }
     
