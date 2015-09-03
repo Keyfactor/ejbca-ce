@@ -729,7 +729,7 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 
 </subsection>
 
-<subsection name="WildFly">
+<subsection name="WildFly 8">
 <p>EJBCA 6.x compiles, deploys and runs with WildFly 8 and WildFly 9 (release following 6.3.1.1).</p>
 <p>For WildFly deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.</p>
 
@@ -737,7 +737,8 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 <p>Add MariaDB database driver by copying mariadb-java-client jar file (for example mariadb-java-client-1.1.5.jar) to modules/system/layers/base/org/mariadb/main and adding a file module.xml in the same directory.
 </p>
 <source>
-&lt;module name="org.mariadb"&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;module xmlns="urn:jboss:module:1.0" name="org.mariadb"&gt;
   &lt;resources&gt;
     &lt;resource-root path="mariadb-java-client-1.1.5.jar"/&gt;
   &lt;/resources&gt;
@@ -749,7 +750,7 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 </source>
 </subsubsection>
 <subsubsection name="Add support for PKCS#11 (HSMs)">
-<p>Modify Modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
+<p>Modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
 <source>
 &lt;path name="sun/security/pkcs11/wrapper"/&gt;
 </source>
@@ -775,7 +776,7 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 /subsystem=remoting/http-connector=http-remoting-connector:add(connector-ref="remoting",security-realm="ApplicationRealm")
 /socket-binding-group=standard-sockets/socket-binding=remoting:add(port="4447")
 /subsystem=undertow/server=default-server/http-listener=remoting:add(socket-binding=remoting)
-:reload
+reload
 </source>
 </subsubsection>
 
@@ -800,20 +801,14 @@ ant deploy-keystore
 /interfaces=/interface=http:remove
 /interfaces=/interface=httpspub:remove
 /interfaces=/interface=httpspriv:remove
-:reload
+reload
 /interfaces=/interface=http:add(inet-address="0.0.0.0")
 /interfaces=/interface=httpspub:add(inet-address="0.0.0.0")
 /interfaces=/interface=httpspriv:add(inet-address="0.0.0.0")
 /socket-binding-group=standard-sockets/socket-binding=http:add(port="8080",interface="http")
 /subsystem=undertow/server=default-server/http-listener=http:add(socket-binding=http)
 /subsystem=undertow/server=default-server/http-listener=http:write-attribute(name=redirect-socket, value="httpspriv")
-/system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
-/system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
-/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
-/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
-/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)
-/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
-:reload
+reload
 /core-service=management/security-realm=SSLRealm:add()
 /core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="localhost")
 /core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
@@ -821,8 +816,16 @@ ant deploy-keystore
 /subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
-:reload
+reload
+/system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
+/system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
+/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
+/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
+/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)
+/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
+reload
 </source>
+<p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
 </subsubsection>
 
 <subsubsection name="Configure logging">
@@ -833,14 +836,6 @@ ant deploy-keystore
 /subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=DEBUG)
 /subsystem=logging/logger=org.cesecore:add
 /subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
-</source>
-</subsubsection>
-
-<subsubsection name="URI encoding">
-<p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query string is needed.</p>
-<source>
-/system-property=org.apache.catalina.connector.URI_ENCODING:add(value=UTF-8)
-/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
 </source>
 </subsubsection>
 
@@ -858,6 +853,49 @@ ant clean deployear
 </source>
 </subsubsection>
 
+</subsection>
+
+<subsection name="WildFly 9">
+<p>USing WildFly 9 instead of WildFly 8 you only have to replace the section 'Configure TLS' with the below section.</p>
+<subsubsection name="Configure TLS">
+<source>
+/socket-binding-group=standard-sockets/socket-binding=httpspub:remove
+/subsystem=undertow/server=default-server/https-listener=httpspub:remove
+/socket-binding-group=standard-sockets/socket-binding=httpspriv:remove
+/subsystem=undertow/server=default-server/https-listener=httpspriv:remove
+/socket-binding-group=standard-sockets/socket-binding=http:remove
+/subsystem=undertow/server=default-server/http-listener=http:remove
+/subsystem=undertow/server=default-server/http-listener=default:remove
+/system-property=org.apache.catalina.connector.URI_ENCODING:remove
+/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:remove
+/interface=http:remove"
+/interface=httpspub:remove
+/interface=httpspriv:remove
+reload
+/interface=http:add(inet-address="0.0.0.0")
+/interface=httpspub:add(inet-address="0.0.0.0")
+/interface=httpspriv:add(inet-address="0.0.0.0")
+/socket-binding-group=standard-sockets/socket-binding=http:add(port="8080",interface="http")
+/subsystem=undertow/server=default-server/http-listener=http:add(socket-binding=http)
+/subsystem=undertow/server=default-server/http-listener=http:write-attribute(name=redirect-socket, value="httpspriv")
+reload
+/core-service=management/security-realm=SSLRealm:add()
+/core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="localhost")
+/core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
+/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
+/subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
+/socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
+/subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
+reload
+/system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
+/system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
+/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
+/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
+/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)
+/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
+reload
+</source>
+</subsubsection>
 </subsection>
 
 <subsection name="Glassfish">
