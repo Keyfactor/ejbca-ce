@@ -70,7 +70,11 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     }
     
     public String getExtKeyUsageName(String oid) {
-        return (String) data.get(oid);
+        String name = (String) data.get(oid);
+        if(name == null) {
+            name = oid;
+        }
+        return name;
     }
     
     public List<String> getAllOIDs() {
