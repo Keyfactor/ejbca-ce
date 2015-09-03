@@ -41,6 +41,7 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -75,7 +76,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -136,12 +139,13 @@ public class StandaloneOcspResponseGeneratorSessionTest {
  
     private String originalSigningTruststoreValidTime;
 
-    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateCreateSessionRemote.class);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private  final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -1169,6 +1173,54 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         }
     }
     
+    @Test
+    public void testOcspSignerWithCriticalEku() throws Exception {
+        final List<Integer> authorizedCaIds = Arrays.asList(new Integer[]{Integer.valueOf(x509ca.getCAId())});
+        final String certProfileCloneName = "testOcspSignerWithCriticalEku";
+        certificateProfileSession.removeCertificateProfile(authenticationToken, certProfileCloneName);
+        try {
+            certificateProfileSession.cloneCertificateProfile(authenticationToken, "OCSPSIGNER", certProfileCloneName, authorizedCaIds);
+            final int certificateProfileId = certificateProfileSession.getCertificateProfileId(certProfileCloneName);
+            final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certProfileCloneName);
+            certificateProfile.setExtendedKeyUsageCritical(true);
+            certificateProfile.setExtendedKeyUsageOids(new ArrayList<String>(Arrays.asList(new String[]{KeyPurposeId.id_kp_OCSPSigning.getId()})));
+            certificateProfileSession.changeCertificateProfile(authenticationToken, certProfileCloneName, certificateProfile);
+            X509Certificate ocspSigningCertificate = null;
+            try {
+                ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME,
+                        "CN=testOcspSignerWithCriticalEku", internalKeyBindingId, x509ca.getCAId(), certificateProfileId);
+                assertNotNull("No EKU present.", ocspSigningCertificate.getExtendedKeyUsage());
+                assertTrue("EKU was not critical", ocspSigningCertificate.getCriticalExtensionOIDs().contains(Extension.extendedKeyUsage.getId()));
+                assertTrue("id_kp_OCSPSigning EKU not present", ocspSigningCertificate.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_OCSPSigning.getId()));
+                final String ocspSigningCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
+                if (!CertTools.getFingerprintAsString(ocspSigningCertificate).equals(ocspSigningCertificateFingerprint)) {
+                    throw new Error("Wrong certificate was found for InternalKeyBinding");
+                }
+                OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
+                // Make the request and check that the cert with critical EKU was picked up
+                final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+                final OCSPResp ocspResponse = sendRequest(ocspRequest);
+                assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, ocspResponse.getStatus());
+                BasicOCSPResp basicOcspResponse = (BasicOCSPResp) ocspResponse.getResponseObject();
+                assertNotNull("Signed request generated null-response.", basicOcspResponse);
+                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+                final SingleResp[] singleResponses = basicOcspResponse.getResponses();
+                assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+                assertEquals("Response cert did not match up with request cert", ocspSigningCertificate.getSerialNumber(), singleResponses[0].getCertID().getSerialNumber());
+                assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+            } finally {
+                if (ocspSigningCertificate!=null) {
+                    internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
+                    internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
+                    OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+                    ocspResponseGeneratorSession.reloadOcspSigningCache();
+                }
+            }
+        } finally {
+            certificateProfileSession.removeCertificateProfile(authenticationToken, certProfileCloneName);
+        }
+    }
     
     // Trusting a certificateSerialNumber of null means any certificate from the CA
     private void addTrustEntry(InternalKeyBinding internalKeyBinding, int caId, BigInteger certificateSerialNumber) {

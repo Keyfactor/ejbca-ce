@@ -154,7 +154,13 @@ public class OcspTestUtils {
         return oldValue;
     }
 
-    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId) 
+    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId)
+            throws CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, AuthorizationDeniedException, CesecoreException, CertificateExtensionException {
+        return createOcspSigningCertificate(authenticationToken, username, signerDN, internalKeyBindingId, caId, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
+    }
+
+    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId,
+            int certificateProfileId) 
             throws AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, 
             CertificateCreateException, CesecoreException, CertificateExtensionException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
@@ -167,7 +173,7 @@ public class OcspTestUtils {
                 internalKeyBindingId));
         // Issue a certificate in EJBCA for the public key
         final EndEntityInformation user = new EndEntityInformation(username, signerDN, caId, null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), 1, certificateProfileId,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());

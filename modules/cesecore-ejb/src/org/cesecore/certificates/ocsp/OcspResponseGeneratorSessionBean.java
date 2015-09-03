@@ -462,7 +462,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             caCertificateChain.add(currentLevelCertificate);
         }
         try {
-            CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain));
+            CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new org.cesecore.util.provider.EkuPKIXCertPathChecker(org.bouncycastle.asn1.x509.KeyPurposeId.id_kp_OCSPSigning.getId()));
         } catch (Exception e) {
             // Apparently the built chain could not be used to validate the leaf certificate
             // this could happen if the CA keys were renewed, but the subject DN did not change
@@ -481,27 +481,27 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     caCertificateChain.add((X509Certificate) current);
                 } else {
                     log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
-                            CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                            CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                             "'. CA certificate chain contains non-X509 certificates.");
                     return null;
                 }
             }
             if (caCertificateChain.isEmpty()) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
-                        CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                        CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. CA certificate(s) are missing in the database.");
                 return null;
             }
             try {
-                CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain));
+                CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new org.cesecore.util.provider.EkuPKIXCertPathChecker(org.bouncycastle.asn1.x509.KeyPurposeId.id_kp_OCSPSigning.getId()));
             } catch (Exception e2) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
-                        CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                        CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. Found CA certificate(s) cannot be used for validation: " + e2.getMessage());
                 return null;
             }
             log.info("Recovered and managed to build a valid certificate chain for OCSP signing certificate with Subject DN '" +
-                    CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
+                    CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                     "'.");
         }
         return caCertificateChain;
