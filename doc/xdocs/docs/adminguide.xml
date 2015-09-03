@@ -1475,14 +1475,12 @@ period of the OCSP response.
 </section>
 <section name="EJBCA Web Service Interface">
 <p>
-EJBCA 3.4 introduced the JAX-WS 2.0 Web Service Interface used to access the basic functions remotely over client
+The JAX-WS 2.0 Web Service Interface is used to access the basic functions remotely over client
 authenticated HTTPS. The functionality currently available through the Web Service Interface are documented in the
 <a href="ws/index.html" target="_blank">EJBCA Web Service API Reference</a>.
 </p><p>
 There is also a CLI that can be used for scripting WS calls remotely. See following section for more information.
 Note: All web service calls are not available through the CLI.
-</p><p>
-If you are running on JBoss 5.x, make sure that you configured JBoss WS correctly as described in the <a href="installation.html#Configure">installation</a> document.
 </p>
 
 <subsection name="Web Services authentication">
@@ -1980,10 +1978,6 @@ Both ways works, but don't forget to reconfigure the proxy settings if you upgra
 <note>It is a rather old, generally unused protocol with poor interoperability and client suppport. There are many better options, like CMP, available.</note>
 <p>
 From EJBCA 6.0 the XKMS protocol is usable on selected platforms, see more in the installation guide.
-<ul>
-<li>JBoss 5.1.0.GA and JBoss EAP 5.1 on Java 6.</li>
-<li>JBoss EAP 6.1 on Java 7.</li>
-</ul>
 </p><p>
 It's disabled in the standard installation (from EJBCA 3.10) and have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
 </p>
@@ -5765,7 +5759,6 @@ Configuration of the System log depends on what application server you are using
 There are a few places where it is configured:
 </p>
 <ul>
-<li>$APPSRV_HOME/server/default/conf/jboss-log4j.xml - For JBoss 5</li>
 <li>conf/log4j-(appserver-name).xml - For JBoss 6, Glassfish etc</li>
 </ul>
 <p>In general log4j configuraton to log different levels of EJBCA events can be done like this:

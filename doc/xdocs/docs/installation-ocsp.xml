@@ -382,12 +382,6 @@ For re-keying to work, the OCSP signer certificates need to be issued to separat
 </p><p>
 Be aware that the re-keying operation has not been tested on all of the application servers.
 Some of the application servers may have problematic client web-service implementations.
-The following application servers have been tested and confirmed to work as expected for OCSP signer re-keying:
-<ol>
-<li>JBoss 5.1.0.GA (jdk6)</li>
-<li>JBoss EAP 5.1.2</li>
-<li>JBoss 6.1.0.Final</li>
-</ol>
 </p>
 </section>
 
@@ -571,12 +565,7 @@ If you prefer the responder not to send OCSP-responses when logging fails you ca
 ant jbosslog4jsafer
 </source>
 <p> 
-<b>2.</b> On JBoss 5 copy jbosslog4jsafer.jar from the modules/dist directory to your servers lib directory. For example:
-</p>
-<source>
-cp modules/dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
-</source>
-<p>On JBoss 7 / EAP 6 build and deploy a new ejbca.ear that includes jbosslog4jsafer.jar with:</p>
+<b>2.</b> On JBoss 7 / EAP 6 build and deploy a new ejbca.ear that includes jbosslog4jsafer.jar with:</p>
 <source>
 ant ejbca.ear
 ant deployear
@@ -584,7 +573,7 @@ ant deployear
 <p>
 <b>3.</b> Set  'ocsp.log-safer = true' in ocsp.properties (and enable ocsp.trx-log and ocsp.audit-log of course).
 </p><p>
-<b>4.</b> Modify your jboss-log4j.xml file (JBoss 5) or create a custom Log4j config (JBoss 7/EAP6) to use the SaferDailyRollingFileAppender and ProbableErrorHandler. For example:
+<b>4.</b> Modify your JBoss logging to use the SaferDailyRollingFileAppender and ProbableErrorHandler. For example:
 </p>
 <source>
 &lt;appender name="OCSPTRANSACTION" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
