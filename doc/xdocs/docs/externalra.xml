@@ -53,7 +53,7 @@ To use External RA Service Workers in EJBCA:
  <li>Enable the service in EJBCA_HOME/conf/externalra.properties</li>
  <li>Configure DataSources in EJBCA_HOME/conf/externalra.properties</li>
  <li>(Install the JDBC connector JARs in the application server for databases used in EJBCA_HOME/conf/externalra.properties)</li>
- <li>On other application servers than JBoss 5 (where is is created automatically), create datasource(s) matching the configuration in externalra.properties.</li>
+ <li>Create datasource(s) matching the configuration in externalra.properties.</li>
  <li>Re-build and deploy EJBCA with 'ant clean deployear'</li>
 </ol>
 </p><p>To create a non-jta data source for JBoss 7 a command in jboss-cli.sh can be used, for example:</p>
