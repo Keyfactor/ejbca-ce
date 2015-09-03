@@ -28,6 +28,7 @@
 # Specify DataSources that should be available to the External RA service.
 # The SQL dialect and JDBC driver class is derived from the JDBC URL.
 # The DataSources (and JPA persistence units) configured below will be named 'RAMessage1DS', 'RAMessage2DS' etc.
+# This must be configured to build in the persistence unit into EJBCA, even is you configure the Data Source yourself.
 
 #externalra.source-1.jdbc-url=jdbc:mysql://127.0.0.1/messages
 #externalra.source-1.username=ejbca
