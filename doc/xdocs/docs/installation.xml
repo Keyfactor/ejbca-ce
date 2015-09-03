@@ -326,14 +326,11 @@ examples:
 <source>
 appserver.home=/opt/jboss-7.1.1.Final
 </source>
-<source>
-appserver.home=/opt/jboss-5.1.0.GA
-</source>
 <p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.7.0_25/bin.
 </p>
 <p>
 2) Open a console (terminal) and start JBoss.
-You can start JBoss with the normal command 'run.sh/cmd' (JBoss 5) or 'standalone.sh' (JBoss 7) from APPSRV_HOME/bin. You should see JBoss
+You can start JBoss with the normal command 'standalone.sh' (JBoss 7/EAP 6/WildFly) from APPSRV_HOME/bin. You should see JBoss
 picking up everything and deploying the ear without errors.
 </p><p>
 3) Open a console and type:
@@ -649,7 +646,7 @@ Since mail configuration is done differently in different versions of JBoss we o
 <li>mail.smtp.ssl.enable=true</li>
 <li>mail.smtp.socketFactory.class=javax.net.ssl.SSLSocketFactory</li>
 </ul>
-<p>For JBoss 5 these are added, commented out in src/appserver/jboss/ejbca-mail-service.xml, for JBoss 7 they should be set using the JBoss command line admin tool.</p>
+<p>For JBoss 7/EAP 6 they should be set using the JBoss command line admin tool.</p>
 </subsubsection>
 
 <subsubsection name="JBoss Service Timer persistence">
@@ -658,38 +655,10 @@ If you run services very often this can under some circumstances fill up the mem
 <p>EJBCA does not need persistent timers since they are initialized during startup. Therefore it is recommended to run JBoss with non-persistent timers, something that can be configured.
 </p>
 <p>
-<u>JBoss 5 configuration</u>:
-<br/>
-<ul>
-<li>Edit jboss/server/default/deploy/ejb2-timer-service.xml</li>
-<li>Remove the commenting around the following line, so the NoopPersistencePolicy is enabled:<br/>
-<pre>
-&lt;mbean code="org.jboss.ejb.txtimer.NoopPersistencePolicy" name="jboss.ejb:service=EJBTimerService,persistencePolicy=noop"/&gt;
-</pre>
-</li>
-<li>Edit the EJBTimerService and change 'PersistencePolicy' from database to noop.
-<br/>
-<pre>
-&lt;mbean code="org.jboss.ejb.txtimer.EJBTimerServiceImpl" name="jboss.ejb:service=EJBTimerService"&gt;
-  &lt;attribute name="TimerIdGeneratorClassName">org.jboss.ejb.txtimer.UUIDTimerIdGenerator&lt;/attribute&gt;
-  &lt;attribute name="TimedObjectInvokerClassName">org.jboss.ejb.txtimer.TimedObjectInvokerImpl&lt;/attribute&gt;
-  &lt;depends optional-attribute-name="RetryPolicy">jboss.ejb:service=EJBTimerService,retryPolicy=fixedDelay&lt;/depends&gt;
-  &lt;depends optional-attribute-name="PersistencePolicy">jboss.ejb:service=EJBTimerService,persistencePolicy=noop&lt;/depends&gt;
-  &lt;depends optional-attribute-name="TransactionManagerFactory" proxy-type="org.jboss.tm.TransactionManagerFactory"&gt;
-    jboss:service=TransactionManager
-  &lt;/depends&gt;
-&lt;/mbean&gt;
-</pre>
-</li>
-</ul>
-</p>
-<p>Note that this only seems to work with JBoss EAP 5. Using JBoss 5.1.0.GA memory will continue to be consumed and you will have to implement some workaround (like restarting the appserver deleting the hypersonic database every few days).
-</p>
-<p>
 <u>JBoss 7/EAP6 configuration</u>:
 </p><p>
 JBoss 7 does not use the in memory database to persist timers, but instead stores them in <i>jboss/standalone/data/timer-service-data/ejbca.ejbca-ejb.ServiceSessionBean</i>.
-This is supposed to ensure that it will not fill up the memory as in JBoss 5.
+This is supposed to ensure that it will not fill up the memory as it did in JBoss 5.
 <br/>
 If persisted timers needs to be removed in JBoss 7 the directory <i>jboss/standalone/data/timer-service-data</i> can simply be deleted.
 </p>
@@ -713,11 +682,6 @@ To run XKMS there are three conditions for running XKMS:
 &lt;path name="com/sun/xml/bind/marshaller"/&gt;
 &lt;path name="sun/security/action"/&gt;
 </source>
-<p>
-<u>JBoss EAP 5.1</u>:
-In JBoss EAP 5.1 it seems neccessary to use the Java parameter "-Dorg.jboss.ws.enable_doctype_decl=true" to the JBoss startup parameters, otherwise EJBCA will fail to deploy.
-Add the parameter to bin/run.sh for example.
-</p>
 
 </subsubsection>
 
@@ -1311,13 +1275,6 @@ Admin web will be at: https://127.0.0.1:9443/ejbca/adminweb/
 <section name="Transaction timouts">
 <p>In some cases, either if you have a slow machine or very large data sets, some common operations can take a long time to complete. The default transaction timout of 
 the application servers may then not be enough.</p>
-<subsection name="JBoss 5">
-<p>In order to change the defautl transaction timeout in JBoss you can edit the file JBOSS_HOME/server/default/deploy/transaction-jboss-beans.xml. 
-There is a property you can change:</p>
-<source>
-&lt;property name="defaultTimeout"&gt;300&lt;/property&gt;
-</source>
-</subsection>
 <subsection name="Weblogic">
 <p>In weblogic you change the default transaction timeout in the admin console. <i>Services -&gt; JTA -&gt; Timeout Seconds</i></p>
 </subsection>
@@ -1358,19 +1315,18 @@ To (re)configure database, i.e. deploy EjbcaDS datasource:
 Here we describe shortly which files/functions are copied/touched during various ant targets that are called. These targets only modifies files automatically on platforms where auto-configure is supported,
 but it will give an indication as well for other platforms what configuration steps are needed.
 </p>
-<p>Below shows (configuration) files updated for JBoss 5 platform. For JBoss 7/EAP6 there is only one unified configuration file and all configuration is done using the JBoss 7 command line interface.
+<p>Below shows JBoss (configuration) files updated. For JBoss 7/EAP6 there is only one unified configuration file and all configuration is done using the JBoss 7 command line interface.
 </p>
 <p>
 <strong>ant deploy</strong>
 <ul>
 <li>ant deploy-datasource</li>
 <ul>
-<li>deploy/ejbca-ds.xml</li>
-<li>deploy/ocsp-ds.xml (if OCSP datasource is configured)</li>
+<li>standalone/configuration/standalone.xml</li>
 </ul>
 <li>ant deploy-service</li>
 <ul>
-<li>deploy/ejbca-mail-service.xml</li>
+<li>standalone/configuration/standalone.xml</li>
 </ul>
 <li>ant deployear</li>
 <ul>
@@ -1391,7 +1347,7 @@ but it will give an indication as well for other platforms what configuration st
 <p>
     <strong>ant web-configure</strong>
     <ul>
-    <li>deploy/jbossweb.sar/server.xml</li>
+    <li>standalone/configuration/standalone.xml</li>
     </ul>
 </p>
 
@@ -1406,15 +1362,15 @@ but it will give an indication as well for other platforms what configuration st
 <p>
     <strong>ant deploy-datasource</strong>
     <ul>
-    <li>deploy/ejbca-ds.xml</li>
-    <li>deploy/ocsp-ds.xml</li>
+    <li>standalone/configuration/standalone.xml</li>
+    <li>standalone/configuration/standalone.xml</li>
 	</ul>
 </p>
 
 <p>
     <strong>ant deploy-service</strong>
     <ul>
-    <li>deploy/ejbca-mail-service.xml</li>
+    <li>standalone/configuration/standalone.xml</li>
     </ul>
 </p>
 
