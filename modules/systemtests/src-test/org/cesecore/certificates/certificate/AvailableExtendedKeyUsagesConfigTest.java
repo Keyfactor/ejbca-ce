@@ -2,6 +2,7 @@ package org.cesecore.certificates.certificate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -81,7 +82,21 @@ public class AvailableExtendedKeyUsagesConfigTest {
         assertEquals("EKU_KRB_PKINIT_KDC", ekuConfig.getExtKeyUsageName("1.3.6.1.5.2.3.5"));
         // Non existing
         assertEquals("1.1.1.1.1", ekuConfig.getExtKeyUsageName("1.1.1.1.1"));
-
+        
+        ekuConfig.removeExtKeyUsage("1.3.6.1.5.5.7.3.21");
+        ekuConfig.removeExtKeyUsage("2.16.840.1.113741.1.2.3");
+        ekuConfig.removeExtKeyUsage("1.1.1.1.1"); // non existing
+        globalConfigSession.saveConfiguration(alwaysAllowToken, ekuConfig);
+        ekuConfig = null; // just to be sure
+        ekuConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
+                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+        assertEquals(3, ekuConfig.getAllOIDs().size());
+        assertFalse(ekuConfig.isExtendedKeyUsageSupported("2.16.840.1.113741.1.2.3"));
+        assertFalse(ekuConfig.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.21"));
+        assertFalse(ekuConfig.isExtendedKeyUsageSupported("1.1.1.1.1"));
+        assertTrue(ekuConfig.isExtendedKeyUsageSupported("1.3.6.1.5.2.3.5"));
+        assertEquals("EKU_KRB_PKINIT_KDC", ekuConfig.getExtKeyUsageName("1.3.6.1.5.2.3.5"));
+        
     }
 
     @Test
