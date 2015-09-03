@@ -308,9 +308,8 @@ public class CertificateView implements Serializable {
             extendedkeyusage = new ArrayList<String>();
         }
         final String[] returnval = new String[extendedkeyusage.size()];
-        final Map<String,String> map = ekuConfig.getAllEKUOidsAndNames();
         for (int i=0; i<extendedkeyusage.size(); i++) {
-            returnval[i] = (String)map.get(extendedkeyusage.get(i));
+            returnval[i] = ekuConfig.getExtKeyUsageName(extendedkeyusage.get(i));
         }
         return returnval; 
     }
