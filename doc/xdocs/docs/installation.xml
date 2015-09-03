@@ -698,35 +698,20 @@ In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> s
 <p>For WildFly deploy and install does not automagically configure the Application server for you, instead we supply configuration instructions for the Application server for you to follow.</p>
 
 <subsubsection name="Add database driver">
-<p>Add MariaDB database driver by copying mariadb-java-client jar file (for example mariadb-java-client-1.1.5.jar) to modules/system/layers/base/org/mariadb/main and adding a file module.xml in the same directory.
+<p>Add MariaDB database driver by hot-deploying it into the Ddeployment directory. This will be picked up by WildFly and deployed so we can create a datasource straight away.
+You can use a generic name, without version number, in order to get a generic 'driver-name' for the data source command.
 </p>
 <source>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;module xmlns="urn:jboss:module:1.0" name="org.mariadb"&gt;
-  &lt;resources&gt;
-    &lt;resource-root path="mariadb-java-client-1.1.5.jar"/&gt;
-  &lt;/resources&gt;
-  &lt;dependencies&gt;
-    &lt;module name="javax.api"/&gt;
-    &lt;module name="javax.transaction.api"/&gt;
-  &lt;/dependencies&gt;
-&lt;/module&gt;
-</source>
-</subsubsection>
-<subsubsection name="Add support for PKCS#11 (HSMs)">
-<p>Modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
-<source>
-&lt;path name="sun/security/pkcs11/wrapper"/&gt;
+>cp mariadb-java-client-1.2.0.jar wildfly_home/standalone/deployments/mariadb-java-client.jar
 </source>
 </subsubsection>
 
-<subsubsection name="Register database driver and datasource">
-<p>Register database driver jar and add data source for EJBCA to use.</p>
+<subsubsection name="Add datasource">
+<p>Add data source for EJBCA to use.</p>
 <p>Start JBoss and run two commands in JBoss CLI.</p>
 <source>
 > ./jboss-cli.sh -c
-> /subsystem=datasources/jdbc-driver=org.mariadb.jdbc.Driver:add(driver-name=org.mariadb.jdbc.Driver,driver-module-name=org.mariadb,driver-xa-datasource-class-name=org.mariadb.jdbc.MySQLDataSource)
-> data-source add --name=ejbcads --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca6" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
+> data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
 </source>
 </subsubsection>
 
@@ -810,10 +795,17 @@ ant clean deployear
 </source>
 </subsubsection>
 
-<subsubsection name="Enable AJP connector">
+<subsubsection name="Optional: Enable AJP connector">
 <p>Only needed if you run an Apache front-end in front of WildFly.</p>
 <source>
 /subsystem=undertow/server=default-server/ajp-listener=ajp-listener:add(socket-binding=ajp, scheme=https, enabled=true)
+</source>
+</subsubsection>
+
+<subsubsection name="Optional: Add support for PKCS#11 (HSMs)">
+<p>If you need support for PKCS#11 (HSMs), you need to modify modules/system/layers/base/sun/jdk/main/module.xml and add:</p>
+<source>
+&lt;path name="sun/security/pkcs11/wrapper"/&gt;
 </source>
 </subsubsection>
 
