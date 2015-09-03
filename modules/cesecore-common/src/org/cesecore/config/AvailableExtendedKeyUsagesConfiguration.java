@@ -61,6 +61,10 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         return data.size() > 1;
     }
     
+    public boolean isExtendedKeyUsageSupported(String oid) {
+        return data.containsKey(oid);
+    }
+    
     public void addExtKeyUsage(String oid, String name) {
         data.put(oid, name);
     }
