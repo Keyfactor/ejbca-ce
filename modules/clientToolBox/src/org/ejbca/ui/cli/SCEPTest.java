@@ -730,6 +730,8 @@ class SCEPTest extends ClientToolBox {
 
         try {
             new StressTest(url, notanot.threads, notanot.tests, waitTime, caName, userCNBase);
+        } catch( SecurityException e ) {
+            throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {
             e.printStackTrace();
         }
