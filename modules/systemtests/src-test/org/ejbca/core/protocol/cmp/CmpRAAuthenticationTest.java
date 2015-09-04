@@ -220,7 +220,6 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             }
         }
         
-
         testIssueConfirmRevoke(dnOrderCA, PBE_SECRET_1, EEP_1, false);
         testIssueConfirmRevoke(dnOrderCA, PBE_SECRET_1, EEP_1, true);
        
@@ -289,7 +288,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
             checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpRevokeConfirmMessage(caCertificate.getSubjectX500Principal().getName(), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
+            checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
             int reason = this.certificateStoreSession.getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
             LOG.trace("<testIssueConfirmRevoke");
