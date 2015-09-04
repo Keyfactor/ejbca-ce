@@ -126,6 +126,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         } else {
             assertTrue("Public key is not RSA", false);
         }
+        // CAInfo always returns a BC cert after being deserialized (because certs are serialized in encoded form) 
         X509Certificate rsamgf1cacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_SHA256_WITH_MFG1_CA_NAME).getCertificateChain()
                 .toArray()[0];
         try {
@@ -138,7 +139,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgOID());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, cert.getSigAlgName());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
-        assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, rsamgf1cacacert.getSigAlgName());
         log.trace("<test18SignSessionRSAWithRSASha256WithMGF1CA()");
 
     }
@@ -191,7 +192,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgOID());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, cert.getSigAlgName());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
-        assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, rsamgf1cacacert.getSigAlgName());
         log.trace("<test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
     }
 

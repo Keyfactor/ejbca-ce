@@ -1240,7 +1240,7 @@ public abstract class CertTools {
                 String b64Cert = new String(Base64.encode(cert.getEncoded()));
                 b64Certs.add(b64Cert);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
         return b64Certs;
@@ -1249,7 +1249,7 @@ public abstract class CertTools {
     public static Collection<Certificate> base64ChainToCertChain(final Collection<String> b64Certs) throws CertificateParsingException {
         final Collection<Certificate> certs = new ArrayList<Certificate>();
         for (String b64Cert : b64Certs) {
-            Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+            Certificate cert = getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
             if (cert == null) {
                 throw new IllegalStateException("Can not create certificate object from: " + b64Cert);
             }
