@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -184,13 +183,13 @@ public class CaInitCommandTest {
     public void testEccCAExplicitEccParams() throws Exception {
         try {
             caInitCommand.execute(ECC_CA_EXPLICIT_ARGS);
-            // This will throw a not serializeable exception (on java up to and including java 6)
-            try {
-                caSession.getCAInfo(admin, CA_NAME);
-                assertTrue("Should have thrown an exception with explicit ECC parameters", false);
-            } catch (RuntimeException e) {
-                // NOPMD: ignore
-            }
+            // In versions of EJBCA before 6.3.3 / 6.2.12, this did not work, because Java always deserializes
+            // certificates using the Sun provider even if they where created with BC originally. This was fixed
+            // by making the certificate object transient and sending an encoded certificate instead.
+            CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
+            assertNotNull("ECC CA was not created.", cainfo);
+            Certificate cert = cainfo.getCertificateChain().iterator().next();
+            assertEquals("EC", cert.getPublicKey().getAlgorithm());
         } finally {
             // Normal remove routines do not work when it is not serializeable, we have to make some qualified guesses
             // and remove it manually
