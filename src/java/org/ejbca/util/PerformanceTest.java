@@ -218,7 +218,6 @@ public class PerformanceTest {
         private int nrOfSuccesses = 0;
         private int nrOfSuccessesLastTime = 0;
         private int nrOfFailures = 0;
-        private long startTime;
         private final PrintStream printStream;
         Statistic(int _nrOfThreads, int _nrOfTests, PrintStream _printStream) {
             this.nrOfThreads = _nrOfThreads;
@@ -309,11 +308,11 @@ public class PerformanceTest {
                 this.printStream.println(description+": "+padding+value+" ("+value2+")");
             }
         }
-        private void printStatistics() {
-            final long time = (int)(new Date().getTime()-this.startTime);
+        private void printStatistics(final long startTime, final long periodStartTime, final long endTime) {
+            final long time = (int)(endTime-startTime);
             final long allThreadsTime = this.nrOfThreads*time;
             final Float testsPerSecond = new Float((float)this.nrOfSuccesses*1000/time);
-            final Float testsPerSecondInLastPeriod = new Float((float)(this.nrOfSuccesses - this.nrOfSuccessesLastTime)/PerformanceTest.this.STATISTIC_UPDATE_PERIOD_IN_SECONDS);
+            final Float testsPerSecondInLastPeriod = new Float((float)(this.nrOfSuccesses - this.nrOfSuccessesLastTime)*1000/(endTime-periodStartTime));
             this.nrOfSuccessesLastTime = this.nrOfSuccesses;
             final float relativeWork; 
             {
@@ -355,7 +354,8 @@ public class PerformanceTest {
         }
         @Override
         public void run() {
-            this.startTime = new Date().getTime();
+            final long startTime = new Date().getTime();
+            long periodStartTime = startTime;
             while(isNotReady()) {
                 synchronized(this) {
                     try {
@@ -364,7 +364,9 @@ public class PerformanceTest {
                         // do nothing
                     }
                 }
-                printStatistics();
+                final long endTime = new Date().getTime();
+                printStatistics(startTime, periodStartTime, endTime);
+                periodStartTime = endTime;
             }
             PerformanceTest.this.log.deActivate();
         }
