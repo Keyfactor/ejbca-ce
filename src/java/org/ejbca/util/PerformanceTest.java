@@ -276,19 +276,17 @@ public class PerformanceTest {
             if ( isNotReady() ) {
                 return;
             }
-            synchronized (this) {
-                this.notifyAll();
-            }
+            this.notifyAll();
         }
-        void taskFailed() {
+        synchronized void taskFailed() {
             this.nrOfFailures++;
             killMeIfReady();
         }
-        void taskFinished() {
+        synchronized void taskFinished() {
             this.nrOfSuccesses++;
             killMeIfReady();
         }
-        boolean doMoreTests() {
+        synchronized boolean doMoreTests() {
             return this.nrOfTests<0 || this.nrOfStarted++<this.nrOfTests;
         }
         void addTime(String timeName, long duration) {
