@@ -74,12 +74,12 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -132,8 +132,8 @@ import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -159,11 +159,11 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
+import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
 /**
  * This SSB generates OCSP responses. 
@@ -462,7 +462,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             caCertificateChain.add(currentLevelCertificate);
         }
         try {
-            CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new org.cesecore.util.provider.EkuPKIXCertPathChecker(org.bouncycastle.asn1.x509.KeyPurposeId.id_kp_OCSPSigning.getId()));
+            CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
         } catch (Exception e) {
             // Apparently the built chain could not be used to validate the leaf certificate
             // this could happen if the CA keys were renewed, but the subject DN did not change
@@ -493,7 +493,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 return null;
             }
             try {
-                CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new org.cesecore.util.provider.EkuPKIXCertPathChecker(org.bouncycastle.asn1.x509.KeyPurposeId.id_kp_OCSPSigning.getId()));
+                CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
             } catch (Exception e2) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
