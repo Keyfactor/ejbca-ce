@@ -45,6 +45,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.GUIDGenerator;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
@@ -227,6 +228,8 @@ public class OCSPServlet extends HttpServlet {
                 transactionLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
                 transactionLogger.paramPut(PatternLogger.SESSION_ID, sessionID);
                 transactionLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
+                final String xForwardedFor = StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For"));
+                transactionLogger.paramPut(TransactionLogger.FORWARDED_FOR, xForwardedFor);
             }
             OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
             OcspResponseInformation ocspResponseInformation = null;

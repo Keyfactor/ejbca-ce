@@ -63,6 +63,9 @@ public class TransactionLogger extends PatternLogger {
     /** The id of the certificate profile that was used to issue the requested certificate. */
     public static final String CERT_PROFILE_ID = "CERT_PROFILE_ID";
 
+    /** The HTTP X-Forwarded-For header value. */
+    public static final String FORWARDED_FOR = "FORWARDED_FOR";
+
     public TransactionLogger(Integer logId, String sessionId, String clientIp) {
         super( OcspConfiguration.getTransactionLog(), TransactionLogger.class, OcspConfiguration.getTransactionLogPattern(), OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
         
@@ -84,5 +87,6 @@ public class TransactionLogger extends PatternLogger {
         paramPut(CERT_STATUS, "0");
         paramPut(PatternLogger.PROCESS_TIME, "-1");
         paramPut(CERT_PROFILE_ID, String.valueOf(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+        paramPut(FORWARDED_FOR, "");
     }
 }
