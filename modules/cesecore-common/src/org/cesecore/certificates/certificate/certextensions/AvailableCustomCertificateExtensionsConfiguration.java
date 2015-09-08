@@ -12,24 +12,17 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.certextensions;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
-import org.cesecore.internal.InternalResources;
 
 public class AvailableCustomCertificateExtensionsConfiguration extends ConfigurationBase implements Serializable{
 
     private static final long serialVersionUID = 7798273820046510706L;
-    private static final Logger log = Logger.getLogger(AvailableCustomCertificateExtensionsConfiguration.class);
-    private static final InternalResources intres = InternalResources.getInstance();
     
     public static final String AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID = "AVAILABLE_CUSTOM_CERT_EXTENSIONS";
     
@@ -109,8 +102,6 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     }
     
     @Override
-    public void upgrade() {
-        // TODO Auto-generated method stub
-    }
+    public void upgrade() { }
 
 }
