@@ -239,9 +239,7 @@ public class EjbcaWebBean implements Serializable {
                 details.put("remoteip", request.getRemoteAddr());
             }
             if (WebConfiguration.getAdminLogForwardedFor()) {
-                String addr = request.getHeader("X-Forwarded-For");
-                if (addr != null) addr = addr.replaceAll("[^a-zA-Z0-9.:-_]", "?");
-                details.put("forwardedip", addr);
+                details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
             }
             if (details.isEmpty()) {
                 details = null;
