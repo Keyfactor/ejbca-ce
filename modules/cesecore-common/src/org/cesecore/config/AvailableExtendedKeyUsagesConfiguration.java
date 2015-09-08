@@ -13,10 +13,6 @@
 
 package org.cesecore.config;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,15 +22,11 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase implements Serializable{
 
-    private static final Logger log = Logger.getLogger(AvailableExtendedKeyUsagesConfiguration.class);
-    
     private static final long serialVersionUID = -3430732247486886608L;
     public static final String AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID = "AVAILABLE_EXTEENDED_KEY_USAGES";
     
