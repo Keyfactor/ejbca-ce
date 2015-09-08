@@ -1169,6 +1169,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(caCertificateSubjectDn, certId.getSerialNumber());
                         status = certificateStatusHolder.getCertificateStatus();
                     }
+                    if (transactionLogger.isEnabled()) {
+                        transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, String.valueOf(status.certificateProfileId));
+                    }
                     // If we have an OcspKeyBinding configured for this request, we override the default value
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                         nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
