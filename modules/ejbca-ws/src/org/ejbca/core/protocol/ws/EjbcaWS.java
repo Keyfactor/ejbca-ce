@@ -116,6 +116,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -293,9 +294,7 @@ public class EjbcaWS implements IEjbcaWS {
         MessageContext msgctx = wsContext.getMessageContext();
         HttpServletRequest request = (HttpServletRequest)msgctx.get(MessageContext.SERVLET_REQUEST);
         logger.paramPut(TransactionTags.ADMIN_REMOTE_IP.toString(), request.getRemoteAddr());
-        String addr = request.getHeader("X-Forwarded-For");
-        if (addr != null) addr = addr.replaceAll("[^a-zA-Z0-9.:-_]", "?");
-        logger.paramPut(TransactionTags.ADMIN_FORWARDED_IP.toString(), addr);
+        logger.paramPut(TransactionTags.ADMIN_FORWARDED_IP.toString(), StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
     }
     /**
 	 * @throws IllegalQueryException 

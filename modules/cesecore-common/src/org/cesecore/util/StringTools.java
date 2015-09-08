@@ -764,4 +764,20 @@ public final class StringTools {
         }
         return ret;
     }
-} // StringTools
+
+    /** @return the IP address of the X-Forwarded-For HTTP header with illegal chars replaced with '?'. IPv6 address hex chars are converted to lower case. */
+    public static String getCleanXForwardedFor(final String rawHeaderValue) {
+        if (rawHeaderValue==null) {
+            return null;
+        }
+        /*
+         * In EJBCA 6.3.2 and earlier we allowed "[^a-zA-Z0-9.:-_]". There is however no source
+         * that non IP-addresses would be allowed.
+         * 
+         * Closest thing to a standardized example is available in RFC 7239 where the example
+         *  "X-Forwarded-For: 192.0.2.43, 2001:db8:cafe::17"
+         * is used.
+         */
+        return rawHeaderValue.trim().toLowerCase().replaceAll("[^0-9a-f.,: ]", "?");
+    }
+}

@@ -319,4 +319,15 @@ public class StringToolsTest {
 		ret = StringTools.stripUsername(str);
 		assertEquals("<> should have been stripped and so should !", "foo/tag/tag//tag//", ret);
 	}
+
+    @Test
+    public void testCleanXForwardedFor() {
+        assertEquals("192.0.2.43, 2001:db8:cafe::17", StringTools.getCleanXForwardedFor("192.0.2.43, 2001:db8:cafe::17"));
+        assertEquals("192.0.2.43", StringTools.getCleanXForwardedFor("192.0.2.43"));
+        assertEquals("2001:db8:cafe::17", StringTools.getCleanXForwardedFor("2001:db8:cafe::17"));
+        assertEquals("192.0.2.43, 2001:db8:cafe::17", StringTools.getCleanXForwardedFor(" 192.0.2.43, 2001:db8:cafe::17 "));
+        assertEquals("192.0.2.43, 2001:db8:cafe::17", StringTools.getCleanXForwardedFor("192.0.2.43, 2001:DB8:CAFE::17"));
+        assertEquals(null, StringTools.getCleanXForwardedFor(null));
+        assertEquals("??c?????a?e????a?e???????????????", StringTools.getCleanXForwardedFor("<script>alert(\"alert!\");</stript>"));
+    }
 }
