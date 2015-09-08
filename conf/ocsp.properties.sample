@@ -259,8 +259,8 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # Use ocsp.trx-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
 # See OCSP Installation guide for documentation of all parameters.
-# Default: ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
-#ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${PROCESS_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
+# Default: ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID}
+#ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${PROCESS_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID}
 
 # Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
 # change ocsp.audit-log to true of you want audit logging turned on

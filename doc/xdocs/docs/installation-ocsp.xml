@@ -494,6 +494,7 @@ SERIAL_NO, Serial number of the a requested certificate.<br/>
 CERT_STATUS, The requested certificate revocation status.<br/>
 REPLY_TIME, The time measured between when the request is received by the responder and when the response is sent. This time includes the time it takes to read the request bytes.<br/>
 PROCESS_TIME, The time measured between when the request has been read by the responder and when the response is sent. This time starts after the request bytes have been read.<br/>
+CERT_PROFILE_ID, The id of the certificate profile that was used to issue the requested certificate.<br/>
 </p><p>
 <b>3.</b> The OCSP <i>audit log</i> logs entire requests and responses. This can be useful when requests and responses are signed because the information can be used 
 to verify requests and responses afterwards.
