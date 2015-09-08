@@ -23,7 +23,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
     
     private AvailableExtendedKeyUsagesConfiguration ekuConfigBackup;
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            "CertificateCreateSessionTest"));
+            "AvailableExtendedKeyUsagesConfigTest"));
 
     @Before
     public void setUp() {

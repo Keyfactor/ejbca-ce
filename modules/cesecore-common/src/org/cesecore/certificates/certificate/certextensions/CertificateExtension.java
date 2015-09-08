@@ -103,7 +103,7 @@ public abstract class CertificateExtension implements Serializable {
 	 * 
 	 * @return the properties configured for this certificate extension.
 	 */
-	protected Properties getProperties() {
+	public Properties getProperties() {
 		return properties;
 	}
 	
