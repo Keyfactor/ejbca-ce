@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.logging;
 
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.OcspConfiguration;
 
 /**
@@ -59,6 +60,9 @@ public class TransactionLogger extends PatternLogger {
      */
     public static final String CERT_STATUS = "CERT_STATUS";
     
+    /** The id of the certificate profile that was used to issue the requested certificate. */
+    public static final String CERT_PROFILE_ID = "CERT_PROFILE_ID";
+
     public TransactionLogger(Integer logId, String sessionId, String clientIp) {
         super( OcspConfiguration.getTransactionLog(), TransactionLogger.class, OcspConfiguration.getTransactionLogPattern(), OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
         
@@ -79,7 +83,6 @@ public class TransactionLogger extends PatternLogger {
         paramPut(PatternLogger.SERIAL_NOHEX, "0");
         paramPut(CERT_STATUS, "0");
         paramPut(PatternLogger.PROCESS_TIME, "-1");
+        paramPut(CERT_PROFILE_ID, String.valueOf(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
     }
-    
-
 }
