@@ -21,8 +21,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -89,7 +87,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -122,7 +119,7 @@ public class X509CATest {
 
 	public static final String CADN = "CN=TEST";
 	
-	// TODO: This will not work when we remove the file certextensions.properties in the future
+	// This will be an empty list of custom certificate extensions
 	private final AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
 	
 	public X509CATest() {
@@ -737,15 +734,6 @@ public class X509CATest {
         props1.put("dynamin", "false");
         props1.put("value", "Hello World");
         cceConfig.addCustomCertExtension(1, "2.16.840.1.113730.1.13", "NetscapeComment", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props1);
-        //prop.put("id1.oid", "2.16.840.1.113730.1.13");
-        //prop.put("id1.classpath", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
-        //prop.put("id1.displayname", "NetscapeComment");
-        //prop.put("id1.used", "true");
-        //prop.put("id1.translatable", "false");
-        //prop.put("id1.critical", "false");
-        //prop.put("id1.property.encoding", "DERIA5STRING");
-        //prop.put("id1.property.dynamin", "false");
-        //prop.put("id1.property.value", "Hello World");
         
         // one RAW with proper DER encoding
         Properties props2 = new Properties();
@@ -754,15 +742,6 @@ public class X509CATest {
         props2.put("dynamin", "false");
         props2.put("value", "301a300c060a2b060104018237140202300a06082b06010505070302");
         cceConfig.addCustomCertExtension(2, "1.2.3.4", "RawProper", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props2);
-        //prop.put("id2.oid", "1.2.3.4");
-        //prop.put("id2.classpath", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
-        //prop.put("id2.displayname", "RawProper");
-        //prop.put("id2.used", "true");
-        //prop.put("id2.translatable", "false");
-        //prop.put("id2.critical", "false");
-        //prop.put("id2.property.encoding", "RAW");
-        //prop.put("id2.property.dynamin", "false");
-        //prop.put("id2.property.value", "301a300c060a2b060104018237140202300a06082b06010505070302");
         
         // one RAW with no DER encoding (actually invalid according to RFC5280)
         Properties props3 = new Properties();
@@ -771,23 +750,7 @@ public class X509CATest {
         props3.put("dynamin", "false");
         props3.put("value", "aabbccddeeff00");
         cceConfig.addCustomCertExtension(3, "1.2.3.5", "RawNoDer", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props3);
-        //prop.put("id3.oid", "1.2.3.5");
-        //prop.put("id3.classpath", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
-        //prop.put("id3.displayname", "RawNoDer");
-        //prop.put("id3.used", "true");
-        //prop.put("id3.translatable", "false");
-        //prop.put("id3.critical", "false");
-        //prop.put("id3.property.encoding", "RAW");
-        //prop.put("id3.property.dynamin", "false");
-        //prop.put("id3.property.value", "aabbccddeeff00");
-        // Load the Custom extensions
-        //Field certificateExtensionFactoryInstance = CertificateExtensionFactory.class.getDeclaredField("instance");
-        //certificateExtensionFactoryInstance.setAccessible(true);
-        //Method parseConfiguration = CertificateExtensionFactory.class.getDeclaredMethod("parseConfiguration", Properties.class);
-        //parseConfiguration.setAccessible(true);
-        //CertificateExtensionFactory instance = (CertificateExtensionFactory) parseConfiguration.invoke(null, prop);
-        //certificateExtensionFactoryInstance.set(null, instance);
-        //CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
+        
         assertEquals(cceConfig.getCustomCertificateExtension(1).getOID(), "2.16.840.1.113730.1.13");
         assertEquals(cceConfig.getCustomCertificateExtension(2).getOID(), "1.2.3.4");
         assertEquals(cceConfig.getCustomCertificateExtension(3).getOID(), "1.2.3.5");

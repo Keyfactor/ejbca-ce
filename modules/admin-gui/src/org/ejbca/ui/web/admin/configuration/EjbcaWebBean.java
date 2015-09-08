@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -35,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -60,11 +62,15 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
@@ -102,6 +108,7 @@ public class EjbcaWebBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
+    private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants.
     public static final int AUTHORIZED_RA_VIEW_RIGHTS = 0;
@@ -272,6 +279,9 @@ public class EjbcaWebBean implements Serializable {
         
         // Read ExtendedKeyUsages from conf/extendedkeyusage.properties
         fillExtendedKeyUsagesFromFile();
+        
+        // Read CustomCertificateExtensions from /src/java/certextensions.properties
+        addAvailableCustomCertExtensionsFromFile();
 
         return globalconfiguration;
     }
@@ -1162,6 +1172,112 @@ public class EjbcaWebBean implements Serializable {
         availableCustomCertExtensionsConfig = cceConfig;
         informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
+    
+    public void addAvailableCustomCertExtensionsFromFile() throws Exception {
+        
+        // If the file has already been removed, no need to go further
+        InputStream is = CertificateExtensionFactory.class.getResourceAsStream("/certextensions.properties");
+        if(is == null) {
+            return;
+        }
+        
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfiguration();
+        
+        // If the file has already been read once, don't read it again so as not to overwrite changes the 
+        // administrator might already have made.
+        if(cceConfig.isConfigurationInitialized()) {
+            return;
+        }
+        
+        try{
+            Properties props = new Properties();
+            try {
+                props.load(is);
+            } finally {
+                is.close();
+            }
+            
+            int count = 0;
+            for(int i=1;i<255;i++){
+                if(props.get("id" + i +".oid")!=null){
+                    log.debug("found " + props.get("id" + i +".oid"));
+                    CertificateExtension ce = getCertificateExtensionFromFile(i, props);
+                    cceConfig.addCustomCertExtension(ce.getId(), ce);
+                    count++;
+                }else{
+                    break;
+                }
+            }
+            log.debug("Nr of read Custom Certificate Extensions from file: " + count);
+        }catch(IOException e){
+            log.error(intres.getLocalizedMessage("certext.errorparsingproperty"),e);
+        } catch (CertificateExtentionConfigurationException e) {
+            log.error(e.getMessage(),e);
+        }
+        
+        saveAvailableCustomCertExtensionsConfiguration(cceConfig);
+    }
+    
+    private CertificateExtension getCertificateExtensionFromFile(int id, Properties propertiesInFile) throws CertificateExtentionConfigurationException {
+        String PROPERTY_ID           = "id";
+        String PROPERTY_OID          = ".oid";
+        String PROPERTY_CLASSPATH    = ".classpath";
+        String PROPERTY_DISPLAYNAME  = ".displayname";
+        String PROPERTY_USED         = ".used";
+        String PROPERTY_TRANSLATABLE = ".translatable";
+        String PROPERTY_CRITICAL     = ".critical";
+        
+        try{
+            String oid = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_OID);
+            String classPath = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CLASSPATH);
+            String displayName = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_DISPLAYNAME);
+            log.debug(PROPERTY_ID + id + PROPERTY_USED + ":" + propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_USED));
+            boolean used = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_USED).trim().equalsIgnoreCase("TRUE");
+            boolean translatable = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_TRANSLATABLE).trim().equalsIgnoreCase("TRUE");
+            boolean critical = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CRITICAL).trim().equalsIgnoreCase("TRUE");
+            log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +translatable +  ", " + displayName);   
+            if(used){
+                if(oid != null && classPath != null && displayName != null){
+                    if(translatable) {
+                        displayName = getText(displayName);
+                    }
+                    
+                    Class<?> implClass = Class.forName(classPath);
+                    CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
+                    Properties extensionProperties = getExtensionProperties(id, propertiesInFile);
+                    certificateExtension.init(id, oid.trim(), displayName, critical, extensionProperties);
+                    return certificateExtension;
+
+                }else{
+                    throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",Integer.valueOf(id)));
+                }
+            }
+            
+        }catch(Exception e){
+            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",Integer.valueOf(id)),e);
+        }
+        return null;
+    }
+    
+    private Properties getExtensionProperties(int id, Properties propertiesInFile) {
+        Properties extProps = new Properties();
+        Iterator<Object> keyIter = propertiesInFile.keySet().iterator();
+        String matchString = "id" + id + ".property."; 
+        while(keyIter.hasNext()){
+            String nextKey = (String) keyIter.next();
+            if(nextKey.startsWith(matchString)){
+                if(nextKey.length() > matchString.length()){
+                  extProps.put(nextKey.substring(matchString.length()), propertiesInFile.get(nextKey));               
+                }
+            }           
+        }
+        return extProps;
+    }
+    
+    
+    
+    
+    
     
     //*******************************
     //         Peer Connector

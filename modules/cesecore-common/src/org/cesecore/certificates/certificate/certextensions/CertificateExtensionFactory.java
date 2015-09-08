@@ -13,7 +13,6 @@
 package org.cesecore.certificates.certificate.certextensions;
 
 import java.util.HashMap;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -84,18 +83,6 @@ public class CertificateExtensionFactory {
 	}
 	
 	private CertificateExtensionFactory(){}
-	
-	
-	/**
-	 * Special Method that should only be used from test scripts.
-	 */
-	static CertificateExtensionFactory getInstance(Properties props){
-		if(instance == null){
-		    instance = new CertificateExtensionFactory();
-		}
-		
-		return instance;
-	}
 	
 	/**
 	 * Method used to get the instance of the factory.

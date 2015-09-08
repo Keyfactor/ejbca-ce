@@ -51,7 +51,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -372,15 +371,6 @@ public class StartServicesServlet extends HttpServlet {
             log.warn("Unable to check if the EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please check and correct the status manually. Failed with: " + e.getMessage());
         }
         
-        // Read certextensions.properties
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
-        cceConfig.addAvailableCustomCertExtensionsFromFile();
-        try {
-            globalConfigurationSession.saveConfiguration(admin, cceConfig);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException(
-                    "An always allow token was not allowed access. Likely cause is that the database hasn't been configured.");
-        }
     }
 
     /** Method that checks if we have an integrity protected security audit device configured, and in that case logs the configuration startup 

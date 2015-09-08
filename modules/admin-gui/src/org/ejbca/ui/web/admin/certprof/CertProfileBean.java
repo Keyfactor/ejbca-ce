@@ -34,6 +34,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -281,6 +282,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
         for(Entry<String, String> eku : ekus.entrySet()) {
             ret.add(new SelectItem(eku.getKey(), eku.getValue()));
+        }
+        ArrayList<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids();
+        for(String oid : usedEKUs) {
+            if(!ekus.containsKey(oid)) {
+                ret.add(new SelectItem(oid, oid));
+            }
         }
         return ret;
     }
@@ -752,18 +759,26 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableCertificateExtensionsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
+        
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = null; 
         try {
-            for (final CertificateExtension current : getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration().getAllAvailableCustomCertificateExtensions()) {
-                ret.add(new SelectItem(current.getId(), current.getDisplayName()));
-                //if (current.isTranslatable()) {
-                //    ret.add(new SelectItem(Integer.valueOf(current.getId()), getEjbcaWebBean().getText(current.getDisplayName())));
-                //} else {
-                //    ret.add(new SelectItem(Integer.valueOf(current.getId()), current.getDisplayName()));
-                //}
-            }
+            cceConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         } catch (Exception e) {
             log.error(e);
         }
+        
+        for (final CertificateExtension current : cceConfig.getAllAvailableCustomCertificateExtensions()) {
+            ret.add(new SelectItem(current.getId(), current.getDisplayName()));
+        }
+        
+        List<Integer> usedExtensions = getCertificateProfile().getUsedCertificateExtensions();
+        for(int id : usedExtensions) {
+            if(!cceConfig.isCustomCertExtensionSupported(id)) {
+                String note = id + " (No longer used. Please unselect this option)";
+                ret.add(new SelectItem(id, note));
+            }
+        }
+        
         return ret;
     }
     public int getAvailableCertificateExtensionsAvailableSize() { return Math.max(1, Math.min(6, getAvailableCertificateExtensionsAvailable().size())); };
