@@ -532,12 +532,15 @@ not just for CAs.
 	</faq>
 	
   <faq id="exportClassification">
-      <question>What is EJBCA's export classification in the United States of America?</question>
+      <question>What is EJBCA's export classification (ECCN code)?</question>
 	  <answer>
 	    <p>
 	    At the time of writing (26 Feb 2008) EJBCA is approved classified under ECCN code 5D002 and approved for export under License Exception TSU. 
 	    See The <a href="http://www.bis.doc.gov/licensing/exportingbasics.htm">Bureau of Industry and Security website</a> for further details.<br/>
 	    EJBCA actually has the same classification as the Bouncy Castle JCE provider, from which this FAQ text is a rip-off. Thanks BC!
+	    </p>
+	    <p>
+	    For the PrimeKey PKI Appliance, which includes EJBCA Enterprise software the ECCN code is instead 5A002.
 	    </p>
 	  </answer>
   </faq>
