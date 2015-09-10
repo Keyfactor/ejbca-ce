@@ -11,16 +11,15 @@
 
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: $APPSRV_HOME
-#appserver.home=/home/jboss/jboss-5.1.0.GA
-#appserver.home=/home/ejbca/Oracle/Middleware
-#appserver.home=/opt/IBM/WebSphere/AppServer
+#appserver.home=/opt/jboss-as-7.1.1.Final
+#appserver.home=/opt/glassfish3/glassfish
 #appserver.home=${env.APPSRV_HOME}
 
 # See also the section 'cluster configuration' for other JBoss options, for example
 # for deploying on JBoss EAP.
 
 # Which application server is used? Normally this is auto-detected from 'appserver.home' and should not be configured. 
-# Possible values: jboss, glassfish (, weblogic)
+# Possible values: jboss, glassfish
 # Default: <auto-detect>
 #appserver.type=jboss
 
