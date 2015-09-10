@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -45,6 +46,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +66,7 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
@@ -78,6 +81,8 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.SignerInformationVerifier;
+import org.bouncycastle.cms.SignerInformationVerifierProvider;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -666,7 +671,8 @@ public class ProtocolScepHttpTest {
             cainfo = (X509CAInfo) caSession.getCAInfo(admin, subCAId);
             final String nextKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
             caAdminSession.receiveResponse(admin, subCAId, respmsg, null, nextKeyAlias, true/*rollover*/);
-            
+            // Sub CA certificate is first
+            final Certificate currentCert = cainfo.getCertificateChain().iterator().next();
             final Certificate rolloverCert = caSession.getFutureRolloverCertificate(subCAId);
             assertNotNull("rollover cert was null", rolloverCert);
             assertEquals("rollover cert has the wrong subject DN", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(rolloverCert));
@@ -677,12 +683,12 @@ public class ProtocolScepHttpTest {
             
             // Now we should get the certificate chain of the rollover cert
             checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1");
-            final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA);
+            final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA, currentCert);
             assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
             final Certificate nextCert = nextChain.get(0);
             final Certificate nextRootCert = nextChain.get(1);
             assertEquals("should get the leaf CA certificate first in the chain", ROLLOVER_SUB_CA_DN, CertTools.getSubjectDN(nextCert));
-            assertEquals("should get the root CA certiticate first in the chain", x509ca.getSubjectDN(), CertTools.getSubjectDN(nextRootCert));
+            assertEquals("should get the root CA certiticate second in the chain", x509ca.getSubjectDN(), CertTools.getSubjectDN(nextRootCert));
             assertEquals("should get the rollover certificate", CertTools.getSerialNumberAsString(rolloverCert), CertTools.getSerialNumberAsString(nextCert));
             
             long certValidityStart = ((X509Certificate)rolloverCert).getNotBefore().getTime();
@@ -807,7 +813,7 @@ public class ProtocolScepHttpTest {
         }
     }
     
-    private List<Certificate> sendGetNextCACert(final String caName) throws Exception {
+    private List<Certificate> sendGetNextCACert(final String caName, Certificate currentCACert) throws Exception {
         String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetNextCACert&message=" + URLEncoder.encode(caName, "UTF-8");
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -828,11 +834,22 @@ public class ProtocolScepHttpTest {
         in.close();
         byte[] respBytes = respBaos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
-        assertTrue(respBytes.length > 0);
+        assertTrue("Response can not be empty.", respBytes.length > 0);
         
         // Verify PKCS7. It should be signed by the current CA
         final ContentInfo ci = ContentInfo.getInstance(respBytes);
+        System.out.println(ASN1Dump.dumpAsString(ci));
         final CMSSignedData signedData = new CMSSignedData(ci);
+        // Check correct signer
+        Collection<SignerInformation> signers = signedData.getSignerInfos().getSigners();
+        assertEquals("Should be only one signer", 1, signers.size());
+        SignerInformation signer = signers.iterator().next();
+        // Verify that the CMS is signed by the current CA certificate
+        BigInteger sigSerno = signer.getSID().getSerialNumber();
+        BigInteger signerSerno = CertTools.getSerialNumber(currentCACert);
+        assertEquals("CMS message should be signed by current CA", signerSerno, sigSerno);
+        // Verify signature
+        assertTrue("CMS should be signed by rollover CA certificate", signedData.verifySignatures(new ScepVerifierProvider(currentCACert.getPublicKey())));        
         final Store<?> certStore = signedData.getCertificates();
         final List<Certificate> ret = new ArrayList<Certificate>();
         for (final Object obj : certStore.getMatches(null)) {
@@ -1293,4 +1310,23 @@ public class ProtocolScepHttpTest {
         }
 
     }
+    
+    private static class ScepVerifierProvider implements SignerInformationVerifierProvider {
+        
+        private final SignerInformationVerifier signerInformationVerifier;
+        
+        public ScepVerifierProvider(PublicKey publicKey) throws OperatorCreationException {
+            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            JcaSignerInfoVerifierBuilder signerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build())
+            .setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            signerInformationVerifier = signerInfoVerifierBuilder.build(publicKey);
+        }
+                
+        @Override
+        public SignerInformationVerifier get(SignerId signerId) throws OperatorCreationException {
+            return signerInformationVerifier;
+        }
+        
+    }
+
 }
