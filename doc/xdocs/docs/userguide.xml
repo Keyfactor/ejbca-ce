@@ -1359,31 +1359,34 @@ the specified number can be changed for a particular end entity at the creation 
 </subsubsection>
 <subsubsection name="Custom certificate extension data">
 <p>
-By checking 'Use' for custom certificate extension data in the end entity profile an text area is provided when adding or editting an end entity for supplying custom certificate extension data.	
+By checking 'Use' for custom certificate extension data in the end entity profile, a text area is provided when adding or editting an end entity for supplying custom certificate extension data.	
 </p>
 <p>
-Extension data are entered in the text area in the same format as for Java properties files. Typically key=value with one entry one each line. What extension  data that is accepted and/or required depends on what custom extensions that has been chosen in the certificate profile as Used Custom Certificate Extensions and how they are configured.
+Extension data are entered in the text area in the same format as for Java properties files. Typically key=value with one entry on each line. 
+What extension data that is accepted and/or required depends on what custom extensions that has been chosen in the certificate profile as 
+Used Custom Certificate Extensions and how they are configured.
 </p>
 <p>
-For example custom extensions of type BasicCertificateExtension configured with the property dynamic=true accepts custom extension data of the form "OID.value=value" where OID is the OID of the configured extension and value is the value to put in the extension in the configured encoding.
+For example, custom extensions of type BasicCertificateExtension configured with the property dynamic=true accepts custom extension data of the 
+form "OID.value=value" where OID is the OID of the configured extension and value is the value to put in the extension in the configured encoding.
 </p>
 <source>
 1.2.3.4.value = 65486c6c206f6f776c720064
 1.5.6.value = Hello world
 </source>
 <p>
-See <a href="adminguide.html#Custom%20Certificate%20Extensions">Custom Certificate Extensions in the admin guide</a> for more information about available extensions, how to configure them and what values they require.
+See <a href="adminguide.html#Custom%20Certificate%20Extensions">Custom Certificate Extensions in the admin guide</a> for more information about 
+available extensions, how to configure them and what values they require.
 </p>
 <p>An example configuration of a certificate extension taking dynamic value in RAW hax encoded format is:</p>
 <source>
-id1.oid = 1.2.3.4
-id1.classpath=org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension
-id1.displayname=SingleExtension
-id1.used=true
-id1.translatable=false
-id1.critical=false
-id1.property.dynamic=true
-id1.property.encoding=RAW
+OID: 1.2.3.4
+Display Name: SingleExtension
+Class Path: org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension
+Critical: false
+Properties: 
+  dynamic=true
+  encoding=RAW
 </source>
 </subsubsection>
 <subsubsection name="Number of allowed requests">

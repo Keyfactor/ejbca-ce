@@ -5479,44 +5479,50 @@ The OtherName consists of:
 <section name="Custom Certificate Extensions">
 <p>
 From EJBCA 3.4 it is possible to add customized certificate extensions to certificates.
-Simple extensions only containing a static value can be added by simply editing a property file, these are called
-"basic certificate extension". It is also possible to generate advanced certificate extension by
-implementing a simple Java interface.
+Customized extensions can be added and removed in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web.
+A simple extension only containing a static value can be added using the already implemented class "BasicCertificateExtension". It is also 
+possible to generate advanced certificate extensions by implementing a simple Java interface.
 </p>
+<p>There is a limit to how many custom certificate extensions can be added and that is 254 extensions.</p>
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
-Certificate extensions are configured in the file 'src/java/certextensions.properties'.
-All extensions should have a id ranging from 1 up to 255, the number order is important.
+Certificate extensions are configured in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web. Only 
+administraters who are granted the access rule '/system_functionality/edit_available_custom_certificate_extensions' are allowed to add and remove 
+custom certificate extensions.
 </p>
-The following properties must be set for each extension (all beginning with idN.)
+The following properties must be set for each extension:
 <ul>
-<li>oid : The unique OID of the extension (Required)
+<li>OID : The unique Object Identifier (OID) of the extension (Required)
 </li>
-<li>classpath : Full class name of the CertificateExtension implementation class. (Required)
+<li>Display Name : Display name of the extension in the 'Edit Certificate Profile' page. (Required)
 </li>
-<li>displayname : Display name of the extension in the 'Edit Certificate Profile' page (Required)
+<li>Class Path : Full class name of the CertificateExtension implementation class. The class path 
+'org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension' is chosen by default but can be edited. (Required)
 </li>
-<li>used : Defines if the extensions should be used or be disabled. (Required)
+<li>Critical : Defines if the extension should be marked as critical in the certificate. This value is set to 'false' by default.
 </li>
-<li>translatable : If the display name should be translated in the language resources. (Required)
-</li>
-<li>critical : Defines if the extension should be marked as critical in the certificate. (Required)
-</li>
-<li>property.'property' : It is possible to define properties to the actual implementation of the CertificateExtension, for example does the BasicCerticateExtension require the properties 'encoding' and 'value' to be set.
+<li>Properties : It is possible to define properties to the actual implementation of the CertificateExtension. For example, BasicCerticateExtension 
+requires the properties 'encoding' and 'value' to be set.
 </li>
 </ul>
 <p>
-After the file is configured rebuild and deploy EJBCA.
-</p><p>
 After extensions have been added it is possible to select them for a certificate profile
 in the 'Edit Certificate Profile' page.
 </p>
 </subsection>
+<subsection name="Removing a Custom Certificate Extension">
+<p>When removing a custom certificate extension from the list of available extensions in the 'Custom Certificate Extensions' tab 
+in the 'System Configuration' page, if that extension is actually in use in a certificate profile, it is not automatically removed form 
+that certificate profile and has to be removed manually by unselecting it from the list of 'Used Custom Certificate Extensions' in the 
+'Edit Certificate Profile' page. The removed extension will not be usable and will not be a part of any certificate issued after the removal 
+and will be displayed as 'ID (No longer used. Please unselect this option)' in the 'Edit Certificate Profile' page.</p>
+<p>Also when removing an extension that is in use, a warning message will be displayed listing the certificate profiles that are still using 
+this extension.</p>
+</subsection>
 <subsection name="Basic Certificate Extension">
 <p>
-In order to create a Basic Certificate Extension you set the "classpath" property to org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension
-and specify the properties idX.property.encoding and idX.property.value 
-(idX.property.value is optionally if idX.property.dynamic=true).
+In order to create a Basic Certificate Extension, you set the 'Class Path' to 'org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension' 
+(default setting) and specify the properties 'encoding' and 'value' ('value' is optional if there is a property 'dynamic=true').
 See the following table for the available encodings and how their value is interpreted:
 </p>
 <ul>
@@ -5557,29 +5563,30 @@ See the following table for the available encodings and how their value is inter
 <li>...
 </li>
 </ul>
-<p>If the the property idX.property.dynamic is configured to true the extension value may be taken from extension data supplied with the end entity. See <a href="userguide.html#Custom%20certificate%20extension%20data">Custom certificate extension data</a> for how this can be added from admin web.</p>
+<p>If the the property 'dynamic' is configured to 'true', the extension value may be taken from extension data supplied with the end entity. 
+See <a href="userguide.html#Custom%20certificate%20extension%20data">Custom certificate extension data</a> for how this can be added from admin web.</p>
 </subsection>
 <subsection name="Implementing an Advanced Certificate Extension">
 <p>
-To create an advanced extension it is required to create a Java class extending
-the CertificateExtension abstract class. One method getValue is required and
-the current user data, CA and certificate profile is sent to the extension in order
+To create an advanced extension, it is required to create a Java class extending
+the CertificateExtension abstract class. The method 'getValue' is required and
+the current user data, CA and certificate profile are sent to the extension in order
 to generate dynamic extensions.
 </p><p>
 If your advanced extension needs to return a byte array that is not necessarly 
-an ASN.1 structure it is possible to override the getValueEncoded method as this 
+an ASN.1 structure, it is possible to override the 'getValueEncoded' method as this 
 is the method EJBCA will call when adding the extension to the certificate. See 
 BasicCertificateExtension.java for an example of this special case.
 </p><p>
-In addition to static values defined as properties in certextensions.properties 
+In addition to static values defined in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web, 
 it is also possible to get values from the extension data in the end entity's 
 extended information store. A good choice is to use the extension oid as a 
 prefix to the key of the property to associate the value with this extension.
 </p><p>
 Here is an example of a simple advanced extension. To add this extension to EJBCA
-create properties for it in certextensions.properties and make sure the full class
-name is set as its "classpath" property, also make sure the class is accessible on 
-the classpath and redeploy.
+create a new Extension in the 'Custom Certificate Extensions' tab in the 'System Configuration' page and make sure the full class
+name is set in the 'Class Path' property, also make sure the class is accessible on 
+the classpath.
 </p>
 <source>
 public class SomeAdvancedCertificateExtension extends CertificateExtension {
@@ -5616,6 +5623,25 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
     }
 }
 </source>
+</subsection>
+</section>
+
+<section name="Extended Key Usages">
+<p>
+Extended Key Usages can be added and removed in the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web. Only administators who are 
+granted the access rule '/system_functionality/edit_available_extended_key_usages' are allowed to add and remove extended key usages.</p>
+
+<p>Every extended key usage consists of an Object Identifier (OID) and a label to be displayed in the 'Edit Certificate Profile' page. After an 
+extended key usage has been added, it is possible to select it for a certificate profile in the 'Edit Certificate Profile' page.</p>
+<p>There are no restrictions on how many extended key usages can be added other than database-related limitations.</p>
+<subsection name="Removing an Extended Key Usage">
+<p>When removing an extended key usage from the list of available usages in the 'Extended Key Usages' tab 
+in the 'System Configuration' page, if that usage is actually in use in a certificate profile, it is not automatically removed form 
+that certificate profile and has to be removed manually by unselecting it from the list of 'Extended Key Usage' in the 
+'Edit Certificate Profile' page. If not unselected in the certificate profile, the removed extension will still be a part of any 
+certificate issued after the removal but will only be displayed as an OID in the 'Edit Certificate Profile' page.</p>
+<p>Also when removing an extended key usage that is in use, a warning message will be displayed listing the certificate profiles that are still using 
+it.</p> 
 </subsection>
 </section>
 

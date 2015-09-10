@@ -64,6 +64,8 @@ import org.cesecore.internal.InternalResources;
  */
 public class BasicCertificateExtension extends CertificateExtension {
 
+    private static final long serialVersionUID = 6896964791897238060L;
+
     private static final Logger log = Logger.getLogger(BasicCertificateExtension.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
