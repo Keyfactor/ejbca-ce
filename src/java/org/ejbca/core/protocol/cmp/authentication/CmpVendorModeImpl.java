@@ -7,7 +7,6 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.protocol.cmp.authentication;
 
 import java.security.cert.Certificate;
