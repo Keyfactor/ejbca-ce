@@ -551,7 +551,7 @@ org.cesecore.authorization.control.AccessControlSession
    					<h:outputText value="#{web.text.ACTION}"/>
    				</f:facet>
 				<h:commandButton action="#{systemConfigMBean.removeCustomCertExtension}" value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"
-								rendered="#{systemConfigMBean.allowedToDelete}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')" />
+								rendered="#{systemConfigMBean.allowedToModify}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')" />
 			</h:column>
 		</h:dataTable>
 		<br/>

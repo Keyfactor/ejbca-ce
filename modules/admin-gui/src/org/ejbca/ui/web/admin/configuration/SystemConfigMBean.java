@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.faces.application.FacesMessage;
@@ -28,7 +27,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.AccessControlSession;
@@ -225,46 +223,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getDisplayName() { return this.displayName; }
         public void setDisplayName(String displayName) { this.displayName=displayName; }
     }
-
-    public class CurrentCustomCertExtensionInfo {
-        private int id;
-        private String oid;
-        private String displayName;
-        private String classPath;
-        private boolean critical;
-        private String properties;
-        
-        public CurrentCustomCertExtensionInfo() {
-            this.id = 0;
-            this.oid = "";
-            this.displayName = "";
-            this.classPath = "";
-            this.critical = false;
-            this.properties = "";
-        }
-        
-        public CurrentCustomCertExtensionInfo(CertificateExtension extension) {
-            this.id = extension.getId();
-            this.oid = extension.getOID();
-            this.displayName = extension.getDisplayName();
-            this.classPath = extension.getClass().getCanonicalName();
-            this.critical = extension.isCriticalFlag();
-            this.properties = extension.getPropertiesAsString();
-        }
-        
-        public int getId() { return this.id; }
-        public void setId(int id) { this.id = id; }
-        public String getOid() { return this.oid; }
-        public void setOid(String oid) { this.oid=oid; }
-        public String getDisplayName() { return this.displayName; }
-        public void setDisplayName(String displayName) { this.displayName=displayName; }
-        public String getClassPath() { return this.classPath; }
-        public void setClassPath(String classPath) { this.classPath=classPath; }
-        public boolean isCritical() { return this.critical; }
-        public void setCritical(boolean critical) { this.critical=critical; }
-        public String getProperties() {return this.properties; }
-        public void  setProperties(String properties) { this.properties=properties; }
-    }
     
     private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
@@ -458,8 +416,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ctLogs = null;
         excludeActiveCryptoTokensFromClearCaches = true;
         availableExtendedKeyUsages = null;
+        availableExtendedKeyUsagesConfig = null;
         availableCustomCertExtensions = null;
-        currentCustomExtension = null;
+        availableCustomCertExtensionsConfig = null;
     }
     
     public void toggleUseApprovalNotification() {
@@ -673,27 +632,41 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         
-        ArrayList<String> certProfileNames = new ArrayList<String>();
+        ArrayList<String> cpNamesUsingEKU = getCertProfilesUsingEKU(oid);
+        if(!cpNamesUsingEKU.isEmpty()) {
+            final String cpNamesMessage = getCertProfilesNamesMessage(cpNamesUsingEKU);
+            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));            
+        }
+    }
+    
+    private ArrayList<String> getCertProfilesUsingEKU(final String oid) {
+        ArrayList<String> ret = new ArrayList<String>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
             final CertificateProfile cp = entry.getValue();
             List<String> ekuOids = cp.getExtendedKeyUsageOids();
             if(ekuOids.contains(oid)) {
-                certProfileNames.add(certprofileSession.getCertificateProfileName(entry.getKey()));
+                ret.add(certprofileSession.getCertificateProfileName(entry.getKey()));
             }
-            
         }
-        if(!certProfileNames.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for(String profileName : certProfileNames) {
-                sb.append(" " + profileName + ",");
-            }
-            sb.deleteCharAt(sb.length()-1);
-            final String profNames = sb.toString();
-            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but will still used in the following certitifcate profiles: " +  profNames;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));            
+        return ret;
+    }
+    
+    private String getCertProfilesNamesMessage(final ArrayList<String> certProfileNames) {
+        int nrOfProfiles = certProfileNames.size();
+        int nrOfdisplayedProfiles = nrOfProfiles>10? 10 : nrOfProfiles;
+        
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<nrOfdisplayedProfiles; i++) {
+            sb.append(" " + certProfileNames.get(i) + ",");
         }
+        sb.deleteCharAt(sb.length()-1);
+        if(nrOfProfiles > nrOfdisplayedProfiles) {
+            sb.append(" and " + (nrOfProfiles-nrOfdisplayedProfiles) + " more certificate profiles.");
+        }
+        return sb.toString();
     }
     
     
@@ -703,36 +676,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ListDataModel availableCustomCertExtensions = null;
-    private CurrentCustomCertExtensionInfo currentCustomExtension = null;
-    private int currentCEId = 0;
-    private boolean currentCustomCertExtensionEditMode = true;  // currentCEId==0 from start
-    private boolean creatingNewExtension = false;
-    
-    public int getCurrentCEId() { 
-        // Get the HTTP GET/POST parameter named "extensionId"
-        final String extensionIdString = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("extensionId");        
-        if (extensionIdString!=null && extensionIdString.length()>0) {
-            try {
-                int currentExtensionId = Integer.parseInt(extensionIdString);
-                // If there is a query parameter present and the id is different we flush the cache!
-                if (currentExtensionId != this.currentCEId) {
-                    flushCache();
-                    this.currentCEId = currentExtensionId;
-                }
-                // Always switch to edit mode for new ones and view mode for all others
-                setCurrentCustomCertExtensionEditMode(currentExtensionId == 0);
-                this.creatingNewExtension = (currentExtensionId==0);
-            } catch (NumberFormatException e) {
-                log.info("Bad 'extensionId' parameter value.. set, but not a number..");
-            }
-        }
-        return this.currentCEId;
-    }
-    
-    public void setCurrentCEId(String id) {
-        this.currentCEId = Integer.parseInt(id);
-    }
-        
+ 
     private AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfig() throws Exception{
         if(availableCustomCertExtensionsConfig == null) {
             availableCustomCertExtensionsConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
@@ -741,12 +685,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public ListDataModel getAvailableCustomCertExtensions() {
-        if(availableCustomCertExtensions == null) {
-            try {
-                availableCustomCertExtensions = new ListDataModel(getNewAvailableCustomCertExtensions());
-            } catch(Exception e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to access AvailableCustomCertificateExtensionsConfiguration.", null));
-            }
+        try {
+            availableCustomCertExtensions = new ListDataModel(getNewAvailableCustomCertExtensions());
+        } catch(Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to access AvailableCustomCertificateExtensionsConfiguration.", null));
         }
         return availableCustomCertExtensions;
     }
@@ -759,73 +701,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             extensionsInfo.add(new CustomCertExtensionInfo(extension));
         }
         return extensionsInfo;
-    }
-    
-    public void saveCurrentCustomCertExtension() {
-        if (currentCustomExtension.getId() == 0) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "The CustomCertificateExtension ID cannot be 0.", null));
-            return;
-        }        
-        if (StringUtils.isEmpty(currentCustomExtension.getOid())) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));
-            return;
-        }
-        if (StringUtils.isEmpty(currentCustomExtension.getDisplayName())) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Display Name is set.", null));
-            return;
-        }
-
-        if (StringUtils.isEmpty(currentCustomExtension.getClassPath())) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion Class Path is set.", null));
-            return;
-        }
-        if (currentCustomExtension.getProperties() == null) {
-            currentCustomExtension.setProperties("");
-        }
-
-        
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = null;
-        try {
-            cceConfig = getAvailableCustomCertExtensionsConfig();
-            
-            if(this.creatingNewExtension) {
-                if(cceConfig.getCustomCertificateExtension(currentCustomExtension.getId()) != null) {
-                    FacesContext.getCurrentInstance()
-                            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Extension ID '" + currentCustomExtension.getId() + "' is already in use.", null));
-                    return;
-                }
-                
-                String certProfilesUsingExtension = getCertProfileUsingExtension(currentCustomExtension.getId());
-                if(!StringUtils.isEmpty(certProfilesUsingExtension)) {
-                    FacesContext.getCurrentInstance()
-                        .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot add extension with ID '" + currentCustomExtension.getId() + "'. This ID is still used in the following profiles: " + certProfilesUsingExtension, null));
-                    return;
-                }
-            }
-            
-            cceConfig.addCustomCertExtension(currentCustomExtension.getId(), currentCustomExtension.getOid(), currentCustomExtension.getDisplayName(), currentCustomExtension.getClassPath(), currentCustomExtension.isCritical(), getPropertiesFromString(currentCustomExtension.getProperties()));
-            getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
-            availableCustomCertExtensions = new  ListDataModel(getNewAvailableCustomCertExtensions());
-        } catch(Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to get AvailableCustomCertificateExtensionsConfiguration. " + e.getLocalizedMessage() , e.getLocalizedMessage()));
-            return;
-        }
-    }
-    
-    private Properties getPropertiesFromString(String props) {
-        Properties properties = new Properties();
-        if(!StringUtils.isEmpty(props)) {
-            String[] propertyPairs = StringUtils.split(props, ",");
-            String[] property = new String[2];
-            for(String pair : propertyPairs) {
-                property = StringUtils.split(pair, "=");
-                properties.put(property[0].trim(), property[1].trim());
-            }
-        }
-        return properties;
     }
 
     public void removeCustomCertExtension() {
@@ -841,72 +716,31 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         
-        final String profNames = getCertProfileUsingExtension(extid);
-        final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certitifcate profiles: " +  profNames;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));            
+        final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extid);
+        if(!cpNamedUsingExtension.isEmpty()) {
+            final String cpNamesMessage = getCertProfilesNamesMessage(cpNamedUsingExtension);
+            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
+        }
     }
 
-    private String getCertProfileUsingExtension(final int id) {
-        
-        ArrayList<String> certProfileNames = new ArrayList<String>();
+    private ArrayList<String> getCertProfilesUsingExtension(final int id) {
+        ArrayList<String> ret = new ArrayList<String>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
             final CertificateProfile cp = entry.getValue();
             List<Integer> usedCertExts = cp.getUsedCertificateExtensions();
             if(usedCertExts.contains(id)) {
-                certProfileNames.add(certprofileSession.getCertificateProfileName(entry.getKey()));
+                ret.add(certprofileSession.getCertificateProfileName(entry.getKey()));
             }
-            
         }
-        if(!certProfileNames.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for(String profileName : certProfileNames) {
-                sb.append(" " + profileName + ",");
-            }
-            sb.deleteCharAt(sb.length()-1);
-            return sb.toString();
-        }
-        return "";
+        return ret;
     }
-    
-    /** @return cached or populate a new CustomCertificateExtension GUI representation for view or edit */
-    public CurrentCustomCertExtensionInfo getCurrentCustomExtension() {
-        if (this.currentCustomExtension == null) {
-            final int ceId = getCurrentCEId();
-            if(ceId == 0) {
-                this.currentCustomExtension = new CurrentCustomCertExtensionInfo();
-            } else {
-                try {
-                    AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
-                    this.currentCustomExtension = new CurrentCustomCertExtensionInfo(cceConfig.getCustomCertificateExtension(ceId));
-                } catch(Exception e) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to access AvailableCustomCertificateExtensionsConfiguration: " + e.getLocalizedMessage(), null));
-                    return null;
-                }
-            }
-        }
-        return this.currentCustomExtension;
-    }
-    
-    public boolean isCurrentCustomCertExtensionEditMode() { return currentCustomCertExtensionEditMode; }
-    public void setCurrentCustomCertExtensionEditMode(boolean currentCustomCertExtEditMode) { this.currentCustomCertExtensionEditMode = currentCustomCertExtEditMode; }
-    public void toggleCurrentCustomCertExtensionEditMode() { currentCustomCertExtensionEditMode ^= true; }
     
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
     public boolean isAllowedToModify() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource());
-    }
-    
-    /** @return true if admin may delete Custom Certificate Extension. */
-    public boolean isAllowedToDelete() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource());
-    }
-    
-    /** Invoked when admin cancels a Custom Certificate Extension create or edit. */
-    public void cancelCurrentCustomExtension() {
-        setCurrentCustomCertExtensionEditMode(false);
-        flushCache();
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource());
     }
     
     // ------------------------------------------------

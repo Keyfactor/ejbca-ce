@@ -107,18 +107,6 @@ public abstract class CertificateExtension implements Serializable {
 		return properties;
 	}
 	
-	public String getPropertiesAsString() {
-	    StringBuilder sb = new StringBuilder("");
-	    for(Object o : properties.keySet() ) {
-	        sb.append((String) o);
-	        sb.append("=");
-	        sb.append((String)properties.get(o));
-	        sb.append(",");
-	    }
-	    sb.deleteCharAt(sb.length()-1);
-	    return sb.toString();
-	}
-	
 	/**
 	 * Method that initialises the CertificateExtension
 	 * 

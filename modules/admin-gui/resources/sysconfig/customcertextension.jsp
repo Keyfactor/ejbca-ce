@@ -39,61 +39,88 @@ org.cesecore.authorization.control.StandardRules
 </head>
 <body>
 	<h1>
-	    <h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NEW}" rendered="#{systemConfigMBean.currentCEId == 0}"/>
-		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} #{systemConfigMBean.currentCustomExtension.displayName}" rendered="#{systemConfigMBean.currentCEId != 0}"/>
+	    <h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NEW}" rendered="#{customCertExtensionMBean.currentExtensionId == 0}"/>
+		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionId != 0}"/>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCustomCertExtensionForm">
 	<h:panelGrid columns="2">
 		<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf"><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NAV_BACK}"/></h:outputLink>
-		<h:commandButton action="#{systemConfigMBean.toggleCurrentCustomCertExtensionEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!systemConfigMBean.currentCustomCertExtensionEditMode) && cryptoTokenMBean.allowedToModify}"/>
-		<h:panelGroup id="placeholder1" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode || !systemConfigMBean.allowedToModify}"/>
+		<h:commandButton action="#{customCertExtensionMBean.toggleCurrentExtensionEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!customCertExtensionMBean.currentExtensionEditMode) && cryptoTokenMBean.allowedToModify}"/>
+		<h:panelGroup id="placeholder1" rendered="#{customCertExtensionMBean.currentExtensionEditMode || !customCertExtensionMBean.allowedToModify}"/>
 		
 		<h:outputLabel for="currentCEId" value="#{web.text.CRYPTOTOKEN_ID}:"/>
 		<h:panelGroup id="currentCEId">
-			<h:outputText value="#{systemConfigMBean.currentCEId}" rendered="#{systemConfigMBean.currentCEId != 0}"/>
-			<h:inputText value="#{systemConfigMBean.currentCustomExtension.id}" rendered="#{systemConfigMBean.currentCEId == 0}"/>
+			<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}"/>
 		</h:panelGroup>
 		
 		<h:outputLabel for="currentCEOid" value="#{web.text.OID}:"/>
 		<h:panelGroup id="currentCEOid">
-	    	<h:inputText  value="#{systemConfigMBean.currentCustomExtension.oid}" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode}" />
-	    	<h:outputText value="#{systemConfigMBean.currentCustomExtension.oid}" rendered="#{!systemConfigMBean.currentCustomCertExtensionEditMode}"/>
+	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}" />
+	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 		</h:panelGroup>
 		
 		<h:outputLabel for="currentCEDisplayName" value="#{web.text.DISPLAYNAME}:"/>
 		<h:panelGroup id="currentCEDisplayName">
-	    	<h:inputText  value="#{systemConfigMBean.currentCustomExtension.displayName}" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode}">
+	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
-	    	<h:outputText value="#{systemConfigMBean.currentCustomExtension.displayName}" rendered="#{!systemConfigMBean.currentCustomCertExtensionEditMode}"/>
+	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="currentCEClassPath" value="#{web.text.CUSTOMCERTEXTENSION_CLASSPATH}:"/>
 		<h:panelGroup id="currentCEClassPath">
-	    	<h:inputText  value="#{systemConfigMBean.currentCustomExtension.classPath}" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode}" />
-	    	<h:outputText value="#{systemConfigMBean.currentCustomExtension.classPath}" rendered="#{!systemConfigMBean.currentCustomCertExtensionEditMode}"/>
+	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}" />
+	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 		</h:panelGroup>
 		
 		<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}:"/>
-		<h:selectBooleanCheckbox id="currentCECritical" value="#{systemConfigMBean.currentCustomExtension.critical}"
-			disabled="#{!systemConfigMBean.currentCustomCertExtensionEditMode}"/>
+		<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"
+			disabled="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 
-		<h:outputLabel for="currentCEProperties" value="#{web.text.PROPERTIES}:"/>
-		<h:panelGroup id="currentCEProperties">
-	    	<h:inputText  value="#{systemConfigMBean.currentCustomExtension.properties}" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode}" />
-	    	<h:outputText value="#{systemConfigMBean.currentCustomExtension.properties}" rendered="#{!systemConfigMBean.currentCustomCertExtensionEditMode}"/>
-		</h:panelGroup>
+		<h:outputLabel for="currentCEProperties" value="#{web.text.PROPERTIES}:" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
+	    <h:outputText id="currentCEProperties" value="#{customCertExtensionMBean.currentExtensionGUIInfo.properties}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 
 
 		<h:panelGroup>
-			<h:commandButton action="#{systemConfigMBean.cancelCurrentCustomExtension}" value="#{web.text.CRYPTOTOKEN_CANCEL}" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode && systemConfigMBean.currentCEId != 0}"/>
-			<h:commandButton action="#{systemConfigMBean.saveCurrentCustomCertExtension}" value="#{web.text.CRYPTOTOKEN_SAVE}" rendered="#{systemConfigMBean.currentCustomCertExtensionEditMode}"/>
+			<h:commandButton action="#{customCertExtensionMBean.cancelCurrentCustomExtension}" value="#{web.text.CRYPTOTOKEN_CANCEL}" rendered="#{customCertExtensionMBean.currentExtensionEditMode && customCertExtensionMBean.currentExtensionId != 0}"/>
+			<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.CRYPTOTOKEN_SAVE}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}"/>
 		</h:panelGroup>
 	</h:panelGrid>
 	</h:form>
 
-	
+	<h2><h:outputText value="Properties" rendered="#{customCertExtensionMBean.currentExtensionEditMode}"/></h2>
+	<h:form id="propertiesform" enctype="multipart/form-data" rendered="#{customCertExtensionMBean.currentExtensionEditMode}">
+		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+			<h:column>
+   				<f:facet name="header"><h:outputText value="Key"/></f:facet>
+				<h:outputText value="#{prop.key}" title="#{prop.key}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentPropertyKey" value="#{customCertExtensionMBean.currentPropertyKey}" />
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="Value"/></f:facet>
+				<h:outputText value="#{prop.value}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentPropertyValue" value="#{customCertExtensionMBean.currentPropertyValue}">
+   					</h:inputText>
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header">
+   					<h:outputText value="#{web.text.ACTION}"/>
+   				</f:facet>
+				<h:commandButton action="#{customCertExtensionMBean.RemoveExtensionProperty}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
+				<f:facet name="footer">
+					<h:commandButton  value="#{web.text.ADD}" action="#{customCertExtensionMBean.addExtensionProperty}" />
+				</f:facet>
+			</h:column>
+		</h:dataTable>
+	</h:form>
+
+
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />

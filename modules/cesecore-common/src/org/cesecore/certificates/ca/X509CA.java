@@ -998,7 +998,7 @@ public class X509CA extends CA implements Serializable {
         final Iterator<Integer> certExtIter = usedCertExt.iterator();
         while (certExtIter.hasNext()) {
             final Integer id = certExtIter.next();
-            final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(id); //fact.getCertificateExtensions(id);
+            final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
             if (certExt != null) {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
