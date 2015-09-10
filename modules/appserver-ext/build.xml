@@ -6,7 +6,10 @@
 
 	<dirname property="this.dir" file="${ant.file.appserver-ext}"/>
 	<import file="${this.dir}/../build.xml"/>
-	
+
+	<!-- JBoss 5.1.0 -->
+	<path id="lib.jboss-log4j.classpath"><fileset dir="${appserver.home}/client" includes="jboss-logging-log4j.jar log4j.jar"/></path>
+
 	<property name="build-jbosslogsigning.dir" location="${this.dir}/build-jbosslogsigning"/>
 	<property name="build-jbosslog4jsafer.dir" location="${this.dir}/build-jbosslog4jsafer"/>
 	<property name="src.dir" location="${this.dir}/src"/>

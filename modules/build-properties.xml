@@ -227,13 +227,6 @@
 
 	<path id="lib.javaxejb.classpath">
 		<fileset dir="${appserver.home}">
-			<!-- JBoss 5.1.0 -->
-	    	<include name="client/jboss-javaee.jar"/>
-	
-			<!-- JBoss 6.0.0 -->
-			<include name="client/jboss-ejb-api_3.1_spec.jar"/>
-			<include name="client/jboss-metadata-ejb.jar"/>
-
 			<!-- JBoss 7.1.1 and EAP 6.0 -->
 			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0*.jar"/>
 			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.*.jar"/>
@@ -242,9 +235,7 @@
 			<!-- JBoss 7.2.0 and EAP 6.1 -->
 			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec*.jar"/>
 			<include name="modules/system/layers/base/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.2.Final-redhat-2.jar"/>
-			<!-- glassfish v2.1.1 -->
-			<include name="lib/javaee.jar"/>
-			
+
 			<!-- Glassfish 3.1 -->
 			<include name="lib/glassfish/javaee.jar"/>
 			
@@ -256,117 +247,51 @@
 	<path id="lib.jee.classpath">
 		<path refid="lib.javaxejb.classpath"/>
 		<fileset dir="${appserver.home}">
-			<!-- JBoss 5.0.0 -->
-			<include name="client/jbossall-client.jar" />
-			<include name="client/jnp-client.jar" />			
-			<include name="client/jboss-javaee.jar" />
-			<include name="client/jboss-logging-spi.jar" />
-			<include name="client/jboss-client.jar" />
-			<include name="client/jboss-security-spi.jar" />
-			<include name="client/jboss-serialization.jar" />
-			<include name="client/jboss-common-core.jar" />
-			<include name="client/jboss-remoting.jar" />
-			<include name="client/concurrent.jar" />
-			<include name="client/jbosssx-client.jar" />
-			<include name="client/jboss-integration.jar" />
-			<!--
-			<include name="client/xmlsec.jar" />
-			-->
-			
-			<!-- JBoss 5.1.0 for Remote EJB-->
-	    	<include name="client/jboss-ejb*.jar"/>
-	    	<include name="client/jboss-aop-client.jar"/>
-	    	<include name="client/jboss-aspect-jdk50-client.jar"/>
-
-			<!-- JBoss 6.0.0 for Remote EJB-->
-			<include name="client/jboss-logging*.jar"/>
-			<include name="client/jboss-metadata-ejb.jar"/>
-
 			<!-- JBoss 7.1.1 and EAP 6.0 for javax.peristence, transaction, remote EJB, ...-->
 			<include name="bin/client/jboss-client*.jar"/>
 			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
 			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
 			<!-- JBoss 7.1.1 and EAP 6.0 for javax.resource ...-->
 			<include name="modules/javax/resource/api/main/jboss-connector-api_1.6_spec-*.jar"/>
-			
 			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 and 9 for javax.peristence, transaction, remote EJB, ...-->
 			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.?-api*.jar"/>
 			<include name="modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.?_spec*.jar"/>
 			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.2_spec*.jar"/> <!-- WildFly 8 -->
 			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.6_spec*.jar"/>
 			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.7_spec*.jar"/> <!-- WildFly 9 -->
-
-			<!-- glassfish v2.1.1 -->
-			<include name="lib/javaee.jar"/>
-			<include name="lib/appserv-rt.jar"/>
-			<include name="lib/appserv-ext.jar"/>
-			<include name="lib/appserv-deployment-client.jar"/>
-			
 			<!-- Glassfish 3.1 -->
 			<include name="lib"/>
 			<include name="lib/gf-client.jar"/>
 			<include name="lib/jndi-properties.jar"/>
 			<!-- FIXME These are supposed to be loaded automatically by gf-client. Why doens't that work? -->
 			<include name="modules/*.jar"/>
-
 			<!-- Glassfish 4.0 -->
 			<include name="glassfish/lib/gf-client.jar"/>			
 			<include name="glassfish/lib/jndi.properties.jar"/>			
-
-			<!-- Weblogic 10.3.4 (generic) -->
-			<!-- This library built with "java -jar wljarbuilder.jar" cannot be used since it also contains webservices etc..
-			<include name="wlserver_10.3/server/lib/wlfullclient.jar"/>
-			-->
-			<include name="wlserver_10.3/server/lib/wlthint3client.jar"/>
-			<include name="modules/javax.persistence_1.0.0.0_1-0-2.jar"/>
-			<!-- websphere -->
-			<include name="runtimes/com.ibm.*.jar"/>
 		</fileset>
 	</path>
 
 	<path id="lib.servlet.classpath">
 		<fileset dir="${appserver.home}">
-			<!-- JBoss 5.1.0 -->
-			<include name="common/lib/servlet-api.jar"/>
-			<!-- JBoss 6.0.0 -->
-			<include name="common/lib/jboss-servlet-api_3.0_spec.jar"/>
 			<!-- JBoss 7.1.0 and EAP 6.0 -->
 			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.*.jar"/>
 			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 -->
 			<include name="modules/system/layers/base/javax/servlet/api/main/jboss-servlet-api_3.?_spec*.jar"/>
-			<!-- Glassfish 2.1.1 -->
-			<include name="lib/javaee.jar"/>
 			<!-- Glassfish 3.1 -->
 			<include name="lib/glassfish/javaee.jar"/>			
 			<!-- Glassfish 4.0 -->
 			<include name="glassfish/lib/javaee.jar"/>			
-			<!-- WebLogic 10.3.3 -->
-			<include name="modules/javax.servlet_1.0.0.0_2-5.jar"/>
-			<!-- WebSphere 7.0.0.13 -->
-			<include name="lib/j2ee.jar"/>
 		</fileset>
 		<!--fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/-->
 	</path>
 
 	<fileset id="lib.jsf.classpath.files" dir="${appserver.home}">
-		<!-- JBoss 5.1.0 -->
-		<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
-		<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
-		<include name="server/default/deploy/jbossweb.sar/jstl.jar"/>
-		<include name="common/lib/el-api.jar"/>
-		<!-- JBoss 6.0.0 -->
-		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
 		<!-- JBoss 7.2.0, 7.1.1 and EAP 6.0 -->
 		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.*.jar"/>
 		<!-- JBoss 7.2.0 and EAP 6.1, 6.2 and WildFly 8  -->							   
 		<include name="modules/system/layers/base/javax/faces/api/main/jboss-jsf-api_2.?_spec*.jar"/>
-		<!-- Glassfish 2.1.1 -->
-		<include name="lib/jsf-impl.jar" />
 		<!-- Glassfish 3.1 -->
 		<include name="modules/jsf-impl.jar" />
-		<!-- WebLogic 10.3.4 -->
-		<include name="modules/javax.jsf_1.1.0.0_1-2.jar" />
-		<!-- websphere ? -->
 	</fileset>
 	<path id="lib.jsf.classpath">
 		<fileset refid="lib.jsf.classpath.files"/>
@@ -375,39 +300,21 @@
 	<path id="lib.jsp.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- JBoss -->
-			<include name="common/lib/jsp-api.jar" /> <!-- 5.1.0 -->
-			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.1.0 -->
-			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
 		    <include name="modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0*.jar"/> <!-- 7.1.1 / EAP6.0 -->
 			<include name="modules/system/layers/base/javax/el/api/main/jboss-el-api_*_spec*.jar"/><!-- 7.2.0 / EAP6.1, 6.2 and WildFly 8 -->
 			<!-- Glassfish -->
-			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
 			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
-			<!-- WebLogic 10.3.4 -->
-			<!-- websphere ? -->
 		</fileset>
 	</path>
 	
 	<path id="lib.jasper.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- JBoss -->
-			<include name="server/default/deploy/jbossweb.sar/jasper-jdt.jar" /> <!-- 5.1.0 -->
-			<include name="server/default/deploy/jbossweb.sar/jbossweb.jar" /> <!-- 5.1.0 -->
-			<include name="common/lib/servlet-api.jar" /> <!-- 5.1.0 -->
-			<include name="lib/jboss-logging-spi.jar" /> <!-- 5.1.0 -->
 			<!-- Glassfish -->
-			<include name="lib/appserv-rt.jar" /> <!-- 2.1.1 -->
-			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
-			<include name="lib/javaee.jar" /> <!-- 2.1.1 -->
 			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
-			<!-- WebLogic 10.3.4 -->
-			<!-- websphere ? -->
 		</fileset>
 	</path>
-	
-	<!-- JBoss 5.1.0 -->
-	<path id="lib.jboss-log4j.classpath"><fileset dir="${appserver.home}/client" includes="jboss-logging-log4j.jar log4j.jar"/></path>
-	
+
 	<path id="lib.log4j.classpath"><pathelement location="${ejbca.home}/lib/log4j-1.2.16.jar"/></path>
 	
 	<path id="lib.json.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="json-simple-*.jar"/></path>
@@ -518,7 +425,6 @@
 	<condition property="mod.externalra-scep.exists">
 		<available file="${mod.externalra-scep.path}/build.xml" />
     </condition>
-	
 
 	<condition property="ejbca-db-cli.available">
 		<available file="${mod.ejbca-entity.path}/src-cli/org" type="dir"/>
