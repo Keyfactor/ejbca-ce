@@ -318,7 +318,9 @@ in the distribution.
 
 <subsection name="Install">
 <p>
-Note that the installation must be done with a user with privileges to write to APPSRV_HOME and sub directories. 
+Note that the installation must be done with a user with privileges to write to APPSRV_HOME and sub directories.
+Running the deploy and install commands as described will also configure the application server with data sources and web configuration automatically. 
+If deploying on <a href="#WildFly%208">WildFly</a>, you should instead follow that guide to manually configure data sources and web. 
 </p><p>
 1) Set the property 'appserver.home' in conf/ejbca.properties to where your JBoss is installed,
 examples:
@@ -338,7 +340,7 @@ picking up everything and deploying the ear without errors.
 <source>
 ant deploy
 </source>
-<p>it will compile and build EJBCA and deploy it to JBoss. You will be prompted to enter the value for database.password if it has
+<p>it will compile and build EJBCA and deploy it to JBoss, as well as automagically create data sources and mail service. You will be prompted to enter the value for database.password if it has
 not already been defined in database.properties. 
 </p><p>
 4) Type:
@@ -346,7 +348,7 @@ not already been defined in database.properties.
 <source>
 ant install
 </source>
-<p>The command will generate all certificates, keys, etc needed to run with an initial CA, deploy the necessary datasources and services, and configure the servlet container to use the generated keystore and truststore files (which are also copied in the process).
+<p>The command will generate all certificates, keys, etc needed to run with an initial CA, and configure TLS in the servlet container to use the generated keystore and truststore files (which are also copied in the process).
 You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
 <br/>The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, 
 and can not be run again (it will give an error if you try).
