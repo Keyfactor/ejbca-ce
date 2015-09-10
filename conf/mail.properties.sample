@@ -12,11 +12,9 @@
 # The JNDI-name used to send email notifications from EJBCA.
 # Not that this differs between different application servers, see installation for 
 # instructions for your appserver. The default works for JBoss.
-# For Weblogic use 'mail/EJbcaMail'.
 #
 # Default: java:/EjbcaMail
 #mail.jndi-name=java:/EjbcaMail
-#mail.jndi-name=mail/EjbcaMail
 
 # user/password to connect to server for sending email notifications from EJBCA.
 # Default: ejbca_user, primekey

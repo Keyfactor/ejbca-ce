@@ -104,7 +104,7 @@
 <li>Possible to integrate into large java applications for optimal integration into business process.</li>
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check monitoring service to support efficient clustering and monitoring.</li>
-<li>Supports multiple application servers: JBoss, Glassfish and to some extent WebLogic</li>
+<li>Supports multiple application servers: JBoss and Glassfish</li>
 <li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, MS SQL Server, Derby, Sybase, Informix.</li>
 <li>Unique possibility to configure either as fully audited CA or as high speed <a href="docs/adminguide.html#Throw%20away%20CA">certificate factory</a>, with the same level of management features.</li>
 </ul>
