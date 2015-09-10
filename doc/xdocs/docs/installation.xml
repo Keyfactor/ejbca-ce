@@ -729,15 +729,22 @@ reload
 </source>
 </subsubsection>
 
-<subsubsection name="Configure TLS">
-<p>If you already have TLS keystores, i.e. you are upgrading from an earlier EJBCA installation and have tomcat.jks and truststore.jks on ejbca/p12, go ahead and configure TLS.</p>
-<p><b>TODO:</b>Creating Management CA and TLS keystores are not described yet, only how to convert an existing implemenetation to WildFly.</p>
-<p>First copy keystores to WildFly:</p>
+<subsubsection name="Configure logging">
+<p>Configure logging in JBoss, to be able to dynamically change logging (DEBUG enabled in this example).</p>
 <source>
-ant deploy-keystore
+/subsystem=logging/logger=org.ejbca:add
+/subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=DEBUG)
+/subsystem=logging/logger=org.cesecore:add
+/subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
 </source>
-<p>The run the following commands in JBoss CLI to configure TLS (again removing any old configuration first just to be safe).</p>
+</subsubsection>
+
+<subsubsection name="Remove existing TLS and HTTP configuration">
+<p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
 <source>
+/core-service=management/security-realm=SSLRealm/authentication=truststore:remove
+/core-service=management/security-realm=SSLRealm/server-identity=ssl:remove
+/core-service=management/security-realm=SSLRealm:remove
 /socket-binding-group=standard-sockets/socket-binding=httpspub:remove
 /subsystem=undertow/server=default-server/https-listener=httpspub:remove
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:remove
@@ -751,6 +758,32 @@ ant deploy-keystore
 /interfaces=/interface=httpspub:remove
 /interfaces=/interface=httpspriv:remove
 reload
+</source>
+</subsubsection>
+
+<subsubsection name="Deploy EJBCA">
+<p>Finally build and deploy the EJBCA (application ear file) to WildFly, without touching any WildFly configuration, by running the following EJBCA command.</p>
+<source>
+ant clean deployear
+</source>
+</subsubsection>
+
+<subsubsection name="Run install">
+<p>Run installation part of EJBCA creating the initial Management CA (for TLS and Super administrator), as well as TLS and Superadmin keystores.</p>
+<note>If you are moving an existing installation that already have TLS keystores available, this step is not needed.</note>
+<p></p>
+<source>
+ant runinstall
+</source>
+</subsubsection>
+
+<subsubsection name="Configure TLS">
+<p>Copy keystores to WildFly:</p>
+<source>
+ant deploy-keystore
+</source>
+<p>The run the following commands in JBoss CLI to configure TLS (again removing any old configuration first just to be safe).</p>
+<source>
 /interfaces=/interface=http:add(inet-address="0.0.0.0")
 /interfaces=/interface=httpspub:add(inet-address="0.0.0.0")
 /interfaces=/interface=httpspriv:add(inet-address="0.0.0.0")
@@ -775,24 +808,7 @@ reload
 reload
 </source>
 <p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
-</subsubsection>
-
-<subsubsection name="Configure logging">
-<p>Configure logging in JBoss, to be able to dynamically change logging (DEBUG enabled in this example).</p>
-<source>
-/system-property=org.jboss.as.logging.per-deployment:add(value=false)
-/subsystem=logging/logger=org.ejbca:add
-/subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=DEBUG)
-/subsystem=logging/logger=org.cesecore:add
-/subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
-</source>
-</subsubsection>
-
-<subsubsection name="Deploy EJBCA">
-<p>Finally build and deploy the EJBCA (application ear file) to WildFly, without touching any WildFly configuration, by running the following EJBCA command.</p>
-<source>
-ant clean deployear
-</source>
+<note>WildFy will most likely get confused at stis step, and will need a restart.</note>
 </subsubsection>
 
 <subsubsection name="Optional: Enable AJP connector">
@@ -812,9 +828,14 @@ ant clean deployear
 </subsection>
 
 <subsection name="WildFly 9">
-<p>USing WildFly 9 instead of WildFly 8 you only have to replace the section 'Configure TLS' with the below section.</p>
-<subsubsection name="Configure TLS">
+<p>USing WildFly 9 instead of WildFly 8 you only have to replace the sections 'Remove existing TLS and HTTP configuration' and 'Configure TLS' with the below section.</p>
+
+<subsubsection name="Remove existing TLS and HTTP configuration">
+<p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
 <source>
+/core-service=management/security-realm=SSLRealm/authentication=truststore:remove
+/core-service=management/security-realm=SSLRealm/server-identity=ssl:remove
+/core-service=management/security-realm=SSLRealm:remove
 /socket-binding-group=standard-sockets/socket-binding=httpspub:remove
 /subsystem=undertow/server=default-server/https-listener=httpspub:remove
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:remove
@@ -828,6 +849,16 @@ ant clean deployear
 /interface=httpspub:remove
 /interface=httpspriv:remove
 reload
+</source>
+</subsubsection>
+
+<subsubsection name="Configure TLS">
+<p>Copy keystores to WildFly:</p>
+<source>
+ant deploy-keystore
+</source>
+<p>The run the following commands in JBoss CLI to configure TLS (again removing any old configuration first just to be safe).</p>
+<source>
 /interface=http:add(inet-address="0.0.0.0")
 /interface=httpspub:add(inet-address="0.0.0.0")
 /interface=httpspriv:add(inet-address="0.0.0.0")
@@ -851,7 +882,10 @@ reload
 /subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
 reload
 </source>
+<p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
+<note>WildFy will most likely get confused at stis step, and will need a restart.</note>
 </subsubsection>
+
 </subsection>
 
 <subsection name="Glassfish">
