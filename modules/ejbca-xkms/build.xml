@@ -61,7 +61,7 @@
         -->
     	<jar destfile="${mod.ejbca-xkms-ejb.jar}" basedir="${build.dir}">
         	<zipfileset dir="${resources.dir}" prefix="META-INF/wsdl" includes="xkms.wsdl xkms.xsd xenc-schema.xsd xmldsig-core-schema.xsd"/>
-        	<zipfileset dir="${resources.dir}" prefix="META-INF" includes="jboss.xml jboss-webservices.xml sun-ejb-jar.xml weblogic-webservices.xml"/><!--weblogic-webservices.xml-->
+        	<zipfileset dir="${resources.dir}" prefix="META-INF" includes="jboss.xml jboss-webservices.xml sun-ejb-jar"/>
     	</jar>
     	<delete dir="${this.dir}/temp"/>
     </target>

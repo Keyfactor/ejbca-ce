@@ -157,7 +157,6 @@
 	<property name="ca.tokentype" value="soft"/>
     <property name="ocspHardTokenClasses" value="${ejbca.home}/ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
-	<property name="weblogic-oracle-columntype" value="" />
 	<property name="mail.from" value="ejbca-donotreply@domain.com" />
 	<property name="mail.user" value="ejbca_user" />
 	<property name="mail.password" value="" />

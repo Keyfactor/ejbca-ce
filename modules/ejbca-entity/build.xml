@@ -106,11 +106,6 @@
     </target>
 
     <target name="handlepersistence">
-    	<!-- Specify JTA lookup if Weblogic -->
-    	<condition property="persistence.enable-weblogic-jta-lookup1" value="-->"><equals arg1="${appserver.type}" arg2="weblogic"/></condition>
-    	<condition property="persistence.enable-weblogic-jta-lookup2" value="&lt;!--"><equals arg1="${appserver.type}" arg2="weblogic"/></condition>
-    	<condition property="persistence.enable-websphere-jta-lookup1" value="-->"><equals arg1="${appserver.type}" arg2="websphere"/></condition>
-    	<condition property="persistence.enable-websphere-jta-lookup2" value="&lt;!--"><equals arg1="${appserver.type}" arg2="websphere"/></condition>
     	<mkdir dir="${build.dir}/META-INF"/>
     	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
