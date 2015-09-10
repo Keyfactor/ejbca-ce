@@ -37,51 +37,6 @@ Locally on the host, a number of ports are used in order for your application se
 </section>
 
 <section name="Securing JBoss">
-<subsection name="JBoss 5">
-<subsubsection name="Disable default services">
-<note>
-Before putting anything on JBoss 5 (community edition) up on the Internet, at least do the following:
-<ul>
-<li>rm /opt/jboss/server/default/deploy/jmx-console.war/ -R</li>
-<li>rm /opt/jboss/server/default/deploy/management/ -R</li>
-<li>rm /opt/jboss/server/default/deploy/ROOT.war/ -R</li>
-<li>rm /opt/jboss/server/default/deploy/http-invoker.sar/ -R</li>
-<li>rm /opt/jboss/server/default/deploy/admin-console.war/ -R</li>
-</ul>
-</note>
-</subsubsection>
-<subsubsection name="HttpOnly session cookies">
-<p>
-For JBoss 5 you can set the HttpOnly session cookies by editing 'server/default/deploy/jbossweb.sar/context.xml':
-</p>
-<source>
-&lt;Context cookies="true" crossContext="true"&gt;
-  &lt;SessionCookie secure="true" httpOnly="true" /&gt;
-</source>
-</subsubsection>
-<subsubsection name="Disable specific HTTP methods">
-<p>EJBCA by default limits the use of PUT|DELETE|TRACE|OPTIONS in it's web applications, but if you are unsure you can further enfoce it.</p>
-<p>You can use a <a href="http://docs.jboss.org/jbossweb/2.1.x/rewrite.html">RewriteValve</a> in JBoss.</p>
-<p>You can disable specific HTTP methods like PUT|DELETE|TRACE|OPTIONS using an Apache http mod_rewrite in front of EJBCA:
-</p>
-<source>
-RewriteEngine On
-RewriteCond %{REQUEST_METHOD} ^(PUT|DELETE|TRACE|OPTIONS)$ [NC]
-RewriteRule .* - [F]
-</source>
-<p>You can verify the configuration with:</p>
-<source>
-curl -v -XTRACE http://hostname:port/appContext
-curl -v -XDELETE http://hostname:port/appContex
-</source>
-</subsubsection>
-<subsubsection name="Content Security Policy">
-<p>You can do the same as described for JBoss 7 below.</p>
-</subsubsection>
-<subsubsection name="Write protect deploy">
-<p>After deploying EJBCA you can write protect the server/default/deploy directory. In runtime files are only read from this directory, and write protecting it (owned by root, JBoss runs as jboss user) can prevent malicious code to be deployed.</p>
-</subsubsection>
-</subsection>
 <subsection name="JBoss 7">
 <subsubsection name="Secure Management Interfaces">
 <p>
@@ -459,8 +414,8 @@ and vice versa.
 </subsection>
 <subsection name="Database transaction logs in MySQL">
 <p>
-<a href="http://dev.mysql.com/doc/refman/5.0/en/binary-log.html">
-http://dev.mysql.com/doc/refman/5.0/en/binary-log.html</a>
+<a href="http://dev.mysql.com/doc/refman/5.7/en/binary-log.html">
+http://dev.mysql.com/doc/refman/5.7/en/binary-log.html</a>
 </p>
 </subsection>
 <subsection name="System accounting in Linux">
