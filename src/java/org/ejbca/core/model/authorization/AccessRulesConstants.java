@@ -128,6 +128,8 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_VIEWENDENTITYHISTORY,
                                                            REGULAR_APPROVEENDENTITY,
                                                            REGULAR_SYSTEMFUNCTIONALITY,
+                                                           SERVICES_EDIT,
+                                                           SERVICES_VIEW,
                                                            StandardRules.EDITROLES.resource(),
                                                            StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(),
                                                            StandardRules.REGULAR_EDITAVAILABLEEKU.resource(),
