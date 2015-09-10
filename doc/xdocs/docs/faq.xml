@@ -535,12 +535,12 @@ not just for CAs.
       <question>What is EJBCA's export classification (ECCN code)?</question>
 	  <answer>
 	    <p>
-	    At the time of writing (26 Feb 2008) EJBCA is approved classified under ECCN code 5D002 and approved for export under License Exception TSU. 
+	    In theory EJBCA would be classified under ECCN code 5D002.c.1, and the PrimeKey PKI Appliance under 5A002.a.1 and approved for export under License Exception TSU. 
 	    See The <a href="http://www.bis.doc.gov/licensing/exportingbasics.htm">Bureau of Industry and Security website</a> for further details.<br/>
-	    EJBCA actually has the same classification as the Bouncy Castle JCE provider, from which this FAQ text is a rip-off. Thanks BC!
 	    </p>
 	    <p>
-	    For the PrimeKey PKI Appliance, which includes EJBCA Enterprise software the ECCN code is instead 5A002.
+	    However, in EJBCA, SignServer and the PrimeKey PKI Appliance encryption is only used for authentication and digital signatures. The products are therefore
+	    not controlled according to 5D002.c.1 or 5A002.a.1.
 	    </p>
 	  </answer>
   </faq>
