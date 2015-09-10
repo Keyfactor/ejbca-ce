@@ -1,4 +1,4 @@
-    <project name="jboss" basedir=".." default="jee:deploy" xmlns:jboss="jboss">
+<project name="jboss" basedir=".." default="jee:deploy" xmlns:jboss="jboss">
 	<property environment="env"/>
 
     <!-- ============================================================================================ -->
@@ -8,7 +8,7 @@
      	<path path="${appserver.home}"/>
      	<filtermapper>
      		<replacestring from="\" to="/"/>
-     	</filtermapper>		
+     	</filtermapper>
     </pathconvert> 			
     	
     <!--For passing commands in jboss-cli.bat we have to escape double quotes -->
@@ -16,25 +16,14 @@
         <os family="windows" />
     </condition>
 
-    <!-- ============ -->
-    <!-- Detecting OS -->
-    <!-- ============ -->
-     <condition property="isWindows">
- 	<os family="windows" />
-     </condition>
-     <condition property="isLinux">
- 	<os family="unix" />
-     </condition>
- 
-     <!-- In case of windows use the path defined in appserver.home.win -->
-     <condition property="appserverhome" value="${appserver.home.win}" else="${appserver.home}">
-         <os family="windows"/>
-     </condition>
-    	
-    <condition property="tlsprotocol" value="TLSv1" else="TLSv1,TLSv1.1,TLSv1.2">
-        <equals arg1="${ant.java.version}" arg2="1.6" />
+    <!-- In case of windows use the path defined in appserver.home.win -->
+    <condition property="appserverhome" value="${appserver.home.win}" else="${appserver.home}">
+        <os family="windows"/>
     </condition>
-    
+
+	<!-- TLSv1-v1.2 are supported by JDK7 -->
+	<property name="tlsprotocol" value="TLSv1,TLSv1.1,TLSv1.2"/>
+
     <condition property="jboss7">
 		<or>
         	<equals arg1="${appserver.subtype}" arg2="jboss7" />
@@ -58,20 +47,7 @@
 	    <property name="truststore.file" value="configuration/keystore/truststore.jks"/>
     </target>
 
-    <target name="set-paths-not-jboss7" unless="jboss7">
-        <!-- Paths for JBoss 4, 5 and 6 -->
-        <property name="jboss.config" value="default"/>
-        <property name="jboss.farm.name" value="deploy"/>
-    	<property name="jboss.server.home.dir" value="${appserverhome}/server/${jboss.config}"/>
-        <property name="jboss.conf.dir" value="${jboss.server.home.dir}/conf"/>
-	    <property name="jboss.farm.dir" value="${jboss.server.home.dir}/${jboss.farm.name}"/>
-	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deploy"/>
-	    <property name="keystore.file" value="conf/keystore/keystore.jks"/>
-	    <property name="truststore.file" value="conf/keystore/truststore.jks"/>
-    </target>
-	
-    <target name="set-paths" depends="set-paths-jboss7, set-paths-not-jboss7">
-    </target>
+    <target name="set-paths" depends="set-paths-jboss7"/>
 
 	<target name="jee:check" depends="set-paths">
 		<!--
@@ -79,10 +55,7 @@
             otherwise, try to pick the one from environment if it exists
             -->
 		<fail message="Please set the property 'appserver.home' for this project" unless="appserverhome"/>
-		<!-- jboss-j2ee.jar is JBoss 4.2.x, jboss-appclient.jar is JBoss 5.x and 6.x, modules.xml is JBoss 7.x. Available does not touch the property
-		     if the file does not exist, which is why this works. -->
-    <available file="${appserverhome}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
-    <available file="${appserverhome}/client/jboss-appclient.jar" property="appserver.home.valid"/>
+		<!-- modules.xml is JBoss 7.x. Available does not touch the property if the file does not exist, which is why this works. -->
 	<available file="${appserverhome}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
     <available file="${appserverhome}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
     <fail message="'appserver.home' (${appserverhome}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
@@ -92,22 +65,11 @@
 	<target name="detect-tomcatdir" depends="set-paths">
 		<!-- detect jboss web version -->
 		<!-- JBoss 7 has very different TLS config in the big standalone.xml file -->
-		<available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
-		<available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
-		<available file="${jboss.deploy.dir}/jbossweb-tomcat55.sar" type="dir" property="jboss.web" value="tomcat55"/>
-		<available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="jboss.web" value="tomcat60"/>
-		<available file="${jboss.deploy.dir}/jbossweb.sar" type="dir" property="jboss.web" value="tomcat60jboss5"/>
 		<available file="${jboss.conf.dir}/${jboss7.mode}.xml" type="file" property="jboss.web" value="jboss7"/>
 		
 		<fail message="Could not detect JBoss Servlet container version" unless="jboss.web"/>
 
 		<!-- configure the tomcat bundle -->
-		<!-- For JBoss 4.0.x tomcat is bundled in jbossweb-tomcat55.sar dir -->
-		<available file="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar"/>
-		<!-- For JBoss 4.2.x tomcat is bundled in jboss-web.deployer dir, i.e. new naming scheme -->
-		<available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
-		<!-- For JBoss 5.0.0 tomcat has yet a new naming scheme -->
-		<available file="${jboss.deploy.dir}/jbossweb.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb.sar"/>
 		<!-- For JBoss 7.1.0 tomcat has yet a new configuration in the unified global config file -->
 		<available file="${jboss.conf.dir}/${jboss7.mode}.xml" type="file" property="tomcat.dir" value="${jboss.conf.dir}"/>
 	</target>
@@ -118,150 +80,24 @@
         <!-- ================================================================ -->
 
         <!-- Deploys the main (CA) datasource. -->
-        <target name="jee:deployDS" depends="jee:deployDSJBoss5,jee:deployDSJBoss7"  />
+        <target name="jee:deployDS" depends="jee:deployDSJBoss7"  />
 
         <!-- Deploys the OCSP datasource. -->
         <target name="jee:deployOCSPDS" if="ocsp-datasource.jndi-name">
-            <antcall target="jee:deployOCSPDSJBoss5" />
             <antcall target="jee:deployOCSPDSJBoss7" />
         </target>
 
         <!-- Deploys the services (mail etc). -->
-        <target name="jee:deployServices" depends="jee:deployServicesJBoss5,jee:deployServicesJBoss7"  />
+        <target name="jee:deployServices" depends="jee:deployServicesJBoss7"  />
 
         <!-- Configures the web interface component of the application server. -->
-        <target name="jee:web-configure" depends="jee:web-configureJBoss5,jee:web-configureJBoss7" unless="web.noconfigure" />
+        <target name="jee:web-configure" depends="jee:web-configureJBoss7" unless="web.noconfigure" />
 
         <!-- Notifies the application server to perform (re)deployment of an application. -->
-        <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss5,notifyDeploymentScannerJBoss7" />
+        <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss7" />
 
         <!-- Determines if server is running or not, and fails if it isn't. -->
-	<target name="jee:assert-run"  depends="jee:assert-runJBoss5,jee:assert-runJBoss7" />
-
-        <!-- ========================================================== -->
-        <!-- These are implementation-specific targets for the JBoss 5. -->
-        <!-- ========================================================== -->
-
-	<target name="jee:deployDSJBoss5" unless="jboss7" depends="set-paths">
-		<copy todir="${jboss.farm.dir}" overwrite="true">
-			<fileset dir="src/appserver/jboss">
-				<include name="ejbca-ds.xml" />
-			</fileset>
-			<filterchain>
-				<expandproperties />
-			</filterchain>
-		</copy>
-		<mkdir dir="dist/datasources"/>
-		<chmod dir="dist/datasources" includes="*.xml" perm="600" failonerror="false"/>
-		<copy todir="${jboss.farm.dir}" overwrite="true" failonerror="false">
-			<fileset dir="dist/datasources" includes="**"/>
-		</copy>
-		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
-	</target>
-
-        <target name="jee:deployOCSPDSJBoss5" unless="jboss7" depends="set-paths">
-                <copy todir="${jboss.farm.dir}" overwrite="true">
-                    <fileset dir="src/appserver/jboss">
-                        <include name="ocsp-ds.xml"/>
-                    </fileset>
-                    <filterchain>
-                        <expandproperties/>
-                    </filterchain>
-                </copy>
-                <chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
-        </target>
-
-        <target name="jee:deployExtRAGUIDSJBoss5" unless="jboss7" depends="set-paths">
-            <copy todir="${jboss.farm.dir}" overwrite="true">
-                <fileset dir="modules/externalra-gui/resources">
-                    <include name="externalragui-ds.xml"/>
-                </fileset>
-                <filterchain>
-                    <expandproperties/>
-                </filterchain>
-            </copy>
-            <chmod file="${jboss.farm.dir}/externalragui-ds.xml" perm="600"/>
-         </target>
-
-    <target name="jee:deployExtRASCEPDSJBoss5" unless="jboss7" depends="set-paths">
-        <copy todir="${jboss.farm.dir}" overwrite="true">
-            <fileset dir="modules/externalra-scep/resources">
-                <include name="ramessage-ds.xml"/>
-            </fileset>
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
-        </copy>
-        <chmod file="${jboss.farm.dir}/ramessage-ds.xml" perm="600"/>
-     </target>
-
-        <target name="jee:deployServicesJBoss5" unless="jboss7" depends="set-paths">
-            <copy todir="${jboss.farm.dir}" overwrite="true">
-                <fileset dir="src/appserver/jboss">
-                    <include name="ejbca-mail-service.xml" />
-                </fileset>
-                <filterchain>
-                    <expandproperties />
-                </filterchain>
-            </copy>
-            <chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
-        </target>
-
-	<target name="jee:web-configureJBoss5" depends="jee:check,detect-tomcatdir" unless="jboss7,web.noconfigure">
-            <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
-            <!-- If the web.nosslconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
-            <condition property="definitions_away_begin" value="&#x3C;!--">
-                <istrue value="${web.nosslconfigure}" />
-            </condition>
-            <condition property="definitions_away_end" value="-->">
-                <istrue value="${web.nosslconfigure}" />
-            </condition>
-            <property name="definitions_away_begin" value="" />
-            <property name="definitions_away_end" value="" />
-
-            <!-- Set dummy value if password is not defined. If defined the old value is kept -->
-            <property name="java.trustpassword" value="changeThisToThePassword"/>
-            <property name="httpsserver.password" value="changeThisToThePassword"/>
-
-            <!-- Copy the server configuration file to JBoss directory. -->
-            <copy todir="${tomcat.dir}" overwrite="true">
-                <fileset dir="src/appserver/jboss/${jboss.web}"/>
-                <filterchain>
-                    <tokenfilter>
-                        <replacestring from="@keystore.file@" to="${keystore.file}"/>
-                        <replacestring from="@truststore.file@" to="${truststore.file}"/>
-                        <replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
-                        <replacestring from="@java.trustpassword@" to="${java.trustpassword}"/>
-                        <replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
-                        <replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
-                        <replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
-                    	<replacestring from="@httpserver.external.fqdn@" to="${httpserver.external.fqdn}"/>
-                        <replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
-                        <replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
-                        <replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>
-                        <replacestring from="@httpsserver.bindaddress.privhttps@" to="${httpsserver.bindaddress.privhttps}"/>
-                        <replacestring from="@definitions_away_begin@" to="${definitions_away_begin}"/>
-                        <replacestring from="@definitions_away_end@" to="${definitions_away_end}"/>
-                    </tokenfilter>
-                </filterchain>
-                <filterchain>
-                    <expandproperties />
-                </filterchain>
-            </copy>
-            <chmod file="${tomcat.dir}/server.xml" perm="600"/>
-            <chmod file="${tomcat.dir}/standalone.xml" perm="600"/>
-        </target>
-
-        <!-- Dummy target, we do not support live redeployments with JBoss 5 -->
-        <target name="notifyDeploymentScannerJBoss5" depends="set-paths" unless="jboss7" />
-
-        <target name="jee:assert-runJBoss5" unless="jboss7">
-		<echo message="Checking that the JEE server is up and running..."/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="jee.notrunning">
-			<http url="http://localhost:${httpserver.pubhttp}/"/>
-		</waitfor>
-		<fail message="Please start JEE server before running this script" if="jee.notrunning"/>
-	</target>
+        <target name="jee:assert-run"  depends="jee:assert-runJBoss7" />
 
         <!-- ========================================================== -->
         <!-- These are implementation-specific targets for the JBoss 7. -->
@@ -299,7 +135,6 @@
 	<!-- For Linux the syntax is diffrent than in Windows 			   -->
 	<!-- Here is where we distinguish the commands to run in jboss-cli -->
 	<!-- according to the operating system 							   -->
-
 
 	<target name="jee:deployDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7">
         <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
@@ -494,13 +329,13 @@
 	    <antcall target="notifyDeploymentScanner" />
 	</target>
 	
-	<target name="jee:deploy-scep-war" depends="jee:check, detect-tomcatdir, jee:deployExtRASCEPDSJBoss5,jee:deployExtRASCEPDSJBoss7">
+	<target name="jee:deploy-scep-war" depends="jee:check, detect-tomcatdir, jee:deployExtRASCEPDSJBoss7">
 		<chmod dir="dist" includes="scepraserver.war" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
 		<antcall target="notifyDeploymentScanner" />
 	</target>
 
-	<target name="jee:deploy-externalragui-war" depends="jee:check, detect-tomcatdir, jee:deployExtRAGUIDSJBoss5,jee:deployExtRAGUIDSJBoss7">
+	<target name="jee:deploy-externalragui-war" depends="jee:check, detect-tomcatdir, jee:deployExtRAGUIDSJBoss7">
 		<chmod dir="dist/externalra-gui" includes="externalra-gui.war" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalra-gui.war"/>
 		<antcall target="notifyDeploymentScanner" />
@@ -511,67 +346,11 @@
 		-->
 	</target>
 
-	<target name="jee:run" description="Start the JEE server">
-		<jee-server classname="org.jboss.Main" classpath="${appserverhome}/bin/run.jar">
-			<args>
-				<jvmarg value="-Djboss.home=${appserverhome}"/>jb
-			</args>
-		</jee-server>
-		<!--
-            appserver.home.dir
-            appserver.home.url		${appserver.home.dir}
-            jboss.server.name		default
-            jboss.server.base.dir	${appserver.home.dir}/server	
-            jboss.server.home.dir	${jboss.base.dir}/${jboss.server.name}
-            jboss.server.temp.dir	${jboss.server.home.dir}/tmp
-            jboss.server.data.dir	${jboss.server.home.dir}/data
-            jboss.server.base.url	${appserver.home.url}/server
-            jboss.server.home.url	${jboss.base.url}/${jboss.server.name}
-            jboss.server.config.url ${jboss.server.home.url}/conf
-            jboss.server.lib.url	${jboss.server.home.url}/lib
-        -->
-	</target>
-
-	<target name="jee:debug" description="Start the JEE server in debug mode">
-		<property name="jee.debug.transport" value="dt_socket"/>
-		<property name="jee.debug.address" value="5005"/>
-		<property name="jee.debug.jvm.opts" value="-Xdebug -Xnoagent -Xrunjdwp:transport=${jee.debug.transport},address=${jee.debug.address},server=y,suspend=y"/>
-		<echo message="Connect your debugger using transport '${jee.debug.transport}' and address '${jee.debug.address}'"/>
-		<antcall target="jee:run"/>
-	</target>
-
         <!-- ================= -->
         <!-- Macro definitions -->
         <!-- ================= -->
 
-	<macrodef name="jee-server">
-		<attribute name="classname"/>
-		<attribute name="classpath"/>
-		<element name="args" optional="yes"/>
-		<sequential>
-            <local name="arg_escaped"/>
-            <loadresource property="arg_escaped">
-                <string value='@{arg}'/>
-                <filterchain>
-                    <tokenfilter>
-                        <filetokenizer/>
-                        <replacestring from='"' to='${quot}'/>
-                    </tokenfilter>
-                </filterchain>
-            </loadresource>
-			<property name="jee.debug.jvm.opts" value=""/>
-			<available file="${java.home}/../lib/tools.jar" property="jdk.present"/>
-			<fail message="Missing tools.jar in ${java.home}/lib. Please use a java JDK" unless="jdk.present"/>
-			<java classname="@{classname}" fork="true">
-				<classpath path="@{classpath}:${java.home}/../lib/tools.jar"/>
-				<jvmarg line="${jee.debug.jvm.opts} -XX:+UseConcMarkSweepGC -XX:MaxPermSize=192m -Xms128m -Xmx512m"/>
-				<args/>
-			</java>
-		</sequential>
-	</macrodef>
-
-	
-        <!-- Diffeent jboss-cli.sh on Windows and Linux -->
+        <!-- Diffent jboss-cli.sh on Windows and Linux -->
         <condition property="jbosscliexe" value="jboss-cli.bat" else="jboss-cli.sh">
             <os family="windows"/>
         </condition>	
@@ -671,4 +450,3 @@
             </sequential>
         </macrodef>
 </project>
-

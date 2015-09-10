@@ -4,7 +4,19 @@
             This file sets the property defaults. Included from other files. 
     </description>
 
-	
+	<!-- Validate basic build requirements before we do anything else. -->
+	<fail message="Java 7+ is required to build EJBCA.">
+		<condition>
+			<or>
+				<equals arg1="${ant.java.version}" arg2="1.5"/>
+				<equals arg1="${ant.java.version}" arg2="1.6"/>
+			</or>
+		</condition>
+	</fail>
+	<fail message="Apache Ant 1.8+ is required to build EJBCA">
+	     <condition><not><antversion atleast="1.8" /></not></condition>
+	</fail>
+
 	<!--
 		Merge custom modifications from customejbca.home to
 		ejbca.home before reading the other configuration files.
@@ -78,32 +90,22 @@
     </condition>
 	
 	<!-- Auto-detect supported application server type -->
-	<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
-	<available file="${appserver.home}/client/cxf-api.jar" property="appserver.subtype" value="jboss6"/>
 	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jboss7"/>
 	<!-- WildFly 8 snd 9 is same as JBoss EAP 6 for building -->
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jbosseap6"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/glassfish/lib/javaee.jar" property="appserver.type" value="glassfish"/>
-	<available file="${appserver.home}/lib/appserv-ext.jar.jar" property="appserver.subtype" value="glassfish2"/>
 	<available file="${appserver.home}/modules/bean-validator.jar" property="appserver.subtype" value="glassfish3"/>
 	<available file="${appserver.home}/glassfish/lib/appserv-rt.jar" property="appserver.subtype" value="glassfish4"/>
-	<available file="${appserver.home}/wlserver_10.3/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
-	<available file="${appserver.home}/lib/commandlineutils.jar" property="appserver.type" value="websphere"/>
-	<!-- Not yet tested:
-		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
-	-->
 	<property name="appserver.type.detected.errormessage"
-		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, Glassfish 4.0, JBoss 5.1.0.GA, JBoss EAP 5.1, JBoss 6.0, JBoss 7.1.1, JBoss EAP 6.1, 6.2, 6.3, 6.4, WildFly 8 and 9, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
+		value="'appserver.type' could not be detected or is not configured. Glassfish 3.1, Glassfish 4.0, JBoss 7.1.1, JBoss EAP 6.1, 6.2, 6.3, 6.4, WildFly 8 and 9 can be detected. (Is 'appserver.home' configured?)"/>
 	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message"/>
 	
 	<condition property="bundle-hibernate-jpa">
 		<or>
 			<matches pattern="glassfish" string="${appserver.type}"/>
-			<matches pattern="weblogic" string="${appserver.type}"/>
-			<matches pattern="websphere" string="${appserver.type}"/>
 			<!-- ... -->
 		</or>
 	</condition>
@@ -118,7 +120,6 @@
 
 	<condition property="exclude-xerces">
 		<or>
-			<matches pattern="jboss6" string="${appserver.subtype}"/>
 			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
 			<matches pattern="glassfish" string="${appserver.type}"/>
@@ -128,7 +129,6 @@
 
 	<condition property="exclude-xalan">
 		<or>
-			<matches pattern="jboss6" string="${appserver.subtype}"/>
 			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
 			<!-- ... -->
@@ -137,7 +137,6 @@
 
 	<condition property="exclude-serializer">
 		<or>
-			<matches pattern="jboss6" string="${appserver.subtype}"/>
 			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
 			<!-- ... -->
@@ -147,8 +146,6 @@
 	<!-- Automatically determine DataSource JNDI name prefix from application server type -->
 	<condition property="datasource.jndi-name-prefix" value="java:/"><equals arg1="jboss" arg2="${appserver.type}"/></condition>
 	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="glassfish" arg2="${appserver.type}"/></condition>
-	<condition property="datasource.jndi-name-prefix" value=""><equals arg1="weblogic" arg2="${appserver.type}"/></condition>
-	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
 
    <!-- Finally we read in default properties from file. This should be done last since a few settings above
          are automagically detected based on appserver-type for instance -->
