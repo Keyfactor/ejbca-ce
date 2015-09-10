@@ -8,9 +8,9 @@
 <section name="EJBCA Installation">
 <p>
 EJBCA is a fully functional Certificate Authority built in Java.
-Based on JEE5 technology it constitutes a robust, high
+Based on JEE6 technology it constitutes a robust, high
 performance and component based CA. Both flexible and platform independent,
-EJBCA can be used standalone or integrated in any JEE5 application.
+EJBCA can be used standalone or integrated in any JEE6 application.
 </p><p>
 The EJBCA Homepage can be found at <a href="http://www.ejbca.org/">http://www.ejbca.org</a>.
 Information about contacting the EJBCA team, contributing to
@@ -421,6 +421,8 @@ It is not enough to pass JEE validation in order to run onn all application serv
 <li>WebSphere: Does not work. Has worked with one version of EJBCA in the past.</li>
 <li>Geronimo: Not supported yet.</li>
 <li>JoNaS: Not supported yet.</li>
+<li>TomEE+: Not tested yet.</li>
+<li>Payara: Not tested yet.</li>
 </ol>
 </p>
 
@@ -664,6 +666,15 @@ This is supposed to ensure that it will not fill up the memory as it did in JBos
 <br/>
 If persisted timers needs to be removed in JBoss 7 the directory <i>jboss/standalone/data/timer-service-data</i> can simply be deleted.
 </p>
+</subsubsection>
+
+<subsubsection name="JBoss7/EAP6 deployment timeout">
+In the case the deployment fails to complete within 60 seconds it will fail. You can increase this timeout with:
+<source>
+/subsystem=deployment-scanner/scanner=default:write-attribute(name=deployment-timeout,value=300) 
+</source>
+Unless there is a clear reason why this takes longer than 60 seconds (for example an HSM waiting for human input, or a <i>very</i> slow server,
+check that database indexes are applied and that your network and any used DNS server is fully operational. 
 </subsubsection>
 
 <subsubsection name="XKMS">
@@ -1073,238 +1084,23 @@ of $APPSRV_HOME/[directory].
 </subsubsection>
 </subsection>
 
-<subsection name="Weblogic">
-<note>EJBCA 5.x has never been officially deployed on Weblogic. 
-The below notes can work as hints for anyone interested in Weblogic.</note>
-<p>
-WebLogic Server 10 is JEE5 certified. EJBCA has been tested with Oracle WebLogic Server 10.3.4.0 generic distribution,
-Oracle JDK 6 and Oracle Database 10.2.0.1-1.0 XE on Ubuntu Server 10.10 i686.
-</p>
-<p>
-Email notifications are still untested and the old instructions are kept for reference.
-</p>
-
-<subsubsection name="Configure EJBCA">
-<p>
-The following must be configured for WebLogic:
-<ol>
-<li>conf/ejbca.properties: 'appserver.home' should be pointing to where weblogic is installed. (weblogic.jar is located under ${appserver.home}/wlserver_10.3/server/lib)</li>
-<li>conf/database.properties: configure accoring to the used database</li>
-<li>conf/web.properties: httpserver.pubhttp=7001</li>
-<li>conf/web.properties: httpserver.privhttps=7002</li>
-<li>conf/mail.properties: mail.jndi-name=mail/EjbcaMail</li>
-<li>conf/jndi.properties.weblogic: modify the principal and credentials according to you weblogic
-    domain's setting (same as the user name/password to login weblogic console).
-    The default in the EJBCA installation is weblogic/foobar123.
-</li>
-<li>conf/log4j-weblogic.xml: Path and log-levels for EJBCA specific logging.</li>
-</ol>
-</p>
-<p>
-If you had issued an 'ant' command before, it is now important to do 'ant clean' before building again.
-Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
-</p>
-</subsubsection>
-
-<subsubsection name="Configure Weblogic">
-<p>
-<ol>
-<li>Access the Weblogic management console at: http://127.0.0.1:7001/console/</li>
-<li>Services -> DataSources:<br/>
-Create a new Generic DataSource "EjbcaDS" with JNDI name "EjbcaDS" of type "Oracle".
-(The URL for the pool should be something like "jdbc:oracle:thin:@127.0.0.1:1521:XE" for Oracle XE.)</li>
-<li>Deployments -> Install -> wlserver_10.3/common/deployable-libraries/jsf-1.2.war as a library named "jsf".</li>
-<li>Increase transaction timeout: Services -> JTA -> Timeout Seconds=300</li>
-<li>Create a new java mail session for user notification in EndEntityManagementSessionBean. In Weblogic, the JNDI name should
- be "mail/EjbcaMail" (same as you configured in mail.properties).<br/>
-key in the properties:
-  <pre>
-  mail.store.protocol=pop3
-  mail.transport.protocol=smtp
-  mail.user=foouser
-  mail.pop3.host=pop.foo.com
-  mail.smtp.host=smtp.foo.com
-  mail.smtp.port=25
-  mail.smtp.auth=false
-  mail.smtp.starttls.enable=false
-  mail.from=foouser@foo.com
-  mail.debug=false
-  </pre>
-  Do not forget to activate the mail session in you target server.
-  </li>
-</ol>
-</p>
-</subsubsection>
-
-<subsubsection name="Deploy and setup">
-<p>
-<ol>
-<li>Deploy EJBCA: Install "$EJBCA_HOME/dist/ejbca.ear" that you built with Ant. It should deploy straight away without errors.</li>
-<li>Run 'ant install' to do the installation. Everything should work here with no errors. 
-   If you get errors these must be resolved before we can move on.<br/>
-   The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, and can not be run again 
-   (it will give an error if you try).</li>
-
-<li>Configure SSL in Weblogic:<br/>
-<ol>
-<li>Go to Environment -> Servers -> AdminServer -> KeyStores</li>
-<li>KeyStores: Custom Identity and Custom Trust</li>
-<li>Custom Identity Keystore: /path/ejbca/p12/tomcat.jks</li>
-<li>Custom Identity Keystore Passphrase: serverpwd (httpsserver.password in conf/web.properties)</li>
-<li>Custom Trust Keystore: /path/ejbca/p12/truststore.jks</li>
-<li>Custom Trust Keystore Passphrase: changeit (java.trustpassword in conf/web.properties)</li>
-<li>Go to Environment -> Servers -> AdminServer -> SSL</li>
-<li>Click Advanced</li>
-<li>Two Way Client Cert Behavior: Client Certs Requested But Not Enforced</li>
-<li>Private Key Alias: localhost (httpsserver.hostname in conf/web.properties)</li>
-<li>Private Key Passphrase: Same as in 'Custom Identity Keystore Passphrase' above.</li>
-<li>Go to Environment -> Servers -> AdminServer -> General</li>
-<li>Check 'SSL Listen Port Enabled'</li>
-</ol>
-</li>
-</ol>
-This should make the Admin GUI work, note to install the  Unlimited Strength Jurisdiction Policy Files from java.sun.com 
-for both sun's JDK and BEA's JDK first before installation. For Weblogic 10.3 it wa possible to skip the installation of the
-bundled JDK's and use a pre-installed Sun JDK.
-</p>
-</subsubsection>
-
-</subsection>
-
-
-<subsection name="Websphere 7 (Incomplete)">
-<note>EJBCA 5.x has never been officially deployed on Webshpere. In general deploying on Websphere requires an unreasonable amount of time and effort.
-The below notes can work as hints for anyone interested in Websphere.</note>
-<p>
-EJBCA 4.0alpha2 has been tested with WebSphere AS for Developers 7.0.0.13, DB2 9.7.2 Express-C on RHEL 5.4 i386.
-</p>
-<p>
-After following these instructions, you will be able to build, deploy, start and install EJBCA.<br/>
-You will NOT be able to use database logs, EJBCA WS, XKMS or anything that requires serialization of Certificates over RMI.
-</p>
-<p>Install the Unlimited strength crypto policy files for the IBM java shipped with Websphere. 
-You need to download these files from IBM. The IBM policy files version 1.4.2 works with IBM JDK 6.</p>
-<p>WebSphere runs with IBM's JDK 6 and EJBCA should be compiled with this compiler as well.</p>
-<subsubsection name="Configure EJBCA">
-<p>
-Configure the following for a test setup:
-<ul>
-<li>conf/ejbca.properties#appserver.home=/opt/IBM/WebSphere/AppServer</li>
-<li>conf/database.properties#database.name=db2</li>
-<li>conf/log4j-websphere.xml (use conf/log4j-websphere.xml.sample)</li>
-<li>conf/web.properties#java.trustpassword=changeit</li>
-<li>conf/web.properties#superadmin.cn=SuperAdmin</li>
-<li>conf/web.properties#superadmin.dn=CN=${superadmin.cn}</li>
-<li>conf/web.properties#superadmin.password=ejbca</li>
-<li>conf/web.properties#httpsserver.password=serverpwd</li>
-<li>conf/web.properties#httpsserver.hostname=localhost</li>
-<li>conf/web.properties#httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE</li>
-<li>conf/web.properties#httpserver.pubhttp=9080</li>
-<li>conf/web.properties#httpserver.privhttps=9443</li>
-<li>conf/mail.properties#mail.jndi-name=EjbcaMail</li>
-<li>conf/xkms.properties#xkms.enabled=true</li>
-<li>conf/jndi.properties.websphere Set the currect port from Servers->Application servers->server1 (your server)->Ports->BOOTSTRAP_ADDRESS.</li>
-</ul>
-Build EJBCA with 'ant clean' and 'ant'.<br/>
-</p>
-</subsubsection>
-
-<subsubsection name="WebService API">
-<p>
-WebSphere 7 does not automatically expose @WebService annotated Sesison Beans. A tool bundled with WAS
-(endptEnabler.sh) will be invoked during the build to generate the WAR and add it to the "ejbca.ear" file.
-<br/>
-The wsdl is accessible using the url: https://127.0.0.1:9443/ejbca/ejbcaws/ejbcaws?wsdl
-</p>
-</subsubsection>
-
-<subsubsection name="Configure Websphere">
-<p>
-Configure Websphere in the admin console.
-<ol>
-<li>
-Navigate to 'Resources->Mail->Mail sessions' and create a new MailSession called 'MailSession' with jndiName same
-as mail.jndi-name configured in conf/mail.properties (EjbcaMail).</li>
-<li>Setup JDBC Provider under "Resources → JDBC → JDBC Providers":
-<ul>
-<li>Scope: node01, server1</li>
-<li>Database type: DB2</li>
-<li>Provider type: DB2 Universal JDBC Driver Provider</li>
-<li>Implementation type: Connection pool data source</li>
-<li>${DB2UNIVERSAL_JDBC_DRIVER_PATH}: /opt/IBM/WebSphere/AppServer/deploytool/itp/plugins/com.ibm.datatools.db2_2.1.102.v20091026_1945/driver</li>
-<li>${DB2UNIVERSAL_JDBC_DRIVER_NATIVEPATH} : /opt/IBM/WebSphere/AppServer/deploytool/itp/plugins/com.ibm.datatools.db2_2.1.102.v20091026_1945/driver</li>
-</ul>
-(the paths depend on where the jdbc-driver is available)
-</li> 
-<li>Setup DataSource (DB2 database running on the same machine):
-<ul>
-<li>Scope: node01, server1</li>
-<li>Data source name: EjbcaDS</li>
-<li>JNDI Name: jdbc/EjbcaDS</li>
-<li>Select an existing JDBC provider: DB2 Universal...</li>
-<li>Driver type: 4</li>
-<li>Database name: ejbca</li>
-<li>Server name: 127.0.0.1</li>
-<li>Port number: 50000</li>
-<li>Click on the EjbcaDS DataSource -> JAAS - J2C authentication data -> New</li>
-<li>Alias: &lt;database username&gt;</li>
-<li>UserId: &lt;database username&gt;</li>
-<li>Password: &lt;database password&gt;</li>
-<li>Save</li>
-<li>Go back to the DataSource and select the new authentication info for "Component-managed authentication alias". Save.</li>
-<li>Edit custom properties for the DataSource and set isolation level to 2.</li>
-</ul>
-</li> 
-</ol>
-</p>
-</subsubsection>
-
-<subsubsection name="Deploy and setup">
-<p>
-Log into the admin console of Websphere to deploy EJBCA.
-<ol>
-<li>Install new application.</li>
-<li>Select ejbca.ear and 'Fast Path' and click next.</li>
-<ul>
-<li>Precompile JavaServer Pages files</li>
-<li>Distribute app</li>
-<li>Deploy enterprise beans</li>
-<li>Deploy Web services</li>
-<li>Process embedded configuration</li>
-<li>Allow EJB reference targets to resolve automatically</li>
-</ul>
-<li>Click next until it is install. Save.</li>
-<li>Start application.</li>
-<li>Now you can run 'ant install' to install EJBCA.</li>
-</ol>
-</p>
-<p>
-Efter deployment and installation you want to configure SSL in Websphere so you can access the Admin-GUI in EJBCA. 
-The admin-GUI in EJBCA requires client certificate authentication.  
-<br/>Configure the SSL port to require client certificate in order to access the admin-GUI:
-<ol>
-  <li>Navigate to Security -> SSL certificate and key management -> NodeDefaultSSLSettings -> Quality of protection (QoP) settings: Client authentication=Supported</li>
-  <li>Navigate to Security -> SSL certificate and key management -> Key stores and certificates<br/>
-  NodeDefaultKeyStore=/usr/local/ejbca/p12/tomcat.jks<br/>
-  NodeDefaultTrustStore=/usr/local/ejbca/p12/truststore.jks<br/>
-  </li>
-</ol>
-After this you should be able to (but cannot) access the EJBCA Admin GUI after installing $EJBCA_HOME/p12/superadmin.p12 in your browser.
-</p>
-<p>
-Public web will be at: http://127.0.0.1:9080/ejbca/ and https://127.0.0.1:9443/ejbca/<br/>
-Admin web will be at: https://127.0.0.1:9443/ejbca/adminweb/
-</p>
-</subsubsection>
-</subsection>
-
 </section>
 
 <section name="Transaction timouts">
 <p>In some cases, either if you have a slow machine or very large data sets, some common operations can take a long time to complete. The default transaction timout of 
 the application servers may then not be enough.</p>
-<subsection name="Weblogic">
-<p>In weblogic you change the default transaction timeout in the admin console. <i>Services -&gt; JTA -&gt; Timeout Seconds</i></p>
+<p>Normally CRL generation and other known long running operation already have larger transaction timout from configuration in</p>
+<source>
+modules/cesecore-ejb/src/META-INF/jboss-ejb3.xml
+modules/ejbca-ejb/resources/jboss-ejb3.xml
+</source>
+<subsection name="JBoss 7 / EAP 6">
+The default transaction timout is 300 seconds. To change this to 600 seconds, run
+<source>
+/subsystem=transactions/:write-attribute(name=default-timeout,value=600)
+</source>
+<source>
+</source>
 </subsection>
 </section>
 
