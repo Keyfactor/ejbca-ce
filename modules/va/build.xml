@@ -124,7 +124,9 @@
     	<copy file="${jndi.properties.file}" tofile="${build-test.dir}/jndi.properties" failonerror="false"/>
 		<copy file="${jboss-ejb-client.properties}" todir="${build-test.dir}" failonerror="true"/>
     	<javac srcdir="${publisher.src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
-    	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
+    	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
+			<sourcepath location="${mod.systemtests.path}/src-test/"/>
+    	</javac>
     </target>
 	
 	<target name="test" depends="tests-compile">
