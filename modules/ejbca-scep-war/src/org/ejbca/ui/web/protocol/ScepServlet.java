@@ -419,6 +419,8 @@ public class ScepServlet extends HttpServlet {
                         log.debug("CA was not found: "+caname);
                     }
                 }
+                // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
+                // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.
                 response.getOutputStream().print(hasRolloverCert ?
                         "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1" :
                         "POSTPKIOperation\nRenewal\nSHA-1");

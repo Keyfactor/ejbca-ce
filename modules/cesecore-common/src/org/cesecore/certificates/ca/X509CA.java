@@ -525,7 +525,7 @@ public class X509CA extends CA implements Serializable {
             throw new SignRequestSignatureException("Could not encode certificate", e);
         } 
         try {
-            CMSTypedData msg = new CMSProcessableByteArray("EJBCA".getBytes());
+            CMSTypedData msg = new CMSProcessableByteArray(new byte[0]);
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             if (privateKey == null) {
@@ -585,12 +585,12 @@ public class X509CA extends CA implements Serializable {
             log.debug("createPKCS7Rollover: Creating a rollover chain with "+certList.size()+" certificates.");
         }
         try {
-            CMSTypedData msg = new CMSProcessableByteArray("EJBCA".getBytes());
+            CMSTypedData msg = new CMSProcessableByteArray(new byte[0]);
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-            // We always sign with the current key, even during rollover, so the new key can be linked to the old key.
+            // We always sign with the current key, even during rollover, so the new key can be linked to the old key. SCEP draft 23, "4.6.1.  Get Next CA Response Message Format"
             final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             if (privateKey == null) {
-                String msg1 = "createPKCS7Rollover: Private key does not exist!";
+                final String msg1 = "createPKCS7Rollover: Private key does not exist!";
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
