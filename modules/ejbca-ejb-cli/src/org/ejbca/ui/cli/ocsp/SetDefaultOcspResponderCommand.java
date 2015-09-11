@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.ocsp;
 
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -104,9 +106,15 @@ public class SetDefaultOcspResponderCommand extends EjbcaCliUserCommandBase {
         Set<String> knownDNs = new HashSet<String>();
         for(InternalKeyBindingInfo info : internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAuthenticationToken(), OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
             if(info.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
-                Certificate certificate = certificateStoreSession.findCertificateByFingerprint(info.getCertificateId());
-                ikbContents.add(new String[]{info.getName(), CertTools.getIssuerDN(certificate)});
-                knownDNs.add(CertTools.getIssuerDN(certificate));
+                String certEncoded = certificateStoreSession.findCertificateByFingerprintRemote(info.getCertificateId());
+                Certificate certificate;
+                try {
+                    certificate = CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()));
+                    ikbContents.add(new String[]{info.getName(), CertTools.getIssuerDN(certificate)});
+                    knownDNs.add(CertTools.getIssuerDN(certificate));
+                } catch (CertificateParsingException e) {
+                    log.warn("WARNING: CLI could not parse certificate: "+e.getMessage());
+                }
             }
         }
         if(!ikbContents.isEmpty()) {
