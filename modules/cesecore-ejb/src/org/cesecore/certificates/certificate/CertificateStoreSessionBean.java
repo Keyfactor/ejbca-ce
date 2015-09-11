@@ -855,6 +855,27 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return ret;
     }
     
+    @Override
+    public String findCertificateByFingerprintRemote(String fingerprint) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findCertificateByFingerprintBase64()");
+        }
+        String ret = null;
+        try {
+            CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
+            if (res != null) {
+                ret = res.getBase64Cert(entityManager);
+            }
+        } catch (Exception e) {
+            log.error("Error finding certificate with fp: " + fingerprint);
+            throw new EJBException(e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<findCertificateByFingerprintBase64()");
+        }
+        return ret;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public Collection<Certificate> findCertificatesBySubjectKeyId(byte[] subjectKeyId) {

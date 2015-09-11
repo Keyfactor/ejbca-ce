@@ -56,4 +56,11 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
     void storeCertificateRemote(AuthenticationToken admin, String b64Cert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException, CertificateParsingException;
 
+    /**
+     * Finds a certificate by fingerprint (remote EJB interface, supports unnamed ECC and Brainpool)
+     * @param fingerprint Fingerprint of certificate
+     * @return BASE64 encoded certificate, or null if no certificate was found.
+     */
+    String findCertificateByFingerprintRemote(String fingerprint);
+
 }

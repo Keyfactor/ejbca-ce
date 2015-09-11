@@ -23,6 +23,7 @@ import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -100,10 +101,11 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
         try {
             boolean foundCertificateOnHold = false;
             // Find all user certs
-            List<Certificate> certificates = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                    .findCertificatesByUsername(username);
+            List<CertificateDataWrapper> certificates = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                    .getCertificateDataByUsername(username);
             if (certificates != null) {
-                for (Certificate cert : certificates) {
+                for (CertificateDataWrapper certWrapper : certificates) {
+                    Certificate cert = certWrapper.getCertificate();
                     BigInteger serialNumber = CertTools.getSerialNumber(cert);
                     String issuerDN = CertTools.getIssuerDN(cert);
                     if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(issuerDN, serialNumber).revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {

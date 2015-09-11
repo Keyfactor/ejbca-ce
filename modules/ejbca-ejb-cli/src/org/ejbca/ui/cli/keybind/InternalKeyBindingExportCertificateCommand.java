@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.keybind;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -23,6 +24,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -70,7 +73,8 @@ public class InternalKeyBindingExportCertificateCommand extends RudInternalKeyBi
                 getLogger().error("There is no certificate bound to Internal key binding with id "+internalKeyBindingId+".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            final Certificate cert = certStoreSession.findCertificateByFingerprint(fp);
+            final String certEncoded = certStoreSession.findCertificateByFingerprintRemote(fp);
+            final Certificate cert = CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()));;
             if (cert == null) {
                 getLogger().error("Certificate with fingerprint "+fp+" does not exist.");
                 return CommandResult.FUNCTIONAL_FAILURE;
@@ -82,6 +86,8 @@ public class InternalKeyBindingExportCertificateCommand extends RudInternalKeyBi
             return CommandResult.SUCCESS;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write PEM format certificate to \"" + filename + "\". " + e.getMessage());
+        } catch (CertificateParsingException e) {
+            throw new IllegalStateException("CLI could not parse certificate. " + e.getMessage());
         }
     }
 

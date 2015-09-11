@@ -199,7 +199,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
-        if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint) != null) {
+        if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).findCertificateByFingerprintRemote(fingerprint) != null) {
             errorString.append("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' is already present.\n");
         }
         // Certificate has expired, but we are obviously keeping it for archival purposes

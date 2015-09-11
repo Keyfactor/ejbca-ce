@@ -52,6 +52,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -185,8 +186,9 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                                     missing_user_name, EndEntityConstants.STATUS_REVOKED);
                             log.info("User '" + missing_user_name + "' has been updated.");
                         }
+                        final String b64cert = new String(Base64.encode(certificate.getEncoded()));
                         EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(),
-                                certificate, missing_user_name, fingerprint, CertificateConstants.CERT_ACTIVE,
+                                b64cert, missing_user_name, fingerprint, CertificateConstants.CERT_ACTIVE,
                                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null,
                                 new Date().getTime());
                         log.info("Dummy certificate  '" + serialHex + "' has been stored.");

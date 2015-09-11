@@ -14,12 +14,12 @@
 package org.ejbca.ui.cli.ra;
 
 import java.math.BigInteger;
-import java.security.cert.Certificate;
 
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -90,11 +90,11 @@ public class RevokeCertificateCommand extends BaseRaCommand {
             getLogger().error("ERROR: Reason must be an integer between 0 and 10 except 7.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } else {
-            Certificate cert = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).findCertificateByIssuerAndSerno(
+            CertificateDataWrapper certWrapper = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateDataByIssuerAndSerno(
                     issuerDN, serno);
-            if (cert != null) {
+            if (certWrapper != null) {
                 getLogger().info("Found certificate:");
-                getLogger().info("Subject DN=" + CertTools.getSubjectDN(cert));
+                getLogger().info("Subject DN=" + certWrapper.getCertificateData().getSubjectDN());
                 // We need the user this cert is connected with
                 // Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
                 // that was permanently revoked
