@@ -611,7 +611,15 @@ public class X509CA extends CA implements Serializable {
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
                 log.debug("createPKCS7Rollover: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
-                s = gen.generate(msg, true);
+                // Don't encapsulate any content, i.e. the bytes in the message. This makes data section of the PKCS#7 message completely empty.
+                // BER Sequence
+                //   ObjectIdentifier(1.2.840.113549.1.7.1)
+                // Instead of 
+                // BER Sequence
+                //   ObjectIdentifier(1.2.840.113549.1.7.1)
+                //   BER Tagged [0]
+                //     BER Constructed Octet String[0] 
+                s = gen.generate(msg, false);
             } else {
                 String msg1 = "CA Token does not exist!";
                 log.debug(msg1);
