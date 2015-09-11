@@ -342,13 +342,16 @@ public class ScepServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA certificates found.");
                 }
             } else if (operation.equals("GetCACertChain")) {
+                // GetCACertChain was included in SCEP draft 18, "5.6.  Get Certificate Authority Certificate Chain"
+                // This dissapeared on SCEP draft 19 however, so we should not expect any clients to use this method.
+                
                 // The response for GetCACertChain is a certificates-only PKCS#7 
                 // SignedDatato carry the certificates to the end entity, with a 
                 // Content-Type of application/x-x509-ca-ra-cert-chain.
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 final String caname = getCAName(message);
-                log.debug("Got SCEP pkcs7 request for CA '" + caname + "'");
+                log.debug("Got SCEP pkcs7 request for CA '" + caname + "'. Old client using SCEP draft 18?");
   
                 CAInfo cainfo = casession.getCAInfo(administrator, caname);
                 byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
