@@ -353,16 +353,6 @@
         </fileset>
 	</path>
 
-	<!-- When we moved to Hibernate 4.1 we also need to have older hibernate libs 
-	on the classpath in some cases, when we use detached entities as parameters/return values in remote EJB calls.
-	This is because these depends on the hibernate of the appserver, and jboss 5 and 6 uses older versions of hibernate.
-	This can be removed once we don't have to support jboss 5 and 6 any more -->
-	<path id="lib.hibernate.compatibility.classpath">
-        <fileset dir="${ejbca.home}/lib/hibernate/compatibility">
-            <include name="*.jar"/>
-        </fileset>
-	</path>
-
 	<path id="lib.clientToolBox.classpath">
         <path location="${mod.clientToolBox.dist}/properties" />
         <path location="${mod.clientToolBox.lib}" />
