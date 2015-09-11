@@ -272,6 +272,11 @@
        	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
        	<include name="org/ejbca/core/model/ca/publisher/*PublisherContainer.java"/>
         <include name="org/ejbca/core/model/ca/publisher/custpubl*/*.java"/>
+                <include name="org/ejbca/core/model/ra/raadmin/validators/*.java"/>
+                <include name="org/ejbca/core/model/ra/raadmin/validators/RegexFieldValidator.java"/>
+                <include name="org/ejbca/core/model/ra/raadmin/EndEntityFieldValidator.java"/>
+                <include name="org/ejbca/core/model/ra/raadmin/EndEntityFieldValidatorException.java"/>
+                <include name="org/ejbca/core/model/ra/raadmin/EndEntityValidationHelper.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
 		<include name="org/ejbca/core/model/hardtoken/profiles/*Profile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
