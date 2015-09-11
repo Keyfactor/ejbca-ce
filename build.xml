@@ -466,6 +466,8 @@
         	<!-- The place where to find plugins -->
 		    <zipfileset dir="${ejbca.plugin.gen.path}" erroronmissingdir="false"/>
             <zipfileset prefix="lib" dir="${lib}">
+                <include name="bcpkix-jdk15on-152.jar"/>
+                <include name="bcprov-jdk15on-152.jar"/>
                 <include name="cert-cvc-1.4.2.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
