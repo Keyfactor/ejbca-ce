@@ -62,7 +62,6 @@
 	<path id="systemtests.classpath">
 		<path refid="systemtests.classpath.nojee"/>
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.hibernate.compatibility.classpath"/>
 	</path>
 	
 	<path id="interfaces.classpath">
