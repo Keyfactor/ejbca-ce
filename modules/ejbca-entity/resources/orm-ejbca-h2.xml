@@ -15,10 +15,11 @@
 
  version: $Id$
  -->
-<entity-mappings version="1.0"
-    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+<entity-mappings version="2.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm
+                        http://java.sun.com/xml/ns/persistence/orm_2_0.xsd">
 
     <!-- 
          This file contains mappings specific to H2 DB (similar to Hypersonic).
