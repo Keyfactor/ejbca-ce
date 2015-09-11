@@ -534,7 +534,8 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param entityManager To be used if the cert is in the {@link Base64CertData} table.
      * @return The certificate
      */
-    private String getBase64Cert(EntityManager entityManager) {
+    @Transient
+    public String getBase64Cert(EntityManager entityManager) {
         if ( this.base64Cert!=null && this.base64Cert.length()>0 ) {
             return this.base64Cert; // the cert was in this table.
         }
@@ -1126,7 +1127,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setParameter("issuerDN", issuerDN);
         return getCertificateList(query.getResultList(), entityManager);
     }
-
+    
     /** @return the CertificateInfo representation (all fields except the actual cert) or null if no such fingerprint exists. */
     public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
         CertificateInfo ret = null;

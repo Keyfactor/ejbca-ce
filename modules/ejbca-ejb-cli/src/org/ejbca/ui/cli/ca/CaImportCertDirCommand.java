@@ -35,6 +35,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -354,7 +355,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
             CAInfo caInfo, String filename, String issuer, String username, final RevocationReasons revocationReason, final Date revocationTime) throws Exception {
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        if (certificateStoreSession.findCertificateByFingerprint(fingerprint) != null) {
+        if (certificateStoreSession.findCertificateByFingerprintRemote(fingerprint) != null) {
             log.info("SKIP: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate) + "' is already present, file: " + filename);
             return STATUS_REDUNDANT;
         }
@@ -399,7 +400,8 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         endEntityManagementSession.changeUser(getAuthenticationToken(), userdata, false);
         log.info("User '" + username + "' has been updated.");
         // Finally import the certificate and revoke it if necessary
-        certificateStoreSession.storeCertificateRemote(getAuthenticationToken(), certificate,
+        final String b64cert = new String(Base64.encode(certificate.getEncoded()));
+        certificateStoreSession.storeCertificateRemote(getAuthenticationToken(), b64cert,
                 username, fingerprint, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null,
                 now.getTime());
         if (status == CertificateConstants.CERT_REVOKED) {
