@@ -499,14 +499,14 @@ org.cesecore.authorization.control.AccessControlSession
 		<h:dataTable value="#{systemConfigMBean.availableExtendedKeyUsages}" var="eku"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
-   				<f:facet name="header"><h:outputText value="OID"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
 				<h:outputText value="#{eku.oid}" title="#{eku.oid}"/>
 				<f:facet name="footer">
 					<h:inputText id="currentOid" value="#{systemConfigMBean.currentEKUOid}" />
 				</f:facet>
 			</h:column>
 			<h:column>
-   				<f:facet name="header"><h:outputText value="Readable Text"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
 				<h:outputText value="#{eku.name}"/>
 				<f:facet name="footer">
 					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}">
@@ -532,15 +532,15 @@ org.cesecore.authorization.control.AccessControlSession
 		<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
-   				<f:facet name="header"><h:outputText value="ID"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.ID}"/></f:facet>
 				<h:outputText value="#{extension.id}" title="#{extension.id}"/>
 			</h:column>
 			<h:column>
-   				<f:facet name="header"><h:outputText value="OID"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
 				<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>
 			</h:column>
 			<h:column>
-   				<f:facet name="header"><h:outputText value="Display Name"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
 				<!-- <h:outputText value="#{extension.displayName}"/> -->
 				<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=#{extension.id}">
 					<h:outputText value="#{extension.displayName}"/>
