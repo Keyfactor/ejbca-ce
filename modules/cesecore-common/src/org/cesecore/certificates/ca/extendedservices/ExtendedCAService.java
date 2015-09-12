@@ -75,8 +75,8 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * Initializes the ExtendedCAService the first time it is created. Only used when the CA service is created the first time, usually this is when
      * the CA is created, or the service of the CA is renewed.
      * 
-     * @param ca
-     *            the CA from which the service can use private keys to generate service certificates etc. This must not be stored.
+     * @param ca the CA from which the service can use private keys to generate service certificates etc. This must not be stored.
+     * @param cceConfig containing a list of available custom certificate extensions
      */
     public abstract void init(final CryptoToken cryptoToken, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception;
 

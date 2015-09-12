@@ -786,6 +786,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param certProfile
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
+     * @param cceConfig containing a list of available custom certificate extensions
      * @return
      * @throws Exception
      */
@@ -819,6 +820,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
      * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
+     * @param cceConfig containing a list of available custom certificate extensions
      * @return the generated certificate
      * 
      * @throws CryptoTokenOfflineException if the crypto token was unavailable
@@ -943,7 +945,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * Initializes the ExtendedCAService
      * 
-     * @param info contains information used to activate the service.
+     * @param cryptoToken the cryptotoken used to initiate the service
+     * @param type the type of the extended key service
+     * @param ca the CA used to initiate the service
+     * @param cceConfig containing a list of available custom certificate extensions
      */
     public void initExtendedService(CryptoToken cryptoToken, int type, CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
         ExtendedCAService service = getExtendedCAService(type);

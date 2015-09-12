@@ -1057,9 +1057,8 @@ The meaning of Extended key usage is defined in <a href="http://www.ietf.org/rfc
 Normally the values specified in the fixed certificate profiles are good for the usage the fixed profile is for. 
 </p>
 <p>
-You can define your own extended key usages very simple. Edit the file EJBCA_HOME/conf/extendedkeyusage.properties and add your custom 
-extended key usages in the end. Be sure to follow the numbering. 
-After editing the file, simply build and re-deploy EJBCA (ant clean; ant deploy).
+You can define your own extended key usages very simple. In the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web, 
+add your custom extended key usage's OIDs and readable name. After adding the new key usage, it can be chosen in the 'Edit Certificate Profile' page.
 </p>
 </subsubsection>
 
