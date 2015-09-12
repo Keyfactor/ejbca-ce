@@ -53,7 +53,7 @@ public class AvailableCustomCertExtensionsConfigTest {
     @Before
     public void setUp() {
         cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession.
-                getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+                getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
     }
     
     @After
@@ -140,7 +140,7 @@ public class AvailableCustomCertExtensionsConfigTest {
                 
         globalConfigSession.saveConfiguration(alwaysAllowToken, cceConfig);
         AvailableCustomCertificateExtensionsConfiguration cceConfig2 = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession.
-                getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+                getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
 
         for(int i=0; i<150; i++) {
             CertificateExtension ext = cceConfig2.getCustomCertificateExtension(i);

@@ -28,7 +28,7 @@ import org.cesecore.configuration.ConfigurationBase;
 public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase implements Serializable{
 
     private static final long serialVersionUID = -3430732247486886608L;
-    public static final String AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID = "AVAILABLE_EXTEENDED_KEY_USAGES";
+    public static final String CONFIGURATION_ID = "AVAILABLE_EXTEENDED_KEY_USAGES";
     
     /** Creates a new instance of AvailableExtendedKeyUsagesConfiguration */
     public AvailableExtendedKeyUsagesConfiguration()  {
@@ -43,7 +43,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     
     @Override
     public String getConfigurationId() {
-        return AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID;
+        return CONFIGURATION_ID;
     }
     
     /**

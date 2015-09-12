@@ -109,9 +109,9 @@ public class ClearCacheServlet extends HttpServlet {
                             log.debug("CMP Configuration cache cleared.");
                         } else if (ScepConfiguration.SCEP_CONFIGURATION_ID.equals(globalConfigurationId)) {
                             log.debug("SCEP Configuration cache cleared.");
-                        } else if (AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID.equals(globalConfigurationId)) {
+                        } else if (AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID.equals(globalConfigurationId)) {
                             log.debug("Available Extended Key Usages Configuration cache cleared.");
-                        } else if (AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID.equals(globalConfigurationId)) {
+                        } else if (AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID.equals(globalConfigurationId)) {
                             log.debug("Available Custom Certificate Extensions Configuration cache cleared.");
                         } else {
                             log.debug(globalConfigurationId + " Configuration cache cleared.");

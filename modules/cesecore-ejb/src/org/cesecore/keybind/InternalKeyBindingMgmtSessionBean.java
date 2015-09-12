@@ -867,7 +867,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         // Check that this is an accepted type of certificate from the one who knows (the implementation)
         internalKeyBinding.assertCertificateCompatability(certificate, 
-                (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID));
+                (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID));
     }
 
     /** @return true if a certificate with the specified certificateId (fingerprint) already exists in the database */

@@ -32,7 +32,6 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -362,14 +361,4 @@ public final class ConfigurationHolder {
         config.setProperty(key, value);
         return true;
     }
-    
-    public static boolean isConfigFileExist(String filename) {
-        for(String f : CONFIG_FILES) {
-            if(StringUtils.equalsIgnoreCase(f, filename)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }

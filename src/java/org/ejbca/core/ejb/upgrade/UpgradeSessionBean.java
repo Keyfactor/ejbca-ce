@@ -409,7 +409,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	migrateDatabase("/400_500/400_500-upgrade-"+dbtype+".sql");
     	
     	final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-    	        globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID );
+    	        globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID );
     	// fix CAs that don't have classpath for extended CA services
     	Collection<Integer> caids = caSession.getAllCaIds();
     	for (Integer caid : caids) {
