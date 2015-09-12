@@ -40,7 +40,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
     @Before
     public void setUp() {
         ekuConfigBackup = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
-                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
     }
     
     @After
@@ -79,7 +79,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
         globalConfigSession.saveConfiguration(alwaysAllowToken, ekuConfig);
         ekuConfig = null; // just to be sure
         ekuConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
-                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
 
         assertTrue(ekuConfig.isConfigurationInitialized());
         assertTrue(ekuConfig.isExtendedKeyUsageSupported("2.5.29.37.0"));
@@ -101,7 +101,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
         globalConfigSession.saveConfiguration(alwaysAllowToken, ekuConfig);
         ekuConfig = null; // just to be sure
         ekuConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
-                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         assertEquals(3, ekuConfig.getAllOIDs().size());
         assertFalse(ekuConfig.isExtendedKeyUsageSupported("2.16.840.1.113741.1.2.3"));
         assertFalse(ekuConfig.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.21"));
@@ -126,7 +126,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
         globalConfigSession.saveConfiguration(alwaysAllowToken, ekuConfig);
         ekuConfig = null; // just to be sure
         AvailableExtendedKeyUsagesConfiguration ekuConfig2 = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
-                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.AVAILABLE_EXTENDED_KEY_USAGES_CONFIGURATION_ID);
+                getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
 
         for(int i=0; i<150; i++) {
             oid = "1.3.15." + i + ".33.12";  // random string that looks like an oid

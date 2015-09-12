@@ -24,7 +24,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
 
     private static final long serialVersionUID = 7798273820046510706L;
     
-    public static final String AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID = "AVAILABLE_CUSTOM_CERT_EXTENSIONS";
+    public static final String CONFIGURATION_ID = "AVAILABLE_CUSTOM_CERT_EXTENSIONS";
     
     public AvailableCustomCertificateExtensionsConfiguration() {
         super();
@@ -38,7 +38,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     
     @Override
     public String getConfigurationId() {
-        return AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID;
+        return CONFIGURATION_ID;
     }
     
     /**
