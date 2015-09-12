@@ -609,7 +609,7 @@ public class ProtocolScepHttpTest {
     @Test
     public void test13ScepGetNextCACertSubCA() throws Exception {
         final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-                globalConfigSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.AVAILABLE_CUSTOM_CERTIFICATE_EXTENSTIONS_CONFIGURATION_ID);
+                globalConfigSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         final boolean wasEnforceUniqueDn = x509ca.isDoEnforceUniqueDistinguishedName();
         final CAInfo rootcainfo = x509ca.getCAInfo();
         rootcainfo.setDoEnforceUniqueDistinguishedName(false);
