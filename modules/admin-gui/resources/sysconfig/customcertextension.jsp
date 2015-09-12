@@ -49,7 +49,7 @@ org.cesecore.authorization.control.StandardRules
 		<h:commandButton action="#{customCertExtensionMBean.toggleCurrentExtensionEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!customCertExtensionMBean.currentExtensionEditMode) && cryptoTokenMBean.allowedToModify}"/>
 		<h:panelGroup id="placeholder1" rendered="#{customCertExtensionMBean.currentExtensionEditMode || !customCertExtensionMBean.allowedToModify}"/>
 		
-		<h:outputLabel for="currentCEId" value="#{web.text.CRYPTOTOKEN_ID}:"/>
+		<h:outputLabel for="currentCEId" value="#{web.text.ID}:"/>
 		<h:panelGroup id="currentCEId">
 			<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}"/>
 		</h:panelGroup>
@@ -60,7 +60,7 @@ org.cesecore.authorization.control.StandardRules
 	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 		</h:panelGroup>
 		
-		<h:outputLabel for="currentCEDisplayName" value="#{web.text.DISPLAYNAME}:"/>
+		<h:outputLabel for="currentCEDisplayName" value="#{web.text.LABEL}:"/>
 		<h:panelGroup id="currentCEDisplayName">
 	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
@@ -94,14 +94,14 @@ org.cesecore.authorization.control.StandardRules
 		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
-   				<f:facet name="header"><h:outputText value="Key"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.KEY}"/></f:facet>
 				<h:outputText value="#{prop.key}" title="#{prop.key}"/>
 				<f:facet name="footer">
 					<h:inputText id="currentPropertyKey" value="#{customCertExtensionMBean.currentPropertyKey}" />
 				</f:facet>
 			</h:column>
 			<h:column>
-   				<f:facet name="header"><h:outputText value="Value"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.VALUE}"/></f:facet>
 				<h:outputText value="#{prop.value}"/>
 				<f:facet name="footer">
 					<h:inputText id="currentPropertyValue" value="#{customCertExtensionMBean.currentPropertyValue}">
