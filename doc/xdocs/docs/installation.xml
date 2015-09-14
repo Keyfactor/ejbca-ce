@@ -738,7 +738,7 @@ You can use a generic name, without version number, in order to get a generic 'd
 /subsystem=remoting/http-connector=http-remoting-connector:add(connector-ref="remoting",security-realm="ApplicationRealm")
 /socket-binding-group=standard-sockets/socket-binding=remoting:add(port="4447")
 /subsystem=undertow/server=default-server/http-listener=remoting:add(socket-binding=remoting)
-reload
+:reload
 </source>
 </subsubsection>
 
@@ -770,7 +770,7 @@ reload
 /interfaces=/interface=http:remove
 /interfaces=/interface=httpspub:remove
 /interfaces=/interface=httpspriv:remove
-reload
+:reload
 </source>
 </subsubsection>
 
@@ -803,7 +803,10 @@ ant deploy-keystore
 /socket-binding-group=standard-sockets/socket-binding=http:add(port="8080",interface="http")
 /subsystem=undertow/server=default-server/http-listener=http:add(socket-binding=http)
 /subsystem=undertow/server=default-server/http-listener=http:write-attribute(name=redirect-socket, value="httpspriv")
-reload
+:reload
+</source>
+<p>Wait for reload to complete by checking the server log before continuing.</p> 
+<source>
 /core-service=management/security-realm=SSLRealm:add()
 /core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="localhost")
 /core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
@@ -811,14 +814,17 @@ reload
 /subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
-reload
+:reload
+</source>
+<p>Wait for reload to complete by checking the server log before continuing.</p> 
+<source>
 /system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
 /system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
 /system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
 /system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
 /subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)
 /subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
-reload
+:reload
 </source>
 <p>If you are using OCSP GET requests, setting URI encoding and allowing encoding for Query and backslash above is needed.</p>
 <note>WildFy will most likely get confused at stis step, and will need a restart.</note>
