@@ -417,23 +417,23 @@ public class HSMKeyTool extends ClientToolBox {
                 log.error("Error: Old and new certificates are not of the same type (X509 / CVC)");
                 return true; // = valid command-line syntax
             }
-            System.err.println("Type of certificates: "+(isCVCA ? "CVC" : "X509"));
+            System.out.println("Type of certificates: "+(isCVCA ? "CVC" : "X509"));
 
             // Detect name change
             final String oldDN = CertTools.getSubjectDN(oldCert);
             final String newDN = CertTools.getSubjectDN(newCert);
-            System.err.println("Old DN: "+oldDN);
-            System.err.println("New DN: "+newDN);
+            System.out.println("Old DN: "+oldDN);
+            System.out.println("New DN: "+newDN);
             final boolean nameChange;
             if (!oldDN.equals(newDN)) {
                 if (isCVCA) {
-                    System.err.println("Name change detected.");
+                    System.out.println("Name change detected.");
                 } else {
-                    System.err.println("Name change detected. Will add Name Change extension.");
+                    System.out.println("Name change detected. Will add Name Change extension.");
                 }
                 nameChange = true;
             } else {
-                System.err.println("No name change detected.");
+                System.out.println("No name change detected.");
                 nameChange = false;
             }
 
@@ -464,7 +464,7 @@ public class HSMKeyTool extends ClientToolBox {
                     System.err.println("Error: Overriding the signature algorithm is not supported for CVC");
                     return true;
                 }
-                System.err.println("Using signature algorithm "+linkSigAlg);
+                System.out.println("Using signature algorithm "+linkSigAlg);
 
                 final HolderReferenceField caHolder = oldCertCVC.getCertificateBody().getHolderReference();
                 final CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
@@ -492,7 +492,7 @@ public class HSMKeyTool extends ClientToolBox {
                     System.err.println("Warning: Signature algorithm manually overridden!");
                     linkSigAlg = sigAlgOverride;
                 }
-                System.err.println("Using signature algorithm "+linkSigAlg);
+                System.out.println("Using signature algorithm "+linkSigAlg);
 
                 final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
                 final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
