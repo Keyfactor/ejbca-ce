@@ -1138,8 +1138,12 @@ public class EjbcaWebBean implements Serializable {
         if(log.isDebugEnabled()) {
             log.debug("Read " + j + " extended key usages from the configurations file");
         }
+
+        AlwaysAllowLocalAuthenticationToken alwaysAllowedAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("LoadingExtendedKeyUsages"));
+        globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, ekuConfig);
+        availableExtendedKeyUsagesConfig = ekuConfig;
+        informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
         
-        saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
     }
     
     //*****************************************************************
@@ -1214,7 +1218,10 @@ public class EjbcaWebBean implements Serializable {
             log.error(e.getMessage(),e);
         }
         
-        saveAvailableCustomCertExtensionsConfiguration(cceConfig);
+        AlwaysAllowLocalAuthenticationToken alwaysAllowedAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("LoadingCustomCertificateExtensions"));
+        globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, cceConfig);
+        availableCustomCertExtensionsConfig = cceConfig;
+        informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
     
     private CertificateExtension getCertificateExtensionFromFile(int id, Properties propertiesInFile) throws CertificateExtentionConfigurationException {
