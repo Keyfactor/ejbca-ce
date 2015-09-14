@@ -52,6 +52,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.ejb.ObjectNotFoundException;
 
@@ -1540,6 +1547,8 @@ Content-Type: text/html; charset=iso-8859-1
         return req.getEncoded();
     }
 
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
+
     /**
      * Sends the payload to the OCSP Servlet using TCP. Can be used for testing
      * malformed or malicious requests.
@@ -1550,41 +1559,60 @@ Content-Type: text/html; charset=iso-8859-1
      * @throws IOException
      *           if the is a IO problem
      */
-    private OCSPResp sendRawRequestToOcsp(int contentLength, byte[] payload, boolean writeByteByByte) throws IOException {
+    private OCSPResp sendRawRequestToOcsp(int contentLength, byte[] payload, final boolean writeByteByByte) throws IOException {
         // Create the HTTP header
         String headers = "POST " + "/ejbca/" + resourceOcsp + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n" + "Content-Type: application/ocsp-request\r\n"
                 + "Content-Length: " + contentLength + "\r\n" + "\r\n";
         // Merge the HTTP headers, the OCSP request and the raw data into one
         // package.
-        byte[] input = concatByteArrays(headers.getBytes(), payload);
+        final byte[] input = concatByteArrays(headers.getBytes(), payload);
         log.debug("HTTP request headers: " + headers);
         log.debug("HTTP headers size: " + headers.getBytes().length);
         log.debug("Size of data to send: " + input.length);
         // Create the socket.
-        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
+        final Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         // Send data byte for byte.
-        OutputStream os = socket.getOutputStream();
-        if (writeByteByByte) {
-            int i = 0;
-            try {
-                for (i = 0; i < input.length; i++) {
-                    os.write(input[i]);
+        final OutputStream os = socket.getOutputStream();
+        // Perform call as separate thread to be able to catch hung connections (found on Wildfly 8)
+        final Future<byte[]> future = executor.submit(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                if (writeByteByByte) {
+                    int i = 0;
+                    try {
+                        for (i = 0; i < input.length; i++) {
+                            os.write(input[i]);
+                        }
+                    } catch (IOException e) {
+                        log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+                    }
+                } else {
+                    try {
+                        os.write(input);
+                    } catch (IOException e) {
+                        log.info("Could not write to TCP Socket " + e.getMessage());
+                    }
                 }
-            } catch (IOException e) {
-                log.info("Socket wrote " + i + " bytes before throwing an IOException.");
-            }
-        } else {
-            try {
-                os.write(input);
-            } catch (IOException e) {
-                log.info("Could not write to TCP Socket " + e.getMessage());
-            }
+                byte rawResponse[] = getHttpResponse(socket.getInputStream());
+                log.info("Response contains: " + rawResponse.length + " bytes.");
+                return rawResponse;
+            };
+        });
+        try {
+            final byte[] rawResponse = future.get(60L, TimeUnit.SECONDS);
+            // Reading the response.
+            return new OCSPResp(rawResponse);
+        } catch (InterruptedException e) {
+            log.info("Could not write to TCP Socket within time limit " + e.getMessage());
+        } catch (ExecutionException e) {
+            log.info("Could not write to TCP Socket within time limit " + e.getMessage());
+        } catch (TimeoutException e) {
+            log.info("Could not write to TCP Socket within time limit " + e.getMessage());
+        } finally {
+            socket.close();
         }
-        // Reading the response.
-        byte rawResponse[] = getHttpResponse(socket.getInputStream());
-        log.info("Response contains: " + rawResponse.length + " bytes.");
-        socket.close();
-        return new OCSPResp(rawResponse);
+        fail("Failed to perform OCSP request to "+httpHost+":"+httpPort+" and get response within timeout.");
+        return null;
     }
 
     /**
