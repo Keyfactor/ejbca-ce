@@ -772,6 +772,7 @@ You can use a generic name, without version number, in order to get a generic 'd
 /interfaces=/interface=httpspriv:remove
 :reload
 </source>
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 </subsubsection>
 
 <subsubsection name="Deploy EJBCA">
@@ -805,7 +806,7 @@ ant deploy-keystore
 /subsystem=undertow/server=default-server/http-listener=http:write-attribute(name=redirect-socket, value="httpspriv")
 :reload
 </source>
-<p>Wait for reload to complete by checking the server log before continuing.</p> 
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 <source>
 /core-service=management/security-realm=SSLRealm:add()
 /core-service=management/security-realm=SSLRealm/server-identity=ssl:add(keystore-path="${jboss.server.config.dir}/keystore/keystore.jks", keystore-password="serverpwd", alias="localhost")
@@ -816,7 +817,7 @@ ant deploy-keystore
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
 :reload
 </source>
-<p>Wait for reload to complete by checking the server log before continuing.</p> 
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 <source>
 /system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
 /system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
