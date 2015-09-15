@@ -273,6 +273,8 @@ public class CertificateData extends ProtectedData implements Serializable {
     /**
      * status of certificate, ex CertificateConstants.CERT_ACTIVE
      * 
+     * @see CertificateConstants#CERT_ACTIVE etc
+     * 
      * @return status
      */
     // @Column
