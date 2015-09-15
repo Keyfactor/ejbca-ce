@@ -53,9 +53,7 @@ public class UpgradeSessionBeanTest {
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     /**
-     * This test will perform all upgrade steps to 6.3.3. These are:
-     * 
-     * 1. Update of access rules, adding read-only rules to any roles which previously had them.
+     * This test will perform the upgrade step to 6.3.3, which is update of access rules, adding read-only rules to any roles which previously had them.
      * 
      */
     @Test
