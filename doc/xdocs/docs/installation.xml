@@ -499,16 +499,17 @@ mkdir -p modules/system/layers/base/org/mariadb/main/
 </module>
 -->
 </pre>
-Or for MariaDB, mariadb-java-client-1.1.5.jar:
+Or for MariaDB, mariadb-java-client-1.2.2.jar:
 <pre>
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;org.mariadb&quot;&gt;
   &lt;resources&gt;
-    &lt;resource-root path=&quot;mariadb-java-client-1.1.5.jar&quot;/&gt;
+    &lt;resource-root path=&quot;mariadb-java-client-1.2.2.jar&quot;/&gt;
   &lt;/resources&gt;
   &lt;dependencies&gt;
     &lt;module name=&quot;javax.api&quot;/&gt;
     &lt;module name=&quot;javax.transaction.api&quot;/&gt;
+    &lt;module name=&quot;org.slf4j&quot;/&gt;
   &lt;/dependencies&gt;
 &lt;/module&gt;
 </pre>
