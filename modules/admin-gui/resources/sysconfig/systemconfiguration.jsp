@@ -502,15 +502,14 @@ org.cesecore.authorization.control.AccessControlSession
    				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
 				<h:outputText value="#{eku.oid}" title="#{eku.oid}"/>
 				<f:facet name="footer">
-					<h:inputText id="currentOid" value="#{systemConfigMBean.currentEKUOid}" />
+					<h:inputText id="currentOid" value="#{systemConfigMBean.currentEKUOid}" size="25" title="#{web.text.FORMAT_OID}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
 				<h:outputText value="#{eku.name}"/>
 				<f:facet name="footer">
-					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}">
-   					</h:inputText>
+					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}" size="35" title="#{web.text.FORMAT_STRING}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
