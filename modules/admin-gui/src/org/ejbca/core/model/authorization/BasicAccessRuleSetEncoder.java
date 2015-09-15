@@ -276,38 +276,40 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                         if (accessRule.getAccessRuleName().lastIndexOf('/') > AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                             String tmpString = accessRule.getAccessRuleName().substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                             profileid = Integer.valueOf(tmpString.substring(0, tmpString.indexOf('/')));
+                            int currentval = 0;
+                            if (endentityrules.get(profileid) != null) {
+                                currentval = ((Integer) endentityrules.get(profileid)).intValue();
+                            }
+                            if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_END_ENTITY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_VIEW;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_END_ENTITY_HISTORY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_VIEWHISTORY;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HARDTOKEN_RIGHTS)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.CREATE_END_ENTITY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_CREATE;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.DELETE_END_ENTITY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_DELETE;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.EDIT_END_ENTITY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_EDIT;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.REVOKE_END_ENTITY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_REVOKE;
+                            } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.KEYRECOVERY_RIGHTS)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_KEYRECOVER;
+                            }
+                            if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.APPROVE_END_ENTITY)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_APPROVE;
+                            }
+                            if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {
+                                currentval += BasicAccessRuleSet.ENDENTITY_VIEWPUK;
+                            }
+                            endentityrules.put(profileid, Integer.valueOf(currentval));
                         } else {
-                            this.forceadvanced = true;
-                            break;
+                            //It's just the basic rule
+                            profileid = Integer.valueOf(accessRule.getAccessRuleName()
+                                    .substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
+                            this.currentendentityprofiles.add(profileid);
                         }
-                        int currentval = 0;
-                        if (endentityrules.get(profileid) != null) {
-                            currentval = ((Integer) endentityrules.get(profileid)).intValue();
-                        }
-                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_END_ENTITY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_VIEW;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.VIEW_END_ENTITY_HISTORY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_VIEWHISTORY;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HARDTOKEN_RIGHTS)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.CREATE_END_ENTITY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_CREATE;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.DELETE_END_ENTITY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_DELETE;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.EDIT_END_ENTITY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_EDIT;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.REVOKE_END_ENTITY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_REVOKE;
-                        } else if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.KEYRECOVERY_RIGHTS)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_KEYRECOVER;
-                        }
-                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.APPROVE_END_ENTITY)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_APPROVE;
-                        }
-                        if (accessRule.getAccessRuleName().endsWith(AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {
-                            currentval += BasicAccessRuleSet.ENDENTITY_VIEWPUK;
-                        }
-                        endentityrules.put(profileid, Integer.valueOf(currentval));
                     } else {
                         this.forceadvanced = true;
                         break;

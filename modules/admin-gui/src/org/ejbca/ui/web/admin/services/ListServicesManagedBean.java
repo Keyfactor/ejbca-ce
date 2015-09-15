@@ -56,7 +56,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 
     public List<SortableSelectItem> getAvailableServices() {
         List<SortableSelectItem> availableServices = new ArrayList<SortableSelectItem>();
-        Collection<Integer> availableServicesIds = ejb.getServiceSession().getAuthorizedVisibleServiceIds();
+        Collection<Integer> availableServicesIds = ejb.getServiceSession().getVisibleServiceIds();
         for (Integer id : availableServicesIds) {
             ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id.intValue());
             String serviceName = ejb.getServiceSession().getServiceName(id.intValue());

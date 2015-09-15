@@ -58,7 +58,7 @@ public interface ServiceSession {
      * 
      * @return Collection of id:s (Integer)
      */
-    Collection<Integer> getAuthorizedVisibleServiceIds();
+    Collection<Integer> getVisibleServiceIds();
 
     /**
      * Retrieves a named service.

@@ -610,7 +610,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * @return true if the upgrade was successful and false otherwise
      */
-    private boolean AddNewAccessRulestoRoles() {
+    private boolean addNewAccessRulestoRoles() {
         Collection<RoleData> roles = roleAccessSession.getAllRoles();
         for (RoleData role : roles) {
             final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
@@ -636,8 +636,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
-        
-        log.error("(this is not an error) Finished upgrade from ejbca 6.3.x with result: true");
         return true;
         
     }      
@@ -853,7 +851,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private void postMigrateDatabase633() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
         // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
-        AddNewAccessRulestoRoles();     
+        addNewAccessRulestoRoles();     
         // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
         addReadOnlyRules();
         log.info("Completed post upgrade procedure to 6.3.3");
