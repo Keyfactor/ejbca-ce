@@ -81,7 +81,7 @@ public class GetCRLServlet extends HttpServlet {
         }
 
         try{
-          ejbcawebbean.initialize(req, AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
+          ejbcawebbean.initialize(req, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
         } catch(Exception e){
            throw new java.io.IOException("Authorization Denied");
         }

@@ -156,15 +156,14 @@ public class BasicAccessRuleSetDecoder implements Serializable {
 
     private static Collection<AccessRuleTemplate> getEndEntityProfileRules(Collection<Integer> currentendentityprofiles, Collection<String> endentityrules) {
         boolean allexists = false;
-        Iterator<Integer> iter = currentendentityprofiles.iterator();
         ArrayList<AccessRuleTemplate> profilerules = new ArrayList<AccessRuleTemplate>();
-        while (iter.hasNext() && !allexists) {
-            Integer next = (Integer) iter.next();
+        for(Integer next : currentendentityprofiles) {
             if (next.intValue() == BasicAccessRuleSet.ENDENTITYPROFILE_ALL) {
                 allexists = true;
                 break;
             }
             String profilerule = AccessRulesConstants.ENDENTITYPROFILEPREFIX + next.toString();
+            profilerules.add(new AccessRuleTemplate(profilerule, AccessRuleState.RULE_ACCEPT, false));
             for(String nextrule : endentityrules) {
                 profilerules.add(new AccessRuleTemplate(profilerule + nextrule, AccessRuleState.RULE_ACCEPT, false));
             }

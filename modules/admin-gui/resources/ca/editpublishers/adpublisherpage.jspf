@@ -72,6 +72,6 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_ADUSERDESCRIPTION%>" size="45" maxlength="255" 
-               value='<c:out value="<%= adpublisher.getUserDescription() %>"/>'> 
+               value='<c:out value="<%= adpublisher.getUserDescription() %>"/>' <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> > 
       </td>
     </tr>

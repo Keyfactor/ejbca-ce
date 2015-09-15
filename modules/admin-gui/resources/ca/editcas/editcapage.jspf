@@ -1658,7 +1658,7 @@ function checkallfields(){
                     <tr>
                         <td><%= ejbcawebbean.getText("RENEWCA_NEXTCAKEY") %></td>
                         <td>
-                            <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_RENEW %>" size="1">
+                            <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY_RENEW %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
                                 <option value="" ><c:out value="<%= ejbcawebbean.getText(\"RENEWCA_USINGKEYSEQUENCE\") %>"/></option>
                             <%  for (final String alias : availableCryptoTokenAliases) {
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -1675,14 +1675,14 @@ function checkallfields(){
                         <% if (catype==CAInfo.CATYPE_CVC) { %>
                             <input type="checkbox" name="<%= CHECKBOX_CREATELINKCERTIFICATE %>" value="<%=CHECKBOX_VALUE%>" checked disabled/>
                         <% } else { %>
-                            <input type="checkbox" name="<%= CHECKBOX_CREATELINKCERTIFICATE %>" value="<%=CHECKBOX_VALUE%>"/>
+                            <input type="checkbox" name="<%= CHECKBOX_CREATELINKCERTIFICATE %>" value="<%=CHECKBOX_VALUE%>" <%= (hasEditRights ? "" : "disabled") %>/>
                         <% } %>
                         </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td>
-                            <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" />
+                            <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" <%= (hasEditRights ? "" : "disabled") %> />
                         </td>
                     </tr>
                     <tr>
