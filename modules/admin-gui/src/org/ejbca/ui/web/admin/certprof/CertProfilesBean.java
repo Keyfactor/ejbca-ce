@@ -190,7 +190,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         Integer selectedProfileId = getSelectedCertProfileId();
         if (selectedProfileId != null) {
             CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(selectedProfileId);
-            return certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(selectedProfileId);
+            if(certificateProfile != null) {
+                return certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(selectedProfileId);
+            } else {
+                //Can happen if cache wasn't updated. 
+                return true;
+            }
         } else {
             return true;
         }
@@ -280,6 +285,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         if (canDeleteCertProfile()) {
             try {
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().removeCertificateProfile(getAdmin(), getSelectedCertProfileName());
+                getEjbcaWebBean().getEjb().getCertificateProfileSession().flushProfileCache();
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to remove certificate profile.");
