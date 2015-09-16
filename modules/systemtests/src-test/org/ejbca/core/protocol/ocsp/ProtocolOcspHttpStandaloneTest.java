@@ -77,6 +77,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.junit.AfterClass;
@@ -611,7 +612,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
                 .getRemoteSession(CertificateStoreSessionRemote.class);
         X509Certificate caCertificate = (X509Certificate) certificate;
         //Store the CA Certificate.
-        certificateStoreSession.storeCertificateRemote(authenticationToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+        certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(caCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         return caCertificate;
     }

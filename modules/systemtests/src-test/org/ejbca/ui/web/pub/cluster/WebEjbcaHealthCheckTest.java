@@ -42,6 +42,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -85,7 +86,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
         final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CertificateStoreSessionRemote.class);
         //Store the CA Certificate.
-        certificateStoreSession.storeCertificateRemote(authenticationToken, x509ca.getCACertificate(), "foo", "1234", CertificateConstants.CERT_ACTIVE,
+        certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(x509ca.getCACertificate()), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(OcspResponseGeneratorSessionRemote.class);

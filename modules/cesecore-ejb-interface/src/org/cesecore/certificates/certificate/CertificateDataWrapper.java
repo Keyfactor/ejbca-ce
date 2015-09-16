@@ -26,7 +26,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  *
  */
-public class CertificateDataWrapper implements Comparable<CertificateDataWrapper>, Serializable {
+public class CertificateDataWrapper implements CertificateWrapper, Comparable<CertificateDataWrapper>, Serializable {
 
     private static final long serialVersionUID = 1L;
 

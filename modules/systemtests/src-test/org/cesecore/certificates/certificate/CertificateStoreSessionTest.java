@@ -62,6 +62,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -629,7 +630,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 		try {
 			final String fp = CertTools.getFingerprintAsString(xcert);
 			final String username = "foouser<tag>mytag</mytag>!";
-	        certificateStoreSession.storeCertificateRemote(roleMgmgToken, xcert, username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+	        certificateStoreSession.storeCertificateRemote(roleMgmgToken, EJBTools.wrap(xcert), username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
 	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
 	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
 	        // Username must not include <tag>s or !
@@ -771,7 +772,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         if (ce != null) {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }
-        certificateStoreSession.storeCertificateRemote(admin, xcert, USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
+        certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(xcert), USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
         		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
         return xcert;
     }
