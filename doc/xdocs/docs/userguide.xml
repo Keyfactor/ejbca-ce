@@ -1057,7 +1057,7 @@ The meaning of Extended key usage is defined in <a href="http://www.ietf.org/rfc
 Normally the values specified in the fixed certificate profiles are good for the usage the fixed profile is for. 
 </p>
 <p>
-You can define your own extended key usages very simple. In the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web, 
+You can define your own extended key usages very simply. In the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web, 
 add your custom extended key usage's OIDs and readable name. After adding the new key usage, it can be chosen in the 'Edit Certificate Profile' page.
 </p>
 </subsubsection>
@@ -1361,13 +1361,13 @@ the specified number can be changed for a particular end entity at the creation 
 By checking 'Use' for custom certificate extension data in the end entity profile, a text area is provided when adding or editting an end entity for supplying custom certificate extension data.	
 </p>
 <p>
-Extension data are entered in the text area in the same format as for Java properties files. Typically key=value with one entry on each line. 
-What extension data that is accepted and/or required depends on what custom extensions that has been chosen in the certificate profile as 
-Used Custom Certificate Extensions and how they are configured.
+Extension data are entered in the text area in the same format as for Java properties files; typically, key=value with one entry on each line. 
+What extension data is accepted and/or required depends on what custom extensions that have been chosen in the certificate profile as 
+'Used Custom Certificate Extensions' and how they are configured.
 </p>
 <p>
-For example, custom extensions of type BasicCertificateExtension configured with the property dynamic=true accepts custom extension data of the 
-form "OID.value=value" where OID is the OID of the configured extension and value is the value to put in the extension in the configured encoding.
+For example, custom extensions of type BasicCertificateExtension configured with the property dynamic=true accept custom extension data in the 
+form 'OID.value=value' where OID is the OID of the configured extension and value is the value to put in the extension in the configured encoding.
 </p>
 <source>
 1.2.3.4.value = 65486c6c206f6f776c720064
