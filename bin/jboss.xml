@@ -341,8 +341,6 @@
 		<antcall target="notifyDeploymentScanner" />
 	    <!-- No web configure, do that manually don't want to do it every time for JBoss 7
 	         Possibly make a separate target for it
-		<chmod dir="dist/externalra-gui" includes="server.xml" perm="600"/>
-		<copy todir="${tomcat.dir}" overwrite="true" file="dist/externalra-gui/server.xml"/>
 		-->
 	</target>
 
