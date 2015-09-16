@@ -183,7 +183,7 @@ public class CaInitCommandTest {
     public void testEccCAExplicitEccParams() throws Exception {
         try {
             caInitCommand.execute(ECC_CA_EXPLICIT_ARGS);
-            // In versions of EJBCA before 6.3.3 / 6.2.12, this did not work, because Java always deserializes
+            // In versions of EJBCA before 6.4.0 / 6.2.11, this did not work, because Java always deserializes
             // certificates using the Sun provider even if they where created with BC originally. This was fixed
             // by making the certificate object transient and sending an encoded certificate instead.
             CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);

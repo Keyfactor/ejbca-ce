@@ -53,11 +53,11 @@ public class UpgradeSessionBeanTest {
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     /**
-     * This test will perform the upgrade step to 6.3.3, which is update of access rules, adding read-only rules to any roles which previously had them.
+     * This test will perform the upgrade step to 6.4.0, which is update of access rules, adding read-only rules to any roles which previously had them.
      * 
      */
     @Test
-    public void testPostUpgradeTo633() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    public void testPostUpgradeTo640() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         //Create a role specifically to test that read only access is given. 
         final String readOnlyRoleName = "ReadOnlyRole"; 
         RoleData readOnlyRole = roleManagementSession.create(alwaysAllowtoken, readOnlyRoleName);
