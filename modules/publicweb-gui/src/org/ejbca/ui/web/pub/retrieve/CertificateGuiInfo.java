@@ -27,7 +27,7 @@ import org.cesecore.util.CertTools;
  * @author Tomas Gustavsson
  * @version $Id$
  */
-public class CertificateWrapper {
+public class CertificateGuiInfo {
 	
 	private Certificate mCurrentCert;
 
@@ -35,7 +35,7 @@ public class CertificateWrapper {
 	/**
 	 * default constructor.
 	 */
-	public CertificateWrapper(Certificate cert) {
+	public CertificateGuiInfo(Certificate cert) {
 		mCurrentCert = cert;
 	}
 

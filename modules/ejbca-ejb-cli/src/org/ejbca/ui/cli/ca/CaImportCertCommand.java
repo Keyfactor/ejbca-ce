@@ -17,9 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -42,9 +40,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
@@ -191,13 +189,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             log.error("File " + certfile + " does not seem to contain a PEM encoded certificate.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        String b64cert;
-        try {
-            b64cert = new String(Base64.encode(certificate.getEncoded()));
-        } catch (CertificateEncodingException e) {
-            log.error("File " + certfile + " could be loaded, but could not be encoded again.", e);
-            return CommandResult.FUNCTIONAL_FAILURE;
-        }
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).findCertificateByFingerprintRemote(fingerprint) != null) {
             errorString.append("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' is already present.\n");
@@ -325,7 +316,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 
         int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(), b64cert,
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(certificate),
                     username, fingerprint, CertificateConstants.CERT_ACTIVE, certificateType, certificateprofileid, null, new Date().getTime());
             if (status == CertificateConstants.CERT_REVOKED) {
                 try {
@@ -350,9 +341,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             }
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to import certificate.");
-            return CommandResult.FUNCTIONAL_FAILURE;
-        } catch (CertificateParsingException e) {
-            log.error("EJBCA received the certificate but could not parse it, and it was not stored.", e);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
 

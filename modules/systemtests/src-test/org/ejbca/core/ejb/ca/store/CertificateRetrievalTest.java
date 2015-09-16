@@ -44,6 +44,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminTestSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
@@ -140,7 +141,7 @@ public class CertificateRetrievalTest {
         rootCaFp = CertTools.getFingerprintAsString(cert);
         try {
             if (certificateStoreSession.findCertificateByFingerprint(rootCaFp) == null) {
-                certificateStoreSession.storeCertificateRemote(adm, cert, "o=AnaTom,c=SE", rootCaFp,
+                certificateStoreSession.storeCertificateRemote(adm, EJBTools.wrap(cert), "o=AnaTom,c=SE", rootCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ROOTCA,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
@@ -152,7 +153,7 @@ public class CertificateRetrievalTest {
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             subCaFp = CertTools.getFingerprintAsString(cert);
             if (certificateStoreSession.findCertificateByFingerprint(subCaFp) == null) {
-                certificateStoreSession.storeCertificateRemote(adm, cert, "o=AnaTom,c=SE", subCaFp,
+                certificateStoreSession.storeCertificateRemote(adm, EJBTools.wrap(cert), "o=AnaTom,c=SE", subCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_SUBCA,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
@@ -163,7 +164,7 @@ public class CertificateRetrievalTest {
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             endEntityFp = CertTools.getFingerprintAsString(cert);
             if (certificateStoreSession.findCertificateByFingerprint(endEntityFp) == null) {
-                certificateStoreSession.storeCertificateRemote(adm, cert, "o=AnaTom,c=SE", endEntityFp,
+                certificateStoreSession.storeCertificateRemote(adm, EJBTools.wrap(cert), "o=AnaTom,c=SE", endEntityFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ENDENTITY,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,

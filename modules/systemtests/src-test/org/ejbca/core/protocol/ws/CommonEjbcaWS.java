@@ -157,6 +157,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -2977,7 +2978,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Now we have to import the CVCA certificate as an external CA, and do it again, then it should find the CVCA certificate
         Collection<java.security.cert.Certificate> cvcacerts = new ArrayList<java.security.cert.Certificate>();
         cvcacerts.add(cvcacert);
-        caAdminSessionRemote.importCACertificate(intAdmin, "WSTESTCVCAIMPORTED", cvcacerts);
+        caAdminSessionRemote.importCACertificate(intAdmin, "WSTESTCVCAIMPORTED", EJBTools.wrapCertCollection(cvcacerts));
         request = ejbcaraws.caRenewCertRequest(caname, new ArrayList<byte[]>(), false, false, false, null);
         assertNotNull(request);
         obj = CertificateParser.parseCVCObject(request);

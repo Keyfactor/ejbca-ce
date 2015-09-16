@@ -77,6 +77,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
@@ -126,7 +127,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         credentials.add(certificate);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         try {
-            certificateStoreSession.storeCertificateRemote(internalToken, certificate, "foo", "1234", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
+            certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
             assertNotNull("Authentication was not returned for active (but soon to expire) cert", authenticationToken);
@@ -214,7 +215,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         try {
             //We're using CertificateConstants.CERT_REVOKED here, but any status but any status != CertificateConstants.CERT_ACTIVE would suffice.
-            certificateStoreSession.storeCertificateRemote(internalToken, certificate, "foo", "1234", CertificateConstants.CERT_REVOKED,
+            certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234", CertificateConstants.CERT_REVOKED,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
             assertNull("Authentication was returned for inactive cert", authenticationToken);

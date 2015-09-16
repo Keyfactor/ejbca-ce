@@ -16,9 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileNotFoundException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,9 +32,9 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -100,9 +98,6 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 return CommandResult.CLI_FAILURE;
             }
             
-            // We can't send the certs directly over EJB
-            final Collection<String> b64Certs = CertTools.certChainToBase64Chain(certs);
-            
             /* 
              * We need to check if the CA already exists to determine what to do:
              *  - If CA already exist, it might be a sub CA that is waiting for certificate from an external CA
@@ -134,7 +129,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                     // CA exists and this is assumed to be an update of the imported CA certificate
                     log.info("CA '" + caName
                             + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
-                    caAdminSession.importCACertificateUpdateBase64(getAuthenticationToken(), cainfo.getCAId(), b64Certs);
+                    caAdminSession.importCACertificateUpdate(getAuthenticationToken(), cainfo.getCAId(), EJBTools.wrapCertCollection(certs));
                     log.info("Updated certificate chain for imported external CA " + caName);
                 } else {
                     log.error("CA '" + caName
@@ -149,7 +144,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                     Integer caid = Integer.valueOf(subjectdn.hashCode());
                     initAuthorizationModule(getAuthenticationToken(), caid.intValue(), superAdminCN);
                 }
-                caAdminSession.importCACertificateBase64(getAuthenticationToken(), caName, b64Certs);
+                caAdminSession.importCACertificate(getAuthenticationToken(), caName, EJBTools.wrapCertCollection(certs));
                 log.info("Imported CA " + caName);
                 return CommandResult.SUCCESS;
             }
@@ -164,8 +159,6 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
         } catch (RoleExistsException e) {
             log.error(e.getMessage());
         } catch (CertPathValidatorException e) {
-            log.error(e.getMessage());
-        } catch (CertificateException e) {
             log.error(e.getMessage());
         } catch (EjbcaException e) {
             log.error(e.getMessage());

@@ -12,14 +12,18 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyPair;
 import java.security.Principal;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,20 +43,26 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
@@ -74,9 +84,14 @@ public class CaAdminSessionBeanTest {
     private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST);
 
     private AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("CaAdminSessionBeanTest");
 
+    private static final String TEST_BC_CERT_CA = "TestBCProviderCertCA";
+    
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -205,6 +220,32 @@ public class CaAdminSessionBeanTest {
             publisherProxySession.removePublisher(alwaysAllowToken, certificateProfilePublisherName);
             publisherProxySession.removePublisher(alwaysAllowToken, unAuthorizedCustomPublisherName);
             publisherProxySession.removePublisher(alwaysAllowToken, authorizedCustomPublisherName);
+        }
+    }
+    
+    @Test
+    public void testBCProviderCertOverRemoteEJB() throws Exception {
+        try {
+            final KeyPair keypair = KeyTools.genKeys("brainpoolP224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+            
+            final Collection<Certificate> certs = new ArrayList<Certificate>();
+            final Certificate brainpoolCert = CertTools.genSelfCert("CN=" + TEST_BC_CERT_CA, 1, null, keypair.getPrivate(), keypair.getPublic(),
+                    AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, true);
+            certs.add(brainpoolCert);
+            
+            caAdminSession.importCACertificate(alwaysAllowToken, TEST_BC_CERT_CA, EJBTools.wrapCertCollection(certs));
+            
+            final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, TEST_BC_CERT_CA);
+            final Certificate returnedCert = cainfo.getCertificateChain().iterator().next();
+            assertEquals("Returned cert did not match imported cert", brainpoolCert, returnedCert);
+        } finally {
+            try {
+                final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, TEST_BC_CERT_CA);
+                caSession.removeCA(alwaysAllowToken, cainfo.getCAId());
+            } catch (CADoesntExistsException e) {
+                // NOPMD ignore
+            }
+            internalCertStoreSession.removeCertificatesBySubject("CN=" + TEST_BC_CERT_CA);
         }
     }
 }

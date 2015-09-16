@@ -101,6 +101,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.ValidityDate;
@@ -268,7 +269,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             caSession.addCA(intAdmin, rootCA);
             X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
-            certificateStoreSession.storeCertificateRemote(intAdmin, cacert, "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(cacert), "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
             //Create a SubCA for this test. 
             subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
@@ -276,7 +277,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             cryptoTokenManagementSession.createKeyPair(intAdmin, cryptoTokenId, "signKeyAlias", "1024");
             X509Certificate subCaCertificate = (X509Certificate) subCA.getCACertificate();
             //Store the CA Certificate.
-            certificateStoreSession.storeCertificateRemote(intAdmin, subCaCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(subCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_SUBCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "footag", new Date().getTime());
             final EndEntityInformation endentity = new EndEntityInformation(subCaName, subCaSubjectDn, rootCA.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);

@@ -72,6 +72,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.cvc.PublicKeyEC;
 
@@ -137,22 +138,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	return storeCertificateNoAuth(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
     }
     
-    @Deprecated
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void storeCertificateRemote(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
+    public void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper wrappedCert, String username, String cafp, int status, int type,
             int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
-        // Check that user is authorized to the CA that issued this certificate
-        int caid = CertTools.getIssuerDN(incert).hashCode();
-        authorizedToCA(admin, caid);
-        storeCertificateNoAuth(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
-    }
-    
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void storeCertificateRemote(AuthenticationToken admin, String b64Cert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException, CertificateParsingException {
-        Certificate incert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+        Certificate incert = EJBTools.unwrap(wrappedCert);
         // Check that user is authorized to the CA that issued this certificate
         int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
@@ -856,22 +846,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     
     @Override
-    public String findCertificateByFingerprintRemote(String fingerprint) {
+    public CertificateWrapper findCertificateByFingerprintRemote(String fingerprint) {
         if (log.isTraceEnabled()) {
-            log.trace(">findCertificateByFingerprintBase64()");
+            log.trace(">findCertificateByFingerprintRemote()");
         }
-        String ret = null;
-        try {
-            CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
-            if (res != null) {
-                ret = res.getBase64Cert(entityManager);
-            }
-        } catch (Exception e) {
-            log.error("Error finding certificate with fp: " + fingerprint);
-            throw new EJBException(e);
-        }
+        final CertificateWrapper ret = EJBTools.wrap(findCertificateByFingerprint(fingerprint));
         if (log.isTraceEnabled()) {
-            log.trace("<findCertificateByFingerprintBase64()");
+            log.trace("<findCertificateByFingerprintRemote()");
         }
         return ret;
     }

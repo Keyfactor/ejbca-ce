@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -30,19 +27,9 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
 
     /**
      * Stores a certificate (remote EJB interface).
-     *
-     * @deprecated Not all types of certificates can be serialized (e.g. Brainpool certificates). Use the overloaded version that takes a BASE64 encoded string instead.
-     * 
-     * @see CertificateStoreSessionRemote#storeCertificateRemote(AuthenticationToken, String, String, String, int, int, int, String, long)
-     */
-    void storeCertificateRemote(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
-
-    /**
-     * Stores a certificate (remote EJB interface).
      * 
      * @param admin An authentication token to authorize the action
-     * @param b64Cert The certificate to be stored, BASE64 encoded.
+     * @param cert Wrapper of the certificate to be stored. Use {@link org.cesecore.util.EJBTools#wrap} to construct to the wrapper.
      * @param cafp Fingerprint (hex) of the CAs certificate.
      * @param username username of end entity owning the certificate.
      * @param status the status from the CertificateConstants.CERT_ constants
@@ -53,14 +40,14 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
      *
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
-    void storeCertificateRemote(AuthenticationToken admin, String b64Cert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException, CertificateParsingException;
+    void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper cert, String username, String cafp, int status, int type,
+            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Finds a certificate by fingerprint (remote EJB interface, supports unnamed ECC and Brainpool)
      * @param fingerprint Fingerprint of certificate
-     * @return BASE64 encoded certificate, or null if no certificate was found.
+     * @return Wrapped certificate, or null if no certificate was found. Use {@link org.cesecore.util.EJBTools#unwrap} to extract the certificate.
      */
-    String findCertificateByFingerprintRemote(String fingerprint);
+    CertificateWrapper findCertificateByFingerprintRemote(String fingerprint);
 
 }

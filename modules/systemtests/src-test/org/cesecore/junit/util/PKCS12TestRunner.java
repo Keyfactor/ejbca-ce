@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.runners.model.InitializationError;
 
@@ -62,7 +63,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
         //Store the CA Certificate.
-        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+        certificateStoreSession.storeCertificateRemote(alwaysAllowToken, EJBTools.wrap(caCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         casToRemove.put(x509ca.getCAId(), x509ca);
         return x509ca;

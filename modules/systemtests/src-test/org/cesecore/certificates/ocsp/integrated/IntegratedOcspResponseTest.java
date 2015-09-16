@@ -107,6 +107,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.TraceLogMethodsRule;
@@ -799,7 +800,7 @@ public class IntegratedOcspResponseTest {
             externalCa.setCAToken(token);
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(internalAdmin, externalCa);
-            certificateStoreSession.storeCertificateRemote(internalAdmin, externalCaCertificate, externalCaName, "1234", CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(externalCaCertificate), externalCaName, "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, null, new Date().getTime());
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
@@ -823,7 +824,7 @@ public class IntegratedOcspResponseTest {
                         BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
                 X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
-                certificateStoreSession.storeCertificateRemote(internalAdmin, importedCertificate, externalUsername, "1234",
+                certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
                 try {

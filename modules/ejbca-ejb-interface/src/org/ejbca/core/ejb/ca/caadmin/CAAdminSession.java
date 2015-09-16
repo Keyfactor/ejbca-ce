@@ -38,6 +38,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.keybind.CertificateImportException;
@@ -151,45 +152,25 @@ public interface CAAdminSession {
      */
     ResponseMessage processRequest(AuthenticationToken admin, CAInfo cainfo, RequestMessage requestmessage) throws CAExistsException,
             CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
-
-    /**
-     * Like importCACertificate, but takes BASE64-encoded certificates to avoid serialization of certificates,
-     * which does not work for e.g. Brainpool certificates.
-     * 
-     * @see CAAdminSession#importCACertificate
-     * @throws CertificateException If the certificates could not be parsed.
-     */
-    void importCACertificateBase64(AuthenticationToken authenticationToken, String caName, Collection<String> base64Certs)
-            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException, CertificateException;
     
     /**
      * Add an external CA's certificate as a CA.
      * 
-     * @param certificates contains the full certificate chain down to the leaf CA to be imported
+     * @param certificates contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
      */
-    void importCACertificate(AuthenticationToken authenticationToken, String caName, Collection<Certificate> certificates)
+    void importCACertificate(AuthenticationToken authenticationToken, String caName, Collection<CertificateWrapper> wrappedCerts)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
-
-    /**
-     * Like importCACertificateUpdate, but takes BASE64-encoded certificates to avoid serialization of certificates,
-     * which does not work for e.g. Brainpool certificates.
-     * 
-     * @see CAAdminSession#importCACertificateUpdate
-     * @throws CertificateException If the certificates could not be parsed.
-     */
-    void importCACertificateUpdateBase64(AuthenticationToken authenticationToken, int caId, Collection<String> base64Certs)
-            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CertificateException;
     
     /**
      * Update an existing external CA's certificate chain.
      * 
      * We allow the same leaf CA certificate to be re-imported in the case where the chain has changed.
      * 
-     * @param certificates contains the full certificate chain down to the leaf CA to be imported
+     * @param certificates contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
      */
-    void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, final Collection<Certificate> certificates)
+    void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, final Collection<CertificateWrapper> wrappedCerts)
             throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException;
 
     /**

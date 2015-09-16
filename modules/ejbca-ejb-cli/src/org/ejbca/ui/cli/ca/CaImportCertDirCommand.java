@@ -35,9 +35,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
@@ -400,8 +400,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         endEntityManagementSession.changeUser(getAuthenticationToken(), userdata, false);
         log.info("User '" + username + "' has been updated.");
         // Finally import the certificate and revoke it if necessary
-        final String b64cert = new String(Base64.encode(certificate.getEncoded()));
-        certificateStoreSession.storeCertificateRemote(getAuthenticationToken(), b64cert,
+        certificateStoreSession.storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(certificate),
                 username, fingerprint, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null,
                 now.getTime());
         if (status == CertificateConstants.CERT_REVOKED) {

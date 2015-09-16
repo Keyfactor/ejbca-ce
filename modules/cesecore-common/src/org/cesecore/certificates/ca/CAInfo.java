@@ -15,11 +15,13 @@ package org.cesecore.certificates.ca;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -198,7 +200,7 @@ public abstract class CAInfo implements Serializable {
         }
         if (certificatechainCached == null) {
             try {
-                certificatechainCached = CertTools.base64ChainToCertChain(certificatechain);
+                certificatechainCached = base64ChainToCertChain(certificatechain);
             } catch (CertificateParsingException e) {
                 throw new IllegalStateException("Can not create certificate object from BASE64 in database", e);
             }
@@ -209,11 +211,36 @@ public abstract class CAInfo implements Serializable {
     public void setCertificateChain(Collection<Certificate> certificatechain) {
         if (certificatechain != null) {
             this.certificatechainCached = certificatechain;
-            this.certificatechain = CertTools.certChainToBase64Chain(certificatechain);
+            this.certificatechain = certChainToBase64Chain(certificatechain);
         } else {
             this.certificatechainCached = null;
             this.certificatechain = null;
         }
+    }
+
+    private Collection<String> certChainToBase64Chain(final Collection<Certificate> certs) {
+        final Collection<String> b64Certs = new ArrayList<String>();
+        for (Certificate cert : certs) {
+            try {
+                String b64Cert = new String(Base64.encode(cert.getEncoded()));
+                b64Certs.add(b64Cert);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return b64Certs;
+    }
+
+    private Collection<Certificate> base64ChainToCertChain(final Collection<String> b64Certs) throws CertificateParsingException {
+        final Collection<Certificate> certs = new ArrayList<Certificate>();
+        for (String b64Cert : b64Certs) {
+            Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+            if (cert == null) {
+                throw new IllegalStateException("Can not create certificate object from: " + b64Cert);
+            }
+            certs.add(cert);
+        }
+        return certs;
     }
 
     public CAToken getCAToken() {
