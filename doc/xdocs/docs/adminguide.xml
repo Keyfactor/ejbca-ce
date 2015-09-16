@@ -5487,7 +5487,7 @@ possible to generate advanced certificate extensions by implementing a simple Ja
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
 Certificate extensions are configured in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web. Only 
-administraters who are granted the access rule '/system_functionality/edit_available_custom_certificate_extensions' are allowed to add and remove 
+administrators who are granted the access rule '/system_functionality/edit_available_custom_certificate_extensions' are allowed to add and remove 
 custom certificate extensions.
 </p>
 The following properties must be set for each extension:
@@ -5513,9 +5513,10 @@ in the 'Edit Certificate Profile' page.
 <subsection name="Removing a Custom Certificate Extension">
 <p>When removing a custom certificate extension from the list of available extensions in the 'Custom Certificate Extensions' tab 
 in the 'System Configuration' page, if that extension is actually in use in a certificate profile, it is not automatically removed form 
-that certificate profile and has to be removed manually by unselecting it from the list of 'Used Custom Certificate Extensions' in the 
-'Edit Certificate Profile' page. The removed extension will not be usable and will not be a part of any certificate issued after the removal 
-and will be displayed as 'ID (No longer used. Please unselect this option)' in the 'Edit Certificate Profile' page.</p>
+that certificate profile. However, the removed extension will not be usable or be a part of any certificate issued after the removal 
+and will be displayed as 'ID (No longer used. Please unselect this option)' in the 'Edit Certificate Profile' page. To remove the extension 
+from the certificate profile, it has to be manually unselected from the list of 'Used Custom Certificate Extensions' in the 
+'Edit Certificate Profile' page. </p>
 <p>Also when removing an extension that is in use, a warning message will be displayed listing the certificate profiles that are still using 
 this extension.</p>
 </subsection>
@@ -5628,7 +5629,7 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 
 <section name="Extended Key Usages">
 <p>
-Extended Key Usages can be added and removed in the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web. Only administators who are 
+Extended Key Usages can be added and removed in the 'Extended Key Usages' tab in the 'System Configuration' page in the Admin web. Only administrators who are 
 granted the access rule '/system_functionality/edit_available_extended_key_usages' are allowed to add and remove extended key usages.</p>
 
 <p>Every extended key usage consists of an Object Identifier (OID) and a label to be displayed in the 'Edit Certificate Profile' page. After an 
@@ -5636,7 +5637,7 @@ extended key usage has been added, it is possible to select it for a certificate
 <p>There are no restrictions on how many extended key usages can be added other than database-related limitations.</p>
 <subsection name="Removing an Extended Key Usage">
 <p>When removing an extended key usage from the list of available usages in the 'Extended Key Usages' tab 
-in the 'System Configuration' page, if that usage is actually in use in a certificate profile, it is not automatically removed form 
+in the 'System Configuration' page, if that usage is actually in use in a certificate profile, it is not automatically removed from 
 that certificate profile and has to be removed manually by unselecting it from the list of 'Extended Key Usage' in the 
 'Edit Certificate Profile' page. If not unselected in the certificate profile, the removed extension will still be a part of any 
 certificate issued after the removal but will only be displayed as an OID in the 'Edit Certificate Profile' page.</p>
