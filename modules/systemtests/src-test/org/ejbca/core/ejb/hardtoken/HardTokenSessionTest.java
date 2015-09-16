@@ -34,6 +34,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -147,7 +148,7 @@ public class HardTokenSessionTest extends CaTestCase {
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.
         if (certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
-            certificateStoreSession.storeCertificateRemote(internalAdmin, cert, "DUMMYUSER",
+            certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(cert), "DUMMYUSER",
                     CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     null, new Date().getTime());

@@ -54,6 +54,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -150,7 +151,7 @@ public class CADataHandler implements Serializable {
           certs = new ArrayList<Certificate>();
           certs.add(CertTools.getCertfromByteArray(certbytes));
       }
-      caadminsession.importCACertificateUpdate(administrator, caId, certs);
+      caadminsession.importCACertificateUpdate(administrator, caId, EJBTools.wrapCertCollection(certs));
       info.cAsEdited();
   }
 
@@ -168,7 +169,7 @@ public class CADataHandler implements Serializable {
 		  certs = new ArrayList<Certificate>();
 		  certs.add(cert);
 	  }
-	  caadminsession.importCACertificate(administrator, caname, certs);
+	  caadminsession.importCACertificate(administrator, caname, EJBTools.wrapCertCollection(certs));
 	  info.cAsEdited();
   }
 

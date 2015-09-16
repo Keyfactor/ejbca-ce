@@ -109,6 +109,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
@@ -157,6 +158,7 @@ import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
@@ -1839,21 +1841,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return returnval;
     }
-    
-    @Override
-    public void importCACertificateBase64(AuthenticationToken authenticationToken, String caName, Collection<String> base64Certs)
-            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException, CertificateException {
-        try {
-            final Collection<Certificate> certs = CertTools.base64ChainToCertChain(base64Certs);
-            importCACertificate(authenticationToken, caName, certs);
-        } catch (CertificateParsingException e) {
-            throw new IllegalStateException("Can not create certificate object from BASE64 encoded certificate.", e);
-        }
-    }
 
     @Override
-    public void importCACertificate(AuthenticationToken admin, String caname, Collection<Certificate> certificates)
+    public void importCACertificate(AuthenticationToken admin, String caname, Collection<CertificateWrapper> wrappedCerts)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
+        Collection<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
         if (certificates.size()!=1) {
             // In the case there is a chain, we require a full chain leading up to a root
@@ -1929,21 +1921,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Publish CA certificates.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
     }
-    
-    @Override
-    public void importCACertificateUpdateBase64(final AuthenticationToken authenticationToken, final int caId, final Collection<String> base64Certs)
-            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CertificateException {
-        try {
-            final Collection<Certificate> certs = CertTools.base64ChainToCertChain(base64Certs);
-            importCACertificateUpdate(authenticationToken, caId, certs);
-        } catch (CertificateParsingException e) {
-            throw new IllegalStateException("Can not create certificate object from BASE64 encoded certificate.", e);
-        }
-    }
 
     @Override
-    public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, Collection<Certificate> certificates)
+    public void importCACertificateUpdate(final AuthenticationToken authenticationToken, final int caId, Collection<CertificateWrapper> wrappedCerts)
             throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
+        Collection<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
         if (certificates.size()!=1) {
             // In the case there is a chain, we require a full chain leading up to a root

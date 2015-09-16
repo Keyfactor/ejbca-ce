@@ -31,6 +31,7 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
@@ -154,7 +155,7 @@ public class PublisherQueueProcessTest {
         // publisherId before
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         try {
-            certificateStoreSession.storeCertificateRemote(admin, cert, "TestPublishQueueProcessService", null, CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(cert), "TestPublishQueueProcessService", null, CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
         } catch (Exception e) {
             // Perhaps the cert already exists

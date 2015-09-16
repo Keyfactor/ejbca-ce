@@ -103,24 +103,24 @@ public class CertificateFinderBean {
 		return cainfo;
 	}
 
-	public Collection<CertificateWrapper> getCACertificateChain() {
+	public Collection<CertificateGuiInfo> getCACertificateChain() {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA);
 		}
-		// Make a collection of CertificateWrapper instead of the real certificate
-		ArrayList<CertificateWrapper> ret = new ArrayList<CertificateWrapper>();
+		// Make a collection of CertificateGuiInfo instead of the real certificate
+		ArrayList<CertificateGuiInfo> ret = new ArrayList<CertificateGuiInfo>();
         Collection<Certificate> certs = mSignSession.getCertificateChain(mCurrentCA);
         for (Certificate cert : certs) {
-            ret.add(new CertificateWrapper(cert));
+            ret.add(new CertificateGuiInfo(cert));
         }
 		
 		return ret;
 	}
 	
-	   public Collection<CertificateWrapper> getCACertificateChainReversed() {
-	        Collection<CertificateWrapper> ret = getCACertificateChain();
+	   public Collection<CertificateGuiInfo> getCACertificateChainReversed() {
+	        Collection<CertificateGuiInfo> ret = getCACertificateChain();
 	        if (ret != null) {
-	            Collections.reverse((ArrayList<CertificateWrapper>) ret);
+	            Collections.reverse((ArrayList<CertificateGuiInfo>) ret);
 	        }
 	        return ret;
 	    }
