@@ -408,7 +408,7 @@ You can access the CMP Proxy as described in the CMP Proxy instructions. There i
 wether using HTTP backend of External RA backend. Example command, using cmpforopenssl (as in CMP examples in Admin Guide) but through the proxy:
 </p>
 <source>
-./cmpclient --server localhost --port 8080 --path cmpProxy-6.3.3/cmpalias --srvcert ManagementCA.cacert.pem --ir --user mykeyid --password password --newclcert clcert.der --newkey privkey.pem --subject "CN=user1,O=My Organization,C=SE"
+./cmpclient --server localhost --port 8080 --path cmpProxy-6.4.0/cmpalias --srvcert ManagementCA.cacert.pem --ir --user mykeyid --password password --newclcert clcert.der --newkey privkey.pem --subject "CN=user1,O=My Organization,C=SE"
 </source>
 <p>As compared to a session directly to the CA:</p>
 <source>

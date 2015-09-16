@@ -210,9 +210,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         
-        if(oldVersion < 633) {
+        if(oldVersion < 640) {
             try {
-                postMigrateDatabase633();
+                postMigrateDatabase640();
             } catch (UpgradeFailedException e) {
                 return false;
             }
@@ -843,18 +843,18 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
     
     /**
-     * EJBCA 6.3.3 introduces new sun rules to System Configuration in regards to Custom OIDs and EKUs.
+     * EJBCA 6.4.0 introduces new sun rules to System Configuration in regards to Custom OIDs and EKUs.
      * 
      * Access rules have also been added for read only rights to parts of the GUI. 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    private void postMigrateDatabase633() throws UpgradeFailedException {
+    private void postMigrateDatabase640() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
         // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
         addNewAccessRulestoRoles();     
         // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
         addReadOnlyRules();
-        log.info("Completed post upgrade procedure to 6.3.3");
+        log.info("Completed post upgrade procedure to 6.4.0");
     }
     
     /**
