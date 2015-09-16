@@ -46,7 +46,7 @@ org.cesecore.authorization.control.StandardRules
 	<h:form id="currentCustomCertExtensionForm">
 	<h:panelGrid columns="2">
 		<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf"><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NAV_BACK}"/></h:outputLink>
-		<h:commandButton action="#{customCertExtensionMBean.toggleCurrentExtensionEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!customCertExtensionMBean.currentExtensionEditMode) && cryptoTokenMBean.allowedToModify}"/>
+		<h:commandButton action="#{customCertExtensionMBean.toggleCurrentExtensionEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!customCertExtensionMBean.currentExtensionEditMode) && customCertExtensionMBean.allowedToModify}"/>
 		<h:panelGroup id="placeholder1" rendered="#{customCertExtensionMBean.currentExtensionEditMode || !customCertExtensionMBean.allowedToModify}"/>
 		
 		<h:outputLabel for="currentCEId" value="#{web.text.ID}:"/>
