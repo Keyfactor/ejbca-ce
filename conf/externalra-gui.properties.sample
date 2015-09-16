@@ -12,29 +12,8 @@
 
 # Application server home directory. Currently only JBoss is supported.
 # Default: $APPSRV_HOME
-#appserver.home=/home/jboss/jboss-5.1.0.GA
+#appserver.home=/opt/jboss-as-7.1.1.Final
 #appserver.home=${env.APPSRV_HOME}
-
-# HTTP bind port configuration.
-# Default: 8080
-#webserver.http.bindport=8080
-
-# HTTP bind address configuration.
-# Default: 0.0.0.0
-#webserver.http.bindaddress=0.0.0.0
-
-# HTTPS bind port configuration.
-# Default: 8442
-#webserver.https.bindport=8442
-
-# HTTPS bind address configuration.
-# Default: 0.0.0.0
-#webserver.https.bindaddress=0.0.0.0
-
-# HTTPS access keystore configuration. SSL access will be disabled if these
-# variables are not set. SSL is disabled by default. 
-#webserver.keystore.file=/home/jboss/extra-keys/ssl-keystore.jks
-#webserver.keystore.password=foo123
 
 #
 # General application behavior
