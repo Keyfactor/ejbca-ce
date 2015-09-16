@@ -92,7 +92,7 @@ import org.junit.runners.MethodSorters;
 /**
  * This test runs in 'normal' CMP mode
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
- * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.3.3", which can be set in Run Configurations if running the 
+ * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the 
  * test from Eclipse.
  *
  * @version $Id$

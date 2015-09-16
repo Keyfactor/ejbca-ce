@@ -30,9 +30,9 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
 
-From EJBCA 6.3.2 up to EJBCA 6.3.3
+From EJBCA 6.3.2 up to EJBCA 6.4.0
 -------------------------------
-Upgrading to 6.3.3 will require some minor additions of access rules, which will be performed in post-upgrade. All additions create more granularity, 
+Upgrading to 6.4.0 will require some minor additions of access rules, which will be performed in post-upgrade. All additions create more granularity, 
 so while role will be given access to anything they didn't have before the upgrade, rules can be restricted manually after the upgrade to make
 access control more restrictive. 
 
