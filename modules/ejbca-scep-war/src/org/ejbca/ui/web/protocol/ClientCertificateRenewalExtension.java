@@ -124,13 +124,13 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             }
             latestIssued = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), cacert, false);
             if (latestIssued == null) {
-                throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has a rollover certiticate, but no valid certificate was found.");
+                throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has a rollover certiticate, but no valid certificate was found. RequestDN: '"+reqmsg.getRequestDN()+"', end entity DN: '"+endEntityInformation.getDN()+"'.");
             }
             log.debug("Found existing certificate, will use client certificate renewal for rollover certificate");
         } else if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             latestIssued = certificateStoreSession.findLatestX509CertificateBySubject(reqmsg.getRequestDN(), cacert, false);
             if (latestIssued == null) {
-                throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has status generated, but no certificate was found.");
+                throw new IllegalStateException("End entity with username " + endEntityInformation.getUsername() + " has status generated, but no certificate was found. RequestDN: '"+reqmsg.getRequestDN()+"', end entity DN: '"+endEntityInformation.getDN()+"'.");
             }
             log.debug("Found existing certificate, will use client certificate renewal");
         } else {
