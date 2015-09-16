@@ -1232,31 +1232,6 @@ public abstract class CertTools {
         }
         return ret;
     }
-    
-    public static Collection<String> certChainToBase64Chain(final Collection<Certificate> certs) {
-        final Collection<String> b64Certs = new ArrayList<String>();
-        for (Certificate cert : certs) {
-            try {
-                String b64Cert = new String(Base64.encode(cert.getEncoded()));
-                b64Certs.add(b64Cert);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
-        return b64Certs;
-    }
-    
-    public static Collection<Certificate> base64ChainToCertChain(final Collection<String> b64Certs) throws CertificateParsingException {
-        final Collection<Certificate> certs = new ArrayList<Certificate>();
-        for (String b64Cert : b64Certs) {
-            Certificate cert = getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
-            if (cert == null) {
-                throw new IllegalStateException("Can not create certificate object from: " + b64Cert);
-            }
-            certs.add(cert);
-        }
-        return certs;
-    }
 
     /**
      * Converts a regular array of certificates into an ArrayList, using the provided provided.
