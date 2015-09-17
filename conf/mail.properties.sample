@@ -4,11 +4,6 @@
 # See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
 # It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
 
-# Note that in JBoss 5.1.0 there is a bug so that only one mail configuration can be used.
-# Whatever mail configuration we deploy in ${jboss.server.dir}/deploy/ejbca-mail-service.xml 
-# is overridden by the default configuration in ${jboss.server.dir}/deploy/mail-service.xml.
-# The solution is to delete the file ${jboss.server.dir}/deploy/mail-service.xml.
-
 # The JNDI-name used to send email notifications from EJBCA.
 # Not that this differs between different application servers, see installation for 
 # instructions for your appserver. The default works for JBoss.
