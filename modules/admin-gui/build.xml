@@ -10,7 +10,6 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="jasper-temp.dir" location="${this.dir}/tmp-jasper"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
@@ -37,25 +36,12 @@
 		<path location="${mod.edition-specific-ejb.lib}"/>
 	</path>
 	
-    <path id="jasper.classpath">
-    	<pathelement location="${jasper-temp.dir}"/>
-        <path refid="lib.jasper.classpath"/>
-        <path refid="lib.commons-logging.classpath"/>
-        <path refid="lib.commons-el.classpath"/>
-        <path refid="lib.jsp.classpath"/>
-        <path refid="lib.ldap.classpath"/>
-        <path refid="compile.classpath"/>
-        <path location="${build.dir}/WEB-INF/classes"/>
-        <path refid="lib.tomahawk.classpath"/>
-    </path>
-
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
     	<delete file="${mod.admin-gui.war}" />
-    	<delete dir="${jasper-temp.dir}"/>
     </target>
 	
-    <target name="build" description="Build this module" depends="validate">
+    <target name="build" description="Build this module" depends="compile">
     	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
         <war destfile="${mod.admin-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
@@ -69,43 +55,6 @@
         	classpathref="compile.classpath"/>
     </target>
 	
-	<!-- JSP validation currently only works on JBoss 5.1.0, but not jboss 6 -->
-	<condition property="validatejsp">
-		<and>
-			<equals arg1="jboss" arg2="${appserver.type}"/>
-			<available classname="org.apache.jasper.JspC" classpathref="jasper.classpath"/>
-			<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
-		</and>
-	</condition>
-
-    <target name="validate" depends="compile" if="validatejsp">
-        <!--
-            Since Jasper might not be compatible with all application servers, we discard the compiled JSP when we are done.
-            This is just a compile-time validation that should be possible to disable if we are running in prod.
-            
-            Using runtime complilation is slower for the user during first access, but will use the latest libraries
-            from the used appserver. 
-        -->
-    	<mkdir dir="${jasper-temp.dir}/classes"/>
-        <mkdir dir="${jasper-temp.dir}/jspc"/>
-        <copy tofile="${jasper-temp.dir}/log4j.xml" file="${log4j.test.file}"/>
-
-	    <property name="jasper.classpath" refid="jasper.classpath"/>
-		<taskdef name="jasper2" classname="org.apache.jasper.JspC" classpathref="jasper.classpath" loaderref="jasper"/>
-		<jasper2 uriroot="${resources.dir}"
-			package="org.apache.jasper.jspc"
-			outputdir="${jasper-temp.dir}/jspc"
-			validatexml="false"
-			addWebXmlMappings="false"
-            verbose="9"
-            classpath="${jasper.classpath}"/>
-		<depend srcdir="${jasper-temp.dir}/jspc" destdir="${jasper-temp.dir}/classes">
-			<classpath refid="jasper.classpath"/>
-		</depend>
-		<javac srcdir="${jasper-temp.dir}/jspc" destdir="${jasper-temp.dir}/classes" debug="on"
-			includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="jasper.classpath"/>
-    </target>
-
     <target name="setup">
     	<mkdir dir="${build.dir}/WEB-INF/classes"/>
     	<native2ascii encoding="UTF-8"

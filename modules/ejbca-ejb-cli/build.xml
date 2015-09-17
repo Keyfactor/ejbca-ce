@@ -95,6 +95,7 @@
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="false">
 			<path refid="lib.jee.classpath"/>
     		<path refid="lib.jpa.classpath"/>
+       		<path refid="lib.jee-client.classpath"/>
     	</copy>
 		<!-- clover.jar is needed if we compiled with clover (see modules/build.xml). Without this cli does not work when using clover -->
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="false" failonerror="false">
