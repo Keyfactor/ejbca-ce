@@ -854,7 +854,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         addNewAccessRulestoRoles();     
         // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
         addReadOnlyRules();
-        log.info("Completed post upgrade procedure to 6.4.0");
+        log.error("(This is not an error) Completed post upgrade procedure to 6.4.0");
     }
     
     /**
