@@ -369,15 +369,9 @@ org.cesecore.keybind.InternalKeyBindingRules
     boolean editSysConfigAuthorized = false;
 	boolean editEKUAuthorized = false;
 	boolean editCustomCertExtensionsAuthorized = false;
-	try{
-		editSysConfigAuthorized = ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE);
-	}catch(AuthorizationDeniedException e){}
-	try{
-		editEKUAuthorized = ejbcawebbean.isAuthorizedNoLog(EDITAVAILABLEEKU_RESOURCE);
-	}catch(AuthorizationDeniedException e){}
-	try{
-		editCustomCertExtensionsAuthorized = ejbcawebbean.isAuthorizedNoLog(EDITCUSTOMCERTEXTENSION_RESOURCE);
-	}catch(AuthorizationDeniedException e){}
+	editSysConfigAuthorized = ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE);
+	editEKUAuthorized = ejbcawebbean.isAuthorizedNoLogSilent(EDITAVAILABLEEKU_RESOURCE);
+	editCustomCertExtensionsAuthorized = ejbcawebbean.isAuthorizedNoLogSilent(EDITCUSTOMCERTEXTENSION_RESOURCE);
 	if(editSysConfigAuthorized || editEKUAuthorized || editCustomCertExtensionsAuthorized){
           if(!configheaderprinted){      
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
