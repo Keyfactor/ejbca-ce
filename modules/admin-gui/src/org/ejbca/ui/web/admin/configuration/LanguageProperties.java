@@ -36,11 +36,8 @@ public class LanguageProperties extends Properties {
 	private static final String whiteSpaceChars = " \t\r\n\f";
 	
 	public synchronized void load(InputStream inStream) throws IOException {   
-		// If we don't specify any encoding, it works good except on Websphere where it throws an
-		// sun.io.MalformedInputException because it expects a UTF-8 encoded file (if system encoding if UTF-8) 
-		// but finds a ISO-8859-1 encoded one
-		// Maybe we should make sure everything is UTF-8?
 		// Try first with system default, revert to ISO-8859-1 if it bombs
+	    // Note: This is not true, we try with ISO-8859-1 and try again if it fails??
 		BufferedReader in = new BufferedReader(new InputStreamReader(inStream, "ISO-8859-1")); //This sentence is crucial
 		try {
 			put(in); 			
