@@ -213,39 +213,14 @@
 	</path>
 
 	<path id="lib.javaxejb.classpath">
-		<fileset dir="${appserver.home}">
-			<!-- JBoss 7.1.1 and EAP 6.0 -->
-			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0*.jar"/>
-			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.*.jar"/>
-			<include name="modules/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec-*.jar"/>
-			
-			<!-- JBoss 7.2.0 and EAP 6.1 -->
-			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec*.jar"/>
-			<include name="modules/system/layers/base/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.2.Final-redhat-2.jar"/>
-
-			<!-- Glassfish 3.1 -->
-			<include name="lib/glassfish/javaee.jar"/>
-			
-			<!-- Glassfish 4.0 -->
-			<include name="glassfish/lib/javaee.jar"/>			
-		</fileset>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
 	</path>
-	
-	<path id="lib.jee.classpath">
-		<path refid="lib.javaxejb.classpath"/>
+
+	<!-- Remote EJB requires application specific implementation to be available -->
+	<path id="lib.jee-client.classpath">
 		<fileset dir="${appserver.home}">
-			<!-- JBoss 7.1.1 and EAP 6.0 for javax.peristence, transaction, remote EJB, ...-->
+			<!-- JBoss 7.1.1 and EAP 6.0 for remote EJB ...-->
 			<include name="bin/client/jboss-client*.jar"/>
-			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
-			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
-			<!-- JBoss 7.1.1 and EAP 6.0 for javax.resource ...-->
-			<include name="modules/javax/resource/api/main/jboss-connector-api_1.6_spec-*.jar"/>
-			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 and 9 for javax.peristence, transaction, remote EJB, ...-->
-			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.?-api*.jar"/>
-			<include name="modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.?_spec*.jar"/>
-			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.2_spec*.jar"/> <!-- WildFly 8 -->
-			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.6_spec*.jar"/>
-			<include name="modules/system/layers/base/javax/resource/api/main/jboss-connector-api_1.7_spec*.jar"/> <!-- WildFly 9 -->
 			<!-- Glassfish 3.1 -->
 			<include name="lib"/>
 			<include name="lib/gf-client.jar"/>
@@ -258,50 +233,22 @@
 		</fileset>
 	</path>
 
-	<path id="lib.servlet.classpath">
-		<fileset dir="${appserver.home}">
-			<!-- JBoss 7.1.0 and EAP 6.0 -->
-			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.*.jar"/>
-			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 -->
-			<include name="modules/system/layers/base/javax/servlet/api/main/jboss-servlet-api_3.?_spec*.jar"/>
-			<!-- Glassfish 3.1 -->
-			<include name="lib/glassfish/javaee.jar"/>			
-			<!-- Glassfish 4.0 -->
-			<include name="glassfish/lib/javaee.jar"/>			
-		</fileset>
-		<!--fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/-->
+	<path id="lib.jee.classpath">
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
 	</path>
 
-	<fileset id="lib.jsf.classpath.files" dir="${appserver.home}">
-		<!-- JBoss 7.2.0, 7.1.1 and EAP 6.0 -->
-		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.*.jar"/>
-		<!-- JBoss 7.2.0 and EAP 6.1, 6.2 and WildFly 8  -->							   
-		<include name="modules/system/layers/base/javax/faces/api/main/jboss-jsf-api_2.?_spec*.jar"/>
-		<!-- Glassfish 3.1 -->
-		<include name="modules/jsf-impl.jar" />
-	</fileset>
+	<path id="lib.servlet.classpath">
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+	</path>
+
 	<path id="lib.jsf.classpath">
-		<fileset refid="lib.jsf.classpath.files"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="myfaces-api-2.0.*.jar"/>
 	</path>
 	
 	<path id="lib.jsp.classpath">
-		<fileset dir="${appserver.home}">
-			<!-- JBoss -->
-		    <include name="modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0*.jar"/> <!-- 7.1.1 / EAP6.0 -->
-			<include name="modules/system/layers/base/javax/el/api/main/jboss-el-api_*_spec*.jar"/><!-- 7.2.0 / EAP6.1, 6.2 and WildFly 8 -->
-			<!-- Glassfish -->
-			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
-		</fileset>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
 	</path>
 	
-	<path id="lib.jasper.classpath">
-		<fileset dir="${appserver.home}">
-			<!-- JBoss -->
-			<!-- Glassfish -->
-			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
-		</fileset>
-	</path>
-
 	<path id="lib.log4j.classpath"><pathelement location="${ejbca.home}/lib/log4j-1.2.16.jar"/></path>
 	
 	<path id="lib.json.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="json-simple-*.jar"/></path>

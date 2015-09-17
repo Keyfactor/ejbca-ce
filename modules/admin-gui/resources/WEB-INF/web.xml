@@ -23,18 +23,14 @@
 
     <description><![CDATA[EJBCA Administration web]]></description>
 
-    <!-- TODO: Disable this when EJBCA 4 is fully stable. -->
+    <!-- Set to "Development" for debugging.
+        "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
+        TODO: Set automatically when ejbca.productionmode=false
+    -->
     <context-param>
-        <param-name>com.sun.faces.validateXml</param-name>
-        <param-value>true</param-value>
+        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-value>Production</param-value>
     </context-param>
-
-	<!-- In JBoss AS 6 we don't want to use JSF2, because the Tomahawk library is not compatible with that. 
-	<context-param>
-    	<param-name>org.jboss.jbossfaces.JSF_CONFIG_NAME</param-name>
-    	<param-value>Mojarra-1.2</param-value>
- 	</context-param>
-	-->
 
     <filter>
         <filter-name>ProxiedAuthenticationFilter</filter-name>
