@@ -37,7 +37,6 @@ org.cesecore.certificates.ca.CAExistsException,
 org.cesecore.certificates.ca.CADoesntExistsException,
 org.cesecore.keys.token.CryptoTokenOfflineException,
 org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
-org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo,
 org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo,
 org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo,
 org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo,
@@ -121,7 +120,6 @@ java.security.InvalidAlgorithmParameterException
   static final String BUTTON_ROLLOVER                   = "buttonrollover";
   static final String BUTTON_RECIEVEFILE                = "buttonrecievefile";     
   static final String BUTTON_PUBLISHCA                  = "buttonpublishca";     
-  static final String BUTTON_REVOKERENEWXKMSCERTIFICATE = "checkboxrenewxkmscertificate";
   static final String BUTTON_REVOKERENEWCMSCERTIFICATE  = "checkboxrenewcmscertificate";
   static final String BUTTON_GENDEFAULTCRLDISTPOINT     = "checkboxgeneratedefaultcrldistpoint";
   static final String BUTTON_GENDEFAULTCRLISSUER        = "checkboxgeneratedefaultcrlissuer";
@@ -175,7 +173,6 @@ java.security.InvalidAlgorithmParameterException
   static final String CHECKBOX_FUTUREROLLOVER                     = "checkboxfuturerollover";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
-  static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
   static final String CHECKBOX_ACTIVATECMSSERVICE                 = "checkboxactivatecmsservice";
   
   static final String SELECT_REVOKEREASONS                        = "selectrevokereasons";
@@ -221,7 +218,6 @@ java.security.InvalidAlgorithmParameterException
   boolean  cadeletefailed       = false;
   boolean  illegaldnoraltname   = false;
   boolean  errorrecievingfile   = false;
-  boolean  xkmsrenewed          = false;
   boolean  cmsrenewed           = false;
   boolean  catokenoffline       = false;
   boolean  initcatokenoffline   = false;
@@ -378,7 +374,6 @@ java.security.InvalidAlgorithmParameterException
                 final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
                 final boolean includeInHealthCheck = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_INCLUDEINHEALTHCHECK));
                 final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
-                final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
                 final String cryptoTokenIdString = requestMap.get(HIDDEN_CACRYPTOTOKEN); //requestMap.get(SELECT_CRYPTOTOKEN);
@@ -400,7 +395,7 @@ java.security.InvalidAlgorithmParameterException
                		 usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
                		 authorityInformationAccess, nameConstraintsPermitted, nameConstraintsExcluded,
                		 caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
-               		 usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive,
+               		 usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
                		 serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest,
                		 cryptoTokenIdString, keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
                		 keyAliasHardTokenEncryptKey, keyAliasKeyEncryptKey, keyAliasKeyTestKey,
@@ -450,10 +445,6 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(BUTTON_REVOKERENEWCMSCERTIFICATE) != null) {
                 cadatahandler.renewAndRevokeCmsCertificate(caid);
                 cmsrenewed = true;             
-            }
-            if (requestMap.get(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null) {
-                cadatahandler.renewAndRevokeXKMSCertificate(caid);
-                xkmsrenewed = true;             
             }
             if (requestMap.get(BUTTON_REVOKECA) != null) {
                 final String revocationReasonParam = requestMap.get(SELECT_REVOKEREASONS);
@@ -544,7 +535,6 @@ java.security.InvalidAlgorithmParameterException
                 final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
                 final boolean includeInHealthCheck = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_INCLUDEINHEALTHCHECK));
                 final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
-                final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
                 final String nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
@@ -568,7 +558,7 @@ java.security.InvalidAlgorithmParameterException
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess,
             		nameConstraintsPermitted, nameConstraintsExcluded,
             		caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl,
-            		crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
+            		crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceCmsActive, sharedCmpRaSecret
             		);
                 
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
@@ -642,7 +632,7 @@ java.security.InvalidAlgorithmParameterException
                         X509CAInfo x509cainfo = (X509CAInfo)cainfo;
                         final String signkeyspec = requestMap.containsKey(SELECT_KEYSIZE) ?
                                 requestMap.get(SELECT_KEYSIZE) : requestMap.get(HIDDEN_KEYSIZE);
-                        extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
+                        extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceCmsActive);
                         x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
                         x509cainfo.setSubjectAltName(subjectaltname);
                         x509cainfo.setPolicies(policies);

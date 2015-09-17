@@ -43,13 +43,6 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Password used to protect XKMS keystores in the database.
-     */
-    public static String getCaXkmsKeyStorePass() {
-        return EjbcaConfigurationHolder.getExpandedString("ca.xkmskeystorepass");
-    }
-
-    /**
      * Password used to protect CMS keystores in the database.
      */
     public static String getCaCmsKeyStorePass() {

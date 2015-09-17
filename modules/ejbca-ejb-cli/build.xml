@@ -22,7 +22,6 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
-		<path refid="lib.xmlsec.classpath"/>	
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>

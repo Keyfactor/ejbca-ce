@@ -134,11 +134,6 @@
     	<antcall target="createreport"/>
     </target>
 
-    <target name="test:xkms" description="Run XKMS tests." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runxkms" />
-    	<antcall target="createreport"/>
-    </target>
-
     <target name="test:externalra" description="run JUnit External RA test." depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/externalra" target="test" />
     	<antcall target="createreport"/>

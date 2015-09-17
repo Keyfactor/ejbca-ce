@@ -50,7 +50,7 @@ public final class CryptoProviderTools {
     private static final String IMPLICITLYCA_N = CesecoreConfiguration.getEcdsaImplicitlyCaN();
 
     /** System provider used to circumvent a bug in Glassfish. Should only be used by 
-     * X509CAInfo, OCSPCAService, XKMSCAService, CMSCAService. 
+     * X509CAInfo, OCSPCAService, CMSCAService. 
      * Defaults to SUN but can be changed to IBM by the installBCProvider method.
      */
     public static String SYSTEM_SECURITY_PROVIDER = "SUN";

@@ -398,12 +398,6 @@
 			replacement-ejb="ejbca-ws-ejb.jar"
 		/>
 		<jar-replacement-in-module
-			replacement-tag="!--@ejbca-xkms-ejb.jar@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${xkms.enabled}"
-			replacement-ejb="ejbca-xkms-ejb.jar"
-		/>
-		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-systemtest-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${in-test-mode}"
@@ -441,14 +435,6 @@
 		<condition property="bundle-xerces-exclude" value="xerces*.jar, xml-apis.jar" else="">
 			<isset property="exclude-xerces"/>
 		</condition>
-		<!-- Include Xalan library if it don't exist in the current application server (jboss6 won't start with it). -->
-		<condition property="bundle-xalan-exclude" value="xalan*.jar" else="">
-			<isset property="exclude-xalan"/>
-		</condition>
-		<!-- Include serializer library if it don't exist in the current application server (jboss6 won't start with it). -->
-		<condition property="bundle-serializer-exclude" value="serializer*.jar" else="">
-			<isset property="exclude-serializer"/>
-		</condition>
 		<!-- Special JBoss EAP 6 handling -->
     	<condition property="jbosseap6-specials" value="true"><equals arg1="jbosseap6" arg2="${appserver.subtype}"/></condition>
 		<!-- Remove possible "leftovers" from previous plugin runs! -->
@@ -473,7 +459,6 @@
                 <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
                 <include name="commons-*.jar" />
-                <include name="libidn.jar" />	<!-- XKMS -->
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
@@ -485,14 +470,12 @@
                 <include name="json-simple-*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
-            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="*.jar" excludes="${bundle-xalan-exclude},${bundle-serializer-exclude}"/>	<!-- XKMS -->
             <fileset dir="${dist.dir}" includes="doc.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
                 <include name="ejbca-ejb.jar" />
             	<include name="edition-specific-ejb.jar" />
                 <include name="ejbca-ws-ejb.jar" />
-                <include name="ejbca-xkms-ejb.jar" />
                 <include name="adminweb.war" />
                 <include name="cmp.war" />
                 <include name="publicweb.war" />
@@ -598,7 +581,6 @@
         	<sourcepath location="${ejbca.home}/src/java"/>
            	<sourcepath location="${ejbca.home}/modules/externalra-scep/src"/>
            	<sourcepath location="${ejbca.home}/modules/externalra/src"/>
-           	<sourcepath location="${ejbca.home}/modules/ejbca-xkms/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src-gen"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	
@@ -1158,14 +1140,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
 
-    <target name="xkms.client" depends="deprecated:check" description="Build the EJBCA XKMS client">
-    	<ant dir="modules" target="ejbca-xkms-cli" />
-    </target>
-
-    <target name="xkms.war" depends="deprecated:check" description="Build the EJBCA XKMS WAR">
-    	<ant dir="modules" target="ejbca-xkms"/>
-    </target>
-	
 	<target name="externalra-service" depends="externalra:check" >
     	<ant dir="modules" target="externalra-service"/>
 	</target>
