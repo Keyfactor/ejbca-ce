@@ -1375,9 +1375,6 @@ The 'signature' type of response protection can be used regardless of what authe
 
 <section name="OCSP">
 <p>
-Note! Some OCSP clients do not handle external OCSP responders very well unfortunately. You should be aware of this.
-</p>
-<p>
 OCSP is used by PKI-clients to verify the validity of certificates in real-time. 
 This is done by sending a request for the status of a specific certificate to an OCSP responder. 
 The responder may or may not be the same as the CA. The OCSP responder sends a signed reply, 
@@ -1400,27 +1397,26 @@ Example to generate an OCSP request using OpenSSL (works with both internal and 
 <source>
 openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
 </source>
+<p>To issue GET requests for testing the following methodology can be used (replace with your own data):</p>
+<source>
+openssl ocsp -noverify -no_nonce -respout ocsp.resp -reqout ocsp.req -issuer ManagementCA.cacert.pem -cert ejbca-test2.primekey.se -url "http://ejbca-test2.primekey.se:8080/ejbca/publicweb/status/ocsp" -header "HOST" "ejbca-test2.primekey.se" -text
+openssl enc -in ocsp.req -out ocsp.req.b64 -a
+curl --verbose --url http://ejbca-test2.primekey.se:8080/ejbca/publicweb/status/ocsp/MEkwRzBFMEMwQTAJBgUrDgMCGgUABBT1x9iHOmegR7sYp5Fzdo/u3FMBRgQUH1DTnzl9lscAe3WBTUPCWR+xwpQCCDlpiyU2q5Rb
+</source>
 <p>
-If Firefox is to request and accept OCSP-responses from a CA it must be configured:
+If Firefox is to request and accept OCSP-responses from a CA not in the default trust store it must be configured to trust this CA:
 <ol>
-<li>'Use OCSP to validate all certificates using this URL and signer' in 'Privacy &amp; Security->Validation'.
-Choose the CA from EJBCA (which you should have made Trusted by right clicking in 
-'Privacy &amp; Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes).
+<li>In 'Advanced->Certificates->View Certificates->Authorities', import and select the CA certificate, and checking the appropriate Trust checkboxes.
 </li>
-<li>If using a Certificate Profile that includes a OCSP Service URL for client certificates, the Validation option in Firefox 
-'Use OCSP to validate only certificates that specify an OCSP service URL' also works fine. When this option is checked you may need to restart Mozilla.
+<li>If 'Query OCSP responder servers to confirm the current validity of certificates' in 'Advanced->Certificates' is selected, 
+and certificates include an OCSP Service URL (AIA extension) Firefox will query the OCSP server when for example double-clicking on a certificate in the 
+certificate manager.
 </li>
 </ol>
 </p><p>
-When the validation settings are set, Firefox will query the OCSP server when for example double-clicking on a certificate in the 
-certificate manager.
 An appropriate URL for validation is: http://<i>hostname</i>:8080/ejbca/publicweb/status/ocsp
 </p><p>
-If using a dedicated OCSP responder certificate, this certificate must probably not be imported in Firefox as a Trusted CA certificate.
-But if you want to, you can do this through 'View Certificates' in EJBCA 
-(http://<i>hostname</i>:8080/ejbca/retrieve/ca_certs.jsp).
-</p><p>
-In doc/samples it is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
+In doc/samples it is a sample how to check revocation with OCSP using the new APIs since JDK 1.5.
 </p>
 
 <subsection name="Stand-alone OCSP responder">
