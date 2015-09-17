@@ -244,10 +244,8 @@ piwikTracker.enableLinkTracking();
     	<mkdir dir="${gen-depgraph.dir}"/>
     	<path id="gen-dep.classpath">
     	    <!-- for javax.ejb.Stateless, Local and EJB-->
-    		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar client/ejb3-persistence.jar"/>
-    		<fileset dir="${appserver.home}" includes="modules/javax/ejb/api/main/jboss-ejb-api_* modules/javax/persistence/api/main/hibernate-jpa-*"/>
-    		<fileset dir="${appserver.home}" includes="modules/system/layers/base/javax/ejb/api/main/jboss-ejb-api_* modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-*"/>
-    		<fileset dir="lib" includes="log4j*.jar" />
+    		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+    		<fileset dir="${ejbca.home}/lib" includes="log4j*.jar" />
     	</path>
     	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" encoding="UTF-8" debug="on" includeantruntime="false"
     		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
