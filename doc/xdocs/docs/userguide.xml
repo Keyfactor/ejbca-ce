@@ -1005,9 +1005,9 @@ The freshest CRL extension identifies how delta CRL information is obtained. The
 <subsubsection name="OCSP Service Locator">
 <p>
 This extension is used when revocation information for the certificate containing this extension is available using the
-Online Certificate Status Protocol (OCSP) [<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC2560</a>].
+Online Certificate Status Protocol (OCSP) [<a href="http://www.ietf.org/rfc/rfc6960.txt">RFC6960</a>] (former RFC2560).
 The URI field is the location of the OCSP responder, using the conventions defined in
-<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC2560</a>, usually a plain URL such as http://ocsp.company.com/.
+<a href="http://www.ietf.org/rfc/rfc6960.txt">RFC6960</a>, usually a plain URL such as http://ocsp.company.com/.
 The default URL for the internal OCSP responder in EJBCA is http://hostname:8080/ejbca/publicweb/status/ocsp. 
 </p>
 </subsubsection>
