@@ -157,7 +157,10 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
                 // Always switch to edit mode for new ones and view mode for all others
                 setCurrentExtensionEditMode(id == 0);
             } catch (NumberFormatException e) {
-                log.info("Bad 'extensionId' parameter value.. set, but not a number..");
+                String msg = "Could not parse the extension ID as an Integer. ";
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+                log.error(msg + e.getLocalizedMessage());
+                return 0;
             }
         }
         return this.currentExtensionId;
