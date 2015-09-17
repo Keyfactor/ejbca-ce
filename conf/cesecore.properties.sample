@@ -8,7 +8,6 @@
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
 # - ca.keystorepass
-# - ca.xkmskeystorepass (in ejbca.properties)
 # - ca.cmskeystorepass (in ejbca.properties)
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).

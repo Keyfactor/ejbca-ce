@@ -43,8 +43,6 @@
   boolean hasEditRights = cabean.hasEditRight();
   boolean hasCreateRights = cabean.hasCreateRight();
   
-  XKMSCAServiceInfo xkmscainfo = null; 
-  java.security.cert.X509Certificate xkmscert = null; 
   CmsCAServiceInfo cmscainfo = null; 
   java.security.cert.X509Certificate cmscert = null; 
   if (editca) {
@@ -63,12 +61,6 @@
 
     if (!isexternal) {
 	    for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
-	        if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
-	            xkmscainfo = (XKMSCAServiceInfo) extendedCAServiceInfo;
-	            if (xkmscainfo.getCertificatePath() != null) {
-		            xkmscert = (java.security.cert.X509Certificate) xkmscainfo.getCertificatePath().get(0);
-	            }
-	        }
 	        if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
 	            cmscainfo = (CmsCAServiceInfo) extendedCAServiceInfo;
 	            if (cmscainfo.getCertificatePath() != null) {
@@ -153,7 +145,6 @@ function fillCertProfileField(){
 function isExternalX509(){
    var subjectaltname  =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
    var policyidfield   =  document.ca.<%=TEXTFIELD_POLICYID%>;
-   var activatexkms    =  document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>;
    var activatecms     =  document.ca.<%=CHECKBOX_ACTIVATECMSSERVICE%>;
    var ncpermitted     =  document.ca.<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>;
    var ncexcluded      =  document.ca.<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>;
@@ -163,10 +154,6 @@ function isExternalX509(){
 	   policyidfield.disabled = false;    
 	   activatecms.disabled = false;
 	   activatecms.checked = false;   
-       if (typeof activatexkms != "undefined") {
-	   	activatexkms.disabled = false;
-	   	activatexkms.checked = false;
-       }
        ncpermitted.disabled = false;
        ncexcluded.disabled = false;
 	
@@ -175,10 +162,6 @@ function isExternalX509(){
 	      policyidfield.disabled = true;   
 	      activatecms.disabled = true;
 	      activatecms.checked = false;
-	      if (typeof activatexkms != "undefined") {
-		      activatexkms.disabled = true;
-		      activatexkms.checked = false;    
-		  }
 		  ncpermitted.disabled = true;
           ncexcluded.disabled = true;
 	   } 
@@ -260,15 +243,7 @@ function confirmrenewal(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA",true) %>") && checkallfields();     
 }
 
-<% if(xkmscert != null){ %>
-  function viewxkmscert(){        
-      var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(xkmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(xkmscert),"UTF-8")%>";
-      link = encodeURI(link);
-      win_popup = window.open(link, 'view_cert','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
-      win_popup.focus();
-  }
-<% } 
-  if(cmscert != null){ %>
+<%  if(cmscert != null){ %>
   function viewcmscert(){        
       var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(cmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(cmscert),"UTF-8")%>";
       link = encodeURI(link);
@@ -1441,30 +1416,6 @@ function checkallfields(){
            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
-
-    <% if((!editca || (editca && xkmscainfo != null)) && org.ejbca.config.XkmsConfiguration.getEnabled()){ %>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("XKMSSERVICE") %>
-      </td>
-      <td width="50%">
-        <input type="checkbox" name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && !isUninitialized && xkmscainfo == null)) out.write(" disabled ");%>
-            <% if((editca && (xkmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
-                 <label for="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
-         <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" 
-         	<%= (hasEditRights ? "" : "disabled") %>>
-         <%   if(xkmscert != null){ %> &nbsp;&nbsp;         
-         <br />
-         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-         <a style="cursor:pointer;" onClick="viewxkmscert()"><u><%= ejbcawebbean.getText("VIEWXKMSCERTIFICATE")%></u></a>
-         <%   } %>
-         <% } %>
-      </td>
-    </tr>    
-    <% } %>    
 
     <% if(!editca || (editca && cmscainfo != null)){ %>
     <tr id="Row<%=row++%2%>"> 

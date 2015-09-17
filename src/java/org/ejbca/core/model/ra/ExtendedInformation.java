@@ -66,9 +66,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     /** Used to store subject directory attributes, which are put in an extension in the certificate.
      * SubjectDirectoryAttributes are standard attributes, see rfc3280 */
     private static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
-    /**  the revocation code identifier primarily used in the XKMS protocol to let the end user revoke his certificate
-     * see the XKMS specification */
-    private  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed  */
     private static final String CUSTOMDATA = "customdata_";
     
@@ -122,33 +119,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
       } else {
         data.put(SUBJECTDIRATTRIBUTES,subjdirattr);
       }
-    }
-    
-    /**
-     * Returns the revocation code identifier primarily used
-     * in the XKMS protocol to let the end user revoke his certificate.
-     *          
-     *      
-     * The method is autoupgradable
-     * 
-     * @returns The code or null if no revocationcode have been set.
-     */
-    public String getRevocationCodeIdentifier(){ 
-    	String retval = (String) data.get(XKMSREVOCATIONCODEIDENTIFIER);
-    	return retval;     	
-    }
-    
-    
-    /**
-     * 
-     * 
-     * @param revocationCodeIdentifier the string saved
-     */
-    public void setRevocationCodeIdentifier(String revocationCodeIdentifier) {
-    	String value = revocationCodeIdentifier;    
-    	    	
-    	data.put(XKMSREVOCATIONCODEIDENTIFIER,value);
-
     }
     
     /**

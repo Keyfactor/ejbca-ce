@@ -29,9 +29,7 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
-		<path refid="lib.xmlsec.classpath"/>	
 		<path refid="lib.jpa.classpath"/>
-		<path refid="lib.xml.classpath"/>
 		<path refid="lib.javaxejb.classpath"/>
 		<path refid="lib.xstream.classpath"/>
 	</path>

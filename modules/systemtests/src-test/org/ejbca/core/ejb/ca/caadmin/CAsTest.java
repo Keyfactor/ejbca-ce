@@ -96,7 +96,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.protocol.cmp.CmpResponseMessage;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -182,10 +181,8 @@ public class CAsTest extends CaTestCase {
         // Preemptively remove the CA if it exists.
         removeTestCA(caName);
         final CAToken catoken = createCaToken("test01", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        // Create and active OSCP CA Service.
+        // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TEST", "", "1024",
-                AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
@@ -443,10 +440,8 @@ public class CAsTest extends CaTestCase {
             String dn = CertTools
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
             final CAToken caToken = createCaToken("test07", "1024", AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            // Create and active OSCP CA Service.
+            // Create and active Extended CA Services.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + dn, "", "2048",
-                    AlgorithmConstants.KEYALGORITHM_RSA));
             X509CAInfo cainfo = new X509CAInfo(dn, "TESTRSA4096", CAConstants.CA_ACTIVE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, CAInfo.SELFSIGNED, null, caToken);
             cainfo.setDescription("JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs");
@@ -517,10 +512,8 @@ public class CAsTest extends CaTestCase {
         List<Certificate> toremove = new ArrayList<Certificate>();
         try {
             final CAToken caToken = createCaToken("test11", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            // Create and active OSCP CA Service.
+            // Create and active Extended CA Services.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
-                    "", "1024", AlgorithmConstants.KEYALGORITHM_RSA));
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "",
                     "1024", AlgorithmConstants.KEYALGORITHM_RSA));
 
@@ -650,10 +643,8 @@ public class CAsTest extends CaTestCase {
         List<Certificate> toremove = new ArrayList<Certificate>();
         try {
             final CAToken caToken = createCaToken("test11", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            // Create and active OSCP CA Service.
+            // Create and active Extended CA Services.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
-                    "", "1024", AlgorithmConstants.KEYALGORITHM_RSA));
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "",
                     "1024", AlgorithmConstants.KEYALGORITHM_RSA));
 
@@ -990,11 +981,8 @@ public class CAsTest extends CaTestCase {
         // We cant be sure this CA was not left over from some other failed test
         removeTestCA("TESTFAIL");
         final CAToken caToken = createCaToken("test16", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        // Create and active OSCP CA Service.
+        // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-
-        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TEST", "", "1024",
-                AlgorithmConstants.KEYALGORITHM_RSA));
 
         X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, CAInfo.SELFSIGNED, null, caToken);

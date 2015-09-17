@@ -33,8 +33,6 @@
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
-	<classpathentry kind="src" path="modules/ejbca-xkms/src"/>
-	<classpathentry kind="src" path="modules/ejbca-xkms-cli/src"/>
 	<classpathentry kind="src" path="modules/externalra-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
@@ -102,10 +100,6 @@
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-152.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.4.2.jar"/>
-	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
-	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/libidn.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/dom4j-1.6.1.jar"/>

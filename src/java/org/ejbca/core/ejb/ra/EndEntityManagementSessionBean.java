@@ -85,7 +85,6 @@ import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.config.XkmsConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -1525,7 +1524,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         String userDataDN = certificateData.getSubjectDN();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         UserData data = null;
-        if (certReqHistory == null || XkmsConfiguration.getEnabled()) {
+        if (certReqHistory == null) {
             // We could use userdata later, so try to find it
             data = UserData.findByUsername(entityManager, username);
         }
@@ -1611,14 +1610,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
             log.info(msg);
             throw new FinderException(msg);
-        }
-        if (XkmsConfiguration.getEnabled() && data != null) {
-            // Reset the revocation code identifier used in XKMS
-            final ExtendedInformation inf = data.getExtendedInformation();
-            if (inf != null && inf.getRevocationCodeIdentifier() != null) {
-                inf.setRevocationCodeIdentifier(null);
-                data.setExtendedInformation(inf);
-            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<revokeCert()");

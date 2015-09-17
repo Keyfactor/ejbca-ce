@@ -259,9 +259,7 @@ This field allows selection of the key specifications to use for these soft keys
 <ul>
 <li><i>Internal</i> Online Certificate Status Protocol (OCSP): The CA's certSignKey key pair will be used.</li>
 <li>Cryptographic Message Syntax (CMS, superseded PKCS#7): A soft key pair in the database will be used.</li>
-<li>XML Key Management Specification (XKMS): A soft key pair in the database will be used.</li>
 </ul>
-If you don't plan on using CMS or XKMS with any special requirements, you can safely use the default value here.
 </p>
 </subsubsection>
 
@@ -429,7 +427,7 @@ EJBCA supports domain name, directory name, e-mail (RFC 822 name) and IP address
 <dt><code>C=SE,O=Company</code></dt>
 <dd>Matches against the beginning of the Subject DN. The certificates must <strong>not</strong> use LDAP DN order, which is enabled by default!
 <br/>Also note that the RDN encoding must match. If the Name Contraint is encoded as PrintableString, the certificate must also be issued with PrintableString in the subjectDN, otherwise Name Contraint matching will fail.
-If you get an name constraint error about &quot;XKMSCertificate&quot; or &quot;CMSCertificate&quot; when creating a CA, then you have some problem with the Subject DN matching.</dd>
+If you get an name constraint error about &quot;CMSCertificate&quot; when creating a CA, then you have some problem with the Subject DN matching.</dd>
 
 <dt><code>198.51.100.0/24</code></dt>
 <dd>Matches an IPv4 subnet. The IP address checked is the one in the certificate, which in turn is checked if the host is accessed by IP address.</dd>

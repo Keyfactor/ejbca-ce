@@ -198,7 +198,6 @@ List of these passwords in ejbca.properites :
 <br/>ca.tokenpassword
 <br/>ca.keystorepass
 <br/>ca.ocspkeystorepass
-<br/>ca.xkmskeystorepass
 <br/>ca.cmskeystorepass
 </p><p>
 List of these passwords in databaseprotection.properties :

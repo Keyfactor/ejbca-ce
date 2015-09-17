@@ -104,7 +104,6 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -516,7 +515,7 @@ public class CAInterfaceBean implements Serializable {
             String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString,
             String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-            boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceXkmsActive,
+            boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
             String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
@@ -575,7 +574,7 @@ public class CAInterfaceBean implements Serializable {
                     defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccessString,
                     nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
-                    usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive,
+                    usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
                     serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
                     keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey, keyAliasHardTokenEncryptKey,
                     keyAliasKeyEncryptKey, keyAliasKeyTestKey, fileBuffer);
@@ -604,7 +603,7 @@ public class CAInterfaceBean implements Serializable {
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
             String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-            boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceXkmsActive,
+            boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
@@ -727,7 +726,7 @@ public class CAInterfaceBean implements Serializable {
 
 	            if (crlperiod != 0 && !illegaldnoraltname) {
 	                if (buttonCreateCa) {
-	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceXkmsActive, serviceCmsActive);
+	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
 	                            certprofileid, validity, 
 	                            null, catype, signedby,
@@ -772,7 +771,7 @@ public class CAInterfaceBean implements Serializable {
 	                }
 
 	                if (buttonMakeRequest) {
-	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceXkmsActive, serviceCmsActive);
+	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
 	                            certprofileid, validity,
 	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
@@ -817,7 +816,7 @@ public class CAInterfaceBean implements Serializable {
 	            deltacrlperiod = 0;
 	            List<Integer> crlpublishers = new ArrayList<Integer>(); 
 	            if(crlperiod != 0 && !illegaldnoraltname){
-	                // A CVC CA does not have any of the external services OCSP, XKMS, CMS
+	                // A CVC CA does not have any of the external services OCSP, CMS
 	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
 	                if (buttonMakeRequest) {
 	                    signedby = CAInfo.SIGNEDBYEXTERNALCA;
@@ -877,7 +876,7 @@ public class CAInterfaceBean implements Serializable {
         return isCA && certProfile.getUseNameConstraints();
     }
 
-    public List<ExtendedCAServiceInfo> makeExtendedServicesInfos(String keySpec, String subjectdn, boolean serviceXkmsActive, boolean serviceCmsActive) {
+    public List<ExtendedCAServiceInfo> makeExtendedServicesInfos(String keySpec, String subjectdn, boolean serviceCmsActive) {
 	    String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
         try {
             Integer.parseInt(keySpec);
@@ -893,15 +892,10 @@ public class CAInterfaceBean implements Serializable {
             }
         }
         
-        final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
         final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
 	    
         List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        // Create and active OSCP CA Service.
-        extendedcaservices.add(
-                new XKMSCAServiceInfo(xkmsactive,
-                        "CN=XKMSCertificate, " + subjectdn, "",
-                        keySpec, keyType));
+        // Create and active External CA Services.
         extendedcaservices.add(
                 new CmsCAServiceInfo(cmsactive,
                         "CN=CMSCertificate, " + subjectdn, "",
@@ -943,7 +937,7 @@ public class CAInterfaceBean implements Serializable {
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceXkmsActive, boolean serviceCmsActive, String sharedCmpRaSecret
+	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret
 	        ) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfoView infoView = cadatahandler.getCAInfo(caid);  
@@ -997,10 +991,8 @@ public class CAInterfaceBean implements Serializable {
                authorityInformationAccess.add(authorityInformationAccessParam);
                final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
                // Create extended CA Service updatedata.
-               final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-               extendedcaservices.add(new XKMSCAServiceInfo(xkmsactive, false)); 
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
                // is not need to update them.
@@ -1037,7 +1029,7 @@ public class CAInterfaceBean implements Serializable {
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {
                // Edit CVC CA data                            
-               // A CVC CA does not have any of the external services OCSP, XKMS, CMS
+               // A CVC CA does not have any of the external services OCSP, CMS
                final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
                // Create the CAInfo to be used for either generating the whole CA or making a request
                cainfo = new CVCCAInfo(caid, validity, 
@@ -1221,7 +1213,7 @@ public class CAInterfaceBean implements Serializable {
 
     public List<Entry<String,String>> getAvailbleKeySpecs() {
         final List<Entry<String,String>> ret = new ArrayList<Entry<String,String>>();
-        // Legacy idea: Never use larger keys than 2048 bit RSA for CMS and XKMS signing
+        // Legacy idea: Never use larger keys than 2048 bit RSA for CMS signing
         final int[] SIZES_RSA = {1024, 1536, 2048, /*4096, 8192*/};
         final int[] SIZES_DSA = {1024};
         for (int size : SIZES_RSA) {

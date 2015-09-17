@@ -58,12 +58,6 @@
       <td width="60%"></td>
     </tr>
   <% } %>
-  <% if(xkmsrenewed){ %> 
-    <tr> 
-      <td width="40%" class="info"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></td>
-      <td width="60%"></td>
-    </tr>
-  <% } %>
   <% if(cmsrenewed){ %> 
     <tr> 
       <td width="40%" class="info"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></td>

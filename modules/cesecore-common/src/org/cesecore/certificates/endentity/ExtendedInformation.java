@@ -60,10 +60,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * attributes, see rfc3280
      */
     public  static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
-    /**
-     * the revocation code identifier primarily used in the XKMS protocol to let the end user revoke his certificate see the XKMS specification
-     */
-    public  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed */
     public  static final String CUSTOMDATA = "customdata_";
     
@@ -129,32 +125,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         } else {
             data.put(SUBJECTDIRATTRIBUTES, subjdirattr);
         }
-    }
-
-    /**
-     * Returns the revocation code identifier primarily used in the XKMS protocol to let the end user revoke his certificate.
-     * 
-     * 
-     * The method is autoupgradable
-     * 
-     * @returns The code or null if no revocationcode have been set.
-     */
-    public String getRevocationCodeIdentifier() {
-        String retval = (String) data.get(XKMSREVOCATIONCODEIDENTIFIER);
-        return retval;
-    }
-
-    /**
-     * 
-     * 
-     * @param revocationCodeIdentifier
-     *            the string saved
-     */
-    public void setRevocationCodeIdentifier(String revocationCodeIdentifier) {
-        String value = revocationCodeIdentifier;
-
-        data.put(XKMSREVOCATIONCODEIDENTIFIER, value);
-
     }
 
     /**

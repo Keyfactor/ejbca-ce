@@ -59,12 +59,6 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     String healthCheck();
 
     /**
-     * Regenerates the XKMS certificate for a CA.
-     */
-    void renewAndRevokeXKMSCertificate(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,
-            CAOfflineException, CertificateRevokeException;
-
-    /**
      * Regenerates the CMS certificate for a CA.
      */
     void renewAndRevokeCmsCertificate(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,

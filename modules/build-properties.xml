@@ -58,12 +58,6 @@
     <property name="mod.ejbca-ws.lib" location="${mod.dist.path}/ejbca-ws.jar" />
     <property name="mod.ejbca-ws.wsdl" location="${mod.dist.path}/EjbcaWSService.wsdl" />
     <property name="mod.ejbca-ws.wsdl-schema" location="${mod.dist.path}/EjbcaWSService_schema1.xsd" />
-    <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.dist.path}/ejbca-xkms-cli/xkmscli.jar" />
-    <property name="mod.ejbca-xkms-cli.dist" location="${ejbca.dist.path}/ejbca-xkms-cli" />
-    <property name="mod.ejbca-xkms-cli.path" location="${mod.path}/ejbca-xkms-cli" />
-    <property name="mod.ejbca-xkms.path" location="${mod.path}/ejbca-xkms" />
-    <property name="mod.ejbca-xkms-ejb.jar" location="${mod.dist.path}/ejbca-xkms-ejb.jar" />
-    <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
     <property name="mod.peerconnector.path" location="${mod.path}/peerconnector"/>
 	<property name="mod.peerconnector-cli.lib" location="${mod.dist.path}/peerconnector-cli.jar" />
     <property name="mod.peerconnector-common.lib" location="${mod.dist.path}/peerconnector-common.jar" />
@@ -152,7 +146,6 @@
 	<property name="externalra.enabled" value="false"/>
 	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
-	<condition property="xkms.enabled.true"><istrue value="${xkms.enabled}"/></condition>
 	<condition property="externalra.enabled.true">
 		<and>
 			<istrue value="${externalra.enabled}"/>
@@ -210,13 +203,7 @@
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
-	<path id="lib.idn.classpath"><fileset dir="${ejbca.home}/lib" includes="libidn.jar"/></path>
 	<path id="lib.jaxb-namespaceprfixmapper-interfaces.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/></path>
-	<path id="lib.xml.classpath"><fileset dir="${ejbca.home}/lib/xmlsign" includes="xalan-2.7.1.jar serializer-2.7.1.jar"/></path>
-	<path id="lib.xmlsec.classpath">
-		<fileset dir="${ejbca.home}/lib/xmlsign" includes="xmlsec-1.4.3.jar"/>
-		<path refid="lib.xml.classpath"/>
-	</path>
 
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">

@@ -32,7 +32,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -186,7 +185,6 @@ import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalReq
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -358,18 +356,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         
         if (caInfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA) {
             try {
-                renewAndRevokeXKMSCertificate(authenticationToken, caInfo.getCAId());
                 renewAndRevokeCmsCertificate(authenticationToken, caInfo.getCAId());
             } catch (CADoesntExistsException e) {
                 // getCAInfo should have thrown this exception already
                 throw new IllegalStateException(e);
             } catch (CAOfflineException e) {
                 // This should not happen.
-                // The user can ignore these errors if he/she does not use CMS or XKMS 
-                log.error("Failed to renew extended service (CMS and XKMS) certificates for ca '"+caInfo.getName()+"'.", e);
+                // The user can ignore these errors if he/she does not use CMS 
+                log.error("Failed to renew extended service (CMS) certificates for ca '"+caInfo.getName()+"'.", e);
             } catch (CertificateRevokeException e) {
                 // ditto
-                log.error("Failed to renew extended service (CMS and XKMS) certificates for ca '"+caInfo.getName()+"'.", e);
+                log.error("Failed to renew extended service (CMS) certificates for ca '"+caInfo.getName()+"'.", e);
             }
         }
     }
@@ -660,34 +657,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final List<ExtendedCAServiceInfo> extsvcs = new ArrayList<ExtendedCAServiceInfo>();
         final String casubjdn = cainfo.getSubjectDN();
         for (ExtendedCAServiceInfo extsvc : cainfo.getExtendedCAServiceInfos()) {
-            if (extsvc instanceof XKMSCAServiceInfo) {
-                final XKMSCAServiceInfo xkmssvc = (XKMSCAServiceInfo) extsvc;
-                extsvc = new XKMSCAServiceInfo(extsvc.getStatus(), "CN=XKMSCertificate, " + casubjdn, xkmssvc.getSubjectAltName(), xkmssvc.getKeySpec(), xkmssvc.getKeyAlgorithm());
-            } else if (extsvc instanceof CmsCAServiceInfo) {
+            if (extsvc instanceof CmsCAServiceInfo) {
                 final CmsCAServiceInfo cmssvc = (CmsCAServiceInfo) extsvc;
                 extsvc = new CmsCAServiceInfo(extsvc.getStatus(), "CN=CMSCertificate, " + casubjdn, cmssvc.getSubjectAltName(), cmssvc.getKeySpec(), cmssvc.getKeyAlgorithm());
             }
             extsvcs.add(extsvc);
         }
         cainfo.setExtendedCAServiceInfos(extsvcs);
-    }
-    
-    @Override
-    public void renewAndRevokeXKMSCertificate(final AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException, CAOfflineException, CertificateRevokeException {
-        CAInfo cainfo = caSession.getCAInfo(admin, caid);
-        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-        while (iter.hasNext()) {
-            ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next(); 
-            if (next instanceof XKMSCAServiceInfo) {
-                List<Certificate> xkmscerts = ((XKMSCAServiceInfo) next).getCertificatePath();
-                if (xkmscerts != null) {
-                    X509Certificate xkmscert = (X509Certificate)xkmscerts.get(0);
-                    final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(CertTools.getFingerprintAsString(xkmscert));
-                    revocationSession.revokeCertificate(admin, cdw, cainfo.getCRLPublishers(), new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());         
-                }
-                initExternalCAService(admin, caid, next);
-            }
-        }  
     }
     
     @Override
@@ -1061,7 +1037,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException {
-        boolean xkmsrenewcert = false;
         boolean cmsrenewcert = false;
         final int caid = cainfo.getCAId();
         // Check authorization
@@ -1101,11 +1076,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = cainfo.getExtendedCAServiceInfos();
             if (extendedCAServiceInfos != null) {
                 for (final ExtendedCAServiceInfo extendedCAServiceInfo : extendedCAServiceInfos) {
-                    if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
-                        final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
-                        xkmsrenewcert = signingInfo.getRenewFlag() ||
-                            (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
-                    } else if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
+                    if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
                         final BaseSigningCAServiceInfo signingInfo = (BaseSigningCAServiceInfo) extendedCAServiceInfo;
                         cmsrenewcert = signingInfo.getRenewFlag() ||
                             (signingInfo.getCertificatePath() == null && signingInfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE);
@@ -1120,15 +1091,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CA ca = caSession.getCA(admin, cainfo.getCAId());
             if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
                 // No OCSP Certificate exists that can be renewed.
-                if (xkmsrenewcert) {
-                    XKMSCAServiceInfo info = (XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE);
-                    // Publish the extended service certificate, but only for active services
-                    if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-                        final ArrayList<Certificate> xkmscertificate = new ArrayList<Certificate>();
-                        xkmscertificate.add(info.getCertificatePath().get(0));
-                        publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
-                    }
-                }
                 if (cmsrenewcert) {
                     CmsCAServiceInfo info = (CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE);
                     if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
@@ -2516,7 +2478,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new EJBException(e);
         }
         log.debug("CA-Info: " + catoken.getSignatureAlgorithm() + " " + catoken.getEncryptionAlgorithm());
-        // Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
+        // Identify the key algorithms for extended CA services, OCSP, CMS
         String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(p12PublicSignatureKey);
         String keySpecification = AlgorithmTools.getKeySpecification(p12PublicSignatureKey);
         if (keyAlgorithm == null || keyAlgorithm == AlgorithmConstants.KEYALGORITHM_RSA) {
@@ -2679,7 +2641,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Encryption keys must be RSA still
         String encryptionAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm);
         catoken.setEncryptionAlgorithm(encryptionAlgorithm);
-        // Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
+        // Identify the key algorithms for extended CA services, OCSP, CMS
         String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(cacert.getPublicKey());
         String keySpecification = AlgorithmTools.getKeySpecification(cacert.getPublicKey());
         if (keyAlgorithm == null || keyAlgorithm == AlgorithmConstants.KEYALGORITHM_RSA) {
@@ -2718,8 +2680,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     /**
-     * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, XKMS, CMS. Example AlgorithmConstants.KEYALGORITHM_RSA
-     * @param keySpecification keyspecification for extended CA services, OCSP, XKMS, CMS. Example 2048
+     * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, CMS. Example AlgorithmConstants.KEYALGORITHM_RSA
+     * @param keySpecification keyspecification for extended CA services, OCSP, CMS. Example 2048
      * @throws AuthorizationDeniedException if imported CA was signed by a CA user does not have authorization to.
      * @throws CADoesntExistsException if superCA does not exist
      * @throws CAExistsException if the CA already exists
@@ -2787,10 +2749,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
         if (caSignatureCertificate instanceof X509Certificate) {
             // Create an X509CA
-            // Create and active extended CA Services (XKMS, CMS).
-            // Create and active XKMS CA Service.
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, "
-                    + CertTools.getSubjectDN(caSignatureCertificate), "", keySpecification, keyAlgorithm));
+            // Create and active extended CA Services (CMS).
             // Create and active CMS CA Service.
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, "
                     + CertTools.getSubjectDN(caSignatureCertificate), "", keySpecification, keyAlgorithm));
@@ -3354,20 +3313,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         while (iter.hasNext()) {
             ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
             ArrayList<Certificate> certificates = new ArrayList<Certificate>();
-            if (info instanceof XKMSCAServiceInfo) {
-                try {
-                    final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                    ca.initExtendedService(cryptoToken, ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE, ca, cceConfig);
-                    final List<Certificate> certPath = ((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE)).getCertificatePath();
-                    if (certPath != null) {
-                        certificates.add(certPath.get(0));
-                    }
-                } catch (Exception fe) {
-                    String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "XKMSCAService");
-                    log.error(msg, fe);
-                    throw new EJBException(fe);
-                }
-            }
             if (info instanceof CmsCAServiceInfo) {
                 try {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
