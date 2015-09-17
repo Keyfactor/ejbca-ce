@@ -117,6 +117,14 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
         
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     
+    private boolean currentExtensionEditMode = true;
+    private AvailableCustomCertificateExtensionsConfiguration availableExtensionsConfig = null;
+    private CurrentExtensionGUIInfo currentExtensionGUIInfo = null;
+    private int currentExtensionId = 0;
+    private ListDataModel currentExtensionPropertiesList = null;
+    private String currentPropertyKey = "";
+    private String currentPropertyValue = "";
+    
     public CustomCertExtensionMBean() {
         super();
     }
@@ -127,14 +135,6 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
         currentPropertyKey = "";
         currentPropertyValue = "";
     }
-        
-    private boolean currentExtensionEditMode = true;
-    private AvailableCustomCertificateExtensionsConfiguration availableExtensionsConfig = null;
-    private CurrentExtensionGUIInfo currentExtensionGUIInfo = null;
-    private int currentExtensionId = 0;
-    private ListDataModel currentExtensionPropertiesList = null;
-    private String currentPropertyKey = "";
-    private String currentPropertyValue = "";
     
     private AvailableCustomCertificateExtensionsConfiguration getAvailableExtensionsConfig() throws Exception{
         if(availableExtensionsConfig == null) {
