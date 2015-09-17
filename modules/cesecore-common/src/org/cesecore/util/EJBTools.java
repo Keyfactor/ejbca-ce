@@ -67,7 +67,7 @@ public final class EJBTools {
         if (certs == null) {
             return null;
         } else {
-            final List<CertificateWrapper> list = new ArrayList<CertificateWrapper>();
+            final List<CertificateWrapper> list = new ArrayList<CertificateWrapper>(certs.size());
             for (final Certificate cert : certs) {
                 list.add(wrap(cert));
             }
@@ -85,7 +85,7 @@ public final class EJBTools {
         if (wrappedCerts == null) {
             return null;
         } else {
-            final List<Certificate> list = new ArrayList<Certificate>();
+            final List<Certificate> list = new ArrayList<Certificate>(wrappedCerts.size());
             for (final CertificateWrapper wrapped : wrappedCerts) {
                 list.add(unwrap(wrapped));
             }
