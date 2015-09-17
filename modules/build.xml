@@ -380,11 +380,11 @@
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="peerconnector" depends="ejbca-util" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
+	<target name="peerconnector" depends="ejbca-util, edition-specific-interface" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
 		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 	
-	<target name="peerconnector-cli" depends="ejbca-common-web" if="mod.peerconnector.exists">
+	<target name="peerconnector-cli" depends="ejbca-common-web, edition-specific-interface" if="mod.peerconnector.exists">
 		<ant antfile="${mod.peerconnector.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -495,7 +495,11 @@
 			<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="statedump" depends="cli-util, buildservicemanifestbuilder" >
+	<target name="va-publisher" description="Builds only the VA Publisher of the VA module" depends="ejbca-common-web, ejbca-util">
+		<ant antfile="${mod.va.path}/build.xml" target="va-publisher.jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	</target>
+	
+	<target name="statedump" depends="ejbca-ejb-cli, va-publisher, buildservicemanifestbuilder">
 		<echo  message="${mod.statedump.path}/build.xml" />
 		<fail message="StateDump tool is not distributed with this version of EJBCA">
 		    <condition>
@@ -503,7 +507,7 @@
 		    		<available file="${mod.statedump.path}/build.xml" />
 		    	</not>
 		    </condition>
-		</fail>	
+		</fail>
 		<ant antfile="${mod.statedump.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
