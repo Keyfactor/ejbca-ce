@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
     
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-public class CustomCertExtensionMBean extends BaseManagedBean implements Serializable {
+/**
+ * JavaServer Faces Managed Bean for managing the configuration of a single CustomCertificateExtension
+ * @version $Id$
+ *
+ */
+public class CustomCertExtensionMBean extends BaseManagedBean {
     
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
