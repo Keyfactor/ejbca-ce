@@ -32,11 +32,7 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
-		<!-- TestPublisher uses this -->
-		<path refid="lib.xmlsec.classpath"/>
-		<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
-		<path refid="lib.idn.classpath"/>
-		<!-- Use by XKMS -->
+		<!-- Use by ? -->
 		<path refid="lib.commons-logging.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-entity.lib}"/>
@@ -44,7 +40,6 @@
 		<pathelement location="${mod.ejbca-extensions.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws-ejb.jar}"/>
-		<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
 		<pathelement location="${mod.ejbca-db-cli.lib}"/>
 		<pathelement location="${mod.clientToolBox.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
@@ -90,7 +85,6 @@
 		<path refid="lib.ldap.classpath" />
 		<path refid="lib.mail.classpath" />
 		<path refid="lib.batik.classpath" />
-		<path refid="lib.xmlsec.classpath" />
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
@@ -137,15 +131,13 @@
 		<jar destfile="${mod.systemtest-ejb.lib}" basedir="${build.src.dir}"/>
 	</target>
 
-	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-db-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">
-			<exclude name="org/ejbca/core/protocol/xkms/**"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">
-			<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
 			<classpath path="${build.test.dir}"/>
 		</javac>
 		<copy file="${log4j.test.file}" tofile="${build.test.dir}/log4j.xml" failonerror="true"/>
@@ -227,13 +219,13 @@
 		<!-- Workaround for tests using BatchMakeP12 -->
 	</target>
 
-	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class">
+	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class **/*Pkcs11*Test.class">
 		<isset property="test.includep11"/>
 	</condition>
 	<!-- =================================
           Run most system tests
          ================================= -->
-	<target name="run" depends="build, assert-appserverrunning, runws, runxkms, edition-specific-interface, eedition-ejb" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
+	<target name="run" depends="build, assert-appserverrunning, runws, edition-specific-interface, eedition-ejb" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime"/>
 		<mkdir dir="${this.dir}/p12"/>
 		<!-- Workaround for tests using BatchMakeP12 -->
@@ -310,8 +302,6 @@
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
 					<!-- Exclude WS, they are run from their own target, runws -->
 					<exclude name="**/protocol/ws/*" />
-					<!-- Exclude XKMS, they are run from their own target, runxkms -->
-					<exclude name="**/XKMS*Test.class" />
 					<!-- Exclude profiling test, since we want to run it later -->
 					<exclude name="org/ejbca/core/ejb/ProfilingTest.class" />
 				</fileset>
@@ -415,16 +405,6 @@
 		<!-- no jee classes for ws tests -->
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="test.runone" value="protocol/ws/*Test"/>
-		</antcall>
-	</target>
-
-	<target name="runxkms" description="Run XKMS system tests" if="xkms.enabled.true">
-		<!--fail message="xkms is not enabled in conf/xkms.properties." unless="xkms.enabled.true" /-->
-		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
-		<antcall target="runone-internal" inheritrefs="true">
-			<param name="test.runone" value="XKMS*Test"/>
-			<!-- Exclude test of broken functionality -->
-			<param name="test.runoneexclude" value="org/ejbca/core/protocol/xkms/XKMSSigTest"/>
 		</antcall>
 	</target>
 

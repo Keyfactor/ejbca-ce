@@ -100,7 +100,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServ
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.util.JDBCUtil;
@@ -423,11 +422,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 							@SuppressWarnings("rawtypes")
                             HashMap data = ca.getExtendedCAServiceData(type);
 							switch (type) {
-							case ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE:
-								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, XKMSCAService.class.getName());
-								ca.setExtendedCAServiceData(type, data);
-								log.info("Updating extended CA service of type "+type+" with implementation class "+XKMSCAService.class.getName());
-								break;
 							case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
 								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, CmsCAService.class.getName());
 								ca.setExtendedCAServiceData(type, data);

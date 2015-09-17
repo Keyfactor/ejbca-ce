@@ -161,7 +161,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 19;
+    public static final float LATEST_VERSION = 20;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -1587,6 +1587,16 @@ public class X509CA extends CA implements Serializable {
                 setDeltaCRLPeriod(((Integer) o).longValue() * SimpleTime.MILLISECONDS_PER_HOUR); // h to ms
             }
             data.put(VERSION, new Float(LATEST_VERSION));
+            // v20, remove XKMS CA service
+            if (data.get(EXTENDEDCASERVICES) != null) {
+                @SuppressWarnings("unchecked")
+                Collection<Integer> types = (Collection<Integer>)data.get(EXTENDEDCASERVICES);
+                // Remove type 2, which is XKMS
+                types.remove(Integer.valueOf(2));
+                data.put(EXTENDEDCASERVICES, types);
+                // Remove any data if it exists
+                data.remove(EXTENDEDCASERVICE+2);                
+            }            
         }
     }
 

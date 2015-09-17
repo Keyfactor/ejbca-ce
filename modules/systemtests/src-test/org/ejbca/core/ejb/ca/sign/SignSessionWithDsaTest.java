@@ -90,9 +90,6 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
         for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(DSA_USERNAME)) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
-        for(Certificate certificate : certificateStoreSession.findCertificatesBySubject("CN=XKMSCertificate,CN=TESTDSA")) {
-            internalCertificateStoreSession.removeCertificate(certificate);
-        }
         for(Certificate certificate : certificateStoreSession.findCertificatesBySubject("CN=TESTDSA")) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }

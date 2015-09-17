@@ -80,7 +80,6 @@
     </module>
        <!--@ejbca-systemtest-ejb.jar@-->
        <!--@ejbca-ws-ejb.jar@-->
-       <!--@ejbca-xkms-ejb.jar@-->
        <!--@doc.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->

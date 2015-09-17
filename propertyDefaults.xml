@@ -67,7 +67,6 @@
     <property file="${ejbca.home}/conf/web.properties" />
     <property file="${ejbca.home}/conf/cmptcp.properties" />
     <property file="${ejbca.home}/conf/jaxws.properties" />
-    <property file="${ejbca.home}/conf/xkms.properties" />
     <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scepra.properties" />
     <property file="${ejbca.home}/conf/externalra-gui.properties" />
@@ -123,22 +122,6 @@
 			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
 			<matches pattern="glassfish" string="${appserver.type}"/>
-			<!-- ... -->
-		</or>
-	</condition>
-
-	<condition property="exclude-xalan">
-		<or>
-			<matches pattern="jboss7" string="${appserver.subtype}"/>
-			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
-			<!-- ... -->
-		</or>
-	</condition>
-
-	<condition property="exclude-serializer">
-		<or>
-			<matches pattern="jboss7" string="${appserver.subtype}"/>
-			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
 			<!-- ... -->
 		</or>
 	</condition>
@@ -253,8 +236,6 @@ cmp.tcp.enabled                 = ${cmp.tcp.enabled}
 cmp.tcp.portno                  = ${cmp.tcp.portno}
 cmp.tcp.logdir                  = ${cmp.tcp.logdir}
 cmp.tcp.conffile                = ${cmp.tcp.conffile}
-xkms.enabled                    = ${xkms.enabled}
-xkms.serviceport                = ${xkms.serviceport}
       </echo>
     </target>
 

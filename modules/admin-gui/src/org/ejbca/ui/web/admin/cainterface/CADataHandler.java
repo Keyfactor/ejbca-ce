@@ -416,10 +416,6 @@ public class CADataHandler implements Serializable {
      caadminsession.rolloverCA(administrator, caid);
  }
  
- public void renewAndRevokeXKMSCertificate(int caid) throws CADoesntExistsException, CAOfflineException, CertificateRevokeException, AuthorizationDeniedException {
-    caadminsession.renewAndRevokeXKMSCertificate(administrator, caid);
- } 
- 
  public void renewAndRevokeCmsCertificate(int caid) throws CADoesntExistsException, CAOfflineException, CertificateRevokeException, AuthorizationDeniedException {
     caadminsession.renewAndRevokeCmsCertificate(administrator, caid);
  }

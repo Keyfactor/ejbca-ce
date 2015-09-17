@@ -678,27 +678,6 @@ Unless there is a clear reason why this takes longer than 60 seconds (for exampl
 check that database indexes are applied and that your network and any used DNS server is fully operational. 
 </subsubsection>
 
-<subsubsection name="XKMS">
-<p>Please do <strong>not</strong> use XKMS. It is a rather old, generally unused protocol with poor interoperability and client suppport. There are many better options, like CMP, available.</p>
-<p>EJBCA may deprecate XKMS in the future, and it is a best effort, cummunity based, support only.</p>
-<p>If you decide to use XKMS anyhow you may stumble into some issues.</p>
-<p>
-<u>JBoss 7 / EAP 6</u>:
-To run XKMS there are three conditions for running XKMS:
-<ul>
-<li>Use JBoss EAP 6.1 (at least).</li>
-<li>Use JDK 7.</li>
-<li>Export some internal sun classes by adding the below to modules/system/layers/base/sun/jdk/main/module.xml in JBoss EAP 6.</li>
-</ul>
-</p>
-<source>
-&lt;path name="com/sun/xml/internal/bind/marshaller"/&gt;
-&lt;path name="com/sun/xml/bind/marshaller"/&gt;
-&lt;path name="sun/security/action"/&gt;
-</source>
-
-</subsubsection>
-
 <subsubsection name="JBoss 7 and Oracle JDK BC issues">
 <p>
 In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> solved the issue of deploying with OracleJDK.

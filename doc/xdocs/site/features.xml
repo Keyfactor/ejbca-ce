@@ -42,7 +42,6 @@
 <li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li>
 <li>Supports the German <a href="http://www.common-pki.org/">Common PKI</a> SigG CertHash OCSP extension.</li> 
 <li>Supports <a href="docs/adminguide.html#CMP">CMP</a> (RFC4210 and RFC4211).</li>
-<li>Supports synchronous XKMS version 2 requests.</li>
 <li>Key recovery to store private keys for recovery for selected users and certificates.</li>
 </ul>    
 </subsection>

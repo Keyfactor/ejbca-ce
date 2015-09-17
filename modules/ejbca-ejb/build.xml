@@ -32,7 +32,6 @@
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.batik.classpath"/>
-		<path refid="lib.xmlsec.classpath"/>
 		<path refid="lib.jee.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
@@ -377,8 +376,6 @@
 		<include name="org/ejbca/core/model/ca/publisher/LdapPublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/LdapSearchPublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/LegacyValidationAuthorityPublisher.java"/>
-		<!-- Dependecies from AdminGUI, EJB, and XMKS -->
-		<include name="org/ejbca/config/XkmsConfiguration.java"/>
 		<!-- Dependecies from EJBCA WS -->
 		<include name="org/ejbca/config/WebServiceConfiguration.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovedActionAdmin.java"/>
@@ -586,7 +583,7 @@
 		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
 	</target>
 
-	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class">
+	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class **/*Pkcs11*Test.class">
 		<isset property="test.includep11"/>
 	</condition>
 
