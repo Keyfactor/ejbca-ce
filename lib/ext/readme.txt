@@ -16,5 +16,3 @@ Used to run Http/Html specific JUnit tests (license apache like...see doc/licens
 htmlunit-1.14.jar
 commons-httpclient-3.1.jar
 
-Used to compile XKMS without need to have both jaxb from java 6 and jaxb RI present. (license is java open source, CDDL v1.1 and GPL v2).
-jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar
