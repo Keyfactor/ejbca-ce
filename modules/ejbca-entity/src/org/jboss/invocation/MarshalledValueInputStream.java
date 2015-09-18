@@ -27,7 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.lang.reflect.Proxy;
 
-import org.jboss.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** Exists in EJBCA due to MarshalledValue not existing in JBoss 7 and higher. 
  * This can give upgrade issues from old version of EJBCA (4) to EJBCA 6, 
