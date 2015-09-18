@@ -6,6 +6,9 @@ selection of the most noteworthy.
 - Improvements:
     *   System Configuration with sections and tabs, and "Exclude Active Manually-Activated CryptoTokens" check box is checked by default
 
+- Changed:
+    * Support for XKMS was removed and is no longer available.
+     
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 

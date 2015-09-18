@@ -72,6 +72,10 @@ Crypto Tokens
 Services
 Internal Key Bindings
 
+100% uptime notes: 
+Support for XKMS was removed and is no longer available. When upgrading to EJBCA 6.4.0, internal keystores for XKMS will be removed and 
+is upgrading in a 100% uptime cluster, the XKMS option in older versions of EJBCA will also disappear.
+
 From EJBCA 6.3.1 up to EJBCA 6.3.2
 -------------------------------
 As the VA Publisher was shifted from Community to Enterprise in EJBCA 6.3.1.1, it had to change baseclass, so will thus require a database 
