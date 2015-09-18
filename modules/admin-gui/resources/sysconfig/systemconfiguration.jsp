@@ -531,7 +531,7 @@ org.cesecore.authorization.control.AccessControlSession
 		<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.ID}"/></f:facet>
+   				<f:facet name="header"><h:outputText value="#{web.text.IDENTIFIER}"/></f:facet>
 				<h:outputText value="#{extension.id}" title="#{extension.id}"/>
 			</h:column>
 			<h:column>
@@ -555,7 +555,7 @@ org.cesecore.authorization.control.AccessControlSession
 		</h:dataTable>
 		<br/>
 		<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=0" rendered="#{systemConfigMBean.allowedToModify}">
-			<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}"/>
+			<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_CREATENEW}"/>
 		</h:outputLink>
 	</h:form>
 
