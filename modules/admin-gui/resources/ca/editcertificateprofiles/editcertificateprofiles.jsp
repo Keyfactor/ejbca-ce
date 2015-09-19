@@ -32,16 +32,16 @@
 		<h:panelGroup rendered="#{!certProfilesBean.operationInProgress}">
 		<h3><h:outputText value="#{web.text.LISTOFCERTIFICATEPROFILES}"/></h3>
 		<h:outputText value="#{certProfilesBean.resetCertificateProfilesTrigger}"/>
-		<h:dataTable value="#{certProfilesBean.certificateProfiles}" var="certificateProfile" styleClass="grid">
-			<h:column headerClass="fixedColumn1">
+		<h:dataTable value="#{certProfilesBean.certificateProfiles}" var="certificateProfile" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+			<h:column headerClass="gridColumn1">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILENAME}" title="#{certificateProfile.id}"/></f:facet>
 				<h:outputText value="#{certificateProfile.name}"/>
 				<h:outputText rendered="#{certificateProfile.missingCa}" value="#{web.text.MISSINGCAIDS}"/>
 				<f:facet name="footer">
-		  			<h:inputText value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255" disabled="#{certProfilesBean.authorizedToOnlyView}"/>
+		  			<h:inputText value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" disabled="#{certProfilesBean.authorizedToOnlyView}"/>
 				</f:facet>
 			</h:column>
-			<h:column headerClass="fixedColumn1">
+			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
 				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" 
 					rendered="#{certProfilesBean.authorizedToOnlyView or not certificateProfile.authorized}" disabled="#{certificateProfile.fixed}"/>
