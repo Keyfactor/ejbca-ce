@@ -56,6 +56,7 @@
 </div>
 
 <h:form id="cpf">
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<h:panelGroup>
@@ -64,6 +65,7 @@
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.caPath}/editcertificateprofiles/editcertificateprofiles.jsf">
 			<h:outputText value="#{web.text.BACKTOCERTIFICATEPROFILES}"/>
 		</h:outputLink>
+
 
 		<h:outputLabel for="certificateProfileId" value="#{web.text.CERTIFICATEPROFILEID}"/>
 		<h:outputText id="certificateProfileId" value="#{certProfileBean.selectedCertProfileId}"/>
@@ -106,6 +108,8 @@
 		</h:panelGroup>
 
 	</h:panelGrid>
+
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Authorizations --%>
@@ -202,6 +206,8 @@
 		</h:panelGroup>
 
 	</h:panelGrid>
+
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- X.509v3 extensions (PKIX) --%>
@@ -242,6 +248,7 @@
 				<f:validateLongRange minimum="0" maximum="99"/>
 			</h:inputText>
 		</h:panelGroup>
+		
 		<%-- PKIX Authority Key Identifier (AKI) extension --%>
 
 		<h:outputLabel for="cbauthoritykeyidentifiergroup" value="#{web.text.EXT_PKIX_AUTHORITYKEYID}"/>
@@ -259,6 +266,7 @@
 		</h:panelGroup>
 
 	</h:panelGrid>
+
 	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- X.509v3 extensions (PKIX) : Usages --%>
@@ -399,6 +407,7 @@
 		</h:panelGrid>
 
 	</h:panelGrid>
+
 	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- X.509v3 extensions (PKIX) : Names --%>
@@ -467,6 +476,7 @@
 		</h:panelGroup>
 
 	</h:panelGrid>
+
 	<h:panelGrid columns="2" styleClass="edit-top subsection" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- X.509v3 extensions (PKIX) : Validation data --%>
@@ -629,6 +639,8 @@
 		</h:panelGrid>
 
 	</h:panelGrid>
+
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Qualified Certificates Statements (qcStatements) extension --%>
@@ -729,7 +741,9 @@
 		<h:inputText id="textfieldqccustomstringtext" value="#{certProfileBean.certificateProfile.QCCustomStringText}" rendered="#{certProfileBean.certificateProfile.useQCStatement}"
 			size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"
 			disabled="#{!certProfileBean.certificateProfile.useQCCustomString or certProfilesBean.authorizedToOnlyView}"/>
+		
 	</h:panelGrid>
+
 
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 		 rendered="#{certProfileBean.ctAvailable}">
@@ -805,11 +819,14 @@
 		<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" for="textfieldctmaxretries" value="#{web.text.EXT_CT_MAXRETRIES}" styleClass="subItem"/>
 		<h:inputText rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" id="textfieldctmaxretries" value="#{certProfileBean.certificateProfile.CTMaxRetries}" size="3" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{(!certProfileBean.certificateProfile.useCertificateTransparencyInCerts && !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP) || certProfilesBean.authorizedToOnlyView}"/>
+		
 	</h:panelGrid>
+
 
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Other extensions --%>
+		
 		<h:outputLabel for="otherextensions" value="#{web.text.OTHEREXTENSIONS}" style="font-weight: bold;"/>
 		<h:panelGroup id="otherextensions"/>
 
@@ -846,7 +863,17 @@
 			<h:outputLabel for="checkusecardnumber" value="#{web.text.USE}"/>
 		</h:panelGroup>
 
+		<%-- Custom Certificate Extensions --%>
+		<h:outputLabel rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" for="selectusedcertificateextensions"
+			value="#{web.text.USEDCERTEXTENSIONS}"/>
+		<h:selectManyListbox rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" id="selectusedcertificateextensions" disabled="#{certProfilesBean.authorizedToOnlyView}"
+			value="#{certProfileBean.certificateProfile.usedCertificateExtensions}" size="#{certProfileBean.availableCertificateExtensionsAvailableSize}" converter="javax.faces.Integer">
+			<f:selectItems value="#{certProfileBean.availableCertificateExtensionsAvailable}"/>
+		</h:selectManyListbox>
+
 	</h:panelGrid>
+
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- ePassport --%>
@@ -930,6 +957,8 @@
 		</h:panelGroup>
 
 	</h:panelGrid>
+
+
 	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Other data --%>
@@ -946,7 +975,6 @@
 			<h:outputLabel for="checkuseldapdnorder" value="#{web.text.USE}"/>
 		</h:panelGroup>
 
-
 		<h:outputLabel for="cnpostfixgroup" value="#{web.text.CERT_SUBJECTDN_CNPOSTFIX}"/>
 		<h:panelGroup id="cnpostfixgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCNPostfix}" rendered="#{!web.legacyInternetExplorer}"
@@ -959,7 +987,6 @@
 				disabled="#{!certProfileBean.certificateProfile.useCNPostfix or certProfilesBean.authorizedToOnlyView}"/>
 			<h:outputText styleClass="help" value=" #{web.text.CERT_SUBJECTDN_CNPF_HELP}"/>
 		</h:panelGroup>
-
 
 		<h:panelGroup>
 			<h:outputLabel for="checkusesubjectdnsubsetgroup" value="#{web.text.CERT_SUBJECTDN_SUBSET}"/>
@@ -994,13 +1021,6 @@
 				<f:selectItems value="#{certProfileBean.subjectAltNameSubSetAvailable}"/>
 			</h:selectManyListbox>
 		</h:panelGrid>
-
-		<h:outputLabel rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" for="selectusedcertificateextensions"
-			value="#{web.text.USEDCERTEXTENSIONS}"/>
-		<h:selectManyListbox rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" id="selectusedcertificateextensions" disabled="#{certProfilesBean.authorizedToOnlyView}"
-			value="#{certProfileBean.certificateProfile.usedCertificateExtensions}" size="#{certProfileBean.availableCertificateExtensionsAvailableSize}" converter="javax.faces.Integer">
-			<f:selectItems value="#{certProfileBean.availableCertificateExtensionsAvailable}"/>
-		</h:selectManyListbox>
 
 		<h:outputLabel for="selectavailablecas" value="#{web.text.AVAILABLECAS}"/>
 		<h:selectManyListbox id="selectavailablecas" value="#{certProfileBean.certificateProfile.availableCAs}" size="#{certProfileBean.availableCAsAvailableSize}"

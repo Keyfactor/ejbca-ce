@@ -320,6 +320,29 @@ table#addendentity .help {
 }
 
 
+/* --- Forms: Grid */
+
+/* Rows */
+table.grid tbody tr:hover,
+table.grid tbody tr:focus,
+table.grid tbody tr:active {
+	background-color: #FFB;
+}
+table.grid tfoot tr:hover,
+table.grid tfoot tr:focus,
+table.grid tfoot tr:active {
+	background-color: #BFB;
+}
+
+/* Columns */
+.gridColumn1 {
+	white-space: nowrap;
+}
+.gridColumn2 {
+	white-space: nowrap;
+}
+
+
 /* --- Forms: List/Actions */
 table.list,
 table.actions {
@@ -373,9 +396,6 @@ table.edit tr td {
 }
 .editColumn2 {
 	width: 65%;
-}
-.fixedColumn1 {
-	width: 300;
 }
 /* Titles (and Sections) */
 table tr.section td,
