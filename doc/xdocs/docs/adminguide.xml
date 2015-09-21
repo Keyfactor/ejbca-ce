@@ -5354,23 +5354,26 @@ Certificate extensions are configured in the 'Custom Certificate Extensions' tab
 administrators who are granted the access rule '/system_functionality/edit_available_custom_certificate_extensions' are allowed to add and remove 
 custom certificate extensions.
 </p>
-The following properties must be set for each extension:
+<p>The following properties are available for each extension:</p>
 <ul>
-<li>OID : The unique Object Identifier (OID) of the extension (Required)
-</li>
-<li>Display Name : Display name of the extension in the 'Edit Certificate Profile' page. (Required)
-</li>
-<li>Class Path : Full class name of the CertificateExtension implementation class. The class path 
-'org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension' is chosen by default but can be edited. (Required)
-</li>
-<li>Critical : Defines if the extension should be marked as critical in the certificate. This value is set to 'false' by default.
-</li>
+<li>OID : The unique Object Identifier (OID) of the extension (Required)</li>
+<li>Display Name : Display name of the extension in the 'Edit Certificate Profile' page. (Required)</li>
+<li>Class Path : Full class name of the CertificateExtension implementation class. (Required)</li>
+<li>Critical : Defines if the extension should be marked as critical in the certificate. </li>
 <li>Properties : It is possible to define properties to the actual implementation of the CertificateExtension. For example, BasicCerticateExtension 
-requires the properties 'encoding' and 'value' to be set.
-</li>
+requires the properties 'encoding' and 'value' to be set.</li>
 </ul>
 <p>
-After extensions have been added it is possible to select them for a certificate profile
+When adding a new Custom Certificate Extension, the  OID and the Display Name are specified and a new Extension with the following default values is created:
+</p>
+<ul>
+<li>Class Path : org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension</li>
+<li>Critical : False</li>
+<li>Properties : Empty list of properties</li>
+</ul>
+<p>Click on the newly created extension to edit these values</p>
+<p>
+After extensions have been added, it is possible to select them for a certificate profile
 in the 'Edit Certificate Profile' page.
 </p>
 </subsection>
