@@ -604,7 +604,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * @return true if the upgrade was successful and false otherwise
      */
-    private boolean addNewAccessRulestoRoles() {
+    private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
         Collection<RoleData> roles = roleAccessSession.getAllRoles();
         for (RoleData role : roles) {
             final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
@@ -845,7 +845,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private void postMigrateDatabase640() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
         // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
-        addNewAccessRulestoRoles();     
+        addEKUAndCustomCertExtensionsAccessRulestoRoles();     
         // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
         addReadOnlyRules();
         log.error("(This is not an error) Completed post upgrade procedure to 6.4.0");
