@@ -112,7 +112,7 @@ org.cesecore.authorization.control.StandardRules
    				<f:facet name="header">
    					<h:outputText value="#{web.text.ACTION}"/>
    				</f:facet>
-				<h:commandButton action="#{customCertExtensionMBean.RemoveExtensionProperty}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
+				<h:commandButton action="#{customCertExtensionMBean.removeExtensionProperty}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
 				<f:facet name="footer">
 					<h:commandButton  value="#{web.text.ADD}" action="#{customCertExtensionMBean.addExtensionProperty}" />
 				</f:facet>

@@ -533,10 +533,16 @@ org.cesecore.authorization.control.AccessControlSession
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.IDENTIFIER}"/></f:facet>
 				<h:outputText value="#{extension.id}" title="#{extension.id}"/>
+				<f:facet name="footer">
+					<h:outputText id="newCEID" value=""/>
+				</f:facet>
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
 				<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>
+				<f:facet name="footer">
+					<h:inputText id="newCEOID" value="#{systemConfigMBean.newOID}" size="25"/>
+				</f:facet>
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
@@ -544,6 +550,9 @@ org.cesecore.authorization.control.AccessControlSession
 				<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=#{extension.id}">
 					<h:outputText value="#{extension.displayName}"/>
 				</h:outputLink>
+				<f:facet name="footer">
+					<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="25"/>
+				</f:facet>
 			</h:column>
 			<h:column>
    				<f:facet name="header">
@@ -551,12 +560,12 @@ org.cesecore.authorization.control.AccessControlSession
    				</f:facet>
 				<h:commandButton action="#{systemConfigMBean.removeCustomCertExtension}" value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"
 								rendered="#{systemConfigMBean.allowedToModify}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')" />
+				<f:facet name="footer">
+					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" />
+				</f:facet>
+				
 			</h:column>
 		</h:dataTable>
-		<br/>
-		<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=0" rendered="#{systemConfigMBean.allowedToModify}">
-			<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_CREATENEW}"/>
-		</h:outputLink>
 	</h:form>
 
 	<%	// Include Footer 
