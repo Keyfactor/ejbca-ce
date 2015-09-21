@@ -2327,13 +2327,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setAllowDNOverride(false); // v31
             }
 
-            // This is no longer necessary since we no longer read extended key usages from file
-            // Also, we no longer support the version that had  OIDs as integers
-            //if (Float.compare((float) 32.0, getVersion()) > 0) { // v32
-            //    // Extended key usage storage changed from ArrayList of Integers to an ArrayList of Strings.
-            //    setExtendedKeyUsage(getExtendedKeyUsageAsOIDStrings(true));
-            //}
-
             if (data.get(NUMOFREQAPPROVALS) == null) { // v 33
                 setNumOfReqApprovals(1);
             }
