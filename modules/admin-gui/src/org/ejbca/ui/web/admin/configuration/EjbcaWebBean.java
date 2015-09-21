@@ -1072,19 +1072,14 @@ public class EjbcaWebBean implements Serializable {
     //      AvailableExtendedKeyUsagesConfigration
     //*************************************************
     
-    public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() throws Exception {
+    public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() {
         if(availableExtendedKeyUsagesConfig == null) {
             reloadAvailableExtendedKeyUsagesConfiguration();
         }
         return availableExtendedKeyUsagesConfig;
     }
-    
-    public void clearAvailableExtendedKeyUsagesConfigCache() throws Exception {
-        globalConfigurationSession.flushConfigurationCache(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
-        reloadAvailableExtendedKeyUsagesConfiguration();
-    }
-        
-    public void reloadAvailableExtendedKeyUsagesConfiguration() throws Exception {
+ 
+    public void reloadAvailableExtendedKeyUsagesConfiguration() {
         availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         if (informationmemory != null) {
@@ -1098,7 +1093,7 @@ public class EjbcaWebBean implements Serializable {
         informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
     }
     
-    private void fillExtendedKeyUsagesFromFile() throws Exception {
+    private void fillExtendedKeyUsagesFromFile() {
         
         // If the file has already been removed, no need to go further
         final URL url = ConfigurationHolder.class.getResource("/conf/extendedkeyusage.properties");
@@ -1140,7 +1135,11 @@ public class EjbcaWebBean implements Serializable {
         }
 
         AlwaysAllowLocalAuthenticationToken alwaysAllowedAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("LoadingExtendedKeyUsages"));
-        globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, ekuConfig);
+        try {
+            globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, ekuConfig);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Recieved an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
+        }
         availableExtendedKeyUsagesConfig = ekuConfig;
         informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
         
@@ -1150,19 +1149,14 @@ public class EjbcaWebBean implements Serializable {
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************
     
-    public AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfiguration() throws Exception {
+    public AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfiguration() {
         if(availableCustomCertExtensionsConfig == null) {
             reloadAvailableCustomCertExtensionsConfiguration();
         }
         return availableCustomCertExtensionsConfig;
     }
-    
-    public void clearAvailableCustomCertExtensionsConfigCache() throws Exception {
-        globalConfigurationSession.flushConfigurationCache(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        reloadAvailableCustomCertExtensionsConfiguration();
-    }
-        
-    public void reloadAvailableCustomCertExtensionsConfiguration() throws Exception {
+
+    public void reloadAvailableCustomCertExtensionsConfiguration() {
         availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) 
                 globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         if (informationmemory != null) {
@@ -1176,7 +1170,7 @@ public class EjbcaWebBean implements Serializable {
         informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
     
-    public void addAvailableCustomCertExtensionsFromFile() throws Exception {
+    public void addAvailableCustomCertExtensionsFromFile() {
         
         // If the file has already been removed, no need to go further
         InputStream is = CertificateExtensionFactory.class.getResourceAsStream("/certextensions.properties");
@@ -1203,7 +1197,9 @@ public class EjbcaWebBean implements Serializable {
             int count = 0;
             for(int i=1;i<255;i++){
                 if(props.get("id" + i +".oid")!=null){
-                    log.debug("found " + props.get("id" + i +".oid"));
+                    if(log.isDebugEnabled()) {
+                        log.debug("found " + props.get("id" + i +".oid"));
+                    }
                     CertificateExtension ce = getCertificateExtensionFromFile(i, props);
                     cceConfig.addCustomCertExtension(ce.getId(), ce);
                     count++;
@@ -1211,7 +1207,9 @@ public class EjbcaWebBean implements Serializable {
                     break;
                 }
             }
-            log.debug("Nr of read Custom Certificate Extensions from file: " + count);
+            if(log.isDebugEnabled()) {
+                log.debug("Nr of read Custom Certificate Extensions from file: " + count);
+            }
         }catch(IOException e){
             log.error(intres.getLocalizedMessage("certext.errorparsingproperty"),e);
         } catch (CertificateExtentionConfigurationException e) {
@@ -1219,7 +1217,11 @@ public class EjbcaWebBean implements Serializable {
         }
         
         AlwaysAllowLocalAuthenticationToken alwaysAllowedAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("LoadingCustomCertificateExtensions"));
-        globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, cceConfig);
+        try {
+            globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, cceConfig);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Recieved an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());      
+        }
         availableCustomCertExtensionsConfig = cceConfig;
         informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
