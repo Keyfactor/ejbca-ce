@@ -25,6 +25,11 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.configuration.ConfigurationBase;
 
+/**
+ * This file handles configuration of Available Extended Key Usages
+ * 
+ * @version $Id$
+ */
 public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase implements Serializable{
 
     private static final long serialVersionUID = -3430732247486886608L;

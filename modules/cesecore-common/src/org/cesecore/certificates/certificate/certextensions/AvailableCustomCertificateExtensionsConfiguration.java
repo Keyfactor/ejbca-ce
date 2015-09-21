@@ -20,6 +20,11 @@ import java.util.Properties;
 
 import org.cesecore.configuration.ConfigurationBase;
 
+/**
+ * This file handles configuration of available Custom Certificate Extensions
+ * 
+ * @version $Id$
+ */
 public class AvailableCustomCertificateExtensionsConfiguration extends ConfigurationBase implements Serializable{
 
     private static final long serialVersionUID = 7798273820046510706L;
