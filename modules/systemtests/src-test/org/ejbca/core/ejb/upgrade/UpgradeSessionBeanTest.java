@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -115,5 +117,79 @@ public class UpgradeSessionBeanTest {
             roleManagementSession.remove(alwaysAllowtoken, readOnlyRoleName);
         }
     }
+    
+   /**
+    * This test will perform the upgrade step to 6.4.0 and tests update of access rules. Rules specific to editing available extended key usages and 
+    * custom certificate extensions should be added to any role that is already allowed to edit system configurations, but not other roles.
+    */
+   @Test
+   public void testPostUpgradeTo640EKUAndCustomCertExtensionsAccessRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+       
+       // Add a role whose access rules should change after upgrade
+       final String sysConfigRoleName = "SystemConfigRole"; 
+       RoleData sysConfigRole  = roleManagementSession.create(alwaysAllowtoken, sysConfigRoleName);
+       List<AccessRuleData> oldSysConfigAccessRules = new ArrayList<AccessRuleData>();
+       oldSysConfigAccessRules.add(new AccessRuleData(sysConfigRole.getRoleName(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), AccessRuleState.RULE_ACCEPT, false));
+       sysConfigRole = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, sysConfigRole, oldSysConfigAccessRules);
+       
+       // Add a role whose access rules should NOT change after upgrade
+       final String caAdmRoleName = "CaAdminRole"; 
+       RoleData caAdmRole  = roleManagementSession.create(alwaysAllowtoken, caAdmRoleName);
+       List<AccessRuleData> oldCaAdmAccessRules = new ArrayList<AccessRuleData>();
+       oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true));
+       oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
+       oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), AccessRulesConstants.REGULAR_EDITPUBLISHER, AccessRuleState.RULE_ACCEPT, false));
+       oldCaAdmAccessRules.add(new AccessRuleData(caAdmRole.getRoleName(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false));
+       caAdmRole = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, caAdmRole, oldCaAdmAccessRules);
+       
+       try {
+           upgradeSession.upgrade(null, "6.3.2", true);
+           
+           // Verify that sysConfigRole's access rules contained rules to edit available extended key usages and custom certificate extensions
+           RoleData upgradedSysConfigRole = roleAccessSession.findRole(sysConfigRoleName);
+           assertEquals(3, upgradedSysConfigRole.getAccessRules().size());
+           assertTrue(
+                   "Role was not upgraded with rule " + StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(),
+                   upgradedSysConfigRole.getAccessRules().containsValue(
+                           new AccessRuleData(sysConfigRoleName, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), AccessRuleState.RULE_ACCEPT, false)));
+           assertTrue(
+                   "Role was not upgraded with rule " + StandardRules.REGULAR_EDITAVAILABLEEKU.resource(),
+                   upgradedSysConfigRole.getAccessRules()
+                           .containsValue(
+                                   new AccessRuleData(sysConfigRoleName, StandardRules.REGULAR_EDITAVAILABLEEKU.resource(),
+                                           AccessRuleState.RULE_ACCEPT, false)));
+           
+           assertTrue(
+                   "Role was not upgraded with rule " + StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(),
+                   upgradedSysConfigRole.getAccessRules()
+                           .containsValue(
+                                   new AccessRuleData(sysConfigRoleName, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(),
+                                           AccessRuleState.RULE_ACCEPT, false)));
+           
+           
+           
+           // Verify that caAdmRole's access rules do not contain new rules
+           RoleData upgradedCaAdmRole = roleAccessSession.findRole(caAdmRoleName);
+           assertEquals(4, upgradedCaAdmRole.getAccessRules().size());
+           assertFalse(
+                   "Role was upgraded with rule " + StandardRules.REGULAR_EDITAVAILABLEEKU.resource() + ", even though it shouldn't have.",
+                   upgradedCaAdmRole.getAccessRules()
+                           .containsValue(
+                                   new AccessRuleData(caAdmRoleName, StandardRules.REGULAR_EDITAVAILABLEEKU.resource(),
+                                           AccessRuleState.RULE_ACCEPT, false)));
+           
+           assertFalse(
+                   "Role was not upgraded with rule " + StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource() + ", even though it shouldn't have.",
+                   upgradedCaAdmRole.getAccessRules()
+                           .containsValue(
+                                   new AccessRuleData(caAdmRoleName, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(),
+                                           AccessRuleState.RULE_ACCEPT, false)));
 
+
+       } finally {
+           roleManagementSession.remove(alwaysAllowtoken, sysConfigRoleName);
+           roleManagementSession.remove(alwaysAllowtoken, caAdmRoleName);
+       }
+   }
+    
 }
