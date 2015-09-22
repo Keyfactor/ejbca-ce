@@ -40,7 +40,7 @@ org.cesecore.authorization.control.StandardRules
 <body>
 	<h1>
 	    <h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NEW}" rendered="#{customCertExtensionMBean.currentExtensionId == 0}"/>
-		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionId != 0}"/>
+		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} : #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionId != 0}"/>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCustomCertExtensionForm">
@@ -75,8 +75,11 @@ org.cesecore.authorization.control.StandardRules
 		</h:panelGroup>
 		
 		<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}"/>
-		<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"
-			disabled="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
+		<h:panelGroup>
+			<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"
+				disabled="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
+			<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}"/>
+		</h:panelGroup>
 
 		<h:outputLabel for="currentCEProperties" value="#{web.text.PROPERTIES}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
 	    <h:outputText id="currentCEProperties" value="#{customCertExtensionMBean.currentExtensionGUIInfo.properties}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>

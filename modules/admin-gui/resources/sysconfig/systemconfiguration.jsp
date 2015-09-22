@@ -541,7 +541,7 @@ org.cesecore.authorization.control.AccessControlSession
    				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
 				<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>
 				<f:facet name="footer">
-					<h:inputText id="newCEOID" value="#{systemConfigMBean.newOID}" size="25"/>
+					<h:inputText id="newCEOID" value="#{systemConfigMBean.newOID}" size="25" title="#{web.text.FORMAT_OID}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
@@ -551,7 +551,7 @@ org.cesecore.authorization.control.AccessControlSession
 					<h:outputText value="#{extension.displayName}"/>
 				</h:outputLink>
 				<f:facet name="footer">
-					<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="25"/>
+					<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="35" title="#{web.text.FORMAT_STRING}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
