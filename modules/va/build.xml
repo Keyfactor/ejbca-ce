@@ -39,6 +39,7 @@
 	<path id="test.classpath">
 		<path refid="compile-ejbca.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path refid="lib.jee-client.classpath"/>
 		<path location="${build-va-publisher.dir}"/>
 		<path location="${build-test.dir}"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
