@@ -56,7 +56,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form id="cryptotokens">
-	<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}" var="cryptoTokenGuiInfo" styleClass="grid">
+	<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}" var="cryptoTokenGuiInfo" styleClass="grid" columnClasses=",gridCenter,,,,gridCenter,gridCenter,gridCenter,">
 		<h:column rendered="false">
 			<h:selectBooleanCheckbox value="#{cryptoTokenGuiInfo.selected}"/>
 		</h:column>

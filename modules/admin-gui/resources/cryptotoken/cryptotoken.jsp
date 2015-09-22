@@ -40,7 +40,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 <body>
 	<h1>
 	    <h:outputText value="#{web.text.CRYPTOTOKEN_NEW}" rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}"/>
-		<h:outputText value="#{web.text.CRYPTOTOKEN} #{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
+		<h:outputText value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCryptoTokenForm">
@@ -51,16 +51,16 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:panelGroup>
 		<h:commandButton action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!cryptoTokenMBean.currentCryptoTokenEditMode) && cryptoTokenMBean.allowedToModify}"/>
 		<h:panelGroup id="placeholder1" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode || !cryptoTokenMBean.allowedToModify}"/>
-		<h:outputLabel for="currentCryptoTokenId" value="#{web.text.CRYPTOTOKEN_ID}:" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
+		<h:outputLabel for="currentCryptoTokenId" value="#{web.text.CRYPTOTOKEN_ID}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		<h:outputText id="currentCryptoTokenId" value="#{cryptoTokenMBean.currentCryptoTokenId}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
-		<h:outputLabel for="currentCryptoTokenName" value="#{web.text.CRYPTOTOKEN_NAME}:"/>
+		<h:outputLabel for="currentCryptoTokenName" value="#{web.text.CRYPTOTOKEN_NAME}"/>
 		<h:panelGroup id="currentCryptoTokenName">
-	    	<h:inputText  value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+	    	<h:inputText  value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="45" title="#{web.text.FORMAT_ID_STR}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
 	    	<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
-		<h:outputLabel for="currentCryptoTokenType" value="#{web.text.CRYPTOTOKEN_TYPE}:"/>
+		<h:outputLabel for="currentCryptoTokenType" value="#{web.text.CRYPTOTOKEN_TYPE}"/>
 		<h:panelGroup id="currentCryptoTokenType">
 			<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}">
 			<h:selectOneMenu id="selectOneMenuType" value="#{cryptoTokenMBean.currentCryptoToken.type}"
@@ -73,24 +73,30 @@ org.cesecore.authorization.control.CryptoTokenRules
 	    	<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.type}"
 	    		rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		</h:panelGroup>
-		<h:outputLabel for="currentCryptoTokenReferenced" value="#{web.text.CRYPTOTOKEN_REFDHEAD}:" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
+		<h:outputLabel for="currentCryptoTokenReferenced" value="#{web.text.CRYPTOTOKEN_REFDHEAD}" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenReferenced" value="#{cryptoTokenMBean.currentCryptoToken.referenced}" disabled="true" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
-		<h:outputLabel for="currentCryptoTokenActive" value="#{web.text.CRYPTOTOKEN_ACTIVE}:" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
+		<h:outputLabel for="currentCryptoTokenActive" value="#{web.text.CRYPTOTOKEN_ACTIVE}" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenActive" value="#{cryptoTokenMBean.currentCryptoToken.active}" disabled="true" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
-		<h:outputLabel for="currentCryptoTokenSecret1" value="#{web.text.CRYPTOTOKEN_PIN}:" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-    	<h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		<h:outputLabel for="currentCryptoTokenSecret2" value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}:" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-    	<h:inputSecret id="currentCryptoTokenSecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}:"/>
-		<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
-			disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		<h:outputLabel for="currentCryptoTokenSecret1" value="#{web.text.CRYPTOTOKEN_PIN}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+    	<h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}"/>
+		<h:outputLabel for="currentCryptoTokenSecret2" value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+    	<h:inputSecret id="currentCryptoTokenSecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}"/>
+		<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}"/>
+		<h:panelGroup>
+			<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
+				disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+			<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.USE}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		</h:panelGroup>
 		<h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
 			<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey"
 				value="#{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#New%20Crypto%20Tokens") + ":" %>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#New%20Crypto%20Tokens") %>
 		</h:panelGroup>
-		<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
-			value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		<h:panelGroup>
+			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
+				value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+			<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey" value="#{web.text.USE}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		</h:panelGroup>
 		<h:outputLabel id="currentCryptoTokenP11LibraryLabel" for="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
 			value="#{web.text.CRYPTOTOKEN_TYPE_P11} #{web.text.CRYPTOTOKEN_LIBRARY}:"/>
 		<h:panelGroup id="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
@@ -145,7 +151,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 	<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NA}" rendered="#{!cryptoTokenMBean.currentCryptoToken.active && cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 	<h:form rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
 	<h:dataTable value="#{cryptoTokenMBean.keyPairGuiList}" var="keyPairGuiInfo" rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
-		styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+		styleClass="grid" style="border-collapse: collapse; right: auto; left: auto" columnClasses=",,gridCenter,gridCenter,,">
 		<h:column>
 			<h:selectBooleanCheckbox value="#{keyPairGuiInfo.selected}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
 		</h:column>
@@ -186,7 +192,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>
 	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}" action="#{cryptoTokenMBean.removeSelectedKeyPairs}"
 	    	rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}" onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REMS}')"/>
-		<h:inputText value="#{cryptoTokenMBean.newKeyPairAlias}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
+		<h:inputText value="#{cryptoTokenMBean.newKeyPairAlias}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="20" title="#{web.text.FORMAT_ALIAS}">
 			<f:validator validatorId="legalCharsValidator"/>
 		</h:inputText>
 		<h:selectOneMenu value="#{cryptoTokenMBean.newKeyPairSpec}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">

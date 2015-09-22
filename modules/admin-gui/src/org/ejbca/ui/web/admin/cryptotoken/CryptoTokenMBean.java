@@ -127,7 +127,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /** GUI edit/view representation of a CryptoToken that can be interacted with. */
     public class CurrentCryptoTokenGuiInfo {
-        private String name = "New CryptoToken";
+        private String name = "";
         private String type = SoftCryptoToken.class.getSimpleName();
         private String secret1 = "";
         private String secret2 = "";
