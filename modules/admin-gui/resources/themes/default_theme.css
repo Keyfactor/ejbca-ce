@@ -341,6 +341,9 @@ table.grid tfoot tr:active {
 .gridColumn2 {
 	white-space: nowrap;
 }
+.gridCenter {
+	text-align: center;
+}
 
 
 /* --- Forms: List/Actions */
