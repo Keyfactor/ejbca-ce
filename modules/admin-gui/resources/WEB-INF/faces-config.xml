@@ -208,7 +208,7 @@
     <from-view-id>/sysconfig/systemconfiguration.jsp</from-view-id>
     <navigation-case>
       <from-outcome>edit</from-outcome>
-      <to-view-id>/sysconfig//customcertextension.jsp</to-view-id>
+      <to-view-id>/sysconfig/customcertextension.jsp</to-view-id>
     </navigation-case>
   </navigation-rule>
   	

@@ -122,7 +122,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
         flushCache();
         this.currentExtensionId = systemConfigMBean.getSelectedCustomCertExtensionID();
         if(this.currentExtensionId == 0) { // 0 is the default value that isn't set to any extension
-            String msg = "Recieved exension ID '0'. Extension ID cannot be '0'.";
+            String msg = "Recieved extension ID '0'. Extension ID cannot be '0'.";
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
             log.error(msg);
         }
@@ -164,7 +164,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
             currentExtensionGUIInfo.setProperties(new Properties());
         }
         
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();;
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
         try {
             cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), currentExtensionGUIInfo.getProperties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
