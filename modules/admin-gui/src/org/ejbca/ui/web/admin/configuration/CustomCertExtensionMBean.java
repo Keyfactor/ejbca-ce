@@ -37,32 +37,21 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
     
-    private final String DEFAULT_EXTENSION_CLASSPATH = "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension";
-    
     public class CurrentExtensionGUIInfo {
         private int id;
         private String oid;
         private String displayName;
         private String classPath;
         private boolean critical;
-        private String properties;
-        
-        public CurrentExtensionGUIInfo(int id) {
-            this.id = id;
-            this.oid = "";
-            this.displayName = "";
-            this.classPath = DEFAULT_EXTENSION_CLASSPATH;
-            this.critical = false;
-            this.properties = "";
-        }
-        
+        private Properties properties;
+
         public CurrentExtensionGUIInfo(CertificateExtension extension) {
             this.id = extension.getId();
             this.oid = extension.getOID();
             this.displayName = extension.getDisplayName();
             this.classPath = extension.getClass().getCanonicalName();
             this.critical = extension.isCriticalFlag();
-            this.properties = getPropertiesAsString(extension.getProperties());
+            this.properties = extension.getProperties();
         }
         
         public int getId() { return this.id; }
@@ -75,25 +64,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
         public void setClassPath(String classPath) { this.classPath=classPath; }
         public boolean isCritical() { return this.critical; }
         public void setCritical(boolean critical) { this.critical=critical; }
-        public String getProperties() {return this.properties; }
-        public void setProperties(String properties) { this.properties=properties; }
-        public void setProperties(Properties properties) { this.properties=getPropertiesAsString(properties); }
-        
-        private String getPropertiesAsString(Properties properties) {
-            if(properties.isEmpty()) {
-                return "";
-            }
-            
-            StringBuilder sb = new StringBuilder("");
-            for(Object o : properties.keySet() ) {
-                sb.append((String) o);
-                sb.append("=");
-                sb.append((String)properties.get(o));
-                sb.append(",");
-            }
-            sb.deleteCharAt(sb.length()-1);
-            return sb.toString();
-        }
+        public Properties getProperties() {return this.properties; }
+        public void setProperties(Properties properties) { this.properties=properties; }
     }
     
     public class PropertyGUIInfo {
@@ -112,7 +84,10 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
         
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     
-    private boolean currentExtensionEditMode = true;
+    // Declarations in faces-config.xml
+    //@javax.faces.bean.ManagedProperty(value="#{systemConfigMBean}")
+    private SystemConfigMBean systemConfigMBean;
+    
     private AvailableCustomCertificateExtensionsConfiguration availableExtensionsConfig = null;
     private CurrentExtensionGUIInfo currentExtensionGUIInfo = null;
     private int currentExtensionId = 0;
@@ -125,6 +100,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     }
             
     public void flushCache() {
+        availableExtensionsConfig = null;
+        currentExtensionId = 0;
         currentExtensionGUIInfo = null;
         currentExtensionPropertiesList = null;
         currentPropertyKey = "";
@@ -138,25 +115,16 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
         return availableExtensionsConfig;
     }
     
-    public int getCurrentExtensionId() { 
-        // Get the HTTP GET/POST parameter named "extensionId"
-        final String idString = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("extensionId");        
-        if (StringUtils.isNotEmpty(idString)) {
-            try {
-                int id = Integer.parseInt(idString);
-                // If there is a query parameter present and the id is different we flush the cache!
-                if (id != this.currentExtensionId) {
-                    flushCache();
-                    this.currentExtensionId = id;
-                }
-                // Always switch to edit mode for new ones and view mode for all others
-                setCurrentExtensionEditMode(false);
-            } catch (NumberFormatException e) {
-                String msg = "Could not parse the extension ID as an Integer. ";
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
-                log.error(msg + e.getLocalizedMessage());
-                return 0;
-            }
+    public SystemConfigMBean getSystemConfigMBean() { return systemConfigMBean; }
+    public void setSystemConfigMBean(SystemConfigMBean systemConfigMBean) { this.systemConfigMBean = systemConfigMBean; }
+    
+    public int getCurrentExtensionId() {
+        flushCache();
+        this.currentExtensionId = systemConfigMBean.getSelectedCustomCertExtensionID();
+        if(this.currentExtensionId == 0) { // 0 is the default value that isn't set to any extension
+            String msg = "Recieved exension ID '0'. Extension ID cannot be '0'.";
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            log.error(msg);
         }
         return this.currentExtensionId;
     }
@@ -193,32 +161,22 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
             return;
         }
         if (currentExtensionGUIInfo.getProperties() == null) {
-            currentExtensionGUIInfo.setProperties("");
+            currentExtensionGUIInfo.setProperties(new Properties());
         }
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();;
         try {
-            cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), getPropertiesFromString(currentExtensionGUIInfo.getProperties()));
+            cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), currentExtensionGUIInfo.getProperties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Extension was saved successfully.", null));
         } catch(Exception e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to edit Custom Certificate Extension. " + e.getLocalizedMessage() , e.getLocalizedMessage()));
             return;
         }
+        
+        flushCache();
     }
-    
-    private Properties getPropertiesFromString(String props) {
-        Properties properties = new Properties();
-        if(!StringUtils.isEmpty(props)) {
-            String[] propertyPairs = StringUtils.split(props, ",");
-            String[] property = new String[2];
-            for(String pair : propertyPairs) {
-                property = StringUtils.split(pair, "=");
-                properties.put(property[0].trim(), property[1].trim());
-            }
-        }
-        return properties;
-    }
-    
+
     // -------------------------------------------------------------
     //              Current Extension Properties
     // ------------------------------------------------------------
@@ -230,8 +188,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     
     public ListDataModel<PropertyGUIInfo> getCurrentExtensionPropertiesList() {
         if(currentExtensionPropertiesList == null) {
-            final String currentPropertiesString = getCurrentExtensionGUIInfo().getProperties();
-            final Properties currentProperties = getPropertiesFromString(currentPropertiesString);
+            final Properties currentProperties = getCurrentExtensionGUIInfo().getProperties();
             currentExtensionPropertiesList = new ListDataModel<PropertyGUIInfo>(getPropertiesAsList(currentProperties));
         }
         return currentExtensionPropertiesList;
@@ -240,34 +197,24 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     public void addExtensionProperty() {
         CurrentExtensionGUIInfo currentExtension = getCurrentExtensionGUIInfo();
         
-        if(StringUtils.isEmpty(currentExtension.getOid()) || StringUtils.isEmpty(currentExtension.getDisplayName())){
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please save Extension before adding properties." , null));
-            return;
-        }
-        
         if (StringUtils.isEmpty(currentPropertyKey) || StringUtils.isEmpty(currentPropertyValue)) {
             FacesContext.getCurrentInstance()
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please specify both property key and value", null));
             return;
         }
         
-        final String newProperyString = currentPropertyKey + "=" + currentPropertyValue;
-        String currentProperties = currentExtension.getProperties();
-        if(StringUtils.isNotEmpty(currentProperties)) {
-            currentProperties += ",";
-        }
-        currentProperties += newProperyString;
+        Properties currentProperties = currentExtension.getProperties();
+        currentProperties.put(currentPropertyKey, currentPropertyValue);
         currentExtension.setProperties(currentProperties);
         currentExtensionGUIInfo = currentExtension;
         saveCurrentExtension();
-        currentExtensionPropertiesList = new ListDataModel<PropertyGUIInfo>(getPropertiesAsList(getPropertiesFromString(currentProperties)));
+        currentExtensionPropertiesList = new ListDataModel<PropertyGUIInfo>(getPropertiesAsList(currentProperties));
         flushPropertyCache();
     }
     
     public void removeExtensionProperty() {
         final CurrentExtensionGUIInfo currentExtension = getCurrentExtensionGUIInfo();
-        final String currentPropertiesString = currentExtension.getProperties();
-        final Properties currentProperties = getPropertiesFromString(currentPropertiesString);
+        final Properties currentProperties = currentExtension.getProperties();
         final PropertyGUIInfo propToRemove = ((PropertyGUIInfo) currentExtensionPropertiesList.getRowData());
         currentProperties.remove(propToRemove.getKey());
         currentExtension.setProperties(currentProperties);
@@ -296,16 +243,6 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
     public boolean isAllowedToModify() {
         return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource());
-    }
-        
-    public boolean isCurrentExtensionEditMode() { return currentExtensionEditMode; }
-    public void setCurrentExtensionEditMode(boolean editMode) { this.currentExtensionEditMode = editMode; }
-    public void toggleCurrentExtensionEditMode() { this.currentExtensionEditMode ^= true; }
-    
-    /** Invoked when admin cancels a Custom Certificate Extension create or edit. */
-    public void cancelCurrentCustomExtension() {
-        setCurrentExtensionEditMode(false);
-        flushCache();
     }
    
 }
