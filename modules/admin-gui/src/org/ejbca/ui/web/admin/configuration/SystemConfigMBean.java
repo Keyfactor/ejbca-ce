@@ -609,7 +609,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();;
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
         ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
         try {
             getEjbcaWebBean().saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
