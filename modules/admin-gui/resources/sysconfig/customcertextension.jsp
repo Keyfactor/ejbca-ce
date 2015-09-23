@@ -44,56 +44,36 @@ org.cesecore.authorization.control.StandardRules
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCustomCertExtensionForm">
-	<h:panelGrid columns="2">
-		<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf"><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NAV_BACK}"/></h:outputLink>
-		<h:commandButton action="#{customCertExtensionMBean.toggleCurrentExtensionEditMode}" value="#{web.text.CUSTOMCERTEXTENSION_NAV_EDIT}" rendered="#{(!customCertExtensionMBean.currentExtensionEditMode) && customCertExtensionMBean.allowedToModify}"/>
-		<h:panelGroup id="placeholder1" rendered="#{customCertExtensionMBean.currentExtensionEditMode || !customCertExtensionMBean.allowedToModify}"/>
+		<h:panelGrid columns="2">
+			<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf"><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NAV_BACK}"/></h:outputLink>
+			<h:panelGroup id="placeholder1"/>
 		
-		<h:outputLabel for="currentCEId" value="#{web.text.IDENTIFIER}"/>
-		<h:panelGroup id="currentCEId">
-			<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}"/>
-		</h:panelGroup>
+			<h:outputLabel for="currentCEId" value="#{web.text.IDENTIFIER}"/>
+			<h:outputText id="currentCEId" value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}"/>
 		
-		<h:outputLabel for="currentCEOid" value="#{web.text.OID}"/>
-		<h:panelGroup id="currentCEOid">
-	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}" size="25" title="#{web.text.FORMAT_OID}"/>
-	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
-		</h:panelGroup>
+			<h:outputLabel for="currentCEOid" value="#{web.text.OID}"/>
+    		<h:inputText id="currentCEOid" value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" size="25" title="#{web.text.FORMAT_OID}"/>
 		
-		<h:outputLabel for="currentCEDisplayName" value="#{web.text.LABEL}"/>
-		<h:panelGroup id="currentCEDisplayName">
-	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}" size="35" title="#{web.text.FORMAT_STRING}">
-	    		<f:validator validatorId="legalCharsValidator"/>
-	    	</h:inputText>
-	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
-		</h:panelGroup>
+			<h:outputLabel for="currentCEDisplayName" value="#{web.text.LABEL}"/>
+    		<h:inputText id="currentCEDisplayName" value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" size="35" title="#{web.text.FORMAT_STRING}">
+    			<f:validator validatorId="legalCharsValidator"/>
+    		</h:inputText>
 
-		<h:outputLabel for="currentCEClassPath" value="#{web.text.CUSTOMCERTEXTENSION_CLASSPATH}"/>
-		<h:panelGroup id="currentCEClassPath">
-	    	<h:inputText  value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}" size="70" title="#{web.text.FORMAT_CLASSPATH}"/>
-	    	<h:outputText value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
-		</h:panelGroup>
+			<h:outputLabel for="currentCEClassPath" value="#{web.text.CUSTOMCERTEXTENSION_CLASSPATH}"/>
+	   		<h:inputText id="currentCEClassPath" value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" size="70" title="#{web.text.FORMAT_CLASSPATH}"/>
 		
-		<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}"/>
-		<h:panelGroup>
-			<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"
-				disabled="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
-			<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}"/>
-		</h:panelGroup>
+			<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}"/>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"/>
+				<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}" />
+			</h:panelGroup>
 
-		<h:outputLabel for="currentCEProperties" value="#{web.text.PROPERTIES}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
-	    <h:outputText id="currentCEProperties" value="#{customCertExtensionMBean.currentExtensionGUIInfo.properties}" rendered="#{!customCertExtensionMBean.currentExtensionEditMode}"/>
-
-
-		<h:panelGroup>
-			<h:commandButton action="#{customCertExtensionMBean.cancelCurrentCustomExtension}" value="#{web.text.CANCEL}" rendered="#{customCertExtensionMBean.currentExtensionEditMode && customCertExtensionMBean.currentExtensionId != 0}"/>
-			<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.SAVE}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}"/>
-		</h:panelGroup>
-	</h:panelGrid>
+			<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.SAVE}" />
+		</h:panelGrid>
 	</h:form>
 
-	<h2><h:outputText value="#{web.text.PROPERTIES}" rendered="#{customCertExtensionMBean.currentExtensionEditMode}"/></h2>
-	<h:form id="propertiesform" enctype="multipart/form-data" rendered="#{customCertExtensionMBean.currentExtensionEditMode}">
+	<h2><h:outputText value="#{web.text.PROPERTIES}" /></h2>
+	<h:form id="propertiesform" enctype="multipart/form-data" >
 		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>

@@ -531,7 +531,7 @@ org.cesecore.authorization.control.AccessControlSession
 		<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.IDENTIFIER}"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.IDENTIFIER}"/></f:facet>
 				<h:outputText value="#{extension.id}" title="#{extension.id}"/>
 				<f:facet name="footer">
 					<h:outputText id="newCEID" value=""/>
@@ -546,24 +546,22 @@ org.cesecore.authorization.control.AccessControlSession
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
-				<!-- <h:outputText value="#{extension.displayName}"/> -->
-				<h:outputLink value="adminweb/sysconfig/customcertextension.jsf?extensionId=#{extension.id}">
-					<h:outputText value="#{extension.displayName}"/>
-				</h:outputLink>
+				<h:outputText value="#{extension.displayName}"/>
 				<f:facet name="footer">
 					<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="35" title="#{web.text.FORMAT_STRING}"/>
 				</f:facet>
 			</h:column>
 			<h:column>
-   				<f:facet name="header">
-   					<h:outputText value="#{web.text.ACTION}"/>
-   				</f:facet>
-				<h:commandButton action="#{systemConfigMBean.removeCustomCertExtension}" value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"
-								rendered="#{systemConfigMBean.allowedToModify}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')" />
+				<f:facet name="header"><h:outputText value="#{web.text.ACTION}"/></f:facet>
+				<h:panelGroup>
+					<h:commandButton value="#{web.text.EDIT}" action="#{systemConfigMBean.actionEdit}"  
+								rendered="#{systemConfigMBean.allowedToModify}"/>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeCustomCertExtension}"
+								rendered="#{systemConfigMBean.allowedToModify}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')"/>
+				</h:panelGroup>
 				<f:facet name="footer">
-					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" />
+					<h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" />
 				</f:facet>
-				
 			</h:column>
 		</h:dataTable>
 	</h:form>
