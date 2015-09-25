@@ -224,9 +224,9 @@ input[type=obligatory] {
 	box-shadow: 0 0 5px rgba(255, 157, 20, 1);
     -webkit-box-shadow: 0 0 5px rgba(255, 157, 20, 1); 
     -moz-box-shadow: 0 0 5px rgba(255, 157, 20, 1);
-	border:1px solid rgba(255, 157, 20, 0.8);
+    -o-box-shadow: 0 0 5px #FF9D14;
+	border: 1px solid rgba(255, 157, 20, 0.8);
 }
-
 select option:hover,
 select option:focus,
 select option:active {
@@ -405,7 +405,6 @@ table tr.section td,
 table tr.title td {
 	font-size: 1.25em;
 }
-
 /* DN & attributes */
 table tr td .dn {
 	white-space: pre-wrap;
