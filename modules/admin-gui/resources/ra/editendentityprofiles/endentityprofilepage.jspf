@@ -749,7 +749,8 @@ if (!editerrors.isEmpty()) {
         <% String validationRegex = "";
            if (validation != null) validationRegex = (String)validation.get(RegexFieldValidator.class.getName()); %>
         <input type="text" name="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" value="<c:out value="<%= validationRegex %>"/>" style="font-size: 9pt"
-            id="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" <% if (validation == null || !authorizedToEdit) out.write("DISABLED"); %>>
+            id="<%=TEXTFIELD_VALIDATION_SUBJECTDN + i%>" <% if (validation == null || !authorizedToEdit) out.write("DISABLED"); %>
+            title="<c:out value="<%= ejbcawebbean.getText(\"FORMAT_REGEX\") %>" />"/>
         <%
              if (editerrors.containsKey(TEXTFIELD_VALIDATION_SUBJECTDN + i)) {
                  // e.g. invalid regex
@@ -762,7 +763,7 @@ if (!editerrors.isEmpty()) {
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>" onclick='checkemailfield("<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>")'
            <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
                  out.write("CHECKED");
-           %> id="<%=CHECKBOX_REQUIRED_SUBJECTDN + i%>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
+           %> id="<%=CHECKBOX_REQUIRED_SUBJECTDN + i%>" <% if(!authorizedToEdit) { out.write("disabled"); } %>/>
         <label for="<%=CHECKBOX_REQUIRED_SUBJECTDN + i%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
         &nbsp;&nbsp;&nbsp;
         <span class="help"><c:out value="<%=ejbcawebbean.getText(\"DN_PKIX_EMAILADDRESS_HELP\") %>" /></span>
