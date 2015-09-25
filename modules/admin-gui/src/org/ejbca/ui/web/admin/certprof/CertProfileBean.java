@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -289,6 +291,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 ret.add(new SelectItem(oid, oid));
             }
         }
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem first, SelectItem second) {
+                return first.getLabel().compareTo(second.getLabel());
+            }
+            
+        });
         return ret;
     }
     
@@ -779,21 +788,40 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             }
         }
         
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem first, SelectItem second) {
+                return first.getLabel().compareToIgnoreCase(second.getLabel());
+            }
+        });
+        
         return ret;
     }
-    public int getAvailableCertificateExtensionsAvailableSize() { return Math.max(1, Math.min(6, getAvailableCertificateExtensionsAvailable().size())); };
+
+    public int getAvailableCertificateExtensionsAvailableSize() {
+        return Math.max(1, Math.min(6, getAvailableCertificateExtensionsAvailable().size()));
+    }
 
     public List<SelectItem/*<Integer,String*/> getAvailableCAsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         final List<Integer> allCAs = getEjbcaWebBean().getEjb().getCaSession().getAllCaIds();
         final List<Integer> authorizedCAs = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
         final Map<Integer, String> caIdToNameMap = getEjbcaWebBean().getEjb().getCaSession().getCAIdToNameMap();
-        ret.add(new SelectItem(String.valueOf(CertificateProfile.ANYCA), getEjbcaWebBean().getText("ANYCA")));
+    
         for (final Integer caId : allCAs) {
             ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "foo", (authorizedCAs.contains(caId) ? false : true)));
         }
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem first, SelectItem second) {
+                return first.getLabel().compareToIgnoreCase(second.getLabel());
+            }
+        });
+        ret. add(0, new SelectItem(String.valueOf(CertificateProfile.ANYCA), getEjbcaWebBean().getText("ANYCA")));
+        
         return ret;
     }
+    
     public int getAvailableCAsAvailableSize() { return Math.max(1, Math.min(7, getAvailableCAsAvailable().size())); };
 
     public List<SelectItem/*<Integer,String*/> getPublisherListAvailable() {
