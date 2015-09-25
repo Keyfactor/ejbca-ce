@@ -219,6 +219,14 @@ textarea,
 select {
 	font-size: 11pt;
 }
+input[type=obligatory] {
+	font-size: 11pt;
+	box-shadow: 0 0 5px rgba(255, 157, 20, 1);
+    -webkit-box-shadow: 0 0 5px rgba(255, 157, 20, 1); 
+    -moz-box-shadow: 0 0 5px rgba(255, 157, 20, 1);
+    -o-box-shadow: 0 0 5px #FF9D14;
+	border: 1px solid rgba(255, 157, 20, 0.8);
+}
 select option:hover,
 select option:focus,
 select option:active {
@@ -362,6 +370,7 @@ table.view,
 table.action,
 table.edit-top,
 table.edit-bottom,
+table.edit-ctnd,
 table.edit {
 	margin: .75em -2px 0em -2px;
 	border-spacing: 3px 1px;
@@ -373,6 +382,7 @@ table.edit-bottom {
 table.view tr td,
 table.action tr td,
 table.edit-top tr td,
+table.edit-ctnd tr td,
 table.edit-bottom tr td,
 table.edit tr td {
 	padding: .25em .5em;
@@ -382,6 +392,10 @@ table.edit tr td {
 .editColumn1 {
 	width: 35%;
 	text-align: right;
+}
+.editColumnSystem1 {
+	width: 35%;
+	text-align: left;
 }
 .editColumn2 {
 	width: 65%;
@@ -618,11 +632,6 @@ form#cryptotokens img.statusIcon {
 }
 
 /* --- Page: CA > CA Activation */
-.actTokenAndCasHeader {
-	text-align: left;
-	color: #000;
-	background-color: #FFF;
-}
 .actCasHeader {
 	padding-left: 4px;
 	padding-right: 8px;
@@ -632,6 +641,11 @@ form#cryptotokens img.statusIcon {
 	border-top: 1px solid #ccc;
 	border-left: 1px solid #ccc;
 	border-right: 1px solid #ccc;
+}
+.actCasFooter {
+	font-style: italic;
+	font-size: x-small;
+	text-align: right;
 }
 .actCas {
 	margin-top: 0.3em;
