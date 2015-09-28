@@ -1260,6 +1260,9 @@ such as MS UPN, GUID, Krb5PrincipalName.
 <p>
 Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>, permanentIdentifier=&lt;Permanent Identifier values&gt;
 </p>
+<p>
+The text fields and check boxes for Subject Alternative Names generally work in a similar way as the <a href="#Subject DN Fields">Subject DN fields</a>.
+</p>
 <strong>RFC 822 Name (e-mail address)</strong>
 <p>Configuration of email fields can be a bit tricky, since there are two places in the End Entity profile where email adresses can be configured:
 </p>
