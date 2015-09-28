@@ -229,7 +229,7 @@ public class EjbcaWebBean implements Serializable {
             final BigInteger serno = CertTools.getSerialNumber(certificates[0]);
             certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
             if(!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
-                throw new RuntimeException("Certificate with SN " +  serno + " did not belong to user " + issuerDN);
+                throw new RuntimeException("Certificate with SN " +  serno + " did not belong to CA " + issuerDN);
             }
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
