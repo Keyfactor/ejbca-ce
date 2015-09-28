@@ -994,7 +994,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	// Make sure that there are enough fields to cover all required in profile
     	checkIfForIllegalNumberOfFields(subjectdnfields, subjectaltnames, subjectdirattrs);
     	// Check that all fields pass the validators (e.g. regex), if any
-    	checkWithValidators(subjectdnfields);
+    	checkWithValidators(subjectdnfields, subjectaltnames);
     	// Check contents of username.
     	checkIfDataFullfillProfile(USERNAME,0,username, "Username",null);
     	// Check Email address.
@@ -1964,7 +1964,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     }
     
-    private void checkWithValidators(final DNFieldExtractor subjectdnfields) throws UserDoesntFullfillEndEntityProfile {
+    private void checkWithValidators(final DNFieldExtractor subjectdnfields, final DNFieldExtractor subjectaltnames) throws UserDoesntFullfillEndEntityProfile {
         final List<String> dnfields = DnComponents.getDnProfileFields();
         final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
         for (int i=0; i<dnfields.size(); i++) {
@@ -1979,7 +1979,27 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     try {
                         EndEntityValidationHelper.checkValue(fieldName, validators, fieldValue);
                     } catch (EndEntityFieldValidatorException e) {
-                        throw new UserDoesntFullfillEndEntityProfile("Did not pass validation of " + fieldName + ". " + e.getMessage());
+                        throw new UserDoesntFullfillEndEntityProfile("Did not pass validation of field " + fieldName + " (in DN). " + e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        final List<String> sanfields = DnComponents.getAltNameFields();
+        final List<Integer> sanFieldExtractorIds = DnComponents.getAltNameDnIds();
+        for (int i=0; i<sanfields.size(); i++) {
+            final int dnId = sanFieldExtractorIds.get(i);
+            final int profileId = DnComponents.dnIdToProfileId(dnId);
+            final String fieldName = sanfields.get(i);
+            final int num = subjectaltnames.getNumberOfFields(dnId);
+            for (int j = 0; j < num; j++) {
+                final Map<String,Serializable> validators = getValidation(profileId, j);
+                if (validators != null) {
+                    final String fieldValue = subjectaltnames.getField(dnId, j);
+                    try {
+                        EndEntityValidationHelper.checkValue(fieldName, validators, fieldValue);
+                    } catch (EndEntityFieldValidatorException e) {
+                        throw new UserDoesntFullfillEndEntityProfile("Did not pass validation of field " + fieldName + " (in SAN). " + e.getMessage());
                     }
                 }
             }
