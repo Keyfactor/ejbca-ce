@@ -36,15 +36,20 @@ Upgrading to 6.4.0 will require some minor additions of access rules, which will
 so while role will be given access to anything they didn't have before the upgrade, rules can be restricted manually after the upgrade to make
 access control more restrictive. 
 
+Upgrading to 6.4.0 involves the following changes:
+
+1. New Access rules for Auditors
+2. XKMS no longer supported 
+
 To perform an upgrade:
 
 1. 	Upgrade EJBCA on all nodes. 
 2. 	Run 'ant post-upgrade' on any one of the nodes and enter "6.3.2" as version(or whatever version you're upgrading from). 
 3.	Verify that all custom roles still have their expected rights. 
 
-New Access rules: 
+1. New Access rules for Auditors: 
 
-1. A new default Role has been added named "Auditor", which is a role which has view access to all pages but not rights to make any changes or 
+A new default Role has been added named "Auditor", which is a role which has view access to all pages but not rights to make any changes or 
 perform any actions. Some new rules had to be added to accommodate this role, and autorization to certain GUI pages has been made more fine 
 grained as a result. During upgrade, all roles which previously had access rights using the previous rules will automatically be given access 
 to the new rule. These are as follows:
@@ -72,7 +77,7 @@ Crypto Tokens
 Services
 Internal Key Bindings
 
-100% uptime notes: 
+2. XKMS no longer supported 
 Support for XKMS was removed and is no longer available. When upgrading to EJBCA 6.4.0, internal keystores for XKMS will be removed and 
 is upgrading in a 100% uptime cluster, the XKMS option in older versions of EJBCA will also disappear.
 
