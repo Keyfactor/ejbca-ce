@@ -881,6 +881,17 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    public static List<CertificateData> findByUsernameAndStatusAfterExpireDate(EntityManager entityManager, String username, int status, long afterExpireDate) {
+        final Query query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status AND a.expireDate>=:afterExpireDate ORDER BY a.expireDate DESC, a.serialNumber DESC");
+        query.setParameter("username", username);
+        query.setParameter("status", status);
+        query.setParameter("afterExpireDate", afterExpireDate);
+        return query.getResultList();
+    }
+
+    /** @return return the query results as a List. */
     // TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
     @SuppressWarnings("unchecked")
     public static Set<String> findUsernamesByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {

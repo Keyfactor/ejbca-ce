@@ -394,13 +394,15 @@ public class EjbcaWS implements IEjbcaWS {
                 }
             }
             // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData 
+            final long now = System.currentTimeMillis();
             Collection<java.security.cert.Certificate> certs;
             if (onlyValid) {
-                certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
+                // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
+                certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now);
             } else {
                 certs = certificateStoreSession.findCertificatesByUsername(username);
             }
-            retval = ejbhelper.returnAuthorizedCertificates(admin, certs, onlyValid);
+            retval = ejbhelper.returnAuthorizedCertificates(admin, certs, onlyValid, now);
         } catch (RuntimeException e) {	// EJBException ...
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} finally {

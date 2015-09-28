@@ -796,19 +796,35 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Collection<Certificate> findCertificatesByUsernameAndStatus(String username, int status) {
+    public Collection<Certificate> findCertificatesByUsernameAndStatus(final String username, final int status) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByUsernameAndStatus(),  username=" + username);
         }
-        ArrayList<Certificate> ret = new ArrayList<Certificate>();
         // This method on the entity bean does the ordering in the database
-        Collection<CertificateData> coll = CertificateData.findByUsernameAndStatus(entityManager, username, status);
-        Iterator<CertificateData> iter = coll.iterator();
-        while (iter.hasNext()) {
-            ret.add(iter.next().getCertificate(this.entityManager));
+        final Collection<CertificateData> certificateDatas = CertificateData.findByUsernameAndStatus(entityManager, username, status);
+        final ArrayList<Certificate> ret = new ArrayList<Certificate>(certificateDatas.size());
+        for (final CertificateData certificateData : certificateDatas) {
+            ret.add(certificateData.getCertificate(this.entityManager));
         }
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByUsernameAndStatus(), username=" + username);
+        }
+        return ret;
+    }
+
+    @Override
+    public Collection<Certificate> findCertificatesByUsernameAndStatusAfterExpireDate(final String username, final int status, final long afterExpireDate) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findCertificatesByUsernameAndStatusAfterExpireDate(),  username=" + username);
+        }
+        // This method on the entity bean does the ordering in the database
+        final Collection<CertificateData> certificateDatas = CertificateData.findByUsernameAndStatusAfterExpireDate(entityManager, username, status, afterExpireDate);
+        final ArrayList<Certificate> ret = new ArrayList<Certificate>(certificateDatas.size());
+        for (final CertificateData certificateData : certificateDatas) {
+            ret.add(certificateData.getCertificate(this.entityManager));
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<findCertificatesByUsernameAndStatusAfterExpireDate(), username=" + username);
         }
         return ret;
     }

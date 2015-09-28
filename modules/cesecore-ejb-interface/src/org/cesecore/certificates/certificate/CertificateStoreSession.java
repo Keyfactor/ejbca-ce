@@ -296,6 +296,17 @@ public interface CertificateStoreSession {
     Collection<Certificate> findCertificatesByUsernameAndStatus(String username, int status);
 
     /**
+     * Finds certificate(s) for a given username and status if the expireDate is after the provided one.
+     * 
+     * @param username the username of the certificate(s) that will be retrieved
+     * @param status the status from the CertificateConstants.CERT_ constants
+     * @param afterExpireDate only return entries that has an expireDate larger than or equal to this one
+     * @return Collection of Certificates ordered by expire date, with last
+     *         expire date first, or empty list if user can not be found
+     */
+    Collection<Certificate> findCertificatesByUsernameAndStatusAfterExpireDate(String username, int status, long afterExpireDate);
+
+    /**
      * Gets certificate info, which is basically all fields except the
      * certificate itself. Note: this method should not be used within a
      * transaction where the reading of this info might depend on something

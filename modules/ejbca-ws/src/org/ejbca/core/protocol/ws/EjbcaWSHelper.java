@@ -692,12 +692,14 @@ public class EjbcaWSHelper {
 	 * @param admin is the admin used for authorization
 	 * @param certs is the collection of certs to verify
 	 * @param validate set to true to perform validation of each certificate
+	 * @param nowMillis current time
 	 * @return a List of valid and authorized certificates
 	 */
-	protected List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs, final boolean validate) {
+	protected List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs,
+	        final boolean validate, final long nowMillis) {
 		final List<Certificate> retval = new ArrayList<Certificate>();
 		final Map<Integer, Boolean> authorizationCache = new HashMap<Integer, Boolean>();
-		final Date now = new Date();
+		final Date now = new Date(nowMillis);
 		for (final java.security.cert.Certificate next : certs) {
 			try {
 				if (validate) {
@@ -712,7 +714,7 @@ public class EjbcaWSHelper {
 					authorizationCache.put(caid, authorized);
 				}
 				if (authorized.booleanValue()) {
-					retval.add(new Certificate((java.security.cert.Certificate) next));
+					retval.add(new Certificate(next));
 				}
 			} catch (CertificateExpiredException e) {		// Drop invalid cert
 			} catch (CertificateNotYetValidException e) {   // Drop invalid cert
