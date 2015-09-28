@@ -1529,8 +1529,10 @@ function checkallfields(){
 	               	if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
 						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" > @
 						<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="15" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>' title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>">
-				<%	} else { %>
-						<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
+				<%	} else {
+				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+                        final String regex = (validation != null ? (String)validation.get(RegexFieldValidator.class.getName()) : null); %>
+                        <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>' <% if (regex != null) { %>pattern="<c:out value='<%=regex%>'/>" title="Must match format specified in profile. / Technical detail - the regex is <c:out value='<%=regex%>'/>"<% } %>>
 				<%	} %>
 			<%	} %>
 		<%	} %>

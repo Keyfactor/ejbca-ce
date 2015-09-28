@@ -323,11 +323,29 @@ function checkuseemailfield(){
     document.editprofile.<%= CHECKBOX_USE_EMAIL %>.checked = true;    
 }
 
-function checkmodifiablefield(i) {
+function checkmodifiablednfield(i) {
   var checkbox = eval("document.editprofile.<%=CHECKBOX_MODIFYABLE_SUBJECTDN %>" + i);
   var validation_checkbox = eval("document.editprofile.<%=CHECKBOX_VALIDATION_SUBJECTDN %>" + i);
   var validation_label = document.getElementById("<%=LABEL_VALIDATION_SUBJECTDN %>" + i);
   var validation_editbox = eval("document.editprofile.<%=TEXTFIELD_VALIDATION_SUBJECTDN %>" + i);
+  
+  if (checkbox.checked) {
+    validation_checkbox.disabled = false;
+    validation_label.style.color = "inherit";
+  } else {
+    validation_checkbox.disabled = true;
+    validation_checkbox.checked = false;
+    validation_editbox.disabled = true;
+    validation_editbox.value = "";
+    validation_label.style.color = "gray";
+  }
+}
+
+function checkmodifiablealtfield(i) {
+  var checkbox = eval("document.editprofile.<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME %>" + i);
+  var validation_checkbox = eval("document.editprofile.<%=CHECKBOX_VALIDATION_SUBJECTALTNAME %>" + i);
+  var validation_label = document.getElementById("<%=LABEL_VALIDATION_SUBJECTALTNAME %>" + i);
+  var validation_editbox = eval("document.editprofile.<%=TEXTFIELD_VALIDATION_SUBJECTALTNAME %>" + i);
   
   if (checkbox.checked) {
     validation_checkbox.disabled = false;
@@ -354,18 +372,32 @@ function checkvalidationdnfield(i) {
   }
 }
 
-function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
-	var valuefield = eval("document.editprofile." + field);
-	var checkBoxTarget = eval("document.editprofile." + boxTarget);
-	var checkBoxSource = eval("document.editprofile." + boxSource);
-	valuefield.disabled = checkBoxSource.checked;
-	checkBoxTarget.disabled = checkBoxSource.checked;
-	if ( valuefield.disabled ) {
+function checkvalidationaltfield(i) {
+  var checkbox = eval("document.editprofile.<%=CHECKBOX_VALIDATION_SUBJECTALTNAME %>" + i);
+  var editbox = eval("document.editprofile.<%=TEXTFIELD_VALIDATION_SUBJECTALTNAME %>" + i);
+  
+  if (checkbox.checked) {
+    editbox.disabled = false;
+    editbox.focus();
+  } else {
+    editbox.value = "";
+    editbox.disabled = true;
+  }
+}
+
+function checkuseendentityemail(i) {
+	var valuefield = eval("document.editprofile.<%= TEXTFIELD_SUBJECTALTNAME %>" + i);
+	var checkbox = eval("document.editprofile.<%=CHECKBOX_USE_SUBJECTALTNAME %>" + i);
+	var modifiableCheckbox = eval("document.editprofile.<%= CHECKBOX_MODIFYABLE_SUBJECTALTNAME %>" + i);
+	valuefield.disabled = checkbox.checked;
+	modifiableCheckbox.disabled = checkbox.checked;
+	if (valuefield.disabled) {
 		valuefield.value = "";
 	}
-	if ( checkBoxTarget.disabled ) {
-		checkBoxTarget.checked = false;
+	if (modifiableCheckbox.disabled) {
+		modifiableCheckbox.checked = false;
 	}
+	checkmodifiablealtfield(i);
 }
 
  function maxFailedLoginsUnlimited() {
@@ -734,7 +766,7 @@ if (!editerrors.isEmpty()) {
         <%
         final boolean isModifiable = profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
         %>
-        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>" onclick="checkmodifiablefield(<%= i %>)" 
+        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>" onclick="checkmodifiablednfield(<%= i %>)" 
            <% if (isModifiable)
                  out.write("CHECKED");
            %> id="<%=CHECKBOX_MODIFYABLE_SUBJECTDN + i%>"
@@ -835,12 +867,14 @@ if (!editerrors.isEmpty()) {
         <c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>" />
       </td>
       <td width="50%"> 
-        <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) { %>
+        <%	boolean useEndEntityEmail = false;
+            if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) { %>
 				<input type="checkbox" name="<%=CHECKBOX_USE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" 
 		           <%	if ( profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) ) {
 		                	out.write(" CHECKED ");
 		                	emailfieldexists = true;
-						} %> onClick="fieldSetDisableAsCheckbox('<%= TEXTFIELD_SUBJECTALTNAME + i %>','<%= CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i %>','<%=CHECKBOX_USE_SUBJECTALTNAME + i %>')"
+		                	useEndEntityEmail = true;
+						} %> onClick="checkuseendentityemail(<%= i %>)"
 						id="<%=CHECKBOX_USE_SUBJECTALTNAME + i%>" 
 						<% if(!authorizedToEdit) { out.write("disabled"); } %>/>
 				<label for="<%=CHECKBOX_USE_SUBJECTALTNAME + i%>"><c:out value="<%= ejbcawebbean.getText(\"USEENTITYEMAILFIELD\") %>" /></label>
@@ -869,15 +903,34 @@ if (!editerrors.isEmpty()) {
 				<% if(!authorizedToEdit) { out.write("disabled"); } %> >
         <label for="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
         &nbsp;
-        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" 
+        <%
+        final boolean isModifiable = profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+        %>
+        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" onclick="checkmodifiablealtfield(<%= i %>)"
            <%	if((profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) &&
            			EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME))
            			|| !authorizedToEdit ) {
 					out.write("DISABLED");
-				} else if(profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
+				} else if (isModifiable) {
 					out.write("CHECKED");
 				} %> id="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i%>">
         <label for="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i%>"><c:out value="<%= ejbcawebbean.getText(\"MODIFYABLE\") %>" /></label>
+        &nbsp;
+        <% Map<String,Serializable> validation = profiledata.getValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]); %>
+        <input type="checkbox" name="<%=CHECKBOX_VALIDATION_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>"  onclick="checkvalidationaltfield(<%= i %>)" 
+           <% if(validation != null) out.write("CHECKED"); %> id="<%=CHECKBOX_VALIDATION_SUBJECTALTNAME + i%>"
+           <% if(!authorizedToEdit || !isModifiable || useEndEntityEmail) { out.write("disabled"); } %>> 
+        <label for="<%=CHECKBOX_VALIDATION_SUBJECTALTNAME + i%>" id="<%=LABEL_VALIDATION_SUBJECTALTNAME + i%>"<% if (!authorizedToEdit || !isModifiable || useEndEntityEmail) { out.write(" style=\"color: gray\""); } %>><c:out value="<%= ejbcawebbean.getText(\"VALIDATION\") %>" /></label>
+        <% String validationRegex = "";
+           if (validation != null) validationRegex = (String)validation.get(RegexFieldValidator.class.getName()); %>
+        <input type="text" name="<%=TEXTFIELD_VALIDATION_SUBJECTALTNAME + i%>" value="<c:out value="<%= validationRegex %>"/>" style="font-size: 9pt"
+            id="<%=TEXTFIELD_VALIDATION_SUBJECTALTNAME + i%>" <% if (validation == null || !authorizedToEdit) out.write("DISABLED"); %>
+            title="<c:out value="<%= ejbcawebbean.getText(\"FORMAT_REGEX\") %>" />"/>
+        <%
+             if (editerrors.containsKey(TEXTFIELD_VALIDATION_SUBJECTALTNAME + i)) {
+                 // e.g. invalid regex
+                 %><span class="alert"><c:out value="<%= ejbcawebbean.getText(\"ERROR\") %>" /></span><%
+             } %>
       </td>
     </tr>
    <%   } %>
