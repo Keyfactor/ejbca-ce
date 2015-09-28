@@ -55,6 +55,7 @@
   static final String TEXTFIELD_MINPWDSTRENGTH       = "textfieldminpwdstrength";
   static final String TEXTFIELD_SUBJECTDN            = "textfieldsubjectdn";
   static final String TEXTFIELD_VALIDATION_SUBJECTDN = "textfieldsubjectdnvalidation";
+  static final String TEXTFIELD_VALIDATION_SUBJECTALTNAME = "textfieldsubjectaltnamevalidation";
   static final String TEXTFIELD_SUBJECTALTNAME       = "textfieldsubjectaltname";
   static final String TEXTFIELD_SUBJECTDIRATTR       = "textfieldsubjectdirattr";
   static final String TEXTFIELD_EMAIL                = "textfieldemail";
@@ -106,8 +107,10 @@
   static final String CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON = "checkboxmodifyableissuancerevocationreason";
   static final String CHECKBOX_MODIFYABLE_MAXFAILEDLOGINS	= "checkboxmodifyablemaxfailedlogins";
   
-  static final String CHECKBOX_VALIDATION_SUBJECTDN       = "checkboxvalidationsubjectdn";
-  static final String LABEL_VALIDATION_SUBJECTDN    = "labelvalidationsubjectdn";
+  static final String CHECKBOX_VALIDATION_SUBJECTDN  = "checkboxvalidationsubjectdn";
+  static final String CHECKBOX_VALIDATION_SUBJECTALTNAME  = "checkboxvalidationsubjectaltname";
+  static final String LABEL_VALIDATION_SUBJECTDN     = "labelvalidationsubjectdn";
+  static final String LABEL_VALIDATION_SUBJECTALTNAME     = "labelvalidationsubjectaltname";
 
   static final String CHECKBOX_USE_CARDNUMBER        = "checkboxusecardnumber";
   static final String CHECKBOX_USE_PASSWORD          = "checkboxusepassword";
@@ -451,6 +454,29 @@
                                         ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTALTNAME + i)));
                 profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , 
                                         ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i)));
+             
+                final boolean useValidation = ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_VALIDATION_SUBJECTALTNAME + i));
+                String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTALTNAME + i);
+                if (useValidation) {
+                    if (validationRegex == null) {
+                        // We must accept an empty value in case the user has Javascript turned
+                        // off and has to update the page before the text field appears
+                        validationRegex = "";
+                    }
+                    final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
+                    final String fieldName = DnComponents.dnIdToProfileName(dnId);
+                    try {
+                        EndEntityValidationHelper.checkValidator(fieldName, RegexFieldValidator.class.getName(), validationRegex);
+                    } catch (EndEntityFieldValidatorException e) {
+                        editerrors.put(TEXTFIELD_VALIDATION_SUBJECTALTNAME + i, e.getMessage());
+                    }
+                    
+                    LinkedHashMap<String,Serializable> validation = new LinkedHashMap<String,Serializable>();
+                    validation.put(RegexFieldValidator.class.getName(), validationRegex);
+                    profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], validation);
+                } else {
+                    profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], null);
+                }
              } 
             
              numberofsubjectdirattrfields = profiledata.getSubjectDirAttrFieldOrderLength();
