@@ -873,7 +873,11 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public String[] getCertSernoAndIssuerdn(String certdata) {
-        return StringTools.parseCertData(certdata);
+        final String[] ret = StringTools.parseCertData(certdata);
+        if (log.isDebugEnabled()) {
+            log.debug("getCertSernoAndIssuerdn: " + certdata + " -> " + ret[0] + "," + ret[1]);
+        }
+        return ret;
     }
 
     public String getCleanOption(String parameter, String[] validOptions) {
