@@ -15,6 +15,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -591,9 +593,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableExtendedKeyUsagesConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         ArrayList<EKUInfo> ekus = new ArrayList<EKUInfo>();
         Map<String, String> allEKU = availableExtendedKeyUsagesConfig.getAllEKUOidsAndNames();
-        for(Entry<String, String> entry : allEKU.entrySet()) {
+        for (Entry<String, String> entry : allEKU.entrySet()) {
             ekus.add(new EKUInfo(entry.getKey(), entry.getValue()));
         }
+        Collections.sort(ekus, new Comparator<EKUInfo>() {
+            @Override
+            public int compare(final EKUInfo ekuInfo1, final EKUInfo ekuInfo2) {
+                return ekuInfo1.getOid().compareTo(ekuInfo2.getOid());
+            }
+        });
         return ekus;
     }
     
