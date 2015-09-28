@@ -383,23 +383,24 @@ public class EjbcaWS implements IEjbcaWS {
 		}
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		List<Certificate> retval = new ArrayList<Certificate>(0);
-		try{
+		try {
 			final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 			final AuthenticationToken admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
-			if (endEntityAccessSession.findUser(admin,username) != null) {  // checks authorization on CA and profiles and view_end_entity
-				Collection<java.security.cert.Certificate> certs;
-				if (onlyValid) {
-					certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
-				} else {
-					certs = certificateStoreSession.findCertificatesByUsername(username);
-				}
-				retval = ejbhelper.returnAuthorizedCertificates(admin, certs, onlyValid);
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));				
-				}
-			}
+            // Check authorization on current CA and profiles and view_end_entity by looking up the end entity
+            if (endEntityAccessSession.findUser(admin,username) == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));              
+                }
+            }
+            // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData 
+            Collection<java.security.cert.Certificate> certs;
+            if (onlyValid) {
+                certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
+            } else {
+                certs = certificateStoreSession.findCertificatesByUsername(username);
+            }
+            retval = ejbhelper.returnAuthorizedCertificates(admin, certs, onlyValid);
         } catch (RuntimeException e) {	// EJBException ...
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} finally {
