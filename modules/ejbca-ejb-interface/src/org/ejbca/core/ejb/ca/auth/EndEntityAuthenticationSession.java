@@ -37,7 +37,7 @@ public interface EndEntityAuthenticationSession {
      * @throws AuthStatusException If the users status is incorrect.
      * @throws AuthLoginException If the password is incorrect.
      */
-    public EndEntityInformation authenticateUser(AuthenticationToken admin, String username, String password)
+    EndEntityInformation authenticateUser(AuthenticationToken admin, String username, String password)
             throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
     /**
@@ -51,6 +51,6 @@ public interface EndEntityAuthenticationSession {
      * 
      * @throws ObjectNotFoundException if the user does not exist.
      */
-    public void finishUser(EndEntityInformation data) throws ObjectNotFoundException;
+    void finishUser(EndEntityInformation data) throws ObjectNotFoundException;
 
 }
