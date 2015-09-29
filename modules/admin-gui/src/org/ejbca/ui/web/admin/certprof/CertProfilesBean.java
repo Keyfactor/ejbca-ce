@@ -44,7 +44,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -59,7 +58,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
-    
+
     // This restriction in certificate profile naming can be removed when the current running version no longer has
     // to be able to run side by side (share the db) with an EJBCA 6.1.x or earlier
     @Deprecated
@@ -70,81 +69,101 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         private final String name;
         private final boolean fixed;
         private final boolean missingCa;
-        private final boolean authorized;
-        public CertificateProfileItem(final int id, final String name, final boolean fixed, final boolean missingCa, final boolean authorized) {
+
+        public CertificateProfileItem(final int id, final String name, final boolean fixed, final boolean missingCa) {
             this.id = id;
             this.name = name;
             this.fixed = fixed;
             this.missingCa = missingCa;
-            this.authorized = authorized;
         }
-        public int getId() { return id; }
-        public String getName() { return name; }
-        public boolean isFixed() { return fixed; }
-        public boolean isMissingCa() { return missingCa; }
-        public boolean isAuthorized() { return authorized; }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isFixed() {
+            return fixed;
+        }
+
+        public boolean isMissingCa() {
+            return missingCa;
+        }
     }
-    
+
     private Integer selectedCertProfileId = null;
     private boolean renameInProgress = false;
     private boolean deleteInProgress = false;
     private boolean addFromTemplateInProgress = false;
     private String certProfileName = "";
+    private boolean viewOnly = true;
+    private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
 
-    public Integer getSelectedCertProfileId() { return selectedCertProfileId; }
-    public void setSelectedCertProfileId(final Integer selectedCertProfileId) { this.selectedCertProfileId = selectedCertProfileId; }
+
+    public Integer getSelectedCertProfileId() {
+        return selectedCertProfileId;
+    }
+
+    public void setSelectedCertProfileId(final Integer selectedCertProfileId) {
+        this.selectedCertProfileId = selectedCertProfileId;
+    }
 
     public String getSelectedCertProfileName() {
         final Integer profileId = getSelectedCertProfileId();
-        if (profileId!=null) {
+        if (profileId != null) {
             return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(profileId.intValue());
         }
         return null;
     }
-    
+
     // Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
     public String getResetCertificateProfilesTrigger() {
         certificateProfileItems = null;
         return "";
     }
-    
-    private ListDataModel certificateProfileItems = null;
-    public ListDataModel/*<CertificateProfileItem>*/ getCertificateProfiles() {
-        if (certificateProfileItems==null) {
+
+
+    public ListDataModel<CertificateProfileItem> getCertificateProfiles() {
+        if (certificateProfileItems == null) {
             final List<CertificateProfileItem> items = new ArrayList<CertificateProfileItem>();
             final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
             final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
             final Map<Integer, CertificateProfile> allCertificateProfiles = certificateProfileSession.getAllCertificateProfiles();
-         
+
             //Always include
-            authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_ENDENTITY));
+            authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
+                    CertificateConstants.CERTTYPE_ENDENTITY));
             if (isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
                 //Only root users may use CA profiles
-                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_ROOTCA));
-                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_SUBCA));
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
+                        CertificateConstants.CERTTYPE_ROOTCA));
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
+                        CertificateConstants.CERTTYPE_SUBCA));
             }
             boolean usingHardwareTokens = getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens();
             if (usingHardwareTokens) {
-                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_HARDTOKEN)); 
-            } 
+                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
+                        CertificateConstants.CERTTYPE_HARDTOKEN));
+            }/*
             // Add fixed certificate profiles.
-            List<Integer> allCertificateProfileIds = new ArrayList<Integer>();
-            allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
-            allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
-            allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
-            allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
-            allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
+            List<Integer> allFixedCertificateProfileIds = new ArrayList<Integer>();
+            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
+            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
+            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
+            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
+            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
             if (usingHardwareTokens) {
-                allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
-                allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-                allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
-                allCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
-            }
-
-            allCertificateProfileIds.addAll(allCertificateProfiles.keySet());
+                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
+                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
+                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
+            }*/
             final List<Integer> profileIdsWithMissingCA = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(getAdmin());
-            final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();  
-            for(Integer profileId : allCertificateProfileIds) {
+            final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
+           /* for (Integer profileId : allFixedCertificateProfileIds) {
                 CertificateProfile certificateProfile = allCertificateProfiles.get(profileId);
                 if (certificateProfile != null && !usingHardwareTokens && certificateProfile.getType() == CertificateConstants.CERTTYPE_HARDTOKEN) {
                     continue;
@@ -152,9 +171,18 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 final boolean missingCa = profileIdsWithMissingCA.contains(profileId);
                 final boolean fixed = isCertProfileFixed(profileId);
                 final String name = idToNameMap.get(profileId);
-                final boolean isAuthorized = authorizedProfileIds.contains(profileId);
-                items.add(new CertificateProfileItem(profileId, name, fixed, missingCa, isAuthorized));
-
+                items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
+            }*/
+            for(Integer profileId : authorizedProfileIds) {
+                //A
+                CertificateProfile certificateProfile = allCertificateProfiles.get(profileId);
+                if (certificateProfile != null && !usingHardwareTokens && certificateProfile.getType() == CertificateConstants.CERTTYPE_HARDTOKEN) {
+                    continue;
+                }
+                final boolean missingCa = profileIdsWithMissingCA.contains(profileId);
+                final boolean fixed = isCertProfileFixed(profileId);
+                final String name = idToNameMap.get(profileId);
+                items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
             }
             // Sort list by name
             Collections.sort(items, new Comparator<CertificateProfileItem>() {
@@ -163,7 +191,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                     return a.getName().compareTo(b.getName());
                 }
             });
-            certificateProfileItems = new ListDataModel(items);
+            certificateProfileItems = new ListDataModel<CertificateProfileItem>(items);
         }
         return certificateProfileItems;
     }
@@ -180,18 +208,19 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public boolean isAuthorizedToEdit() {
         return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEEDIT.resource()) && isAuthorizedToSelectedCertificateProfile();
     }
-    
-    public boolean isAuthorizedToOnlyView() {   
+
+    public boolean isAuthorizedToOnlyView() {
         return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEVIEW.resource()) && !isAuthorizedToEdit();
     }
-    
+
     private boolean isAuthorizedToSelectedCertificateProfile() {
         CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Integer selectedProfileId = getSelectedCertProfileId();
         if (selectedProfileId != null) {
             CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(selectedProfileId);
-            if(certificateProfile != null) {
-                return certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(selectedProfileId);
+            if (certificateProfile != null) {
+                return certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfile.getType()).contains(
+                        selectedProfileId);
             } else {
                 //Can happen if cache wasn't updated. 
                 return true;
@@ -200,31 +229,44 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             return true;
         }
     }
-    
+
     public String actionEdit() {
         selectCurrentRowData();
-        return "edit";   // Outcome is defined in faces-config.xml
+        viewOnly = false;
+        return "edit"; // Outcome is defined in faces-config.xml
+    }
+
+    public String actionView() {
+        selectCurrentRowData();
+        viewOnly = true;
+        return "view"; // Outcome is defined in faces-config.xml
     }
     
+    public boolean getViewOnly() {
+        return viewOnly;
+    }
+
     private void selectCurrentRowData() {
         final CertificateProfileItem certificateProfileItem = (CertificateProfileItem) getCertificateProfiles().getRowData();
         selectedCertProfileId = certificateProfileItem.getId();
     }
 
-    public boolean isOperationInProgress() { return isRenameInProgress() || isDeleteInProgress() || isAddFromTemplateInProgress(); }
-    
+    public boolean isOperationInProgress() {
+        return isRenameInProgress() || isDeleteInProgress() || isAddFromTemplateInProgress();
+    }
+
     public void actionAdd() {
         final String certProfileName = getCertProfileName();
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (certProfileName.length()>0) {
+        } else if (certProfileName.length() > 0) {
             try {
                 final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
                 certificateProfile.setAvailableCAs(getEjbcaWebBean().getInformationMemory().getAuthorizedCAIds());
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), certProfileName, certificateProfile);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 setCertProfileName("");
-            } catch(CertificateProfileExistsException e){
+            } catch (CertificateProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
@@ -233,18 +275,20 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         certificateProfileItems = null;
     }
 
-    public boolean isAddFromTemplateInProgress() { return addFromTemplateInProgress; }
+    public boolean isAddFromTemplateInProgress() {
+        return addFromTemplateInProgress;
+    }
 
     public void actionAddFromTemplate() {
         selectCurrentRowData();
         addFromTemplateInProgress = true;
     }
-    
+
     public void actionAddFromTemplateConfirm() {
         final String certProfileName = getCertProfileName();
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (certProfileName.length()>0) {
+        } else if (certProfileName.length() > 0) {
             try {
                 final List<Integer> authorizedCaIds;
                 if (isCertProfileFixed(getSelectedCertProfileId()) && !isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
@@ -254,10 +298,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                     // Use null as authorizedCaIds, so we will copy the profile exactly as the template(, including ANY CA for SuperAdmin)
                     authorizedCaIds = null;
                 }
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, authorizedCaIds);
+                getEjbcaWebBean().getEjb().getCertificateProfileSession()
+                        .cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, authorizedCaIds);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 setCertProfileName("");
-            } catch(CertificateProfileExistsException e) {
+            } catch (CertificateProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
@@ -268,19 +313,21 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         addFromTemplateInProgress = false;
         certificateProfileItems = null;
     }
-    
+
     public void actionAddFromTemplateCancel() {
         addFromTemplateInProgress = false;
         certificateProfileItems = null;
     }
-    
-    public boolean isDeleteInProgress() { return deleteInProgress; }
+
+    public boolean isDeleteInProgress() {
+        return deleteInProgress;
+    }
 
     public void actionDelete() {
         selectCurrentRowData();
         deleteInProgress = true;
     }
-    
+
     public void actionDeleteConfirm() {
         if (canDeleteCertProfile()) {
             try {
@@ -296,13 +343,15 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         deleteInProgress = false;
         certificateProfileItems = null;
     }
-    
+
     public void actionDeleteCancel() {
         deleteInProgress = false;
         certificateProfileItems = null;
     }
-    
-    public boolean isRenameInProgress() { return renameInProgress; }
+
+    public boolean isRenameInProgress() {
+        return renameInProgress;
+    }
 
     public void actionRename() {
         selectCurrentRowData();
@@ -313,12 +362,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final String certProfileName = getCertProfileName();
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (certProfileName.length()>0) {
+        } else if (certProfileName.length() > 0) {
             try {
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName);
+                getEjbcaWebBean().getEjb().getCertificateProfileSession()
+                        .renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
                 setCertProfileName("");
-            } catch(CertificateProfileExistsException e) {
+            } catch (CertificateProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
@@ -348,58 +398,56 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final CertificateProfile certProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(certificateProfileId);
         final int certProfileType = certProfile.getType();
         // Count number of EEs that reference this CP
-        if (certProfileType==CertificateConstants.CERTTYPE_ENDENTITY) {
-            final long numberOfEndEntitiesReferencingCP = getEjbcaWebBean().getEjb().
-                    getEndEntityManagementSession().countEndEntitiesUsingCertificateProfile(certificateProfileId);
-            if (numberOfEndEntitiesReferencingCP>1000) {
+        if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
+            final long numberOfEndEntitiesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityManagementSession()
+                    .countEndEntitiesUsingCertificateProfile(certificateProfileId);
+            if (numberOfEndEntitiesReferencingCP > 1000) {
                 ret = false;
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIES");
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIESEXCESSIVE");
-            } else if (numberOfEndEntitiesReferencingCP>0) {
+            } else if (numberOfEndEntitiesReferencingCP > 0) {
                 ret = false;
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIES");
-                final List<String> eeNames = getEjbcaWebBean().getEjb().
-                        getEndEntityManagementSession().findByCertificateProfileId(certificateProfileId);
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DISPLAYINGFIRSTTENRESULTS") + numberOfEndEntitiesReferencingCP +
-                        " " + getAsCommaSeparatedString(eeNames));
+                final List<String> eeNames = getEjbcaWebBean().getEjb().getEndEntityManagementSession()
+                        .findByCertificateProfileId(certificateProfileId);
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DISPLAYINGFIRSTTENRESULTS") + numberOfEndEntitiesReferencingCP + " "
+                        + getAsCommaSeparatedString(eeNames));
             }
         }
         // Check if certificate profile is in use by any service
-        final List<String> servicesReferencingCP = getEjbcaWebBean().getEjb().
-                getServiceSession().getServicesUsingCertificateProfile(certificateProfileId);
+        final List<String> servicesReferencingCP = getEjbcaWebBean().getEjb().getServiceSession()
+                .getServicesUsingCertificateProfile(certificateProfileId);
         if (!servicesReferencingCP.isEmpty()) {
             ret = false;
-            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINSERVICES") + 
-                    " " + getAsCommaSeparatedString(servicesReferencingCP));
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINSERVICES") + " "
+                    + getAsCommaSeparatedString(servicesReferencingCP));
         }
         // Check if certificate profile is in use by any end entity profile
-        if (certProfileType==CertificateConstants.CERTTYPE_ENDENTITY || certProfileType==CertificateConstants.CERTTYPE_SUBCA) {
-            final List<String> endEntityProfilesReferencingCP = getEjbcaWebBean().getEjb().
-                    getEndEntityProfileSession().getEndEntityProfilesUsingCertificateProfile(certificateProfileId);
+        if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY || certProfileType == CertificateConstants.CERTTYPE_SUBCA) {
+            final List<String> endEntityProfilesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityProfileSession()
+                    .getEndEntityProfilesUsingCertificateProfile(certificateProfileId);
             if (!endEntityProfilesReferencingCP.isEmpty()) {
                 ret = false;
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINENDENTITYPROFILES") + 
-                        " " + getAsCommaSeparatedString(endEntityProfilesReferencingCP));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINENDENTITYPROFILES") + " "
+                        + getAsCommaSeparatedString(endEntityProfilesReferencingCP));
             }
         }
         // Check if certificate profile is in use by any hard token profile
-        if (certProfileType==CertificateConstants.CERTTYPE_ENDENTITY) {
-            final List<String> hardTokenProfilesReferencingCP = getEjbcaWebBean().getEjb().
-                    getHardTokenSession().getHardTokenProfileUsingCertificateProfile(certificateProfileId);
+        if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
+            final List<String> hardTokenProfilesReferencingCP = getEjbcaWebBean().getEjb().getHardTokenSession()
+                    .getHardTokenProfileUsingCertificateProfile(certificateProfileId);
             if (!hardTokenProfilesReferencingCP.isEmpty()) {
                 ret = false;
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINHARDTOKENPROFILES") + 
-                        " " + getAsCommaSeparatedString(hardTokenProfilesReferencingCP));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINHARDTOKENPROFILES") + " "
+                        + getAsCommaSeparatedString(hardTokenProfilesReferencingCP));
             }
         }
-        if (certProfileType!=CertificateConstants.CERTTYPE_ENDENTITY) {
+        if (certProfileType != CertificateConstants.CERTTYPE_ENDENTITY) {
             // Check if certificate profile is in use by any CA
-            final List<String> casReferencingCP = getEjbcaWebBean().getEjb().
-                    getCaAdminSession().getCAsUsingCertificateProfile(certificateProfileId);
+            final List<String> casReferencingCP = getEjbcaWebBean().getEjb().getCaAdminSession().getCAsUsingCertificateProfile(certificateProfileId);
             if (!casReferencingCP.isEmpty()) {
                 ret = false;
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINCAS") + 
-                        " " + getAsCommaSeparatedString(casReferencingCP));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINCAS") + " " + getAsCommaSeparatedString(casReferencingCP));
             }
         }
         return ret;
@@ -408,7 +456,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private String getAsCommaSeparatedString(final List<String> list) {
         final StringBuilder sb = new StringBuilder();
         for (final String entry : list) {
-            if (sb.length()>0) {
+            if (sb.length() > 0) {
                 sb.append(", ");
             }
             sb.append(entry);
@@ -416,7 +464,10 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         return sb.toString();
     }
 
-    public String getCertProfileName() { return certProfileName; }
+    public String getCertProfileName() {
+        return certProfileName;
+    }
+
     public void setCertProfileName(String certProfileName) {
         certProfileName = certProfileName.trim();
         if (checkFieldForLegalChars(certProfileName)) {
@@ -430,13 +481,19 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
         return Pattern.matches(blackList, fieldValue);
     }
-    
+
     //----------------------------------------------
     //                Import profiles
     //----------------------------------------------
     private UploadedFile uploadFile;
-    public UploadedFile getUploadFile() { return uploadFile; }
-    public void setUploadFile(UploadedFile uploadFile) { this.uploadFile = uploadFile; }
+
+    public UploadedFile getUploadFile() {
+        return uploadFile;
+    }
+
+    public void setUploadFile(UploadedFile uploadFile) {
+        this.uploadFile = uploadFile;
+    }
 
     public void actionImportProfiles() {
 
@@ -456,12 +513,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         } catch (CertificateProfileExistsException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
-        
+
     }
-    
-    
-    public void importProfilesFromZip(byte[] filebuffer) throws CertificateProfileExistsException, AuthorizationDeniedException, 
-                    NumberFormatException, IOException {
+
+    public void importProfilesFromZip(byte[] filebuffer) throws CertificateProfileExistsException, AuthorizationDeniedException,
+            NumberFormatException, IOException {
 
         if (filebuffer.length == 0) {
             throw new IllegalArgumentException("No input file");
@@ -470,28 +526,28 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         String importedFiles = "";
         String ignoredFiles = "";
         int nrOfFiles = 0;
-        
+
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
         ZipEntry ze = zis.getNextEntry();
-        if (ze==null) {
+        if (ze == null) {
             String msg = uploadFile.getName() + " is not a zip file.";
             log.info(msg);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
             return;
         }
-            
+
         do {
             nrOfFiles++;
             String filename = ze.getName();
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Importing file: " + filename);
             }
-            
+
             if (ignoreFile(filename)) {
                 ignoredFiles += filename + ", ";
                 continue;
             }
-            
+
             try {
                 filename = URLDecoder.decode(filename, "UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -501,12 +557,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             int index2 = filename.lastIndexOf("-");
             int index3 = filename.lastIndexOf(".xml");
             String profilename = filename.substring(index1 + 1, index2);
-            int profileid= 0 ;
+            int profileid = 0;
             try {
                 profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
             } catch (NumberFormatException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("NumberFormatException parsing certificate profile id: "+e.getMessage());
+                    log.debug("NumberFormatException parsing certificate profile id: " + e.getMessage());
                 }
                 ignoredFiles += filename + ", ";
                 continue;
@@ -519,19 +575,18 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 ignoredFiles += filename + ", ";
                 continue;
             }
-            
+
             if (getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(profileid) != null) {
-                log.warn("Certificate profile id '" + profileid
-                        + "' already exist in database. Adding with a new profile id instead.");
+                log.warn("Certificate profile id '" + profileid + "' already exist in database. Adding with a new profile id instead.");
                 profileid = -1; // means we should create a new id when adding the cert profile
             }
-                
+
             byte[] filebytes = new byte[102400];
             int i = 0;
             while ((zis.available() == 1) && (i < filebytes.length)) {
                 filebytes[i++] = (byte) zis.read();
             }
-                    
+
             final CertificateProfile certificateProfile = getCertProfileFromByteArray(profilename, filebytes);
             if (certificateProfile == null) {
                 String msg = "Faulty XML file '" + filename + "'. Failed to read Certificate Profile.";
@@ -539,31 +594,31 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
                 continue;
             }
-            
+
             certificateProfile.setAvailableCAs(getEjbcaWebBean().getInformationMemory().getAuthorizedCAIds());
             getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), profilename, certificateProfile);
             getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
             importedFiles += filename + ", ";
             log.info("Added Certificate profile: " + profilename);
-        } while((ze=zis.getNextEntry()) != null);
+        } while ((ze = zis.getNextEntry()) != null);
         zis.closeEntry();
         zis.close();
-        
+
         String msg = uploadFile.getName() + " contained " + nrOfFiles + " files. ";
         log.info(msg);
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
-        
+
         if (StringUtils.isNotEmpty(importedFiles)) {
-            importedFiles = importedFiles.substring(0, importedFiles.length()-2);
+            importedFiles = importedFiles.substring(0, importedFiles.length() - 2);
         }
         msg = "Imported Certificate Profiles from files: " + importedFiles;
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug(msg);
         }
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
-        
+
         if (StringUtils.isNotEmpty(ignoredFiles)) {
-            ignoredFiles = ignoredFiles.substring(0, ignoredFiles.length()-2);
+            ignoredFiles = ignoredFiles.substring(0, ignoredFiles.length() - 2);
         }
         msg = "Ignored files: " + ignoredFiles;
         if (log.isDebugEnabled()) {
@@ -571,20 +626,19 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         }
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
     }
-    
 
     private CertificateProfile getCertProfileFromByteArray(String profilename, byte[] profileBytes) throws AuthorizationDeniedException {
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
         CertificateProfile cprofile = new CertificateProfile();
         try {
-            XMLDecoder decoder = getXMLDecoder(is);        
+            XMLDecoder decoder = getXMLDecoder(is);
             // Add certificate profile
             Object data = null;
             try {
                 data = decoder.readObject();
             } catch (IllegalArgumentException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("IllegalArgumentException parsing certificate profile data: "+e.getMessage());
+                    log.debug("IllegalArgumentException parsing certificate profile data: " + e.getMessage());
                 }
                 return null;
             }
@@ -605,13 +659,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 }
             }
             for (Integer toRemove : casToRemove) {
-                log.warn("Warning: CA with id " + toRemove
-                        + " was not found and will not be used in certificate profile '" + profilename + "'.");
+                log.warn("Warning: CA with id " + toRemove + " was not found and will not be used in certificate profile '" + profilename + "'.");
                 cas.remove(toRemove);
             }
             if (cas.size() == 0) {
-                log.error("Error: No CAs left in certificate profile '" + profilename
-                        + "' and no CA specified on command line. Using ANYCA.");
+                log.error("Error: No CAs left in certificate profile '" + profilename + "' and no CA specified on command line. Using ANYCA.");
                 cas.add(Integer.valueOf(CertificateProfile.ANYCA));
 
             }
@@ -624,8 +676,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 try {
                     pub = getEjbcaWebBean().getEjb().getPublisherSession().getPublisher(publisher);
                 } catch (Exception e) {
-                    log.warn("Warning: There was an error loading publisher with id " + publisher
-                            + ". Use debug logging to see stack trace: " + e.getMessage());
+                    log.warn("Warning: There was an error loading publisher with id " + publisher + ". Use debug logging to see stack trace: "
+                            + e.getMessage());
                     log.debug("Full stack trace: ", e);
                 }
                 if (pub == null) {
@@ -633,8 +685,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 }
             }
             for (Integer toRemove : allToRemove) {
-                log.warn("Warning: Publisher with id " + toRemove
-                        + " was not found and will not be used in certificate profile '" + profilename + "'.");
+                log.warn("Warning: Publisher with id " + toRemove + " was not found and will not be used in certificate profile '" + profilename
+                        + "'.");
                 publishers.remove(toRemove);
             }
             cprofile.setPublisherList(publishers);
@@ -650,23 +702,23 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     }
 
     private boolean ignoreFile(String filename) {
-        if(filename.lastIndexOf(".xml") != (filename.length() - 4)) {
-            if(log.isDebugEnabled()) {
+        if (filename.lastIndexOf(".xml") != (filename.length() - 4)) {
+            if (log.isDebugEnabled()) {
                 log.debug(filename + " is not an XML file. IGNORED");
             }
             return true;
         }
-            
-        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("certprofile_") < 0) ) {
-            if(log.isDebugEnabled()) {
-                log.debug(filename + " is not in the expected format. " +
-                        "The file name should look like: certprofile_<profile name>-<profile id>.xml. IGNORED");
+
+        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("certprofile_") < 0)) {
+            if (log.isDebugEnabled()) {
+                log.debug(filename + " is not in the expected format. "
+                        + "The file name should look like: certprofile_<profile name>-<profile id>.xml. IGNORED");
             }
             return true;
         }
         return false;
     }
-    
+
     private boolean ignoreProfile(String filename, String profilename, int profileid) {
         // We don't add the fixed profiles, EJBCA handles those automagically
         if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
@@ -680,7 +732,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
-    
+
     private XMLDecoder getXMLDecoder(ByteArrayInputStream is) {
         // Without the exception listener, when a faulty xml file is read, the XMLDecoder catches the exception,
         // writes an error message to stderr and continues reading. Ejbca wouldn't notice that the profile created 
@@ -690,7 +742,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             public void exceptionThrown(Exception e) {
                 // This probably means that an extra byte is found or something. The certprofile that raises this exception 
                 // does not seem to be faulty at all as far as I can test.
-                if(StringUtils.equals("org.apache.xerces.impl.io.MalformedByteSequenceException", e.getClass().getName())) {
+                if (StringUtils.equals("org.apache.xerces.impl.io.MalformedByteSequenceException", e.getClass().getName())) {
                     log.error("org.apache.xerces.impl.io.MalformedByteSequenceException: " + e.getMessage());
                     log.error("Continuing ...");
                 } else {

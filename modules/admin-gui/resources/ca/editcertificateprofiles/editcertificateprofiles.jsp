@@ -43,16 +43,15 @@
 			</h:column>
 			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
-				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" 
-					rendered="#{certProfilesBean.authorizedToOnlyView or not certificateProfile.authorized}" disabled="#{certificateProfile.fixed}"/>
+				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionView}" disabled="#{certificateProfile.fixed}"/>
 				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
-					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
-					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.RENAME}" action="#{certProfilesBean.actionRename}" disabled="#{certificateProfile.fixed}" 
-					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{certProfilesBean.actionAddFromTemplate}" 
-					rendered="#{certProfilesBean.authorizedToEdit and certificateProfile.authorized}"/>
+					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<f:facet name="footer" >
 					<h:commandButton value="#{web.text.ADD}" action="#{certProfilesBean.actionAdd}" disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"/>
 				</f:facet>
