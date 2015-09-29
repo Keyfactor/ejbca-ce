@@ -89,7 +89,8 @@ public interface CertificateProfileSession {
             List<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException, AuthorizationDeniedException;
 
     /**
-     * Retrieves a Collection of id:s (Integer) to authorized profiles.
+     * Retrieves a Collection of id:s (Integer) to authorized profiles. Only profiles that refer to CA's that the authentication token is 
+     * authorized to will be returned. 
      * 
      * @param admin Administrator performing the operation
      * @param certprofiletype

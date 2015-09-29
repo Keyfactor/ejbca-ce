@@ -67,7 +67,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     // Declarations in faces-config.xml
     //@javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
     private CertProfilesBean certProfilesBean;
-
+    
     private int currentCertProfileId = -1;
     private CertificateProfile certificateProfile = null;
     @SuppressWarnings("rawtypes")
@@ -93,6 +93,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
     public void setCertProfilesBean(CertProfilesBean certProfilesBean) { this.certProfilesBean = certProfilesBean; }
 
+   
     public Integer getSelectedCertProfileId() {
         return certProfilesBean.getSelectedCertProfileId();
     }
@@ -282,13 +283,24 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
-        for(Entry<String, String> eku : ekus.entrySet()) {
-            ret.add(new SelectItem(eku.getKey(), eku.getValue()));
-        }
         ArrayList<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids();
-        for(String oid : usedEKUs) {
-            if(!ekus.containsKey(oid)) {
-                ret.add(new SelectItem(oid, oid));
+        //If in view only mode, display only used EKU's
+        if (certProfilesBean.getViewOnly()) {
+            for(String oid : usedEKUs) {
+                if(ekus.containsKey(oid)) {
+                    ret.add(new SelectItem(oid, ekus.get(oid)));
+                } else {
+                    ret.add(new SelectItem(oid, oid));
+                }
+            }
+        } else {
+            for (Entry<String, String> eku : ekus.entrySet()) {
+                ret.add(new SelectItem(eku.getKey(), eku.getValue()));
+            }           
+            for (String oid : usedEKUs) {
+                if (!ekus.containsKey(oid)) {
+                    ret.add(new SelectItem(oid, oid));
+                }
             }
         }
         Collections.sort(ret, new Comparator<SelectItem>() {
@@ -775,19 +787,30 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         } catch (Exception e) {
             log.error(e);
         }
-        
-        for (final CertificateExtension current : cceConfig.getAllAvailableCustomCertificateExtensions()) {
-            ret.add(new SelectItem(current.getId(), current.getDisplayName()));
-        }
-        
         List<Integer> usedExtensions = getCertificateProfile().getUsedCertificateExtensions();
-        for(int id : usedExtensions) {
-            if(!cceConfig.isCustomCertExtensionSupported(id)) {
-                String note = id + " (No longer used. Please unselect this option)";
-                ret.add(new SelectItem(id, note));
+        Map<Integer, CertificateExtension> allExtensions = cceConfig.getAllAvailableCustomCertificateExtensions();
+        if (certProfilesBean.getViewOnly()) {
+            //If in view mode, only display used values.
+            for(Integer id : usedExtensions) {
+                if (!cceConfig.isCustomCertExtensionSupported(id)) {
+                    String note = id + " (No longer used. Please unselect this option)";
+                    ret.add(new SelectItem(id, note));
+                } else {
+                    ret.add(new SelectItem(id, allExtensions.get(id).getDisplayName()));
+                }
+            }
+
+        } else {
+            for (final CertificateExtension current : allExtensions.values()) {
+                ret.add(new SelectItem(current.getId(), current.getDisplayName()));
+            }            
+            for (int id : usedExtensions) {
+                if (!cceConfig.isCustomCertExtensionSupported(id)) {
+                    String note = id + " (No longer used. Please unselect this option)";
+                    ret.add(new SelectItem(id, note));
+                }
             }
         }
-        
         Collections.sort(ret, new Comparator<SelectItem>() {
             @Override
             public int compare(SelectItem first, SelectItem second) {
@@ -808,8 +831,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<Integer> authorizedCAs = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
         final Map<Integer, String> caIdToNameMap = getEjbcaWebBean().getEjb().getCaSession().getCAIdToNameMap();
     
-        for (final Integer caId : allCAs) {
-            ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "foo", (authorizedCAs.contains(caId) ? false : true)));
+        //If in view mode, add only authorized CA's 
+        if (certProfilesBean.getViewOnly()) {
+            for(final Integer caId : authorizedCAs) {
+                ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "", true));
+            }
+        } else {
+            for (final Integer caId : allCAs) {
+                ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "", (authorizedCAs.contains(caId) ? false : true)));
+            }
         }
         Collections.sort(ret, new Comparator<SelectItem>() {
             @Override
