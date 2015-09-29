@@ -45,6 +45,8 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
     private static final String[] CREATE_ARGS = { SERVICE_NAME };
     private static final String[] CREATE_WITH_PROPERTIES_ARGS = { SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS interval.periodical.value=1234" };
     private static final String[] MISSING_NAME_ARGS = { };
+    private static final String[] CREATE_WITH_PROPERTIES_AND_SWITCH = { "--service", SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS interval.periodical.value=1234" };
+
     
     @Before
     public void setUp() throws Exception {
@@ -62,7 +64,7 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
     public void testExecuteCreate() {
         assertNull("service should not yet exist", getServiceSession().getService(SERVICE_NAME));
         serviceCreateCommand.execute(CREATE_ARGS);
-        assertNotNull("service should have been created", getServiceSession().getService(SERVICE_NAME));
+        assertNotNull("Service of name " + SERVICE_NAME + " was not created", getServiceSession().getService(SERVICE_NAME));      
     }
     
     @Test
@@ -70,8 +72,19 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
         assertNull("service should not yet exist", getServiceSession().getService(SERVICE_NAME));
         
         serviceCreateCommand.execute(CREATE_WITH_PROPERTIES_ARGS);
-        assertNotNull("service should have been created", getServiceSession().getService(SERVICE_NAME));
-        
+        assertNotNull("Service of name " + SERVICE_NAME + " was not created", getServiceSession().getService(SERVICE_NAME));         
+        ServiceConfiguration sc = getServiceSession().getService(SERVICE_NAME);
+        assertEquals("intervalClassPath", "org.ejbca.core.model.services.intervals.PeriodicalInterval", sc.getIntervalClassPath());
+        Properties props = sc.getIntervalProperties();
+        assertEquals("interval.periodical.unit", "DAYS", props.getProperty("interval.periodical.unit"));
+        assertEquals("interval.periodical.value", "1234", props.getProperty("interval.periodical.value"));
+    }
+    
+    @Test
+    public void testExecuteCreateWithPropertiesAndSwitch() {
+        assertNull("service should not yet exist", getServiceSession().getService(SERVICE_NAME));
+        serviceCreateCommand.execute(CREATE_WITH_PROPERTIES_AND_SWITCH);
+        assertNotNull("Service of name " + SERVICE_NAME + " was not created", getServiceSession().getService(SERVICE_NAME));      
         ServiceConfiguration sc = getServiceSession().getService(SERVICE_NAME);
         assertEquals("intervalClassPath", "org.ejbca.core.model.services.intervals.PeriodicalInterval", sc.getIntervalClassPath());
         Properties props = sc.getIntervalProperties();

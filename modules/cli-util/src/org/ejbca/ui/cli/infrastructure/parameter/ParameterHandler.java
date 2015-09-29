@@ -175,7 +175,8 @@ public class ParameterHandler {
                     value = new String(System.console().readPassword());
                 } else {
                     throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
-                }                
+                } 
+                standaloneParametersDefensiveCopy.remove(parameterString);
             }
             if (verbose) {
                 if (!StringUtils.isEmpty(value) && (parameter == null || (parameter.getParameterMode() != ParameterMode.PASSWORD && parameter.getParameterMode() != ParameterMode.FLAG))) {
@@ -187,7 +188,6 @@ public class ParameterHandler {
             if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
                 value = value.substring(1, value.length() - 1);
             }
-            
             result.put(parameterString, value, isStandalone);
         }
 
