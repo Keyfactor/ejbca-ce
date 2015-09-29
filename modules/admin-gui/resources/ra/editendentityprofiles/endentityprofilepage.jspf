@@ -75,7 +75,7 @@ function checkallfields(){
 
 
     for(var i=0; i < numbersubjectdnfields; i++){
-      if( dnfieldtypes[i] != <%= DnComponents.DNEMAILADDRESS %>){
+      if( dnfieldtypes[i] != <%= DnComponents.dnIdToProfileId(DNFieldExtractor.E) %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTDN%>" + i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
@@ -83,7 +83,7 @@ function checkallfields(){
     } 
 
     for(var i=0; i < numbersubjectaltnamesfields; i++){
-      if(altnamesfieldtypes[i] != <%= DnComponents.RFC822NAME%>){
+      if(altnamesfieldtypes[i] != <%= DnComponents.dnIdToProfileId(DNFieldExtractor.RFC822NAME) %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTALTNAME%>"+i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
