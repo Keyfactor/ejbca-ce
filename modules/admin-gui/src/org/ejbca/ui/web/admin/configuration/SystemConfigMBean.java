@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -719,7 +720,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private ArrayList<CustomCertExtensionInfo> getNewAvailableCustomCertExtensions() {
         availableCustomCertExtensionsConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         ArrayList<CustomCertExtensionInfo> extensionsInfo = new ArrayList<CustomCertExtensionInfo>();
-        ArrayList<CertificateExtension> allExtensions = availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions();
+        Collection<CertificateExtension> allExtensions = availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions().values();
         for(CertificateExtension extension : allExtensions) {
             extensionsInfo.add(new CustomCertExtensionInfo(extension));
         }

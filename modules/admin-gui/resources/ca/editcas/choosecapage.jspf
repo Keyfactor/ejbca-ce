@@ -104,11 +104,13 @@
           <% for (final String nameofca : canames.keySet()) {
               	 int currentCaId = canames.get(nameofca).intValue();
                  CAInfo cainfo2 = cabean.getCAInfoNoAuth(currentCaId).getCAInfo();
-                 String disabled = (cabean.isAuthorizedToCa(currentCaId) ? "" : "disabled");;
+                 
                  String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(CAConstants.getStatusText(cainfo2.getStatus())) + ")"; %>
-            <option value="<c:out value="<%= canames.get(nameofca) %>"/>" <%= disabled %>> 
-                <c:out value="<%= nameandstatus %>"/>
-             </option>
+             	<%if(cabean.isAuthorizedToCa(currentCaId)) { %>
+            		<option value="<c:out value="<%= canames.get(nameofca) %>"/>"> 
+                		<c:out value="<%= nameandstatus %>"/>
+             		</option>
+             	<% } %>
              <%}%>
         </select>
       </td>

@@ -13,8 +13,9 @@
 package org.cesecore.certificates.certificate.certextensions;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -84,12 +85,13 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         data.remove(id);
     }
     
-    public ArrayList<CertificateExtension> getAllAvailableCustomCertificateExtensions() {
-        ArrayList<CertificateExtension> exts = new ArrayList<CertificateExtension>();
+    public Map<Integer, CertificateExtension> getAllAvailableCustomCertificateExtensions() {
+        Map<Integer, CertificateExtension> exts = new HashMap<Integer, CertificateExtension>();
         for(Entry<Object, Object> entry : data.entrySet()) {
             Object value = entry.getValue();
             if(value instanceof CertificateExtension) {
-                exts.add((CertificateExtension) value);
+                Integer id = ((CertificateExtension) value).getId();
+                exts.put(id, (CertificateExtension) value);
             }
         }
         return exts;
