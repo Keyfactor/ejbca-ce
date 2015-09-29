@@ -1216,7 +1216,9 @@ function checkUseInBatch(){
              final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
              final String regex = (validation != null ? (String)validation.get(RegexFieldValidator.class.getName()) : null);
              %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<c:out value="<%= userdata.getSubjectDNField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>"/>" <% if (regex != null) { %>pattern="<c:out value='<%=regex%>'/>" title="Must match format specified in profile. / Technical detail - the regex is <c:out value='<%=regex%>'/>"<% } %>>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>"
+                    value="<c:out value="<%= userdata.getSubjectDNField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>"/>"
+                    <% if (regex != null) { %>pattern="<c:out value='<%=regex%>'/>" title="Must match format specified in profile. / Technical detail - the regex is <c:out value='<%=regex%>'/>"<% } %>>
            <% }
             }
             else{ %>

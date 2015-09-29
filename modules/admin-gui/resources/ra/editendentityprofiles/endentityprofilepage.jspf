@@ -900,7 +900,7 @@ if (!editerrors.isEmpty()) {
 	        	if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
 					out.write(" CHECKED ");
 				} %> id="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i%>"
-				<% if(!authorizedToEdit) { out.write("disabled"); } %> >
+				<% if(!authorizedToEdit) { out.write("disabled"); } %> />
         <label for="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
         &nbsp;
         <%
@@ -913,13 +913,13 @@ if (!editerrors.isEmpty()) {
 					out.write("DISABLED");
 				} else if (isModifiable) {
 					out.write("CHECKED");
-				} %> id="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i%>">
+				} %> id="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i%>" />
         <label for="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i%>"><c:out value="<%= ejbcawebbean.getText(\"MODIFYABLE\") %>" /></label>
         &nbsp;
         <% Map<String,Serializable> validation = profiledata.getValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]); %>
         <input type="checkbox" name="<%=CHECKBOX_VALIDATION_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>"  onclick="checkvalidationaltfield(<%= i %>)" 
            <% if(validation != null) out.write("CHECKED"); %> id="<%=CHECKBOX_VALIDATION_SUBJECTALTNAME + i%>"
-           <% if(!authorizedToEdit || !isModifiable || useEndEntityEmail) { out.write("disabled"); } %>> 
+           <% if(!authorizedToEdit || !isModifiable || useEndEntityEmail) { out.write("disabled"); } %> />
         <label for="<%=CHECKBOX_VALIDATION_SUBJECTALTNAME + i%>" id="<%=LABEL_VALIDATION_SUBJECTALTNAME + i%>"<% if (!authorizedToEdit || !isModifiable || useEndEntityEmail) { out.write(" style=\"color: gray\""); } %>><c:out value="<%= ejbcawebbean.getText(\"VALIDATION\") %>" /></label>
         <% String validationRegex = "";
            if (validation != null) validationRegex = (String)validation.get(RegexFieldValidator.class.getName()); %>
