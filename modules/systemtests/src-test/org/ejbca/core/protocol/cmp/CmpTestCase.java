@@ -255,21 +255,22 @@ public abstract class CmpTestCase extends CaTestCase {
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+        // Validity can have notBefore, notAfter or both
         ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
         if (notBefore != null) {
-            nb = new org.bouncycastle.asn1.x509.Time(notBefore);
+            org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(notBefore);
+            optionalValidityV.add(new DERTaggedObject(true, 0, nb));
         }
-        optionalValidityV.add(new DERTaggedObject(true, 0, nb));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date());
         if (notAfter != null) {
-            na = new org.bouncycastle.asn1.x509.Time(notAfter);
+            org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(notAfter);
+            optionalValidityV.add(new DERTaggedObject(true, 1, na));
         }
-        optionalValidityV.add(new DERTaggedObject(true, 1, na));
         OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
 
         CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
-        myCertTemplate.setValidity(myOptionalValidity);
+        if (notBefore != null || notAfter != null) {
+            myCertTemplate.setValidity(myOptionalValidity);
+        }
         if(issuerDN != null) {
             myCertTemplate.setIssuer(new X500Name(issuerDN));
         }

@@ -21,6 +21,8 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -293,8 +295,10 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] nonce = CmpMessageHelper.createSenderNonce();
             final byte[] transid = CmpMessageHelper.createSenderNonce();
             final int reqId;
-
-            final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
+            
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, 2);
+            final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, null, new Date(), cal.getTime(), null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, null, 567);
             Assert.assertNotNull(req);
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -399,7 +403,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         }
         
         try {
-            final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
+            final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, null, new Date(), null, null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
 
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();

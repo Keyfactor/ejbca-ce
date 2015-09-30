@@ -375,9 +375,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
         final OptionalValidity val = templ.getValidity();
         if (val != null) {
-            DERSequence valSeq = (DERSequence) val.toASN1Primitive();
-            ASN1Encodable[] asn1a = valSeq.toArray();
-            final Time time = Time.getInstance((ASN1TaggedObject) asn1a[0], true);
+            final Time time = val.getNotBefore();
             if (time != null) {
                 ret = time.getDate();
             }
@@ -394,9 +392,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
         final OptionalValidity val = templ.getValidity();
         if (val != null) {
-            DERSequence valSeq = (DERSequence) val.toASN1Primitive();
-            ASN1Encodable[] asn1a = valSeq.toArray();
-            final Time time = Time.getInstance((ASN1TaggedObject) asn1a[1], true);
+            final Time time = val.getNotAfter();
             if (time != null) {
                 ret = time.getDate();
             }
