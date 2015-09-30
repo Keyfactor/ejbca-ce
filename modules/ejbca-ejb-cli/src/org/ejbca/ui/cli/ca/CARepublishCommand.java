@@ -35,6 +35,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -164,8 +165,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                             continue;
                         }
                         // Get an ordered list of certificates, last expire date first
-                        List<Certificate> certCol = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                                .findCertificatesByUsername(data.getUsername());
+                        List<Certificate> certCol = EJBTools.unwrapCertCollection(EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                                .findCertificatesByUsername(data.getUsername()));
                         if ((certCol != null) && certCol.iterator().hasNext()) {
                             if (certProfile.getPublisherList() != null) {
                                 getLogger().info(

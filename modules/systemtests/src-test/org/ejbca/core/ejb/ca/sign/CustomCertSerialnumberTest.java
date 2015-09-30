@@ -46,6 +46,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -184,7 +185,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace(">test02CreateCertWithRandomSN()");
 
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername("foo").iterator().next()).getSerialNumber();
+        BigInteger serno = ((X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername("foo")).iterator().next()).getSerialNumber();
         log.debug("foo serno: " + serno);
 
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo2"),
@@ -218,7 +219,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace(">test03CreateCertWithDublicateSN()");
 
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername("foo").iterator().next()).getSerialNumber();
+        BigInteger serno = ((X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername("foo")).iterator().next()).getSerialNumber();
         log.debug("foo serno: " + serno);
 
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo3"),

@@ -29,6 +29,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -122,7 +123,7 @@ public abstract class SignSessionCommon extends CaTestCase{
         } catch (Exception e) { /* ignore */
             //NOPMD
         }
-        List<Certificate> certs = storeSession.findCertificatesByUsername(username);
+        List<Certificate> certs = EJBTools.unwrapCertCollection(storeSession.findCertificatesByUsername(username));
         for (Certificate certificate : certs) {
             try {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));

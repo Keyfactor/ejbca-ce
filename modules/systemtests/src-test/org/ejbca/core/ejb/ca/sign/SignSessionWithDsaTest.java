@@ -43,6 +43,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -87,7 +88,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
         }        
         removeTestCA(TEST_DSA_CA_NAME);
         //Clean up certificates associated with this test class:
-        for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(DSA_USERNAME)) {
+        for (Certificate certificate : EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(DSA_USERNAME))) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
         for(Certificate certificate : certificateStoreSession.findCertificatesBySubject("CN=TESTDSA")) {

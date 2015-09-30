@@ -57,6 +57,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -155,8 +156,8 @@ public class RevocationApprovalTest extends CaTestCase {
         roleManagementSession.addSubjectsToRole(internalAdmin, role, adminentities);
         accessControlSession.forceCacheExpire();
 
-        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminUsername).iterator().next();
-        X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(requestingAdminUsername).iterator()
+        X509Certificate admincert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminUsername)).iterator().next();
+        X509Certificate reqadmincert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(requestingAdminUsername)).iterator()
                 .next();
         approvingAdmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(admincert));
         requestingAdmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(reqadmincert));
@@ -326,7 +327,7 @@ public class RevocationApprovalTest extends CaTestCase {
         final String ERRORALLOWMORETHANONE = "Allowing more than one identical approval requests.";
         try {
             createUser(internalAdmin, username, approvalCAID);
-            X509Certificate usercert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(username).iterator().next();
+            X509Certificate usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
             try {
                 endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
                         RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
