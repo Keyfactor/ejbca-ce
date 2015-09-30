@@ -162,7 +162,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     		log.info("1. Looking for cert with expireDate=" + findDate);
 
-    		Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate);
+    		Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
     		log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
     		assertTrue("No certs should have expired before this date", certs.size() == 0);
             Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
@@ -171,23 +171,19 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     		findDateSecs = data.getExpireDate().getTime() + (yearmillis * 200);
     		findDate = new Date(findDateSecs);
     		log.info("2. Looking for cert with expireDate=" + findDate+", "+findDate.getTime());
-    		certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate);
-    		log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
-    		assertTrue("Some certs should have expired before this date", certs.size() != 0);
+    		Collection<Certificate> certs2 = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
+    		log.debug("findCertificatesByExpireTime returned " + certs2.size() + " certs.");
+    		assertTrue("Some certs should have expired before this date", certs2.size() != 0);
             usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
             log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
             assertTrue("Some certs should have expired before this date", usernames.size() != 0);
-
-    		Iterator<Certificate> iter = certs.iterator();
-
-    		while (iter.hasNext()) {
-    			Certificate tmpcert = iter.next();
-    			Date retDate = CertTools.getNotAfter(tmpcert);
-    			log.debug(retDate);
-    			assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
+    		for (final Certificate tmpcert : certs2) {
+                Date retDate = CertTools.getNotAfter(tmpcert);
+                log.debug(retDate);
+                assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
     		}
     	} finally {
-    		internalCertStoreSession.removeCertificate(cert);
+    		internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
     	}
 	}
 
@@ -587,11 +583,11 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
     		assertNotNull("Failed to find cert", data3);
     		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
-    		Collection<Certificate> fcert = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, issuerDN);
+    		Collection<Certificate> fcert = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, issuerDN));
     		assertNotNull("Cant find by issuer and type", fcert);
     		assertEquals("Should be one ee cert issued by '"+issuerDN+"'", 1, fcert.size());
     		// Test a query with no issuerDN as well
-    		Collection<Certificate> tcert = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, null);
+    		Collection<Certificate> tcert = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, null));
     		assertNotNull("Cant find by type", tcert);
     		assertTrue("Should be more than one ee cert", tcert.size()>0);
     	} finally {

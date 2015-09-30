@@ -50,6 +50,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -288,7 +289,7 @@ public class AutoEnrollServlet extends HttpServlet {
 		if (!endEntityManagementSession.existsUser(username)) {
 			return "NO_SUCH_USER";
 		}
-		Collection<Certificate> certificates = certificateStoreSession.findCertificatesByUsername(username);
+		Collection<Certificate> certificates = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
 		Iterator<Certificate> iter = certificates.iterator();
 		if (!iter.hasNext()) {
 			return "NO_CERTIFICATES";

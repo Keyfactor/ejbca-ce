@@ -63,6 +63,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -148,7 +149,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         configurationSessionRemote.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, originalSigRequiredValue);
-        for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(END_ENTITY_NAME)) {
+        for (Certificate certificate : EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(END_ENTITY_NAME))) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(admin, internalKeyBindingId);
