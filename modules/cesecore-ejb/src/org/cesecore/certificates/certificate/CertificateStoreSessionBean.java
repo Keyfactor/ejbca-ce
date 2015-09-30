@@ -16,7 +16,6 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
@@ -464,6 +463,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return findLatestX509CertificateBySubject(subjectDN, null, false);
     }
     
+    @Override
     public X509Certificate findLatestX509CertificateBySubject(String subjectDN, Certificate rolloverCA, boolean findRollover) {
         final Collection<CertificateDataWrapper> certificateDatas = getCertificateDatasBySubject(subjectDN);
         X509Certificate result = null;
