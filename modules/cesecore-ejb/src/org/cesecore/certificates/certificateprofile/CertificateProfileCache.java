@@ -39,9 +39,10 @@ import org.cesecore.config.CesecoreConfiguration;
  * 
  * @version $Id$
  */
-public final class CertificateProfileCache {
+public enum CertificateProfileCache {
+    INSTANCE;
 
-    private static final Logger LOG = Logger.getLogger(CertificateProfileCache.class);
+    private final Logger LOG = Logger.getLogger(CertificateProfileCache.class);
 
     /*
      * Cache of profiles, with Id as keys. This cache may be
@@ -59,41 +60,31 @@ public final class CertificateProfileCache {
     private volatile long lastUpdate = 0;
 
     /* Create template maps with all static constants */
-    private static final HashMap<Integer, String> idNameMapCacheTemplate = new HashMap<Integer, String>();
-    private static final HashMap<String, Integer> nameIdMapCacheTemplate = new HashMap<String, Integer>();
+    private final HashMap<Integer, String> idNameMapCacheTemplate = new HashMap<Integer, String>();
+    private final HashMap<String, Integer> nameIdMapCacheTemplate = new HashMap<String, Integer>();
 
-    static {
+    private final ReentrantLock lock = new ReentrantLock(false);
+
+    private CertificateProfileCache() {
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER), CertificateProfile.ENDUSERPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA), CertificateProfile.SUBCAPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA), CertificateProfile.ROOTCAPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER),
-                CertificateProfile.OCSPSIGNERPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER), CertificateProfile.OCSPSIGNERPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER), CertificateProfile.SERVERPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH),
-                CertificateProfile.HARDTOKENAUTHPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC),
-                CertificateProfile.HARDTOKENAUTHENCPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC),
-                CertificateProfile.HARDTOKENENCPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN),
-                CertificateProfile.HARDTOKENSIGNPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH), CertificateProfile.HARDTOKENAUTHPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC), CertificateProfile.HARDTOKENAUTHENCPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC), CertificateProfile.HARDTOKENENCPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN), CertificateProfile.HARDTOKENSIGNPROFILENAME);
         nameIdMapCacheTemplate.put(CertificateProfile.ENDUSERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
         nameIdMapCacheTemplate.put(CertificateProfile.SUBCAPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
         nameIdMapCacheTemplate.put(CertificateProfile.ROOTCAPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
-        nameIdMapCacheTemplate.put(CertificateProfile.OCSPSIGNERPROFILENAME,
-                Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
+        nameIdMapCacheTemplate.put(CertificateProfile.OCSPSIGNERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
         nameIdMapCacheTemplate.put(CertificateProfile.SERVERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
-        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENAUTHPROFILENAME,
-                Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
-        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENAUTHENCPROFILENAME,
-                Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENENCPROFILENAME,
-                Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
-        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENSIGNPROFILENAME,
-                Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
+        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENAUTHPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
+        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENAUTHENCPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENENCPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
+        nameIdMapCacheTemplate.put(CertificateProfile.HARDTOKENSIGNPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
     }
-
-    private static final ReentrantLock lock = new ReentrantLock(false);
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
@@ -105,9 +96,12 @@ public final class CertificateProfileCache {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
-
         final long cacheCertificateProfileTime = CesecoreConfiguration.getCacheCertificateProfileTime();
         final long now = System.currentTimeMillis();
+        // Check before acquiring lock
+        if (!force && cacheCertificateProfileTime != 0 && lastUpdate + cacheCertificateProfileTime > now) {
+            return; // We don't need to update cache
+        }
         try {
             lock.lock();
             if (!force && cacheCertificateProfileTime != 0 && lastUpdate + cacheCertificateProfileTime > now) {
@@ -117,10 +111,8 @@ public final class CertificateProfileCache {
         } finally {
             lock.unlock();
         }
-        @SuppressWarnings("unchecked")
-        final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
-        @SuppressWarnings("unchecked")
-        final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
+        final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
+        final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
         try {
             final List<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
@@ -137,7 +129,6 @@ public final class CertificateProfileCache {
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
-
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }
@@ -160,5 +151,4 @@ public final class CertificateProfileCache {
         updateProfileCache(entityManager, false);
         return nameIdMapCache;
     }
-
 }
