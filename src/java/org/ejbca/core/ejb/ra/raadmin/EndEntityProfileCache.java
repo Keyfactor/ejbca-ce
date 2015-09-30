@@ -40,11 +40,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * 
  * @version $Id$
  */
-public final class EndEntityProfileCache {
+public enum EndEntityProfileCache {
+    INSTANCE;
 
-    private static final Logger LOG = Logger.getLogger(EndEntityProfileCache.class);
+    private final Logger LOG = Logger.getLogger(EndEntityProfileCache.class);
     /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
+    private final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     /*
      * Cache of profiles, with Id as keys. This cache may be
@@ -62,14 +63,15 @@ public final class EndEntityProfileCache {
     private volatile long lastUpdate = 0;
 
     /* Create template maps with all static constants */
-    private static final HashMap<Integer,String> idNameMapCacheTemplate = new HashMap<Integer,String>();
-    private static final HashMap<String,Integer> nameIdMapCacheTemplate = new HashMap<String,Integer>();
-    static {
+    private final HashMap<Integer,String> idNameMapCacheTemplate = new HashMap<Integer,String>();
+    private final HashMap<String,Integer> nameIdMapCacheTemplate = new HashMap<String,Integer>();
+
+    private final ReentrantLock lock = new ReentrantLock(false);
+    
+    private EndEntityProfileCache() {
     	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
     	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
     }
-
-    private static final ReentrantLock lock = new ReentrantLock(false);
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
@@ -82,6 +84,10 @@ public final class EndEntityProfileCache {
         }
         final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
         final long now = System.currentTimeMillis();
+        // Check before acquiring lock
+        if (!force && cacheEndEntityProfileTime!=0 && lastUpdate+cacheEndEntityProfileTime > now) {
+            return; // We don't need to update cache
+        }
         try {
         	lock.lock();
         	if (!force && cacheEndEntityProfileTime!=0 && lastUpdate+cacheEndEntityProfileTime > now) {
@@ -91,10 +97,8 @@ public final class EndEntityProfileCache {
         } finally {
         	lock.unlock();
         }
-        @SuppressWarnings("unchecked")
-        final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
-        @SuppressWarnings("unchecked")
-        final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
+        final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
+        final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
         try {
         	final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);

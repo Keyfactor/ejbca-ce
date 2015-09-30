@@ -61,9 +61,6 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
 
-    /** Cache of certificate profiles and id-name mappings */
-    private static final CertificateProfileCache profileCache = new CertificateProfileCache();
-
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -171,7 +168,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        profileCache.updateProfileCache(entityManager, true);
+        CertificateProfileCache.INSTANCE.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
         }
@@ -250,7 +247,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
         final boolean rootAccess = accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
+        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
                 final CertificateProfile profile = cpEntry.getValue();
                 // Check if all profiles available CAs exists in authorizedcaids.          
                 if (certprofiletype == 0 || certprofiletype == profile.getType() || (profile.getType() == CertificateConstants.CERTTYPE_ENDENTITY &&
@@ -284,7 +281,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
         allcaids.add(CertificateProfile.ANYCA);
-        for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
+        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile profile = cpEntry.getValue();
             boolean nonExistingCA = false;
             for (final Integer caid : profile.getAvailableCAs()) {
@@ -310,7 +307,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             returnval = new CertificateProfile(id);
         } else {
             // We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-            final CertificateProfile cprofile = profileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
+            final CertificateProfile cprofile = CertificateProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
             try {
                 if (cprofile != null) {
                     returnval = (CertificateProfile) cprofile.clone();
@@ -328,12 +325,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     
     @Override
     public Map<Integer, CertificateProfile> getAllCertificateProfiles() {
-        return profileCache.getProfileCache(entityManager);
+        return CertificateProfileCache.INSTANCE.getProfileCache(entityManager);
     }
 
     @Override
     public CertificateProfile getCertificateProfile(final String name) {
-        final Integer id = profileCache.getNameIdMapCache(entityManager).get(name);
+        final Integer id = CertificateProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(name);
         if (id == null) {
             return null;
         } else {
@@ -347,7 +344,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             LOG.trace(">getCertificateProfileId: " + certificateprofilename);
         }
         int returnval = 0;
-        final Integer id = profileCache.getNameIdMapCache(entityManager).get(certificateprofilename);
+        final Integer id = CertificateProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(certificateprofilename);
         if (id != null) {
             returnval = id.intValue();
         }
@@ -362,7 +359,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getCertificateProfileName: " + id);
         }
-        final String returnval = profileCache.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
+        final String returnval = CertificateProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getCertificateProfileName: " + id + "): " + returnval);
         }
@@ -374,7 +371,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getCertificateProfileIdToNameMap");
         }
-        return profileCache.getIdNameMapCache(entityManager);
+        return CertificateProfileCache.INSTANCE.getIdNameMapCache(entityManager);
     }
 
     /* 
@@ -460,7 +457,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @Override
     public boolean existsCAIdInCertificateProfiles(final int caid) {
-        for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
+        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile certProfile = cpEntry.getValue();
             if (certProfile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
                 for (Integer availableCaId : certProfile.getAvailableCAs()) {
@@ -478,7 +475,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     
     @Override
     public boolean existsPublisherIdInCertificateProfiles(final int publisherid) {
-        for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
+        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             for (Integer availablePublisherId : cpEntry.getValue().getPublisherList()) {
                 if (availablePublisherId.intValue() == publisherid) {
                     if (LOG.isDebugEnabled()) {
