@@ -65,9 +65,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
-    /** Cache of end entity profiles and id-name mappings */
-    private static final EndEntityProfileCache profileCache = new EndEntityProfileCache();
-
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -223,7 +220,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        profileCache.updateProfileCache(entityManager, true);
+        EndEntityProfileCache.INSTANCE.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache");
         }
@@ -261,7 +258,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
             returnval = new EndEntityProfile(true);
         } else {
-            final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename);
+            final Integer id = EndEntityProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(profilename);
             if (id != null) {
                 returnval = getEndEntityProfileNoClone(id);
             }
@@ -286,7 +283,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
-        	for (final Entry<Integer, EndEntityProfile> entry : profileCache.getProfileCache(entityManager).entrySet()) {
+        	for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
         		// Check if all profiles available CAs exists in authorizedcaids.
         		final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
         		if (availableCasString != null) {
@@ -327,7 +324,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         
         try {
-            for (final Entry<Integer, EndEntityProfile> entry : profileCache.getProfileCache(entityManager).entrySet()) {
+            for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
                 final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
                 if (availableCasString != null) {
                     boolean nonExistingCA = false;
@@ -380,7 +377,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval = new EndEntityProfile(true);
         } else {
             // We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-            returnval = profileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
+            returnval = EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfileNoClone(id): " + (returnval == null ? "null" : "not null"));
@@ -394,7 +391,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
         }
-        final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename.trim());
+        final Integer id = EndEntityProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(profilename.trim());
         if (id != null) {
             int result = id.intValue();
             if (LOG.isTraceEnabled()) {
@@ -412,7 +409,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfilename(" + id + ")");
         }
-        final String returnval = profileCache.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
+        final String returnval = EndEntityProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfilename(" + id + "): " + returnval);
         }
@@ -425,7 +422,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getEndEntityProfileIdToNameMap");
         }
-        return profileCache.getIdNameMapCache(entityManager);
+        return EndEntityProfileCache.INSTANCE.getIdNameMapCache(entityManager);
     }
 
     @Override
