@@ -41,6 +41,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -269,7 +270,7 @@ public class CertificateExpireTest extends CaTestCase {
         assertEquals("Status does not match.", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
         } finally {
             //Restore superadmin CA if it got screwed up.
-            List<Certificate> certs = certificateStoreSession.findCertificatesByUsername("superadmin");
+            List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername("superadmin"));
             for (Certificate certificate : certs) {
                 String superAdminFingerprint = CertTools.getFingerprintAsString(certificate);
                 internalCertificateStoreSession.setStatus(admin, superAdminFingerprint, CertificateConstants.CERT_ACTIVE);

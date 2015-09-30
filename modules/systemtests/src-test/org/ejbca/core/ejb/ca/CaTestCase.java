@@ -76,6 +76,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSession;
 import org.ejbca.core.ejb.approval.ApprovalSession;
@@ -453,7 +454,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             ApprovalExecutionSession approvalExecutionSession, int approvalCAID) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
-        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
+        Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
         Iterator<Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while (i.hasNext()) {

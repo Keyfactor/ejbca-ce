@@ -112,9 +112,9 @@ public interface CertificateStoreSession {
      * @param expireTime The time by which the certificates will be expired
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return List of maximum 500 certificates (java.security.cert.Certificate), never null
+     * @return Collection of maximum 500 certificates, never null
      */
-    List<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime);
+    Collection<CertificateWrapper> findCertificatesByExpireTimeWithLimit(Date expireTime);
     
     /**
      * Finds certificates  expiring within a specified time and that have
@@ -274,7 +274,7 @@ public interface CertificateStoreSession {
      * @return Collection of Certificates ordered by expire date, with last
      *         expire date first, or null if none found.
      */
-    List<Certificate> findCertificatesByUsername(String username);
+    Collection<CertificateWrapper> findCertificatesByUsername(String username);
 
     /**
      * Finds certificate(s) with meta data for a given username.
@@ -333,9 +333,9 @@ public interface CertificateStoreSession {
      *                 the issuer.
      * @param type     CERTTYPE_* types from CertificateConstants
      * @throws IllegalArgumentException when admin is null or type is not one or more of of SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_ROOTCA
-     * @return Collection Collection of Certificate, never <tt>null</tt>
+     * @return Collection of Certificate, never <tt>null</tt>
      */
-    Collection<Certificate> findCertificatesByType(int type, String issuerDN);
+    Collection<CertificateWrapper> findCertificatesByType(int type, String issuerDN);
 
     /**
      * Recursively finds the certificate chain for the given certificate.

@@ -57,6 +57,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
@@ -301,7 +302,7 @@ public class KeyRecoveryTest extends CaTestCase {
             eeinfo.setPassword("foo123");
             final GenerateToken tgen1 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
             final KeyStore ks1 = tgen1.generateOrKeyRecoverToken(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, false, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
-            usercert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(testuser).get(0);
+            usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(testuser)).get(0);
             fp1 = CertTools.getFingerprintAsString(usercert);
             assertNotNull("Could not find user's certificate in keystore", ks1.getCertificateAlias(usercert));
             

@@ -186,9 +186,9 @@ public class CertificateRetrievalTest {
     public void test02FindCACertificates() throws Exception {
         log.trace(">test02FindCACertificates()");
         // List all certificates to see
-        Collection<Certificate> certfps =
+        Collection<Certificate> certfps = EJBTools.unwrapCertCollection(
                 certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA,
-                                                               null);
+                                                               null));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
         log.debug("Query returned " + certfps.size() + " entries.");
@@ -217,9 +217,9 @@ public class CertificateRetrievalTest {
 
         // List all certificates to see, but only from our test certificates
         // issuer, or we might get OutOfMemmory if there are plenty of certs
-        Collection<Certificate> certfps = certificateStoreSession
+        Collection<Certificate> certfps = EJBTools.unwrapCertCollection(certificateStoreSession
                 .findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY,
-                                        "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
+                                        "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE"));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
         log.debug("Query returned " + certfps.size() + " entries.");
@@ -248,9 +248,9 @@ public class CertificateRetrievalTest {
         log.trace(">test04FindRootCertificates()");
 
         // List all certificates to see
-        Collection<Certificate> certfps =
+        Collection<Certificate> certfps = EJBTools.unwrapCertCollection(
                 certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA,
-                                                               null);
+                                                               null));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
         log.debug("Query returned " + certfps.size() + " entries.");
@@ -336,9 +336,9 @@ public class CertificateRetrievalTest {
         Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
 
         // List all certificates to see
-        Collection<Certificate> certfps =
+        Collection<Certificate> certfps = EJBTools.unwrapCertCollection(
                 certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA,
-                                                               CertTools.getSubjectDN(rootcacert));
+                                                               CertTools.getSubjectDN(rootcacert)));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
         log.debug("Query returned " + certfps.size() + " entries.");
@@ -404,7 +404,7 @@ public class CertificateRetrievalTest {
         // Clean up left over test data
         internalCertStoreSession.removeCertificatesBySubject(dn);
         
-        List<Certificate> certs = certificateStoreSession.findCertificatesByUsername(username);
+        List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
         assertNotNull("failed to list certs", certs);
         assertEquals("cert list should be empty", 0, certs.size());
         
@@ -426,7 +426,7 @@ public class CertificateRetrievalTest {
             certReqSession.processSoftTokenReq(admin, userdata, null, "1024", "RSA", false);
             
             // First test as usual
-            List<Certificate> certfps = certificateStoreSession.findCertificatesByUsername(username);
+            List<Certificate> certfps = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
             assertNotNull("failed to list certs", certfps);
             assertEquals("failed to list certs", 1, certfps.size());
             fingerprint = CertTools.getFingerprintAsString(certfps.get(0));
@@ -436,10 +436,10 @@ public class CertificateRetrievalTest {
             
             log.debug("Trying with removed cert data.");
             
-            Collection<Certificate> certcollection = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, caSession.getCAInfo(admin, caid).getSubjectDN());
+            Collection<Certificate> certcollection = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, caSession.getCAInfo(admin, caid).getSubjectDN()));
             assertNotNull("failed to list certs", certcollection);
             
-            certfps = certificateStoreSession.findCertificatesByUsername(username);
+            certfps = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
             assertNotNull("failed to list certs", certfps);
             assertEquals("failed to list certs", 1, certfps.size());
         } finally {

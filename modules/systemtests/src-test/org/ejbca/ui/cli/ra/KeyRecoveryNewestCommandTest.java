@@ -41,6 +41,7 @@ import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -128,7 +129,7 @@ public class KeyRecoveryNewestCommandTest {
             endEntityManagementSession.deleteUser(authenticationToken, TESTCLASS_NAME);
         }
         keyRecoverySession.removeAllKeyRecoveryData(authenticationToken, TESTCLASS_NAME);
-        for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(TESTCLASS_NAME)) {
+        for (Certificate certificate : EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(TESTCLASS_NAME))) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
     }

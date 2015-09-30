@@ -86,6 +86,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 
@@ -463,7 +464,7 @@ public abstract class ProtocolOcspTestBase {
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         CertificateStoreSessionRemote certificateStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        List<Certificate> certificates = certificateStoreSessionRemote.findCertificatesByUsername(CERTIFICATE_USERNAME);
+        List<Certificate> certificates = EJBTools.unwrapCertCollection(certificateStoreSessionRemote.findCertificatesByUsername(CERTIFICATE_USERNAME));
         for (Certificate certificate : certificates) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
@@ -477,7 +478,7 @@ public abstract class ProtocolOcspTestBase {
 
     protected X509Certificate getRevokedTestCert() {
         try {
-            Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
+            Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME));
             for (Certificate cert : certs) {
                 CertificateStatus cs = certificateStoreSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
                 if (cs.equals(CertificateStatus.REVOKED)) {
@@ -494,7 +495,7 @@ public abstract class ProtocolOcspTestBase {
     
     protected X509Certificate getActiveTestCert() {
         try {
-            Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
+            Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME));
             for (Certificate cert : certs) {
                 CertificateStatus cs = certificateStoreSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
                 if (cs.equals(CertificateStatus.OK)) {
@@ -511,7 +512,7 @@ public abstract class ProtocolOcspTestBase {
 
     /** Return the latest Root CA certificate that issued the provided certificate. */
     protected X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
+        Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert)));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
         X509Certificate latestCaCertificate = null;
         for (final Certificate current : certs) {

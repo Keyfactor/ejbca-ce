@@ -64,6 +64,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -243,7 +244,7 @@ public class OcspKeyRenewalTest {
         }
         try {
             // find all certificates for Ocsp signing user and remove them
-            List<Certificate> certs = certificateStoreSession.findCertificatesByUsername(OcspTestUtils.OCSP_END_USER_NAME);
+            List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(OcspTestUtils.OCSP_END_USER_NAME));
             for (Certificate certificate : certs) {
                 internalCertificateStoreSession.removeCertificate(certificate);                
             }
@@ -263,7 +264,7 @@ public class OcspKeyRenewalTest {
         }
         try {
             // find all certificates for Ocsp ECC signing user and remove them
-            List<Certificate> certs = certificateStoreSession.findCertificatesByUsername(OCSP_ECC_END_USER_NAME);
+            List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(OCSP_ECC_END_USER_NAME));
             for (Certificate certificate : certs) {
                 internalCertificateStoreSession.removeCertificate(certificate);                
             }

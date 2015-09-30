@@ -23,6 +23,7 @@ import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.List;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -45,6 +46,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -117,8 +119,9 @@ public class CaImportCertDirCommandTest {
         } finally {
             fileOutputStream.close();
         }
-        if (certificateStoreSession.findCertificatesByUsername(USERNAME).size() > 0) {
-            for (Certificate cert : certificateStoreSession.findCertificatesByUsername(USERNAME)) {
+        List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(USERNAME));
+        if (certs.size() > 0) {
+            for (Certificate cert : certs) {
                 internalCertificateStoreSession.removeCertificate(cert);
             }
         }
@@ -136,16 +139,18 @@ public class CaImportCertDirCommandTest {
         if (endEntityAccessSession.findUser(authenticationToken, USERNAME) != null) {
             endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
         }
-        if (certificateStoreSession.findCertificatesByUsername(USERNAME).size() > 0) {
-            for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(USERNAME)) {
+        List<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(USERNAME));
+        if (userCerts.size() > 0) {
+            for (Certificate certificate : userCerts) {
                 internalCertificateStoreSession.removeCertificate(certificate);
             }
         }
         if (endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN) != null) {
             endEntityManagementSession.deleteUser(authenticationToken, CERTIFICATE_DN);
         }
-        if (certificateStoreSession.findCertificatesByUsername(CERTIFICATE_DN).size() > 0) {
-            for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(CERTIFICATE_DN)) {
+        List<Certificate> dnCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(CERTIFICATE_DN));
+        if (dnCerts.size() > 0) {
+            for (Certificate certificate : dnCerts) {
                 internalCertificateStoreSession.removeCertificate(certificate);
             }
         }

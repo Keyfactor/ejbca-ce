@@ -64,6 +64,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.CmpConfiguration;
@@ -453,7 +454,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             userdata.setPassword("foo123");
             this.endEntityManagementSession.addUser(ADMIN, userdata, true);
             fileHandles.addAll(BatchCreateTool.createAllNew(ADMIN, new File(P12_FOLDER_NAME)));
-            Collection<java.security.cert.Certificate> userCerts = this.certificateStoreSession.findCertificatesByUsername(username);
+            Collection<java.security.cert.Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
             assertTrue(userCerts.size() == 1);
             X509Certificate cert = (X509Certificate) userCerts.iterator().next();
             // revoke via CMP and verify response
@@ -538,7 +539,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     protected int approveRevocation(AuthenticationToken admin, AuthenticationToken approvingAdmin, String username, int reason,
             int approvalType, CertificateStoreSession certStoreSession, ApprovalSession approvalS,
             ApprovalExecutionSession approvalExecSession, int approvalCAID) throws Exception {
-        Collection<java.security.cert.Certificate> userCerts = certStoreSession.findCertificatesByUsername(username);
+        Collection<java.security.cert.Certificate> userCerts = EJBTools.unwrapCertCollection(certStoreSession.findCertificatesByUsername(username));
         Iterator<java.security.cert.Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while (i.hasNext()) {

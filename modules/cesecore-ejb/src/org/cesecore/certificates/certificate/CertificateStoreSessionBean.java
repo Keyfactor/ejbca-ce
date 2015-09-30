@@ -507,7 +507,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public List<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime) {
+    public Collection<CertificateWrapper> findCertificatesByExpireTimeWithLimit(Date expireTime) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
         }
@@ -525,7 +525,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
         }
-        return ret;
+        return EJBTools.wrapCertCollection(ret);
     }
     
     @Override
@@ -778,7 +778,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public List<Certificate> findCertificatesByUsername(String username) {
+    public Collection<CertificateWrapper> findCertificatesByUsername(String username) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByUsername(),  username=" + username);
         }
@@ -792,7 +792,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByUsername(), username=" + username);
         }
-        return ret;
+        return EJBTools.wrapCertCollection(ret);
     }
 
     @Override
@@ -887,7 +887,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Collection<Certificate> findCertificatesByType(int type, String issuerDN) throws IllegalArgumentException {
+    public Collection<CertificateWrapper> findCertificatesByType(int type, String issuerDN) throws IllegalArgumentException {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByType()");
         }
@@ -914,7 +914,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByType()");
         }
-        return ret;
+        return EJBTools.wrapCertCollection(ret);
     }
     
     @Override
@@ -1466,8 +1466,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS) 
     public void reloadCaCertificateCache() {
         log.info("Reloading CA certificate cache.");
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
-                CertificateConstants.CERTTYPE_ROOTCA, null);
+        Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
+                CertificateConstants.CERTTYPE_ROOTCA, null));
         CaCertificateCache.INSTANCE.loadCertificates(certs);
     }
 

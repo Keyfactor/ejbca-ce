@@ -116,6 +116,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebServiceConfiguration;
@@ -400,7 +401,7 @@ public class EjbcaWS implements IEjbcaWS {
                 // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
                 certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now);
             } else {
-                certs = certificateStoreSession.findCertificatesByUsername(username);
+                certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
             }
             retval = ejbhelper.returnAuthorizedCertificates(admin, certs, onlyValid, now);
         } catch (RuntimeException e) {	// EJBException ...
@@ -426,7 +427,7 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			if (endEntityAccessSession.findUser(admin, username) != null) { // checks authorization on CA and profiles and view_end_entity
-				Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByUsername(username);
+				Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
 				if (certs.size() > 0) {
 					// The latest certificate will be first
 					java.security.cert.Certificate lastcert = certs.iterator().next();
@@ -838,7 +839,7 @@ public class EjbcaWS implements IEjbcaWS {
 					// Check to see that the inner signature does not also verify using an old certificate
 					// because that means the same keys were used, and that is not allowed according to the EU policy
 					// This must be done whether it is signed by CVCA or a renewal request
-					Collection<java.security.cert.Certificate> oldcerts = certificateStoreSession.findCertificatesByUsername(username);
+					Collection<java.security.cert.Certificate> oldcerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
 					if (oldcerts != null) {
 						log.debug("Found "+oldcerts.size()+" old certificates for user "+username);
 						Iterator<java.security.cert.Certificate> iterator = oldcerts.iterator(); 
@@ -853,7 +854,7 @@ public class EjbcaWS implements IEjbcaWS {
 					boolean verifiedOuter = false; // So we can throw an error if we could not verify
 					if (StringUtils.equals(holderRef.getMnemonic(), caRef.getMnemonic()) && StringUtils.equals(holderRef.getCountry(), caRef.getCountry())) {
 						log.debug("Authenticated request is self signed, we will try to verify it using user's old certificate.");
-						Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByUsername(username);
+						Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
 						// certs contains certificates ordered with last expire date first. Last expire date should be last issued cert
 						// We have to iterate over available user certificates, because we don't know which on signed the old one
 						// and cv certificates have very coarse grained validity periods so we can't really know which one is the latest one
