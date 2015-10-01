@@ -85,10 +85,10 @@ public class AvailableCustomCertExtensionsConfigTest {
         props.put("translatable", "TRUE");
         props.put("value", "Test 321");
         DummyAdvancedCertificateExtension dummyExtension = new DummyAdvancedCertificateExtension(3, "3.2.3.4", "TESTEXTENSION3", false, props);
-        cceConfig.addCustomCertExtension(3, dummyExtension);
+        cceConfig.addCustomCertExtension(dummyExtension);
         
         assertEquals(3, cceConfig.getAllAvailableCustomCertificateExtensions().size());
-        CertificateExtension ext = cceConfig.getCustomCertificateExtension(1);
+        CertificateExtension ext = cceConfig.getCustomCertificateExtension("1.2.3.4");
         assertNotNull(ext);
         assertEquals(1, ext.getId());
         assertEquals("1.2.3.4", ext.getOID());
@@ -98,7 +98,7 @@ public class AvailableCustomCertExtensionsConfigTest {
         assertTrue(getObject(ext.getValueEncoded(null, null, null, null, null, null)) instanceof DERPrintableString);
         assertEquals("Test 123", ((DERPrintableString) getObject(ext.getValueEncoded(null, null, null, null, null, null))).getString());
         
-        ext = cceConfig.getCustomCertificateExtension(3);
+        ext = cceConfig.getCustomCertificateExtension("3.2.3.4");
         assertNotNull(ext);
         assertEquals(3 , ext.getId());
         assertEquals("3.2.3.4", ext.getOID());
@@ -109,12 +109,14 @@ public class AvailableCustomCertExtensionsConfigTest {
         assertEquals("Test 321", ((DERPrintableString) getObject(ext.getValueEncoded(null, null, null, null, null, null))).getString());
 
         // Test that non-existing key return null
-        ext = cceConfig.getCustomCertificateExtension(4);
+        ext = cceConfig.getCustomCertificateExtension("3.2.3.4.5.6.7");
         assertNull(ext);
         
         // test removal
-        cceConfig.removeCustomCertExtension(2);
+        cceConfig.removeCustomCertExtension("1.2.3.4");
         assertEquals(2, cceConfig.getAllAvailableCustomCertificateExtensions().size());
+        ext = cceConfig.getCustomCertificateExtension("1.2.3.4");
+        assertNull(ext);
         
     }
     
@@ -146,8 +148,8 @@ public class AvailableCustomCertExtensionsConfigTest {
                 getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
 
         for(int i=0; i<150; i++) {
-            CertificateExtension ext = cceConfig2.getCustomCertificateExtension(i);
             oid = "1.3.15." + i + ".33.12";  // random string that looks like an oid
+            CertificateExtension ext = cceConfig2.getCustomCertificateExtension(oid);
             displayName = "Readable name of CustomCertExtension with oid " + oid;
             assertNotNull(ext);
             assertEquals(oid, ext.getOID());

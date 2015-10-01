@@ -420,7 +420,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Default to have access to fingerprint and iris
         setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
 
-        setUsedCertificateExtensions(new ArrayList<Integer>());
+        setUsedCertificateExtensions(new ArrayList<String>());
 
         setNumOfReqApprovals(1);
         List<Integer> emptyList = Collections.emptyList();
@@ -1182,29 +1182,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     /**
-     * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC. Keep the unchecked java stuff for now, since we
-     * have the fallback conversion below in getExtendedKeyUsageAsOIDStrings
+     * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC.
      */
-    @SuppressWarnings("rawtypes")
-    public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
+    public void setExtendedKeyUsage(ArrayList<String> extendedkeyusage) {
         data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
-    }
-
-    /**
-     * Only used for JUnit testing Keep the unchecked java stuff for now, since we have the fallback conversion below in
-     * getExtendedKeyUsageAsOIDStrings
-     */
-    @SuppressWarnings("rawtypes")
-    protected ArrayList getExtendedKeyUsageArray() {
-        return (ArrayList) data.get(EXTENDEDKEYUSAGE);
     }
 
     /**
      * Extended Key Usage is an arraylist of Strings with eku oids.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     public ArrayList<String> getExtendedKeyUsageOids() {
-        return (ArrayList) data.get(EXTENDEDKEYUSAGE);
+        return (ArrayList<String>) data.get(EXTENDEDKEYUSAGE);
     }
     public void setExtendedKeyUsageOids(final ArrayList<String> extendedKeyUsageOids) {
         setExtendedKeyUsage(extendedKeyUsageOids);
@@ -1777,27 +1766,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Method returning a list of (Integers) of ids of used CUSTOM certificate extensions. I.e. those custom certificate extensions selected for this
+     * Method returning a list of (Strings) of OIDs of used CUSTOM certificate extensions. I.e. those custom certificate extensions selected for this
      * profile. Never null.
      * 
      * Autoupgradable method
      */
-    @SuppressWarnings("unchecked")
-    public List<Integer> getUsedCertificateExtensions() {
+    @SuppressWarnings("rawtypes")
+    public List getUsedCertificateExtensions() {
         if (data.get(USEDCERTIFICATEEXTENSIONS) == null) {
-            return new ArrayList<Integer>();
+            return new ArrayList<String>();
         }
-        return (List<Integer>) data.get(USEDCERTIFICATEEXTENSIONS);
+        return (List) data.get(USEDCERTIFICATEEXTENSIONS);
     }
 
     /**
-     * Method setting a list of used certificate extensions a list of Integers containing CertificateExtension Id is expected
+     * Method setting a list of used certificate extensions to a list of Strings containing CertificateExtension OIDs is expected
+     * 
+     * Keep the java warning for now, since we might need to fall back to the old list of integers 
      * 
      * @param usedCertificateExtensions
      */
-    public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
+    @SuppressWarnings("rawtypes")
+    public void setUsedCertificateExtensions(List usedCertificateExtensions) {
         if (usedCertificateExtensions == null) {
-            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<Integer>());
+            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<String>());
         } else {
             data.put(USEDCERTIFICATEEXTENSIONS, usedCertificateExtensions);
         }
@@ -2148,7 +2140,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
             }
             if (data.get(EXTENDEDKEYUSAGE) == null) {
-                data.put(EXTENDEDKEYUSAGE, new ArrayList<Object>());
+                data.put(EXTENDEDKEYUSAGE, new ArrayList<String>());
             }
             if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
                 data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);

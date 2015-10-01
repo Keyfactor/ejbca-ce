@@ -39,17 +39,13 @@ org.cesecore.authorization.control.StandardRules
 </head>
 <body>
 	<h1>
-	    <h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NEW}" rendered="#{customCertExtensionMBean.currentExtensionId == 0}"/>
-		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} : #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" rendered="#{customCertExtensionMBean.currentExtensionId != 0}"/>
+		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} : #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}"/>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCustomCertExtensionForm">
 		<h:panelGrid columns="2">
 			<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf"><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NAV_BACK}"/></h:outputLink>
 			<h:panelGroup id="placeholder1"/>
-		
-			<h:outputLabel for="currentCEId" value="#{web.text.IDENTIFIER}"/>
-			<h:outputText id="currentCEId" value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}"/>
 		
 			<h:outputLabel for="currentCEOid" value="#{web.text.OID}"/>
     		<h:inputText id="currentCEOid" value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" size="25" title="#{web.text.FORMAT_OID}"/>
