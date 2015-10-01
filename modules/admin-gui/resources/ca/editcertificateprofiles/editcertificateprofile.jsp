@@ -650,7 +650,8 @@
 
 		<h:outputLabel for="checkuseqcstatementgroup" value="#{web.text.EXT_PKIX_QCSTATEMENTS}"/>
 		<h:panelGroup id="checkuseqcstatementgroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCStatement}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCStatement}" rendered="#{!web.legacyInternetExplorer}"
+				disabled="#{certProfilesBean.viewOnly}"/>
 			<h:commandButton id="checkuseqcstatement" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseQCStatement}"
 				value="#{certProfileBean.certificateProfile.useQCStatement?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
 				disabled="#{certProfilesBean.viewOnly}" />
@@ -840,7 +841,8 @@
 		<%-- MS Template extension --%>
 		<h:outputLabel for="checkusemstemplategroup" value="#{web.text.EXT_MS_TEMPLATENAME}"/>
 		<h:panelGroup id="checkusemstemplategroup">
-			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useMicrosoftTemplate}" rendered="#{!web.legacyInternetExplorer}"/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useMicrosoftTemplate}" rendered="#{!web.legacyInternetExplorer}"
+				disabled="#{certProfilesBean.viewOnly}"/>
 			<h:commandButton id="checkusemstemplate" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseMicrosoftTemplate}"
 				value="#{certProfileBean.certificateProfile.useMicrosoftTemplate?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
 				disabled="#{certProfilesBean.viewOnly}"/>
