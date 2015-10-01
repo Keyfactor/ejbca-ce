@@ -35,7 +35,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class CustomCertExtensionMBean extends BaseManagedBean {
     
     private static final long serialVersionUID = -6653610614851741905L;
-    private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
     
     public class CurrentExtensionGUIInfo {
         private int id;
@@ -90,7 +89,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     
     private AvailableCustomCertificateExtensionsConfiguration availableExtensionsConfig = null;
     private CurrentExtensionGUIInfo currentExtensionGUIInfo = null;
-    private int currentExtensionId = 0;
+    private String currentExtensionOId = "";
     private ListDataModel<PropertyGUIInfo> currentExtensionPropertiesList = null;
     private String currentPropertyKey = "";
     private String currentPropertyValue = "";
@@ -101,11 +100,9 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
             
     public void flushCache() {
         availableExtensionsConfig = null;
-        currentExtensionId = 0;
+        currentExtensionOId = "";
         currentExtensionGUIInfo = null;
         currentExtensionPropertiesList = null;
-        currentPropertyKey = "";
-        currentPropertyValue = "";
     }
     
     private AvailableCustomCertificateExtensionsConfiguration getAvailableExtensionsConfig() {
@@ -118,33 +115,20 @@ public class CustomCertExtensionMBean extends BaseManagedBean {
     public SystemConfigMBean getSystemConfigMBean() { return systemConfigMBean; }
     public void setSystemConfigMBean(SystemConfigMBean systemConfigMBean) { this.systemConfigMBean = systemConfigMBean; }
     
-    public int getCurrentExtensionId() {
+    public String getCurrentExtensionOId() {
         flushCache();
-        this.currentExtensionId = systemConfigMBean.getSelectedCustomCertExtensionID();
-        if(this.currentExtensionId == 0) { // 0 is the default value that isn't set to any extension
-            String msg = "Recieved extension ID '0'. Extension ID cannot be '0'.";
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
-            log.error(msg);
-        }
-        return this.currentExtensionId;
+        this.currentExtensionOId = systemConfigMBean.getSelectedCustomCertExtensionOID();
+        return this.currentExtensionOId;
     }
     
     /** @return cached or populate a new CustomCertificateExtension GUI representation for view or edit */
     public CurrentExtensionGUIInfo getCurrentExtensionGUIInfo() {
-        if (this.currentExtensionGUIInfo == null) {
-            final int id = getCurrentExtensionId();
-            AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
-            this.currentExtensionGUIInfo = new CurrentExtensionGUIInfo(cceConfig.getCustomCertificateExtension(id));
-        }
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
+        this.currentExtensionGUIInfo = new CurrentExtensionGUIInfo(cceConfig.getCustomCertificateExtension(getCurrentExtensionOId()));
         return this.currentExtensionGUIInfo;
     }
         
     public void saveCurrentExtension() {
-        if (currentExtensionGUIInfo.getId() == 0) {
-            FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "The CustomCertificateExtension ID cannot be 0.", null));
-            return;
-        }        
         if (StringUtils.isEmpty(currentExtensionGUIInfo.getOid())) {
             FacesContext.getCurrentInstance()
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));

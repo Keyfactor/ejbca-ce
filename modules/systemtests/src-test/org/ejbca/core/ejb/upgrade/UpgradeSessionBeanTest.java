@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -28,6 +29,13 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -38,6 +46,8 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -51,9 +61,24 @@ public class UpgradeSessionBeanTest {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
+    private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
+    
+    @Before
+    public void setUp() {
+        cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession.
+                getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, cceConfigBackup);
+    }
+
     /**
      * This test will perform the upgrade step to 6.4.0, which is update of access rules, adding read-only rules to any roles which previously had them.
      * 
@@ -191,5 +216,74 @@ public class UpgradeSessionBeanTest {
            roleManagementSession.remove(alwaysAllowtoken, caAdmRoleName);
        }
    }
+   
+   /**
+    * This test will perform the upgrade step to 6.4.0 and tests whether the list of used certificate extension in a certificate profile was upgraded successfully. 
+    * Prier to the upgrade, the used certificate extensions in a certificate profile were stored as a list of Integers representing the extensions' IDs. After 
+    * upgrade, the used certificate extensions in a certificate profile are stored as a listed on Strings representing the extensions' OIDs.
+    * @throws CertificateExtentionConfigurationException 
+    * @throws AuthorizationDeniedException 
+    * @throws CertificateProfileExistsException 
+    */
+   @Test
+   public void testPostUpgradeTo640UsedCertExtensionsInCertProfile() throws CertificateExtentionConfigurationException, AuthorizationDeniedException, CertificateProfileExistsException {
+       
+       // Populate the available custom certificate extensions
+       AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
+       Properties props = new Properties();
+       props.put("translatable", "FALSE");
+       props.put("encoding", "DERPRINTABLESTRING");
+       props.put("value", "Test 123");
+       cceConfig.addCustomCertExtension(1, "1.2.3.4", "TESTEXTENSION", BasicCertificateExtension.class.getName(), true, props);
+       props = new Properties();
+       props.put("translatable", "FALSE");
+       props.put("encoding", "DERPRINTABLESTRING");
+       props.put("value", "Test 123");
+       cceConfig.addCustomCertExtension(2, "2.2.3.4", "TESTEXTENSION2", BasicCertificateExtension.class.getName(), true, props);
+       props = new Properties();
+       props.put("translatable", "TRUE");
+       props.put("value", "Test 321");
+       cceConfig.addCustomCertExtension(3, "3.2.3.4", "TESTEXTENSION3", BasicCertificateExtension.class.getName(), false, props);
+       globalConfigSession.saveConfiguration(alwaysAllowtoken, cceConfig);
+       
+       // If the test profile was not removed previously, remove it now
+       String testCPName = "testCP";
+       if(certProfileSession.getCertificateProfile(testCPName)!=null) {
+           certProfileSession.removeCertificateProfile(alwaysAllowtoken, testCPName);
+       }
+       
+       try {
+           CertificateProfile testCP = new CertificateProfile();
+           ArrayList<Integer> usedExts = new ArrayList<Integer>();
+           usedExts.add(1);
+           usedExts.add(3);
+           testCP.setUsedCertificateExtensions(usedExts);
+           certProfileSession.addCertificateProfile(alwaysAllowtoken, testCPName, testCP);
+           
+           // Check that the test profile contains the right values of used certificate extensions before upgrade
+           testCP = null;
+           testCP = certProfileSession.getCertificateProfile(testCPName);
+           List oldUsedExts = testCP.getUsedCertificateExtensions();
+           assertEquals(2, oldUsedExts.size());
+           assertTrue(oldUsedExts.contains(1));
+           assertFalse(oldUsedExts.contains(2));
+           assertTrue(oldUsedExts.contains(3));
+           
+           // preform the upgrade
+           upgradeSession.upgrade(null, "6.3.2", true);
+           
+           // Check that the test profile contains the right values of used certificate extensions after upgrade
+           testCP = null;
+           testCP = certProfileSession.getCertificateProfile(testCPName);
+           List newUsedExts = testCP.getUsedCertificateExtensions();
+           assertEquals(2, newUsedExts.size());
+           assertTrue(newUsedExts.contains("1.2.3.4"));
+           assertFalse(newUsedExts.contains("2.2.3.4"));
+           assertTrue(newUsedExts.contains("3.2.3.4"));
+       } finally {
+           certProfileSession.removeCertificateProfile(alwaysAllowtoken, testCPName);
+       }
+   }
+       
     
 }
