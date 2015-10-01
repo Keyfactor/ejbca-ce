@@ -5347,7 +5347,6 @@ Customized extensions can be added and removed in the 'Custom Certificate Extens
 A simple extension only containing a static value can be added using the already implemented class "BasicCertificateExtension". It is also 
 possible to generate advanced certificate extensions by implementing a simple Java interface.
 </p>
-<p>There is a limit to how many custom certificate extensions can be added and that is 254 extensions.</p>
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
 Certificate extensions are configured in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web. Only 
@@ -5381,7 +5380,7 @@ in the 'Edit Certificate Profile' page.
 <p>When removing a custom certificate extension from the list of available extensions in the 'Custom Certificate Extensions' tab 
 in the 'System Configuration' page, if that extension is actually in use in a certificate profile, it is not automatically removed form 
 that certificate profile. However, the removed extension will not be usable or be a part of any certificate issued after the removal 
-and will be displayed as 'ID (No longer used. Please unselect this option)' in the 'Edit Certificate Profile' page. To remove the extension 
+and will be displayed as 'OID (No longer used. Please unselect this option)' in the 'Edit Certificate Profile' page. To remove the extension 
 from the certificate profile, it has to be manually unselected from the list of 'Used Custom Certificate Extensions' in the 
 'Edit Certificate Profile' page. </p>
 <p>Also when removing an extension that is in use, a warning message will be displayed listing the certificate profiles that are still using 
