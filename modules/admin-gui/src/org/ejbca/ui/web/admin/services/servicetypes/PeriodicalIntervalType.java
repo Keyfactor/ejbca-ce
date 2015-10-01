@@ -85,11 +85,10 @@ public class PeriodicalIntervalType extends IntervalType {
 	}
 	
 	public List<SelectItem> getAvailableUnits(){
-		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
-		for(int i = 0 ; i<PeriodicalInterval.AVAILABLE_UNITS.length; i++){
-			retval.add(new SelectItem(PeriodicalInterval.AVAILABLE_UNITS[i],(String) EjbcaJSFHelper.getBean().getText().get(PeriodicalInterval.AVAILABLE_UNITS[i])));
+		final List<SelectItem> retval = new ArrayList<SelectItem>(PeriodicalInterval.AVAILABLE_UNITS.length);
+		for (final String key : PeriodicalInterval.AVAILABLE_UNITS) {
+            retval.add(new SelectItem(key, EjbcaJSFHelper.getBean().getText().get(key).toLowerCase()));
 		}
-		
 		return retval;
 	}
 
