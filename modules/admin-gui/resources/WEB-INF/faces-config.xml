@@ -197,7 +197,7 @@
     </navigation-case>
     <navigation-case>
       <from-outcome>view</from-outcome>
-      <to-view-id>/ca/editcertificateprofiles/editcertificateprofile.jsp?</to-view-id>
+      <to-view-id>/ca/editcertificateprofiles/editcertificateprofile.jsp</to-view-id>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
