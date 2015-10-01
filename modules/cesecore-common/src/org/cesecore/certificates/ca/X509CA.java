@@ -1002,11 +1002,11 @@ public class X509CA extends CA implements Serializable {
 
         // Fourth, check for custom Certificate Extensions that should be added.
         // Custom certificate extensions is defined in certextensions.properties
-        final List<Integer> usedCertExt = certProfile.getUsedCertificateExtensions();
-        final Iterator<Integer> certExtIter = usedCertExt.iterator();
+        final List usedCertExt = certProfile.getUsedCertificateExtensions();
+        final Iterator certExtIter = usedCertExt.iterator();
         while (certExtIter.hasNext()) {
-            final Integer id = certExtIter.next();
-            final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
+            final String oid = (String) certExtIter.next();
+            final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(oid);
             if (certExt != null) {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.

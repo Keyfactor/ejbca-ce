@@ -424,7 +424,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableExtendedKeyUsagesConfig = null;
         availableCustomCertExtensions = null;
         availableCustomCertExtensionsConfig = null;
-        selectedCustomCertExtensionID = 0;
+        selectedCustomCertExtensionOID = "";
     }
     
     public void toggleUseApprovalNotification() {
@@ -688,12 +688,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final String DEFAULT_EXTENSION_CLASSPATH = "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension";
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ListDataModel<CustomCertExtensionInfo> availableCustomCertExtensions = null;
-    private int selectedCustomCertExtensionID = 0;
+    private String selectedCustomCertExtensionOID = "";
     private String newOID = "";
     private String newDisplayName = "";
  
-    public int getSelectedCustomCertExtensionID() { return selectedCustomCertExtensionID; }
-    public void setSelectedCustomCertExtensionID(int id) { selectedCustomCertExtensionID=id; }
+    public String getSelectedCustomCertExtensionOID() { return selectedCustomCertExtensionOID; }
+    public void setSelectedCustomCertExtensionOID(String oid) { selectedCustomCertExtensionOID=oid; }
     
     public String getNewOID() { return newOID; }
     public void setNewOID(String oid) { newOID=oid; }
@@ -720,7 +720,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private ArrayList<CustomCertExtensionInfo> getNewAvailableCustomCertExtensions() {
         availableCustomCertExtensionsConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         ArrayList<CustomCertExtensionInfo> extensionsInfo = new ArrayList<CustomCertExtensionInfo>();
-        Collection<CertificateExtension> allExtensions = availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions().values();
+        Collection<CertificateExtension> allExtensions = availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions();
         for(CertificateExtension extension : allExtensions) {
             extensionsInfo.add(new CustomCertExtensionInfo(extension));
         }
@@ -729,9 +729,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void removeCustomCertExtension() {
         final CustomCertExtensionInfo extensionToRemove = (CustomCertExtensionInfo) availableCustomCertExtensions.getRowData();
-        final int extid = extensionToRemove.getId();
+        final String extOid = extensionToRemove.getOid();
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
-        cceConfig.removeCustomCertExtension(Integer.valueOf(extensionToRemove.getId()));
+        cceConfig.removeCustomCertExtension(extOid);
         try {
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
         } catch(Exception e) {
@@ -740,7 +740,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         availableCustomCertExtensions = new ListDataModel<CustomCertExtensionInfo>(getNewAvailableCustomCertExtensions());
         
-        final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extid);
+        final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extOid);
         if(!cpNamedUsingExtension.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamedUsingExtension);
             final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certitifcate profiles: " +  cpNamesMessage;
@@ -754,14 +754,22 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));
             return;
         }
+        
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
+
+        if (cceConfig.isCustomCertExtensionSupported(getNewOID())) {
+            FacesContext.getCurrentInstance()
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "A CustomCertificateExenstion with the same OID already exists.", null));
+            return;
+        }
+        
         if (StringUtils.isEmpty(getNewDisplayName())) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Display Name is set.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Label is set.", null));
             return;
         }
 
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
         try {
-            cceConfig.addCustomCertExtension(getUnusedID(), getNewOID(), getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, new Properties());
+            cceConfig.addCustomCertExtension(0, getNewOID(), getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, new Properties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
         } catch(Exception e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
@@ -780,44 +788,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     private void selectCurrentRowData() {
         final CustomCertExtensionInfo cceInfo = (CustomCertExtensionInfo) availableCustomCertExtensions.getRowData();
-        selectedCustomCertExtensionID = cceInfo.getId();
+        selectedCustomCertExtensionOID = cceInfo.getOid();
     }
     
-    private int getUnusedID() {
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
-        for(int i=1; i<255; i++) {
-            if(cceConfig.isCustomCertExtensionSupported(i)) {
-                continue;
-            }
-            if(isExtensionUsedInProfiles(i)) {
-                continue;
-            }
-            return i;
-        }
-        return 0;
-    }
-    
-    private boolean isExtensionUsedInProfiles(final int id) {
-        final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-        Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
-        for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
-            final CertificateProfile cp = entry.getValue();
-            List<Integer> usedCertExts = cp.getUsedCertificateExtensions();
-            if(usedCertExts.contains(id)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private ArrayList<String> getCertProfilesUsingExtension(final int id) {
+    @SuppressWarnings("rawtypes")
+    private ArrayList<String> getCertProfilesUsingExtension(final String oid) {
         ArrayList<String> ret = new ArrayList<String>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
             final CertificateProfile cp = entry.getValue();
-            List<Integer> usedCertExts = cp.getUsedCertificateExtensions();
-            if(usedCertExts.contains(id)) {
+            List usedCertExts = cp.getUsedCertificateExtensions();
+            if(usedCertExts.contains(oid)) {
                 ret.add(certprofileSession.getCertificateProfileName(entry.getKey()));
             }
         }
@@ -830,7 +812,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     // ------------------------------------------------
-    //             Drop-down manue options
+    //             Drop-down menu options
     // ------------------------------------------------
     /** @return a list of all CA names */
     public List<SelectItem> getAvailableCAsAndNoEncryptionOption() {

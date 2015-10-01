@@ -13,9 +13,9 @@
 package org.cesecore.certificates.certificate.certextensions;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -54,16 +54,16 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         return data.size() > 1;
     }
 
-    public boolean isCustomCertExtensionSupported(int id) {
-        return data.containsKey(id);
+    public boolean isCustomCertExtensionSupported(String oid) {
+        return data.containsKey(oid);
     }
     
-    public CertificateExtension getCustomCertificateExtension(int id) {
-        return (CertificateExtension) data.get(id);
+    public CertificateExtension getCustomCertificateExtension(String oid) {
+        return (CertificateExtension) data.get(oid);
     }
     
-    public void addCustomCertExtension(int id, CertificateExtension ce) {
-        data.put(id, ce);
+    public void addCustomCertExtension(CertificateExtension ce) {
+        data.put(ce.getOID(), ce);
     }
     
     public void addCustomCertExtension(int id, String oid, String displayName, String classPath, boolean critical, Properties properties) throws CertificateExtentionConfigurationException {
@@ -71,7 +71,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             Class<?> implClass = Class.forName(classPath);
             CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
             certificateExtension.init(id, oid.trim(), displayName, critical, properties);
-            data.put(id, certificateExtension);
+            data.put(oid, certificateExtension);
         } catch (ClassNotFoundException e) {
             throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
         } catch (InstantiationException e) {
@@ -81,28 +81,33 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         }
     }
     
-    public void removeCustomCertExtension(int id) {
-        data.remove(id);
+    public void removeCustomCertExtension(String oid) {
+        data.remove(oid);
     }
     
-    public Map<Integer, CertificateExtension> getAllAvailableCustomCertificateExtensions() {
-        Map<Integer, CertificateExtension> exts = new HashMap<Integer, CertificateExtension>();
+    public List<CertificateExtension> getAllAvailableCustomCertificateExtensions() {
+        List<CertificateExtension> ret = new ArrayList<CertificateExtension>();
         for(Entry<Object, Object> entry : data.entrySet()) {
             Object value = entry.getValue();
             if(value instanceof CertificateExtension) {
-                Integer id = ((CertificateExtension) value).getId();
-                exts.put(id, (CertificateExtension) value);
+                CertificateExtension ext = (CertificateExtension) value;
+                ret.add(ext);
             }
         }
-        return exts;
+        return ret;
     }
     
+    /**
+     * Returns a list of the available CertificateExtensions as Properties. Each property contains the extension OID 
+     * as its 'key' and the extension's label as its 'value'
+     * @return
+     */
     public Properties getAsProperties() {
         Properties properties = new Properties();
         for(Entry<Object, Object> entry : data.entrySet()) {
             if(entry.getValue() instanceof CertificateExtension) {
                 CertificateExtension ce = (CertificateExtension) entry.getValue();
-                properties.setProperty(entry.getKey().toString(), ce.getOID());
+                properties.setProperty(ce.getOID(), ce.getDisplayName());
             }
         }
         return properties;
