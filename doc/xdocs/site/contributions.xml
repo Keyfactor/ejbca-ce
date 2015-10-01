@@ -62,7 +62,8 @@ You can also send us complete files that you have changed, we can see the diffs 
 <p>
 The normal process for contribution patches is: 
 <ul>
-<li>Contributor send patches, under the LGPLv2.1+ license, to the ejbca-develop mailing list.</li>
+<li>Contributor send patches, under the LGPLv2.1+ license, to the ejbca-develop mailing list, or directly to PrimeKey.</li>
+<li>Include a JUnit test case for your change, it may be a simple addition to an existing test. If you do not know how to do this, ask us and we will help you.</li>
 <li>Someone on the EJBCA core team will review them, when there is time, and if needed suggest improvements.</li>
 <li>If it is a useful and generic feature it will be integrated in EJBCA to be available in a later release.</li>
 </ul>
