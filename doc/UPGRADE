@@ -40,6 +40,9 @@ Upgrading to 6.4.0 involves the following changes:
 
 1. New Access rules for Auditors
 2. XKMS no longer supported 
+3. Extended Key Usages and Custom Certificate Extension are imported to the database from the previously static configuration files
+4. New Access rules to update Extended Key Usages and Custom Certificate Extensions
+5. Available Custom Certificate Extensions are no longer limited to only 255 extensions
 
 To perform an upgrade:
 
@@ -80,6 +83,20 @@ Internal Key Bindings
 2. XKMS no longer supported 
 Support for XKMS was removed and is no longer available. When upgrading to EJBCA 6.4.0, internal keystores for XKMS will be removed and 
 is upgrading in a 100% uptime cluster, the XKMS option in older versions of EJBCA will also disappear.
+
+3. Extended Key Usages and Custom Certificate Extension are imported to the database from the previously static configuration files:
+The configuration files extendedkeyusage.properties and certextensions.properties are automatically read into EJBCA database during 
+deployment of the new code. Future changes to Extended Key Usages and Custom Certificate Extensions will have to be done through the 
+AdminGUI under 'System Configuration'->'Extended Key Usages' and 'System Configuration'->'Custom Certificate Extensions'
+
+4. New Access rules to update Extended Key Usages and Custom Certificate Extensions:
+New Access Rules has been added to add, remove or edit Extended Key Usages and Custom Certificate Extensions. During upgrade, all roles 
+which previously had the access right '/system_functionality/edit_systemconfiguration', will automatically be given access to the new 
+rules '/system_functionality/edit_available_extended_key_usages' and '/system_functionality/edit_available_custom_certificate_extensions'
+
+5. Available Custom Certificate Extensions are no longer limited to only 255 extensions:
+The limitation on how many Custom Certificate Extensions EJBCA can have available at one time has not been removed. 
+
 
 From EJBCA 6.3.1 up to EJBCA 6.3.2
 -------------------------------
