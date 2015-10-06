@@ -791,14 +791,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         selectedCustomCertExtensionOID = cceInfo.getOid();
     }
     
-    @SuppressWarnings("rawtypes")
     private ArrayList<String> getCertProfilesUsingExtension(final String oid) {
         ArrayList<String> ret = new ArrayList<String>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
             final CertificateProfile cp = entry.getValue();
-            List usedCertExts = cp.getUsedCertificateExtensions();
+            List<String> usedCertExts = cp.getUsedCertificateExtensionsOIDs();
             if(usedCertExts.contains(oid)) {
                 ret.add(certprofileSession.getCertificateProfileName(entry.getKey()));
             }

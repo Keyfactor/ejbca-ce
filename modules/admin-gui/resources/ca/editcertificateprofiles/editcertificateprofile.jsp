@@ -869,7 +869,7 @@
 		<h:outputLabel rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" for="selectusedcertificateextensions"
 			value="#{web.text.USEDCERTEXTENSIONS}"/>
 		<h:selectManyListbox rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" id="selectusedcertificateextensions" disabled="#{certProfilesBean.viewOnly}"
-			value="#{certProfileBean.certificateProfile.usedCertificateExtensions}" size="#{certProfileBean.availableCertificateExtensionsAvailableSize}" converter="javax.faces.Integer">
+			value="#{certProfileBean.certificateProfile.usedCertificateExtensionsOIDs}" size="#{certProfileBean.availableCertificateExtensionsAvailableSize}">
 			<f:selectItems value="#{certProfileBean.availableCertificateExtensionsAvailable}"/>
 		</h:selectManyListbox>
 
