@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -71,7 +70,6 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
@@ -791,52 +789,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
     
-    @SuppressWarnings("rawtypes")
-    private void convertCustomCertExtensionsIDInCertProfile() {
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-                globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        List<CertificateExtension> allExtensions = cceConfig.getAllAvailableCustomCertificateExtensions();
-        
-        
-        Map<Integer, CertificateProfile> allCertProfiles =  certProfileSession.getAllCertificateProfiles();
-        for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
-            CertificateProfile certProfile = entry.getValue();
-            
-            List usedCustomExtensions = certProfile.getUsedCertificateExtensions();
-            if(!usedCustomExtensions.isEmpty()) {
-                Object o = usedCustomExtensions.get(0);
-                // This is a test for backwards compatibility for the older type of extended key usage
-                if (o instanceof String) {
-                    // This is the new extended key usage in the profile, simply return the array with oids
-                    continue;
-                }
-                
-                AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.AddNewAccessRulestoRoles"));
-                List<String> newCustomExtensions = new ArrayList<String>();
-                for(Object extensionID : usedCustomExtensions) {
-                    //CertificateExtension extension = cceConfig.getCustomCertificateExtensionIdentifiedByID((Integer)extensionID);
-                    CertificateExtension extension = getCustomCertExtensionIdentifiedByID((Integer)extensionID, allExtensions);
-                    if(extension != null) {
-                        newCustomExtensions.add(extension.getOID());
-                    }
-                }
-                certProfile.setUsedCertificateExtensions(newCustomExtensions);
-                try {
-                    certProfileSession.changeCertificateProfile(admin, certProfileSession.getCertificateProfileName(entry.getKey()), certProfile);
-                } catch (AuthorizationDeniedException e) { /* Should not occur since it's an "always allowed" authentication token */ }
-            }
-        }
-    }
-    
-    private CertificateExtension getCustomCertExtensionIdentifiedByID(int id, List<CertificateExtension> allCustomCertExtensions) {        
-        for(CertificateExtension ext : allCustomCertExtensions) {
-            if(ext.getId()==id) {
-                return ext;
-            }
-        }
-        return null;
-    }
-    
     /**
      * EJBCA 6.3.1.1 moves the VA Publisher from Community to Enterprise, changing its baseclass in the process for Enterprise users. 
      * This method will fail gracefully if user is not running Enterprise. It will also upgrade any placeholder publishers from 6.3.1.1 Community 
@@ -892,10 +844,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     private void postMigrateDatabase640() throws UpgradeFailedException {
     	
-    	// Re-identify CustomCertExtensions in the certificate profile by their 
-    	// OIDs instead of their IDs
-        convertCustomCertExtensionsIDInCertProfile();
-        
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
         // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
         addEKUAndCustomCertExtensionsAccessRulestoRoles();     

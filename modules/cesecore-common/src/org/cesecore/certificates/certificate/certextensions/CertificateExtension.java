@@ -35,7 +35,7 @@ public abstract class CertificateExtension implements Serializable {
 	
 	private static final long serialVersionUID = -7708267512352607118L;
 	
-	@Deprecated
+	@Deprecated // Should be removed when support for EJBCA 6.4.0 is dropped
     private int id;
 	private String oID;
 	private String displayName;
@@ -52,7 +52,7 @@ public abstract class CertificateExtension implements Serializable {
 	/**
 	 * @return the unique id of the extension
 	 */
-	@Deprecated
+	@Deprecated // Should be removed when support for EJBCA 6.4.0 is dropped
 	public int getId() {
 		return id;
 	}
