@@ -43,6 +43,7 @@ Upgrading to 6.4.0 involves the following changes:
 3. Extended Key Usages and Custom Certificate Extension are imported to the database from the previously static configuration files
 4. New Access rules to update Extended Key Usages and Custom Certificate Extensions
 5. Available Custom Certificate Extensions are no longer limited to only 255 extensions
+6. Used Custom Certificate Extensions in a Certificate Profile are now identified by their OIDs
 
 To perform an upgrade:
 
@@ -95,7 +96,14 @@ which previously had the access right '/system_functionality/edit_systemconfigur
 rules '/system_functionality/edit_available_extended_key_usages' and '/system_functionality/edit_available_custom_certificate_extensions'
 
 5. Available Custom Certificate Extensions are no longer limited to only 255 extensions:
-The limitation on how many Custom Certificate Extensions EJBCA can have available at one time has not been removed. 
+The limitation on how many Custom Certificate Extensions EJBCA can have available at one time has now been removed.
+
+6. Used Custom Certificate Extensions in a Certificate Profile are now identified by their OIDs:
+The Used Custom Certificate Extensions in a Certificate Profile used to be a list of numbers representing the extensions' IDs. This has 
+now been changed to a list of Strings representing the extensions' OIDs instead. This is done by adding a new field containing the OIDs 
+of the Used Custom Certificate Extensions. The field containing the list of IDs is not changed, but all functions are now referencing the 
+new field containing the list of OIDs. This way, an older version of EJBCA can still work on a newer database content without disrupting 
+any functions.
 
 
 From EJBCA 6.3.1 up to EJBCA 6.3.2
