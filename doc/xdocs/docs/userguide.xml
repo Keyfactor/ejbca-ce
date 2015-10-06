@@ -457,11 +457,11 @@ The Finish User configuration defines if the CA calls a process called "finishUs
 <ul>
 <li>With this setting enabled an end entity password can only be used once (or as many times as defined in 'Number of allowed requests' when adding 
 the end entity) to enroll for a certificate.
-After the last certificate has been issued the user status is set to 'Generated' and the password is blanked (unless the cleartext password setting is enabled). 
+After the last certificate has been issued the user status is set to 'Generated' and the password is blanked. 
 When status is 'Generated' a new certificate can not be issued until status is reset to 'New', usually by editing the end entity.
 </li>
 <li>With this setting disabled the password can be used unlimited number of times to enroll for certificates, and the status stays as 'New' after each time.</li> 
-<li>This setting only works for token types other than <i>User Generated</i></li> 
+<li>Note that the password will only be blanked for token types other than <i>User Generated</i></li> 
 </ul>
 </p>
 </subsubsection>
