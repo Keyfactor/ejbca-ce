@@ -1001,24 +1001,24 @@ public class X509CA extends CA implements Serializable {
         }
 
         // Fourth, check for custom Certificate Extensions that should be added.
-        // Custom certificate extensions is defined in certextensions.properties
-        final List usedCertExt = certProfile.getUsedCertificateExtensions();
-        final Iterator certExtIter = usedCertExt.iterator();
+        // Custom certificate extensions is defined in AdminGUI -> SystemConfiguration -> Custom Certificate Extensions
+        final List<String> usedCertExt = certProfile.getUsedCertificateExtensionsOIDs();
+        final Iterator<String> certExtIter = usedCertExt.iterator();
         while (certExtIter.hasNext()) {
-            final String oid = (String) certExtIter.next();
+            final String oid = certExtIter.next();
             final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(oid);
             if (certExt != null) {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
-                if (overridenexts.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) == null) {
+                if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
                     final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Extension with oid " + certExt.getOID() + " has been overridden, custom extension will not be added.");
+                        log.debug("Extension with oid " + oid + " has been overridden, custom extension will not be added.");
                     }
                 }
             }

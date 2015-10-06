@@ -778,22 +778,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
-    @SuppressWarnings("rawtypes")
     public List<SelectItem> getAvailableCertificateExtensionsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = null; 
-        try {
-            cceConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
-        } catch (Exception e) {
-            log.error(e);
-        }
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         
-        List usedExtensions = getCertificateProfile().getUsedCertificateExtensions();
+        List<String> usedExtensions = getCertificateProfile().getUsedCertificateExtensionsOIDs();
         if (certProfilesBean.getViewOnly()) {
             //If in view mode, only display used values.
-            for(Object o : usedExtensions) {
-                String oid = (String) o;
+            for(String oid : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(oid)) {
                     String note = oid + " (No longer used. Please unselect this option)";
                     ret.add(new SelectItem(oid, note));
@@ -806,8 +799,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             for (final CertificateExtension current : cceConfig.getAllAvailableCustomCertificateExtensions()) {
                 ret.add(new SelectItem(current.getOID(), current.getDisplayName()));
             }            
-            for (Object o : usedExtensions) {
-                String oid = (String) o;
+            for (String oid : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(oid)) {
                     String note = oid + " (No longer used. Please unselect this option)";
                     ret.add(new SelectItem(oid, note));

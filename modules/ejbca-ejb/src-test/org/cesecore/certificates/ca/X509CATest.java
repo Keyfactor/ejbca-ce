@@ -759,7 +759,7 @@ public class X509CATest {
         list.add("2.16.840.1.113730.1.13");
         list.add("1.2.3.4");
         list.add("1.2.3.5");
-        cp.setUsedCertificateExtensions(list);
+        cp.setUsedCertificateExtensionsOIDs(list);
         final KeyPair keypair = KeyTools.genKeys("512", "RSA");
         X509Certificate cert = (X509Certificate)testCa.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000", cceConfig);
         assertNotNull("A certificate should have been issued", cert);
