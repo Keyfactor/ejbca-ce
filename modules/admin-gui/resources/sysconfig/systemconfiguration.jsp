@@ -385,6 +385,13 @@ org.cesecore.authorization.control.AccessControlSession
 	<%-- CTLogs --%>
 
 	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
+		<h:panelGroup>
+			<h4><h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}"/>
+			<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></h4>
+			</br>
+		</h:panelGroup>
+		
+		
 		<h:dataTable value="#{systemConfigMBean.ctLogs}" var="ctlog"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
@@ -496,6 +503,12 @@ org.cesecore.authorization.control.AccessControlSession
 	<%-- Extended Key Usages --%>
 	
 	<h:form id="extkeyusageform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Extended Key Usages'}">
+		<h:panelGroup>
+			<h4><h:outputText value="#{web.text.EKU_EDIT_EKU_TITLE}"/>
+			<%= ejbcawebbean.getHelpReference("/adminguide.html#Extended%20Key%20Usages") %></h4>
+			</br>
+		</h:panelGroup>
+	
 		<h:dataTable value="#{systemConfigMBean.availableExtendedKeyUsages}" var="eku"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
@@ -528,6 +541,12 @@ org.cesecore.authorization.control.AccessControlSession
 	<%-- Custom Certificate Extensions --%>
 	
 	<h:form id="customcertextensionsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Custom Certificate Extensions'}">
+		<h:panelGroup>
+			<h4><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_EDIT_CCE_TITLE}"/>
+			<%= ejbcawebbean.getHelpReference("/adminguide.html#Custom%20Certificate%20Extensions") %></h4>
+			</br>
+		</h:panelGroup>
+		
 		<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
