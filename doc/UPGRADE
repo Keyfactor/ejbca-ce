@@ -42,8 +42,7 @@ Upgrading to 6.4.0 involves the following changes:
 2. XKMS no longer supported 
 3. Extended Key Usages and Custom Certificate Extension are imported to the database from the previously static configuration files
 4. New Access rules to update Extended Key Usages and Custom Certificate Extensions
-5. Available Custom Certificate Extensions are no longer limited to only 255 extensions
-6. Used Custom Certificate Extensions in a Certificate Profile are now identified by their OIDs
+5. Changes to Custom Certificate Extensions 
 
 To perform an upgrade:
 
@@ -98,15 +97,20 @@ New Access Rules has been added to add, remove or edit Extended Key Usages and C
 which previously had the access right '/system_functionality/edit_systemconfiguration', will automatically be given access to the new 
 rules '/system_functionality/edit_available_extended_key_usages' and '/system_functionality/edit_available_custom_certificate_extensions'
 
-5. Available Custom Certificate Extensions are no longer limited to only 255 extensions:
-The limitation on how many Custom Certificate Extensions EJBCA can have available at one time has now been removed.
+5. Changes to Custom Certificate Extensions. 
 
-6. Used Custom Certificate Extensions in a Certificate Profile are now identified by their OIDs:
-The Used Custom Certificate Extensions in a Certificate Profile used to be a list of numbers representing the extensions' IDs. This has 
+Several changes have been implemented in how Custom Certificate Extensions are handled:
+
+5.a Available Custom Certificate Extensions are no longer limited to only 255 extensions:
+	The limitation on how many Custom Certificate Extensions EJBCA can have available at one time has now been removed.
+5.b Used Custom Certificate Extensions in a Certificate Profile are now identified by their OIDs:
+	The Used Custom Certificate Extensions in a Certificate Profile used to be a list of numbers representing the extensions' IDs. This has 
 now been changed to a list of Strings representing the extensions' OIDs instead. This is done by adding a new field containing the OIDs 
 of the Used Custom Certificate Extensions. The field containing the list of IDs is not changed, but all functions are now referencing the 
 new field containing the list of OIDs. This way, an older version of EJBCA can still work on a newer database content without disrupting 
 any functions.
+5.c Custom Certificate Extensions must implement the CustomCertificatExtension marker interface. 
+
 
 
 From EJBCA 6.3.1 up to EJBCA 6.3.2

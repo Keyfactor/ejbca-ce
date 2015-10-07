@@ -118,6 +118,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
+import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -1006,7 +1007,7 @@ public class X509CA extends CA implements Serializable {
         final Iterator<String> certExtIter = usedCertExt.iterator();
         while (certExtIter.hasNext()) {
             final String oid = certExtIter.next();
-            final CertificateExtension certExt = cceConfig.getCustomCertificateExtension(oid);
+            final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(oid);
             if (certExt != null) {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.

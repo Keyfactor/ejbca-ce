@@ -28,7 +28,7 @@ org.cesecore.authorization.control.StandardRules
 "%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); %>
+<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource()); %>
 <html>
 <f:view>
 <head>
@@ -39,7 +39,8 @@ org.cesecore.authorization.control.StandardRules
 </head>
 <body>
 	<h1>
-		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION} : #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}"/>
+		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION}: #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}"/>
+		<%= ejbcawebbean.getHelpReference("/adminguide.html#Custom%20Certificate%20Extensions") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCustomCertExtensionForm">
@@ -55,51 +56,39 @@ org.cesecore.authorization.control.StandardRules
     			<f:validator validatorId="legalCharsValidator"/>
     		</h:inputText>
 
-			<h:outputLabel for="currentCEClassPath" value="#{web.text.CUSTOMCERTEXTENSION_CLASSPATH}"/>
-	   		<h:inputText id="currentCEClassPath" value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" size="70" title="#{web.text.FORMAT_CLASSPATH}"/>
-		
+			<h:outputLabel for="currentCustomExtension" value="#{web.text.CUSTOMCERTEXTENSION_CLASS}"/>
+			
+			<h:selectOneMenu  id="currentCustomExtension" value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" title="#{web.text.FORMAT_CLASSPATH}"
+				 onchange="document.getElementById('currentCustomCertExtensionForm:updateButton').click();" valueChangeListener="#{customCertExtensionMBean.updateExtension}">
+				<f:selectItems value="#{customCertExtensionMBean.availableCustomCertificateExtensions}"/>
+			</h:selectOneMenu>
+			<h:commandButton id="updateButton" action="#{customCertExtensionMBean.update}" value="#{web.text.UPDATE}"/>			
+			<script>document.getElementById('currentCustomCertExtensionForm:updateButton').style.display = 'none'</script>
+					
 			<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}"/>
 			<h:panelGroup>
 				<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"/>
 				<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}" />
 			</h:panelGroup>
-
-			<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.SAVE}" />
 		</h:panelGrid>
-	</h:form>
-
-	<h2><h:outputText value="#{web.text.PROPERTIES}" /></h2>
-	<h:form id="propertiesform" enctype="multipart/form-data" >
-		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop"
-					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+		<h2><h:outputText value="#{web.text.PROPERTIES}" /></h2>
+		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop" styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.KEY}"/></f:facet>
 				<h:outputText value="#{prop.key}" title="#{prop.key}"/>
-				<f:facet name="footer">
-					<h:inputText id="currentPropertyKey" value="#{customCertExtensionMBean.currentPropertyKey}" size="25"/>
-				</f:facet>
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.VALUE}"/></f:facet>
-				<h:outputText value="#{prop.value}"/>
-				<f:facet name="footer">
-					<h:inputText id="currentPropertyValue" value="#{customCertExtensionMBean.currentPropertyValue}" size="35">
-   					</h:inputText>
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header">
-   					<h:outputText value="#{web.text.ACTION}"/>
-   				</f:facet>
-				<h:commandButton action="#{customCertExtensionMBean.removeExtensionProperty}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
-				<f:facet name="footer">
-					<h:commandButton  value="#{web.text.ADD}" action="#{customCertExtensionMBean.addExtensionProperty}" />
-				</f:facet>
-			</h:column>
+				<h:panelGroup>
+					<h:inputText id="currentPropertyValue" value="#{prop.value}" size="35" rendered="#{prop.possibleValuesCount == 0}" />
+					<h:selectOneMenu rendered="#{prop.possibleValuesCount > 0}" value="#{prop.value}">
+						<f:selectItems value="#{prop.possibleValues}"/>
+					</h:selectOneMenu>
+				</h:panelGroup>			
+			</h:column>			
 		</h:dataTable>
+	<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.SAVE}" />
 	</h:form>
-
-
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />

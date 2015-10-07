@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -62,24 +64,58 @@ import org.cesecore.internal.InternalResources;
  * 
  * @version $Id$
  */
-public class BasicCertificateExtension extends CertificateExtension {
+public class BasicCertificateExtension extends CertificateExtension implements CustomCertificateExtension {
 
     private static final long serialVersionUID = 6896964791897238060L;
 
     private static final Logger log = Logger.getLogger(BasicCertificateExtension.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
+    
+    private static final String DISPLAY_NAME = "Basic Certificate Extension";
 
-    private static String ENCODING_DERBITSTRING = "DERBITSTRING";
-    private static String ENCODING_DERINTEGER = "DERINTEGER";
-    private static String ENCODING_DEROCTETSTRING = "DEROCTETSTRING";
-    private static String ENCODING_DERBOOLEAN = "DERBOOLEAN";
-    private static String ENCODING_DERPRINTABLESTRING = "DERPRINTABLESTRING";
-    private static String ENCODING_DERUTF8STRING = "DERUTF8STRING";
-    private static String ENCODING_DERIA5STRING = "DERIA5STRING";
-    private static String ENCODING_DERNULL = "DERNULL";
-    private static String ENCODING_DEROBJECT = "DEROBJECT";
-    private static String ENCODING_DEROID = "DERBOJECTIDENTIFIER";
+    private enum Encoding {
+        ENCODING_DERBITSTRING("DERBITSTRING"),
+        ENCODING_DERINTEGER("DERINTEGER"),
+        ENCODING_DEROCTETSTRING("DEROCTETSTRING"),
+        ENCODING_DERBOOLEAN("DERBOOLEAN"),
+        ENCODING_DERPRINTABLESTRING("DERPRINTABLESTRING"),
+        ENCODING_DERUTF8STRING("DERUTF8STRING"),
+        ENCODING_DERIA5STRING("DERIA5STRING"),
+        ENCODING_DERNULL("DERNULL"),
+        ENCODING_DEROBJECT("DEROBJECT"),
+        ENCODING_DEROID("DERBOJECTIDENTIFIER");
+        
+        private static final Map<String, Encoding> lookupMap = new HashMap<String, Encoding>();
+        
+        static {
+            for(Encoding encoding : Encoding.values()) {
+                lookupMap.put(encoding.value(), encoding);
+            }
+        }
+        
+        private final String value;
+
+        
+        private Encoding(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
+        }
+        
+        public boolean equals(Encoding otherValue) {
+            return value.equalsIgnoreCase(otherValue.value());
+        }
+        
+        public static final Encoding fromString(String value) {
+            return lookupMap.get(value);
+        }
+        
+      
+    }
+
 
     /** 
      * The value is expected to by hex encoded and is added as an byte array 
@@ -92,6 +128,23 @@ public class BasicCertificateExtension extends CertificateExtension {
     private static String PROPERTY_ENCODING = "encoding";
     private static String PROPERTY_NVALUES = "nvalues";
     private static String PROPERTY_DYNAMIC  = "dynamic";
+    
+    private static final Map<String, String[]> propertiesMap = new HashMap<String, String[]>();
+    
+    static {
+        Encoding[] encodings = Encoding.values();
+        String[] encodingValues = new String[encodings.length];
+        for(int i = 0; i < encodings.length; i++) {
+            encodingValues[i] = encodings[i].value;
+        }
+        propertiesMap.put(PROPERTY_ENCODING, encodingValues);
+        propertiesMap.put(PROPERTY_VALUE, new String[]{});
+        propertiesMap.put(PROPERTY_DYNAMIC, CustomCertificateExtension.BOOLEAN);
+    }
+    
+    {
+        setDisplayName(DISPLAY_NAME);
+    }
 
     /**
      * @deprecated use getValueEncoded instead.
@@ -120,8 +173,8 @@ public class BasicCertificateExtension extends CertificateExtension {
      *      PublicKey, CertificateValidity)
      */
     @Override
-    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val)
-    throws CertificateExtensionException {
+    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         final byte[] result;
         String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
         String[] values = getValues(userData);
@@ -229,32 +282,45 @@ public class BasicCertificateExtension extends CertificateExtension {
     private ASN1Encodable parseValue(String encoding, String value) throws CertificateExtensionException {
 
         ASN1Encodable toret = null;
+        
+        Encoding encodingType = Encoding.fromString(encoding);
 
-        if (!encoding.equalsIgnoreCase(ENCODING_DERNULL) && (value == null || value.trim().equals(""))) {
+        if (!Encoding.ENCODING_DERNULL.equals(encodingType) && (value == null || value.trim().equals(""))) {
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
-        if (encoding.equalsIgnoreCase(ENCODING_DERBITSTRING)) {
+        switch(encodingType) { 
+        case ENCODING_DERBITSTRING:
             toret = parseDERBitString(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DERINTEGER)) {
+            break;
+        case ENCODING_DERINTEGER:
             toret = parseDERInteger(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DEROCTETSTRING)) {
+            break;
+        case ENCODING_DEROCTETSTRING:
             toret = parseDEROctetString(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DERBOOLEAN)) {
+            break;
+        case ENCODING_DERBOOLEAN:
             toret = parseDERBoolean(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DEROID)) {
+            break;
+        case ENCODING_DEROID:
             toret = parseDEROID(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DERPRINTABLESTRING)) {
+            break;
+        case ENCODING_DERPRINTABLESTRING:
             toret = parseDERPrintableString(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DERUTF8STRING)) {
+            break;
+        case ENCODING_DERUTF8STRING:
             toret = parseDERUTF8String(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DERIA5STRING)) {
+            break;
+        case ENCODING_DERIA5STRING:
             toret = parseDERIA5String(value);
-        } else if (encoding.equalsIgnoreCase(ENCODING_DERNULL)) {
+            break;
+        case ENCODING_DERNULL:
             toret = DERNull.INSTANCE;
-        } else if (encoding.equalsIgnoreCase(ENCODING_DEROBJECT)) {
+            break;
+        case ENCODING_DEROBJECT:
             toret = parseHexEncodedDERObject(value);
-        } else {
+            break;
+        default:
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectenc", encoding,
                     Integer.valueOf(getId())));
         }
@@ -398,5 +464,10 @@ public class BasicCertificateExtension extends CertificateExtension {
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
         return Hex.decode(value);
+    }
+
+    @Override
+    public Map<String, String[]> getAvailableProperties() {
+        return propertiesMap;
     }
 }

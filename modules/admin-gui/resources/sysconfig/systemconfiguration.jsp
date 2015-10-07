@@ -560,7 +560,7 @@ org.cesecore.authorization.control.AccessControlSession
 								rendered="#{systemConfigMBean.allowedToModify}" onclick="return confirm('#{web.text.CUSTOMCERTEXTENSION_CONF_DELETE}')"/>
 				</h:panelGroup>
 				<f:facet name="footer">
-					<h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" />
+					<h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" />					 			   
 				</f:facet>
 			</h:column>
 		</h:dataTable>

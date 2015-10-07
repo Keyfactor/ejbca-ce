@@ -27,7 +27,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
  */
 public abstract class StandardCertificateExtension extends CertificateExtension {
 	
-	/**
+	private static final long serialVersionUID = 1L;
+
+    /**
 	 * Method that initializes the CertificateExtension
 	 * 
 	 * @param certProf certificateprofile that defines if this extension is used and critical

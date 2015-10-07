@@ -34,6 +34,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -88,7 +89,7 @@ public class AvailableCustomCertExtensionsConfigTest {
         cceConfig.addCustomCertExtension(dummyExtension);
         
         assertEquals(3, cceConfig.getAllAvailableCustomCertificateExtensions().size());
-        CertificateExtension ext = cceConfig.getCustomCertificateExtension("1.2.3.4");
+        CustomCertificateExtension ext = cceConfig.getCustomCertificateExtension("1.2.3.4");
         assertNotNull(ext);
         assertEquals(1, ext.getId());
         assertEquals("1.2.3.4", ext.getOID());
@@ -149,7 +150,7 @@ public class AvailableCustomCertExtensionsConfigTest {
 
         for(int i=0; i<150; i++) {
             oid = "1.3.15." + i + ".33.12";  // random string that looks like an oid
-            CertificateExtension ext = cceConfig2.getCustomCertificateExtension(oid);
+            CustomCertificateExtension ext = cceConfig2.getCustomCertificateExtension(oid);
             displayName = "Readable name of CustomCertExtension with oid " + oid;
             assertNotNull(ext);
             assertEquals(oid, ext.getOID());

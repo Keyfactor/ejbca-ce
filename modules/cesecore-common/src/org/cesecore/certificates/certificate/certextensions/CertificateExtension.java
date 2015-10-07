@@ -43,7 +43,7 @@ public abstract class CertificateExtension implements Serializable {
 	private Properties properties;
 	
 	/**
-	 * Constuctor for creating a Certificate Extension. 
+	 * Constructor for creating a Certificate Extension. 
 	 */
 	public CertificateExtension() {
 		super();
@@ -99,7 +99,7 @@ public abstract class CertificateExtension implements Serializable {
 	}
 
 	/**
-	 * The propertes configured for this extension. The properties are stripped
+	 * The properties configured for this extension. The properties are stripped
 	 * of the beginning "idX.property.". So searching for the property
 	 * "id1.property.value" only the key "value" should be used in the returned property.
 	 * 
@@ -110,7 +110,7 @@ public abstract class CertificateExtension implements Serializable {
 	}
 	
 	/**
-	 * Method that initialises the CertificateExtension
+	 * Method that initializes the CertificateExtension
 	 * 
 	 * @param id, the uniqueID of the extension
 	 * @param oID, the OID 
