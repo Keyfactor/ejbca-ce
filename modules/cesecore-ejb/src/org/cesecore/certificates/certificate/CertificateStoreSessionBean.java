@@ -783,12 +783,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findCertificatesByUsername(),  username=" + username);
         }
         // This method on the entity bean does the ordering in the database
-        List<CertificateData> coll = CertificateData.findByUsernameOrdered(entityManager, username);
-        ArrayList<Certificate> ret = new ArrayList<Certificate>();
-        Iterator<CertificateData> iter = coll.iterator();
-        while (iter.hasNext()) {
-            ret.add(iter.next().getCertificate(this.entityManager));
-        }
+        final List<CertificateData> certificateDatas = CertificateData.findByUsernameOrdered(entityManager, username);
+        final List<Certificate> ret = getAsCertificateListWithoutNulls(certificateDatas);
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByUsername(), username=" + username);
         }
@@ -801,11 +797,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findCertificatesByUsernameAndStatus(),  username=" + username);
         }
         // This method on the entity bean does the ordering in the database
-        final Collection<CertificateData> certificateDatas = CertificateData.findByUsernameAndStatus(entityManager, username, status);
-        final ArrayList<Certificate> ret = new ArrayList<Certificate>(certificateDatas.size());
-        for (final CertificateData certificateData : certificateDatas) {
-            ret.add(certificateData.getCertificate(this.entityManager));
-        }
+        final List<CertificateData> certificateDatas = CertificateData.findByUsernameAndStatus(entityManager, username, status);
+        final List<Certificate> ret = getAsCertificateListWithoutNulls(certificateDatas);
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByUsernameAndStatus(), username=" + username);
         }
@@ -818,13 +811,22 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findCertificatesByUsernameAndStatusAfterExpireDate(),  username=" + username);
         }
         // This method on the entity bean does the ordering in the database
-        final Collection<CertificateData> certificateDatas = CertificateData.findByUsernameAndStatusAfterExpireDate(entityManager, username, status, afterExpireDate);
-        final ArrayList<Certificate> ret = new ArrayList<Certificate>(certificateDatas.size());
-        for (final CertificateData certificateData : certificateDatas) {
-            ret.add(certificateData.getCertificate(this.entityManager));
-        }
+        final List<CertificateData> certificateDatas = CertificateData.findByUsernameAndStatusAfterExpireDate(entityManager, username, status, afterExpireDate);
+        final List<Certificate> ret = getAsCertificateListWithoutNulls(certificateDatas);
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByUsernameAndStatusAfterExpireDate(), username=" + username);
+        }
+        return ret;
+    }
+
+    /** Fetch the actual certificate is stored in a separate table and filter out entries where we don't store base64CertData at all */
+    private List<Certificate> getAsCertificateListWithoutNulls(List<CertificateData> certificateDatas) {
+        final ArrayList<Certificate> ret = new ArrayList<Certificate>();
+        for (final CertificateData certificateData : certificateDatas) {
+            final Certificate certificate = certificateData.getCertificate(this.entityManager);
+            if (certificate!=null) {
+                ret.add(certificate);
+            }
         }
         return ret;
     }
