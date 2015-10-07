@@ -724,6 +724,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         for(CertificateExtension extension : allExtensions) {
             extensionsInfo.add(new CustomCertExtensionInfo(extension));
         }
+        
+        Collections.sort(extensionsInfo, new Comparator<CustomCertExtensionInfo>() {
+            @Override
+            public int compare(CustomCertExtensionInfo first, CustomCertExtensionInfo second) {
+                return first.getOid().compareToIgnoreCase(second.getOid());
+            }
+        });
+        
         return extensionsInfo;
     }
 
