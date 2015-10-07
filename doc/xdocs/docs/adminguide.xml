@@ -5342,10 +5342,11 @@ The OtherName consists of:
 </section>
 <section name="Custom Certificate Extensions">
 <p>
-From EJBCA 3.4 it is possible to add customized certificate extensions to certificates.
 Customized extensions can be added and removed in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web.
-A simple extension only containing a static value can be added using the already implemented class "BasicCertificateExtension". It is also 
-possible to generate advanced certificate extensions by implementing a simple Java interface.
+A simple extension only containing a static value can be added using the already implemented class "BasicCertificateExtension", but more advanced 
+custom extensions an be made available by implementing the <i>CustomCertificateExtension</i> interface and making the implementation available on the classpath
+using Java's ServiceLoader (see the BasicCertificateExtension for how to do so). By implementing the marker interface and setting property fields and default values, 
+EJBCA can autogenerate a properties table for the extension.  
 </p>
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
@@ -5359,8 +5360,7 @@ custom certificate extensions.
 <li>Display Name : Display name of the extension in the 'Edit Certificate Profile' page. (Required)</li>
 <li>Class Path : Full class name of the CertificateExtension implementation class. (Required)</li>
 <li>Critical : Defines if the extension should be marked as critical in the certificate. </li>
-<li>Properties : It is possible to define properties to the actual implementation of the CertificateExtension. For example, BasicCerticateExtension 
-requires the properties 'encoding' and 'value' to be set.</li>
+<li>Properties : Properties are inherent to each extension implementation.</li>
 </ul>
 <p>
 When adding a new Custom Certificate Extension, the  OID and the Display Name are specified and a new Extension with the following default values is created:
