@@ -66,8 +66,8 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         return data.containsKey(oid);
     }
     
-    public CertificateExtension getCustomCertificateExtension(String oid) {
-        return (CertificateExtension) data.get(oid);
+    public CustomCertificateExtension getCustomCertificateExtension(String oid) {
+        return (CustomCertificateExtension) data.get(oid);
     }
     
     public void addCustomCertExtension(CertificateExtension ce) {

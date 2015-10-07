@@ -631,7 +631,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String currentKeyPairAlias = null;
     private String currentSignatureAlgorithm = null;
     private String currentNextKeyPairAlias = null;
-    private ListDataModel internalKeyBindingPropertyList = null;
+    private ListDataModel<InternalKeyBindingProperty<Serializable>> internalKeyBindingPropertyList = null;
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
     private String currentCertificateSerialNumber = null;
@@ -1102,17 +1102,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return a list of the current InteralKeyBinding's properties */
-    public ListDataModel/*<InternalKeyBindingProperty>*/getInternalKeyBindingPropertyList() {
-        /*
-        if (internalKeyBindingPropertyList == null) {
-            internalKeyBindingPropertyList = new ListDataModel(internalKeyBindingSession.getAvailableTypesAndProperties(authenticationToken).get(getSelectedInternalKeyBindingType()));
-        }
-        */
+    public ListDataModel<InternalKeyBindingProperty<Serializable>>getInternalKeyBindingPropertyList() {
         return internalKeyBindingPropertyList;
     }
 
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
-    @SuppressWarnings("unchecked")
     public String getPropertyNameTranslated() {
         final String name = ((InternalKeyBindingProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData()).getName();
         final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
@@ -1121,7 +1115,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
-    @SuppressWarnings("unchecked")
     public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
         final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
         if (internalKeyBindingPropertyList != null) {
