@@ -215,11 +215,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private int id;
         private String oid;
         private String displayName;
+        private boolean critical;
+        private String encoding;
         
         public CustomCertExtensionInfo(CertificateExtension extension) {
             this.id = extension.getId();
             this.oid = extension.getOID();
             this.displayName = extension.getDisplayName();
+            this.critical = extension.isCriticalFlag();
+            Properties props = extension.getProperties();
+            this.encoding = props.getProperty("encoding", "");
         }
         public int getId() { return this.id; }
         public void setId(int id) { this.id = id; }
@@ -227,6 +232,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setOid(String oid) { this.oid=oid; }
         public String getDisplayName() { return this.displayName; }
         public void setDisplayName(String displayName) { this.displayName=displayName; }
+        public boolean isCritical() { return this.critical; }
+        public String getEncoding() { return this.encoding; }
     }
     
     private String selectedTab = null;
