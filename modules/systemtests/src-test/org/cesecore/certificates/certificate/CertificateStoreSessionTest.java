@@ -51,6 +51,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -83,6 +86,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
@@ -737,6 +741,36 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
                 certificateStatus5.equals(CertificateStatus.NOT_AVAILABLE));
     }
     
+    @Test
+    public void testLimitedCertificateDataFindByUsername() throws AuthorizationDeniedException {
+        final String username = CertificateStoreSessionTest.class.getName()+"_NonExistent";
+        final String subjectDn = "CN="+username;
+        final BigInteger serialNumber = BigInteger.valueOf(username.hashCode()); // Just some value
+        try {
+            final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, "ManagementCA");
+            
+            final Certificate cacert = cainfo.getCertificateChain().iterator().next();
+            final int caid = cainfo.getCAId();
+            final String issuerDn = cainfo.getSubjectDN();
+            final String cafp = CertTools.getFingerprintAsString(cacert);
+            
+            // Creates limited certificate entry, with ACTIVE status this time.
+            internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, caid, issuerDn, subjectDn, username, serialNumber, CertificateConstants.CERT_ACTIVE, null, -1, cafp);
+            
+            final Collection<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username);
+            assertEquals("Should get list of 1 certificate data wrapper", 1, cdws.size());
+            final CertificateDataWrapper cdw = cdws.iterator().next();
+            assertEquals("Should get the certificate.", subjectDn, cdw.getCertificateData().getSubjectDN());
+            
+            // Even if the end entity doesn't exist, and there's no certificate in the database, it should still work.
+            final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
+            assertEquals("Should get an empty list (since there's no certificate)", 0, certs.size());
+        } catch (CADoesntExistsException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            internalCertStoreSession.removeCertificate(serialNumber);
+        }
+    }
 	
 	// Commented out code.
 	// Keep it here, because it can be nice to have as a reference how this can be done.
