@@ -221,7 +221,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param reason the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
      * 
-     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws CertificateRevokeException (rollback) if certificate does not exist
      */
     boolean setRevokeStatusNoAuth(AuthenticationToken admin, CertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException;
 
