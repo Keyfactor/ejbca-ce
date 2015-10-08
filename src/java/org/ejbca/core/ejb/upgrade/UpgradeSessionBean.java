@@ -115,6 +115,7 @@ import org.ejbca.util.SqlExecutor;
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
 
+    
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
     /** Internal localization of logs and errors */
@@ -162,19 +163,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean upgrade( String dbtype, String sOldVersion, boolean isPost) {
+    public boolean upgrade( String dbtype, String oldVersion, boolean isPost) {
 
         try {
-            log.debug("Upgrading from version=" + sOldVersion);
-            final int oldVersion;
-            {
-                final String[] oldVersionArray = sOldVersion.split("\\."); // Split around the '.'-char
-                oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
-            }
+            log.debug("Upgrading from version=" + oldVersion);
             if (isPost) {
                 return postUpgrade(oldVersion, dbtype);
+            } else {
+                return upgrade(dbtype, oldVersion);
             }
-            return upgrade(dbtype, oldVersion);
         } catch (RuntimeException e) {
         	// We want to log in server.log so we can analyze the error
             log.error("Error thrown during upgrade: ", e);
@@ -184,32 +181,32 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    private boolean postUpgrade(int oldVersion, String dbtype) {
+    private boolean postUpgrade(String oldVersion, String dbtype) {
     	log.debug(">post-upgrade from version: "+oldVersion);
-        if (oldVersion < 311) {
-            log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
+        if (isLesserThan(oldVersion, "3.11")) {
+            log.error("Upgrades directly from versions 3.10.x or earlier are note supported by this version of EJBCA. Please upgrade to a version of 4.0.x first.");
             return false;
         }
         // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
-        if (oldVersion < 400) {
-        	if (!postMigrateDatabase400()) {
+        if (isLesserThan(oldVersion,"4")) {
+        	if (!postMigrateDatabase4_0_0()) {
         		return false;
         	}
         }
         // Upgrade database change between EJBCA 4.0.x and EJBCA 5.0.x if needed, and previous post-upgrade succeeded
-        if ((oldVersion < 500)) {
+        if (isLesserThan(oldVersion, "5")) {
         	if (!postMigrateDatabase500(dbtype)) {
         		return false;
         	}
         }
         
-        if ((oldVersion < 632)) {
+        if (isLesserThan(oldVersion, "6.3.2")) {
             if (!postMigrateDatabase632()) {
                 return false;
             }
         }
         
-        if(oldVersion < 640) {
+        if(isLesserThan(oldVersion, "6.4.0")) {
             try {
                 postMigrateDatabase640();
             } catch (UpgradeFailedException e) {
@@ -220,20 +217,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;
     }
 
-    private boolean upgrade(String dbtype, int oldVersion) {
+    private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (oldVersion < 311) {
+        if (isLesserThan(oldVersion, "3.11")) {
             log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x and higher.");
             return false;
         }
         // Upgrade between EJBCA 3.11.x and EJBCA 4.0.x to 5.0.x
-        if (oldVersion <= 500) {
+        if (isLesserThan(oldVersion, "5")) {
         	if (!migrateDatabase500(dbtype)) {
         		return false;
         	}
         }
 
-        if (oldVersion < 600) {
+        if (isLesserThan(oldVersion, "6")) {
             log.error("(this is not an error) Nothing to upgrade at this point for EJBCA 6.2.");
             log.error("(this is not an error) The upgrade to 6.2 is performed when EJBCA is started.");
         }
@@ -289,7 +286,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * NOTE: You only need to run this if you upgrade a JBoss installation.
      */
-    private boolean postMigrateDatabase400() {
+    private boolean postMigrateDatabase4_0_0() {
     	log.error("(this is not an error) Starting post upgrade from EJBCA 3.11.x to EJBCA 4.0.x");
     	boolean ret = true;
     	upgradeSession.postMigrateDatabase400SmallTables();	// Migrate small tables in a new transaction 
@@ -1025,6 +1022,54 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 			}
 		}
 		return exists;
+    }
+    
+    /**
+     * Takes two versions and compares the first and the second versions to each other
+     * 
+     * @param first a version number
+     * @param second a version number
+     * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
+     */
+    private static boolean isLesserThan(final String first, final String second) {
+        final String delimiter = "\\.";
+        if (first == null) {
+            throw new IllegalArgumentException("First version argument may not be null");
+        }
+        if (second == null) {
+            throw new IllegalArgumentException("Second version argument may not be null");
+        }
+        String[] firstSplit = first.split(delimiter);
+        String[] secondSplit = second.split(delimiter);
+        for (int i = 0; i < Math.max(firstSplit.length, secondSplit.length); i++) {
+            if (i == firstSplit.length) {
+                //We've gotten this far and passed the number of digits in first, so false
+                return true;
+            } else if (i == secondSplit.length) {
+                return false;
+            } else {
+                int firstNumber;
+                int secondNumber;
+                if (StringUtils.isNumeric(firstSplit[i])) {
+                    firstNumber = Integer.valueOf(firstSplit[i]);
+                } else {
+                    throw new IllegalArgumentException(first + " is not a valid version number.");
+                }
+                if (StringUtils.isNumeric(secondSplit[i])) {
+                    secondNumber = Integer.valueOf(secondSplit[i]);
+                } else {
+                    throw new IllegalArgumentException(first + " is not a valid version number.");
+
+                }
+                if (firstNumber == secondNumber) {
+                    continue;
+                } else {
+                    return firstNumber < secondNumber;
+                }
+            }
+        }
+        //Versions must be the same then
+        return false;
     }
 
 }
