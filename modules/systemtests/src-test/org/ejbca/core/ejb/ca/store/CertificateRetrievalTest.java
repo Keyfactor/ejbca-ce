@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.store;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
@@ -32,6 +33,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -439,9 +441,11 @@ public class CertificateRetrievalTest {
             Collection<Certificate> certcollection = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, caSession.getCAInfo(admin, caid).getSubjectDN()));
             assertNotNull("failed to list certs", certcollection);
             
-            certfps = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
-            assertNotNull("failed to list certs", certfps);
-            assertEquals("failed to list certs", 1, certfps.size());
+            final List<CertificateDataWrapper> certDataWrappers = certificateStoreSession.getCertificateDataByUsername(username);
+            assertNotNull("failed to list certs", certDataWrappers);
+            assertEquals("failed to list certs", 1, certDataWrappers.size());
+            assertEquals("cert has wrong username", username, certDataWrappers.get(0).getCertificateData().getUsername());
+            assertNull("certificate object should be null after the data has been removed", certDataWrappers.get(0).getCertificate());
         } finally {
             // Delete user and certificates
             if (fingerprint != null) {
