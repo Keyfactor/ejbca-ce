@@ -384,10 +384,17 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             // Before storing the new certificate, check if single active certificate constraint is active, and if so let's revoke all active and unexpired certificates
             if (certProfile.isSingleActiveCertificateConstraint()) {
-                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDatasBySubjectAndIssuer(endEntityInformation.getCertificateDN(), caSubjectDN, true);
+                final List<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(endEntityInformation.getUsername());
                 for (final CertificateDataWrapper cdw : cdws) {
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
+                    if((cdw.getCertificateData().getStatus() == CertificateConstants.CERT_ACTIVE
+                            || cdw.getCertificateData().getStatus() == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION
+                            || (cdw.getCertificateData().getStatus() == CertificateConstants.CERT_REVOKED 
+                                && cdw.getCertificateData().getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)
+                        ) && cdw.getCertificateData().getExpireDate() > System.currentTimeMillis()) {
+                        //Only revoke active certificates
                     certificateStoreSession.setRevokeStatusNoAuth(admin, cdw.getCertificateData(), new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    }
                 }
             }
             
