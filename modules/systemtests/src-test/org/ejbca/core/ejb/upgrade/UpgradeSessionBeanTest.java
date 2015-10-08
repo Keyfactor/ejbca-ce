@@ -16,6 +16,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -208,5 +210,23 @@ public class UpgradeSessionBeanTest {
            roleManagementSession.remove(alwaysAllowtoken, caAdmRoleName);
        }
    }
+   
+   @Test
+   public void testVersionUtil() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+       assertTrue("Version util did not parse correctly.", isLesserThan("1", "2"));
+       assertFalse("Version util did not parse correctly.", isLesserThan("2", "1"));
+       assertTrue("Version util did not parse correctly.", isLesserThan("1.0", "2.0"));
+       assertTrue("Version util did not parse correctly.", isLesserThan("2.0", "2.1"));
+       assertFalse("Version util did not parse correctly.", isLesserThan("1.0", "1.0"));
+       assertTrue("Version util did not parse correctly.", isLesserThan("2.0.0", "2.1"));
+       assertTrue("Version util did not parse correctly.", isLesserThan("2.1", "2.1.1"));
+   }
+   
+    private boolean isLesserThan(String firstVersion, String secondVersion) throws IllegalAccessException, InvocationTargetException,
+            NoSuchMethodException, SecurityException {
+        Method upgradeMethod = UpgradeSessionBean.class.getDeclaredMethod("isLesserThan", String.class, String.class);
+        upgradeMethod.setAccessible(true);
+        return (Boolean) upgradeMethod.invoke(null, firstVersion, secondVersion);
+    }
     
 }
