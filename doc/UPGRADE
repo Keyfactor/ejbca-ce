@@ -89,6 +89,8 @@ The configuration files 'extendedkeyusage.properties' and 'certextensions.proper
 deployment of the new code. Future changes to Extended Key Usages and Custom Certificate Extensions will have to be done through the 
 AdminGUI under 'System Configuration'->'Extended Key Usages' and 'System Configuration'->'Custom Certificate Extensions'
 
+In the case of Custom Certificate Extension, only the extensions with 'id<ID>.used=true' are imported into the database.
+
 Please note that extensions related to OCSP responses are not effected. Only the handling the content of 'extendedkeyusage.properties' 
 and 'certextensions.properties' files is effected.
 
