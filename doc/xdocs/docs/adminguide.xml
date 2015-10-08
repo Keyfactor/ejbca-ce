@@ -5344,7 +5344,7 @@ The OtherName consists of:
 <p>
 Customized extensions can be added and removed in the 'Custom Certificate Extensions' tab in the 'System Configuration' page in the Admin web.
 A simple extension only containing a static value can be added using the already implemented class "BasicCertificateExtension", but more advanced 
-custom extensions an be made available by implementing the <i>CustomCertificateExtension</i> interface and making the implementation available on the classpath
+custom extensions can be made available by implementing the <i>CustomCertificateExtension</i> interface and making the implementation available on the classpath
 using Java's ServiceLoader (see the BasicCertificateExtension for how to do so). By implementing the marker interface and setting property fields and default values, 
 EJBCA can autogenerate a properties table for the extension.  
 </p>
