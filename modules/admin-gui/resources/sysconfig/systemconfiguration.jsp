@@ -570,6 +570,19 @@ org.cesecore.authorization.control.AccessControlSession
 					<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="35" title="#{web.text.FORMAT_STRING}"/>
 				</f:facet>
 			</h:column>
+			
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CRITICAL}"/></f:facet>
+				<h:outputText value="#{web.text.NO}" rendered="#{!extension.critical}"/>
+				<h:outputText value="#{web.text.YES}" rendered="#{extension.critical}"/>
+			</h:column>
+			
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.ENCODING}"/></f:facet>
+				<h:outputText value="#{extension.encoding}"/>
+			</h:column>
+
+			
 			<h:column>
 				<f:facet name="header"><h:outputText value="#{web.text.ACTION}"/></f:facet>
 				<h:panelGroup>
