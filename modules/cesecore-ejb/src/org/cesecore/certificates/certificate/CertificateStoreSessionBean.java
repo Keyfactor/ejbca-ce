@@ -1411,6 +1411,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final BigInteger serialNumber,
             final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
+        // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL, 
+        // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to 
+        // "CN=limited" instead of an empty string
+        updateLimitedCertificateDataStatus(admin, caId, issuerDn, "CN=limited", null, serialNumber,
+                CertificateConstants.CERT_REVOKED, revocationDate, reasonCode, caFingerprint);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
+            final int status, final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
         if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
             final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
             throw new AuthorizationDeniedException(msg);
@@ -1426,12 +1437,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 limitedCertificateData.setFingerprint(limitedFingerprint);
                 limitedCertificateData.setSerialNumber(serialNumber.toString());
                 limitedCertificateData.setIssuer(issuerDn);
-                // The idea is to set SubjectDN to an empty string. However, since Oracle treats an empty String as NULL, 
-                // and since CertificateData.SubjectDN has a constraint that it should not be NULL, we are setting it to 
-                // "CN=limited" instead of an empty string
-                limitedCertificateData.setSubjectDN("CN=limited");
+                limitedCertificateData.setSubjectDN(subjectDn);
+                limitedCertificateData.setUsername(username);
                 limitedCertificateData.setCertificateProfileId(new Integer(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
-                limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
+                limitedCertificateData.setStatus(status);
                 limitedCertificateData.setRevocationReason(reasonCode);
                 limitedCertificateData.setRevocationDate(revocationDate);
                 limitedCertificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
