@@ -549,13 +549,7 @@ org.cesecore.authorization.control.AccessControlSession
 		
 		<h:dataTable value="#{systemConfigMBean.availableCustomCertExtensions}" var="extension"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
-			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.IDENTIFIER}"/></f:facet>
-				<h:outputText value="#{extension.id}" title="#{extension.id}"/>
-				<f:facet name="footer">
-					<h:outputText id="newCEID" value=""/>
-				</f:facet>
-			</h:column>
+					
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.OID}"/></f:facet>
 				<h:outputText value="#{extension.oid}" title="#{extension.oid}"/>

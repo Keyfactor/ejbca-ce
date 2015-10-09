@@ -212,22 +212,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public class CustomCertExtensionInfo {
-        private int id;
         private String oid;
         private String displayName;
         private boolean critical;
         private String encoding;
         
         public CustomCertExtensionInfo(CertificateExtension extension) {
-            this.id = extension.getId();
             this.oid = extension.getOID();
             this.displayName = extension.getDisplayName();
             this.critical = extension.isCriticalFlag();
             Properties props = extension.getProperties();
             this.encoding = props.getProperty("encoding", "");
         }
-        public int getId() { return this.id; }
-        public void setId(int id) { this.id = id; }
         public String getOid() { return this.oid; }
         public void setOid(String oid) { this.oid=oid; }
         public String getDisplayName() { return this.displayName; }
