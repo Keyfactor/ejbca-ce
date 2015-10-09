@@ -3509,15 +3509,13 @@ public abstract class CertTools {
         ArrayList<Certificate> returnval = new ArrayList<Certificate>();
         Certificate rootca = null;
         HashMap<String, Certificate> cacertmap = new HashMap<String, Certificate>();
-        Iterator<?> iter = certlist.iterator();
-        while (iter.hasNext()) {
+        for(Object possibleCertificate : certlist) {
             Certificate cert = null;
-            Object o = iter.next();
             try {
-                cert = (Certificate) o;
+                cert = (Certificate) possibleCertificate;
             } catch (ClassCastException e) {
                 // This was not a certificate, is it byte encoded?
-                byte[] certBytes = (byte[]) o;
+                byte[] certBytes = (byte[]) possibleCertificate;
                 try {
                     cert = CertTools.getCertfromByteArray(certBytes);
                 } catch (CertificateParsingException e1) {
@@ -3539,10 +3537,19 @@ public abstract class CertTools {
         Certificate currentcert = rootca;
         int i = 0;
         while (certlist.size() != returnval.size() && i <= certlist.size()) {
-            log.debug("Looking in cacertmap for '" + CertTools.getSubjectDN(currentcert) + "'");
+            if (log.isDebugEnabled()) {
+                log.debug("Looking in cacertmap for '" + CertTools.getSubjectDN(currentcert) + "'");
+            }
             Certificate nextcert = (Certificate) cacertmap.get(CertTools.getSubjectDN(currentcert));
             if (nextcert == null) {
-                throw new CertPathValidatorException("Error building certificate path");
+                if(log.isDebugEnabled()) {
+                    log.debug("Dumping keys of CA certificate map:");
+                    for(String issuerDn : cacertmap.keySet()) {
+                        log.debug(issuerDn);
+                    }
+                }
+                throw new CertPathValidatorException("Error building certificate path. Could find certificate with SubjectDN " 
+                        + CertTools.getSubjectDN(currentcert) + " in certificate map. See debug log for details.");
             }
             returnval.add(0, nextcert);
             currentcert = nextcert;
