@@ -106,6 +106,9 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         }
         
         public boolean equals(Encoding otherValue) {
+            if(otherValue == null) {
+                return false;
+            }
             return value.equalsIgnoreCase(otherValue.value());
         }
         
@@ -284,6 +287,11 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         ASN1Encodable toret = null;
         
         Encoding encodingType = Encoding.fromString(encoding);
+        
+        if(encodingType == null) {
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectenc", encoding,
+                    Integer.valueOf(getId())));
+        }
 
         if (!Encoding.ENCODING_DERNULL.equals(encodingType) && (value == null || value.trim().equals(""))) {
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
