@@ -63,15 +63,16 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     }
 
     public boolean isCustomCertExtensionSupported(String oid) {
-        return data.containsKey(oid);
+        return data.containsKey(oid.trim());
     }
     
     public CustomCertificateExtension getCustomCertificateExtension(String oid) {
-        return (CustomCertificateExtension) data.get(oid);
+        return (CustomCertificateExtension) data.get(oid.trim());
     }
     
     public void addCustomCertExtension(CertificateExtension ce) {
-        data.put(ce.getOID(), ce);
+        ce.setOID(ce.getOID().trim());
+        data.put(ce.getOID().trim(), ce);
     }
     
     public void addCustomCertExtension(int id, String oid, String displayName, String classPath, boolean critical, Properties properties) throws CertificateExtentionConfigurationException {
@@ -79,7 +80,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             Class<?> implClass = Class.forName(classPath);
             CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
             certificateExtension.init(id, oid.trim(), displayName, critical, properties);
-            data.put(oid, certificateExtension);
+            data.put(oid.trim(), certificateExtension);
         } catch (ClassNotFoundException e) {
             throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
         } catch (InstantiationException e) {
@@ -90,7 +91,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     }
     
     public void removeCustomCertExtension(String oid) {
-        data.remove(oid);
+        data.remove(oid.trim());
     }
     
     public List<CertificateExtension> getAllAvailableCustomCertificateExtensions() {
@@ -115,7 +116,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         for(Entry<Object, Object> entry : data.entrySet()) {
             if(entry.getValue() instanceof CertificateExtension) {
                 CertificateExtension ce = (CertificateExtension) entry.getValue();
-                properties.setProperty(ce.getOID(), ce.getDisplayName());
+                properties.setProperty(ce.getOID().trim(), ce.getDisplayName());
             }
         }
         return properties;
