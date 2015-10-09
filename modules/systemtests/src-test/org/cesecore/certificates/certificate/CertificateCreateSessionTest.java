@@ -545,8 +545,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         certprof.setSignatureAlgorithm("MD5WithRSA");
         //Make sure that certificate doesn't already exist in database.
         final String username = "signalgtest";
-        for (Certificate certificate : certificateStoreSession.findCertificatesByUsernameAndStatus(username, EndEntityConstants.STATUS_NEW)) {
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
+        for (CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
         }
         try {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
@@ -562,12 +562,12 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             } catch (InvalidAlgorithmException e) {
                 //Expected state, make sure rollback occurred
                 assertEquals("Certificate was created in spite of invalid signature algorithm", 0, certificateStoreSession
-                        .findCertificatesByUsernameAndStatus(username, EndEntityConstants.STATUS_NEW).size());
+                        .findCertificatesByUsername(username).size());
             }
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
-            for (Certificate certificate : certificateStoreSession.findCertificatesByUsernameAndStatus(username, EndEntityConstants.STATUS_NEW)) {
-                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
+            for (CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
             }
         }
     }
