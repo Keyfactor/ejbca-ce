@@ -265,11 +265,11 @@ public class CmpMessageHelper {
         }
         head.setSenderKID(new DEROctetString(keyIdBytes));
         // SHA1
-        AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(digestAlgId);
+        AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlgId));
         // iterations, usually something like 1024
         ASN1Integer iteration = new ASN1Integer(iterationCount);
         // HMAC/SHA1
-        AlgorithmIdentifier macAlg = new AlgorithmIdentifier(macAlgId);
+        AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(macAlgId));
         // We need some random bytes for the nonce
         byte[] saltbytes = createSenderNonce();
         DEROctetString derSalt = new DEROctetString(saltbytes);
