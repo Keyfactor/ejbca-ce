@@ -18,8 +18,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Collections;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
@@ -335,5 +345,16 @@ public class StringToolsTest {
         assertEquals("192.0.2.43, 2001:db8:cafe::17", StringTools.getCleanXForwardedFor("192.0.2.43, 2001:DB8:CAFE::17"));
         assertEquals(null, StringTools.getCleanXForwardedFor(null));
         assertEquals("??c?????a?e????a?e???????????????", StringTools.getCleanXForwardedFor("<script>alert(\"alert!\");</stript>"));
+    }
+    
+    @Test
+    public void testPasswordEncryptionAndObfuscation() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException {
+        String obf = StringTools.obfuscate("foo123");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("Encrypted/decrypted password does not match", "foo123", deobf);
+
+        String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+        String pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe);
+        assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
     }
 }
