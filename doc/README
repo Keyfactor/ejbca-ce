@@ -47,6 +47,8 @@ You can make a nice, deliverable, document by:
 Open question:
 - Is it possible to add our logo somewhere?
 
+TODO: also look at http://weasyprint.org/.
+
 Release notes and upgrade
 -------------------------
 In this directory you will find RELEASE_NOTES with some notes relating to this specific release and
