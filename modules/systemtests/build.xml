@@ -101,6 +101,13 @@
 		<pathelement location="${mod.edition-specific-ejb.lib}"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
+	
+	<path id="manifest.classpath">
+	        <path refid="compile-ejb.classpath"/>
+			<path location="${ejbca.home}/src/java"/>
+			<path location="${ejbca.home}/src"/>
+			<path location="${cesecore-common.dir}/build/classes"/>
+		</path>
 
 	<target name="build" description="Build this module" depends="cesecore-ejb, va-ejbca-war, build-libs, compile-tests" /> 
 	
@@ -129,7 +136,11 @@
 		<antcall target="systemtest-compile-interfaces" />
 		<antcall target="systemtest-compile-src" />	
 		<jar destfile="${mod.systemtest-interface.lib}" basedir="${build.interface.dir}"/>
-		<jar destfile="${mod.systemtest-ejb.lib}" basedir="${build.src.dir}"/>
+		<buildservicemanifest interface="org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+							    		file="${build.src.dir}" classpath="manifest.classpath"/>
+		<jar destfile="${mod.systemtest-ejb.lib}" basedir="${build.src.dir}">	
+			<!--<fileset dir="${build.src.dir}" includes="META-INF/**/*"/>-->
+		</jar>
 	</target>
 
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
