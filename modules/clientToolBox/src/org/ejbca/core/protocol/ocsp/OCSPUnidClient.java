@@ -315,7 +315,7 @@ public class OCSPUnidClient {
     	}
 
 		final RespID id = brep.getResponderId();
-		final DERTaggedObject to = (DERTaggedObject)id.toASN1Object().toASN1Primitive();
+		final DERTaggedObject to = (DERTaggedObject)id.toASN1Primitive().toASN1Primitive();
 		final RespID respId;
         final X509CertificateHolder[] chain = brep.getCerts();
         JcaX509CertificateConverter converter = new JcaX509CertificateConverter();

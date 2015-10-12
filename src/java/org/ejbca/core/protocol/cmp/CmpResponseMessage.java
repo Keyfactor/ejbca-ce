@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -319,7 +320,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
                         pbeIterationCount);
             } else {
-                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digest));
+                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digest)));
                 PKIHeader header = myPKIHeader.build();
                 myPKIMessage = new PKIMessage(header, myPKIBody);                        
                 responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digest, provider);
