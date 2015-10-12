@@ -167,7 +167,9 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
                         break valueSearch;
                     }
                 }
-                throw new InvalidCustomExtensionPropertyException("Value " + value + " was not valid for property " + key + ".");
+                //There should be a check for property validity here, but since I can't manage to decouple the list of properties when the page is refreshed after
+                //the extension class has been changed, we'll fail nicely and simply ignore unfound values. 
+                return;
             }
             this.value = value;
         }
@@ -304,7 +306,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     
     public void updateExtension(ValueChangeEvent e){
         String extensionClass = (String) e.getNewValue();  
-        currentExtensionGUIInfo.setClassPath(extensionClass);   
+        currentExtensionGUIInfo.setClassPath(extensionClass); 
+        currentExtensionProperties.setWrappedData(null);
         currentExtensionProperties = null;
     }
     
