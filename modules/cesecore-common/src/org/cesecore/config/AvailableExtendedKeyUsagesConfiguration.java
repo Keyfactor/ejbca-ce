@@ -59,18 +59,19 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     }
     
     public boolean isExtendedKeyUsageSupported(String oid) {
-        return data.containsKey(oid);
+        return data.containsKey(oid.trim());
     }
     
     public void addExtKeyUsage(String oid, String name) {
-        data.put(oid, name);
+        data.put(oid.trim(), name);
     }
     
     public void removeExtKeyUsage(String oid) {
-        data.remove(oid);
+        data.remove(oid.trim());
     }
     
     public String getExtKeyUsageName(String oid) {
+        oid = oid.trim();
         String name = (String) data.get(oid);
         if(name == null) {
             name = oid;

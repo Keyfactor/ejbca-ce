@@ -68,7 +68,7 @@ public abstract class CertificateExtension implements Serializable {
 	 * @param The unique OID of the extension
 	 */
 	public void setOID(String oID) {
-		this.oID = oID;
+		this.oID = oID.trim();
 	}
 	
 	/**
@@ -119,7 +119,7 @@ public abstract class CertificateExtension implements Serializable {
 	 */
 	public void init(int id, String oID, String displayName, boolean criticalFlag, Properties extensionProperties){
 		this.id = id;
-		this.oID = oID;
+		this.oID = oID.trim();
 		this.displayName = displayName;
 		this.criticalFlag = criticalFlag;
 		this.properties = extensionProperties;
