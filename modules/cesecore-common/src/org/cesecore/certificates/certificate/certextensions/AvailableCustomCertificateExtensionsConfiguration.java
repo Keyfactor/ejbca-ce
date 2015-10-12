@@ -71,7 +71,6 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     }
     
     public void addCustomCertExtension(CertificateExtension ce) {
-        ce.setOID(ce.getOID().trim());
         data.put(ce.getOID().trim(), ce);
     }
     
