@@ -159,12 +159,12 @@ To renew only the CA certificate using the same keys you simply press the button
 Also if it is a subCA with the rootCA in the same EJBCA instance the root CA must also be on-line. 
 </p>
 <p>
-To renew the CA keys you check the box "Renew keys" and give the CA token authentication code. After this you simply press "Renew CA". 
+To renew the CA keys, set 'Next CA key' to '- Generate new key using KeySequence -'. After this you simply press "Renew CA". 
 <br/>Renewing the keys will not always work if you are using an HSM. It may work with some HSMs and not work with others. 
 <br/>You can report success and failures to us.
 </p>
 <p>When using an HSM you can also make the renewal of keys manually. Simply generate new keys on the HSM with whatever tools you used the first time (preferably the EJBCA cli tools), and then edit the CA token properties
-to use the new key. After the new key has been configured you can simply press "Renew CA" (without the renew keys checkbox), to generate your new CA certificate.
+to use the new key. After the new key has been configured you can simply press "Renew CA" (do not set 'Next CA key' to '- Generate new key using KeySequence -'), to generate your new CA certificate.
 </p>
 </subsection>
 
