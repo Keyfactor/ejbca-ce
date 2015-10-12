@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
@@ -118,13 +119,13 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		PKIMessage myPKIMessage = null;
 
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
-		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(getPbeDigestAlg()));
+		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(getPbeDigestAlg())));
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
 			if ((signCertChain != null) && (signCertChain.size() > 0) && (signKey != null)) {
 				try {
-				    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
+				    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlg)));
 				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
 				} catch (CertificateEncodingException e) {
