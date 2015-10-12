@@ -139,7 +139,7 @@
 				</h:panelGroup>
 			</f:facet>
 			<h:commandLink action="#{rolesManagedBean.deleteAdmin}" title="#{web.text.DELETE}"
-				styleClass="commandLink" onclick="return confirm('#{web.text.AREYOUSURE}');" >
+				styleClass="commandLink" onclick="return confirm('#{web.text.AREYOUSURE}');" immediate="true">
 				<h:outputText value="#{web.text.DELETE}"/>
 				<f:param name="primaryKey" value="#{admin.primaryKey}"/>
 			</h:commandLink>
