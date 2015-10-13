@@ -353,8 +353,12 @@ public class StringToolsTest {
         String deobf = StringTools.deobfuscate(obf);
         assertEquals("Encrypted/decrypted password does not match", "foo123", deobf);
 
+        // Using an encrypted string from older version of EJBCA, using BC 1.52
+        String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c");
+        assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+
         String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
-        String pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe);
+        pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe);
         assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
     }
 }
