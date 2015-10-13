@@ -160,7 +160,9 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
                     + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
             defaultCliUserData.setStatus(EndEntityConstants.STATUS_GENERATED);
-            entityManager.persist(defaultCliUserData);
+            if (entityManager.find(UserData.class, defaultCliUserData.getUsername())==null) {
+                entityManager.persist(defaultCliUserData);
+            }
         } else {
             log.debug("AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' already exists in " + SUPERADMIN_ROLE + ".");            
         }

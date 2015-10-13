@@ -51,7 +51,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
     @Test
     public void testGetOids() throws Exception {
         
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration();
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
         
         ekuConfig.addExtKeyUsage("2.5.29.37.0", "EKU_PKIX_ANYEXTENDEDKEYUSAGE");
         ekuConfig.addExtKeyUsage("1.3.6.1.5.5.7.3.21", "EKU_PKIX_SSHCLIENT");
@@ -114,7 +114,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
     @Test
     public void testAddingManyExtendedKeyUsages() throws Exception {
         
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration();
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
         
         String oid, name;
         for(int i=0; i<150; i++) {

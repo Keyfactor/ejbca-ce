@@ -44,7 +44,6 @@ import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -66,7 +65,6 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
@@ -89,6 +87,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -146,6 +145,7 @@ public class EjbcaWebBean implements Serializable {
     private final RoleAccessSessionLocal roleAccessSession = ejbLocalHelper.getRoleAccessSession();
     private final RoleManagementSessionLocal roleManagementSession = ejbLocalHelper.getRoleManagementSession();
     private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
+    private final UpgradeSessionLocal upgradeSession = ejbLocalHelper.getUpgradeSession();
     private final UserDataSourceSessionLocal userDataSourceSession = ejbLocalHelper.getUserDataSourceSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
@@ -272,13 +272,8 @@ public class EjbcaWebBean implements Serializable {
                     currentadminpreference.getSecondaryLanguage());
             initialized = true;
         }
-        
-        // Read ExtendedKeyUsages from conf/extendedkeyusage.properties
-        fillExtendedKeyUsagesFromFile();
-        
         // Reset the DisplayName of CustomCertExtensions to the value in the language file if available
         translateCustomCertExtensionsDisplayNames();
-
         return globalconfiguration;
     }
     
@@ -798,6 +793,10 @@ public class EjbcaWebBean implements Serializable {
         return KeyTools.isUsingExportableCryptography();
     }
 
+    public boolean isPostUpgradeRequired() {
+        return upgradeSession.isPostUpgradeNeeded();
+    }
+
     /**
      * @return The host's name or "unknown" if it could not be determined.
      */
@@ -1094,59 +1093,7 @@ public class EjbcaWebBean implements Serializable {
         availableExtendedKeyUsagesConfig = ekuConfig;
         informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
     }
-    
-    private void fillExtendedKeyUsagesFromFile() {
-        
-        // If the file has already been removed, no need to go further
-        final URL url = ConfigurationHolder.class.getResource("/conf/extendedkeyusage.properties");
-        if(url == null) {
-            return;
-        }
-            
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableExtendedKeyUsagesConfiguration();
-        
-        // If the file has already been read once, don't read it again so as not to overwrite changes the 
-        // administrator might already have made.
-        if(ekuConfig.isConfigurationInitialized()) {
-            return;
-        }
-            
-        final Configuration conf = ConfigurationHolder.instance();
-        final String ekuname = "extendedkeyusage.name.";
-        final String ekuoid = "extendedkeyusage.oid.";
-        int j=0;
-        for (int i = 0; i < 255; i++) {
-            final String oid = conf.getString(ekuoid+i);
-            if (oid != null) {
-                String name = conf.getString(ekuname+i);
-                if (name != null) {
-                    // A null value in the properties file means that we should not use this value, so set it to null for real
-                    if (!name.equalsIgnoreCase("null")) {
-                        String readableName = getText(name);
-                        ekuConfig.addExtKeyUsage(oid, readableName);
-                        j++;
-                    }
-                } else {
-                    log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
-                }
-            } 
-            // No eku with a certain number == continue trying next, we will try 0-255.
-        }
-        if(log.isDebugEnabled()) {
-            log.debug("Read " + j + " extended key usages from the configurations file");
-        }
 
-        AlwaysAllowLocalAuthenticationToken alwaysAllowedAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("LoadingExtendedKeyUsages"));
-        try {
-            globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, ekuConfig);
-        } catch (AuthorizationDeniedException e) {
-            log.error("Recieved an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
-        }
-        availableExtendedKeyUsagesConfig = ekuConfig;
-        informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
-        
-    }
-    
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************

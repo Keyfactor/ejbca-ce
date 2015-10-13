@@ -291,6 +291,8 @@
 		<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java"/>
 		<include name="org/ejbca/core/ejb/config/CMPConfigurationCache.java"/>
 		<include name="org/ejbca/core/ejb/config/GlobalConfigurationCache.java"/>
+		<include name="org/ejbca/core/ejb/config/GlobalUpgradeConfiguration.java"/>
+		<include name="org/ejbca/core/ejb/config/GlobalUpgradeConfigurationCache.java"/>
 		<include name="org/ejbca/core/ejb/config/ScepConfigurationCache.java"/>
 		<include name="org/ejbca/core/ejb/config/AvailableExtendedKeyUsagesConfigurationCache.java"/>
 		<include name="org/ejbca/core/ejb/config/AvailableCustomCertificateExtensionsConfigurationCache.java"/>

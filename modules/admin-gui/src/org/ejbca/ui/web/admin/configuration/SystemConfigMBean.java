@@ -598,7 +598,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ArrayList<EKUInfo> ekus = new ArrayList<EKUInfo>();
         Map<String, String> allEKU = availableExtendedKeyUsagesConfig.getAllEKUOidsAndNames();
         for (Entry<String, String> entry : allEKU.entrySet()) {
-            ekus.add(new EKUInfo(entry.getKey(), entry.getValue()));
+            ekus.add(new EKUInfo(entry.getKey(), getEjbcaWebBean().getText(entry.getValue())));
         }
         Collections.sort(ekus, new Comparator<EKUInfo>() {
             @Override
@@ -884,15 +884,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public List<String> getAvailableTabs() {
         AccessControlSession accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
         final List<String> availableTabs = new ArrayList<String>();
-        if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Certificate Transparency Logs");
             availableTabs.add("Administrator Preferences");
         }
-        if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
             availableTabs.add("Extended Key Usages");
         }
-        if(accessControlSession.isAuthorized(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
             availableTabs.add("Custom Certificate Extensions");
         }
         return availableTabs;

@@ -15,78 +15,76 @@ package org.ejbca.core.ejb.config;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
- * Class Holding cache variable for available extended key usages configuration.
- * 
- * Needed because EJB spec does not allow volatile, non-final fields in session beans.
+ * Cache of upgrade configuration.
  * 
  * @version $Id$
  */
-public class AvailableExtendedKeyUsagesConfigurationCache implements ConfigurationCache {
+public class GlobalUpgradeConfigurationCache implements ConfigurationCache {
 
     /**
-     * Cache variable containing the available extended key usages configuration. This cache may be
-     * unsynchronized between multiple instances of EJBCA, but is common to all
+     * This cache may be unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
-    private volatile ConfigurationBase cache = null;
-    /** help variable used to control that updates are not performed to often. */
-    private volatile long lastUpdateTime = -1;  
+    private volatile GlobalUpgradeConfiguration configurationCache = null;
+    /** help variable used to control that update isn't performed to often. */
+    private volatile long lastupdatetime = -1;  
+    
+    public GlobalUpgradeConfigurationCache() {}
 
     @Override
     public boolean needsUpdate() {
-        return cache==null || lastUpdateTime + EjbcaConfiguration.getCacheGlobalConfigurationTime() < System.currentTimeMillis();
+        if (configurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
+            return false;
+        }
+        return true;
     }
 
-    @Override
     public void clearCache() {
-        cache = null;
+        configurationCache = null;
     }
 
     @Override
     public String getConfigId() {
-        if (cache==null) {
-            return getNewConfiguration().getConfigurationId();
-        }
-        return cache.getConfigurationId();
+        return GlobalUpgradeConfiguration.CONFIGURATION_ID;
     }
 
     @Override
     public void saveData() {
-       cache.saveData();
+       configurationCache.saveData();
     }
 
     @Override
     public ConfigurationBase getConfiguration() {
-        return cache;
+        return configurationCache;
     }
-    
+
     @SuppressWarnings("rawtypes")
     @Override
-    public ConfigurationBase getConfiguration(final HashMap data) {
-        final ConfigurationBase returnval = new AvailableExtendedKeyUsagesConfiguration(false);
+    public ConfigurationBase getConfiguration(HashMap data) {
+        ConfigurationBase returnval = new GlobalUpgradeConfiguration();
         returnval.loadData(data);
         return returnval;
     }
 
     @Override
     public void updateConfiguration(final ConfigurationBase configuration) {
-        cache = configuration;
-        lastUpdateTime = System.currentTimeMillis();
+        this.configurationCache = (GlobalUpgradeConfiguration) configuration;
+        lastupdatetime = System.currentTimeMillis();
+        
     }
     
     @Override
     public ConfigurationBase getNewConfiguration() {
-       return new AvailableExtendedKeyUsagesConfiguration();
+       return new GlobalUpgradeConfiguration();      
     }
 
     @Override
     public Properties getAllProperties() {
-        return ((AvailableExtendedKeyUsagesConfiguration)cache).getAsProperties();
+        return configurationCache.getAsProperties();
     }
 }
