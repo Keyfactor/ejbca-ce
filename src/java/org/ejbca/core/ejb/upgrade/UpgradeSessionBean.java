@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -41,6 +42,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -74,6 +76,11 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationData;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
@@ -86,10 +93,13 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
+import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
@@ -115,11 +125,11 @@ import org.ejbca.util.SqlExecutor;
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
 
-    
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
     /** Internal localization of logs and errors */
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
+    private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal upgrade"));
     
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -153,6 +163,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
     private UpgradeSessionLocal upgradeSession;
 
@@ -161,13 +173,104 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	upgradeSession = sessionContext.getBusinessObject(UpgradeSessionLocal.class);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public String getLastUpgradedToVersion() {
+        return getGlobalUpgradeConfiguration().getUpgradedToVersion();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public String getLastPostUpgradedToVersion() {
+        return getGlobalUpgradeConfiguration().getPostUpgradedToVersion();
+    }
+
+    private void setLastUpgradedToVersion(final String version) {
+        final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
+        guc.setUpgradedToVersion(version);
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, guc);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private void setLastPostUpgradedToVersion(final String version) {
+        final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
+        guc.setPostUpgradedToVersion(version);
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, guc);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private GlobalUpgradeConfiguration getGlobalUpgradeConfiguration() {
+        return (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+    }
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean upgrade( String dbtype, String oldVersion, boolean isPost) {
+    public boolean performUpgrade() {
+        final String dbType = DatabaseConfiguration.getDatabaseName();
+        final String currentVersion = InternalConfiguration.getAppVersionNumber();
+        String last = getLastUpgradedToVersion();
+        if (last==null) {
+            // Start auto-detection, since no version info was present
+            // This auto-detection was added for EJBCA 6.4.0
+            if (!checkColumnExists500()) {
+                // The CAId column was removed during post upgrade to EJBCA 5.0
+                last = "5.0";
+                if (globalConfigurationSession.findByConfigurationId(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)!=null) {
+                    last = "6.2.4";
+                }
+                setLastUpgradedToVersion(last);
+                if (!publisherSession.isOldVaPublisherPresent()) {
+                    // For all practical purposes, this version can used as post-upgrade version
+                    setLastPostUpgradedToVersion("6.4.0");
+                }
+            } else {
+                // We are on EJBCA 4.0 or 3.11 or even earlier
+                log.error("Unable to detect version of database content and perform automatic upgrade from the version you are running. Run 'ant upgrade' manually.");
+                return false;
+            }
+        }
+        boolean ret = true;
+        if (isLesserThan(last, currentVersion)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Starting upgrade.");
+            }
+            ret = upgradeSession.upgrade(dbType, last, false);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Upgrade is not needed.");
+            }
+        }
+        return ret;
+    }
 
+    /* TODO: Currently not used, but should be invokable from the Admin GUI */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public boolean performPostUpgrade() {
+        final String dbType = DatabaseConfiguration.getDatabaseName();
+        final String currentVersion = InternalConfiguration.getAppVersionNumber();
+        final String last = getLastPostUpgradedToVersion();
+        boolean ret = true;
+        if (isLesserThan(last, currentVersion)) {
+            ret = upgradeSession.upgrade(dbType, last, false);
+        }
+        return ret;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public boolean upgrade(String dbtype, String oldVersion, boolean isPost) {
         try {
             log.debug("Upgrading from version=" + oldVersion);
             if (isPost) {
+                // TODO: We might want to check that upgrade has run ok before allowing this.
+                // ...on the other hand... we wont allow it via the GUI so it might be good to be able to force upgrade retries
                 return postUpgrade(oldVersion, dbtype);
             } else {
                 return upgrade(dbtype, oldVersion);
@@ -181,42 +284,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    private boolean postUpgrade(String oldVersion, String dbtype) {
-    	log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "3.11")) {
-            log.error("Upgrades directly from versions 3.10.x or earlier are note supported by this version of EJBCA. Please upgrade to a version of 4.0.x first.");
-            return false;
-        }
-        // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
-        if (isLesserThan(oldVersion,"4")) {
-        	if (!postMigrateDatabase4_0_0()) {
-        		return false;
-        	}
-        }
-        // Upgrade database change between EJBCA 4.0.x and EJBCA 5.0.x if needed, and previous post-upgrade succeeded
-        if (isLesserThan(oldVersion, "5")) {
-        	if (!postMigrateDatabase500(dbtype)) {
-        		return false;
-        	}
-        }
-        
-        if (isLesserThan(oldVersion, "6.3.2")) {
-            if (!postMigrateDatabase632()) {
-                return false;
-            }
-        }
-        
-        if(isLesserThan(oldVersion, "6.4.0")) {
-            try {
-                postMigrateDatabase640();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
         if (isLesserThan(oldVersion, "3.11")) {
@@ -225,18 +292,79 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         // Upgrade between EJBCA 3.11.x and EJBCA 4.0.x to 5.0.x
         if (isLesserThan(oldVersion, "5")) {
-        	if (!migrateDatabase500(dbtype)) {
+        	if (!upgradeSession.migrateDatabase500(dbtype)) {
         		return false;
         	}
+            setLastUpgradedToVersion("5.0");
         }
-
-        if (isLesserThan(oldVersion, "6")) {
-            log.error("(this is not an error) Nothing to upgrade at this point for EJBCA 6.2.");
-            log.error("(this is not an error) The upgrade to 6.2 is performed when EJBCA is started.");
+        if (isLesserThan(oldVersion, "6.0")) {
+            // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
+            ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
+            setLastUpgradedToVersion("6.0");
         }
+        if (isLesserThan(oldVersion, "6.2.4")) {
+            try {
+                upgradeSession.migrateDatabase624();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.2.4");
+        }
+        if (isLesserThan(oldVersion, "6.3.1")) {
+            // Upgrade the old Validation Authority Publisher in Community Edition (leave it be in Enterprise for the sake of 100% uptime)
+            if (!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
+                publisherSession.adhocUpgradeTo6_3_1_1();
+            }
+            setLastUpgradedToVersion("6.3.1");
+        }
+        if (isLesserThan(oldVersion, "6.4")) {
+            try {
+                upgradeSession.migrateDatabase640();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.4");
+        }
+        setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
 
+    private boolean postUpgrade(String oldVersion, String dbtype) {
+        log.debug(">post-upgrade from version: "+oldVersion);
+        if (isLesserThan(oldVersion, "3.11")) {
+            log.error("Upgrades directly from versions 3.10.x or earlier are note supported by this version of EJBCA. Please upgrade to a version of 4.0.x first.");
+            return false;
+        }
+        // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
+        if (isLesserThan(oldVersion,"4")) {
+            if (!postMigrateDatabase4_0_0()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("4.0");
+        }
+        // Upgrade database change between EJBCA 4.0.x and EJBCA 5.0.x if needed, and previous post-upgrade succeeded
+        if (isLesserThan(oldVersion, "5")) {
+            if (!postMigrateDatabase500(dbtype)) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("5.0");
+        }
+        if (isLesserThan(oldVersion, "6.3.2")) {
+            if (!postMigrateDatabase632()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("6.3.2");
+        }
+        // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded()
+        //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
+        return true;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public boolean isPostUpgradeNeeded() {
+        return isLesserThan(getLastPostUpgradedToVersion(), "6.3.2");
+    }
 
     /**
      * Called from other migrate methods, don't call this directly, call from an
@@ -395,7 +523,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
-    private boolean migrateDatabase500(String dbtype) {
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)   // Until our roles API can handle transactions properly
+    @Override
+    public boolean migrateDatabase500(String dbtype) {
     	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
     	
@@ -628,9 +758,49 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
         return true;
-        
-    }      
-    
+    }
+
+    private void importExtendedKeyUsagesFromFile() {
+        final URL url = ConfigurationHolder.class.getResource("/conf/extendedkeyusage.properties");
+        AvailableExtendedKeyUsagesConfiguration ekuConfig;
+        if (url == null) {
+            // Create using the default template of the current version if no such file exists
+            ekuConfig = (AvailableExtendedKeyUsagesConfiguration) 
+                    globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        } else {
+            ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
+            final Configuration conf = ConfigurationHolder.instance();
+            final String ekuname = "extendedkeyusage.name.";
+            final String ekuoid = "extendedkeyusage.oid.";
+            int j=0;
+            for (int i = 0; i < 255; i++) {
+                final String oid = conf.getString(ekuoid+i);
+                if (oid != null) {
+                    String name = conf.getString(ekuname+i);
+                    if (name != null) {
+                        // A null value in the properties file means that we should not use this value, so set it to null for real
+                        if (!name.equalsIgnoreCase("null")) {
+                            // Set the untranslated name (since the translation is actually only available in the Admin GUI)
+                            ekuConfig.addExtKeyUsage(oid, name);
+                            j++;
+                        }
+                    } else {
+                        log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
+                    }
+                } 
+                // No eku with a certain number == continue trying next, we will try 0-255.
+            }
+            if(log.isDebugEnabled()) {
+                log.debug("Read " + j + " extended key usages from the configurations file");
+            }
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, ekuConfig);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Recieved an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
+        }
+    }
+
     /**
      * This method adds read-only rules that were created for the new read-only admin in https://jira.primekey.se/browse/ECA-4344. It makes sure that any roles which previously
      * had access to the affected resources retain read rights (in case those roles should be restricted as a result of this ticket). 
@@ -663,7 +833,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         Arrays.asList(newRule));
                 }
             }
-            
             // Any roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
             List<RoleData> publisherRoles = roleMgmtSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITPUBLISHER, false);
             for (RoleData role : publisherRoles) {
@@ -712,24 +881,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         Arrays.asList(newRule));
                 }
             }
-
         } catch (RoleNotFoundException e) {
             throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
         }
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private RoleData addAccessRulesToRole(final RoleData role,
-            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException { 
-        
+    private RoleData addAccessRulesToRole(final RoleData role, final Collection<AccessRuleData> accessRules) throws RoleNotFoundException { 
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
             throw new RoleNotFoundException(msg);
         }
-        
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.AddNewAccessRulestoRoles"));
-        
         try {
             roleMgmtSession.addAccessRulesToRole(admin, result, accessRules);
         } catch (AuthorizationDeniedException e) {
@@ -738,7 +902,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         logAccessRulesAdded(admin, role.getRoleName(), accessRules);
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
-        
         return result;
     }
     
@@ -769,7 +932,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
         }
-
     }
 
     private void logAccessRulesRemoved(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> removedRules) {
@@ -830,23 +992,47 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         return true;
-        
     }
     
+    /**
+     * EJBCA 6.2.4 introduced default responder configuration in the database.
+     * 
+     * @throws UpgradeFailedException if upgrade fails (rolls back)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase624() throws UpgradeFailedException {
+        // Check if there the default responder has been set. If not, try setting it using the old value.
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (StringUtils.isEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
+            globalConfiguration.setOcspDefaultResponderReference(OcspConfiguration.getDefaultResponderId());
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new UpgradeFailedException(e);
+            }
+            globalConfigurationSession.flushConfigurationCache(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        }
+        log.error("(This is not an error) Completed upgrade procedure to 6.2.4");
+    }
+
     /**
      * EJBCA 6.4.0 introduces new sun rules to System Configuration in regards to Custom OIDs and EKUs.
      * 
      * Access rules have also been added for read only rights to parts of the GUI. 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    private void postMigrateDatabase640() throws UpgradeFailedException {
-    	
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase640() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
         // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
-        addEKUAndCustomCertExtensionsAccessRulestoRoles();     
+        addEKUAndCustomCertExtensionsAccessRulestoRoles();  
+        importExtendedKeyUsagesFromFile();
         // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
         addReadOnlyRules();
-        log.error("(This is not an error) Completed post upgrade procedure to 6.4.0");
+        log.error("(This is not an error) Completed upgrade procedure to 6.4.0");
     }
     
     /**
@@ -858,7 +1044,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * to allow for 100% uptime upgrades.
      */
     private boolean postMigrateDatabase500(String dbtype) {
-
         log.error("(this is not an error) Starting post upgrade from EJBCA 4.0.x to ejbca 5.0.x");
         boolean ret = true;
 
@@ -882,7 +1067,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     log.error("Error upgrading certificate policy: ", e);
                 }
             }
-            
         }
         // post-upgrade "change CertificatePolicy from ejbca class to cesecore class in CAs profiles that have that defined?
         // fix CAs that don't have classpath for extended CA services
@@ -939,11 +1123,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *                                                  Public Web Users
      */
     private void removeOldRoles500() {
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.removeOldRoles"));
         final String defaultRoleName = "DEFAULT";
         final String tempSuperAdminRoleName = "Temporary Super Administrator Group";
         final String publicWebRoleName = "Public Web Users";
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.removeOldRoles"));
-
         try {
             RoleData defaultRole = roleAccessSession.findRole(defaultRoleName);
             if (defaultRole != null) {
@@ -1031,9 +1214,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @param second a version number
      * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
      */
-    private static boolean isLesserThan(final String first, final String second) {
+    private boolean isLesserThan(final String first, final String second) {
         final String delimiter = "\\.";
         if (first == null) {
+            if (second != null) {
+                return true;    // No version is before a specified version
+            }
             throw new IllegalArgumentException("First version argument may not be null");
         }
         if (second == null) {
@@ -1048,28 +1234,26 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } else if (i == secondSplit.length) {
                 return false;
             } else {
-                int firstNumber;
-                int secondNumber;
-                if (StringUtils.isNumeric(firstSplit[i])) {
-                    firstNumber = Integer.valueOf(firstSplit[i]);
-                } else {
-                    throw new IllegalArgumentException(first + " is not a valid version number.");
+                String firstString = firstSplit[i].replaceAll("[^0-9].*", "");    // Remove trailing Beta2, _alpha1 etc
+                if (firstString.isEmpty()) {
+                    firstString = "0";  // Treat ".x" as ".0"
                 }
-                if (StringUtils.isNumeric(secondSplit[i])) {
-                    secondNumber = Integer.valueOf(secondSplit[i]);
-                } else {
-                    throw new IllegalArgumentException(first + " is not a valid version number.");
-
+                String secondString = secondSplit[i].replaceAll("[^0-9].*", "");
+                if (secondString.isEmpty()) {
+                    secondString = "0";
                 }
-                if (firstNumber == secondNumber) {
-                    continue;
+                if (StringUtils.isNumeric(firstString) && StringUtils.isNumeric(secondString)) {
+                    final int firstNumber = Integer.valueOf(firstString);
+                    final int secondNumber = Integer.valueOf(secondString);
+                    if (firstNumber != secondNumber) {
+                        return firstNumber < secondNumber;
+                    }
                 } else {
-                    return firstNumber < secondNumber;
+                    throw new IllegalArgumentException("Unable to parse version numbers.");
                 }
             }
         }
         //Versions must be the same then
         return false;
     }
-
 }

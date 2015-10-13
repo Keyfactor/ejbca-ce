@@ -10,10 +10,9 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.ui.web.admin.configuration;
+package org.ejbca.core.ejb;
 
-import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -25,17 +24,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.EJB;
 import javax.ejb.FinderException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditDevicesConfig;
 import org.cesecore.audit.enums.EventStatus;
@@ -56,41 +57,41 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 
 /**
- * Servlet used to start services by calling the ServiceSession.load() at startup<br>
+ * Singleton used to start services and perform upgrade tasks at startup.
  * 
  * @version $Id$
  */
-public class StartServicesServlet extends HttpServlet {
+@Singleton
+@Startup
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)  // No external access to this bean
+@TransactionManagement(TransactionManagementType.BEAN)  // By legacy we create a global config here this way
+public class StartupSingletonBean implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(StartServicesServlet.class);
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    private static final long serialVersionUID = 1L;
+    private final Logger log = Logger.getLogger(StartupSingletonBean.class);
+    private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Application internal"));
     
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -109,89 +110,39 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
-    private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
-    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
     @EJB
     private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
-    private PublisherSessionLocal publisherSession;
+    private UpgradeSessionLocal upgradeSession;
     @EJB
     private ServiceSessionLocal serviceSession;
-    @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
-
-
-
 
     @Resource
     private UserTransaction tx;
-    
-    /**
-     * Method used to log service shutdown.
-	 * @see javax.servlet.GenericServlet#destroy()
-	 **/
-    @Override
-	public void destroy() {
-        String iMsg = intres.getLocalizedMessage("startservice.shutdown");
+
+    @PreDestroy
+    private void shutdown() {
+        String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservice.shutdown");
         log.info(iMsg);
-
-        // Making an EJB call to audit log shutdown is not possible, since the EJBs will shut down before the servlet. 
-        // This should be possible to handle  with EJB 3.1
-        /*
-        @Singleton
-        @Startup
-        public class StartupBean {
-
-        @PostConstruct
-        private void startup() { ... }
-
-        @PreDestroy
-        private void shutdown() { ... }
-        ...
-        }
-        */
         // Make a log row that EJBCA is stopping
-//        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("StartServicesServlet.destroy"));
-//        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-//        details.put("msg", iMsg);
-//        logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);                
-        super.destroy();
-	}
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        ejbcaInit();
+        //final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        //details.put("msg", iMsg);
+        //logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, null, null, details);                
     }
 
-    @Override
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException, ServletException {
-        log.trace(">doPost()");
-        doGet(req, res);
-        log.trace("<doPost()");
-    } //doPost
-
-    @Override
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        log.trace(">doGet()");
-    	res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
-        log.trace("<doGet()");
-    } // doGet
-
-    @SuppressWarnings("deprecation")
-    private void ejbcaInit() {
-    	
+    @PostConstruct
+    private void startup() {
         //
         // Run all "safe" initializations first, 
         // i.e. those that does not depend on other running beans, components etc
 
-        
         // Log a startup message
-        String iMsg = intres.getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
+        String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
         log.info(iMsg);
 
         // Reinstall BC-provider to help re-deploys to work
@@ -212,48 +163,46 @@ public class StartServicesServlet extends HttpServlet {
         // crashes from not finding the BC-provider.
         int waitTime = 0;
         while (Security.getProvider("BC") == null && waitTime++ < 5) {
-        	log.info("Waiting for BC provider to be installed..");
-        	try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				log("Waiting for BC provider failed.", e);
-				break;
-			}
+            log.info("Waiting for BC provider to be installed..");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                log.error("Waiting for BC provider failed.", e);
+                break;
+            }
         }
 
         // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
         
-		log.trace(">init CryptoTokenFactory just to load those classes that are available");
-		CryptoTokenFactory.instance();
-		
+        log.trace(">init CryptoTokenFactory just to load those classes that are available");
+        CryptoTokenFactory.instance();
+        
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
         log.trace(">init loading CAs into cache");
         try {
-        	caAdminSession.initializeAndUpgradeCAs();
+            caAdminSession.initializeAndUpgradeCAs();
         } catch (Exception e) {
-        	log.error("Error creating CAAdminSession: ", e);
+            log.error("Error creating CAAdminSession: ", e);
         }
-
-    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("StartServicesServlet.init"));
 
         // Make a log row that EJBCA is starting
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", iMsg);
-        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, getHostName(), null, details);				
+        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, getHostName(), null, details);               
 
         // Log the type of security audit configuration that we have enabled.
         log.trace(">init security audit device configuration");
         final Set<String> loggerIds = AuditDevicesConfig.getAllDeviceIds();
         if (loggerIds.isEmpty()) {
-            final String msg = intres.getLocalizedMessage("startservices.noauditdevices");
+            final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservices.noauditdevices");
             log.info(msg);
         } else {
-            if (!checkForProtectedAudit(admin, loggerIds)) {
+            if (!checkForProtectedAudit(authenticationToken, loggerIds)) {
                 // Make a log row that no integrity protected device is configured
-                final String msg = intres.getLocalizedMessage("startservices.noprotectedauditdevices");
+                final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservices.noprotectedauditdevices");
                 final Map<String, Object> logdetails = new LinkedHashMap<String, Object>();
                 logdetails.put("msg", msg);
-                logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, admin.toString(), null, null, null, logdetails);                
+                logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, logdetails);                
             }
         }
 
@@ -263,26 +212,26 @@ public class StartServicesServlet extends HttpServlet {
 
         log.trace(">init calling ServiceSession.load");
         try {
-        	serviceSession.load();
-		} catch (Exception e) {
-			log.error("Error init ServiceSession: ", e);
-		}
-		
+            serviceSession.load();
+        } catch (Exception e) {
+            log.error("Error init ServiceSession: ", e);
+        }
+        
         // Load Certificate profiles at startup to upgrade them if needed
         log.trace(">init loading CertificateProfile to check for upgrades");
         try {
-        	certificateProfileSession.initializeAndUpgradeProfiles();
+            certificateProfileSession.initializeAndUpgradeProfiles();
         } catch (Exception e) {
-        	log.error("Error initializing certificate profiles: ", e);
+            log.error("Error initializing certificate profiles: ", e);
         }
         
         // Load EndEntity profiles at startup to upgrade them if needed
         // And add this node to list of nodes
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
-        	endEntityProfileSession.initializeAndUpgradeProfiles();        	
+            endEntityProfileSession.initializeAndUpgradeProfiles();         
         } catch (Exception e) {
-        	log.error("Error initializing end entity profiles: ", e);
+            log.error("Error initializing end entity profiles: ", e);
         }
         
         // Add this node's hostname to list of nodes
@@ -298,7 +247,7 @@ public class StartServicesServlet extends HttpServlet {
                     log.debug("Adding this node ("+hostname+") to the list of nodes");
                     nodes.add(hostname);
                     config.setNodesInCluster(nodes);
-                    globalConfigurationSession.saveConfiguration(admin, config);
+                    globalConfigurationSession.saveConfiguration(authenticationToken, config);
                 }
             } finally {
                 tx.commit();
@@ -326,26 +275,8 @@ public class StartServicesServlet extends HttpServlet {
         } catch (ClassNotFoundException e) {
             log.error("Failure during match value initialization", e);
         }
-        // Check if there the default responder has been set. If not, try setting it using the old value.
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (StringUtils.isEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
-            globalConfiguration.setOcspDefaultResponderReference(OcspConfiguration.getDefaultResponderId());
-            try {
-                globalConfigurationSession.saveConfiguration(admin, globalConfiguration);
-                globalConfigurationSession.flushConfigurationCache(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException(
-                        "An always allow token was not allowed access. Likely cause is that the database hasn't been configured.");
-            }
-        }
-        // Upgrade the old Validation Authority Publisher in Community Edition (leave it be in Enterprise for the sake of 100% uptime)
-        if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
-            publisherSession.adhocUpgradeTo6_3_1_1();
-        }
-        
-        // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
-        ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
+        // Perform (automatic) upgrades, if needed
+        upgradeSession.performUpgrade();
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
         // Start CA certificate cache reload
@@ -355,10 +286,10 @@ public class StartServicesServlet extends HttpServlet {
         // Verify that the EJB CLI user (if present) cannot be used to generate certificates
         final String cliUsername = EjbcaConfiguration.getCliDefaultUser();
         try {
-            final EndEntityInformation defaultCliUser = endEntityAccessSession.findUser(admin, cliUsername);
+            final EndEntityInformation defaultCliUser = endEntityAccessSession.findUser(authenticationToken, cliUsername);
             if (defaultCliUser!=null && defaultCliUser.getStatus()==EndEntityConstants.STATUS_NEW) {
                 try {
-                    endEntityManagementSession.setUserStatus(admin, cliUsername, EndEntityConstants.STATUS_GENERATED);
+                    endEntityManagementSession.setUserStatus(authenticationToken, cliUsername, EndEntityConstants.STATUS_GENERATED);
                 } catch (ApprovalException e) {
                     log.warn("The EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please correct the status manually. Failed with: " + e.getMessage());
                 } catch (FinderException e) {
@@ -370,7 +301,6 @@ public class StartServicesServlet extends HttpServlet {
         } catch (AuthorizationDeniedException e) {
             log.warn("Unable to check if the EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please check and correct the status manually. Failed with: " + e.getMessage());
         }
-        
     }
     
 
@@ -446,15 +376,14 @@ public class StartServicesServlet extends HttpServlet {
      * @return The host's name or null if it could not be determined.
      */
     private String getHostName() {
-    	String hostname = null;
-    	try {
-	        InetAddress addr = InetAddress.getLocalHost();    
-	        // Get hostname
-	        hostname = addr.getHostName();
-	    } catch (UnknownHostException e) {
-	    	log.error("Hostname could not be determined", e);
-	    }
-	    return hostname;
-    }
-    
+        String hostname = null;
+        try {
+            InetAddress addr = InetAddress.getLocalHost();    
+            // Get hostname
+            hostname = addr.getHostName();
+        } catch (UnknownHostException e) {
+            log.error("Hostname could not be determined", e);
+        }
+        return hostname;
+    }    
 }

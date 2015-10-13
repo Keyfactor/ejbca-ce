@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
@@ -102,6 +103,7 @@ public interface EjbBridgeSessionLocal {
 	ServiceSessionLocal getServiceSession();
 	SignSessionLocal getSignSession();
 	CertificateCreateSessionLocal getCertificateCreateSession();
+    UpgradeSessionLocal getUpgradeSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	EndEntityManagementSessionLocal getEndEntityManagementSession();
 	WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();

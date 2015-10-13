@@ -1023,6 +1023,7 @@
 					<include name="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionLocal.java" />
 				</fileset>
 				<fileset dir="${src.dir}">
+					<include name="org/ejbca/core/ejb/config/GlobalUpgradeConfiguration.java"/>
 					<include name="org/ejbca/core/ejb/upgrade/*SessionBean.java"/>
 					<include name="org/ejbca/util/SqlExecutor.java"/>
 					<!-- Upgrade of extended CA services in EJBCA 5.0 -->
