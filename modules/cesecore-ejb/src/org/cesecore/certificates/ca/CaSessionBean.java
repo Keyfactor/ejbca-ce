@@ -590,6 +590,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         CAData cadata = null;
         if (caid != -1) {
             cadata = upgradeAndMergeToDatabase(CAData.findById(entityManager, Integer.valueOf(caid)));
+            if (log.isDebugEnabled()) {
+                log.debug("Unable to get CAData with id generated from SubjectDN.");
+            }
         } else {
             cadata = upgradeAndMergeToDatabase(CAData.findByName(entityManager, name));
         }

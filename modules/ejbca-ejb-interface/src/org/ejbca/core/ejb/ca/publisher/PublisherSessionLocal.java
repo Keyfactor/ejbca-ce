@@ -114,4 +114,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @return the number of upgraded publishers
      */
     int adhocUpgradeTo6_3_1_1();
+
+    /** @return true if the old VA publisher is still present in the database and upgrade is needed. */
+    boolean isOldVaPublisherPresent();
 }

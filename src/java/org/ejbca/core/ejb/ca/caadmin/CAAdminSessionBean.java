@@ -263,6 +263,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caAdminSession = sessionContext.getBusinessObject(CAAdminSessionLocal.class);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void initializeAndUpgradeCAs() {
         final List<CAData> caDatas = CAData.findAll(entityManager);
@@ -297,7 +298,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void initializeAndUpgradeCA(Integer caid) throws CADoesntExistsException {
-        caSession.getCAInfoInternal(caid);
+        caSession.getCAInfoInternal(caid, null, false);
     }
 
     @Override

@@ -21,8 +21,17 @@ package org.ejbca.config;
 public class DatabaseConfiguration {
 
 	public static final String CONFIG_DATASOURCENAME = "datasource.jndi-name";
+    public static final String CONFIG_DATABASENAME = "database.name";
 
 	public static String getFullDataSourceJndiName(){
 		return InternalConfiguration.getDataSourceJndiNamePrefix() + EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAME);
 	}
+
+    public static String getDatabaseName(){
+        final String ret = EjbcaConfigurationHolder.getString(CONFIG_DATABASENAME);
+        if (ret==null) {
+            return "hsqldb";
+        }
+        return ret;
+    }
 }

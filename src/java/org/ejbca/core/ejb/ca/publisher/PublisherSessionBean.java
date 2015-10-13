@@ -776,4 +776,27 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return numberOfUpgradedPublishers;
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isOldVaPublisherPresent() {
+        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
+            // be on the classpath
+            XMLDecoder decoder;
+            try {
+                decoder = new XMLDecoder(new ByteArrayInputStream(publisherData.getData().getBytes("UTF8")));
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+            HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
+            decoder.close();
+            // Handle Base64 encoded string values
+            @SuppressWarnings("unchecked")
+            HashMap<Object, Object> data = new Base64GetHashMap(h);
+            if (PublisherConst.TYPE_VAPUBLISHER == ((Integer) data.get(BasePublisher.TYPE)).intValue()) {
+                return true;
+            }           
+        }
+        return false;
+    }
 }

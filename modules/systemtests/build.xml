@@ -208,7 +208,7 @@
 		<!-- Workaround for tests using BatchMakeP12 -->
 		<mkdir dir="${build.test.dir}/conf"/>
 		<!-- Workaround for tests TestCertificateProfile -->
-		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />
+		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>
 		<!-- Workaround for tests TestCertificateProfile -->
 		<property name="runone-internal.classpath" value="systemtests.classpath"/>
 		<echo message="runone-internal.classpath=${runone-internal.classpath}"/>
@@ -243,7 +243,7 @@
 		<!-- Workaround for tests using BatchMakeP12 -->
 		<mkdir dir="${build.test.dir}/conf"/>
 		<!-- Workaround for tests TestCertificateProfile -->
-		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />
+		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>
 		<!-- Workaround for tests TestCertificateProfile -->
 		<echo message="Checking if the CMP TCP listener is listening on port 127.0.0.1:5587... (will result in additional tests being run)"/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">

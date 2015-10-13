@@ -28,11 +28,24 @@ import org.cesecore.roles.RoleNotFoundException;
 @Local
 public interface UpgradeSessionLocal  extends UpgradeSession{
 
-	/** For internal user from UpgradeSessionBean only! */
-	void postMigrateDatabase400SmallTables();
-	/** For internal user from UpgradeSessionBean only! */
-	void postMigrateDatabase400HardTokenData(List<String> subSet);
-	
+	/** Perform upgrades that can run side by side with older EJBCA versions. */
+	boolean performUpgrade();
+
+	/** Perform upgrades that require all nodes connected to the same database to run the current EJBCA version. */
+    boolean performPostUpgrade();
+
+    /** @return true if post upgrade is required */
+    boolean isPostUpgradeNeeded();
+
+    /** @return EJBCA version of the database content that can be upgraded while running older EJBCAs on the same database. */
+    String getLastUpgradedToVersion();
+
+    /** @return EJBCA version of the database content that can be upgraded after all nodes run the same EJBCA version. */
+    String getLastPostUpgradedToVersion();
+
+    /** @return true if the AdminGroupData.cAId column still exists which indicates that this is EJBCA 4.0 or earlier. */
+    boolean checkColumnExists500();
+
     /**
      * Required because the real method in RoleManagementSessionBean requires authorization to manipulate rules.
      * A bit of a catch-22. 
@@ -43,5 +56,15 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
      */
 	RoleData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final RoleData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException;
-	
+
+    /** For internal user from UpgradeSessionBean only! */
+    void postMigrateDatabase400SmallTables();
+    /** For internal user from UpgradeSessionBean only! */
+    void postMigrateDatabase400HardTokenData(List<String> subSet);
+    /** For internal user from UpgradeSessionBean only! */
+	boolean migrateDatabase500(String dbtype);
+    /** For internal user from UpgradeSessionBean only! */
+    void migrateDatabase624() throws UpgradeFailedException;
+    /** For internal user from UpgradeSessionBean only! */
+    void migrateDatabase640() throws UpgradeFailedException;	
 }

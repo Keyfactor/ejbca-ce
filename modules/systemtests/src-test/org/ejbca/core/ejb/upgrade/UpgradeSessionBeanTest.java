@@ -94,7 +94,7 @@ public class UpgradeSessionBeanTest {
         roleManagementSession.addSubjectsToRole(alwaysAllowtoken, readOnlyRole, Arrays.asList(new AccessUserAspectData(readOnlyRoleName, 1,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")));
         try {
-            upgradeSession.upgrade(null, "6.3.2", true);
+            upgradeSession.upgrade(null, "6.3.2", false);
             RoleData upgradedRole = roleAccessSession.findRole(readOnlyRoleName);
             assertTrue(
                     "Role was not upgraded with rule " + StandardRules.CAVIEW.resource(),
@@ -162,7 +162,7 @@ public class UpgradeSessionBeanTest {
        caAdmRole = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, caAdmRole, oldCaAdmAccessRules);
        
        try {
-           upgradeSession.upgrade(null, "6.3.2", true);
+           upgradeSession.upgrade(null, "6.3.2", false);
            
            // Verify that sysConfigRole's access rules contained rules to edit available extended key usages and custom certificate extensions
            RoleData upgradedSysConfigRole = roleAccessSession.findRole(sysConfigRoleName);
@@ -212,7 +212,7 @@ public class UpgradeSessionBeanTest {
    }
    
    @Test
-   public void testVersionUtil() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+   public void testVersionUtil() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException, IllegalArgumentException, InstantiationException {
        assertTrue("Version util did not parse correctly.", isLesserThan("1", "2"));
        assertFalse("Version util did not parse correctly.", isLesserThan("2", "1"));
        assertTrue("Version util did not parse correctly.", isLesserThan("1.0", "2.0"));
@@ -223,10 +223,10 @@ public class UpgradeSessionBeanTest {
    }
    
     private boolean isLesserThan(String firstVersion, String secondVersion) throws IllegalAccessException, InvocationTargetException,
-            NoSuchMethodException, SecurityException {
+            NoSuchMethodException, SecurityException, IllegalArgumentException, InstantiationException {
         Method upgradeMethod = UpgradeSessionBean.class.getDeclaredMethod("isLesserThan", String.class, String.class);
         upgradeMethod.setAccessible(true);
-        return (Boolean) upgradeMethod.invoke(null, firstVersion, secondVersion);
+        return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
     
 }

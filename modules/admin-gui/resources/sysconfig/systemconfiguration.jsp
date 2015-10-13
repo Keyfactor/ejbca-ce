@@ -520,7 +520,7 @@ org.cesecore.authorization.control.AccessControlSession
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
-				<h:outputText value="#{eku.name}"/>
+				<h:outputText value="#{web.text[eku.name]}"/>
 				<f:facet name="footer">
 					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}" size="35" title="#{web.text.FORMAT_STRING}"/>
 				</f:facet>

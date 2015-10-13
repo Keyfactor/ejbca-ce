@@ -165,13 +165,6 @@
       <load-on-startup>99</load-on-startup>
    </servlet>
    <servlet>
-      <description><![CDATA[Servlet used to start services by calling the ServiceSession.load()]]></description>
-      <display-name>StartServicesServlet</display-name>
-      <servlet-name>StartServices</servlet-name>
-      <servlet-class>org.ejbca.ui.web.admin.configuration.StartServicesServlet</servlet-class>
-      <load-on-startup>1</load-on-startup>
-   </servlet>
-   <servlet>
       <servlet-name>LogOutServlet</servlet-name>
       <servlet-class>org.ejbca.ui.web.admin.LogOutServlet</servlet-class>
       <load-on-startup>99</load-on-startup>

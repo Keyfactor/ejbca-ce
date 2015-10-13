@@ -286,6 +286,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
         
         public boolean needsUpdate(final String configId) {
+            if (caches.get(configId)==null) {
+                return true;
+            }
             return caches.get(configId).needsUpdate();
         }
         

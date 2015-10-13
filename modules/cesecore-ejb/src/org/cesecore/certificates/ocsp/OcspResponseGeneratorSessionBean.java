@@ -59,6 +59,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -940,7 +941,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isTraceEnabled()) {
             log.trace(">cancelTimers");
         }
-        @SuppressWarnings("unchecked")
         final Collection<Timer> timers = timerService.getTimers();
         for (final Timer timer : timers) {
             final int currentTimerId = ((Integer)timer.getInfo()).intValue();
@@ -958,7 +958,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.trace(">getTimerCount");
         }
         int count = 0;
-        @SuppressWarnings("unchecked")
         final Collection<Timer> timers = timerService.getTimers();
         for (final Timer timer : timers) {
             final int currentTimerId = ((Integer)timer.getInfo()).intValue();
@@ -985,7 +984,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         Timer ret = null;
         if (interval > 0) {
-            ret = timerService.createTimer(interval, id);
+        	// Create non-persistent timer that fires once
+            ret = timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
             if (log.isTraceEnabled()) {
                 log.trace("<addTimer: " + id + ", interval: " + interval + ", " + ret.getNextTimeout().toString());
             }
@@ -1702,6 +1702,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Deprecated //Remove this method once upgrading from 5-6 is dropped
     public void adhocUpgradeFromPre60(char[] activationPassword) {
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(

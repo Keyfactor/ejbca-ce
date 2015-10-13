@@ -27,6 +27,9 @@
 	<noscript>
 	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("JAVASCRIPTDISABLED") %></div>
 	</noscript>
+<%	if (ejbcawebbean.isPostUpgradeRequired()) { %>
+	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("POSTUPGRADE_REQUIRED") %></div>
+<%	} %>
 </div> 
 
 <h3 id="welcome"><%= ejbcawebbean.getText("WELCOME") + " "%> <c:out value="<%= ejbcawebbean.getUsersCommonName() %>"/> <%= " " + ejbcawebbean.getText("TOEJBCA")%></h3> 

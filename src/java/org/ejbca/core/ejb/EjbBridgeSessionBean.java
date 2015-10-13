@@ -56,6 +56,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
@@ -105,6 +106,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
+    @EJB UpgradeSessionLocal upgradeSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB EndEntityManagementSessionLocal endEntityManagementSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
@@ -144,6 +146,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
 	@Override public SignSessionLocal getSignSession() { return signSession; }
+    @Override public UpgradeSessionLocal getUpgradeSession() { return upgradeSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return endEntityManagementSession; }
 	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
