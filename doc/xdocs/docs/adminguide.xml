@@ -163,8 +163,9 @@ To renew the CA keys, set 'Next CA key' to '- Generate new key using KeySequence
 <br/>Renewing the keys will not always work if you are using an HSM. It may work with some HSMs and not work with others. 
 <br/>You can report success and failures to us.
 </p>
-<p>When using an HSM you can also make the renewal of keys manually. Simply generate new keys on the HSM with whatever tools you used the first time (preferably the EJBCA cli tools), and then edit the CA token properties
-to use the new key. After the new key has been configured you can simply press "Renew CA" (do not set 'Next CA key' to '- Generate new key using KeySequence -'), to generate your new CA certificate.
+<p>When using an HSM you can also make the renewal of keys manually. Simply generate new keys on the HSM with whatever 
+tools you used the first time (preferably the EJBCA cli tools) and select the newly generated keys as the 'Next CA key'. 
+Press 'Renew CA' to generate your new CA certificate.
 </p>
 </subsection>
 
