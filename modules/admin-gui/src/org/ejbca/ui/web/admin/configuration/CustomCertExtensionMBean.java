@@ -58,7 +58,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         public CurrentExtensionGUIInfo(CustomCertificateExtension extension) {
             this.id = extension.getId();
             this.oid = extension.getOID();
-            this.displayName = extension.getDisplayName();
+            this.displayName = getEjbcaWebBean().getText(extension.getDisplayName());
             this.critical = extension.isCriticalFlag();      
             setExtension(extension);
         }

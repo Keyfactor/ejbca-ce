@@ -791,13 +791,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     String note = oid + " (No longer used. Please unselect this option)";
                     ret.add(new SelectItem(oid, note));
                 } else {
-                    ret.add(new SelectItem(oid, cceConfig.getCustomCertificateExtension(oid).getDisplayName()));
+                    ret.add(new SelectItem(oid, getEjbcaWebBean().getText(cceConfig.getCustomCertificateExtension(oid).getDisplayName())));
                 }
             }
 
         } else {
             for (final CertificateExtension current : cceConfig.getAllAvailableCustomCertificateExtensions()) {
-                ret.add(new SelectItem(current.getOID(), current.getDisplayName()));
+                ret.add(new SelectItem(current.getOID(), getEjbcaWebBean().getText(current.getDisplayName())));
             }            
             for (String oid : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(oid)) {
