@@ -105,7 +105,6 @@ public class EjbcaWebBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
-    private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants.
     public static final int AUTHORIZED_RA_VIEW_RIGHTS = 0;
@@ -272,8 +271,7 @@ public class EjbcaWebBean implements Serializable {
                     currentadminpreference.getSecondaryLanguage());
             initialized = true;
         }
-        // Reset the DisplayName of CustomCertExtensions to the value in the language file if available
-        translateCustomCertExtensionsDisplayNames();
+        
         return globalconfiguration;
     }
     
@@ -1118,35 +1116,6 @@ public class EjbcaWebBean implements Serializable {
         availableCustomCertExtensionsConfig = cceConfig;
         informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
-
-    private void translateCustomCertExtensionsDisplayNames() {
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-                globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        List<CertificateExtension> allExts = cceConfig.getAllAvailableCustomCertificateExtensions();
-        boolean changed = false;
-        for(CertificateExtension ext : allExts) {
-            Properties extProperties = ext.getProperties();
-            if(extProperties.containsKey("translatable")) {
-                ext.setDisplayName(getText(ext.getDisplayName()));
-                extProperties.remove("translatable");
-                cceConfig.addCustomCertExtension(ext);
-                changed = true;
-            }
-        }
-        
-        if(changed) {
-            AlwaysAllowLocalAuthenticationToken alwaysAllowedAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("LoadingCustomCertificateExtensions"));
-            try {
-                globalConfigurationSession.saveConfiguration(alwaysAllowedAdmin, cceConfig);
-            } catch (AuthorizationDeniedException e) {
-                log.error("Recieved an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());      
-            }
-            availableCustomCertExtensionsConfig = cceConfig;
-            informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
-        }
-        
-    }
-
     
     
     //*******************************
