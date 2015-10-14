@@ -288,14 +288,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         if (certProfilesBean.getViewOnly()) {
             for(String oid : usedEKUs) {
                 if(ekus.containsKey(oid)) {
-                    ret.add(new SelectItem(oid, ekus.get(oid)));
+                    ret.add(new SelectItem(oid, getEjbcaWebBean().getText(ekus.get(oid))));
                 } else {
                     ret.add(new SelectItem(oid, oid));
                 }
             }
         } else {
             for (Entry<String, String> eku : ekus.entrySet()) {
-                ret.add(new SelectItem(eku.getKey(), eku.getValue()));
+                ret.add(new SelectItem(eku.getKey(), getEjbcaWebBean().getText(eku.getValue())));
             }           
             for (String oid : usedEKUs) {
                 if (!ekus.containsKey(oid)) {
