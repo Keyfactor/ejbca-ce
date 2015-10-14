@@ -44,6 +44,35 @@
   	label.subItem {
   		padding-left: 10px;
   	}
+  	input.selectButton {
+        margin-right: 5px;
+  	    border: 1px solid #666;
+  	    border-radius: 6px;
+  	    padding: 5px;
+  	    background: #fff;
+  	    color: #000;
+  	    /* Parsed if supported by the browser */
+  	    background-color: Window;
+  	    background-color: -moz-Field;
+  	    color: WindowText;
+  	    color: -moz-FieldText;
+  	}
+  	input.selectButton.selected {
+  	    border: 2px solid #666;
+  	    padding: 4px;
+  	    background: #66c;
+  	    color: #fff;
+  	    /* Parsed if supported by the browser */
+  	    background-color: Highlight;
+  	    color: HighlightText;
+  	}
+  	input.selectButton:hover {
+  	    background: #99f;
+  	    color: #fff;
+  	    border-color: #fff;
+  	    background-color: Highlight;
+  	    color: HighlightText;
+  	}
   </style>
 </head>
 <f:view>
@@ -72,13 +101,13 @@
 
 		<h:outputLabel for="selecttype" value="#{web.text.TYPE}"/>
 		<h:panelGroup id="selecttype">
-			<h:commandButton rendered="#{certProfileBean.typeEndEntityAvailable}" disabled="#{certProfileBean.typeEndEntity or certProfilesBean.viewOnly}"
+			<h:commandButton rendered="#{certProfileBean.typeEndEntityAvailable}" disabled="#{certProfileBean.typeEndEntity or certProfilesBean.viewOnly}" styleClass="selectButton #{certProfileBean.typeEndEntity?'selected':'notSelected'}"
 				action="#{certProfileBean.setTypeEndEntity}" value="#{certProfileBean.typeEndEntity?'✓':' '}#{web.text.ENDENTITY}"/>
-			<h:commandButton rendered="#{certProfileBean.typeSubCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeSubCa or certProfilesBean.viewOnly}"
+			<h:commandButton rendered="#{certProfileBean.typeSubCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeSubCa or certProfilesBean.viewOnly}" styleClass="selectButton #{certProfileBean.typeSubCa?'selected':''}"
 				action="#{certProfileBean.setTypeSubCa}" value="#{certProfileBean.typeSubCa?'✓':' '}#{web.text.SUBCA}"/>
-			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeRootCa or certProfilesBean.viewOnly}"
+			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeRootCa or certProfilesBean.viewOnly}" styleClass="selectButton #{certProfileBean.typeRootCa?'selected':''}"
 				action="#{certProfileBean.setTypeRootCa}" value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}"/>
-			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeHardToken or certProfilesBean.viewOnly}"
+			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeHardToken or certProfilesBean.viewOnly}"  styleClass="selectButton #{certProfileBean.typeHardToken?'selected':'notSelected'}"
 				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.HARDTOKEN}"/>
 		</h:panelGroup>
 
