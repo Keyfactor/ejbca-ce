@@ -44,45 +44,6 @@
   	label.subItem {
   		padding-left: 10px;
   	}
-  	input.selectButton {
-        margin-right: 5px;
-  	    border: 1px solid #666;
-  	    border-radius: 6px;
-  	    padding: 1px 5px;
-  	    background: #fff;
-  	    color: #000;
-  	    /* Parsed if supported by the browser */
-  	    background-color: Window;
-  	    background-color: -moz-Field;
-  	    color: WindowText;
-  	    color: -moz-FieldText;
-  	}
-  	input.selectButton.largeSelectButton {
-  	    padding: 5px;
-  	}
-  	input.selectButton.disabled {
-  	    color: GrayText;
-  	    border-color: GrayText;
-  	}
-  	input.selectButton.selected {
-  	    border: 2px solid #666;
-  	    padding: 0px 4px;
-  	    background: #66c;
-  	    color: #fff;
-  	    /* Parsed if supported by the browser */
-  	    background-color: Highlight;
-  	    color: HighlightText;
-  	}
-  	input.selectButton.largeSelectButton.selected {
-  	    padding: 5px;
-  	}
-  	input.selectButton.enabled:hover {
-  	    background: #99f;
-  	    color: #fff;
-  	    border-color: #fff;
-  	    background-color: Highlight;
-  	    color: HighlightText;
-  	}
   </style>
 </head>
 <f:view>
