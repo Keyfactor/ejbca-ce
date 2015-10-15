@@ -732,10 +732,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @return true if the upgrade was successful and false otherwise
      */
     private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
-        Collection<RoleData> roles = roleAccessSession.getAllRoles();
+        Collection<RoleData> roles = new ArrayList<RoleData>(roleAccessSession.getAllRoles());
         for (RoleData role : roles) {
             final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
-            final Collection<AccessRuleData> rules = rulemap.values();
+            final Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>(rulemap.values());
             for (AccessRuleData rule : rules) {
                 if (StringUtils.equals(StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), rule.getAccessRuleName()) && 
                         rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
