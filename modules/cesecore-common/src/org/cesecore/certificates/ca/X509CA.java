@@ -1662,6 +1662,10 @@ public class X509CA extends CA implements Serializable {
         JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
         rec.setProvider(cryptoToken.getEncProviderName());
         rec.setContentProvider("BC");
+        // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
+        // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
+        // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+        rec.setMustProduceEncodableUnwrappedKey(true);            
         byte[] recdata = recipient.getContent(rec);
         ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
         log.info("Decrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
@@ -1677,6 +1681,10 @@ public class X509CA extends CA implements Serializable {
         JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(keyAlias));
         rec.setProvider(cryptoToken.getSignProviderName());
         rec.setContentProvider("BC");
+        // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
+        // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
+        // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+        rec.setMustProduceEncodableUnwrappedKey(true);            
         byte[] recdata = recipient.getContent(rec);
         log.info("Decrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
         return recdata;
