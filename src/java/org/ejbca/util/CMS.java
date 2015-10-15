@@ -103,6 +103,10 @@ public class CMS {
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(key);
             rec.setProvider(providerName);
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
+            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
+            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
+            // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+            rec.setMustProduceEncodableUnwrappedKey(true);            
             final CMSTypedStream recData = recipientInformation.getContentStream(rec);
             final InputStream ris = recData.getContentStream();
             fromInToOut(ris, bos);

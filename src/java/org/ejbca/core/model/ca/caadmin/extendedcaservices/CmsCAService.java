@@ -304,9 +304,13 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				if (recipient != null) {
 	                JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(this.privKey);
 	                // Provider for decrypting the symmetric key 
+                    // We can use a different provider for decrypting the content, for example of we used a PKCS#11 provider above we could use the BC provider below
 	                rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
 	                rec.setProvider(cryptoToken.getSignProviderName());
-	                // We can use a different provider for decrypting the content, for example of we used a PKCS#11 provider above we could use the BC provider below
+	                // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
+	                // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
+	                // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+	                rec.setMustProduceEncodableUnwrappedKey(true);	                
 	                resp = recipient.getContent(rec);
 				}
 			}
