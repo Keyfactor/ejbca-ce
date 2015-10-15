@@ -248,6 +248,11 @@ client support is rare and the certSignKey will always be used.</li>
 <li>testKey: Key used by health-check to verify that the Crypto Token is usable. Usually a short key for speedy connection checks.</li>
 </ul>
 </p>
+<p>
+If no crypto token has been specified, a soft (PKCS#12) crypto token can be automatically generated, and will have the same name as the CA. This crypto token will be 
+set to automatically activate, and will have the default password <i>foo123</i>. This crypto token will also have the <i>NODEFAULTPWD</i> set as false, which allows the crypto token
+to be manipulated without using a password. Changing the password (via the CLI) or turning off auto activation will also invalidate the using the default password. 
+</p>
 </subsubsection>
 
 <subsubsection name="Extended Services Key Specification">

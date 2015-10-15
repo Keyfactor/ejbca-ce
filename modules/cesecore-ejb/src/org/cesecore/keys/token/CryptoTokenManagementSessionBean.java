@@ -358,6 +358,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             if (newAuthenticationCode == null) {
                 // When no new pin is supplied, we will not modify the key-store and just remove the current auto-activation pin
                 cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+                // We'll also remove the default password option
+                cryptoTokenProperties.put(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
                 cryptoToken.setProperties(cryptoTokenProperties);
             } else {
                 try {

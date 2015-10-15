@@ -59,4 +59,10 @@ public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagem
         CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
         return cryptoToken.getSignProviderName();
     }
+
+    @Override
+    public void flushCache() {
+       cryptoTokenSession.flushCache();
+        
+    }
 }
