@@ -36,4 +36,6 @@ public interface CryptoTokenManagementProxySessionRemote {
     PrivateKey getPrivateKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException;
     
     String getSignProviderName(int cryptoTokenId);
+    
+    void flushCache();
 }
