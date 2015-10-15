@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -87,9 +86,8 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 @Startup
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)  // No external access to this bean
 @TransactionManagement(TransactionManagementType.BEAN)  // By legacy we create a global config here this way
-public class StartupSingletonBean implements Serializable {
+public class StartupSingletonBean {
 
-    private static final long serialVersionUID = 1L;
     private final Logger log = Logger.getLogger(StartupSingletonBean.class);
     private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Application internal"));
     
