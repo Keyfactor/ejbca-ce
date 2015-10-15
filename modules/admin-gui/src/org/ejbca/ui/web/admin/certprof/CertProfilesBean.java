@@ -22,8 +22,10 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -131,7 +133,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             final List<CertificateProfileItem> items = new ArrayList<CertificateProfileItem>();
             final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
             final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
-            final Map<Integer, CertificateProfile> allCertificateProfiles = certificateProfileSession.getAllCertificateProfiles();
 
             //Always include
             authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
@@ -147,42 +148,17 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             if (usingHardwareTokens) {
                 authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
                         CertificateConstants.CERTTYPE_HARDTOKEN));
-            }/*
-            // Add fixed certificate profiles.
-            List<Integer> allFixedCertificateProfileIds = new ArrayList<Integer>();
-            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
-            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
-            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
-            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
-            allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
-            if (usingHardwareTokens) {
-                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
-                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
-                allFixedCertificateProfileIds.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
-            }*/
+            }
             final List<Integer> profileIdsWithMissingCA = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(getAdmin());
             final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
-           /* for (Integer profileId : allFixedCertificateProfileIds) {
-                CertificateProfile certificateProfile = allCertificateProfiles.get(profileId);
-                if (certificateProfile != null && !usingHardwareTokens && certificateProfile.getType() == CertificateConstants.CERTTYPE_HARDTOKEN) {
-                    continue;
-                }
-                final boolean missingCa = profileIdsWithMissingCA.contains(profileId);
-                final boolean fixed = isCertProfileFixed(profileId);
-                final String name = idToNameMap.get(profileId);
-                items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
-            }*/
+            final Set<Integer> existing = new HashSet<Integer>();
             for(Integer profileId : authorizedProfileIds) {
-                //A
-                CertificateProfile certificateProfile = allCertificateProfiles.get(profileId);
-                if (certificateProfile != null && !usingHardwareTokens && certificateProfile.getType() == CertificateConstants.CERTTYPE_HARDTOKEN) {
-                    continue;
-                }
                 final boolean missingCa = profileIdsWithMissingCA.contains(profileId);
                 final boolean fixed = isCertProfileFixed(profileId);
                 final String name = idToNameMap.get(profileId);
-                items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
+                if (existing.add(profileId)) { // Don't add twice!
+                    items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
+                }
             }
             // Sort list by name
             Collections.sort(items, new Comparator<CertificateProfileItem>() {
