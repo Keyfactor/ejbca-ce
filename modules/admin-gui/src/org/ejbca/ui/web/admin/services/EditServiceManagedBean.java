@@ -342,12 +342,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 certificateProfiles.put(profileName.toLowerCase(), new SelectItem(certificateProfile.toString(), profileName));
             }
         }
-        //Only add hardprofile certificate profiles if enabled. 
+        // Only add hardprofile certificate profiles if enabled.
         if( ( (GlobalConfiguration) ejb.getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getIssueHardwareTokens()) {
             Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_HARDTOKEN);
             for (Integer certificateProfile : profiles) {
                 String profileName = ejb.getCertificateProfileSession().getCertificateProfileName(
                         certificateProfile);
+                // In this loop we also get the CERTTYPE_ENDUSER profiles again, but those are simply overwritten since a map can't contain duplicates
                 certificateProfiles.put(profileName.toLowerCase(), new SelectItem(certificateProfile.toString(), profileName));
             }
         }
