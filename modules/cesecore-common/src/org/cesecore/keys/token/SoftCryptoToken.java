@@ -35,6 +35,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -59,9 +60,12 @@ public class SoftCryptoToken extends BaseCryptoToken {
      * When upgrading this version, you must up the version of the CA as well, otherwise the upgraded CA token will not be stored in the database.
      */
     public static final float LATEST_VERSION = 3;
-
-    private static final String PROVIDER = "BC";
-
+    
+    /**
+     * This property value denotes whether the default soft token password is usable on this token (as defined by ca.keystorepass, defaults to 'foo123',
+     * which allows it to be activated/deactivated/edited without providing a password. Setting this property to true means that the default password is 
+     * not available for use. 
+     */
     public static final String NODEFAULTPWD = "NODEFAULTPWD";
 
     private byte[] keystoreData;
@@ -79,7 +83,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
      */
     @Override
     public void init(Properties properties, final byte[] data, final int cryptoTokenId) {
-        super.setJCAProviderName(PROVIDER);
+        super.setJCAProviderName(BouncyCastleProvider.PROVIDER_NAME);
         this.keystoreData = data;
         if (properties == null) {
             properties = new Properties();
@@ -139,7 +143,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             String msg = intres.getLocalizedMessage("token.erroractivate", getId(), "No keystore data available yet, creating new PKCS#12 keystore.");
             log.info(msg);
             try {
-                KeyStore keystore = KeyStore.getInstance("PKCS12", PROVIDER);
+                KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
                 keystore.load(null, null);
                 //keystore.load(null, authCode);
                 setKeyStore(keystore);
@@ -203,7 +207,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
     private KeyStore loadKeyStore(final byte[] ksdata, final char[] keystorepass) throws NoSuchAlgorithmException, CertificateException, IOException,
             KeyStoreException, NoSuchProviderException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        KeyStore keystore = KeyStore.getInstance("PKCS12", PROVIDER);
+        KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
         if (log.isDebugEnabled()) {
         	log.debug("Loading keystore data of size: "+ (ksdata == null ? "null" : ksdata.length));
         }
