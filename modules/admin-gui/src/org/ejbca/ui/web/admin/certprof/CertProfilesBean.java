@@ -285,14 +285,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             } catch (CertificateProfileDoesNotExistException e) {
                 // NOPMD: ignore do nothing
             }
+            
         }
-        addFromTemplateInProgress = false;
-        certificateProfileItems = null;
-    }
-
-    public void actionAddFromTemplateCancel() {
-        addFromTemplateInProgress = false;
-        certificateProfileItems = null;
+        actionCancel();
     }
 
     public boolean isDeleteInProgress() {
@@ -316,13 +311,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         } else {
             addErrorMessage("COULDNTDELETECERTPROF");
         }
-        deleteInProgress = false;
-        certificateProfileItems = null;
-    }
-
-    public void actionDeleteCancel() {
-        deleteInProgress = false;
-        certificateProfileItems = null;
+        actionCancel();
     }
 
     public boolean isRenameInProgress() {
@@ -350,13 +339,16 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
             }
         }
-        renameInProgress = false;
-        certificateProfileItems = null;
+        actionCancel();
     }
 
-    public void actionRenameCancel() {
+    public void actionCancel() {
+        addFromTemplateInProgress = false;
+        deleteInProgress = false;
         renameInProgress = false;
         certificateProfileItems = null;
+        selectedCertProfileId = null;
+        certProfileName = null;
     }
 
     /*

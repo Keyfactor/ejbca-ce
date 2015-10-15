@@ -69,7 +69,7 @@
   				<h:panelGroup/>
 				<h:panelGroup>
 					<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE_CONFIRM}" action="#{certProfilesBean.actionAddFromTemplateConfirm}"/>
-					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionAddFromTemplateCancel}"/>
+					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:panelGroup>
@@ -84,7 +84,7 @@
   				<h:panelGroup/>
 				<h:panelGroup>
 					<h:commandButton value="#{web.text.RENAME_CONFIRM}" action="#{certProfilesBean.actionRenameConfirm}"/>
-					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionRenameCancel}"/>
+					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:panelGroup>
@@ -97,7 +97,7 @@
   				<h:panelGroup/>
 				<h:panelGroup>
 					<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE_CONFIRM}" action="#{certProfilesBean.actionDeleteConfirm}"/>
-					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionDeleteCancel}"/>
+					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:panelGroup>
