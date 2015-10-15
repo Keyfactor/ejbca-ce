@@ -48,7 +48,7 @@
         margin-right: 5px;
   	    border: 1px solid #666;
   	    border-radius: 6px;
-  	    padding: 5px;
+  	    padding: 1px 5px;
   	    background: #fff;
   	    color: #000;
   	    /* Parsed if supported by the browser */
@@ -57,16 +57,26 @@
   	    color: WindowText;
   	    color: -moz-FieldText;
   	}
+  	input.selectButton.largeSelectButton {
+  	    padding: 5px;
+  	}
+  	input.selectButton.disabled {
+  	    color: GrayText;
+  	    border-color: GrayText;
+  	}
   	input.selectButton.selected {
   	    border: 2px solid #666;
-  	    padding: 4px;
+  	    padding: 0px 4px;
   	    background: #66c;
   	    color: #fff;
   	    /* Parsed if supported by the browser */
   	    background-color: Highlight;
   	    color: HighlightText;
   	}
-  	input.selectButton:hover {
+  	input.selectButton.largeSelectButton.selected {
+  	    padding: 5px;
+  	}
+  	input.selectButton.enabled:hover {
   	    background: #99f;
   	    color: #fff;
   	    border-color: #fff;
@@ -101,13 +111,13 @@
 
 		<h:outputLabel for="selecttype" value="#{web.text.TYPE}"/>
 		<h:panelGroup id="selecttype">
-			<h:commandButton rendered="#{certProfileBean.typeEndEntityAvailable}" disabled="#{certProfileBean.typeEndEntity or certProfilesBean.viewOnly}" styleClass="selectButton #{certProfileBean.typeEndEntity?'selected':'notSelected'}"
+			<h:commandButton rendered="#{certProfileBean.typeEndEntityAvailable}" disabled="#{certProfileBean.typeEndEntity or certProfilesBean.viewOnly}" styleClass="selectButton largeSelectButton #{certProfileBean.typeEndEntity?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				action="#{certProfileBean.setTypeEndEntity}" value="#{certProfileBean.typeEndEntity?'✓':' '}#{web.text.ENDENTITY}"/>
-			<h:commandButton rendered="#{certProfileBean.typeSubCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeSubCa or certProfilesBean.viewOnly}" styleClass="selectButton #{certProfileBean.typeSubCa?'selected':''}"
+			<h:commandButton rendered="#{certProfileBean.typeSubCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeSubCa or certProfilesBean.viewOnly}" styleClass="selectButton largeSelectButton #{certProfileBean.typeSubCa?'selected':''} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				action="#{certProfileBean.setTypeSubCa}" value="#{certProfileBean.typeSubCa?'✓':' '}#{web.text.SUBCA}"/>
-			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeRootCa or certProfilesBean.viewOnly}" styleClass="selectButton #{certProfileBean.typeRootCa?'selected':''}"
+			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeRootCa or certProfilesBean.viewOnly}" styleClass="selectButton largeSelectButton #{certProfileBean.typeRootCa?'selected':''} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				action="#{certProfileBean.setTypeRootCa}" value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}"/>
-			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeHardToken or certProfilesBean.viewOnly}"  styleClass="selectButton #{certProfileBean.typeHardToken?'selected':'notSelected'}"
+			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeHardToken or certProfilesBean.viewOnly}"  styleClass="selectButton largeSelectButton #{certProfileBean.typeHardToken?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.HARDTOKEN}"/>
 		</h:panelGroup>
 
@@ -406,13 +416,16 @@
 								disabled="#{certProfilesBean.viewOnly}"/>
 							<h:panelGrid id="policyqualidinput" columns="3">
 								<h:commandButton value="#{certProfileBean.newCertificatePolicyQualifierIdNone?'✓':' '}#{web.text.EXT_PKIX_CP_NOQUAL}"
+									styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdNone?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 									action="#{certProfileBean.actionNewCertificatePolicyQualifierIdNone}" disabled="#{certProfileBean.newCertificatePolicyQualifierIdNone or certProfilesBean.viewOnly}"
 									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
 								<h:commandButton value="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice?'✓':' '}#{web.text.EXT_PKIX_CP_USERNOTICE}"
+									styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdUserNotice?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 									action="#{certProfileBean.actionNewCertificatePolicyQualifierIdUserNotice}" 
 									disabled="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice or certProfilesBean.viewOnly}"
 									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
 								<h:commandButton value="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri?'✓':' '}#{web.text.EXT_PKIX_CP_CPSURI}"
+									styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdCpsUri?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 									action="#{certProfileBean.actionNewCertificatePolicyQualifierIdCpsUri}" 
 									disabled="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri or certProfilesBean.viewOnly}"
 									title="#{web.text.EXT_PKIX_CP_POLICYQUALID}"/>
@@ -947,11 +960,14 @@
 		<%-- CVC (ePassport) --%>
 		<h:outputLabel for="selectcvctermtype" value="#{web.text.CVCTERMTYPE}" rendered="#{certProfileBean.cvcAvailable}"/>
 		<h:panelGroup id="selectcvctermtype" rendered="#{certProfileBean.cvcAvailable}">
-			<h:commandButton value="#{certProfileBean.cvcTerminalTypeIs?'✓':' '}#{web.text.CVCINSPECTIONSYSTEM}" 
+			<h:commandButton value="#{certProfileBean.cvcTerminalTypeIs?'✓':' '}#{web.text.CVCINSPECTIONSYSTEM}"
+					styleClass="selectButton #{certProfileBean.cvcTerminalTypeIs?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 					disabled="#{certProfileBean.cvcTerminalTypeIs or certProfilesBean.viewOnly}" action="#{certProfileBean.setCvcTerminalTypeIs}"/>
-			<h:commandButton value="#{certProfileBean.cvcTerminalTypeAt?'✓':' '}#{web.text.CVCAUTHENTICATIONTERMINAL}" 
+			<h:commandButton value="#{certProfileBean.cvcTerminalTypeAt?'✓':' '}#{web.text.CVCAUTHENTICATIONTERMINAL}"
+				styleClass="selectButton #{certProfileBean.cvcTerminalTypeAt?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				disabled="#{certProfileBean.cvcTerminalTypeAt or certProfilesBean.viewOnly}" action="#{certProfileBean.setCvcTerminalTypeAt}"/>
-			<h:commandButton value="#{certProfileBean.cvcTerminalTypeSt?'✓':' '}#{web.text.CVCSIGNATURETERMINAL}" 
+			<h:commandButton value="#{certProfileBean.cvcTerminalTypeSt?'✓':' '}#{web.text.CVCSIGNATURETERMINAL}"
+				styleClass="selectButton #{certProfileBean.cvcTerminalTypeSt?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				disabled="#{certProfileBean.cvcTerminalTypeSt or certProfilesBean.viewOnly}" action="#{certProfileBean.setCvcTerminalTypeSt}"/>
 		</h:panelGroup>
 
