@@ -603,7 +603,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         Collections.sort(ekus, new Comparator<EKUInfo>() {
             @Override
             public int compare(final EKUInfo ekuInfo1, final EKUInfo ekuInfo2) {
-                return ekuInfo1.getOid().compareTo(ekuInfo2.getOid());
+                String[] oidFirst = ekuInfo1.getOid().split("\\.");
+                String[] oidSecond = ekuInfo2.getOid().split("\\.");
+                int length = oidFirst.length < oidSecond.length ? oidFirst.length : oidSecond.length;
+                for(int i=0; i<length ; i++) {
+                    if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
+                        if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
+                            return -1;
+                        }
+                        return 1;
+                    }
+                }
+                return 0;
             }
         });
         return ekus;
@@ -731,7 +742,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         Collections.sort(extensionsInfo, new Comparator<CustomCertExtensionInfo>() {
             @Override
             public int compare(CustomCertExtensionInfo first, CustomCertExtensionInfo second) {
-                return first.getOid().compareToIgnoreCase(second.getOid());
+                String[] oidFirst = first.getOid().split("\\.");
+                String[] oidSecond = second.getOid().split("\\.");
+                int length = oidFirst.length < oidSecond.length ? oidFirst.length : oidSecond.length;
+                for(int i=0; i<length ; i++) {
+                    if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
+                        if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
+                            return -1;
+                        }
+                        return 1;
+                    }
+                }
+                return 0;
             }
         });
         
