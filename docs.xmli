@@ -213,30 +213,6 @@ piwikTracker.enableLinkTracking();
       </replace>
     </target>
     
-    <!-- This target depends on having the jsch classes installed in ant
-         http://sourceforge.net/projects/JSch
-    -->
-    <target name="site:publish" depends="doc" description="Publish the website, use like 'ant -Dusername=me -Dpassword=mypwd site:publish'">
-    	<property name="publish.dir" value="/home/groups/e/ej/ejbca/htdocs"/>
-    	<tar destfile="tmp/htdocs.tgz" compression="gzip">
-    		<tarfileset dir="${docs.dest}" mode="664" dirmode="775" username="${username}" group="ejbca"/>
-    	</tar>
-    	<scp file="tmp/htdocs.tgz" todir="${username}:${password}@ejbca.sourceforge.net:"/>
-    	<sshexec host="ejbca.sourceforge.net"
-				username="${username}" password="${password}"
-				command="mkdir ${publish.dir} ; tar -xzpf htdocs.tgz -C ${publish.dir};"/>
-		<!-- I'm setting the permissions this way as there seems to be a problem with dirmode -->
-		<echo message="Setting directory permissions"/>
-    	<sshexec host="ejbca.sourceforge.net"
-				username="${username}" password="${password}"
-				command="find ${publish.dir} -type d -exec chmod 775 {} \;"/> 
-		<echo message="Setting file permissions"/>
-    	<sshexec host="ejbca.sourceforge.net"
-				username="${username}" password="${password}"
-				command="find ${publish.dir} -type f -exec chmod 664 {} \;"/>
-		
-    </target>
-
     <target name="gen-depgraph" depends="ejbca.ear" description="Generate EJB dependecy graph using external 'dot' application">
     	<condition property="isjboss" value="isset"><equals arg1="jboss" arg2="${appserver.type}"/></condition>
     	<fail unless="isjboss" message="This target only works for JBoss AS."/>
