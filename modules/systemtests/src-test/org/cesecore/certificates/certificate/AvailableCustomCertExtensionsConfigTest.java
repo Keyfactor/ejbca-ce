@@ -20,23 +20,18 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.PublicKey;
 import java.util.Properties;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.certificate.certextensions.DummyCertificateExtension;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -85,15 +80,14 @@ public class AvailableCustomCertExtensionsConfigTest {
         props = new Properties();
         props.put("translatable", "TRUE");
         props.put("value", "Test 321");
-        DummyAdvancedCertificateExtension dummyExtension = new DummyAdvancedCertificateExtension(3, "3.2.3.4", "TESTEXTENSION3", false, props);
-        cceConfig.addCustomCertExtension(dummyExtension);
+        cceConfig.addCustomCertExtension(3, "3.2.3.4", "TESTEXTENSION3", DummyCertificateExtension.class.getName(), false, props);
         
-        assertEquals(3, cceConfig.getAllAvailableCustomCertificateExtensions().size());
         CustomCertificateExtension ext = cceConfig.getCustomCertificateExtension("1.2.3.4");
         assertNotNull(ext);
         assertEquals(1, ext.getId());
         assertEquals("1.2.3.4", ext.getOID());
         assertEquals("TESTEXTENSION", ext.getDisplayName());
+        assertTrue(ext instanceof BasicCertificateExtension);
         assertTrue(ext.isCriticalFlag());
         assertFalse("The property 'translatable' should be 'False'", Boolean.parseBoolean((String) ext.getProperties().get("translatable")));
         assertTrue(getObject(ext.getValueEncoded(null, null, null, null, null, null)) instanceof DERPrintableString);
@@ -104,10 +98,11 @@ public class AvailableCustomCertExtensionsConfigTest {
         assertEquals(3 , ext.getId());
         assertEquals("3.2.3.4", ext.getOID());
         assertEquals("TESTEXTENSION3", ext.getDisplayName());
+        assertTrue(ext instanceof DummyCertificateExtension);
         assertFalse(ext.isCriticalFlag());
         assertTrue("The property 'translatable' should be 'True'", Boolean.parseBoolean((String) ext.getProperties().get("translatable")));
-        assertTrue(getObject(ext.getValueEncoded(null, null, null, null, null, null)) instanceof DERPrintableString);
-        assertEquals("Test 321", ((DERPrintableString) getObject(ext.getValueEncoded(null, null, null, null, null, null))).getString());
+        assertTrue(getObject(ext.getValueEncoded(null, null, null, null, null, null)) instanceof DERIA5String);
+        assertEquals("Test 321", ((DERIA5String) getObject(ext.getValueEncoded(null, null, null, null, null, null))).getString());
 
         // Test that non-existing key return null
         ext = cceConfig.getCustomCertificateExtension("3.2.3.4.5.6.7");
@@ -115,7 +110,6 @@ public class AvailableCustomCertExtensionsConfigTest {
         
         // test removal
         cceConfig.removeCustomCertExtension("1.2.3.4");
-        assertEquals(2, cceConfig.getAllAvailableCustomCertificateExtensions().size());
         ext = cceConfig.getCustomCertificateExtension("1.2.3.4");
         assertNull(ext);
         
@@ -159,30 +153,6 @@ public class AvailableCustomCertExtensionsConfigTest {
             assertFalse(ext.isCriticalFlag());
             assertNull(ext.getProperties().get("translatable"));
         }
-    }
-    
-    private class DummyAdvancedCertificateExtension extends CertificateExtension {
-
-        private static final long serialVersionUID = 2699063289876651811L;
-        private String PROPERTY_VALUE = "value";
-
-        public DummyAdvancedCertificateExtension(int id, String oID, String displayName, boolean criticalFlag, Properties extensionProperties) {
-            super.init(id, oID, displayName, criticalFlag, extensionProperties);
-        }
-        
-        /**
-         * The main method that should return a ASN1Encodable
-         * using the input data (optional) or defined properties (optional)
-         * 
-         */ 
-        public ASN1Encodable getValue(EndEntityInformation userData, CA ca,
-                CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
-            
-            String value = getProperties().getProperty(PROPERTY_VALUE);
-            
-            return new DERPrintableString(value);
-        }
-
     }
     
 }
