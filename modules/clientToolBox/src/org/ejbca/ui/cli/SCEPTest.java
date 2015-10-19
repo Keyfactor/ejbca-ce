@@ -538,6 +538,10 @@ class SCEPTest extends ClientToolBox {
                 JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(StressTest.this.keyPair.getPrivate());
                 rec.setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
+                // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
+                // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
+                // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+                rec.setMustProduceEncodableUnwrappedKey(true);            
                 final byte decBytes[] = recipient.getContent(rec);
             	// This is yet another CMS signed data
             	final CMSSignedData sd = new CMSSignedData(decBytes);
