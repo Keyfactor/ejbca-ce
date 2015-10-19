@@ -605,15 +605,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             public int compare(final EKUInfo ekuInfo1, final EKUInfo ekuInfo2) {
                 String[] oidFirst = ekuInfo1.getOid().split("\\.");
                 String[] oidSecond = ekuInfo2.getOid().split("\\.");
-                int length = oidFirst.length < oidSecond.length ? oidFirst.length : oidSecond.length;
-                for(int i=0; i<length ; i++) {
-                    if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
-                        if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
-                            return -1;
+                int length = Math.min(oidFirst.length, oidSecond.length);
+                try {
+                    for(int i=0; i<length ; i++) {
+                        if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
+                            if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
+                                return -1;
+                            }
+                            return 1;
                         }
-                        return 1;
                     }
+                } catch(NumberFormatException e) {
+                    log.error("OID contains non-numerical values. This should not happen at this point");
                 }
+                
+                if(oidFirst.length !=oidSecond.length) {
+                    return oidFirst.length < oidSecond.length ? -1 : 1;
+                }
+                
                 return 0;
             }
         });
@@ -625,6 +634,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(currentEKUOid)) {
             FacesContext.getCurrentInstance()
                     .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
+            return;
+        }
+        if (!isOidNumericalOnly(currentEKUOid)) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
             return;
         }
         if (StringUtils.isEmpty(currentEKUName)) {
@@ -694,6 +708,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return sb.toString();
     }
     
+    private boolean isOidNumericalOnly(String oid) {
+        String[] oidParts = oid.split("\\.");
+        for(int i=0; i<oidParts.length ; i++) {
+            try {
+                Integer.parseInt(oidParts[i]);
+            } catch(NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     
     // ----------------------------------------------------
     //               Custom Certificate Extensions
@@ -744,15 +770,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             public int compare(CustomCertExtensionInfo first, CustomCertExtensionInfo second) {
                 String[] oidFirst = first.getOid().split("\\.");
                 String[] oidSecond = second.getOid().split("\\.");
-                int length = oidFirst.length < oidSecond.length ? oidFirst.length : oidSecond.length;
-                for(int i=0; i<length ; i++) {
-                    if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
-                        if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
-                            return -1;
+                int length = Math.min(oidFirst.length, oidSecond.length);
+                try {
+                    for(int i=0; i<length ; i++) {
+                        if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
+                            if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
+                                return -1;
+                            }
+                            return 1;
                         }
-                        return 1;
                     }
+                } catch(NumberFormatException e) {
+                    log.error("OID contains non-numerical values. This should not happen at this point");
                 }
+                
+                if(oidFirst.length !=oidSecond.length) {
+                    return oidFirst.length < oidSecond.length ? -1 : 1;
+                }
+                
                 return 0;
             }
         });
@@ -782,15 +817,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public void addCustomCertExtension() {
-        if (StringUtils.isEmpty(getNewOID())) {
+        String newOID = getNewOID();
+        if (StringUtils.isEmpty(newOID)) {
             FacesContext.getCurrentInstance()
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));
+            return;
+        }
+        if (!isOidNumericalOnly(newOID)) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
             return;
         }
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
 
-        if (cceConfig.isCustomCertExtensionSupported(getNewOID())) {
+        if (cceConfig.isCustomCertExtensionSupported(newOID)) {
             FacesContext.getCurrentInstance()
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "A CustomCertificateExenstion with the same OID already exists.", null));
             return;
@@ -802,7 +843,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         try {
-            cceConfig.addCustomCertExtension(0, getNewOID(), getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, new Properties());
+            cceConfig.addCustomCertExtension(0, newOID, getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, new Properties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
         } catch(Exception e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
