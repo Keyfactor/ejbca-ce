@@ -81,7 +81,7 @@ public class AvailableExtendedKeyUsagesConfigTest {
         ekuConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.
                 getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
 
-        assertTrue(ekuConfig.isConfigurationInitialized());
+        assertTrue(ekuConfig.getAllOIDs().size()>0);
         assertTrue(ekuConfig.isExtendedKeyUsageSupported("2.5.29.37.0"));
         assertEquals("EKU_PKIX_ANYEXTENDEDKEYUSAGE", ekuConfig.getExtKeyUsageName("2.5.29.37.0"));
         assertTrue(ekuConfig.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.21"));

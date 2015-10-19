@@ -120,14 +120,6 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         return CONFIGURATION_ID;
     }
     
-    /**
-     * @return true if there is at least one supported ExtendedKeyUsage. False otherwize 
-     */
-    @Deprecated
-    public boolean isConfigurationInitialized() {
-        return data.size() > 1;
-    }
-    
     public boolean isExtendedKeyUsageSupported(String oid) {
         return data.containsKey(oid.trim());
     }
