@@ -747,7 +747,16 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         final String subjectDn = "CN="+username;
         final BigInteger serialNumber = BigInteger.valueOf(username.hashCode()); // Just some value
         try {
-            final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, "ManagementCA");
+            CAInfo cainfo;
+            try {
+                cainfo = caSession.getCAInfo(alwaysAllowToken, "ManagementCA");
+            } catch (CADoesntExistsException e) {
+                try {
+                    cainfo = caSession.getCAInfo(alwaysAllowToken, "AdminCA1");
+                } catch (CADoesntExistsException e1) {
+                    throw new IllegalStateException("Couldn't find either ManagementCA or AdminCA1");
+                }
+            }
             
             final Certificate cacert = cainfo.getCertificateChain().iterator().next();
             final int caid = cainfo.getCAId();
@@ -765,8 +774,6 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             // Even if the end entity doesn't exist, and there's no certificate in the database, it should still work.
             final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
             assertEquals("Should get an empty list (since there's no certificate)", 0, certs.size());
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException(e);
         } finally {
             internalCertStoreSession.removeCertificate(serialNumber);
         }
