@@ -1162,6 +1162,15 @@ An EndEntityProfile can be connected to specific CertificateProfiles
 so users belonging to a specific EndEntityProfile can only get 
 certificates from the specified CertificateProfile.
 </p>
+<subsection name="Enable End Entity Profile Limitations">
+<p>
+In System Configuration, it is possible to enable and disable End Entity Profile limitations. If this option is enabled, whenever End Entity Profiles are referenced, a check is preformed to 
+verify whether the current administrator has the right to access this/these End Entity Profiles. If this option is disabled, no such check is made and all End Entity Profiles are accessable 
+administrators.
+</p>
+<p>Please note that when this option is enabled, it might not be possible to edit 'End Entity Profiles' under System Functions -> Administrator  Roles -> Access Rules. </p>
+</subsection>
+
 <subsection name="Create an End Entity Profile for SSL servers">
 <p>This section will show you how to create an end entity profile suitable for SSL/TLS servers, such as web servers.
 You should previously have created the certificate profile for SSL servers in the section "Create a Certificate Profile for SSL servers". 

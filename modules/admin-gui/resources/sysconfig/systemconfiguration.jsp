@@ -126,6 +126,7 @@ org.cesecore.authorization.control.AccessControlSession
 		
 			<h:panelGroup>
 				<h:outputLabel for="enableeeplimit" value="#{web.text.ENABLEENDENTITYPROFILELIM}" styleClass="titles"/>
+				<%= ejbcawebbean.getHelpReference("/userguide.html#Enable%20End%20Entity%20Profile%20Limitations") %>
 				<br/>
 				<h:outputText value="#{web.text.ENABLEENDENTITYPROFILELIM_HELP}" styleClass="help"/>
 			</h:panelGroup>
