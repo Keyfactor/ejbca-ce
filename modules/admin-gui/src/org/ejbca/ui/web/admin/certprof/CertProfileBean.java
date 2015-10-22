@@ -279,7 +279,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_x509v3extensions_usages");
     }
 
-    public List<SelectItem> getExtendedKeyUsageOidsAvailable() throws Exception {
+    public List<SelectItem> getExtendedKeyUsageOidsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
