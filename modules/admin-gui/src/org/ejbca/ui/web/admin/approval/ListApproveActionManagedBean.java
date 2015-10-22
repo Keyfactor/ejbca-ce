@@ -36,10 +36,9 @@ import org.ejbca.util.query.Query;
 /**
  * Managed bean in the actionapprovallist page.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
-public class ListApproveActionSessionBean extends BaseManagedBean {
+public class ListApproveActionManagedBean extends BaseManagedBean {
 	//private static final Logger log = Logger.getLogger(ListApproveActionSessionBean.class);
 
 	private static final long serialVersionUID = 1L;
@@ -56,7 +55,7 @@ public class ListApproveActionSessionBean extends BaseManagedBean {
 	
 	private ApprovalDataVOViewList listData;
 
-	public ListApproveActionSessionBean() throws AuthorizationDeniedException{		      			 			 	 	
+	public ListApproveActionManagedBean() throws AuthorizationDeniedException{		      			 			 	 	
 		setSelectedStatus("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 		setSelectedTimeSpan(TIME_30MIN);
 		list();
