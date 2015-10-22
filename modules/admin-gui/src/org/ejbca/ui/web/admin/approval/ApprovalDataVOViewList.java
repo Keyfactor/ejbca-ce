@@ -13,12 +13,12 @@
 
 package org.ejbca.ui.web.admin.approval;
 
+import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -26,11 +26,10 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 /**
  * Class used to manage the list of approvaldatas resulted in the query.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 
-public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> implements java.io.Serializable {
+public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> implements Serializable {
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -50,9 +49,8 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
 
     public ApprovalDataVOViewList(Collection<ApprovalDataVO> approvalDataVOs) {
         listData = new ArrayList<ApprovalDataVOView>();
-        Iterator<ApprovalDataVO> iter = approvalDataVOs.iterator();
-        while (iter.hasNext()) {
-            listData.add(new ApprovalDataVOView((ApprovalDataVO) iter.next()));
+        for(ApprovalDataVO approvalDataVO : approvalDataVOs) {
+            listData.add(new ApprovalDataVOView(approvalDataVO));
         }
 
     }

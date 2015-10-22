@@ -27,8 +27,8 @@
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <managed-bean-name>listApproveActionSessionBean</managed-bean-name>
-    <managed-bean-class>org.ejbca.ui.web.admin.approval.ListApproveActionSessionBean</managed-bean-class>
+    <managed-bean-name>listApproveActionManagedBean</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ListApproveActionManagedBean</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>

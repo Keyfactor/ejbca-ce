@@ -40,15 +40,15 @@ function viewcert(link){
 
 <h:form>
 <p align="center"><h:outputText value="#{web.text.SEARCHFORACTION}"/>  
-<h:selectOneMenu id="status" value="#{listApproveActionSessionBean.selectedStatus}"> 
-  <f:selectItems value="#{listApproveActionSessionBean.availableStatus}"/>
+<h:selectOneMenu id="status" value="#{listApproveActionManagedBean.selectedStatus}"> 
+  <f:selectItems value="#{listApproveActionManagedBean.availableStatus}"/>
 </h:selectOneMenu>
    <h:outputText value="#{web.text.REQUESTEDWITHIN}"/>    
-  <h:selectOneMenu id="timespan" value="#{listApproveActionSessionBean.selectedTimeSpan}">
-  <f:selectItems value="#{listApproveActionSessionBean.availableTimeSpans}"/>
+  <h:selectOneMenu id="timespan" value="#{listApproveActionManagedBean.selectedTimeSpan}">
+  <f:selectItems value="#{listApproveActionManagedBean.availableTimeSpans}"/>
 </h:selectOneMenu>
   <h:outputText value=" "/>
-  <h:commandButton id="list" action="#{listApproveActionSessionBean.list}" value="#{web.text.SEARCH}"/>
+  <h:commandButton id="list" action="#{listApproveActionManagedBean.list}" value="#{web.text.SEARCH}"/>
   </p>
 </h:form>
 
@@ -62,11 +62,11 @@ function viewcert(link){
                 styleClass="Table"
                 headerClass="standardTable_Header"
                 footerClass="standardTable_Header"    
-                rowClasses="#{listApproveActionSessionBean.rowClasses}"                       
+                rowClasses="#{listApproveActionManagedBean.rowClasses}"                       
                 var="approveActionDataVOView"
-                value="#{listApproveActionSessionBean.listData}"
-                sortColumn="#{listApproveActionSessionBean.sort}"
-                sortAscending="#{listApproveActionSessionBean.ascending}" 
+                value="#{listApproveActionManagedBean.listData}"
+                sortColumn="#{listApproveActionManagedBean.sort}"
+                sortAscending="#{listApproveActionManagedBean.ascending}" 
                 preserveDataModel="false"
                 rows="#{web.entriesPerPage}"
                 width="100%"
@@ -87,11 +87,9 @@ function viewcert(link){
                   <h:outputText value="#{web.text.APPROVEACTIONNAME}" />
                </t:commandSortHeader>
                </f:facet>
-               <f:verbatim>
                  <h:commandLink immediate="true"  onmousedown='#{approveActionDataVOView.approveActionWindowLink}' >
                    <h:outputText value="#{approveActionDataVOView.approveActionName}" />    
                  </h:commandLink>          
-               </f:verbatim>
            </h:column>
 
            <h:column>
@@ -100,12 +98,10 @@ function viewcert(link){
                   <h:outputText value="#{web.text.REQUESTINGADMIN}" />
                </t:commandSortHeader>
                </f:facet>
-               <f:verbatim>
                  <h:commandLink immediate="true" onmousedown='#{approveActionDataVOView.viewRequestorCertLink}' rendered="#{approveActionDataVOView.showViewRequestorCertLink}">
                    <h:outputText value="#{approveActionDataVOView.requestAdminName}"/> 
                  </h:commandLink> 
                  <h:outputText value="#{approveActionDataVOView.requestAdminName}" rendered="#{!approveActionDataVOView.showViewRequestorCertLink}"/> 
-               </f:verbatim>
            </h:column>
            <h:column>
                <f:facet name="header">
