@@ -1164,11 +1164,15 @@ certificates from the specified CertificateProfile.
 </p>
 <subsection name="Enable End Entity Profile Limitations">
 <p>
-In System Configuration, it is possible to enable and disable End Entity Profile limitations. If this option is enabled, whenever End Entity Profiles are referenced, a check is preformed to 
-verify whether the current administrator has the right to access this/these End Entity Profiles. If this option is disabled, no such check is made and all End Entity Profiles are accessable 
-administrators.
+In System Configuration, it is possible to enable and disable End Entity Profile limitations. 
+
+If this option is disabled, it does not matter what End Entity Profiles an administrator has access to. Instead, the administrator's ability 
+to perform actions is limited by which CAs he or she is authorized to access.  
+
+If this option is enabled, in addition to the limits set by which CAs the administrator is authorization to access, there are limits set by which 
+End Entity Profiles the adminstrator is authorized to access.
 </p>
-<p>Please note that when this option is enabled, it might not be possible to edit 'End Entity Profiles' under System Functions -> Administrator  Roles -> Access Rules. </p>
+<p>Please note that when this option is disabled, the list of End Entity Profiles under System Functions -> Administrator  Roles -> Access Rules might be empty. </p>
 </subsection>
 
 <subsection name="Create an End Entity Profile for SSL servers">
