@@ -783,26 +783,26 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         
-        List<String> usedExtensions = getCertificateProfile().getUsedCertificateExtensionsOIDs();
+        List<Integer> usedExtensions = getCertificateProfile().getUsedCertificateExtensions();
         if (certProfilesBean.getViewOnly()) {
             //If in view mode, only display used values.
-            for(String oid : usedExtensions) {
-                if (!cceConfig.isCustomCertExtensionSupported(oid)) {
-                    String note = oid + " (No longer used. Please unselect this option)";
-                    ret.add(new SelectItem(oid, note));
+            for(int id : usedExtensions) {
+                if (!cceConfig.isCustomCertExtensionSupported(id)) {
+                    String note = id + " (No longer used. Please unselect this option)";
+                    ret.add(new SelectItem(id, note));
                 } else {
-                    ret.add(new SelectItem(oid, getEjbcaWebBean().getText(cceConfig.getCustomCertificateExtension(oid).getDisplayName())));
+                    ret.add(new SelectItem(id, getEjbcaWebBean().getText(cceConfig.getCustomCertificateExtension(id).getDisplayName())));
                 }
             }
 
         } else {
             for (final CertificateExtension current : cceConfig.getAllAvailableCustomCertificateExtensions()) {
-                ret.add(new SelectItem(current.getOID(), getEjbcaWebBean().getText(current.getDisplayName())));
+                ret.add(new SelectItem(current.getId(), getEjbcaWebBean().getText(current.getDisplayName())));
             }            
-            for (String oid : usedExtensions) {
-                if (!cceConfig.isCustomCertExtensionSupported(oid)) {
-                    String note = oid + " (No longer used. Please unselect this option)";
-                    ret.add(new SelectItem(oid, note));
+            for (int id : usedExtensions) {
+                if (!cceConfig.isCustomCertExtensionSupported(id)) {
+                    String note = id + " (No longer used. Please unselect this option)";
+                    ret.add(new SelectItem(id, note));
                 }
             }
         }
