@@ -772,27 +772,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         Collections.sort(extensionsInfo, new Comparator<CustomCertExtensionInfo>() {
             @Override
             public int compare(CustomCertExtensionInfo first, CustomCertExtensionInfo second) {
-                String[] oidFirst = first.getOid().split("\\.");
-                String[] oidSecond = second.getOid().split("\\.");
-                int length = Math.min(oidFirst.length, oidSecond.length);
-                try {
-                    for(int i=0; i<length ; i++) {
-                        if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
-                            if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
-                                return -1;
-                            }
-                            return 1;
-                        }
-                    }
-                } catch(NumberFormatException e) {
-                    log.error("OID contains non-numerical values. This should not happen at this point");
-                }
-                
-                if(oidFirst.length !=oidSecond.length) {
-                    return oidFirst.length < oidSecond.length ? -1 : 1;
-                }
-                
-                return 0;
+                return Integer.compare(first.getId(), second.getId());
             }
         });
         
