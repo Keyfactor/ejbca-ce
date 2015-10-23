@@ -138,10 +138,10 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		}
 		final int certProfID; {
 			final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-			final List<String> usedCertificateExtensions = new LinkedList<String>();
-			usedCertificateExtensions.add(sOID_one);
-			usedCertificateExtensions.add(sOID_several);
-			profile.setUsedCertificateExtensionsOIDs(usedCertificateExtensions);
+			final List<Integer> usedCertificateExtensions = new LinkedList<Integer>();
+			usedCertificateExtensions.add(1);
+			usedCertificateExtensions.add(2);
+			profile.setUsedCertificateExtensions(usedCertificateExtensions);
 			this.certificateProfileSession.addCertificateProfile(intAdmin, CERTIFICATE_PROFILE, profile);
 			certProfID = this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE);
 		}
@@ -331,12 +331,12 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        props.put("critical", "false");
 	        props.put("dynamic", "true");
 	        props.put("encoding", "RAW");
-	        cceConfig.addCustomCertExtension(0, sOID_one, "SingleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props);
+	        cceConfig.addCustomCertExtension(1, sOID_one, "SingleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props);
 	        props = new Properties();
 	        props.put("dynamic", "true");
 	        props.put("nvalues", Integer.toString(nrOfValues));
 	        props.put("encoding", "DEROCTETSTRING");
-	        cceConfig.addCustomCertExtension(0, sOID_several, "MultipleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props);
+	        cceConfig.addCustomCertExtension(2, sOID_several, "MultipleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props);
 	}
 	
 	@Override

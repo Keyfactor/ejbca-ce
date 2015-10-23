@@ -35,7 +35,6 @@ public interface CustomCertificateExtension {
     /**
      * @return the unique id of the extension
      */
-    @Deprecated
     int getId();
     
     /**

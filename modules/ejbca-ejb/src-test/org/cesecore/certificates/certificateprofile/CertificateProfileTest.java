@@ -139,7 +139,7 @@ public class CertificateProfileTest {
         assertEquals(false, prof.getUseDefaultOCSPServiceLocator());
         assertEquals("", prof.getOCSPServiceLocatorURI());
         assertEquals(CertificateProfile.CVC_ACCESS_DG3DG4, prof.getCVCAccessRights());
-        final Collection<String> ext = prof.getUsedCertificateExtensionsOIDs();
+        final Collection<Integer> ext = prof.getUsedCertificateExtensions();
         assertEquals(0, ext.size());
         assertEquals(1, prof.getNumOfReqApprovals());
         final Collection<Integer> app = prof.getApprovalSettings();

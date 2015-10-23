@@ -47,6 +47,9 @@ org.cesecore.authorization.control.StandardRules
 		<h:panelGrid columns="2">
 			<h:outputLink value="adminweb/sysconfig/systemconfiguration.jsf"><h:outputText value="#{web.text.CUSTOMCERTEXTENSION_NAV_BACK}"/></h:outputLink>
 			<h:panelGroup id="placeholder1"/>
+
+			<h:outputLabel for="currentCEId" value="#{web.text.ID}"/>
+    		<h:outputText id="currentCEId" value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}" />
 		
 			<h:outputLabel for="currentCEOid" value="#{web.text.OID}"/>
     		<h:inputText id="currentCEOid" value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" size="25" title="#{web.text.FORMAT_OID}"/>

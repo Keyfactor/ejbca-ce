@@ -196,14 +196,15 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     private List<SelectItem> availableCertificateExtensionsList = null;
     private CurrentExtensionGUIInfo currentExtensionGUIInfo = null;
     private ListDataModel<CustomExtensionPropertyGUIInfo> currentExtensionProperties = null;
-    private String currentExtensionOId = "";
+    private int currentExtensionId = 0;
+    
     public CustomCertExtensionMBean() {
         super();
     }
             
     private void flushCurrentExtension() {
         availableExtensionsConfig = null;
-        currentExtensionOId = "";
+        currentExtensionId = 0;
         currentExtensionGUIInfo = null;
         currentExtensionProperties = null;
     }
@@ -220,9 +221,9 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     public SystemConfigMBean getSystemConfigMBean() { return systemConfigMBean; }
     public void setSystemConfigMBean(SystemConfigMBean systemConfigMBean) { this.systemConfigMBean = systemConfigMBean; }
     
-    public String getCurrentExtensionOId() {
-        this.currentExtensionOId = systemConfigMBean.getSelectedCustomCertExtensionOID();
-        return this.currentExtensionOId;
+    public int getCurrentExtensionId() {
+        this.currentExtensionId = systemConfigMBean.getSelectedCustomCertExtensionID();
+        return this.currentExtensionId;
     }
     
     public List<SelectItem> getAvailableCustomCertificateExtensions() {
@@ -247,9 +248,10 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     /** @return cached or populate a new CustomCertificateExtension GUI representation for view or edit */
     public CurrentExtensionGUIInfo getCurrentExtensionGUIInfo() {
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
-        if (currentExtensionGUIInfo == null || !currentExtensionGUIInfo.getOid().equals(getCurrentExtensionOId())) {
+        int currentID = getCurrentExtensionId();
+        if ((currentExtensionGUIInfo == null) || (currentExtensionGUIInfo.getId() != currentID)) {
             flushCurrentExtension();
-            currentExtensionGUIInfo = new CurrentExtensionGUIInfo(cceConfig.getCustomCertificateExtension(getCurrentExtensionOId()));
+            currentExtensionGUIInfo = new CurrentExtensionGUIInfo(cceConfig.getCustomCertificateExtension(currentID));
         } 
         return currentExtensionGUIInfo;
     }
