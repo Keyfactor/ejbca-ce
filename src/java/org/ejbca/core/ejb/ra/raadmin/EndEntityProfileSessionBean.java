@@ -299,9 +299,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         					break;
         				}
         			}
-                    if (authorizedToProfile
-                            && authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey()
-                                    + endentityAccessRule)) {
+                    if (authorizedToProfile) {
                         returnval.add(entry.getKey());
                     }
         		}
