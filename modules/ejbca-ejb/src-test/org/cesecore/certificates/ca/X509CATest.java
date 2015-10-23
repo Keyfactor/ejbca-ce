@@ -751,15 +751,15 @@ public class X509CATest {
         props3.put("value", "aabbccddeeff00");
         cceConfig.addCustomCertExtension(3, "1.2.3.5", "RawNoDer", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props3);
         
-        assertEquals(cceConfig.getCustomCertificateExtension("2.16.840.1.113730.1.13").getOID(), "2.16.840.1.113730.1.13");
-        assertEquals(cceConfig.getCustomCertificateExtension("1.2.3.4").getOID(), "1.2.3.4");
-        assertEquals(cceConfig.getCustomCertificateExtension("1.2.3.5").getOID(), "1.2.3.5");
+        assertEquals(cceConfig.getCustomCertificateExtension(1).getOID(), "2.16.840.1.113730.1.13");
+        assertEquals(cceConfig.getCustomCertificateExtension(2).getOID(), "1.2.3.4");
+        assertEquals(cceConfig.getCustomCertificateExtension(3).getOID(), "1.2.3.5");
         // Configure to use the custom extensions in the certificate profile
-        List<String> list = new ArrayList<String>();
-        list.add("2.16.840.1.113730.1.13");
-        list.add("1.2.3.4");
-        list.add("1.2.3.5");
-        cp.setUsedCertificateExtensionsOIDs(list);
+        List<Integer> list = new ArrayList<Integer>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        cp.setUsedCertificateExtensions(list);
         final KeyPair keypair = KeyTools.genKeys("512", "RSA");
         X509Certificate cert = (X509Certificate)testCa.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000", cceConfig);
         assertNotNull("A certificate should have been issued", cert);

@@ -62,16 +62,16 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         return data.size() > 1;
     }
 
-    public boolean isCustomCertExtensionSupported(String oid) {
-        return data.containsKey(oid.trim());
+    public boolean isCustomCertExtensionSupported(int id) {
+        return data.containsKey(id);
     }
     
-    public CustomCertificateExtension getCustomCertificateExtension(String oid) {
-        return (CustomCertificateExtension) data.get(oid.trim());
+    public CustomCertificateExtension getCustomCertificateExtension(int id) {
+        return (CustomCertificateExtension) data.get(id);
     }
     
     public void addCustomCertExtension(CertificateExtension ce) {
-        data.put(ce.getOID().trim(), ce);
+        data.put(ce.getId(), ce);
     }
     
     public void addCustomCertExtension(int id, String oid, String displayName, String classPath, boolean critical, Properties properties) throws CertificateExtentionConfigurationException {
@@ -79,7 +79,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             Class<?> implClass = Class.forName(classPath);
             CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
             certificateExtension.init(id, oid.trim(), displayName, critical, properties);
-            data.put(oid.trim(), certificateExtension);
+            data.put(id, certificateExtension);
         } catch (ClassNotFoundException e) {
             throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
         } catch (InstantiationException e) {
@@ -89,8 +89,8 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         }
     }
     
-    public void removeCustomCertExtension(String oid) {
-        data.remove(oid.trim());
+    public void removeCustomCertExtension(int id) {
+        data.remove(id);
     }
     
     public List<CertificateExtension> getAllAvailableCustomCertificateExtensions() {
@@ -115,7 +115,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         for(Entry<Object, Object> entry : data.entrySet()) {
             if(entry.getValue() instanceof CertificateExtension) {
                 CertificateExtension ce = (CertificateExtension) entry.getValue();
-                properties.setProperty(ce.getOID().trim(), ce.getDisplayName());
+                properties.setProperty(Integer.toString(ce.getId()), ce.getDisplayName());
             }
         }
         return properties;

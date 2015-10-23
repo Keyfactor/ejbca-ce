@@ -33,8 +33,6 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -155,11 +153,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String SUBJECTDNSUBSET = "subjectdnsubset";
     protected static final String USESUBJECTALTNAMESUBSET = "usesubjectaltnamesubset";
     protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
-    
-    @Deprecated //TODO Remove when Support for EJBCA 6.4.0 is dropped
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
-    
-    protected static final String USEDCERTIFICATEEXTENSIONSOIDS = "usedcertificateextensionsoids";
     protected static final String APPROVALSETTINGS = "approvalsettings";
     protected static final String NUMOFREQAPPROVALS = "numofreqapprovals";
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
@@ -427,7 +421,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
 
         setUsedCertificateExtensions(new ArrayList<Integer>());
-        setUsedCertificateExtensionsOIDs(new ArrayList<String>());
 
         setNumOfReqApprovals(1);
         List<Integer> emptyList = Collections.emptyList();
@@ -1779,7 +1772,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Autoupgradable method
      */
     @SuppressWarnings("unchecked")
-    @Deprecated // TODO Remove this method when support for EJBCA 6.4.0 is dropped
     public List<Integer> getUsedCertificateExtensions() {
         if (data.get(USEDCERTIFICATEEXTENSIONS) == null) {
             return new ArrayList<Integer>();
@@ -1792,7 +1784,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * 
      * @param usedCertificateExtensions
      */
-    @Deprecated // TODO Remove this method when support for EJBCA 6.4.0 is dropped
     public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
         if (usedCertificateExtensions == null) {
             data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<Integer>());
@@ -1800,34 +1791,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(USEDCERTIFICATEEXTENSIONS, usedCertificateExtensions);
         }
     }
-    
-    /**
-     * Method returning a list of (Strings) of OIDs of used CUSTOM certificate extensions. I.e. those custom certificate extensions selected for this
-     * profile. Never null.
-     * 
-     * Autoupgradable method
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getUsedCertificateExtensionsOIDs() {
-        if (data.get(USEDCERTIFICATEEXTENSIONSOIDS) == null) {
-            return new ArrayList<String>();
-        }
-        return (List<String>) data.get(USEDCERTIFICATEEXTENSIONSOIDS);
-    }
-
-    /**
-     * Method setting a list of used certificate extensions. A list of Strings containing CertificateExtension OID is expected
-     * 
-     * @param usedCertificateExtensions
-     */
-    public void setUsedCertificateExtensionsOIDs(List<String> usedCertificateExtensionsOids) {
-        if (usedCertificateExtensionsOids == null) {
-            data.put(USEDCERTIFICATEEXTENSIONSOIDS, new ArrayList<String>());
-        } else {
-            data.put(USEDCERTIFICATEEXTENSIONSOIDS, usedCertificateExtensionsOids);
-        }
-    }
-    
 
     /**
      * Function that looks up in the profile all certificate extensions that we should use if the value is that we should use it, the oid for this
@@ -2391,38 +2354,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(data.get(DOCUMENTTYPELIST) == null) { // v 37
             	setDocumentTypeList(new ArrayList<String>());
             }
-            
-            // This can be removed when support for EJBCA 6.4.0 is dropped
-            if(data.get(USEDCERTIFICATEEXTENSIONSOIDS) == null) { // v 38
-                List<Integer> usedCustomCertExtensionsIDs = getUsedCertificateExtensions();
-                if(usedCustomCertExtensionsIDs.isEmpty()) {
-                    setUsedCertificateExtensionsOIDs(new ArrayList<String>());
-                } else {
-                    AvailableCustomCertificateExtensionsConfiguration cceConfig = AvailableCustomCertificateExtensionsConfiguration.getAvailableCustomCertExtensionsFromFile();
-                    List<CertificateExtension> extensionsFromFile = cceConfig.getAllAvailableCustomCertificateExtensions();
-                    ArrayList<String> usedCustomCertExtensionsOIDs = new ArrayList<String>();
-                    for(Integer id : usedCustomCertExtensionsIDs) {
-                        CertificateExtension ce = getCertExtensionByID(id.intValue(), extensionsFromFile);
-                        if(ce != null) {
-                            usedCustomCertExtensionsOIDs.add(ce.getOID());
-                        }
-                    }
-                    setUsedCertificateExtensionsOIDs(usedCustomCertExtensionsOIDs);
-                }
-            }
-            
+                        
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.trace("<upgrade");
-    }
-    
-    private CertificateExtension getCertExtensionByID(int id, List<CertificateExtension> certExtensions) {
-        for(CertificateExtension ce : certExtensions) {
-            if(ce.getId() == id) {
-                return ce;
-            }
-        }
-        return null;
     }
 
 }
