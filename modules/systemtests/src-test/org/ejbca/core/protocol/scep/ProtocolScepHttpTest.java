@@ -987,7 +987,6 @@ public class ProtocolScepHttpTest {
         CMSSignedData s = new CMSSignedData(retMsg);
         // The signer, i.e. the CA, check it's the right CA
         SignerInformationStore signers = s.getSignerInfos();
-        @SuppressWarnings("unchecked")
         Collection<SignerInformation> col = signers.getSigners();
         assertTrue(col.size() > 0);
         Iterator<SignerInformation> iter = col.iterator();

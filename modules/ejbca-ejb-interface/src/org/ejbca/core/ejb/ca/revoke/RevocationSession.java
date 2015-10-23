@@ -12,10 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.revoke;
 
-import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
-import java.util.Date;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
