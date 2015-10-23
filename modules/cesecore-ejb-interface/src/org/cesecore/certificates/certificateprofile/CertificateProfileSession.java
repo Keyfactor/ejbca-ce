@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 

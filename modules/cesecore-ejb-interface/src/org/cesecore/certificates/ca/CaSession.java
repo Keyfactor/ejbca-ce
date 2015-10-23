@@ -14,7 +14,6 @@ package org.cesecore.certificates.ca;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
