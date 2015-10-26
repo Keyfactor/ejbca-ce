@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.CertTools;
@@ -249,6 +250,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CTMAXSCTSOCSP = "ctmaxsctsocsp";
     protected static final String CTMAXRETRIES = "ctmaxretries";
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
+    protected static final String USECUSTOMDNORDER = "usecustomdnorder";
+    protected static final String CUSTOMDNORDER = "customdnorder";
+    
 
     /**
      * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
@@ -1200,6 +1204,35 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExtendedKeyUsage(extendedKeyUsageOids);
     }
 
+    public void setUseCustomDnOrder(boolean use) {
+        data.put(USECUSTOMDNORDER, Boolean.valueOf(use));
+    }
+
+    public boolean getUseCustomDnOrder() {
+        boolean ret = false; // Default value is false here
+        Object o = data.get(USECUSTOMDNORDER);
+        if (o != null) {
+            ret = ((Boolean) o).booleanValue();
+        }
+        return ret;
+    }
+
+    /** Custom DN order is an ArrayList of DN strings
+     * @see DnComponents
+     * @return ArrayList of Strings or an empty ArrayList
+     */
+    @SuppressWarnings("unchecked")
+    public ArrayList<String> getCustomDnOrder() {
+        if (data.get(CUSTOMDNORDER) == null) {
+            return new ArrayList<String>();
+        }
+        return (ArrayList<String>) data.get(CUSTOMDNORDER);
+    }
+
+    public void setCustomDnOrder(final ArrayList<String> dnOrder) {
+        data.put(CUSTOMDNORDER, dnOrder);
+    }
+    
     public boolean getUseLdapDnOrder() {
         boolean ret = true; // Default value is true here
         Object o = data.get(USELDAPDNORDER);
