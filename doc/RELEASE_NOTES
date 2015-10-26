@@ -7,7 +7,7 @@ confident to the stability of this release.
 This major release contains 134 new features, bug fixes and improvements. Below is a selection of the most noteworthy:
 
 - New Features:
-	* Granular control has been added to DN and SAN elements in End Entity Profiles. Inputed values can be contolled using
+	* Granular control has been added to DN and SAN elements in End Entity Profiles. Inputed values can be controlled using
 	  regular expressions. 
 	* Most of the UI has been given read-only rights, and a new role template (named Auditor) can be created and built upon
 	  to allow an auditor to view but not modify. 
