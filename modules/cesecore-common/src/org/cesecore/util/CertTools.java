@@ -293,12 +293,27 @@ public abstract class CertTools {
      * @throws IllegalArgumentException if DN is not valid
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder) {
+        return stringToBcX500Name(dn, nameStyle, ldaporder, null);
+    }
+    /** Same as @see {@link CertTools#stringToBcX500Name(String, X500NameStyle, boolean)} but with the possibility of 
+     * specifying a custom order. 
+     * ONLY to be used when creating names that are transient, never for storing in the database.
+     * 
+     * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
+     *            the string will be added to the end positions of OID array.
+     * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
+     * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
+     *            order is the reverse
+     * @param order specified order, which overrides 'ldaporder', care must be taken constructing this String array, ignored if null or empty
+     * @return X500Name or null if input is null
+     */
+    public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder, final String[] order) {
         final X500Name x500Name = stringToUnorderedX500Name(dn, nameStyle);
         if (x500Name==null) {
             return null;
         }
         // -- Reorder fields
-        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, nameStyle);
+        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, order, nameStyle);
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
         }
@@ -3310,17 +3325,27 @@ public abstract class CertTools {
     /**
      * Obtains a List with the ASN1ObjectIdentifiers for dNObjects names, in the specified order
      * 
+     * @param order an array of DN objects.
+     * @return a List with ASN1ObjectIdentifiers defining the known order we require
+     * @see org.cesecore.certificates.util.DnComponents#getDnObjects(boolean) for definition of the contents of the input array
+     */
+    private static List<ASN1ObjectIdentifier> getX509FieldOrder(String[] order) {
+        List<ASN1ObjectIdentifier> fieldOrder = new ArrayList<ASN1ObjectIdentifier>();
+        for (final String dNObject : order) {
+            fieldOrder.add(DnComponents.getOid(dNObject));
+        }
+        return fieldOrder;
+    }
+    /**
+     * Obtains a List with the ASN1ObjectIdentifiers for dNObjects names, in the specified pre-defined order
+     * 
      * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500
      *            (C=SE,O=bar,CN=foo).
      * @return a List with ASN1ObjectIdentifiers defining the known order we require
      * @see org.cesecore.certificates.util.DnComponents#getDnObjects(boolean)
      */
     public static List<ASN1ObjectIdentifier> getX509FieldOrder(boolean ldaporder) {
-        List<ASN1ObjectIdentifier> fieldOrder = new ArrayList<ASN1ObjectIdentifier>();
-        for (final String dNObject : DnComponents.getDnObjects(ldaporder)) {
-            fieldOrder.add(DnComponents.getOid(dNObject));
-        }
-        return fieldOrder;
+        return getX509FieldOrder(DnComponents.getDnObjects(ldaporder));
     }
 
     /**
@@ -3330,21 +3355,28 @@ public abstract class CertTools {
      * @param x500Name the X500Name that is unordered
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
+     * @param order specified order, which overrides 'ldaporder', care must be taken constructing this String array, ignored if null or empty
      * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @return X500Name with ordered conmponents according to the orcering vector
      */
-    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, final X500NameStyle nameStyle) {
-        // -- Null prevent
-        // Guess order of the input name
-        final boolean isLdapOrder = !isDNReversed(x500Name.toString());
+    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, String[] order, final X500NameStyle nameStyle) {
         // -- New order for the X509 Fields
         final List<ASN1ObjectIdentifier> newOrdering = new ArrayList<ASN1ObjectIdentifier>();
         final List<ASN1Encodable> newValues = new ArrayList<ASN1Encodable>();
         // -- Add ordered fields
         final ASN1ObjectIdentifier[] allOids = x500Name.getAttributeTypes();
+        
+        // Guess order of the input name
+        final boolean isLdapOrder = !isDNReversed(x500Name.toString());
         // If we think the DN is in LDAP order, first order it as a LDAP DN, if we don't think it's LDAP order
-        // order it as a X.500 DN
-        final List<ASN1ObjectIdentifier> ordering = getX509FieldOrder(isLdapOrder);
+        // order it as a X.500 DN. If we haven't specified our own ordering
+        final List<ASN1ObjectIdentifier> ordering;
+        if ((order != null) && (order.length > 0)) {
+            ordering = getX509FieldOrder(order);            
+        } else {
+            ordering = getX509FieldOrder(isLdapOrder);
+        }
+        
         final HashSet<ASN1ObjectIdentifier> hs = new HashSet<ASN1ObjectIdentifier>(allOids.length + ordering.size());
         for (final ASN1ObjectIdentifier oid : ordering) {
             if (!hs.contains(oid)) {

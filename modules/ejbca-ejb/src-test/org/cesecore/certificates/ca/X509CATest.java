@@ -34,6 +34,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -838,7 +839,43 @@ public class X509CATest {
         assertTrue("Certificate C was not PrintableString encoded.", getValueFromDN(cert, X509ObjectIdentifiers.countryName) instanceof DERPrintableString); // C is always PrintableString
         assertTrue("Certificate JurisdictionCountry was not PrintableString encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_COUNTRY) instanceof DERPrintableString); // C is always PrintableString
     }
-    
+
+    /**
+     * Tests using different DN orders in issued certificates.
+     */
+    @Test
+    public void testDNOrder() throws Exception {
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final String caDN = "CN=foo CA,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
+        final X509CA testCa = createTestCA(cryptoToken, caDN);        
+        Certificate cert = testCa.getCACertificate();
+        X500Principal princ = ((X509Certificate) cert).getSubjectX500Principal();
+        X500Name name = X500Name.getInstance(princ.getEncoded());
+        // The EV DN components do not have names in standard java/BC
+        assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
+        
+        // Test generation by calling generateCertificate directly
+        final String subjectDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE"; 
+        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null, cceConfig);
+        princ = ((X509Certificate) cert).getSubjectX500Principal();
+        name = X500Name.getInstance(princ.getEncoded());
+        // The EV DN components do not have names in standard java/BC. This is standard order where EV fields are before CN and in other respects ldap order
+        String desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SERIALNUMBER=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
+        assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
+        // Now set a DN order where the EV fields (and serialnumber and businesscategory) comes before C and in other aspects are x500 order
+        final ArrayList<String> order = new ArrayList<String>(Arrays.asList("jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality","businesscategory","serialnumber","c","dc","st","l","o","ou","t","surname","initials","givenname","gn","sn","name","cn","uid","dn","email","e","emailaddress","unstructuredname","unstructuredaddress","postalcode","postaladdress","telephonenumber","pseudonym","street"));
+        certProfile.setCustomDnOrder(order);
+        certProfile.setUseCustomDnOrder(true);
+        cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, 30, certProfile, null, cceConfig);
+        princ = ((X509Certificate) cert).getSubjectX500Principal();
+        name = X500Name.getInstance(princ.getEncoded());
+        // The EV DN components do not have names in standard java/BC
+        desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,SERIALNUMBER=1234567890,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,CN=evssltest6.test.lan";
+        assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
+    }
+
     private static ASN1Encodable getValueFromDN(Certificate cert, ASN1ObjectIdentifier oid) {
         final X500Principal principal = ((X509Certificate)cert).getSubjectX500Principal();
         final X500Name xname = X500Name.getInstance(principal.getEncoded());
