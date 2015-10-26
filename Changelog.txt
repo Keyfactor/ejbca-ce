@@ -1,3 +1,150 @@
+EJBCA 6.4.0, 2015-10-26
+---
+Bug
+	[ECA-3576] - 'Enforce unique DN' creates a stack trace in public web
+	[ECA-4016] - Unable to activate a crypto token imported by statedump after restarting JBoss
+	[ECA-4022] - Can not use Brainpool or explicit ECC curve in CLI (e.g. import CA certificate, list/export CA)
+	[ECA-4030] - "Key sequence" always set to 00000 when saving uninitialised CA with available crypto token
+	[ECA-4171] - Missing parameter for the --end-entity-password option does not cause statedump import command to fail immediately
+	[ECA-4172] - End entities inaccessible after changing the subject DN of an uninitialised CA
+	[ECA-4197] - Role access rules not updated when changing subject DN of an uninitialised CA
+	[ECA-4228] - Clean redundant method declaration in PublisherSession and PublisherSessionLocal
+	[ECA-4276] - External RA SCEP junit test broken after BC updates
+	[ECA-4283] - Warning about missing intresources running External RA SCEP
+	[ECA-4284] - Possible to create a rollover certificate for a CA waiting for CSR
+	[ECA-4286] - ClientToolBox PKCS11HSMKeyTool can no longer handle sun config file
+	[ECA-4288] - Change usage license info in csv_to_endentity.sh
+	[ECA-4295] - Incorrect documentation on "Finish User" setting.
+	[ECA-4296] - SCEP Client Certificate Renewal shouldn't demand a challenge password
+	[ECA-4298] - Probably wrong description of parameters in help for importcacert command
+	[ECA-4306] - Use UTF-8 in German Admin GUI translation
+	[ECA-4326] - CRLDownload service can't handle multiple revocation changes in a CRL
+	[ECA-4327] - Links from cert enrollment completed page for IE is broken
+	[ECA-4333] - Detect available EC curves in JDK by OID
+	[ECA-4339] - DirectoryName subjectAltName is not added
+	[ECA-4356] - Regression: Sorting of certificates has become random
+	[ECA-4357] - Regression: external-ra-gui doesn't deploy
+	[ECA-4364] - Regression: Error editing Publishers under CA Functions in Admin Web
+	[ECA-4367] - ejbca-ws-generate not run after the addition of CA rollover WS operations
+	[ECA-4368] - intresources missing in externalra-gui war file
+	[ECA-4369] - NPE when trying to create custom publisher that is not pre-edited
+	[ECA-4371] - SCEP Client Certificate Renewal allows renewal using expired certificates
+	[ECA-4381] - OCSP TransactionLogger prints SERIALNUMBER instead of SN for REQ_NAME 
+	[ECA-4385] - Internal issue
+	[ECA-4397] - Include custpubl publishers in build
+	[ECA-4399] - System test auth token classes should be commonly accessible
+	[ECA-4400] - Security Issue
+	[ECA-4402] - Subject alternative names dropped when using "Allow merge DN Web Services"
+	[ECA-4405] - ra addendentity CLI command breaks when hard token issuers are enabled
+	[ECA-4414] - Typo error in System Configuration page
+	[ECA-4416] - Verification of CRLs on CAs using Brainpool ECC does not always work
+	[ECA-4418] - Expect OCSP signing if EKU in OCSP signing certificate is marked critical
+	[ECA-4419] - Statedump 6.3 can't import 6.2 dump because ValidationAuthorityPublisher in not on the classpath
+	[ECA-4435] - SCEP: Use empty content in CACert PKCS#7 messages
+	[ECA-4453] - Peerconnector tests and Statedump fails to start due to JNDI problems (NoInitialContextException)
+	[ECA-4457] - EjbcaWS.findCerts(username, isValid=true) should not fetch expired certificates from database
+	[ECA-4469] - 'Edit Service' page: uppercase/lowercase inconsistency in drop down menu
+	[ECA-4471] - Unable to view certificate with E field in issuer DN
+	[ECA-4472] - EJB CLI fails if standalone argument is used after a standalone-enabled switch 
+	[ECA-4475] - Validation javascript on End Entity Profile page throws exception
+	[ECA-4479] - CMP RA requests with only notBefore requested does not work
+	[ECA-4483] - Remote EJB serialization of Collection<Certificate> hangs on JBoss 7.1.1.GA
+	[ECA-4484] - EjbcaEventTypes.CA_ROLLEDOVER is missing its language reference
+	[ECA-4489] - No checkbox "Renew keys” on 'Edit CA' page
+	[ECA-4492] - NPE during standard SCEP Certificate Renewal 
+	[ECA-4494] - Single Active Certificate Constraint misses certificates due to subject DN differing between UserData and CertificateData
+	[ECA-4495] - NPE in EJBCA WS findCerts when no base64CertData is stored
+	[ECA-4503] - Test case in CertificateCreateSessionTest uses wrong status constants
+	[ECA-4510] - Can't delete admin in access role
+	[ECA-4513] - Unchecking auto-activate does not persist for auto-generated crypto tokens using default password
+	[ECA-4523] - Security Issue, information leak
+	[ECA-4525] - CustomCertExtensions and ExtendedKeyUsages are sorted alphabetically instead of numerically
+	[ECA-4536] - Regression: Approve Action Name not displayed 
+	[ECA-4542] -  'List of End Entity Profiles' displays nothing in Auditor pre-defined role
+	[ECA-4554] - NPE in remote IKB page when multiple CA clusters connect to the same VA
+
+Improvement
+	[ECA-3418] - Optimize JBoss reload during install
+	[ECA-3815] - Improve batch command instructions
+	[ECA-4034] - Include end entities in statedump export by default
+	[ECA-4113] - Modify BatchCreateTool to allow easy cleanup of files from p12 directory
+	[ECA-4163] - Move ScepRequestGenerator out of general code
+	[ECA-4174] - PKCS#11 symmetric key unwrapping for KeyRecovery broken for some HSMs on JDK >= 1.7.0_75
+	[ECA-4248] - Swap username and serialnumber for PUBLISHER_STORE_CERTIFICATE audit event
+	[ECA-4254] - Document prerequisite for trusting external CA's leaf cert from IKB
+	[ECA-4273] - Cosmetic cleanup of IEjbcaWS
+	[ECA-4281] - GUI: Optimization of the header banner of Admin GUI
+	[ECA-4287] - Pre-emptive rewrite of CertificateProfile cache
+	[ECA-4291] - Add system tests for EjbcaWS.caCertResponseForRollover
+	[ECA-4300] - Convert System Configuration page to JSF
+	[ECA-4301] - Add tabs to System Configuration Page 
+	[ECA-4304] - Allow prefix for self registered users
+	[ECA-4305] - Disable choice in self registration when referenced profile does not exist
+	[ECA-4313] - Allow help text for custom publishers in language file
+	[ECA-4317] - Document how to encrypt the datasource password in standalone.xml for JBoss EAP 6.4/JBoss AS 7.1
+	[ECA-4325] - Remove CertificateCreationException from code
+	[ECA-4330] - Backport ECA-2576 to 6.2
+	[ECA-4331] - Make the static values for revocation reasons into a new type. 
+	[ECA-4342] - Have cryptotokens excluded from Clear All Caches by default. 
+	[ECA-4351] - Lower log level of misconfigured CertificatePolicies to WARN
+	[ECA-4352] - Always use EC curves OID when possible for key generation
+	[ECA-4361] - Add logging of 'X-Forwarded-For' in OCSP transaction log
+	[ECA-4365] - Document that Healtch check can be enabled/disabled per CA
+	[ECA-4376] - Add "All CAs" option to Rollover Service worker. 
+	[ECA-4390] - GUI: System Configuration page usability
+	[ECA-4406] - Improve how upgrade versions are read, making migration from 6.2.10+ to 6.3+ possible 
+	[ECA-4407] - Clarify Illegal key length exception message as limitation by certificate policy
+	[ECA-4415] - GUI: Certificate Profiles page usability
+	[ECA-4430] - Bundle JEE6 API library to minimize appserver build time dependency
+	[ECA-4431] - Update XML schemas for JEE6
+	[ECA-4440] - Fix use of deprecated version of storeCertificateRemote in CertificateStoreSessionRemote
+	[ECA-4441] - Rewrite the ExternalRA GUI to use JSF 2.0 and CSS
+	[ECA-4449] - GUI: CryptoToken page usability
+	[ECA-4454] - Certificate Profiles: Sort Custom Certificate Extension and EKUs alphabetically by label.
+	[ECA-4455] - CustomCertExtensions: Remove limit on number of certificate extensions (was: Identify by OID instead of ID)
+	[ECA-4456] - Allow EjbcaWS.findCerts(usename, isValid) to work without UserData
+	[ECA-4458] - Improvements to Certificate Extensions overview page
+	[ECA-4460] - Extended Key Usages overview page should be sorted by OID. 
+	[ECA-4461] - Add input validation control to SAN in EEP 
+	[ECA-4462] - Minor improvements to Auditor role 
+	[ECA-4465] - GUI: End-Entity Profile usability
+	[ECA-4470] - Document how EKUs and CCEs are imported in upgrade
+	[ECA-4480] - ExtRA GUI DB2 support
+	[ECA-4490] - Upgrade EJBCA to BC 1.53
+	[ECA-4515] - Remove translation of CustomCertExtension displayname into readable text
+	[ECA-4517] - Buttons for type of Certificate Profile etc. are confusing for new users
+	[ECA-4531] - ExtendedKeyUsages: remove deprecated method
+	[ECA-4537] - 'End Entity Profiles' are not displayed in Access Rules
+
+New Feature
+	[ECA-3436] - Support WildFly 8
+	[ECA-4264] - Ability to generate link certificate from key on HSM
+	[ECA-4279] - Add ability to specify revocation reason and revocation date when importing certificates in the CLI
+	[ECA-4282] - Allow CMP Proxy to work with External RA backend
+	[ECA-4341] - Add CertificateProfileID to OCSP transaction logs
+	[ECA-4343] - Custom Certificate Extensions and EKUs without recompilation
+	[ECA-4344] - Introduce a Read-Only admin to EJBCA
+	[ECA-4345] - Granular control over elements of the DN in End Entity Profiles
+	[ECA-4360] - SCEP Client Certificate Renewal on a rollover CA
+	[ECA-4372] - New setting for specifying certificate chain order in the public web.
+	[ECA-4396] - Compile and deploy on WildFly 9
+	[ECA-4459] - Certificate Extensions should define their own property fields
+	[ECA-4502] - Improve upgrade procedure with database version detection.
+
+Task
+	[ECA-4289] - Remove outdated sample file change_p12_pwd.c
+	[ECA-4292] - Remove Support for XKMS
+	[ECA-4466] - AdminWeb CSS styles clean up
+	[ECA-4468] - Remove site:publish ant target
+
+Master Ticket
+	[ECA-4432] - Remove JEE5 and JDK6 support
+		[ECA-4375] - Update documentation to reflect dropped JBoss5 and JDK6 support. 
+		[ECA-4417] - Remove build and install script specifics for JEE5 app servers and JDK6.
+		[ECA-4433] - Get rid of Hibernate compatibility libs
+		[ECA-4437] - Update ExternalRA GUI to JEE6
+
+
 EJBCA 6.3.2, 2015-05-29
 ---
 Bug
