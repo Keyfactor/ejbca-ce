@@ -46,6 +46,7 @@ import org.cesecore.util.StringTools;
  * @version $Id$
  */
 public class CrlDistributionPoints extends StandardCertificateExtension {
+    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CrlDistributionPoints.class);
 	
     @Override
