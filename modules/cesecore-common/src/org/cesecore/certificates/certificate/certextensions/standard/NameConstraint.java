@@ -48,6 +48,8 @@ import org.cesecore.util.CeSecoreNameStyle;
  */
 public class NameConstraint extends StandardCertificateExtension {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
     public void init(CertificateProfile certProf) {
         super.setOID(Extension.nameConstraints.getId());

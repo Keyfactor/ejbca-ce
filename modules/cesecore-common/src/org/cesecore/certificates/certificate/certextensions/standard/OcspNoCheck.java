@@ -31,6 +31,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  */
 public class OcspNoCheck extends StandardCertificateExtension {
 	
+    private static final long serialVersionUID = 1L;
+
     @Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());

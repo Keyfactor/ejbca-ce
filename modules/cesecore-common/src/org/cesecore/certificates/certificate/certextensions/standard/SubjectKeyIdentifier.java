@@ -38,6 +38,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  */
 public class SubjectKeyIdentifier extends StandardCertificateExtension {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(Extension.subjectKeyIdentifier.getId());

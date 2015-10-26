@@ -36,6 +36,7 @@ import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
  * @version $Id$
  */
 public class SubjectDirectoryAttributes extends StandardCertificateExtension {
+    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);
 
     @Override
