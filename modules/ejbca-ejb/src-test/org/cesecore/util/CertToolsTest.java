@@ -1785,7 +1785,48 @@ public class CertToolsTest {
             fail("Exception " + e.getClass() + " should not been thrown.");
         }
     }
-    
+
+    @Test
+    public void testStringToBcX500WithDefinedEVOrder() {
+        try {
+            final String[] order1 = { "street", "pseudonym",
+                "telephonenumber", "postaladdress", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
+                "email", "dn", "uid", "cn", "name", "sn", "gn", "givenname", "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c", "serialnumber", "businesscategory", "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality"};
+            final String[] order2 = { "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality","businesscategory","serialnumber","c","dc","st","l","o","ou","t","surname","initials","givenname","gn","sn","name","cn","uid","dn","email","e","emailaddress","unstructuredname","unstructuredaddress","postalcode","postaladdress","telephonenumber","pseudonym","street"};
+            final X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
+            final String dn = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE"; 
+            X500Name name = CertTools.stringToBcX500Name(dn, nameStyle, false, order1);
+            assertNotNull(name);
+            String desiredDN = "JurisdictionLocality=Åmål,JurisdictionState=State,JurisdictionCountry=NL,BusinessCategory=Private Organization,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,SN=1234567890,CN=evssltest6.test.lan";
+            assertEquals("Name order should be as defined in order string array", desiredDN, name.toString());
+            // Another order
+            name = CertTools.stringToBcX500Name(dn, nameStyle, false, order2);
+            assertNotNull(name);
+            desiredDN = "CN=evssltest6.test.lan,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE,SN=1234567890,BusinessCategory=Private Organization,JurisdictionLocality=Åmål,JurisdictionState=State,JurisdictionCountry=NL";
+            assertEquals("Name order should be as defined in order string array", desiredDN, name.toString());
+            // If the ordering string is missing some components that exist in the DN, these will just be added to the beginning of the resulting DN
+            final String[] orderWithMissing = { "street", "pseudonym",
+                    "telephonenumber", "postaladdress", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
+                    "email", "dn", "uid", "cn", "name", "sn", "gn", "givenname", "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c", "serialnumber", "jurisdictionstate", "jurisdictionlocality"};
+            name = CertTools.stringToBcX500Name(dn, nameStyle, false, orderWithMissing);
+            assertNotNull(name);
+            desiredDN = "BusinessCategory=Private Organization,JurisdictionCountry=NL,JurisdictionLocality=Åmål,JurisdictionState=State,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,SN=1234567890,CN=evssltest6.test.lan";
+            assertEquals("Name order should be as defined in order string array", desiredDN, name.toString());
+            // Standard ldap order
+            name = CertTools.stringToBcX500Name(dn, nameStyle, true, null);
+            assertNotNull(name);
+            desiredDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
+            assertEquals("Name order should be as defined DnComponents (forward) order array", desiredDN, name.toString());
+            // Standard x500 order
+            name = CertTools.stringToBcX500Name(dn, nameStyle, false, null);
+            assertNotNull(name);
+            desiredDN = "C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,SN=1234567890,CN=evssltest6.test.lan,BusinessCategory=Private Organization,JurisdictionLocality=Åmål,JurisdictionState=State,JurisdictionCountry=NL";
+            assertEquals("Name order should be as defined DnComponents (reverse) order array", desiredDN, name.toString());
+        } catch (IllegalArgumentException e) {
+            fail("Exception " + e.getClass() + " should not been thrown.");
+        }
+    }
+
     /**
      * Tests encoding DN attributes as UTF-8 or printable string
      */
