@@ -47,6 +47,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  */
 public class QcStatement extends StandardCertificateExtension {
+    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(QcStatement.class);
 	
     @Override

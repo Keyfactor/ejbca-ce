@@ -31,6 +31,8 @@ import org.cesecore.util.CertTools;
  */
 public class MsTemplate extends StandardCertificateExtension {
 	
+    private static final long serialVersionUID = 1L;
+
     @Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(CertTools.OID_MSTEMPLATE);

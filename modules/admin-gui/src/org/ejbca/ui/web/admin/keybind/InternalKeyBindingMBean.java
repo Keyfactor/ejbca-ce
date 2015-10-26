@@ -635,7 +635,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
     private String currentCertificateSerialNumber = null;
-    private ListDataModel/*<SimpleEntry<Integer, BigInteger>>*/trustedCertificates = null;
+    private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
 
     public Integer getCurrentCertificateAuthority() {
         return currentCertificateAuthority;
@@ -1058,16 +1058,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
-    public ListDataModel/*<List<InternalKeyBindingTrustEntry>>*/getTrustedCertificates() {
+    public ListDataModel<InternalKeyBindingTrustEntry>getTrustedCertificates() {
         if (trustedCertificates == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             if (internalKeyBindingId == 0) {
-                trustedCertificates = new ListDataModel(new ArrayList<InternalKeyBindingTrustEntry>());
+                trustedCertificates = new ListDataModel<InternalKeyBindingTrustEntry>(new ArrayList<InternalKeyBindingTrustEntry>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
                             authenticationToken, internalKeyBindingId);
-                    trustedCertificates = new ListDataModel(internalKeyBinding.getTrustedCertificateReferences());
+                    trustedCertificates = new ListDataModel<InternalKeyBindingTrustEntry>(internalKeyBinding.getTrustedCertificateReferences());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }

@@ -37,6 +37,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * @version $Id$
  */
 public class DocumentTypeList extends StandardCertificateExtension {
+    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(DocumentTypeList.class);
 
     @Override

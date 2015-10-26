@@ -32,6 +32,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  */
 public class KeyUsage extends StandardCertificateExtension {
+    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(KeyUsage.class);
 
     @Override

@@ -36,6 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  */
 public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
 
+    private static final long serialVersionUID = 1L;
     /** Logger for this class. */
     private static final Logger LOG = Logger.getLogger(PrivateKeyUsagePeriod.class);
 

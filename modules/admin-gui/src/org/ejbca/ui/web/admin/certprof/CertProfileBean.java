@@ -70,12 +70,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     
     private int currentCertProfileId = -1;
     private CertificateProfile certificateProfile = null;
-    @SuppressWarnings("rawtypes")
-    private ListDataModel certificatePoliciesModel = null;
+    private ListDataModel<CertificatePolicy> certificatePoliciesModel = null;
     private CertificatePolicy newCertificatePolicy = null;
-    private ListDataModel caIssuersModel = null;
+    private ListDataModel<String> caIssuersModel = null;
     private String newCaIssuer = "";
-    private ListDataModel documentTypeList = null;
+    private ListDataModel<String> documentTypeList = null;
     private String documentTypeListNew = "";
 
     /** Since this MBean is session scoped we need to reset all the values when needed. */
@@ -353,13 +352,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_x509v3extensions_usages");
     }
     
-    public ListDataModel/*<CertificatePolicy>*/ getCertificatePolicies() throws AuthorizationDeniedException {
+    public ListDataModel<CertificatePolicy> getCertificatePolicies() throws AuthorizationDeniedException {
         if (certificatePoliciesModel==null) {
             final List<CertificatePolicy> certificatePolicies = getCertificateProfile().getCertificatePolicies();
             if (certificatePolicies!=null) {
-                certificatePoliciesModel = new ListDataModel(certificatePolicies);
+                certificatePoliciesModel = new ListDataModel<CertificatePolicy>(certificatePolicies);
             } else {
-                certificatePoliciesModel = new ListDataModel();
+                certificatePoliciesModel = new ListDataModel<CertificatePolicy>();
             }
         }
         return certificatePoliciesModel;
@@ -424,13 +423,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return "";
     }
 
-    public ListDataModel/*<String>*/ getCaIssuers() throws AuthorizationDeniedException {
+    public ListDataModel<String> getCaIssuers() throws AuthorizationDeniedException {
         if (caIssuersModel==null) {
             final List<String> caIssuers = getCertificateProfile().getCaIssuers();
             if (caIssuers!=null) {
-                caIssuersModel = new ListDataModel(caIssuers);
+                caIssuersModel = new ListDataModel<String>(caIssuers);
             } else {
-                caIssuersModel = new ListDataModel();
+                caIssuersModel = new ListDataModel<String>();
             }
         }
         return caIssuersModel;
@@ -630,9 +629,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         redirectToComponent("cvc_epassport");
     }
-    public ListDataModel/*<String>*/ getDocumentTypeList() throws AuthorizationDeniedException {
+    public ListDataModel<String> getDocumentTypeList() throws AuthorizationDeniedException {
         if (documentTypeList==null) {
-            documentTypeList = new ListDataModel(getCertificateProfile().getDocumentTypeList());
+            documentTypeList = new ListDataModel<String>(getCertificateProfile().getDocumentTypeList());
         }
         return documentTypeList;
     }

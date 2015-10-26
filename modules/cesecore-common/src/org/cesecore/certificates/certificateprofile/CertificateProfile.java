@@ -1161,6 +1161,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(DOCUMENTTYPELIST, docTypes);
     }
     
+    @SuppressWarnings("unchecked")
     public ArrayList<String> getDocumentTypeList() {
         return (ArrayList<String>) data.get(DOCUMENTTYPELIST);
     }

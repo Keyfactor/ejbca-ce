@@ -33,9 +33,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 /**
  * Class used to populate the fields in the customworker.jsp subview page. 
  * 
- * Is comatible with custom action and custom interval. 
- * 
- * @author Philip Vendil 2006 sep 30
+ * Is compatible with custom action and custom interval. 
  *
  * @version $Id$
  */
@@ -49,7 +47,8 @@ public class CustomWorkerType extends WorkerType {
     private String propertyText;
     private Collection<String> compatibleActionTypeNames = new ArrayList<String>();
     private Collection<String> compatibleIntervalTypeNames = new ArrayList<String>();
-    
+    private ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
+
 	public CustomWorkerType() {
 		super("customworker.jsp", NAME, true);
 		
@@ -157,10 +156,8 @@ public class CustomWorkerType extends WorkerType {
             return false;
         }
 	}
-	
-	private ListDataModel/*<CustomServiceWorkerProperty>*/ customUiPropertyListDataModel = null;
-	
-	public ListDataModel/*<CustomServiceWorkerProperty>*/ getCustomUiPropertyList() {
+		
+	public ListDataModel<CustomServiceWorkerProperty> getCustomUiPropertyList() {
 	    if (isCustomUiRenderingSupported()) {
 	        if (customUiPropertyListDataModel==null) {
 	            final List<CustomServiceWorkerProperty> customUiPropertyList = new ArrayList<CustomServiceWorkerProperty>();
@@ -178,7 +175,7 @@ public class CustomWorkerType extends WorkerType {
 	            } catch (IOException e) {
 	                e.printStackTrace();
 	            }
-	            this.customUiPropertyListDataModel = new ListDataModel(customUiPropertyList);
+	            this.customUiPropertyListDataModel = new ListDataModel<CustomServiceWorkerProperty>(customUiPropertyList);
             }
 	    }
 	    return customUiPropertyListDataModel;

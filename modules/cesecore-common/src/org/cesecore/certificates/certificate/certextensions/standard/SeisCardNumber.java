@@ -36,7 +36,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  */
 public class SeisCardNumber extends StandardCertificateExtension {
 
-	private static final Logger log = Logger.getLogger(SeisCardNumber.class);
+	private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(SeisCardNumber.class);
 
     /** OID for creating Smartcard Number Certificate Extension
      *  SEIS Cardnumber Extension according to SS 614330/31 */
