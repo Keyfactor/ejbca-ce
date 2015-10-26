@@ -92,8 +92,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 				value="#{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#New%20Crypto%20Tokens") %>
 		</h:panelGroup>
-		<h:panelGroup>
-			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
+		<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
+			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey"
 				value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 			<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey" value="#{web.text.USE}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
