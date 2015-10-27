@@ -290,7 +290,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN, subjectDN, null, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN, subjectDN, subjectDN, null, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();

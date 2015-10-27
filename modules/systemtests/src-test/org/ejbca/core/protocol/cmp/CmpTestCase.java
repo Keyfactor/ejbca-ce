@@ -247,11 +247,35 @@ public abstract class CmpTestCase extends CaTestCase {
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
-        return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID);
     }
 
-    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+    /** 
+     * 
+     * @param issuerDN
+     * @param userDN the subjectDN in the CSR, can be set to null, but typically is not
+     * @param senderDN senderDN is usually the same as userDN
+     * @param altNames
+     * @param keys
+     * @param cacert
+     * @param nonce
+     * @param transid
+     * @param raVerifiedPopo
+     * @param extensions
+     * @param notBefore
+     * @param notAfter
+     * @param customCertSerno
+     * @param pAlg
+     * @param senderKID
+     * @return PKIMessage, to be protected
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws IOException
+     * @throws InvalidKeyException
+     * @throws SignatureException
+     */
+    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
@@ -274,7 +298,10 @@ public abstract class CmpTestCase extends CaTestCase {
         if(issuerDN != null) {
             myCertTemplate.setIssuer(new X500Name(issuerDN));
         }
-        myCertTemplate.setSubject(userDN);
+        if (userDN != null) {
+            // This field can be empty in the spec, and it has happened for real that someone has used empty value here
+            myCertTemplate.setSubject(userDN);
+        }
         byte[] bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream dIn = new ASN1InputStream(bIn);
@@ -355,7 +382,7 @@ public abstract class CmpTestCase extends CaTestCase {
         
         CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(userDN), new GeneralName(new X500Name(
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(senderDN), new GeneralName(new X500Name(
                 issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
         
         myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
@@ -366,8 +393,7 @@ public abstract class CmpTestCase extends CaTestCase {
         myPKIHeader.setProtectionAlg(pAlg);
         myPKIHeader.setSenderKID(senderKID);
 
-        PKIBody myPKIBody = new PKIBody(0, myCertReqMessages); // initialization
-                                                               // request
+        PKIBody myPKIBody = new PKIBody(0, myCertReqMessages); // initialization request
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
         return myPKIMessage;
     }
