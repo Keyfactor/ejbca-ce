@@ -532,6 +532,37 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
     } // test04RevocationApprovals
 
+    
+    @Test
+    public void test05CrmfEmptyDN() throws Exception {
+        try {
+            byte[] nonce = CmpMessageHelper.createSenderNonce();
+            byte[] transid = CmpMessageHelper.createSenderNonce();
+
+            // Create a request with non-existing subjectDN
+            PKIMessage one = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
+            assertNotNull(one);
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+            assertNotNull(req);
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent(); 
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+        } finally {
+            try {
+                this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
+            } catch (NotFoundException e) {
+                // NOPMD: ignore
+            }
+        }
+    }
+
     /**
      * Find all certificates for a user and approve any outstanding revocation.
      */
