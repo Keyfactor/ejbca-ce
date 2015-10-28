@@ -381,7 +381,7 @@ public class CmpMessageHelper {
     /**
      * creates a simple error message in response to msg.
      * 
-     * The protection paramters can be null to create an unprotected message
+     * The protection parameters can be null to create an unprotected message
      * 
      * @return IResponseMessage that can be sent to user
      */
