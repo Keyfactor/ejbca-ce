@@ -462,6 +462,25 @@ public class CrmfRARequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resprev, ISSUER_DN, userDN, this.cacert, nonce2, transid2, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             int revstatus = checkRevokeStatus(ISSUER_DN, serialnumber);
             Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
+
+            // Create a request that points to a non existing profile (identified by keyId)
+            final PKIMessage three = genCertReq(ISSUER_DN, userDN, keys, this.cacert, nonce, transid, true, null, new Date(), null, null, null, null);
+            final PKIMessage req3 = protectPKIMessage(three, false, PBEPASSWORD, "CMPKEYIDTESTPROFILEFAIL", 567);
+
+            ir = (CertReqMessages) req3.getBody().getContent();
+            final int reqId3 = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            Assert.assertNotNull(reqId3);
+            final ByteArrayOutputStream bao3 = new ByteArrayOutputStream();
+            final DEROutputStream out3 = new DEROutputStream(bao3);
+            out3.writeObject(req3);
+            final byte[] ba3 = bao3.toByteArray();
+            // Send request and receive response
+            final byte[] resp3 = sendCmpHttp(ba3, 200, cmpAlias);
+            // do not check signing if we expect a failure (sFailMessage==null)
+            checkCmpResponseGeneral(resp3, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpFailMessage(resp3, "No end entity profile found with name: CMPKEYIDTESTPROFILEFAIL", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId3, 
+                                                                PKIFailureInfo.systemUnavail, PKIFailureInfo.systemUnavail);
+
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "keyIDTestUser");

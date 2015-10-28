@@ -316,6 +316,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         } catch (CADoesntExistsException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
             return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);
+        }  catch (NotFoundException e) {
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.info(errMsg, e);
+            // In case an EE profile or a cert profiles, or a CA can not be found, this is a bad configuration or database is down. 
+            // In either case the system is unavailable due to CMP server, so client should try again at some later point
+            return CmpMessageHelper.createErrorMessage(msg, FailInfo.SYSTEM_UNAVAILABLE, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);           
         }
 
         ResponseMessage resp = null; // The CMP response message to be sent back to the client
