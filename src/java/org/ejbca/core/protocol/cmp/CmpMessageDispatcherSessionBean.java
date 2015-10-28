@@ -34,7 +34,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -132,7 +131,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 
 	    if(!cmpConfiguration.aliasExists(confAlias)) {
 	        log.info("There is no CMP alias: " + confAlias);
-	        return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, "Wrong URL. CMP alias '" + confAlias + "' does not exist");
+	        return CmpMessageHelper.createUnprotectedErrorMessage(null, FailInfo.INCORRECT_DATA, "Wrong URL. CMP alias '" + confAlias + "' does not exist");
 	    }
 	    
 		final PKIMessage req;
@@ -145,7 +144,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
 			log.error(eMsg, t);
 			// If we could not read the message, we should return an error BAD_REQUEST
-			return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eMsg);
+			return CmpMessageHelper.createUnprotectedErrorMessage(null, FailInfo.BAD_REQUEST, eMsg);
 		}
 		try {
 			final PKIBody body = req.getBody();
@@ -217,13 +216,13 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         final String errMsg = e.getLocalizedMessage();
                         log.info(errMsg, e);
                         cmpMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg); 
+                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, FailInfo.BAD_REQUEST, errMsg); 
                     }
                 } else {
                     final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                     log.info(errMsg);
                     cmpMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
+                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, FailInfo.BAD_REQUEST, errMsg);
                 }
 
 			default:
@@ -235,7 +234,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				if (unknownMessageType > -1) {
 					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
 					log.error(eMsg);
-					return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eMsg);
+					return CmpMessageHelper.createUnprotectedErrorMessage(null, FailInfo.BAD_REQUEST, eMsg);
 				}
 				throw new Exception("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}

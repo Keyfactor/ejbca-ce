@@ -83,7 +83,6 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -346,10 +345,10 @@ public class CmpMessageHelper {
      * @param failText
      * @return IResponseMessage that can be sent to user
      */
-    public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, ResponseStatus status, FailInfo failInfo, String failText) {
+    public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText) {
         // Create a failure message
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating an unprotected error message with status=" + status.getValue() + ", failInfo=" + failInfo + ", failText=" + failText);
+            LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + failText);
         }
         CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
         resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
@@ -364,7 +363,6 @@ public class CmpMessageHelper {
             resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
         }
         resp.setFailInfo(failInfo);
-        resp.setStatus(status);
         resp.setFailText(failText);
         try {
             resp.create();
