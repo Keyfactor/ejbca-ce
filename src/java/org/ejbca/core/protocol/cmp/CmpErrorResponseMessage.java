@@ -39,7 +39,7 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 
 /**
  * A very simple error message, no protection, or PBE protection
- * @author tomas
+ *
  * @version $Id$
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseMessage {
@@ -60,7 +60,6 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
     private byte[] responseMessage = null;
     private String failText = null;
     private FailInfo failInfo = null;
-    private ResponseStatus status = null;
     private int requestId = 0;
 	private int requestType = 23; // 23 is general error message
 
@@ -84,12 +83,12 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 
 	@Override
 	public void setStatus(ResponseStatus status) {
-		this.status = status;
 	}
 
 	@Override
 	public ResponseStatus getStatus() {
-		return status;
+	    // Not used by CMP (create method of this class), but this message is definitely a failure...
+		return ResponseStatus.FAILURE;
 	}
 
 	@Override
