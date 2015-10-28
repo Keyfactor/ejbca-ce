@@ -37,7 +37,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -147,7 +146,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         String errmsg = "EndEnityCertificate authentication module is not configured. For a KeyUpdate request to be authentication in RA mode, EndEntityCertificate " +
                         		"authentication module has to be set and configured";
                         LOG.info(errmsg);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errmsg);
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errmsg);
                     }
                     
                     // Check PKIMessage authentication
@@ -157,7 +156,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
                         LOG.info(eecmodule.getErrorMessage());
-                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
                     } else {
                         if(LOG.isDebugEnabled()) {
                             LOG.debug("The CMP KeyUpdate request for SubjectDN '" + crmfreq.getSubjectDN() +"' was verified successfully");
@@ -189,7 +188,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
                         LOG.info(eecmodule.getErrorMessage());
-                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, eecmodule.getErrorMessage());
                     }
                     oldCert = (X509Certificate) eecmodule.getExtraCert();
                     
@@ -200,7 +199,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 if(subjectDN == null) {
                     final String errMsg = "Cannot find a SubjectDN in the request";
                     LOG.info(errMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
+                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
                 }
                 
                 // Find the end entity that the certificate belongs to                
@@ -233,7 +232,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 if(userdata == null) {
                     final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", subjectDN);
                     LOG.info(errMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
 
                 if(LOG.isDebugEnabled()) {
@@ -275,7 +274,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if(certPublicKey.equals(requestPublicKey)) {
                         final String errMsg = "Invalid key. The public key in the KeyUpdateRequest is the same as the public key in the existing end entity certificate";
                         LOG.info(errMsg);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                     }
                 }
 
@@ -285,61 +284,61 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 if (resp == null) {
                     final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
                     LOG.info(errMsg);
-                    resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                    resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
             } else {
                 final String errMsg = INTRES.getLocalizedMessage("cmp.errornocmrfreq");
                 LOG.info(errMsg);
-                resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, errMsg);
             }
         
         } catch (AuthorizationDeniedException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (CADoesntExistsException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (UserDoesntFullfillEndEntityProfile e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (WaitingForApprovalException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (EjbcaException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (FinderException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (CesecoreException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (InvalidKeyException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info("Error while reading the public key of the extraCert attached to the CMP request");
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (NoSuchAlgorithmException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info("Error while reading the public key of the extraCert attached to the CMP request");
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (NoSuchProviderException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info("Error while reading the public key of the extraCert attached to the CMP request");
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (CertificateExtensionException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, e.getMessage());
         }
 
         if (LOG.isTraceEnabled()) {
