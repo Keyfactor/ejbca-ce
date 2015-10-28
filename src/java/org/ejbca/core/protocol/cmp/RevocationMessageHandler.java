@@ -123,10 +123,10 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
             LOG.info(errMsg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errMsg);
         } catch (AuthorizationDeniedException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
         }
 		
 		ResponseMessage resp = null;
@@ -143,7 +143,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
 	          LOG.info(messageVerifyer.getErrorMessage());
-	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, messageVerifyer.getErrorMessage());
+	          return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_MESSAGE_CHECK, messageVerifyer.getErrorMessage());
 		}
 
 		// If authentication was correct, we will now try to find the certificate to revoke
@@ -171,7 +171,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    reasonbits = new DERBitString(reasonoctets.getEncoded());
 		} catch (IOException e1) {
 		    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e1.getMessage()), e1);
-		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e1.getMessage());
+		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e1.getMessage());
 		}
 		if (reasonbits != null) {
 		    reason = CertTools.bitStringToRevokedCertInfo(reasonbits);
