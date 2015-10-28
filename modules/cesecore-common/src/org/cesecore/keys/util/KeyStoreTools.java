@@ -114,16 +114,16 @@ public class KeyStoreTools {
     public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if ( alias!=null ) {
             deleteAlias(alias);
-        } else {
-            Enumeration<String> e = getKeyStore().aliases();
-            while( e.hasMoreElements() ) {
-            	final String str = e.nextElement();
-                deleteAlias( str );
-            }
+            return;
+        }
+        final Enumeration<String> e = getKeyStore().aliases();
+        while( e.hasMoreElements() ) {
+            final String str = e.nextElement();
+            deleteAlias( str );
         }
     }
     /**
-     * Creates a new entry identical with another entry.
+     * Rename the alias of an entry.
      *  
      * @param oldAlias is the current name
      * @param newAlias is the new name
@@ -134,8 +134,9 @@ public class KeyStoreTools {
      * @throws IOException 
      * @throws CertificateException 
      */
-    public void copyEntry( String oldAlias, String newAlias ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, CertificateException, IOException {
-    	getKeyStore().setEntry(newAlias, getKeyStore().getEntry(oldAlias, null), null);
+    public void renameEntry( String oldAlias, String newAlias ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, CertificateException, IOException {
+        // only one key with same public part (certificate) is existing on a p11 token. this has been tested.
+        getKeyStore().setEntry(newAlias, getKeyStore().getEntry(oldAlias, null), null);
     }
 
     private X509Certificate getSelfCertificate(String myname, long validity, String sigAlg, KeyPair keyPair) throws InvalidKeyException,
@@ -199,7 +200,7 @@ public class KeyStoreTools {
 
         		keyPairGenerator.initialize(keyPairGenerationSpec);
 				*/
-        	} else {
+        	}
         	    final ECGenParameterSpec ecSpec;
                 if (StringUtils.equals(name,"implicitlyCA")) {
                     if (log.isDebugEnabled()) {
@@ -218,7 +219,6 @@ public class KeyStoreTools {
                     ecSpec = new ECGenParameterSpec(oidOrName);
                 }
         		kpg.initialize(ecSpec);        		
-        	}
         } catch( InvalidAlgorithmParameterException e ) {
             log.debug("EC name "+name+" not supported.");
             throw e;
@@ -235,7 +235,7 @@ public class KeyStoreTools {
             log.trace(">generate "+algInstanceName+": curve name "+name+", keyEntryName "+keyEntryName);
         }
         // Generate the EC Keypair
-        KeyPairGenerator kpg;
+        final KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance(algInstanceName, this.providerName);
         } catch (NoSuchAlgorithmException e) {
@@ -271,7 +271,7 @@ public class KeyStoreTools {
             log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
         }
         // Generate the RSA Keypair
-        KeyPairGenerator kpg;
+        final KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance("RSA", this.providerName);
         } catch (NoSuchAlgorithmException e) {
@@ -291,7 +291,7 @@ public class KeyStoreTools {
             log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
         }
         // Generate the RSA Keypair
-        KeyPairGenerator kpg;
+        final KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance("DSA", this.providerName);
         } catch (NoSuchAlgorithmException e) {
@@ -350,6 +350,9 @@ public class KeyStoreTools {
     /** Generates keys in the Keystore token.
      * @param spec AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec. 
      * @param keyEntryName
+     * @throws InvalidAlgorithmParameterException 
+     * @throws CertificateException 
+     * @throws IOException 
      */
     public void generateKeyPair(final AlgorithmParameterSpec spec, final String keyEntryName) throws InvalidAlgorithmParameterException,
             CertificateException, IOException {
@@ -357,17 +360,20 @@ public class KeyStoreTools {
         	log.trace(">generate from AlgorithmParameterSpec: "+spec.getClass().getName());
         }
         // Generate the Keypair
-        String algorithm = "EC";
-        String sigAlg = "SHA1withECDSA";
-        String specName = spec.getClass().getName();
+        final String algorithm;
+        final String sigAlg;
+        final String specName = spec.getClass().getName();
         if (specName.contains("DSA")) {
         	algorithm = "DSA";
             sigAlg = "SHA1withDSA";
         } else if (specName.contains("RSA")) {
         	algorithm = "RSA";
             sigAlg = "SHA1withRSA";
+        } else {
+            algorithm = "EC";
+            sigAlg = "SHA1withECDSA";
         }
-        KeyPairGenerator kpg;
+        final KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance(algorithm, this.providerName);
         } catch (NoSuchAlgorithmException e) {

@@ -47,21 +47,129 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class CachingKeyStoreWrapper {
-    
     /** Similar to Java's KeyStore.Entry */
     private class KeyStoreMapEntry {
-        Key key;
-        Certificate[] certificateChain;
+        public KeyStoreMapEntry(final String alias, final KeyStore keyStore) throws KeyStoreException {
+            if (keyStore.isCertificateEntry(alias)) {
+                // See if there is a TrustedCertificateEntry instead
+                final Certificate certificate = keyStore.getCertificate(alias);
+                this.certificateChain = new Certificate[] { certificate };
+                this.key = null;
+                this.isTrusted = true;
+                return;
+            }
+            this.isTrusted = false;
+            this.certificateChain = keyStore.getCertificateChain(alias);
+            Key tmpKey;
+            try {
+                tmpKey = keyStore.getKey(alias, null);
+            } catch (KeyStoreException e) {
+                throw e;
+            } catch (Exception e) {
+                tmpKey = null;
+            }
+            this.key = tmpKey;
+        }
+        public KeyStoreMapEntry(
+                final String alias, final KeyStore keyStore, final char password[],
+                final KeyStoreMapEntry oldEntry)
+                        throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
+            assert(!oldEntry.isTrusted);
+            this.isTrusted = false;
+            this.certificateChain = oldEntry.certificateChain;
+            this.key = keyStore.getKey(alias, password);
+        }
+        public KeyStoreMapEntry( final Certificate certificate ) {
+            this.key = null;
+            this.isTrusted = true;
+            this.certificateChain = new Certificate[] { certificate };
+        }
+        public KeyStoreMapEntry( final Certificate[] chain, final Key k ) {
+            this.key = k;
+            this.isTrusted = false;
+            this.certificateChain = chain;
+        }
+        public KeyStoreMapEntry(
+                final String alias, final ProtectionParameter protection,
+                final KeyStore keyStore )
+                        throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
+            this(keyStore.getEntry(alias, protection));
+        }
+        public KeyStoreMapEntry( final Entry entry ) {
+            if ( entry instanceof PrivateKeyEntry ) {
+                this.key = ((PrivateKeyEntry) entry).getPrivateKey();
+                this.certificateChain = ((PrivateKeyEntry) entry).getCertificateChain();
+                this.isTrusted = false;
+                return;
+            }
+            if ( entry instanceof SecretKeyEntry ) {
+                this.key =((SecretKeyEntry) entry).getSecretKey();
+                this.certificateChain = null;
+                this.isTrusted = false;
+                return;
+            }
+            if ( entry instanceof TrustedCertificateEntry ) {
+                this.key = null;
+                this.certificateChain = new Certificate[] { ((TrustedCertificateEntry) entry).getTrustedCertificate() };
+            }
+            throw new Error("It should not be possible to reach this point!");
+        }
+        public Entry getEntry() {
+            if ( this.isTrusted  ) {
+                assert(this.certificateChain!=null);
+                assert(this.certificateChain.length==1);
+                return new TrustedCertificateEntry(this.certificateChain[0]);
+            }
+            assert(this.key!=null);
+            if ( this.certificateChain!=null ) {
+                return new PrivateKeyEntry((PrivateKey) this.key, this.certificateChain);
+            }
+            return new SecretKeyEntry((SecretKey) this.key);
+        }
+        public final Key key;
+        public final Certificate[] certificateChain;
+        public final boolean isTrusted;
     }
-    
+
     private static final Logger log = Logger.getLogger(CachingKeyStoreWrapper.class);
     private final ReentrantLock updateLock = new ReentrantLock(false);
     private final KeyStore keyStore;
-    private final boolean cachingEnabled;
-    private HashMap<String, KeyStoreMapEntry> keyStoreCache = new HashMap<String, KeyStoreMapEntry>();
-    
+    private final KeyStoreCache keyStoreCache;
+    private class KeyStoreCache {
+        public KeyStoreCache(final KeyStore keyStore, final Logger log) throws KeyStoreException {
+            this.cache = new HashMap<String, KeyStoreMapEntry>();
+            // Load the whole public KeyStore content (aliases and certificate) into the cache
+            final Enumeration<String> aliases = keyStore.aliases();
+            while (aliases.hasMoreElements()) {
+                final String alias = aliases.nextElement();
+                this.cache.put(alias, new KeyStoreMapEntry(alias, keyStore));
+                if (log.isDebugEnabled()) {
+                    log.debug("KeyStore has alias: " + alias);
+                }
+            }
+        }
+        private HashMap<String, KeyStoreMapEntry> cache;
+
+        public void addEntry(final String alias, final  KeyStoreMapEntry newEntry) {
+            final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(this.cache);
+            clone.put(alias, newEntry);
+            this.cache = clone;
+        }
+        public void removeEntry(final String alias) {
+            final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(this.cache);
+            clone.remove(alias);
+            this.cache = clone;
+        }
+        public KeyStoreMapEntry get(final String alias) {
+            return this.cache.get(alias);
+        }
+        public Enumeration<String> getAliases() {
+            return new Vector<String>(this.cache.keySet()).elements();
+        }
+    }
+
     @Deprecated // Should only be used from OcspResponseGeneratorSessionBean.adhocUpgradeFromPre60
-    public KeyStore getKeyStore() { return keyStore; }
+    public KeyStore getKeyStore() { return this.keyStore; }
     
     /**
      * Wrap the key store object with optional caching of all entries.
@@ -72,206 +180,195 @@ public class CachingKeyStoreWrapper {
      */
     public CachingKeyStoreWrapper(final KeyStore keyStore, final boolean cachingEnabled) throws KeyStoreException {
         this.keyStore = keyStore;
-        this.cachingEnabled = cachingEnabled;
         if (log.isDebugEnabled()) {
             log.debug("cachingEnabled: " + cachingEnabled);
         }
         if (cachingEnabled) {
-            // Load the whole public KeyStore content (aliases and certificate) into the cache
-            final Enumeration<String> aliases = keyStore.aliases();
-            while (aliases.hasMoreElements()) {
-                final String alias = aliases.nextElement();
-                if (log.isDebugEnabled()) {
-                    log.debug("KeyStore has alias: " + alias);
-                }
-                final KeyStoreMapEntry keyStoreMapEntry = new KeyStoreMapEntry();
-                // Try to load a certificate chain for a PrivateKey
-                keyStoreMapEntry.certificateChain = keyStore.getCertificateChain(alias);
-                if (keyStoreMapEntry.certificateChain==null) {
-                    // See if there is a TrustedCertificateEntry instead
-                    final Certificate certificate = keyStore.getCertificate(alias);
-                    if (certificate!=null) {
-                        keyStoreMapEntry.certificateChain = new Certificate[] { certificate };
-                    }
-                }
-                keyStoreCache.put(alias, keyStoreMapEntry);
-            }
+            this.keyStoreCache = new KeyStoreCache(keyStore, log);
+        } else {
+            this.keyStoreCache = null;
         }
     }
 
     /** @see java.security.KeyStore#getCertificate(String) */
     public Certificate getCertificate(final String alias) throws KeyStoreException {
-        if (cachingEnabled) {
-            final KeyStoreMapEntry keyStoreMapEntry = keyStoreCache.get(alias);
-            if (keyStoreMapEntry==null) {
-                return null;
-            }
-            if (keyStoreMapEntry.certificateChain==null || keyStoreMapEntry.certificateChain.length==0) {
-                return null;
-            }
-            return keyStoreMapEntry.certificateChain[0];
-        } else {
-            return keyStore.getCertificate(alias);
+        if (this.keyStoreCache==null) {
+            return this.keyStore.getCertificate(alias);
         }
+        final KeyStoreMapEntry keyStoreMapEntry = this.keyStoreCache.get(alias);
+        if (keyStoreMapEntry==null) {
+            return null;
+        }
+        if (keyStoreMapEntry.certificateChain==null || keyStoreMapEntry.certificateChain.length==0) {
+            return null;
+        }
+        return keyStoreMapEntry.certificateChain[0];
     }
 
     /** @see java.security.KeyStore#setCertificateEntry(String, Certificate) */
     public void setCertificateEntry(final String alias, final Certificate certificate) throws KeyStoreException {
         // Update the TrustedCertificateEntry in the real key store
-        keyStore.setCertificateEntry(alias, certificate);
-        if (cachingEnabled) {
-            updateLock.lock();
-            try {
-                final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(keyStoreCache);
-                KeyStoreMapEntry keyStoreMapEntry = clone.get(alias);
-                if (keyStoreMapEntry==null) {
-                    keyStoreMapEntry = new KeyStoreMapEntry();
-                }
-                keyStoreMapEntry.certificateChain = new Certificate[] { certificate };
-                clone.put(alias, keyStoreMapEntry);
-                keyStoreCache = clone;
-            } finally {
-                updateLock.unlock();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Updated certificate entry in cache for alias: " + alias);
-            }
+        this.keyStore.setCertificateEntry(alias, certificate);
+        if (this.keyStoreCache==null) {
+            return;
+        }
+        this.updateLock.lock();
+        try {
+            this.keyStoreCache.addEntry(alias, new KeyStoreMapEntry(certificate));
+        } finally {
+            this.updateLock.unlock();
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Updated certificate entry in cache for alias: " + alias);
         }
     }
 
     /** @see java.security.KeyStore#aliases() */
     public Enumeration<String> aliases() throws KeyStoreException {
-        if (cachingEnabled) {
-            return new Vector<String>(keyStoreCache.keySet()).elements();
-        } else {
-            return keyStore.aliases();
+        if (this.keyStoreCache==null) {
+            return this.keyStore.aliases();
         }
+        return this.keyStoreCache.getAliases();
     }
 
     /** @see java.security.KeyStore#store(OutputStream, char[]) */
     public void store(final OutputStream outputStream, final char[] password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        keyStore.store(outputStream, password);
+        this.keyStore.store(outputStream, password);
     }
 
     /** @see java.security.KeyStore#setKeyEntry(String, Key, char[], Certificate[]) */
     public void setKeyEntry(final String alias, final Key key, final char[] password, final Certificate[] chain) throws KeyStoreException {
-        keyStore.setKeyEntry(alias, key, password, chain);
-        if (cachingEnabled) {
-            final KeyStoreMapEntry keyStoreMapEntry = new KeyStoreMapEntry();
-            keyStoreMapEntry.certificateChain = chain;
-            keyStoreMapEntry.key = key;
-            updateLock.lock();
-            try {
-                final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(keyStoreCache);
-                clone.put(alias, keyStoreMapEntry);
-                keyStoreCache = clone;
-            } finally {
-                updateLock.unlock();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Updated key entry in cache for alias: " + alias);
-            }
+        this.keyStore.setKeyEntry(alias, key, password, chain);
+        if (this.keyStoreCache==null) {
+            return;
+        }
+        this.updateLock.lock();
+        try {
+            final KeyStoreMapEntry keyStoreMapEntry = new KeyStoreMapEntry(chain,key);
+            this.keyStoreCache.addEntry(alias, keyStoreMapEntry);
+        } finally {
+            this.updateLock.unlock();
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Updated key entry in cache for alias: " + alias);
         }
     }
 
     /** @see java.security.KeyStore#deleteEntry(String) */
     public void deleteEntry(final String alias) throws KeyStoreException {
-        keyStore.deleteEntry(alias);
-        if (cachingEnabled) {
-            updateLock.lock();
-            try {
-                final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(keyStoreCache);
-                clone.remove(alias);
-                keyStoreCache = clone;
-            } finally {
-                updateLock.unlock();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Removed entry from cache for alias: " + alias);
-            }
+        this.keyStore.deleteEntry(alias);
+        if (this.keyStoreCache==null) {
+            return;
+        }
+        this.updateLock.lock();
+        try {
+            this.keyStoreCache.removeEntry(alias);
+        } finally {
+            this.updateLock.unlock();
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Removed entry from cache for alias: " + alias);
         }
     }
 
     /** @see java.security.KeyStore#getEntry(String, ProtectionParameter) */
     public Entry getEntry(final String alias, final ProtectionParameter protParam) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
-        if (cachingEnabled) {
-            final KeyStoreMapEntry keyStoreMapEntry = keyStoreCache.get(alias);
+        if (this.keyStoreCache==null) {
+            return this.keyStore.getEntry(alias, protParam);
+        }
+        {
+            final KeyStoreMapEntry keyStoreMapEntry = this.keyStoreCache.get(alias);
             if (keyStoreMapEntry==null) {
                 return null;
             }
-            if (keyStoreMapEntry.key instanceof PrivateKey) {
-                return new PrivateKeyEntry((PrivateKey)keyStoreMapEntry.key, keyStoreMapEntry.certificateChain);
+            if ( keyStoreMapEntry.isTrusted || keyStoreMapEntry.key!=null ) {
+                return keyStoreMapEntry.getEntry();
             }
-            if (keyStoreMapEntry.key instanceof SecretKey) {
-                return new SecretKeyEntry((SecretKey)keyStoreMapEntry.key);
+        }
+        try {
+            this.updateLock.lock();
+            {
+                final KeyStoreMapEntry afterWaitEntry = this.keyStoreCache.get(alias);
+                if ( afterWaitEntry.key!=null ) {
+                    return afterWaitEntry.getEntry();
+                }
             }
-            if (keyStoreMapEntry.certificateChain!=null && keyStoreMapEntry.certificateChain.length>0) {
-                return new TrustedCertificateEntry(keyStoreMapEntry.certificateChain[0]);
-            }
-            return null;
-        } else {
-            return keyStore.getEntry(alias, protParam);
+            final KeyStoreMapEntry newEntry = new KeyStoreMapEntry(alias, protParam, this.keyStore);
+            this.keyStoreCache.addEntry(alias, newEntry);
+            return newEntry.getEntry();
+        } finally {
+            this.updateLock.unlock();
         }
     }
 
     /** @see java.security.KeyStore#setEntry(String, Entry, ProtectionParameter) */
     public void setEntry(final String alias, final Entry entry, final ProtectionParameter protParam) throws KeyStoreException {
-        keyStore.setEntry(alias, entry, protParam);
-        if (cachingEnabled) {
-            final KeyStoreMapEntry keyStoreMapEntry = new KeyStoreMapEntry();
-            if (entry instanceof PrivateKeyEntry) {
-                final PrivateKeyEntry privateKeyEntry = ((PrivateKeyEntry)entry);
-                keyStoreMapEntry.certificateChain = privateKeyEntry.getCertificateChain();
-                keyStoreMapEntry.key = privateKeyEntry.getPrivateKey();
-            } else if (entry instanceof SecretKeyEntry) {
-                keyStoreMapEntry.certificateChain = null;
-                keyStoreMapEntry.key = ((SecretKeyEntry)entry).getSecretKey();
-            } else {
-                keyStoreMapEntry.certificateChain = new Certificate[] { ((TrustedCertificateEntry)entry).getTrustedCertificate() };
-                keyStoreMapEntry.key = null;
-            }
-            updateLock.lock();
-            try {
-                final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(keyStoreCache);
-                clone.put(alias, keyStoreMapEntry);
-                keyStoreCache = clone;
-            } finally {
-                updateLock.unlock();
-            }
+        this.keyStore.setEntry(alias, entry, protParam);
+        if (this.keyStoreCache==null) {
+            return;
+        }
+        this.updateLock.lock();
+        try {
+            final KeyStoreMapEntry keyStoreMapEntry = new KeyStoreMapEntry(entry);
+            this.keyStoreCache.addEntry(alias, keyStoreMapEntry);
+        } finally {
+            this.updateLock.unlock();
         }
     }
 
     /** @see java.security.KeyStore#getProvider() */
     public Provider getProvider() {
-        return keyStore.getProvider();
+        return this.keyStore.getProvider();
     }
 
     /** @see java.security.KeyStore#getKey(String, char[]) */
     public Key getKey(final String alias, final char[] password) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-        if (cachingEnabled) {
-            final KeyStoreMapEntry keyStoreMapEntry = keyStoreCache.get(alias);
+        if (this.keyStoreCache==null) {
+            return this.keyStore.getKey(alias, password);
+        }
+        {
+            final KeyStoreMapEntry keyStoreMapEntry = this.keyStoreCache.get(alias);
             if (keyStoreMapEntry==null) {
                 // If the alias exists it has a KeyStoreMapEntry. No need to query the key store here.
                 return null;
             }
-            if (keyStoreMapEntry.key==null) {
-                updateLock.lock();
-                try {
-                    // Check if another thread has retrieved the key while we waited for the lock
-                    if (keyStoreMapEntry.key==null) {
-                        final Key key = keyStore.getKey(alias, password);
-                        keyStoreMapEntry.key = key;
-                    }
-                } finally {
-                    updateLock.unlock();
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Caching key for alias: " + alias);
-                }
+            if (keyStoreMapEntry.key!=null) {
+                return keyStoreMapEntry.key;
             }
-            return keyStoreMapEntry.key;
-        } else {
-            return keyStore.getKey(alias, password);
         }
+        this.updateLock.lock();
+        try {
+            // Check if another thread has retrieved the key while we waited for the lock
+            final KeyStoreMapEntry entryAfterWait = this.keyStoreCache.get(alias);
+            if (entryAfterWait.key!=null) {
+                return entryAfterWait.key;
+            }
+            final KeyStoreMapEntry newEntry = new KeyStoreMapEntry(alias, this.keyStore, password, entryAfterWait);
+            this.keyStoreCache.addEntry(alias, newEntry);
+            if (log.isDebugEnabled()) {
+                log.debug("Caching key for alias: " + alias);
+            }
+            return newEntry.key;
+        } finally {
+            this.updateLock.unlock();
+        }
+    }
+
+    /** @see java.security.KeyStore#isKeyEntry(String) */
+    public boolean isKeyEntry(final String alias ) throws KeyStoreException {
+        if (this.keyStoreCache==null) {
+            return this.keyStore.isKeyEntry(alias);
+        }
+        final KeyStoreMapEntry keyStoreMapEntry = this.keyStoreCache.get(alias);
+        return keyStoreMapEntry!=null && !keyStoreMapEntry.isTrusted;
+    }
+
+    /** @see java.security.KeyStore#getCertificateChain(String) */
+    public Certificate[] getCertificateChain(String alias) throws KeyStoreException {
+        if (this.keyStoreCache==null) {
+            return this.keyStore.getCertificateChain(alias);
+        }
+        final KeyStoreMapEntry entry = this.keyStoreCache.get(alias);
+        return entry!=null ? entry.certificateChain : null;
     }
 }

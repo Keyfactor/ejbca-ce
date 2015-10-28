@@ -19,6 +19,7 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.security.Key;
@@ -44,7 +45,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -61,7 +61,9 @@ import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
+import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.AccessRights;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -75,9 +77,7 @@ import org.ejbca.cvc.OIDField;
 import org.ejbca.util.CMS;
 import org.ejbca.util.CliTools;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
-import org.ejbca.util.keystore.KeyStoreContainer;
-import org.ejbca.util.keystore.KeyStoreContainerBase;
-import org.ejbca.util.keystore.KeyStoreContainerFactory;
+import org.ejbca.util.keystore.KeyStoreToolsFactory;
 
 
 
@@ -93,12 +93,9 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String DECRYPT_SWITCH = "decrypt";
     private static final String VERIFY_SWITCH = "verify";
     private static final String GENERATE_SWITCH = "generate";
-    private static final String GENERATE_MODULE_SWITCH = GENERATE_SWITCH+"module";
     private static final String GENERATE_BATCH_SWITCH = "batchgenerate";
     private static final String DELETE_SWITCH = "delete";
     private static final String TEST_SWITCH = "test";
-    private static final String CREATE_KEYSTORE_SWITCH = "createkeystore";
-    private static final String CREATE_KEYSTORE_MODULE_SWITCH = CREATE_KEYSTORE_SWITCH+"module";
     private static final String MOVE_SWITCH = "move";
     private static final String CERT_REQ = "certreq";
     private static final String INSTALL_CERT = "installcert";
@@ -109,67 +106,38 @@ public class HSMKeyTool extends ClientToolBox {
 
     final static private Logger log = Logger.getLogger(HSMKeyTool.class);
 
-    /**
-     * To be overided if the HSM implementation knows the value of some parameters.
-     * @return description of parameters common to all commands.
-     */
-    String getProviderParameterDescription() {
-        return "<signature provider name> <crypto provider name (use null if same as signature)> <keystore provider name>";
+    final static private String TOKEN_ID_PARAM = "<PKCS#11 token identifier>";
+    static private void sunConfigFileUseDescription(){
+        System.err.println("If <PKCS#11 token identifier> is omitted then <the shared library name> will specify the sun config file.");
     }
-    /**
-     * @return description of the keystore id.
-     */
-    String getKeyStoreDescription() {
-        return "keystore ID";
-    }
-    /**
-     * The HSM may overide to print an extra comment for the generate command.
-     */
-    void generateComment(){
-        return;
-    }
-    /**
-     * HSMs not capable to create a keystore should overide this method and return false.
-     * @return true if the HSM is capable to create a keystore.
-     */
-    boolean doCreateKeyStore() {
-        return true;
-    }
-    /**
-     * HSMs capable of module protection should overide this method and return true.
-     * @return true if the HSDM is capable of module protection.
-     */
-    boolean doModuleProtection() {
-        return false;
-    }
-    /**
-     * HSMs capable of module protection should overide this method.
-     */
-    void setModuleProtection() {
-        return;
+    static private void printTokenIdDescription() {
+        System.err.print("The ");
+        System.err.print(TOKEN_ID_PARAM);
+        System.err.println(" is one of these:");
+        System.err.println("    An integer referring to slot ID.");
+        System.err.println("    A string starting with \'i\' followed by an integer. The integer is the index in the slot list.");
+        System.err.println("    A string starting with \'TOKEN_LABEL:\' followed by a string. The string is the label of the token.");
+        System.err.println();
     }
     private static String commandString(String[] sa) {
-        String s = "";
+        final StringBuffer sb = new StringBuffer();
         for ( int i=0; i<sa.length; i++) {
-            s += sa[i];
+            sb.append(sa[i]);
             if (i+1<sa.length) {
-                s += " ";
+                sb.append(' ');
             }
         }
-        return s;
+        return sb.toString();
     }
     private static void tooFewArguments(String[] args) {
         System.err.println("Too few arguments in command: '"+commandString(args)+'\'');
         System.exit(3); // NOPMD, it's not a JEE app
     }
-    private static void generateBatch( final String batchFile, final KeyStoreContainer keyStoreContainer ) throws Exception {
+    private static void generateBatch( final String batchFile, final KeyStoreTools keyStoreContainer ) throws Exception {
         final Properties p = new Properties();
         {
-            final InputStream is = new FileInputStream(batchFile);
-            try {
+            try ( final InputStream is = new FileInputStream(batchFile) ) {
                 p.load(is);
-            } finally {
-                is.close();
             }
         }
         for ( final Entry<Object, Object> entry : p.entrySet() ) {
@@ -183,7 +151,7 @@ public class HSMKeyTool extends ClientToolBox {
                 continue;
             }
             try {
-                keyStoreContainer.generate(keySpec, alias);
+                keyStoreContainer.generateKeyPair(keySpec, alias);
                 System.out.println("Key with specification '"+keySpec+"' generated for alias '"+alias+"'.");
             } catch( Exception e ) {
                 final String m = "Failed to generate key for alias '"+alias+"' with key specification '"+keySpec+"'.";
@@ -193,9 +161,28 @@ public class HSMKeyTool extends ClientToolBox {
         }
     }
     final static String KEY_SPEC_DESC = "all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn";
-    private boolean doIt(final String[] orgArgs) throws Exception {
-        final String commandStringNoSharedLib = orgArgs[0]+" "+orgArgs[1]+" ";
-        final String commandString = commandStringNoSharedLib+getProviderParameterDescription()+" ";
+    private static void printCommandString( final String args[], final boolean withCharedLib, Object... objects) {
+        final StringBuffer sb = new StringBuffer();
+        sb.append(args[0]);
+        sb.append(' ');
+        sb.append(args[1]);
+        sb.append(' ');
+        if ( withCharedLib ) {
+            sb.append("<shared library name>");
+            sb.append(' ');
+        }
+        for ( final Object o : objects ) {
+            sb.append(o);
+        }
+        System.err.println(sb);
+    }
+    private static void printCommandString( final String args[], Object... objects) {
+        printCommandString(args, true, objects);
+    }
+    private static void printCommandStringNoSharedLib( final String args[], Object... objects) {
+        printCommandString(args, false, objects);
+    }
+    private static boolean doIt(final String[] orgArgs) throws Exception {
         // Get and remove optional switches
         final List<String> argsList = CliTools.getAsModifyableList(orgArgs);
         final KeyStore.ProtectionParameter protectionParameter;
@@ -207,66 +194,63 @@ public class HSMKeyTool extends ClientToolBox {
         }
         final String[] args = CliTools.getAsArgs(argsList);
         if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
-            if ( args.length < 6 ) {
-                System.err.println(commandString + "<name of batch file> " + '['+'<'+getKeyStoreDescription()+'>'+']');
-                generateComment();
+            if ( args.length < 4 ) {
+                printCommandString( args, "<name of batch file> [", TOKEN_ID_PARAM, "]");
+                printTokenIdDescription();
+                sunConfigFileUseDescription();
                 System.err.println("The batch file is a file which specifies alias and key specification for each key to be generated.");
                 System.err.println("Each row is starting with a key alias then the key specification is following.");
                 System.err.println("The specification of the key is done like this: "+KEY_SPEC_DESC);
                 tooFewArguments(args);
             }
-            if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
-                setModuleProtection();
-            }
             final String storeId;
             final Pkcs11SlotLabelType slotType;
-            if(args.length > 6) {
-                storeId = trimStoreId(args[6]);
-                slotType = divineSlotLabelType(args[6]);
+            if(args.length > 4) {
+                storeId = trimStoreId(args[4]);
+                slotType = getTokenLabelType(args[4]);
             } else {
                 storeId = null;
                 slotType = Pkcs11SlotLabelType.SUN_FILE;
             }
-            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "batch-"+new Date().getTime());
-            generateBatch(args[5], store);
+            final KeyStoreTools store = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter, "batch-"+new Date().getTime());
+            generateBatch(args[3], store);
             return true;
         }
         if ( args[1].toLowerCase().trim().contains(GENERATE_SWITCH) ) {
-            if ( args.length < 6 ) {
-                System.err.println(commandString + '<' + KEY_SPEC_DESC + "> <key entry name> [<"+getKeyStoreDescription()+">]");
-                generateComment();
+            if ( args.length < 4 ) {
+                printCommandString( args, Character.valueOf('<'), KEY_SPEC_DESC, "> <key entry name> [", TOKEN_ID_PARAM, "]");
+                printTokenIdDescription();
+                sunConfigFileUseDescription();
                 tooFewArguments(args);
             }
-            if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
-                setModuleProtection();
-            }
-            final String keyEntryName = args.length>6 ? args[6] :"myKey";
+            final String keyEntryName = args.length>4 ? args[4] :"myKey";
             final String storeId;
             final Pkcs11SlotLabelType slotType;
-            if(args.length > 7) {
-                storeId = trimStoreId(args[7]);
-                slotType = divineSlotLabelType(args[7]);
+            if(args.length > 5) {
+                storeId = trimStoreId(args[5]);
+                slotType = getTokenLabelType(args[5]);
             } else {
                 storeId = null;
                 slotType = Pkcs11SlotLabelType.SUN_FILE;
             }
             System.out.println("Using Slot Reference Type: "+slotType+'.');
-            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
-            store.generate(args[5], keyEntryName);
+            final KeyStoreTools store = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
+            store.generateKeyPair(args[3], keyEntryName);
             System.out.println("Created certificate with entry "+keyEntryName+'.');
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
-            if ( args.length < 6 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<key entry name>]");
+            if ( args.length < 4 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " [<key entry name>]");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String alias = args.length>6 ? args[6] : null;
+            final String alias = args.length>4 ? args[4] : null;
             System.out.println("Deleting certificate with alias "+alias+'.');
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
 
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).delete(alias);
+            KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter).deleteEntry(alias);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(CERT_REQ)) {
@@ -275,18 +259,19 @@ public class HSMKeyTool extends ClientToolBox {
             final boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
             final boolean forAllKeys = argsListLocal.remove("-all");
             final String modArgs[] = argsListLocal.toArray(new String[argsListLocal.size()]);
-            if ( modArgs.length < 6 || (modArgs.length < 7 && !forAllKeys) ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] [-explicitecc]");
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [-all] [-explicitecc]");
+            if ( modArgs.length < 4 || (modArgs.length < 5 && !forAllKeys) ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <key entry name> [<CN>] [-explicitecc]");
+                printCommandString( args, TOKEN_ID_PARAM, " [-all] [-explicitecc]");
+                printTokenIdDescription();
                 tooFewArguments(modArgs);
             }
-            final String storeId = trimStoreId(modArgs[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(modArgs[5]);
-            final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(modArgs[4], modArgs[2], modArgs[3], storeId, slotType, null, protectionParameter);
+            final String storeId = trimStoreId(modArgs[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(modArgs[3]);
+            final KeyStoreTools container = KeyStoreToolsFactory.getInstance(modArgs[2], storeId, slotType, null, protectionParameter);
             final List<String> entries;
             if (forAllKeys) {
-                entries = new LinkedList<String>();
-                final KeyStore ks = container.getKeyStore();
+                entries = new LinkedList<>();
+                final CachingKeyStoreWrapper ks = container.getKeyStore();
                 final Enumeration<String> aliases = ks.aliases();
                 while (aliases.hasMoreElements()) {
                     final String alias = aliases.nextElement();
@@ -295,24 +280,25 @@ public class HSMKeyTool extends ClientToolBox {
                     }
                 }
             } else {
-                entries = Collections.singletonList(modArgs[6]);
+                entries = Collections.singletonList(modArgs[4]);
             }
 
             for (String entry : entries) {
-                container.generateCertReq(entry, modArgs.length>7 ? modArgs[7] : null, explicitEccParameters);
+                container.generateCertReq(entry, modArgs.length>5 ? modArgs[5] : null, explicitEccParameters);
             }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
-            if ( args.length < 7 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain files in PEM format (one chain per file)>");
+            if ( args.length < 5 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <certificate chain files in PEM format (one chain per file)>");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            final KeyStoreTools container = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter);
             boolean failure = false;
-            for (int i = 6; i < args.length; i++) {
+            for (int i = 4; i < args.length; i++) {
                 try {
                     container.installCertificate(args[i]);
                 } catch (Exception ex) {
@@ -326,68 +312,100 @@ public class HSMKeyTool extends ClientToolBox {
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(INSTALL_TRUSTED_ROOT)) {
-            if ( args.length < 7 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <trusted root certificate in PEM format>");
+            if ( args.length < 5 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <trusted root certificate in PEM format>");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).installTrustedRoot(args[6]);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter).installTrustedRoot(args[4]);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
             String symmAlgOid = CMSEnvelopedGenerator.AES128_CBC;
-            if ( args.length < 7 ) {
+            if ( args.length < 5 ) {
                 System.err.println("There are two ways of doing the encryption:");
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias> [optional symm algorithm oid]");
-                System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use> [optional symm algorithm oid]");
+                printCommandString( args, TOKEN_ID_PARAM, " <input file> <output file> <key alias> [optional symm algorithm oid]");
+                printCommandStringNoSharedLib( args, "<input file> <output file> <file with certificate with public key to use> [optional symm algorithm oid]");
+                printTokenIdDescription();
                 System.err.println("Optional symmetric encryption algorithm OID can be for example 2.16.840.1.101.3.4.1.42 (AES256_CBC) or 1.2.392.200011.61.1.1.1.4 (CAMELLIA256_CBC). Default is to use AES256_CBC.");
                 tooFewArguments(args);
             }
-            if ( args.length < 9 ) {
+            if ( args.length < 7 ) {
                 Security.addProvider( new BouncyCastleProvider() );
+                if (args.length > 5) {
+                    // We have a symmAlg as last parameter
+                    symmAlgOid = args[5];
+                }
+                System.out.println("Using symmetric encryption algorithm: "+symmAlgOid);
+                try(
+                        final InputStream certIS = new FileInputStream(args[4]);
+                        final InputStream is=new FileInputStream(args[2]);
+                        final OutputStream os = new FileOutputStream(args[3])
+                        ) {
+                    final X509Certificate cert = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(certIS));
+                    CMS.encrypt(is, os, cert, symmAlgOid);
+                }
+            } else {
                 if (args.length > 7) {
                     // We have a symmAlg as last parameter
                     symmAlgOid = args[7];
                 }
-                System.out.println("Using symmetric encryption algorithm: "+symmAlgOid);
-                final X509Certificate cert = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
-                CMS.encrypt(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert, symmAlgOid);
-            } else {
-                if (args.length > 9) {
-                    // We have a symmAlg as last parameter
-                    symmAlgOid = args[9];
-                }
                 System.out.println("Using symmstric encryption algorithm: "+symmAlgOid);
-                final String storeId = trimStoreId(args[5]);
-                final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
+                final String storeId = trimStoreId(args[3]);
+                final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+                try(
+                        final InputStream is = new FileInputStream(args[4]);
+                        final OutputStream os = new FileOutputStream(args[5]);
+                        ) {
+                    final Certificate cert = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter).getKeyStore().getCertificate(args[6]);
+                    CMS.encrypt(is, os, (X509Certificate)cert, symmAlgOid);
+                }
             }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
-            if ( args.length < 9 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
+            if ( args.length < 7 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <input file> <output file> <key alias>");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            try(
+                    final InputStream is = new FileInputStream(args[4]);
+                    final OutputStream os = new FileOutputStream(args[5])
+                    ) {
+                final KeyStoreTools keyStore = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter);
+                CMS.decrypt(is, os, (PrivateKey)keyStore.getKeyStore().getKey(args[6], null), keyStore.getProviderName());
+            }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(SIGN_SWITCH)) {
-            if ( args.length < 9 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
+            if ( args.length < 7 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <input file> <output file> <key alias>");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            final KeyStoreTools keyStore = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter);
+            final String alias = args[6];
+            final PrivateKey key = (PrivateKey)keyStore.getKeyStore().getKey(alias, null);
+            final X509Certificate cert = (X509Certificate)keyStore.getKeyStore().getCertificate(alias);
+            try(
+                    final InputStream is = new FileInputStream(args[4]);
+                    final OutputStream os = new FileOutputStream(args[5]);
+                    ) {
+                CMS.sign(is, os, key, keyStore.getProviderName(), cert);
+            }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(LINKCERT_SWITCH)) {
-            if ( args.length < 10 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old ca-cert> <new ca-cert> <output link-cert> <key alias> [<sig alg override>]");
+            if ( args.length < 8 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <old ca-cert> <new ca-cert> <output link-cert> <key alias> [<sig alg override>]");
+                printTokenIdDescription();
                 System.err.println();
                 System.err.println("Creates a link certificate that links the old and new certificate files.");
                 System.err.println("You should use this command with the old HSM key. It does not need any");
@@ -395,21 +413,25 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println();
                 tooFewArguments(args);
             }
-            String storeId = null;
-            Pkcs11SlotLabelType slotType = null;
-            storeId = trimStoreId(args[5]);
-            slotType = divineSlotLabelType(args[5]);
-            final KeyStoreContainer ksc = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
-            final String alias = args[9];
-            final String oldCertPath = args[6];
-            final String newCertPath = args[7];
-            final String outputPath = args[8];
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            final KeyStoreTools ksc = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter);
+            final String alias = args[7];
+            final String oldCertPath = args[4];
+            final String newCertPath = args[5];
+            final String outputPath = args[6];
             final String signProviderName = ksc.getProviderName();
-            final String sigAlgOverride = (args.length >= 11 ? args[10] : "null");
+            final String sigAlgOverride = (args.length > 8 ? args[8] : "null");
 
             // Parse certificates
-            final byte[] oldCertBytes = IOUtils.toByteArray(new FileInputStream(oldCertPath));
-            final byte[] newCertBytes = IOUtils.toByteArray(new FileInputStream(newCertPath));
+            final byte[] oldCertBytes;
+            try( final InputStream is=new FileInputStream(oldCertPath) ) {
+                oldCertBytes = IOUtils.toByteArray(is);
+            }
+            final byte[] newCertBytes;
+            try( final InputStream is=new FileInputStream(newCertPath) ) {
+                newCertBytes = IOUtils.toByteArray(is);
+            }
             final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, BouncyCastleProvider.PROVIDER_NAME);
             final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, BouncyCastleProvider.PROVIDER_NAME);
             final boolean isCVCA = (oldCert instanceof CardVerifiableCertificate);
@@ -440,12 +462,12 @@ public class HSMKeyTool extends ClientToolBox {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             // Get new and old key
-            PublicKey newPubKey = newCert.getPublicKey();
+            final PublicKey newPubKey = newCert.getPublicKey();
             if (newPubKey == null) {
                 System.err.println("Error: Failed to extract public key from new certificate");
                 return true;
             }
-            final Key oldKey = ksc.getKey(alias);
+            final Key oldKey = ksc.getKeyStore().getKey(alias, null);
             if (oldKey == null) {
                 System.err.println("Error: Could not find the key named "+alias);
                 return true;
@@ -475,9 +497,9 @@ public class HSMKeyTool extends ClientToolBox {
                 final Date validTo = oldCertCVC.getCertificateBody().getValidTo();
 
                 final CVCertificate linkCert = CertificateGenerator.createCertificate(newPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
-                final DataOutputStream dos = new DataOutputStream(baos);
-                linkCert.encode(dos);
-                dos.close();
+                try ( final DataOutputStream dos = new DataOutputStream(baos) ) {
+                    linkCert.encode(dos);
+                }
             } else {
                 // X509 CA
                 final X509Certificate oldCertX509 = (X509Certificate)oldCert;
@@ -495,7 +517,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.out.println("Using signature algorithm "+linkSigAlg);
 
                 final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
-                final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
+                final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(ASN1Primitive.fromByteArray(newPubKey.getEncoded()));
                 final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
                 final Date validTo = oldCertX509.getNotAfter();
 
@@ -506,7 +528,7 @@ public class HSMKeyTool extends ClientToolBox {
 
                 // Copy all extensions except AKID
                 final ExtensionsGenerator extgen = new ExtensionsGenerator();
-                final Set<String> oids = new LinkedHashSet<String>();
+                final Set<String> oids = new LinkedHashSet<>();
                 final Set<String> criticalOids = newCertX509.getCriticalExtensionOIDs();
                 oids.addAll(criticalOids);
                 oids.addAll(newCertX509.getNonCriticalExtensionOIDs());
@@ -556,32 +578,47 @@ public class HSMKeyTool extends ClientToolBox {
                 baos.write(certHolder.getEncoded());
                 
                 // Save to output file
-                final FileOutputStream fos = new FileOutputStream(outputPath);
-                baos.writeTo(fos);
-                fos.close();
+                try( final FileOutputStream fos = new FileOutputStream(outputPath) ) {
+                    baos.writeTo(fos);
+                }
             }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(VERIFY_SWITCH)) {
             final CMS.VerifyResult verifyResult;
-            if ( args.length < 7 ) {
+            if ( args.length < 5 ) {
                 System.err.println("There are two ways of doing the encryption:");
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
-                System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use>");
+                printCommandString( args, TOKEN_ID_PARAM, " <input file> <output file> <key alias>");
+                printTokenIdDescription();
+                printCommandStringNoSharedLib(args, "<input file> <output file> <file with certificate with public key to use>");
                 tooFewArguments(args);
             }
-            if ( args.length < 9 ) {
+            if ( args.length < 7 ) {
                 Security.addProvider( new BouncyCastleProvider() );
-                final X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
-                verifyResult = CMS.verify(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
+                try (
+                        final InputStream certIS = new FileInputStream(args[4]);
+                        final InputStream is = new FileInputStream(args[2]);
+                        final OutputStream os = new FileOutputStream(args[3]);
+                        ) {
+                    final X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(certIS));
+                    verifyResult = CMS.verify(is, os, cert);
+                }
             } else {
-                final String storeId = trimStoreId(args[5]);
-                final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-                verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                final String storeId = trimStoreId(args[3]);
+                final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+                final KeyStoreTools keyStore = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter);
+                final X509Certificate cert = (X509Certificate)keyStore.getKeyStore().getCertificate(args[6]);
+                try (
+                        final InputStream is = new FileInputStream(args[4]);
+                        final OutputStream os = new FileOutputStream(args[5])
+                        ) {
+                    verifyResult = CMS.verify(is, os, cert);
+                }
             }
             if ( verifyResult==null ) {
                 System.err.println("Not possible to parse signed file.");
                 System.exit(4); // Not verifying // NOPMD, it's not a JEE app
+                return false;//will never be executes. just to avoid warning.
             }
             System.out.println("The signature of the input " +(verifyResult.isVerifying?"has been":"could not be")+" verified. The file was signed on '"+verifyResult.signDate+"'. The public part of the signing key is in a certificate with serial number "+verifyResult.signerId.getSerialNumber()+" issued by '"+verifyResult.signerId.getIssuer()+"'.");
             if ( !verifyResult.isVerifying ) {
@@ -590,49 +627,65 @@ public class HSMKeyTool extends ClientToolBox {
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
-            if ( args.length < 6 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<'m:n' m # of threads, n # of tests>] [<alias for stress test>] [<type of stress test>]");
+            if ( args.length < 4 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " [<'m:n' m # of threads, n # of tests>] [<alias for stress test>] [<type of stress test>]");
+                printTokenIdDescription();
                 System.err.println("    If a file named \"./testData\" exists then the data that is signed, is read from this file.");
                 tooFewArguments(args);
             }
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>6 ? args[6] : null);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>4 ? args[4] : null);
             KeyStoreContainerTest.test(
-                    args[2], args[3], args[4], storeId, slotType,
+                    args[2], storeId, slotType,
                     notanot.threads, notanot.tests,
-                    args.length>7 ? args[7].trim() : null,
-                    args.length>8 ? args[8].trim() : null,
+                    args.length>5 ? args[5].trim() : null,
+                    args.length>6 ? args[6].trim() : null,
                     protectionParameter);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(RENAME)) {
-            if ( args.length < 8 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old key alias> <new key alias>");
+            if ( args.length < 6 ) {
+                printCommandString( args, TOKEN_ID_PARAM, " <old key alias> <new key alias>");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String storeId = trimStoreId(args[5]);
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).renameAlias(args[6], args[7]);
+            final String storeId = trimStoreId(args[3]);
+            final Pkcs11SlotLabelType slotType = getTokenLabelType(args[3]);
+            final KeyStoreTools keyStore = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter);
+
+            keyStore.renameEntry(args[4], args[5]);
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
-            if ( args.length < 7 ) {
-                System.err.println(commandString + "<from "+getKeyStoreDescription()+"> <to "+getKeyStoreDescription()+'>');
+            if ( args.length < 5 ) {
+                printCommandString( args, "<from PKCS#11 token identifier> <to PKCS#11 token identifier>");
+                printTokenIdDescription();
                 tooFewArguments(args);
             }
-            final String fromId = args[5];                    
-            final String toId = args[6];
-            final Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
-            System.out.println("Moving entry with alias '"+fromId+"' to alias '"+toId+'.');
-            KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, slotType, protectionParameter);
-            return true;
-        }
-        if ( doCreateKeyStore() && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
-            if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH)) {
-                setModuleProtection();
+            final KeyStoreTools fromKS = KeyStoreToolsFactory.getInstance(
+                    args[2],
+                    trimStoreId(args[3]),
+                    getTokenLabelType(args[3]),
+                    null, protectionParameter );
+            final KeyStoreTools toKS = KeyStoreToolsFactory.getInstance(
+                    args[2],
+                    trimStoreId(args[4]),
+                    getTokenLabelType(args[4]),
+                    null, protectionParameter );
+            System.out.println("Moving entry with alias '"+args[3]+"' to alias '"+args[4]+'.');
+            final Enumeration<String> e = fromKS.getKeyStore().aliases();
+            while( e.hasMoreElements() ) {
+                final String alias = e.nextElement();
+                if (fromKS.getKeyStore().isKeyEntry(alias)) {
+                    final Key key=fromKS.getKeyStore().getKey(alias, null);
+                    final Certificate chain[] = fromKS.getKeyStore().getCertificateChain(alias);
+                    toKS.setKeyEntry(alias, key, chain);
+                }
+                fromKS.getKeyStore().deleteEntry(alias);
             }
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], null, Pkcs11SlotLabelType.SUN_FILE, null, protectionParameter).storeKeyStore();
+            fromKS.getKeyStore().store(null, null);
+            toKS.getKeyStore().store(null, null);
             return true;
         }
         return false;
@@ -651,20 +704,11 @@ public class HSMKeyTool extends ClientToolBox {
 //            pw.println("  "+args[0]+" "+CREATE_CA_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_BATCH_SWITCH);
-            if ( doModuleProtection() ) {
-                pw.println("  "+args[0]+" "+GENERATE_MODULE_SWITCH);
-            }
             pw.println("  "+args[0]+" "+CERT_REQ);
             pw.println("  "+args[0]+" "+INSTALL_CERT);
             pw.println("  "+args[0]+" "+DELETE_SWITCH);
             pw.println("  "+args[0]+" "+TEST_SWITCH);
             pw.println("  "+args[0]+" "+RENAME);
-            if ( doCreateKeyStore() ){
-                pw.println("  "+args[0]+" "+CREATE_KEYSTORE_SWITCH);
-                if ( doModuleProtection() ) {
-                    pw.println("  "+args[0]+" "+CREATE_KEYSTORE_MODULE_SWITCH);
-                }
-            }
             pw.println("  "+args[0]+" "+ENCRYPT_SWITCH);
             pw.println("  "+args[0]+" "+DECRYPT_SWITCH);
             pw.println("  "+args[0]+" "+SIGN_SWITCH);
@@ -686,12 +730,9 @@ public class HSMKeyTool extends ClientToolBox {
             System.exit(2); // Command did not execute OK! // NOPMD, it's not a JEE app
         }
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.cli.ClientToolBox#getName()
-     */
     @Override
     protected String getName() {
-        return "HSMKeyTool";
+        return "PKCS11HSMKeyTool";
     }
 
     private static final String trimStoreId(String storeId) {
@@ -701,7 +742,7 @@ public class HSMKeyTool extends ClientToolBox {
         return storeId;
     }
 
-    private static final Pkcs11SlotLabelType divineSlotLabelType(String storeId) {
+    private static final Pkcs11SlotLabelType getTokenLabelType(String storeId) {
         if(storeId.contains(":")) {
             String prefix = storeId.split(":", 2)[0].trim();
             if(prefix.equals("TOKEN_LABEL") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
