@@ -36,12 +36,12 @@ import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
-import org.ejbca.util.keystore.KeyStoreContainer;
-import org.ejbca.util.keystore.KeyStoreContainerFactory;
+import org.ejbca.util.keystore.KeyStoreToolsFactory;
 
 /**
  *
@@ -61,30 +61,25 @@ class KeyStoreContainerTest {
         this.keyPair = kp;
         this.providerName = pn;
     }
-    static void test(final String providerClassName, // NOPMD: this is not a JUnit test
-                     final String encryptProviderClassName,
-                     final String keyStoreType,
-                     final String storeID,
-                     final Pkcs11SlotLabelType slotLabelType,
-                     final int nrOfThreads,
-                     final int nrOfTests,
-                     final String alias,
-                     final String typeOfOperation,
-                     final ProtectionParameter protectionParameter) throws Exception {
+    static void test(
+            final String p11moduleName,
+            final String storeID,
+            final Pkcs11SlotLabelType slotLabelType,
+            final int nrOfThreads,
+            final int nrOfTests,
+            final String alias,
+            final String typeOfOperation,
+            final ProtectionParameter protectionParameter) throws Exception {
         if ( alias==null ) {
             startNormal(
-                    providerClassName,
-                    encryptProviderClassName,
-                    keyStoreType,
+                    p11moduleName,
                     storeID,
                     slotLabelType,
                     nrOfTests>0 ? nrOfTests : nrOfThreads,
                     protectionParameter);
         } else {
             startStress(
-                    providerClassName,
-                    encryptProviderClassName,
-                    keyStoreType,
+                    p11moduleName,
                     storeID,
                     slotLabelType,
                     nrOfThreads,
@@ -94,44 +89,44 @@ class KeyStoreContainerTest {
                     protectionParameter);
         }
     }
-    private static NormalTest[] getTests(final KeyStoreContainer keyStore) throws Exception {
+    private static NormalTest[] getTests(final KeyStoreTools keyStore) throws Exception {
         Enumeration<String> e = keyStore.getKeyStore().aliases();
-        Set<NormalTest> testSet = new HashSet<NormalTest>();
+        Set<NormalTest> testSet = new HashSet<>();
         while( e.hasMoreElements() ) {
             String alias = e.nextElement();
-            if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
-                try {
-                    PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
-                    Certificate cert = keyStore.getKeyStore().getCertificate(alias);
-                    if (cert != null) {
-                        testSet.add(new NormalTest(alias,
-                                new KeyPair(cert.getPublicKey(), privateKey),
-                                keyStore.getProviderName()));
-                    } else {
-                        termOut.println("Not testing keys with alias "+alias+". No certificate exists.");
-                    }
-                } catch (ClassCastException ce) {
-                    termOut.println("Not testing keys with alias "+alias+". Not a private key.");
-                } catch (KeyStoreException ce) {
-                    termOut.println("Not testing keys with alias "+alias+". KeyStoreException getting key: "+ce.getMessage());
-                } catch (ProviderException ce) {
-                    termOut.println("Not testing keys with alias "+alias+". ProviderException getting key: "+ce.getMessage());
+            if ( !keyStore.getKeyStore().isKeyEntry(alias) ) {
+                continue;
+            }
+            try {
+                final PrivateKey privateKey = (PrivateKey)keyStore.getKeyStore().getKey(alias, null);
+                final Certificate cert = keyStore.getKeyStore().getCertificate(alias);
+                if (cert != null) {
+                    testSet.add(new NormalTest(alias,
+                            new KeyPair(cert.getPublicKey(), privateKey),
+                            keyStore.getProviderName()));
+                } else {
+                    termOut.println("Not testing keys with alias "+alias+". No certificate exists.");
                 }
+            } catch (ClassCastException ce) {
+                termOut.println("Not testing keys with alias "+alias+". Not a private key.");
+            } catch (KeyStoreException ce) {
+                termOut.println("Not testing keys with alias "+alias+". KeyStoreException getting key: "+ce.getMessage());
+            } catch (ProviderException ce) {
+                termOut.println("Not testing keys with alias "+alias+". ProviderException getting key: "+ce.getMessage());
             }
         }
         return testSet.toArray(new NormalTest[testSet.size()]);
     }
-    private static void startNormal(final String providerClassName,
-                                    final String encryptProviderClassName,
-                                    final String keyStoreType,
-                                    final String storeID,
-                                    final Pkcs11SlotLabelType slotLabelType,
-                                    final int nrOfTests,
-                                    final ProtectionParameter protectionParameter) throws Exception {
+    private static void startNormal(
+            final String p11moduleName,
+            final String storeID,
+            final Pkcs11SlotLabelType slotLabelType,
+            final int nrOfTests,
+            final ProtectionParameter protectionParameter) throws Exception {
         termOut.println("Test of keystore with ID "+storeID+'.');
         NormalTest tests[] = null;
-        final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
-                                                           keyStoreType, storeID, slotLabelType, protectionParameter);
+        final KeyStoreTools keyStore = getKeyStore(
+                p11moduleName, storeID, slotLabelType, protectionParameter);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
                 if ( tests==null || nrOfTests==-5 ) {
@@ -147,9 +142,8 @@ class KeyStoreContainerTest {
             }
         }
     }
-    private static void startStress(final String providerClassName,
-                                    final String encryptProviderClassName,
-                                    final String keyStoreType,
+    private static void startStress(
+                                    final String p11moduleName,
                                     final String storeID,
                                     final Pkcs11SlotLabelType slotLabelType,
                                     final int numberOfThreads,
@@ -157,12 +151,13 @@ class KeyStoreContainerTest {
                                     final String alias,
                                     final boolean isSign,
                                     final ProtectionParameter protectionParameter) throws Exception {
-        final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
-                                                       keyStoreType, storeID, slotLabelType, protectionParameter);
+        final KeyStoreTools keyStore = getKeyStore(
+                p11moduleName, storeID, slotLabelType, protectionParameter);
         if ( !keyStore.getKeyStore().isKeyEntry(alias) ) {
-            termOut.println("Key alias does not exist.");
+            termErr.println("Key alias does not exist.");
+            return;
         }
-        PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
+        PrivateKey privateKey = (PrivateKey)keyStore.getKeyStore().getKey(alias, null);
         StressTest.execute(
                 alias,
                 new KeyPair(keyStore.getKeyStore().getCertificate(alias).getPublicKey(), privateKey),
@@ -172,17 +167,16 @@ class KeyStoreContainerTest {
                 -1,
                 isSign);
     }
-    static private KeyStoreContainer getKeyStore(final String providerName,
-                                                 final String encryptProviderClassName,
-                                                 final String keyStoreType,
-                                                 final String storeID,
-                                                 final Pkcs11SlotLabelType slotLabelType,
-                                                 final ProtectionParameter protectionParameter) throws Exception {
-        KeyStoreContainer keyStore = null;
+    static private KeyStoreTools getKeyStore(
+            final String p11moduleName,
+            final String storeID,
+            final Pkcs11SlotLabelType slotLabelType,
+            final ProtectionParameter protectionParameter) throws Exception {
+        KeyStoreTools keyStore = null;
         while( keyStore==null ) {
             try {
-                keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
-                                                   encryptProviderClassName, storeID, slotLabelType, null, protectionParameter);
+                keyStore = KeyStoreToolsFactory.getInstance(
+                        p11moduleName, storeID, slotLabelType, null, protectionParameter);
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 log.error("Not possible to load keys.", t);
                 termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed or 'x' enter to quit.");
@@ -286,26 +280,30 @@ class KeyStoreContainerTest {
                 return null;
             }
         }
-        /** Load the provided signature with test data from either a file or a hard coded short String. */
+        /**
+         * Load the provided signature with test data from either a file or a hard coded short String.
+         * @param signature
+         * @throws Exception
+         */
         public static void updateWithTestData(final Signature signature) throws Exception {
-            final InputStream is = getInput();
-            log.trace("Start updating ...");
-            if (is==null) {
-                // Update the signer with hard coded test data, since no file was available
-                signature.update(Arrays.copyOf(STATIC_TEST_DATA, STATIC_TEST_DATA.length));
-                return;
-            }
-            // Load the found file with test data into the signer
-            final byte buffer[] = new byte[16*1024];
-            while ( true ) {
-                final int length = is.read(buffer);
-                if ( length<0 ) {
-                    break;
+            try (final InputStream is = getInput() ) {
+                log.trace("Start updating ...");
+                if (is==null) {
+                    // Update the signer with hard coded test data, since no file was available
+                    signature.update(Arrays.copyOf(STATIC_TEST_DATA, STATIC_TEST_DATA.length));
+                    return;
                 }
-                log.trace("Updating ...");
-                signature.update(buffer, 0, length);
+                // Load the found file with test data into the signer
+                final byte buffer[] = new byte[16*1024];
+                while ( true ) {
+                    final int length = is.read(buffer);
+                    if ( length<0 ) {
+                        break;
+                    }
+                    log.trace("Updating ...");
+                    signature.update(buffer, 0, length);
+                }
             }
-            is.close();
         }
     }
 
@@ -316,7 +314,7 @@ class KeyStoreContainerTest {
         private boolean result;
         Sign() {
             if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof ECKey ) {
-                this.sigAlgName = "SHA1withECDSA";
+                this.sigAlgName = "SHA256withECDSA";
                 return;
             }
             if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof RSAKey ) {

@@ -50,9 +50,7 @@ public abstract class ClientToolBox {
         // each new tool must be added to the array
         final ClientToolBox toolBox[] = { 
         		new HealthCheckTest(), 
-        		new HSMKeyTool(), 
-        		new PKCS11HSMKeyTool(), 
-        		new NCipherHSMKeyTool(), 
+        		new HSMKeyTool(),
         		new Ocsp(), 
         		new EjbcaWsRaCli(), 
         		new CvcWsRaCli(), 

@@ -10,43 +10,31 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.util.keystore;
 
 import java.io.IOException;
-import java.security.Key;
 import java.security.KeyStore;
-import java.security.KeyStore.CallbackHandlerProtection;
 import java.security.Provider;
 import java.security.Security;
-import java.security.cert.Certificate;
+import java.security.KeyStore.CallbackHandlerProtection;
 
 import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.util.KeyStoreTools;
 
-/** A keystore container for PCKS#11 keystores i.e. the java PKCS#11 wrapper
- * 
- * @version $Id$
+/**
+ * @version $Id: KeyStoreToolsFactory.java 22062 2015-10-20 14:36:16Z primelars $
  */
-public class KeyStoreContainerP11 extends KeyStoreContainerBase {
-    private static final Logger log = Logger.getLogger(KeyStoreContainerP11.class);
+public class KeyStoreToolsFactory {
+    private static final Logger log = Logger.getLogger(KeyStoreToolsFactory.class);
 
-    private KeyStoreContainerP11( KeyStore _keyStore,
-                                  String _providerName ) throws Exception, IOException{
-        super( _keyStore, _providerName, _providerName );
-        load();
-    }
-    protected void load() throws Exception, IOException {
-        this.keyStore.load(null, null);
-    }
-
-    /** Use KeyStoreContainer.getInstance to get an instance of this class
-     * @param privateKeyLabel 
-     * @see KeyStoreContainer#getInstance(String, String, String, String)
-     */
-    static KeyStoreContainer getInstance(final String slot, final Pkcs11SlotLabelType slotLabelType, final String libName,
+    private static KeyStoreTools getInstance(final String slot, final Pkcs11SlotLabelType slotLabelType, final String libName,
             final String attributesFile, final KeyStore.ProtectionParameter protectionParameter, final String privateKeyLabel) throws Exception,
             IOException {
         final Provider provider = Pkcs11SlotLabel.getP11Provider(slot, slotLabelType, libName, attributesFile, privateKeyLabel);
@@ -60,10 +48,7 @@ public class KeyStoreContainerP11 extends KeyStoreContainerBase {
 
         return getInstance(providerName, protectionParameter);
     }
-    /** Use KeyStoreContainer.getInstance to get an instance of this class
-     * @see KeyStoreContainer#getInstance(String, String, String, String)
-     */
-    static KeyStoreContainer getInstance(final String providerName,
+    private static KeyStoreTools getInstance(final String providerName,
                                          final KeyStore.ProtectionParameter protectionParameter) throws Exception, IOException {
         // Make a default password callback handler, if we don't specify one on the command line
         KeyStore.ProtectionParameter pp = protectionParameter;
@@ -75,38 +60,55 @@ public class KeyStoreContainerP11 extends KeyStoreContainerBase {
                 //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
                 //final Class<?> implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
                 //cbh = (CallbackHandler)implClass.newInstance();
-            	
-            	// Nope: we have a better approach from EJBCA 3.9, we made our own callback handler
-            	cbh = new PasswordCallBackHandler();
+                
+                // Nope: we have a better approach from EJBCA 3.9, we made our own callback handler
+                cbh = new PasswordCallBackHandler();
             } catch (Exception e) {
                 IOException ioe = new IOException("Error constructing pkcs11 password callback handler: "+e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             } 
-            pp = new CallbackHandlerProtection(cbh);        	
+            pp = new CallbackHandlerProtection(cbh);            
         }
         Provider provider = Security.getProvider(providerName);
         KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pp);
         final KeyStore keyStore = builder.getKeyStore();
-        return new KeyStoreContainerP11( keyStore, providerName );
+        return new KeyStoreTools(new CachingKeyStoreWrapper(keyStore, true), providerName);
     }
 
-    public byte[] storeKeyStore() throws Exception, IOException {
-        char[] authCode = getPassPhraseLoadSave();
-        this.keyStore.store(null, authCode);
-        return new byte[0];
+    /**
+     * @param p11moduleFileName
+     * @param storeID
+     * @param slotLabelType the slot label type
+     * @param attributesFile
+     * @param pp
+     * @param privateKeyLabel 
+     * @return
+     * @throws Exception
+     */
+    public static KeyStoreTools getInstance(
+            final String p11moduleFileName,
+            final String storeID, final Pkcs11SlotLabelType slotLabelType,
+            final String attributesFile, final KeyStore.ProtectionParameter pp,
+            final String privateKeyLabel) throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
+        return getInstance(storeID, slotLabelType, p11moduleFileName, attributesFile, pp, privateKeyLabel);
     }
-    @Override
-    void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, Exception {
-        this.keyStore.setKeyEntry(alias, key, null, chain);
+    /**
+     * @param p11moduleFileName
+     * @param storeID
+     * @param slotLabelType
+     * @param attributesFile
+     * @param pp
+     * @return
+     * @throws Exception
+     */
+    public static KeyStoreTools getInstance(
+            final String p11moduleFileName,
+            final String storeID,
+            final Pkcs11SlotLabelType slotLabelType,
+            final String attributesFile,
+            final KeyStore.ProtectionParameter pp) throws Exception {
+        return getInstance(p11moduleFileName, storeID, slotLabelType, attributesFile, pp, null);
     }
-
-    public Key getKey(String alias) throws Exception, IOException {
-        return this.keyStore.getKey(alias, null);
-    }
-
-    public char[] getPassPhraseGetSetEntry() {
-        return null;
-    }
-
 }
