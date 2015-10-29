@@ -34,8 +34,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-
 /**
  * Protocol messages.
  *

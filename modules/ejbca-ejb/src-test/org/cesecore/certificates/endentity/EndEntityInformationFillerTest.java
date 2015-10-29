@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.ra;
+package org.cesecore.certificates.endentity;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +19,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
+import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +28,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class UserDataFillerTest {
+public class EndEntityInformationFillerTest {
 	EndEntityProfile profile;
 	EndEntityInformation userData = new EndEntityInformation();
 

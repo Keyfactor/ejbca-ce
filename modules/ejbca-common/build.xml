@@ -97,7 +97,7 @@
         	 classpathref="compile-common.classpath"/>
 	</target>
 	
-	<target name="test" depends="compile-tests" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
+	<target name="test-common" depends="compile-tests" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime"/>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
 		<echo message=" ** Running unit tests in parallel chunks. Console output will be a bit scrambled.. **"/>

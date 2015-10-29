@@ -1,8 +1,24 @@
-package org.ejbca.util;
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+package org.cesecore.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
@@ -13,7 +29,6 @@ import org.junit.Test;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
- * @author tomasg
  * @version $Id$
  */
 public class HashMapTest {
@@ -29,13 +44,13 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
         String data = baos.toString("UTF8");
         //log.error(data);
         
-        java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
+        XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
         HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
         decoder.close();
         assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
@@ -56,14 +71,14 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
         String data = baos.toString("UTF8");
         //log.error(data);
 
         try {
-            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();         
             assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
@@ -100,16 +115,17 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
         String data = baos.toString("UTF8");
         //log.error(data);
 
         try {
-            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
+            @SuppressWarnings("unchecked")
             HashMap<Object, Object> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
             assertEquals(((Boolean)c.get("foo3")).booleanValue(),true);
@@ -135,16 +151,17 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
         String data = baos.toString("UTF8");
         //log.error(data);
 
         try {
-            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
+            @SuppressWarnings("unchecked")
             HashMap<Object, Object> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
             assertEquals(((Boolean)c.get("foo3")).booleanValue(),true);

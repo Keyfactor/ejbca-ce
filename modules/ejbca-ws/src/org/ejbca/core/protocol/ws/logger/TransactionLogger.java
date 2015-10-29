@@ -22,6 +22,12 @@ import org.ejbca.util.DummyPatternLogger;
 import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.PatternLogger;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public class TransactionLogger {
     
     private static TransactionLogger instance = null;
