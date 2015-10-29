@@ -19,6 +19,7 @@
     <property name="mod.common-lib.path" location="${mod.common.path}/lib" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
+	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ejbca-db-cli.dist" location="${ejbca.dist.path}/ejbca-db-cli" />
@@ -41,8 +42,7 @@
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
 	<property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
-    <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
-    <property name="mod.ejbca-util-signserver.lib" location="${ejbca.dist.path}/ejbca-util-signserver.jar" />
+    <property name="mod.ejbca-common.lib" location="${ejbca.dist.path}/ejbca-common.jar" />
     <property name="mod.ejbca-common-web.lib" location="${mod.dist.path}/ejbca-common-web.jar" />
 	<property name="mod.ejbca-extensions.lib" location="${mod.dist.path}/ejbca-extensions.jar" />
     <property name="mod.ejbca-properties.lib" location="${mod.dist.path}/ejbca-properties.jar" />
@@ -253,13 +253,13 @@
 	
 	<path id="lib.json.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="json-simple-*.jar"/></path>
 	
-	<path id="lib.ejbca-util.classpath">
+	<path id="lib.ejbca-common.classpath">
     	<pathelement location="${ejbca.home}/lib/cert-cvc-1.4.3.jar"/>
-    	<pathelement location="${mod.ejbca-util.lib}"/>
+    	<pathelement location="${mod.ejbca-common.lib}"/>
 	</path>
 
 	<path id="lib.ejbca-common-web.classpath">
-    	<path refid="lib.ejbca-util.classpath"/>
+    	<path refid="lib.ejbca-common.classpath"/>
     	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.cesecore-common.lib}"/>
 		<pathelement location="${mod.cesecore-ejb-interface.lib}"/>

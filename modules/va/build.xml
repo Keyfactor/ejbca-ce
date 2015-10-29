@@ -30,7 +30,7 @@
 		<path refid="compile-common.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
-		<path location="${mod.ejbca-util.lib}"/>
+		<path location="${mod.ejbca-common.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>

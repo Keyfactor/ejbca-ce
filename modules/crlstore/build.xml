@@ -25,7 +25,7 @@
 		<path refid="compile-common.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>

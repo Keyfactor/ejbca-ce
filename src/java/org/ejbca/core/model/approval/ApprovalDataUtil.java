@@ -27,7 +27,6 @@ import org.cesecore.util.Base64;
  * Class containing utils for extracting data from the approvaldata table.
  * is used by the Entity and Session bean only.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class ApprovalDataUtil  { 

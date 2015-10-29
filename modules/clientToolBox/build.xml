@@ -25,6 +25,7 @@
             <include name="commons-logging-1.1.1.jar"/>
         	<include name="commons-io-*.jar"/>
         </fileset>
+		<path location="${mod.ejbca-common.lib}"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile">

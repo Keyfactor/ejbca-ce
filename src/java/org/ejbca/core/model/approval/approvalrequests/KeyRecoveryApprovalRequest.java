@@ -40,7 +40,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
  * Approval Request created when an administrator wants
  * to recovery a end entities keyset
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class KeyRecoveryApprovalRequest extends ApprovalRequest {

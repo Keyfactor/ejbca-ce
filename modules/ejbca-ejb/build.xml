@@ -10,16 +10,14 @@
 	<import file="${this.dir}/../build.xml"/>
 
 	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-util.dir" location="${this.dir}/build-util"/>
-	<property name="build-util-signserver.dir" location="${this.dir}/build-util-signserver"/>
+	
 	<property name="build-common-web.dir" location="${this.dir}/build-common-web"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 	
-
-	<path id="compile-util.classpath">
+	<path id="compile-common-web.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/> 
@@ -27,31 +25,28 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
-		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.commons-io.classpath"/>		
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.batik.classpath"/>
 		<path refid="lib.jee.classpath"/>
-        <path location="${mod.cesecore-entity.lib}"/>
-        <path location="${mod.cesecore-common.lib}"/>
-        <path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.cesecore-entity.lib}"/>
+		<path location="${mod.cesecore-common.lib}"/>
+		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
-	</path>
-
-	<path id="compile-common-web.classpath">
-		<path refid="compile-util.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
 	    <path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>
 
 	<path id="compile-ejbca-ejb.classpath">
-		<path refid="compile-util.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.mail.classpath"/>
+		<path refid="lib.quickserver.classpath"/>
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
-		<path refid="lib.quickserver.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
@@ -66,24 +61,18 @@
 		<!-- Service manifest builder triggers static references to InternalResources -->
 		<path location="${ejbca.home}/src"/>
 	</path>
-	
-	<path id="servicemanifest-util.classpath">
-		<path refid="compile-util.classpath"/>
-		<path location="${build-util.dir}"/>
-		<!-- Service manifest builder triggers static references to InternalResources -->
-		<path location="${ejbca.home}/src"/>
-		<path location="${ejbca.home}/src/java"/>
-	</path>
 
 	<path id="compile-test.classpath">
-		<path refid="compile-util.classpath"/>
+		<path refid="compile-ejbca-ejb.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<!-- TODO: Refactor so this isn't neccessary for building the tests..? -->
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.easymock.classpath"/>
+		<path refid="lib.commons-io.classpath"/>		
+		<path refid="lib.ldap.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
@@ -92,248 +81,20 @@
         <path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
+		<path location="${mod.ejbca-common.lib}"/>
 	</path>
 
 	<path id="test.classpath">
 		<path location="${build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
-		<path location="${mod.ejbca-util.lib}" />
+		<path location="${mod.ejbca-common.lib}" />
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
 
 	<!--
-		SignServer util depends on the CVC library and used by many modules in EJBCA and also in SignServer.
-		
-		Execute
-		 grep "import.*org.ejbca.*" * -r | grep -v svn | awk '{print $2}' | tr -d ';' | sed 's/\s//g' | sort | uniq | sed 's/[\.]/\//g'"
-		and
-		 grep "import.*org.cesecore.*" * -r | grep -v svn | awk '{print $2}' | tr -d ';' | sed 's/\s//g' | sort | uniq | sed 's/[\.]/\//g'
-		in the SignServer home dir to get a list of dependencies.
-	-->
-	<fileset id="source.fileset.signserver-util" dir="${src.dir}">
-		<!-- Classes no longer available in EJBCA:
-       	<include name="org/ejbca/core/ejb/JNDINames.java"/>
-		-->
-		<include name="org/ejbca/core/model/ca/caadmin/IllegalKeyStoreException.java"/>
-		<include name="org/ejbca/core/model/ca/catoken/CATokenAuthenticationFailedException.java"/>
-		<include name="org/ejbca/core/model/ca/catoken/CATokenOfflineException.java"/>
-		<include name="org/cesecore/keys/token/CryptoToken.java"/>
-		<include name="org/cesecore/keys/token/PKCS11CryptoToken.java"/>
-		<include name="org/cesecore/certificates/crl/RevokedCertInfo.java"/>
-		<include name="org/cesecore/internal/UpgradeableDataHashMap.java"/>
-		<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
-		<include name="org/cesecore/certificates/certificate/request/SimpleRequestMessage.java"/>
-		<include name="org/ejbca/ui/cli/util/ConsolePasswordReader.java"/>
-		<include name="org/ejbca/ui/web/pub/cluster/IHealthCheck.java"/>
-		<include name="org/ejbca/util/Base64.java"/>
-		<include name="org/ejbca/util/Base64GetHashMap.java"/>
-		<include name="org/ejbca/util/Base64PutHashMap.java"/>
-		<include name="org/ejbca/util/CertTools.java"/>
-		<include name="org/ejbca/util/IPatternLogger.java"/>
-		<include name="org/ejbca/util/JDBCUtil.java"/>
-		<include name="org/ejbca/util/keystore/KeyStoreContainer.java"/>
-		<include name="org/ejbca/util/keystore/KeyStoreContainerFactory.java"/>
-		<include name="org/ejbca/util/keystore/KeyTools.java"/>
-		<include name="org/ejbca/util/PatternLogger.java"/>
-		<include name="org/ejbca/util/RequestMessageUtils.java"/>
-	</fileset>
-	<pathconvert refid="source.fileset.signserver-util" pathsep=" " property="source.fileset.signserver-util.files">
-		<map from="${src.dir}/" to=""/>
-	</pathconvert>
-
-	<!--
-		EJBCA util depends on the CVC library and used by many modules in EJBCA.
-	-->
-	<fileset id="source.fileset.ejbca-util" dir="${src.dir}">
-		<!-- CESeCore util and common classes.. a bit rough.. -->
-		<include name="org/cesecore/*.java"/>
-		<include name="org/cesecore/audit/*.java"/>
-		<include name="org/cesecore/certificates/certificate/Certificate*.java"/>
-		<include name="org/cesecore/certificates/certificate/*Exception.java"/>
-		<include name="org/cesecore/certificates/certificate/request/*.java"/>
-		<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
-		<include name="org/cesecore/certificates/*Exception.java"/>
-		<include name="org/cesecore/certificates/ca/*.java"/>
-		<include name="org/cesecore/certificates/crl/*.java"/>
-		<include name="org/cesecore/certificates/ocsp/OcspResponseInformation.java"/>
-		<include name="org/cesecore/certificates/ocsp/cache/OcspConfigurationCache.java"/>
-		<include name="org/cesecore/certificates/ocsp/extension/OCSPExtension.java"/>
-		<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>		
-		<include name="org/cesecore/certificates/ocsp/logging/AuditLogger.java"/>
-		<include name="org/cesecore/certificates/ocsp/logging/TransactionLogger.java"/>
-		<include name="org/cesecore/certificates/ocsp/logging/GuidHolder.java"/>
-		<include name="org/cesecore/certificates/ocsp/logging/TransactionCounter.java"/>
-		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
-		<exclude name="org/cesecore/certificates/certificateprofile/*Cache.java"/>
-		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
-		<include name="org/cesecore/audit/audit/*.java"/>
-		<include name="org/cesecore/audit/enums/*.java"/>
-		<include name="org/cesecore/audit/impl/*.java"/>
-		<include name="org/cesecore/audit/log/*.java"/>
-		<include name="org/cesecore/authentication/tokens/*.java"/>
-		<include name="org/cesecore/authentication/*Exception.java"/>
-		<include name="org/cesecore/authorization/*.java"/>
-		<include name="org/cesecore/authorization/control/*.java"/>
-		<include name="org/cesecore/authorization/rules/*.java"/>
-		<include name="org/cesecore/authorization/user/*.java"/>
-		<include name="org/cesecore/internal/*.java"/>
-		<include name="org/cesecore/keys/token/*.java"/>
-		<include name="org/cesecore/keys/util/*.java"/>
-		<include name="org/cesecore/roles/*.java"/>
-		<include name="org/cesecore/time/*.java"/>
-		<include name="org/cesecore/time/providers/*.java"/>
-		<include name="org/cesecore/util/**/*.java"/>
-		<include name="org/cesecore/certificates/util/**/*.java"/>
-		<exclude name="org/cesecore/**/*SessionBean.java"/>
-		<!-- From EJBCA entity lib -->
-		<include name="org/cesecore/certificates/ca/internal/CACacheManager.java"/>
-		<include name="org/cesecore/certificates/ca/CADoesntExistsException.java"/>
-		<include name="org/cesecore/certificates/certificateprofiles/CertificateProfile.java"/>
-		<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
-		<include name="org/cesecore/keybind/InternalKeyBinding.java"/>
-		<include name="org/cesecore/keybind/InternalKeyBindingInfo.java"/>
-		<include name="org/cesecore/keybind/InternalKeyBindingRules.java"/>
-		<include name="org/ejbca/config/CmpConfiguration.java"/>
-		<include name="org/ejbca/config/CmpTcpConfiguration.java"/>
-		<include name="org/ejbca/config/ScepConfiguration.java"/>
-		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
-		<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
-		<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
-		<include name="org/ejbca/core/model/approval/ApprovalRequestExecutionException.java"/>
-		<include name="org/ejbca/core/model/approval/Approval.java"/>
-		<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
-		<include name="org/ejbca/core/model/authorization/AccessRule.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/PublisherConst.java"/>
-		<include name="org/ejbca/core/model/ca/store/CertReqHistory.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuer.java"/>
-		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfile.java"/>
-		<include name="org/ejbca/core/model/log/LogConfiguration.java"/>
-		<include name="org/ejbca/core/model/log/LogEntry.java"/>
-		<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
-		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
-		<include name="org/ejbca/config/GlobalConfiguration.java"/>
-		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceData.java"/>
-		<include name="org/ejbca/core/model/ra/userdatasource/*DataSource.java"/>
-		<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
-		<include name="org/ejbca/util/GUIDGenerator.java"/>
-		<!-- From EJBCA interface lib -->
-		<include name="org/cesecore/certificates/crl/CRLInfo.java"/>
-		<include name="org/cesecore/certificates/ca/CAExistsException.java"/>
-		<include name="org/cesecore/certificates/certificate/CertificateStatus.java"/>
-       	<include name="org/ejbca/util/cert/OID.java"/>
-       	<include name="org/ejbca/core/ejb/ra/EndEntityExistsException.java"/>
-       	<include name="org/ejbca/core/ejb/ra/NoSuchEndEntityException.java"/>
-		<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
-		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>
-		<include name="org/ejbca/core/model/log/ILogExporter.java"/>
-		<include name="org/ejbca/util/query/IllegalQueryException.java"/>
-		<include name="org/ejbca/util/query/Query.java"/>
-		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
-		<include name="org/ejbca/core/model/approval/AdminAlreadyApprovedRequestException.java"/>
-		<include name="org/ejbca/core/model/approval/WaitingForApprovalException.java"/>
-		<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
-		<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>
-		<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerInformation.java"/>
-		<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenInformation.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenDoesntExistsException.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenExistsException.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
-		<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryInformation.java"/>
-		<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
-       	<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
-		<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
-		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
-		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileNotFoundException.java"/>
-		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
-		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
-		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->
-		<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
-		<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>		
-		<!-- Dependecies from EJB CLI, AdminWeb -->
-		<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
-		<include name="org/ejbca/core/model/ra/EndEntityManagementConstants.java"/>
-		<include name="org/ejbca/config/LogConfiguration.java"/>
-		<include name="org/ejbca/util/PrinterManager.java"/>
-		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>
-		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
-		<include name="org/cesecore/certificates/util/cert/CertificateTransparencyExtension.java"/>
-		<include name="org/cesecore/certificates/util/cert/CrlExtensions.java"/>
-		<include name="org/cesecore/certificates/ct/*.java"/>
-		<include name="org/ejbca/core/model/authorization/DefaultRoles.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/*PublisherContainer.java"/>
-        <include name="org/ejbca/core/model/ca/publisher/custpubl*/*.java"/>
-                <include name="org/ejbca/core/model/ra/raadmin/validators/*.java"/>
-                <include name="org/ejbca/core/model/ra/raadmin/validators/RegexFieldValidator.java"/>
-                <include name="org/ejbca/core/model/ra/raadmin/EndEntityFieldValidator.java"/>
-                <include name="org/ejbca/core/model/ra/raadmin/EndEntityFieldValidatorException.java"/>
-                <include name="org/ejbca/core/model/ra/raadmin/EndEntityValidationHelper.java"/>
-		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
-		<include name="org/ejbca/core/model/hardtoken/profiles/*Profile.java"/>
-		<!-- Dependecies from EJB CLI, EJBCA WS -->
-		<include name="org/cesecore/keys/util/PublicKeyWrapper.java"/>	
-		<include name="org/ejbca/core/model/hardtoken/types/*.java"/>
-		<include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationToken.java"/>
-		<include name="org/ejbca/core/ejb/authentication/cli/CliUserAccessMatchValue.java"/>
-		<include name="org/ejbca/util/crypto/BCrypt.java"/>
-		<include name="org/ejbca/util/crypto/CryptoTools.java"/>
-		<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
-		<!-- Dependecies from multiple places -->
-		<include name="com/novosec/pkix/asn1/**/*.java"/>
-		<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java"/>
-		<include name="org/ejbca/core/ejb/config/CMPConfigurationCache.java"/>
-		<include name="org/ejbca/core/ejb/config/GlobalConfigurationCache.java"/>
-		<include name="org/ejbca/core/ejb/config/GlobalUpgradeConfiguration.java"/>
-		<include name="org/ejbca/core/ejb/config/GlobalUpgradeConfigurationCache.java"/>
-		<include name="org/ejbca/core/ejb/config/ScepConfigurationCache.java"/>
-		<include name="org/ejbca/core/ejb/config/AvailableExtendedKeyUsagesConfigurationCache.java"/>
-		<include name="org/ejbca/core/ejb/config/AvailableCustomCertificateExtensionsConfigurationCache.java"/>
-		<include name="org/ejbca/util/KeyValuePair.java"/>
-		<!-- Dependecies from EJB CLI and CTB -->
-		<include name="org/ejbca/util/CliTools.java"/>
-		<!-- Dependecies from EJB CLI and XMKS -->
-		<include name="org/ejbca/util/keystore/P12toPEM.java"/>
-		<include name="org/cesecore/certificates/ca/internal/SernoGenerator.java"/>
-		<!-- Dependecies from EJBCA WS CLI and XMKS CLI -->
-		<include name="org/ejbca/ui/cli/IAdminCommand.java"/>
-		<!-- Dependecies from EJBCA WS CLI and VA WAR -->
-		<include name="org/ejbca/util/provider/TLSProvider.java"/>
-		<!-- Dependecies from EJBCA WS CLI and CTB -->
-		<include name="org/ejbca/util/PerformanceTest.java"/>
-		<!-- Dependecies from all CLIs -->
-		<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
-		<include name="org/ejbca/core/ejb/authentication/cli/exception/CliAuthenticationFailedException.java"/>
-		<!-- Dependencies from VA WAR and Appserver Extensions -->
-		<include name="org/cesecore/util/log/SaferAppenderListener.java"/>
-		<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*.java"/>
-		<include name="org/ejbca/util/JDBCUtil.java"/>
-		<!-- Tool used to tidy up JavaDoc and make generated WS client classes usable. -->
-		<include name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
-		<!-- For backwards compatiblitiy, replaced by classes in CESeCore -->
-		<include name="org/ejbca/util/Base64PutHashMap.java"/>
-		<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
-		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificatePolicy.java"/>
-		<!-- Tool for tests. -->
-		<include name="org/ejbca/util/NonEjbTestTools.java"/>
-		<include name="org/ejbca/core/ejb/ProfilingStat.java"/>
-		<!-- For customer services -->
-		<include name="org/ejbca/core/model/services/CustomServiceWorkerUiSupport.java"/>
-		<include name="org/ejbca/core/model/services/CustomServiceWorkerProperty.java"/>
-	</fileset>
-	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files">
-		<map from="${src.dir}/" to=""/>
-	</pathconvert>
-	
-	<!--
-		EJBCA Common Web depends on ejbca-util, ejbca-ejb-interface and used by many modules in EJBCA.
+		EJBCA Common Web depends on ejbca-common, ejbca-ejb-interface and used by many modules in EJBCA.
 	-->
 	<fileset id="source.fileset.ejbca-common-web" dir="${src.dir}">
 		<!-- Dependencies from Public Web, Admin GUI, SCEP WAR, Web Dist WAR, CMP WAR, -->
@@ -419,7 +180,7 @@
 		<istrue value="${mod.peerconnector.exists}"/>
 	</condition>
 
-	<fileset id="source.fileset.ejbca-ejb" dir="${src.dir}" excludes="${source.fileset.ejbca-util.files} ${source.fileset.ejbca-common-web.files}">
+	<fileset id="source.fileset.ejbca-ejb" dir="${src.dir}" excludes="${source.fileset.ejbca-common.files} ${source.fileset.ejbca-common-web.files}">
 		<!-- CESeCore dependencies instatiated through reflection 
        	<include name="org/cesecore/audit/impl/**/*.java"/>-->
 		<!-- Exclude appserver specific code.. -->
@@ -439,7 +200,7 @@
 	</pathconvert>
 
 	<!-- DEBUG output of what is included where..
-	<echo message="source.fileset.ejbca-util.files:       ${source.fileset.ejbca-util.files}"/>
+	<echo message="source.fileset.ejbca-common.files:       ${source.fileset.ejbca-common.files}"/>
 	<echo message="source.fileset.ejbca-common-web.files: ${source.fileset.ejbca-common-web.files}"/>
 	<echo message="source.fileset.ejbca-ejb.files:        ${source.fileset.ejbca-ejb.files}"/>
 	-->
@@ -449,24 +210,22 @@
 
 	<target name="clean" depends="dependecy-check-clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${build-util.dir}" />
-		<delete dir="${build-util-signserver.dir}" />
 		<delete dir="${build-common-web.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
-		<delete file="${mod.ejbca-util.lib}" />
+		<delete file="${mod.ejbca-common.lib}" />
 		<delete file="${mod.ejbca-common-web.lib}" />
 	</target>
 
 	<target name="build" description="Build this module" depends="compile-ejbca-ejb">
 
-		<!-- Make sure we do not include files that are already in ejbca-util in this jar file -->
-		<zipfileset id="util-zipfiles" includes="**/*.class" src="${mod.ejbca-util.lib}"/>
-		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-util.files">
-			<map from="${mod.ejbca-util.lib}:" to=""/>
+		<!-- Make sure we do not include files that are already in ejbca-common in this jar file -->
+		<zipfileset id="util-zipfiles" includes="**/*.class" src="${mod.ejbca-common.lib}"/>
+		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-common.files">
+			<map from="${mod.ejbca-common.lib}:" to=""/>
 		</pathconvert>
 
-		<!-- Make sure we do not include files that are already in ejbca-util in this jar file -->
+		<!-- Make sure we do not include files that are already in ejbca-common in this jar file -->
 		<zipfileset id="common-zipfiles" includes="**/*.class" src="${mod.ejbca-common-web.lib}"/>
 		<pathconvert refid="common-zipfiles" pathsep=" " property="exclude.fileset.ejbca-common-web.files">
 			<map from="${mod.ejbca-common-web.lib}:" to=""/>
@@ -478,7 +237,7 @@
         </condition>
     	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin" file="${build.dir}" classpath="servicemanifest-ejbca-ejb.classpath"/>
 		<jar destfile="${mod.ejbca-ejb.lib}">
-			<fileset dir="${build.dir}" excludes="${exclude.fileset.ejbca-util.files} ${exclude.fileset.ejbca-common-web.files}"/>
+			<fileset dir="${build.dir}" excludes="${exclude.fileset.ejbca-common.files} ${exclude.fileset.ejbca-common-web.files}"/>
 			<!--
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
@@ -488,60 +247,23 @@
 		</jar>
 	</target>
 
-	<target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
-		<dirname file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.dir"/>
-		<mkdir dir="${mod.ejbca-util.lib.dir}" />
-		<buildservicemanifest interface="org.cesecore.configuration.ConfigurationCache" file="${build-util.dir}" classpath="servicemanifest-util.classpath"/>
-		<!-- Since the base classes reading properties is in ejbca-util, we also store defaultvalues.properties here so it can be used stand-alone -->
-		<jar destfile="${mod.ejbca-util.lib}">
-			<manifest>
-				<attribute name="Implementation-Version" value="${app.version}"/>
-			</manifest>
-			<fileset dir="${build-util.dir}" includes="**/*.class,META-INF/**/*"/>
-			<fileset dir="${ejbca.home}/src/java">
-			    <include name="META-INF/services/org.ejbca.core.model.ca.publisher.ICustomPublisher"/> <!-- for GeneralPurposeCustomPublisher, etc. -->
-				<include name="dncomponents.properties"/>
-				<include name="profilemappings.properties"/>
-                <include name="profilemappings_enterprise.properties"/>
-				<include name="certextensions.properties"/>
-				<include name="defaultvalues.properties"/>
-			</fileset>
-		</jar>
-	</target>
+	
 
 	<target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
 		<dirname file="${mod.ejbca-common-web.lib}" property="mod.ejbca-common-web.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common-web.lib.dir}" />
 
-		<!-- Make sure we do not include files that are already in ejbca-util in this jar file -->
-		<zipfileset id="util-zipfiles" includes="**/*.class" src="${mod.ejbca-util.lib}"/>
-		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-util.files">
-			<map from="${mod.ejbca-util.lib}:" to=""/>
+		<!-- Make sure we do not include files that are already in ejbca-common in this jar file -->
+		<zipfileset id="util-zipfiles" includes="**/*.class" src="${mod.ejbca-common.lib}"/>
+		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-common.files">
+			<map from="${mod.ejbca-common.lib}:" to=""/>
 		</pathconvert>
 		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher" file="${build-common-web.dir}" classpath="compile-common-web.classpath"/>
 		<jar destfile="${mod.ejbca-common-web.lib}">
-			<fileset dir="${build-common-web.dir}" excludes="${exclude.fileset.ejbca-util.files}"/>
+			<fileset dir="${build-common-web.dir}" excludes="${exclude.fileset.ejbca-common.files}"/>
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
 			</manifest>
-		</jar>
-	</target>
-
-	<target name="build-util-signserver" description="Compile and create library used by SignServer">
-		<mkdir dir="${build-util-signserver.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${build-util-signserver.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
-        	includes="${source.fileset.signserver-util.files}" classpathref="compile-ejbca-ejb.classpath"/>
-		<dirname file="${mod.ejbca-util-signserver.lib}" property="mod.ejbca-util-signserver.lib.dir"/>
-		<mkdir dir="${mod.ejbca-util-signserver.lib.dir}"/>
-		<!-- Since the base classes reading properties is in ejbca-util-signserver.jar, we also store defaultvalues.properties here so it can be used stand-alone -->
-		<jar destfile="${mod.ejbca-util-signserver.lib}">
-			<manifest>
-				<attribute name="Implementation-Version" value="${app.version}"/>
-			</manifest>
-			<fileset dir="${build-util-signserver.dir}" includes="**/*.class"/>
-			<fileset dir="${ejbca.home}/src/java">
-				<include name="defaultvalues.properties"/>
-			</fileset>
 		</jar>
 	</target>
 
@@ -553,12 +275,6 @@
 		<mkdir dir="${build.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
-	</target>
-
-	<target name="compile-util" depends="with.clover, cesecore-ejb-interface">
-		<mkdir dir="${build-util.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
-        	includes="${source.fileset.ejbca-util.files}" classpathref="compile-util.classpath"/>
 	</target>
 
 	<target name="compile-common-web-external-deps" unless="external-deps-satfisfied">
@@ -573,6 +289,7 @@
 	<target name="compile-tests-external-deps" unless="external-deps-satfisfied">
 		<antcall target="ejbca-ejb"/>
 	</target>
+	
 	<target name="compile-tests" depends="with.clover, cesecore-ejb, dependecy-check, compile-tests-external-deps">
 		<mkdir dir="${build-test.dir}" />
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"

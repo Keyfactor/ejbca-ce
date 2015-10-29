@@ -28,7 +28,7 @@
 	</path>
 
 	<path id="compile-library.classpath">
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
@@ -87,7 +87,7 @@
     	</javac>
     </target>
 
-    <target name="compile-library-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util"/></target>
+    <target name="compile-library-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common"/></target>
     <target name="compile-library" depends="compile-library-external-deps">
     	<mkdir dir="${build-lib.dir}" />
         <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no"

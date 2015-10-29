@@ -28,5 +28,5 @@ public interface ICustomNotificationRecipient {
 	 * @param user EndEntityInformation of the user that will be notified
 	 * @return a comma separated list of email addresses
 	 */
-	public String getRecipientEmails(EndEntityInformation user);
+    String getRecipientEmails(EndEntityInformation user);
 }
