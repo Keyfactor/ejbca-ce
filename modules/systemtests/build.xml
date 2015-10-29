@@ -43,12 +43,12 @@
 		<pathelement location="${mod.ejbca-db-cli.lib}"/>
 		<pathelement location="${mod.clientToolBox.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
-		<pathelement location="${mod.ejbca-util.lib}"/>
+		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<pathelement location="${mod.edition-specific-interface.lib}"/>
 		<pathelement location="${mod.edition-specific-ejb.lib}"/>
-		<pathelement location="${mod.ejbca-util.lib}"/>
+		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement location="${mysql.lib}"/>
 		<pathelement location="${mod.systemtest-interface.lib}"/>
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
@@ -89,7 +89,7 @@
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
-		<pathelement location="${mod.ejbca-util.lib}"/>
+		<pathelement location="${mod.ejbca-common.lib}"/>
 		<path location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.quickserver.classpath" />
 		<path location="${build.interface.dir}" />
@@ -143,7 +143,7 @@
 		</jar>
 	</target>
 
-	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-common, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">

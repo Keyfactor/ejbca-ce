@@ -22,7 +22,7 @@
 	</target>
 	
 	<!-- The buildservicemanifest needs ${ejbca-home}/src/java/defaultvalues.properties in order to run. 
-	     This is included in ejbca-util, so if that or ${ejbca-home}/src/java is not on the classpath passed to this macro, this will fail. -->
+	     This is included in ejbca-common, so if that or ${ejbca-home}/src/java is not on the classpath passed to this macro, this will fail. -->
 	<macrodef name="buildservicemanifest">
 		<attribute name="classpath" />
 		<attribute name="file" />

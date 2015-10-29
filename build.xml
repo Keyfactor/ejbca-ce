@@ -127,10 +127,10 @@
     </target>
 	
     <!-- =================================================================== -->
-    <!-- Build ejbca util part                                                    -->
+    <!-- Build ejbca common part                                                    -->
     <!-- =================================================================== -->
-    <target name="ejbca-util.jar" depends="deprecated:check" description="Creates ejbca util classes for use in other projects.jar">
-        <ant antfile="build.xml" dir="modules" target="ejbca-util" />
+    <target name="ejbca-common.jar" depends="deprecated:check" description="Creates ejbca util classes for use in other projects.jar">
+        <ant antfile="build.xml" dir="modules" target="ejbca-common" />
     </target>    	
 
 	<macrodef name="jar-replacement-in-module" description="Optionally enable and configure a EJB module in the EAR">
@@ -526,7 +526,7 @@
         		<include name="${mod.ejbca-ws-client.libname}" />
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
-        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
+        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-common.jar"/>
         	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
         	<zipfileset prefix="lib" dir="${hwtoken.class.dir}" includes="*.jar"/>
 		</ear>
@@ -574,23 +574,39 @@
         <mkdir dir="${apidoc}" />
     	<path id="javadoc-dependencies.classpath">
     		<fileset dir="${lib}" includes="**/*.jar"/>
+    		<fileset dir="${ant.home}/lib/" includes="ant.jar"/>
     	</path>
     	<!-- extdirs="${lib}" -->
         <javadoc packagenames="org.ejbca.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
         	author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB." >
         	<sourcepath location="${ejbca.home}/src/java"/>
-           	<sourcepath location="${ejbca.home}/modules/externalra-scep/src"/>
-           	<sourcepath location="${ejbca.home}/modules/externalra/src"/>
-           	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src"/>
-           	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src-gen"/>
-           	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	
-           	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
-           	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
-           	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb-interface/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-entity/src"/>
+        	<sourcepath location="${ejbca.home}/modules/cli-util/src"/>
+           	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
+        	<sourcepath location="${ejbca.home}/modules/edition-specific/src-ejb/"/>
+        	<sourcepath location="${ejbca.home}/modules/edition-specific/src-interface/"/>
+           	<sourcepath location="${ejbca.home}/modules/edition-specific-ee/src-ejb/"/>
+        	<sourcepath location="${ejbca.home}/modules/ejbca-common/src/"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
+        	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-interface/src"/>    	
+            <sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	
+        	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src"/>
+        	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src-gen"/>
+           	<sourcepath location="${ejbca.home}/modules/externalra-scep/src"/>
+           	<sourcepath location="${ejbca.home}/modules/externalra/src"/>
+        	<sourcepath location="${ejbca.home}/modules/peerconnector/src-cli"/>
+        	<sourcepath location="${ejbca.home}/modules/peerconnector/src-common"/>
+            <sourcepath location="${ejbca.home}/modules/peerconnector/src-ejb"/>
+            <sourcepath location="${ejbca.home}/modules/peerconnector/src-interface"/>
+            <sourcepath location="${ejbca.home}/modules/peerconnector/src-publ"/>
+        	<sourcepath location="${ejbca.home}/modules/peerconnector/src-rar"/>
+            <sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
+        	<sourcepath location="${ejbca.home}/modules/va/src-war"/>
+        	<sourcepath location="${ejbca.home}/modules/va/publisher/src"/>
         </javadoc>
     	<echo message=""/>
     	<dirname file="${apidoc}/index.html" property="javadoc.dir"/>
@@ -1179,10 +1195,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 	<target name="jbosslog4jsafer" depends="deprecated:check" description="Build Log4j ErrorHandler and Appender extensions for JBoss">
     	<ant dir="modules" target="appserver-ext-jbosslog4jsafer"/>
 	</target>
-
-    <target name="ejbca-util-signserver.jar" depends="deprecated:check" description="Creates util library for use in SignServer">
-        <ant dir="modules/ejbca-ejb" target="build-util-signserver"/>
-    </target>
 
     <target name="oldlogexport-cli" depends="deprecated:check" description="Creates a CLI for exporting the log generated by OldLogDevice.">
         <ant dir="modules" target="oldlogexport-cli"/>

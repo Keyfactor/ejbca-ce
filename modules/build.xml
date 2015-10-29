@@ -164,11 +164,11 @@
         <ant antfile="${mod.peerconnector.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
 	
-	<target name="ejbca-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
+	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-db-cli" depends="ejbca-util" if="${ejbca-db-cli.available}" description="Build EJBCA JPA database CLI">
+	<target name="ejbca-db-cli" depends="ejbca-common" if="${ejbca-db-cli.available}" description="Build EJBCA JPA database CLI">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -180,7 +180,7 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="clientToolBox" description="Build EJBCA client toolbox">
+	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
         
@@ -304,7 +304,7 @@
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="cmpTcpProxy" description="Build CMP TCP proxy">
+	<target name="cmpTcpProxy" description="Build CMP TCP proxy" depends="ejbca-common">
 		<echo  message="${mod.cmpProxy.path}/build-tcp.xml" />
 		<fail message="CMP TCP Proxy tool is not distributed with this version of EJBCA">
 		    <condition>
@@ -316,7 +316,7 @@
 		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
-	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home">
+	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home" depends="ejbca-common">
 		<echo  message="${mod.cmpProxy.path}/build-http.xml" />
 		<fail message="CMP HTTP Proxy tool is not distributed with this version of EJBCA">
 		    <condition>
@@ -328,8 +328,8 @@
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="dist" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
-	<target name="ejbca-util" description="Build EJBCA util library">
-		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-util" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="ejbca-common" description="Build EJBCA Common library">
+		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
 	<target name="cli-util">
@@ -352,7 +352,7 @@
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ws-common" depends="ejbca-util" description="Build the EJBCA Web Services common library">
+	<target name="ejbca-ws-common" depends="ejbca-common" description="Build the EJBCA Web Services common library">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build-jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -366,7 +366,7 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="peerconnector" depends="ejbca-util, edition-specific-interface" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
+	<target name="peerconnector" depends="ejbca-common, edition-specific-interface" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
 		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 	
@@ -378,7 +378,7 @@
 		<ant antfile="${mod.externalra.path}/build.xml" target="build-service" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="externalra-client" depends="ejbca-util" description="Build the EJBCA External RA Service CLI">
+	<target name="externalra-client" depends="ejbca-common" description="Build the EJBCA External RA Service CLI">
 		<ant antfile="${mod.externalra.path}/build.xml" target="build-client" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -418,7 +418,7 @@
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-ejbca-war" depends="ejbca-common-web, ejbca-util">
+	<target name="va-ejbca-war" depends="ejbca-common-web, ejbca-common">
 		<ant antfile="${mod.va.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 	
@@ -481,7 +481,7 @@
 			<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="va-publisher" description="Builds only the VA Publisher of the VA module" depends="ejbca-common-web, ejbca-util">
+	<target name="va-publisher" description="Builds only the VA Publisher of the VA module" depends="ejbca-common-web, ejbca-common">
 		<ant antfile="${mod.va.path}/build.xml" target="va-publisher.jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 	

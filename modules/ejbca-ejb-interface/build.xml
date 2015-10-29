@@ -11,7 +11,7 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 
 	<path id="compile.classpath">
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
 		<pathelement location="${mod.ejbca-entity.lib}" />
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<path refid="lib.log4j.classpath"/>
@@ -33,7 +33,7 @@
 
     <target name="compile-ejb3-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-entity"/></target>
 	
-    <target name="compile-ejb3" depends="with.clover, ejbca-util, ejbca-entity">
+    <target name="compile-ejb3" depends="with.clover, ejbca-common, ejbca-entity">
         <mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath">	

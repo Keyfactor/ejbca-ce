@@ -37,7 +37,7 @@
     <property name="include.xml"  value="**/*.xml" />
 
 	<path id="jdoc.classpath">
-		<path location="dist/ejbca-util.jar" />
+		<path location="dist/ejbca-common.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
         <path location="modules/dist/cesecore-common.jar"/>
         <path location="modules/dist/cesecore-entity.jar"/>
@@ -60,7 +60,7 @@
 	
     <target name="doc-build-tool">
     	<mkdir dir="${docs.tools.dest}"/>
-    	<javac srcdir="${ejbca.home}/src/java" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="UTF-8"
+    	<javac srcdir="${ejbca.home}/modules/ejbca-common/src/" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="UTF-8"
 			includes="org/ejbca/util/JAXWSDocAndConvTools.java"/>
     </target>
 
@@ -87,7 +87,7 @@
         <mkdir dir="${docs.dest}"/>
     </target>
 
-	<target name="doc-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util.jar"/></target>
+	<target name="doc-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common.jar"/></target>
     <target name="site" if="site.present">
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
