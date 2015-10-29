@@ -281,19 +281,19 @@ public class CachingKeyStoreWrapper {
         {
             final KeyStoreMapEntry keyStoreMapEntry = this.keyStoreCache.get(alias);
             if (keyStoreMapEntry==null) {
+                // If the alias exists it has a KeyStoreMapEntry. No need to query the key store here.
                 return null;
             }
             if ( keyStoreMapEntry.isTrusted || keyStoreMapEntry.key!=null ) {
                 return keyStoreMapEntry.getEntry();
             }
         }
+        this.updateLock.lock();
         try {
-            this.updateLock.lock();
-            {
-                final KeyStoreMapEntry afterWaitEntry = this.keyStoreCache.get(alias);
-                if ( afterWaitEntry.key!=null ) {
-                    return afterWaitEntry.getEntry();
-                }
+            // Check if another thread has retrieved the key while we waited for the lock
+            final KeyStoreMapEntry afterWaitEntry = this.keyStoreCache.get(alias);
+            if ( afterWaitEntry.isTrusted || afterWaitEntry.key!=null ) {
+                return afterWaitEntry.getEntry();
             }
             final KeyStoreMapEntry newEntry = new KeyStoreMapEntry(alias, protParam, this.keyStore);
             this.keyStoreCache.addEntry(alias, newEntry);
@@ -334,7 +334,8 @@ public class CachingKeyStoreWrapper {
                 // If the alias exists it has a KeyStoreMapEntry. No need to query the key store here.
                 return null;
             }
-            if (keyStoreMapEntry.key!=null) {
+            if ( keyStoreMapEntry.isTrusted || keyStoreMapEntry.key!=null ) {
+                // There is no key if it is a trusted Entry.
                 return keyStoreMapEntry.key;
             }
         }
@@ -342,7 +343,7 @@ public class CachingKeyStoreWrapper {
         try {
             // Check if another thread has retrieved the key while we waited for the lock
             final KeyStoreMapEntry entryAfterWait = this.keyStoreCache.get(alias);
-            if (entryAfterWait.key!=null) {
+            if ( entryAfterWait.isTrusted || entryAfterWait.key!=null ) {
                 return entryAfterWait.key;
             }
             final KeyStoreMapEntry newEntry = new KeyStoreMapEntry(alias, this.keyStore, password, entryAfterWait);
