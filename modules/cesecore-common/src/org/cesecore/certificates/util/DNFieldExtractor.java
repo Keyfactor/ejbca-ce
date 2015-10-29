@@ -96,6 +96,10 @@ public class DNFieldExtractor implements java.io.Serializable {
     private boolean illegal = false;
     private int type;
 
+    public int getType() {
+        return type;
+    }
+    
     /**
      * Creates a new instance of DNFieldExtractor
      * 
