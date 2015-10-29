@@ -44,7 +44,7 @@
 		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
 	</path>
 
-	<target name="jar" depends="">
+	<target name="jar">
 		<mkdir dir="${cesecore-common.dir}/build/classes"/>
 		<javac srcdir="${cesecore-common.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath"/>
@@ -68,7 +68,7 @@
 
 	</target>
 
-	<target name="compile-tests" depends="jar">
+	<target name="compile-tests" depends="jar, cesecore-entity">
 		<mkdir dir="${build-test.dir}" />
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>

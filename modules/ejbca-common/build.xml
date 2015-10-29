@@ -175,7 +175,7 @@
 		</junit>
 	</target>
 	
-	<target name="compile-tests" depends="with.clover, cesecore-ejb">
+	<target name="compile-tests" depends="with.clover, cesecore-ejb, ejbca-ejb">
 		<mkdir dir="${build-test.dir}" />
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>

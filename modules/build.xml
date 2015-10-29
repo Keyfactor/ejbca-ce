@@ -185,10 +185,10 @@
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
         
-        <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
-        <target name="cesecore-entity" depends="-build-cesecore-entity, -copy-cesecore-entities, -copy-cesecore-common"/>
-        <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
-        <target name="cesecore-ejb" depends="-build-cesecore-ejb, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface, -copy-cesecore-ejb"/>
+    <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
+    <target name="cesecore-entity" depends="-build-cesecore-entity, -copy-cesecore-entities, -copy-cesecore-common"/>
+    <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
+    <target name="cesecore-ejb" depends="-build-cesecore-ejb, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface, -copy-cesecore-ejb"/>
         
         <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface">
             <!-- Builds cesecore-ejb which also builds all other cesecore modules -->
