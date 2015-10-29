@@ -55,6 +55,7 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.ejbca-common.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -189,12 +190,12 @@
         <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
         <target name="cesecore-ejb" depends="-build-cesecore-ejb, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface, -copy-cesecore-ejb"/>
         
-        <target name="-build-cesecore-ejb">
+        <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface">
             <!-- Builds cesecore-ejb which also builds all other cesecore modules -->
             <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="false"/>
         </target>
         
-        <target name="-build-cesecore-ejb-interface">
+        <target name="-build-cesecore-ejb-interface" depends="cesecore-entity, cesecore-common">
             <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="false"/>
         </target>
         
@@ -202,7 +203,7 @@
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="false"/>
         </target>
         
-        <target name="-build-cesecore-entity">
+        <target name="-build-cesecore-entity" depends="cesecore-common">
             <ant antfile="${mod.cesecore-entity.path}/build.xml" target="jar" inheritall="false"/>
         </target>
         

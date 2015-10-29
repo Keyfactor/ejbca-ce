@@ -34,6 +34,8 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
+       	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" />       
+       	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" />        	       	 	
        	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" /> 
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" /> 
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
@@ -71,6 +73,11 @@
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
 					<include name="modules/ct/src-test/**/${test.runone}.java" />
 					<include name="modules/peerconnector/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-common/src-test/**/${test.runone}.java" />
+					<include name="modules/cesecore-common/src-test/**/${test.runone}.java" />
+					<include name="modules/cesecore-ejb/src-test/**/${test.runone}.java" />
+					<include name="modules/cesecore-ejb-interface/src-test/**/${test.runone}.java" />
+					<include name="modules/cesecore-entity/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -96,6 +103,21 @@
     	</condition>
     	<condition property="module" value="modules/peerconnector">
     		<matches string="${test-fullname}" pattern="^modules/peerconnector/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ejbca-common">
+    		<matches string="${test-fullname}" pattern="^modules/ejbca-common/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/cesecore-common">
+    		<matches string="${test-fullname}" pattern="^modules/cesecore-common/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/cesecore-ejb">
+    		<matches string="${test-fullname}" pattern="^modules/cesecore-ejb/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/cesecore-ejb-interface">
+    		<matches string="${test-fullname}" pattern="^modules/cesecore-ejb-interface/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/cesecore-entity">
+    		<matches string="${test-fullname}" pattern="^modules/cesecore-entity/.*$"/>
     	</condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="build.xml" dir="${module}" target="runone" />

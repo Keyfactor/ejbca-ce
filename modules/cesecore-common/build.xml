@@ -1,52 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="cesecore-common" basedir="../.." default="jar">
-    <property environment="env" />
-    <dirname property="cesecore-common.dir" file="${ant.file.cesecore-common}"/>
-    
-    <import file="${cesecore-common.dir}/../build.xml"/>
-    
+	<property environment="env" />
+	<dirname property="cesecore-common.dir" file="${ant.file.cesecore-common}"/>
+
+	<import file="${cesecore-common.dir}/../build.xml"/>
+
+	<property name="build.dir" location="${cesecore-common.dir}/build"/>
+	<property name="build-test.dir" location="${cesecore-common.dir}/build-test"/>
+	<property name="src-test.dir" location="${cesecore-common.dir}/src-test"/>
+
+
 	<path id="compile.classpath">
-        <path refid="lib.commons-lang.classpath"/>
-        <path refid="lib.jee.classpath" />
-        <path refid="lib.jpa.classpath"/>
-        <path refid="lib.cert-cvc.classpath"/>
-        <path refid="lib.bouncycastle.classpath"/>
-        <path refid="lib.log4j.classpath"/>
-        <path refid="lib.commons-logging.classpath"/>
-        <path refid="lib.commons-codec.classpath"/>
-        <path refid="lib.commons-config.classpath"/>
-        <path refid="lib.commons-collections.classpath"/>
-        <path refid="lib.ldap.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.jee.classpath" />
+		<path refid="lib.jpa.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.commons-codec.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 	</path>
 
 	<!-- The buildservicemanifest needs additional classes in order to run. 
 	     These are not included in the javac classpath for cesecore-common to ensure that cesecore-common does not depends on that -->
 	<path id="manifest.classpath">
-        <path refid="compile.classpath"/>
+		<path refid="compile.classpath"/>
 		<path location="${ejbca.home}/src/java"/>
 		<path location="${ejbca.home}/src"/>
 		<path location="${cesecore-common.dir}/build/classes"/>
 	</path>
 
-    <target name="jar" depends="">
-        <mkdir dir="${cesecore-common.dir}/build/classes"/>
-        <javac srcdir="${cesecore-common.dir}/src" destdir="${cesecore-common.dir}/build/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
-            <classpath refid="compile.classpath"/>
-        </javac>
-    	<!-- generates dynamically META-INF/services for the ServiceLocator to find implementations of CvcPlugin -->
-    	<buildservicemanifest interface="org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+	<path id="test.classpath">
+		<path location="${build.dir}/classes"/>
+		<path location="${build-test.dir}"/>
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.easymock.classpath"/>
+		<path location="${mod.cesecore-entity.lib}"/>
+		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
+	</path>
+
+	<target name="jar" depends="">
+		<mkdir dir="${cesecore-common.dir}/build/classes"/>
+		<javac srcdir="${cesecore-common.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+			<classpath refid="compile.classpath"/>
+		</javac>
+		<!-- generates dynamically META-INF/services for the ServiceLocator to find implementations of CvcPlugin -->
+		<buildservicemanifest interface="org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
     		file="${cesecore-common.dir}/build/classes" classpath="manifest.classpath"/>
-    	<mkdir dir="${cesecore-common.dir}/dist"/>
-        <jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">
-   			<fileset dir="${cesecore-common.dir}/build" includes="META-INF/**/*"/>
-            <fileset dir="${cesecore-common.dir}/build/classes/" excludes="**/*.java"/>
-            <fileset dir="${cesecore-common.dir}/src/" excludes="**/*.java"/>
-        </jar>
-    </target>
-        
-    <target name="clean" depends="">
-        <delete dir="${cesecore-common.dir}/dist"/>
-        <delete dir="${cesecore-common.dir}/build"/>
-    </target>
+		<mkdir dir="${cesecore-common.dir}/dist"/>
+		<jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">
+			<fileset dir="${cesecore-common.dir}/build" includes="META-INF/**/*"/>
+			<fileset dir="${cesecore-common.dir}/build/classes/" excludes="**/*.java"/>
+			<fileset dir="${cesecore-common.dir}/src/" excludes="**/*.java"/>
+		</jar>
+	</target>
+
+
+	<target name="clean" depends="">
+		<delete dir="${cesecore-common.dir}/dist"/>
+		<delete dir="${build.dir}"/>
+		<delete dir="${build-test.dir}"/>
+
+	</target>
+
+	<target name="compile-tests" depends="jar">
+		<mkdir dir="${build-test.dir}" />
+		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
+		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy todir="${build-test.dir}" failonerror="true">
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
+		</copy>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
+	</target>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module">
+		<antcall target="showtime"/>
+		<junit printsummary="yes" haltonfailure="no" dir="${cesecore-common.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="showtime"/>
+	</target>
+
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest" unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
 
 </project>

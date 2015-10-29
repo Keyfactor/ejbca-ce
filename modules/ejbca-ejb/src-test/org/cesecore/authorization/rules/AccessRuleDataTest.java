@@ -18,12 +18,12 @@ import org.cesecore.authorization.access.AccessTreeState;
 import org.junit.Test;
 
 /**
- * Unit tests for the AccessRule class
+ * Unit tests for the AccessRuleData class
  * 
  * @version $Id$
  *
  */
-public class AccessRuleTest {
+public class AccessRuleDataTest {
 
     @Test
     public void testSetState() {

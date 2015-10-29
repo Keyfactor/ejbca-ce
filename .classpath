@@ -8,9 +8,13 @@
 	<classpathentry kind="src" path="modules/certificatestore/src"/>
 	<classpathentry kind="src" path="modules/certsafe/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src"/>
-	<classpathentry kind="src" path="modules/cesecore-ejb-interface/src"/>
+	<classpathentry kind="src" path="modules/cesecore-common/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-ejb/src"/>
+	<classpathentry kind="src" path="modules/cesecore-ejb/src-test"/>
+	<classpathentry kind="src" path="modules/cesecore-ejb-interface/src"/>
+	<classpathentry kind="src" path="modules/cesecore-ejb-interface/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
+	<classpathentry kind="src" path="modules/cesecore-entity/src-test"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
 	<classpathentry kind="src" path="modules/cli-util/src"/>
 	<classpathentry kind="src" path="modules/cli-util/src-test"/>
@@ -21,7 +25,7 @@
 	<classpathentry kind="src" path="modules/ct/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
-    <classpathentry kind="src" path="modules/ejbca-common/src"/>
+	<classpathentry kind="src" path="modules/ejbca-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
