@@ -1,41 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="cesecore-ejb" basedir="../.." default="jar">
-    <property environment="env" />
-    <dirname property="cesecore-ejb.dir" file="${ant.file.cesecore-ejb}"/>
-    
-    <import file="${cesecore-ejb.dir}/../build.xml"/>
-    <import file="${cesecore-ejb.dir}/../cesecore-common/build.xml"/>
-    <import file="${cesecore-ejb.dir}/../cesecore-entity/build.xml"/>
-    <import file="${cesecore-ejb.dir}/../cesecore-ejb-interface/build.xml"/>
-    
-    <target name="jar" depends="cesecore-ejb-interface.jar">
-        <mkdir dir="${cesecore-ejb.dir}/build/classes"/>
-        <javac srcdir="${cesecore-ejb.dir}/src" destdir="${cesecore-ejb.dir}/build/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
-            <classpath refid="lib.jee.classpath" />
-            <classpath refid="lib.jpa.classpath"/>
-            <classpath refid="lib.cert-cvc.classpath"/>
-            <classpath refid="lib.bouncycastle.classpath"/>
-            <classpath refid="lib.log4j.classpath"/>
-            <classpath refid="lib.commons-logging.classpath"/>
-            <classpath refid="lib.commons-lang.classpath"/>
-            <classpath refid="lib.commons-config.classpath"/>
-            <classpath refid="lib.commons-collections.classpath"/>
-            <classpath refid="lib.commons-io.classpath"/>
-            <classpath refid="lib.ldap.classpath"/>
-            <classpath location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
-            <classpath location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
-            <classpath location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
-        </javac>
-        <mkdir dir="${cesecore-ejb.dir}/dist"/>
-        <jar destfile="${cesecore-ejb.dir}/dist/cesecore-ejb.jar">
-            <fileset dir="${cesecore-ejb.dir}/build/classes/" excludes="**/*.java"/>
-            <fileset dir="${cesecore-ejb.dir}/src/" excludes="**/*.java"/>
-        </jar>
-    </target>
-        
-    <target name="clean" depends="cesecore-ejb-interface.clean">
-        <delete dir="${cesecore-ejb.dir}/dist"/>
-        <delete dir="${cesecore-ejb.dir}/build"/>
-    </target>
+	<property environment="env" />
+	<dirname property="cesecore-ejb.dir" file="${ant.file.cesecore-ejb}"/>
+
+	<property name="build.dir" location="${cesecore-ejb.dir}/build"/>
+	<property name="build-test.dir" location="${cesecore-ejb.dir}/build-test"/>
+	<property name="src-test.dir" location="${cesecore-ejb.dir}/src-test"/>
+
+	<import file="${cesecore-ejb.dir}/../build.xml"/>
+
+	<path id="compile.classpath">
+		<path refid="lib.jee.classpath" />
+		<path refid="lib.jpa.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+		<path location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
+		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
+		<path location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
+	</path>
+
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path location="${build.dir}/classes"/>
+		<path location="${build-test.dir}"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.easymock.classpath"/>
+		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
+	</path>
+
+	<target name="jar">
+		<mkdir dir="${build.dir}/classes"/>
+		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+			<classpath refid="test.classpath"/>
+		</javac>
+		<mkdir dir="${cesecore-ejb.dir}/dist"/>
+		<jar destfile="${cesecore-ejb.dir}/dist/cesecore-ejb.jar">
+			<fileset dir="${cesecore-ejb.dir}/build/classes/" excludes="**/*.java"/>
+			<fileset dir="${cesecore-ejb.dir}/src/" excludes="**/*.java"/>
+		</jar>
+	</target>
+
+	<target name="clean">
+		<delete dir="${cesecore-ejb.dir}/dist"/>
+		<delete dir="${build.dir}"/>
+		<delete dir="${build-test.dir}"/>
+	</target>
+
+	<target name="compile-tests" depends="jar">
+		<mkdir dir="${build-test.dir}" />
+		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+		        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
+		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy todir="${build-test.dir}" failonerror="true">
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
+		</copy>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
+	</target>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module">
+		<antcall target="showtime"/>
+		<junit printsummary="yes" haltonfailure="no" dir="${cesecore-ejb.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="showtime"/>
+	</target>
+
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest" unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
 
 </project>

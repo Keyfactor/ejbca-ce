@@ -112,6 +112,8 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
             if (accessUser.getCaId() == adminCaId) {
                 // Determine part of certificate to match with.
                 DNFieldExtractor usedExtractor = dnExtractor;
+                log.debug("moooop: -- " + usedExtractor.getType() + " == " + dnExtractor.getType());
+
                 X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                 if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                     try {
@@ -201,8 +203,11 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                     if (clientstrings != null) {
                         switch (accessUser.getMatchTypeAsType()) {
                         case TYPE_EQUALCASE:
+                            String accessUserMatchValue = accessUser.getMatchValue();
+                            log.debug("foosize: " + matchValue + " " + size + " -- " + usedExtractor.getType() + " == " + dnExtractor.getType());
+
                             for (int i = 0; i < size; i++) {
-                                returnvalue = clientstrings[i].equals(accessUser.getMatchValue());
+                                returnvalue = clientstrings[i].equals(accessUserMatchValue);
                                 if (returnvalue) {
                                     break;
                                 }
