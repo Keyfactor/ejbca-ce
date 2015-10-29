@@ -860,6 +860,35 @@ authentication testing. If the first module fails, the second module will be use
 done or all alternatives fail.
 </p>
 </subsection>
+
+<subsection name="CMP Response Message">
+<p>
+When a CMP request is successfull, EJBCA returns a protected CMP response message. The protection type of the response message can also be configered in the 
+Adminb GUI under "CMP Configuration".
+EJBCA supports two types of response message protection: 'pbe' and 'signature'.
+</p>
+<p>If a CMP request fails, EJBCA returns an unprotected, unencrypted CMP error message.</p>
+<subsubsection name="pbe">
+<p>
+This type of protection of the response message can be used only when the request was authenticaed using HMAC authentication module. The parameters used for 
+the 'pbe' protection are based on the parameters used in the recieved HMAC authentication.
+</p>
+</subsubsection>
+<subsubsection name="signature">
+<p>
+The CA used to handle the CMP request signs the CMP response message using the same protection algorithm specified in the CMP request. If a conflict occures 
+between the protection algorithm in the request and the CA's signature algorithm, the CA's key algorithm will be used in combination with a digest algorithm 
+based on the protection algorithm in the CMP request. If a conflict occures even on the digest algorithm level, a default digest algorithm will be used.
+For example, if the CMP request uses the protection algorithm ECDSA with SHA1 and the CA's signature algorithm is RSA with SHA256, the CMP response will be 
+signed using RSA with SHA1.
+</p>
+<p>
+The 'signature' type of response protection can be used regardless of what authentication module was used to authenticate the CMP request.
+</p>
+<p>CMP messages are signed using the CAs signature key. Verification of the signed CMP messages hence typically assumes that overly strict enforcement of Key Usage in CA certificate is not in place (similar to allow signing of OCSP responses under the CRLSign Key Usage).</p>
+</subsubsection>
+</subsection>
+
 <subsection name="Client mode for CMP">
 <p>
 Client mode is used when the CMP client will act as an End Entity to EJBCA. This means that the End Entity must be pre-registered in EJBCA and that the client request is authenticated
@@ -1335,41 +1364,14 @@ The proxy is a stand alone module that runs on another machine than the CA itsel
 </p><p>
 See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build and use the proxy.
 </p>
-</subsection>
-
-<subsection name="CMP Response Message">
-<p>
-When a CMP request is successfull, EJBCA returns a protected CMP response message. The protection type of the response message can also be configered in the 
-Adminb GUI under "CMP Configuration".
-EJBCA supports two types of response message protection: 'pbe' and 'signature'.
-</p>
-<p>If a CMP request fails, EJBCA returns an unprotected, unencrypted CMP error message.</p>
-<subsubsection name="pbe">
-<p>
-This type of protection of the response message can be used only when the request was authenticaed using HMAC authentication module. The parameters used for 
-the 'pbe' protection are based on the parameters used in the recieved HMAC authentication.
-</p>
-</subsubsection>
-<subsubsection name="signature">
-<p>
-The CA used to handle the CMP request signs the CMP response message using the same protection algorithm specified in the CMP request. If a conflict occures 
-between the protection algorithm in the request and the CA's signature algorithm, the CA's key algorithm will be used in combination with a digest algorithm 
-based on the protection algorithm in the CMP request. If a conflict occures even on the digest algorithm level, a default digest algorithm will be used.
-For example, if the CMP request uses the protection algorithm ECDSA with SHA1 and the CA's signature algorithm is RSA with SHA256, the CMP response will be 
-signed using RSA with SHA1.
-</p>
-<p>
-The 'signature' type of response protection can be used regardless of what authentication module was used to authenticate the CMP request.
-</p>
-</subsubsection>
-<subsection name="Backends">
+<subsubsection name="Backends">
 <p>The CMP Proxy can use different connection backends to the CA. The most usable are:
 </p>
 <ul>
 <li>Direct HTTP connection. The CMP proxy creates a new HTTP connection to the CA, and return the response to the client, through the client connection, after receiving the response from the CA.</li>
 <li><a href="externalra.html#CMP%20Proxy%20using%20External%20RA">External RA connection</a>. The CMP proxy creates an external RA msg in an external RA database, which the CA polls. When the CA stores a return message in the external RA database, this is picked up by the CMP proxy and returned to the client.</li>
 </ul>
-</subsection>
+</subsubsection>
 </subsection>
 
 </section>
