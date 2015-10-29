@@ -34,6 +34,7 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
+       	<ant antfile="build.xml" dir="modules/ejbca-common" target="test" /> 
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" /> 
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />

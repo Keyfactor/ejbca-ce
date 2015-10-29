@@ -12,7 +12,7 @@
 
 	<path id="compile.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.ldap.classpath"/>

@@ -21,7 +21,6 @@ import java.util.Properties;
  * 
  * Its main method is perormAction() that should do the work.
  * 
- * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
@@ -33,7 +32,7 @@ public interface IAction {
 	 * 
 	 * This method should be called before the any action calls are made.
 	 */
-	public void init(Properties properties, String serviceName);
+	void init(Properties properties, String serviceName);
 	
 	
 	/**
@@ -44,6 +43,6 @@ public interface IAction {
 	 * @param ejbs A map between Local EJB interface classes and their injected stub
 	 * @throws ActionException if the action failed in any way.
 	 */
-	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException;
+	void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException;
 
 }

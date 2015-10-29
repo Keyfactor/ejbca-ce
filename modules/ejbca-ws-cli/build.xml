@@ -13,7 +13,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
-		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.ejbca-common.classpath"/>
 		<pathelement location="${mod.ejbca-ws.lib}" /> 
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -71,7 +71,7 @@
 	<target name="overwritegenerated">
 		<!-- Verify that the generated class is a true subset of the handwritten class -->
 	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" 
-	  		  classpath="${mod.ejbca-util.lib}"
+	  		  classpath="${mod.ejbca-common.lib}"
 	  		  failonerror="yes"
 	  		  fork="true">
 	  	    <arg value="${mod.ejbca-ws.path}/src/org/ejbca/core/protocol/ws/objects/${class}.java"/>
