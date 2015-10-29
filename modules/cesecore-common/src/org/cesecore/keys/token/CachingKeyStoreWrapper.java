@@ -74,7 +74,7 @@ public class CachingKeyStoreWrapper {
                 final String alias, final KeyStore keyStore, final char password[],
                 final KeyStoreMapEntry oldEntry)
                         throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-            assert(!oldEntry.isTrusted);
+            assert !oldEntry.isTrusted;
             this.isTrusted = false;
             this.certificateChain = oldEntry.certificateChain;
             this.key = keyStore.getKey(alias, password);
@@ -111,16 +111,18 @@ public class CachingKeyStoreWrapper {
             if ( entry instanceof TrustedCertificateEntry ) {
                 this.key = null;
                 this.certificateChain = new Certificate[] { ((TrustedCertificateEntry) entry).getTrustedCertificate() };
+                this.isTrusted = true;
+                return;
             }
             throw new Error("It should not be possible to reach this point!");
         }
         public Entry getEntry() {
             if ( this.isTrusted  ) {
-                assert(this.certificateChain!=null);
-                assert(this.certificateChain.length==1);
+                assert this.certificateChain!=null;
+                assert this.certificateChain.length==1;
                 return new TrustedCertificateEntry(this.certificateChain[0]);
             }
-            assert(this.key!=null);
+            assert this.key!=null;
             if ( this.certificateChain!=null ) {
                 return new PrivateKeyEntry((PrivateKey) this.key, this.certificateChain);
             }
