@@ -212,8 +212,10 @@ public class X509CertificateAuthenticationTokenTest {
                 break;
             default:
                 AccessMatchType match = AccessMatchType.values()[matchValue.ordinal() % 4];
+
                 accessUser = EasyMock.createMock(AccessUserAspectData.class);
                 EasyMock.expect(accessUser.getCaId()).andReturn(caid);
+
                 EasyMock.expect(accessUser.getMatchWith()).andReturn(matchValue.getNumericValue());
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(match);
                 EasyMock.expect(accessUser.getMatchValue()).andReturn("Test");
