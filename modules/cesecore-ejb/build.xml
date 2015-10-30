@@ -36,7 +36,7 @@
 		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
 	</path>
 
-	<target name="jar">
+	<target name="jar" depends = "cesecore-common, cesecore-ejb-interface">
 		<mkdir dir="${build.dir}/classes"/>
 		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="test.classpath"/>
