@@ -15,7 +15,6 @@ package org.cesecore.certificates.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
@@ -150,6 +149,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      *            DOCUMENT ME!
      */
     public final void setDN(final String dn, final int type) {
+
         this.type = type;
         final ArrayList<Integer> ids;
         if (type == TYPE_SUBJECTDN) {
@@ -162,24 +162,19 @@ public class DNFieldExtractor implements java.io.Serializable {
             ids = new ArrayList<Integer>();
         }
         fieldnumbers = new HashMap<Integer, Integer>();
-        final Iterator<Integer> it = ids.iterator();
-        while (it.hasNext()) {
-            final Integer id = (Integer) it.next();
+        for(Integer id : ids) {
             fieldnumbers.put(id, 0);
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
             dnfields = new HashMap<Integer, String>();
-
             try {
                 final String[] dnexploded = LDAPDN.explodeDN(dn, false);
-
                 for (int i = 0; i < dnexploded.length; i++) {
                     boolean exists = false;
-                    final Iterator<Integer> iter = ids.iterator();
-                    while (iter.hasNext()) {
-                        final Integer id = (Integer) iter.next();
-                        Integer number = (Integer) fieldnumbers.get(id);
+
+                    for(Integer id : ids) {
+                        Integer number = fieldnumbers.get(id);
                         String field;
                         if (type == TYPE_SUBJECTDN) {
                             field = DnComponents.getDnExtractorFieldFromDnId(id.intValue());
@@ -198,7 +193,9 @@ public class DNFieldExtractor implements java.io.Serializable {
                                 field = CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=";
                             }
                         }
+                       
                         if (dnex.startsWith(field)) {
+                           
                             exists = true;
                             final String rdn;
                             final String tmp;
