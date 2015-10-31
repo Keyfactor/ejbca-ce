@@ -776,6 +776,19 @@ The validity of the CA can never be longer than the value specified in the profi
 The last option you have is to set a global maximum validity date for certificates issued from the EJBCA instance. You can do this by setting the option 'ca.toolateexpiredate'
 in ejbca.properties. See the documentation in conf/ejbca.properties.sample for more details. If a validity period would exceed this value, if it is configured, an error occurs and no certificate is issued. 
 </p>
+<p><i>Undefined validity:</i>
+<br/>There is a part in section "4.1.2.5. Validity" of RFC5280 that specifies a date to be used to indicate that a certificate has no well-defined expiration date.
+<br/>"To indicate that a certificate has no well-defined expiration date, the notAfter SHOULD be assigned the GeneralizedTime value of 99991231235959Z."
+<br/>You can set this in EJBCA as follows:
+</p>
+<ul>
+<li>Update cesecore.properties setting the ca.toolateexpiredate. This is a global setting, so keep in mind all CAs etc would be able to use super-long expiration date!</li>
+<li>Create a new CA certificate profile with validity set to 9999-12-31 23:59:59+00:00.</li>
+<li>Create a new CA with validity set to 9999-12-31 23:59:59+00:00 using the CA profile created in previous step.</li>
+<li>Create a new end entity certificate profile with validity set to 9999-12-31 23:59:59+00:00.</li>
+<li>Create new end entity profile that uses certificate profile created in step 4.</li>
+<li>Add new end entities and issue a certificates for them.</li>
+</ul>
 </subsubsection>
 <subsubsection name="Allow extension override">
 <p>
