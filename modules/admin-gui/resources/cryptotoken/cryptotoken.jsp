@@ -95,7 +95,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
 			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey"
 				value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-			<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey" value="#{web.text.USE}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+			<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey" value="#{web.text.ALLOW}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
 		<h:outputLabel id="currentCryptoTokenP11LibraryLabel" for="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
 			value="#{web.text.CRYPTOTOKEN_TYPE_P11} #{web.text.CRYPTOTOKEN_LIBRARY}:"/>
