@@ -3,6 +3,8 @@
 	<property environment="env" />
 	<dirname property="cesecore-entity.dir" file="${ant.file.cesecore-entity}" />
 
+	<dirname property="cesecore-common.dir" file="${cesecore-entity.dir}/../cesecore-common/" />
+
 	<property name="build.dir" location="${cesecore-entity.dir}/build" />
 	<property name="build-test.dir" location="${cesecore-entity.dir}/build-test" />
 	<property name="src-test.dir" location="${cesecore-entity.dir}/src-test" />
@@ -33,7 +35,6 @@
 		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar" />
 	</path>
 
-
 	<target name="jar">
 		<mkdir dir="${build.dir}/classes" />
 		<javac srcdir="${cesecore-entity.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
@@ -54,7 +55,13 @@
 
 	<target name="compile-tests" depends="jar">
 		<mkdir dir="${build-test.dir}" />
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath" />
+		<javac destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
+			<src path="${cesecore-common.dir}/cesecore-common/src-test"/>
+			<include name="org/cesecore/keys/token/PKCS11TestUtils.java"/>
+		</javac>
+		<javac destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
+			<src path="${src-test.dir}"/>
+		</javac>
 		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true" />
 		<copy todir="${build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**" />
