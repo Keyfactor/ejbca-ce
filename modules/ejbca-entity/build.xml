@@ -196,8 +196,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="org/ejbca/util/**/*Test.class" excludes=""/>
-				<fileset dir="${build-test.dir}" includes="org/cesecore/**/*Test.class" excludes=""/>
+				<fileset dir="${build-test.dir}" includes="**/**Test.class"/>
 			</batchtest>
 		</junit>
     	<antcall target="showtime"/>
@@ -207,13 +206,7 @@
 	    	<mkdir dir="${build-test.dir}" />
 	        <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath">
-	        	<include name="org/ejbca/database/**/*Test.java"/>
-	        	<include name="org/ejbca/util/**/*Test.java"/>
-	        	<exclude name="org/ejbca/util/PerformanceTest.java"/>
 		    	<src path="${src-test.dir}"/>
-		    	<src path="${src.dir}"/>
-	        	<src path="${ejbca.home}/src/java"/>
-	        	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
 	        </javac>
 			<copy todir="${build-test.dir}" failonerror="true">
 				<fileset dir="${src-test.dir}">
