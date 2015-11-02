@@ -3909,6 +3909,17 @@ cd /opt/ETCprt/bin/linux-x86-64
 
 </subsection>
 
+<subsection name="SmartCard-HSM">
+<p>
+SmartCard-HSM is a lightweight hardware security module in a Smart Card, MicroSD or USB form factor providing a remotely manageable secure key store
+to protect your RSA and ECC keys. 
+</p>
+<ul>
+<li><a href="http://www.smartcard-hsm.com/2014/09/05/Accessing_your_SmartCard-HSM_from_EJBCA.html" target="_smartcardhsm">Accessing your SmartCard-HSM from EJBCA</a></li>
+<li><a href="http://www.smartcard-hsm.com/2015/10/10/Shared_Control_over_Key_Usage.html" target="_smartcardhsm">Shared control over key usage</a></li>
+</ul>
+</subsection>
+
 <subsection name="Support for new HSMs">
 <p>
 EJBCA uses PKCS#11 so in theory can support any HSMs that provide a decent PKCS#11 implementation.
