@@ -49,13 +49,14 @@ httpsserver.password=serverpwd
 # The CA servers DNS host name, must exist on client using the admin GUI.
 httpsserver.hostname=localhost
 
-# The Distinguished Name of the SSL server certificate used by the administrative web gui.
+# The Distinguished Name of the SSL server certificate used by the administrative web GUI.
 # The CN part should match your host's DNS name to avoid browser warnings.
 httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 
-# The Alternative Name (certificate extension) of the SSL server certificate used by the administrative web gui.
+# The Subject Alternative Name (X.509 extension) of the SSL server certificate used by the administrative web GUI.
 # The dnsName part should match your hosts DNS name (and the CN above) to avoid browser warnings.
-# Set automatically, so no need to change this property unless you want something exotic.
+# You can define several dnsName values (maximum: 2), e.g. dnsName=fqdn1,dnsName=fqdn2
+# Default: set automatically, so no need to change this property unless you want something specific.
 #httpsserver.an=dnsName=${httpsserver.hostname}
 
 # The public port JBoss will listen to http on
