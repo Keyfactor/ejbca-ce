@@ -28,16 +28,6 @@ can be used together with PKI to even further improve your PKI experience.
     </p>
 </subsection>
 
-<subsection name="Syscheck">
-    <p>
-    <a href="http://sourceforge.net/projects/syscheck/">Syscheck</a>
-    </p>
-	<p>
-	It's a framework build with shell scripts to make sure a system is working and at good health. It started as checker for EJBCA. 
-	Used in high security environments, that can not allow standard probes to be installed. The result is sent out with syslog. 	
-	</p>
-</subsection>
-
 <subsection name="CRL Publish Perl script">
     <p>
     <a href="http://search.cpan.org/~kcody/EJBCA-CrlPublish-0.60/">CRL Publish</a> perl script by Kevin Cody-Little.
@@ -98,7 +88,7 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="jSCEP">
 	<p>
-    <a href="http://code.google.com/p/jscep/">Java SCEP implementation</a>
+    <a href="https://github.com/jscep">Java SCEP implementation</a>
 	</p>
 	<p>
 	jSCEP is an open-source Java implementation of the Simple Certificate Enrollment Protocol (SCEP). It is capable of supporting both client- and server-side operations.
