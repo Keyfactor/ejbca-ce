@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.endentity;
+package org.ejbca.core.ejb.ra;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,7 +30,8 @@ import org.junit.Test;
 *
 * @version $Id$
 */
-public class EndEntityInformationTest {
+@SuppressWarnings("deprecation")
+public class UserDataTest {
 
 	@Test
     public void test01UserPassword() throws Exception {

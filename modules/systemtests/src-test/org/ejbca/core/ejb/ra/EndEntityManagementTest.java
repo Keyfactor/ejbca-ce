@@ -54,9 +54,9 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class UserDataTest extends CaTestCase {
+public class EndEntityManagementTest extends CaTestCase {
 
-    private static final Logger log = Logger.getLogger(UserDataTest.class);
+    private static final Logger log = Logger.getLogger(EndEntityManagementTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserDataTest"));
 
     private static final String PROFILE_CACHE_NAME_1 = "TESTEEPROFCACHE1";
