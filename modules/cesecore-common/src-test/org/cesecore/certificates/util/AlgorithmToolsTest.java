@@ -20,20 +20,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
-import org.cesecore.certificates.util.AlgorithmToolsHelper.MockDSAPublicKey;
-import org.cesecore.certificates.util.AlgorithmToolsHelper.MockDSTU4145PublicKey;
-import org.cesecore.certificates.util.AlgorithmToolsHelper.MockECDSAPublicKey;
-import org.cesecore.certificates.util.AlgorithmToolsHelper.MockGOST3410PublicKey;
-import org.cesecore.certificates.util.AlgorithmToolsHelper.MockNotSupportedPublicKey;
-import org.cesecore.certificates.util.AlgorithmToolsHelper.MockRSAPublicKey;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -324,4 +326,56 @@ public class AlgorithmToolsTest {
         assertEquals("GOST3411withDSTU4145", AlgorithmTools.getSignatureAlgorithm(gost3411withgost3410));
     }
 
+    private static class MockPublicKey implements PublicKey {
+        private static final long serialVersionUID = 1L;
+        public String getAlgorithm() { return null; }
+        public byte[] getEncoded() { return null; }
+        public String getFormat() { return null; }      
+    }
+    
+    private static class MockNotSupportedPublicKey extends MockPublicKey {
+        private static final long serialVersionUID = 1L;
+    }
+    
+    private static class MockRSAPublicKey extends MockPublicKey implements RSAPublicKey {
+        private static final long serialVersionUID = 1L;
+        public BigInteger getPublicExponent() { return BigInteger.valueOf(1); }
+        public BigInteger getModulus() { return BigInteger.valueOf(1000); }
+    }
+    
+    private static class MockDSAPublicKey extends MockPublicKey implements DSAPublicKey {
+        private static final long serialVersionUID = 1L;
+        public BigInteger getY() { return BigInteger.valueOf(1); }
+        public DSAParams getParams() { return null; }
+    }
+    
+    private static class MockECDSAPublicKey extends MockPublicKey implements ECPublicKey {
+        private static final long serialVersionUID = 1L;
+        public ECPoint getW() { return null; }
+        public ECParameterSpec getParams() { return null; }
+        @Override
+        public String getAlgorithm() {
+            return "ECDSA mock";
+        }
+    }
+    
+    private static class MockGOST3410PublicKey extends MockPublicKey implements ECPublicKey {
+        private static final long serialVersionUID = 1L;
+        public ECPoint getW() { return null; }
+        public ECParameterSpec getParams() { return null; }
+        @Override
+        public String getAlgorithm() {
+            return "GOST mock";
+        }
+    }
+    
+    private static class MockDSTU4145PublicKey extends MockPublicKey implements ECPublicKey {
+        private static final long serialVersionUID = 1L;
+        public ECPoint getW() { return null; }
+        public ECParameterSpec getParams() { return null; }
+        @Override
+        public String getAlgorithm() {
+            return "DSTU mock";
+        }
+    }
 }
