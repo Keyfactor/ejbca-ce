@@ -274,6 +274,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	}
         	// Add another DC-field since (if used) more than one is always used
     		addFieldWithDefaults(DnComponents.DOMAINCOMPONENT, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+            // Add another SAN DNSname field, for the server certificates (ref. RFC 6125)
+            addFieldWithDefaults(DnComponents.DNSNAME, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
         	// Set required fields
         	setRequired(USERNAME,0,true);
         	setRequired(PASSWORD,0,true);
