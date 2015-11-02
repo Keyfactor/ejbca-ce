@@ -981,10 +981,10 @@ if (!editerrors.isEmpty()) {
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_SUBJECTDIRATTR + i%>" size="45" maxlength="1024" 
-           value="
-           <% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {
-           		%><c:out value="<%= profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) %>"/>
-           <%} %>"
+           value="<%
+           		if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {
+           			%><c:out value="<%= profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) %>"/><%
+           		} %>"
            <% if(!authorizedToEdit) { out.write("disabled"); } %> >
         <br />
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>"
