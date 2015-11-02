@@ -956,11 +956,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final List<String> availableTabs = new ArrayList<String>();
         if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
             availableTabs.add("Basic Configurations");
-            availableTabs.add("Certificate Transparency Logs");
             availableTabs.add("Administrator Preferences");
         }
         if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
             availableTabs.add("Extended Key Usages");
+        }
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+            availableTabs.add("Certificate Transparency Logs");
         }
         if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
             availableTabs.add("Custom Certificate Extensions");
