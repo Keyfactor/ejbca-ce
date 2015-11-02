@@ -382,61 +382,6 @@ org.cesecore.authorization.control.AccessControlSession
 	</h:form>
 	
 	
-	
-	<%-- CTLogs --%>
-
-	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
-		<h:panelGroup>
-			<h4><h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></h4>
-			</br>
-		</h:panelGroup>
-		
-		
-		<h:dataTable value="#{systemConfigMBean.ctLogs}" var="ctlog"
-					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
-			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogUrl}" title="#{web.text.CTLOGCONFIGURATION_URL} #{ctlog.url}"/>
-				<f:facet name="footer">
-					<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" size="45" title="#{web.text.FORMAT_URI}"/>
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
-				<f:facet name="footer">
-					<h:panelGroup>
- 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE} " />
- 	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}"
- 	 	 	 					       title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
- 	 	 	 		</h:panelGroup>
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogTimeout}"/>
-				<f:facet name="footer">
-					<h:inputText id="currentTimeout" required="false"
-									value="#{systemConfigMBean.currentCTLogTimeout}"
-									title="#{web.text.FORMAT_INTEGER}"
-									size="10">
-   					</h:inputText>
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header">
-   					<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
-   				</f:facet>
-				<h:commandButton action="#{systemConfigMBean.removeCTLog}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
-				<f:facet name="footer">
-					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" />
-				</f:facet>
-			</h:column>
-		</h:dataTable>
-	</h:form>
-
-
 	<%-- Administrator Preferences --%>
 
 	<h:form id="adminprefform" rendered="#{systemConfigMBean.selectedTab eq 'Administrator Preferences'}">
@@ -533,6 +478,60 @@ org.cesecore.authorization.control.AccessControlSession
 				<h:commandButton action="#{systemConfigMBean.removeEKU}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
 				<f:facet name="footer">
 					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addEKU}" />
+				</f:facet>
+			</h:column>
+		</h:dataTable>
+	</h:form>
+	
+	
+	<%-- Certificate Transparency Logs --%>
+
+	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
+		<h:panelGroup>
+			<h4><h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}"/>
+			<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></h4>
+			</br>
+		</h:panelGroup>
+		
+		
+		<h:dataTable value="#{systemConfigMBean.ctLogs}" var="ctlog"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/></f:facet>
+				<h:outputText value="#{systemConfigMBean.ctLogUrl}" title="#{web.text.CTLOGCONFIGURATION_URL} #{ctlog.url}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" size="45" title="#{web.text.FORMAT_URI}"/>
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
+				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
+				<f:facet name="footer">
+					<h:panelGroup>
+ 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE} " />
+ 	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}"
+ 	 	 	 					       title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" />
+ 	 	 	 		</h:panelGroup>
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/></f:facet>
+				<h:outputText value="#{systemConfigMBean.ctLogTimeout}"/>
+				<f:facet name="footer">
+					<h:inputText id="currentTimeout" required="false"
+									value="#{systemConfigMBean.currentCTLogTimeout}"
+									title="#{web.text.FORMAT_INTEGER}"
+									size="10">
+   					</h:inputText>
+				</f:facet>
+			</h:column>
+			<h:column>
+   				<f:facet name="header">
+   					<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+   				</f:facet>
+				<h:commandButton action="#{systemConfigMBean.removeCTLog}"	value="#{web.text.REMOVE}" title="#{web.text.REMOVE}"/>
+				<f:facet name="footer">
+					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" />
 				</f:facet>
 			</h:column>
 		</h:dataTable>
