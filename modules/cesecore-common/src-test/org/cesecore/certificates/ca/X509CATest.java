@@ -86,13 +86,7 @@ import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
-import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -977,93 +971,4 @@ public class X509CATest {
         }
     }
     
-    private static class MyExtendedCAServiceInfo extends ExtendedCAServiceInfo {
-
-        private static final long serialVersionUID = 1L;
-
-        public static final int type = 4711;
-        
-        public MyExtendedCAServiceInfo(int status) {
-            super(status);
-        }
-
-        @Override
-        public String getImplClass() {
-            return "org.cesecore.certificates.ca.MyExtendedCAService";
-        }
-
-        @Override
-        public int getType() {
-            return MyExtendedCAServiceInfo.type;
-        }
-
-    }
-
-    private static class MyExtendedCAService extends ExtendedCAService {
-
-        public MyExtendedCAService(ExtendedCAServiceInfo info) {
-            super(info);
-            data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());
-        }
-
-        public MyExtendedCAService(HashMap<?, ?> data) {
-            super(data);
-            loadData(data);
-        }
-
-        private static final long serialVersionUID = 1L;
-        
-        public static int didrun = 0;
-        
-        @Override
-        public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken,
-                ExtendedCAServiceRequest request)
-        throws ExtendedCAServiceRequestException,
-        IllegalExtendedCAServiceRequestException,
-        ExtendedCAServiceNotActiveException {
-            didrun++;
-            return new MyExtendedCAServiceResponse();
-        }
-
-        @Override
-        public ExtendedCAServiceInfo getExtendedCAServiceInfo() {
-            return new MyExtendedCAServiceInfo(0);
-        }
-
-        @Override
-        public void init(CryptoToken cryptoToken, CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception {
-
-        }
-
-        @Override
-        public void update(CryptoToken cryptoToken, ExtendedCAServiceInfo info, CA ca, final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
-        }
-
-        @Override
-        public float getLatestVersion() {
-            return 0;
-        }
-
-        @Override
-        public void upgrade() {
-        }
-
-    }
-    
-    private static class MyExtendedCAServiceRequest extends ExtendedCAServiceRequest {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int getServiceType() {
-            return MyExtendedCAServiceInfo.type;
-        }
-
-    }
-    
-    private static class MyExtendedCAServiceResponse extends ExtendedCAServiceResponse {
-
-        private static final long serialVersionUID = 1L;
-
-    }
 }
