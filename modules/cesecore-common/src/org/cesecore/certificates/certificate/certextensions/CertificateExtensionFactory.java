@@ -42,7 +42,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.util.CertTools;
 
 /**
- * Class parsing the src/java/certextensions.properties file 
+ * Class parsing the modules/ejbca-common/src/certextensions.properties file 
  * and maintains a set of available custom extensions to the system.
  * 
  * It is also responsible for creating the actual CertificateExtensions

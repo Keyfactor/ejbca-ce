@@ -251,7 +251,7 @@
         	<include name="org/cesecore/keys/token/PKCS11CryptoToken.java"/>
 	    	<src path="${src-cli.dir}"/>
 	    	<src path="${src.dir}"/>
-        	<src path="${ejbca.home}/src/java"/>
+        	<src path="${ejbca.home}/modules/ejbca-ejb/src"/>
         	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
         </javac>
     	<mkdir dir="${mod.ejbca-db-cli.dist}/META-INF"/>

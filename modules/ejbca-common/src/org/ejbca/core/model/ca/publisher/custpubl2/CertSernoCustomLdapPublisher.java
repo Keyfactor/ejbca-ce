@@ -41,7 +41,7 @@ import com.novell.ldap.LDAPAttributeSet;
  * Configuration options are the same as for the standard LDAP publisher, but must be set using properties, as custom publishers are configured with a properties field.
  * 
  * To build using ejbca-custom:
- * 1. Create a directory ejbca-custom/src/java/org/ejbca/core/model/ca/publisher/custpubl2 on the same level as your ejbca directory:
+ * 1. Create a directory ejbca-custom/modules/ejbca-common/src/org/ejbca/core/model/ca/publisher/custpubl2 on the same level as your ejbca directory:
  *    ejbca_6_0_0
  *    ejbca-custom
  * 2. Copy CertSernoCustomLdapPublisher.java to this directory

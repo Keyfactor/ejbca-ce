@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src"/>
@@ -29,6 +28,7 @@
 	<classpathentry kind="src" path="modules/ejbca-common/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-common-web/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common-web/src-test"/>
+	<classpathentry kind="src" path="modules/ejbca-ejb/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
