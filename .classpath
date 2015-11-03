@@ -27,6 +27,8 @@
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src-test"/>
+	<classpathentry kind="src" path="modules/ejbca-common-web/src"/>
+	<classpathentry kind="src" path="modules/ejbca-common-web/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>

@@ -38,7 +38,8 @@
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test" />        	       	       
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" />  
        	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" />              	       	 	
-       	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" /> 
+       	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" />
+       	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test-common-web" />  
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" /> 
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
@@ -76,6 +77,7 @@
 					<include name="modules/ct/src-test/**/${test.runone}.java" />
 					<include name="modules/peerconnector/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-common/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-common-web/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-common/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-ejb-interface/src-test/**/${test.runone}.java" />
@@ -108,6 +110,9 @@
     	</condition>
     	<condition property="module" value="modules/ejbca-common">
     		<matches string="${test-fullname}" pattern="^modules/ejbca-common/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ejbca-common-web">
+    		<matches string="${test-fullname}" pattern="^modules/ejbca-common-web/.*$"/>
     	</condition>
     	<condition property="module" value="modules/cesecore-common">
     		<matches string="${test-fullname}" pattern="^modules/cesecore-common/.*$"/>

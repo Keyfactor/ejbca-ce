@@ -19,7 +19,8 @@
     <property name="mod.common-lib.path" location="${mod.common.path}/lib" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
-	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" />
+	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" /> 
+	<property name="mod.ejbca-common-web.path" location="${mod.path}/ejbca-common-web" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ejbca-db-cli.dist" location="${ejbca.dist.path}/ejbca-db-cli" />

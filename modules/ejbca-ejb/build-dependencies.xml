@@ -53,13 +53,14 @@
 		<property name="src-ejbca-ejb-interface.dir" location="${this.dir}/../ejbca-ejb-interface/src"/>
 		<property name="src-ejbca-entity.dir" location="${this.dir}/../ejbca-entity/src"/>
 		<property name="src-ejbca-common.dir" location="${this.dir}/../ejbca-common/src"/>
+		<property name="src-ejbca-common-web.dir" location="${this.dir}/../ejbca-common-web/src"/>
 
 		<target name="dependecy-check-clean" description="Clean up dependency check on the different EJBCA core components">
 			<delete dir="${src-temp.dir}" />
 			<delete dir="${build-temp.dir}" />
 		</target>
 
-		<target name="dependecy-check" unless="no-depcheck" description="Perform a dependency check on the different EJBCA core components.">
+		<target name="dependecy-check" unless="no-depcheck" depends="dependecy-check-clean" description="Perform a dependency check on the different EJBCA core components.">
 			<echo message="This check can be disabled by running ant with '-Dno-depcheck=1'"/>
 			<mkdir dir="${src-temp.dir}"/>
 			<mkdir dir="${build-temp.dir}"/>
@@ -285,9 +286,12 @@
 					<include name="org/ejbca/util/query/TimeMatch.java"/>
 					<include name="org/ejbca/util/query/UserMatch.java"/>
 				</fileset>
-				<fileset dir="${src.dir}">
+				<fileset dir="${src-ejbca-common-web.dir}">
+					<include name="org/ejbca/config/MailConfiguration.java"/>
 					<include name="org/ejbca/core/model/approval/**/*.java"/>
-					<include name="org/ejbca/core/ejb/approval/ApprovalSessionBean.java"/>
+					<include name="org/ejbca/util/NotificationParamGen.java"/>
+					<include name="org/ejbca/util/mail/MailSender.java"/>
+					<include name="org/ejbca/util/mail/MailAttachment.java"/>				
 					<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
@@ -298,6 +302,10 @@
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java"/>
 					<!-- Key Recovery approval requests.. org.ejbca.core.model.keyrecovery.approvalrequests would be a better location for this -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/KeyRecoveryApprovalRequest.java"/>
+				</fileset>
+				<fileset dir="${src.dir}">
+					<include name="org/ejbca/core/model/approval/**/*.java"/>
+					<include name="org/ejbca/core/ejb/approval/ApprovalSessionBean.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/approval" destdir="${build-temp.dir}/approval" debug="on" includeantruntime="no"
@@ -454,8 +462,7 @@
 				    			-->		
 					<include name="org/ejbca/core/model/ca/caadmin/*.java" />
 					<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java" />
-					<!-- Depends on EjbRemoteHelper and EjbLocalHelper -->					
-					<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java" />
+					
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
@@ -601,6 +608,9 @@
 				</fileset>
 				<fileset dir="${src-ejbca-common.dir}">
 					<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
+					<include name="org/ejbca/core/model/ra/userdatasource/**/*.java"/>
+				</fileset>
+				<fileset dir="${src-ejbca-common-web.dir}">
 					<include name="org/ejbca/core/model/ra/userdatasource/**/*.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
@@ -811,20 +821,17 @@
 					<include name="org/ejbca/core/model/services/workers/EmailSendingWorkerConstants.java"/>					
 					<include name="org/ejbca/core/model/services/I*.java"/>
 				</fileset>
-				<fileset dir="${src.dir}">
-					<include name="org/ejbca/core/ejb/services/*SessionBean.java"/>
+				<fileset dir="${src-ejbca-common-web.dir}">
 					<include name="org/ejbca/core/model/services/BaseWorker.java"/>
 					<include name="org/ejbca/core/model/services/BaseInterval.java"/>
-					<include name="org/ejbca/core/model/services/*Exception.java"/>
 					<include name="org/ejbca/core/model/services/I*.java"/>
 					<include name="org/ejbca/core/model/services/ActionInfo.java"/>
-					<include name="org/ejbca/core/model/services/intervals/DummyInterval.java"/>				
-					<!-- Depends on EjbLocalHelper
-       			<include name="org/ejbca/core/model/services/*.java"/>
-    			<include name="org/ejbca/core/model/services/actions/*.java"/>
-    			<include name="org/ejbca/core/model/services/intervals/*.java"/>
-    			-->
-					<include name="org/cesecore/authentication/tokens/*.java"/>
+					<include name="org/ejbca/core/model/services/intervals/DummyInterval.java"/>
+					<include name="org/ejbca/core/model/services/*Exception.java"/>
+				</fileset>
+				<fileset dir="${src.dir}">
+					<include name="org/ejbca/core/ejb/services/*SessionBean.java"/>					
+					<include name="org/ejbca/core/model/services/*Exception.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/services" destdir="${build-temp.dir}/services" debug="on" includeantruntime="no"
@@ -875,6 +882,7 @@
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
 					<!-- upgrade of Va Publisher-->
 					<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>  
+					<include name="org/ejbca/core/model/ca/publisher/upgrade/BasePublisherConverter.java"/>  
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*SessionBean.java"/>
@@ -883,7 +891,6 @@
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
 					<include name="org/ejbca/config/*Configuration.java"/>			 
 					<!-- upgrade of Va Publisher-->
-					<include name="org/ejbca/core/model/ca/publisher/upgrade/BasePublisherConverter.java"/>  
 					<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>  
 				</fileset>
 			</copy>
