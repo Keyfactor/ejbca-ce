@@ -579,7 +579,6 @@
     	<!-- extdirs="${lib}" -->
         <javadoc packagenames="org.ejbca.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
         	author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB." >
-        	<sourcepath location="${ejbca.home}/src/java"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-common/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb-interface/src"/>
@@ -590,6 +589,8 @@
         	<sourcepath location="${ejbca.home}/modules/edition-specific/src-interface/"/>
            	<sourcepath location="${ejbca.home}/modules/edition-specific-ee/src-ejb/"/>
         	<sourcepath location="${ejbca.home}/modules/ejbca-common/src/"/>
+        	<sourcepath location="${ejbca.home}/modules/ejbca-common-web/src/"/>
+        	<sourcepath location="${ejbca.home}/modules/ejbca-ejb/src/"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
         	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-interface/src"/>    	

@@ -49,7 +49,7 @@
     <target name="compile" depends="setup, cesecore-entity">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
-            <src path="${ejbca.home}/src/java" />
+            <src path="${ejbca.home}/modules/ejbca-ejb/src" />
         	<src path="${src.dir}"/>
             <include name="org/ejbca/ui/cli/OldLogExportCli.java" />
         </javac>

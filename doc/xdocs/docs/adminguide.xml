@@ -4949,7 +4949,7 @@ If your setup makes it very complex to configure multiple certificate
 profiles and multiple publishers you might consider writing a custom publisher that
 handles things directly according to your needs.
 </p><p>
-Look in the directory src/java/org/ejbca/core/model/ca/publishers for more
+Look in the directory modules/ejbca-common/src/org/ejbca/core/model/ca/publishers for more
 information about writing your own solution. There is an empty custom publisher called
 DummyCustomPublisher.java that can be extended. Custom publishers are deployed
 in the same way as <a href="#Writing Customized Services">custom services</a>, i.e.
@@ -6023,7 +6023,7 @@ stable release, and want to try the latest trunk snapshot.
 <li>Backup your database</li>
 <li>Copy $EJBCA_HOME/conf/ to $EJBCA_HOME/../ejbca-custom/conf/</li>
 <li>Copy $EJBCA_HOME/p12/ to $EJBCA_HOME/../ejbca-custom/p12/</li>
-<li>Copy $EJBCA_HOME/src/java/*.properties to $EJBCA_HOME/../ejbca-custom/src/java/*.properties</li>
+<li>Copy $EJBCA_HOME/src/java/*.properties and modules/ejbca-common/src/*.properties to $EJBCA_HOME/../ejbca-custom/src/java/ and ../ejbca-custom/modules/ejbca-common/src/</li>
 </ul>
 You can now remove the entire $EJBCA_HOME-directory and replace it with the a fresh snapshot from
 the trunk. Restore the database and all the config and generated keys will be restored to $EJBCA_HOME
@@ -6104,7 +6104,7 @@ To set up the demo servlet:
 </p>
 <ol>
 <li>Find out the CA id of the CA you want to use for signing of the demo certificates. Use the Admin GUI or 'bin/ejbca.sh ca listcas' to find the integer value that is the CA id.</li>
-<li>Configure the CA id in src/java/org/ejbca/ui/web/pub/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
+<li>Configure the CA id in modules/publicweb-gui/src/org/ejbca/ui/web/pub/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
 <li>Edit src/publicweb/publicweb/WEB-INF/web.xml and uncomment the two sections for the demo servlet.</li>
 <li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
 <li>Deploy with 'ant deploy'.</li>
@@ -6139,7 +6139,7 @@ a full dn for the 'user' parameter. Use your imagination!
 
 <section name="Samples">
 <p>
-A collection of samples are available in the directory src/java/org/ejbca/samples/ and doc/samples/. You can also look for classes with "Dummy" in the name.
+A collection of samples are available in the directory modules/ejbca-ejb/src/org/ejbca/samples/ and doc/samples/. You can also look for classes with "Dummy" in the name.
 </p></section>
 
 <section name="Troubleshooting">
