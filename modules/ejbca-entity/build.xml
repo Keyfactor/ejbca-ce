@@ -196,7 +196,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/**Test.class"/>
+				<fileset dir="${build-test.dir}" includes="**/**Test.class" excludes="org/ejbca/ui/cli/OcspMonitoringToolTest.class,org/ejbca/database/DatabaseSchemaTest.java"/>
 			</batchtest>
 		</junit>
     	<antcall target="showtime"/>
