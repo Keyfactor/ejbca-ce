@@ -25,7 +25,9 @@
             <include name="commons-logging-1.1.1.jar"/>
         	<include name="commons-io-*.jar"/>
         </fileset>
+		<path refid="lib.jee.classpath"/>
 		<path location="${mod.ejbca-common.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
@@ -49,11 +51,11 @@
                 <include name="conf/*.properties"/>
             </fileset>
             <fileset dir="${ejbca.home}/src/java">
-                <include name="dncomponents.properties"/>
-                <include name="profilemappings.properties"/>
-                <include name="profilemappings_enterprise.properties"/>
+            	<include name="dncomponents.properties"/>
+            	<include name="profilemappings.properties"/>
+            	<include name="profilemappings_enterprise.properties"/>
                 <include name="defaultvalues.properties"/>
-            </fileset>  
+            </fileset>
         </jar>
     </target>
 
@@ -72,16 +74,13 @@
                	<path refid="clientToolBox.endorsed.classpath"/>
                	-->
             </classpath>
-        	<src path="${src.dir}"/>
-            <src path="${ejbca.home}/src/java" />
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${mod.ejbca-ws-cli.path}/src" />
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-entity.path}/src" />
             <src path="${mod.va.path}/src-war" />
             <src path="${mod.cesecore-common.path}/src" />
-            <src path="${mod.cesecore-ejb-interface.path}/src" />
-        	
+            <src path="${mod.cesecore-ejb-interface.path}/src" />      	
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />

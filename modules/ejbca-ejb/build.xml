@@ -12,7 +12,7 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${ejbca.home}/src/java"/>
+	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 	

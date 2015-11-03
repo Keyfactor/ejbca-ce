@@ -7,13 +7,9 @@
 	<dirname property="this.dir" file="${ant.file.appserver-ext}"/>
 	<import file="${this.dir}/../build.xml"/>
 
-	<!-- JBoss 5.1.0 -->
-	<path id="lib.jboss-log4j.classpath"><fileset dir="${appserver.home}/client" includes="jboss-logging-log4j.jar log4j.jar"/></path>
-
 	<property name="build-jbosslogsigning.dir" location="${this.dir}/build-jbosslogsigning"/>
 	<property name="build-jbosslog4jsafer.dir" location="${this.dir}/build-jbosslog4jsafer"/>
 	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="ejbcasrc.dir" location="${ejbca.home}/src/java"/>
 
 	<path id="compile-jbosslogsigning.classpath">
 		<path refid="lib.jboss-log4j.classpath"/>
@@ -49,14 +45,9 @@
     <target name="compile-jbosslogsigning" depends="cesecore-common">
     	<mkdir dir="${build-jbosslogsigning.dir}" />
         <javac srcdir="${src.dir}" destdir="${build-jbosslogsigning.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="compile-jbosslogsigning.classpath">
-        	<sourcepath location="${ejbca.home}/src/java"/>
             <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender.java"/>
             <include name="org/ejbca/appserver/jboss/ScriptrunningDailyRollingFileAppender.java"/>
             <include name="org/ejbca/appserver/jboss/RollingCalendar.java"/>
-            <include name="org/ejbca/appserver/jboss/SignerThread.java"/>   
-            <include name="org/ejbca/appserver/jboss/ScriptThread.java"/>   
-    		<include name="org/cesecore/util/CryptoProviderTools.java"/>
-    		<include name="org/cesecore/util/FileTools.java"/>
     	</javac>
     </target>
 

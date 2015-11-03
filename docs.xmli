@@ -223,7 +223,7 @@ piwikTracker.enableLinkTracking();
     		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
     		<fileset dir="${ejbca.home}/lib" includes="log4j*.jar" />
     	</path>
-    	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" encoding="UTF-8" debug="on" includeantruntime="false"
+    	<javac srcdir="${ejbca.home}/modules/ejbca-ejb/src" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" encoding="UTF-8" debug="on" includeantruntime="false"
     		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
        	<path id="gen-dep.classpath.run">
        		<path refid="gen-dep.classpath"/>
