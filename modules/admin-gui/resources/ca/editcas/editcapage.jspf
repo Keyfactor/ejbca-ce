@@ -76,7 +76,7 @@
   } else {
     // Defaults in the create CA page
     if (signatureAlgorithmParam == null || signatureAlgorithmParam.length()==0) {
-        signatureAlgorithmParam = AlgorithmConstants.AVAILABLE_SIGALGS[1];
+        signatureAlgorithmParam = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
     }
   }
   
