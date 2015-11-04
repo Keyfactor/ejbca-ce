@@ -177,6 +177,7 @@ import org.junit.Test;
 
 /**
  * Tests http pages of ocsp
+ * 
  * @version $Id$
  *
  */
@@ -821,7 +822,9 @@ Content-Type: text/html; charset=iso-8859-1
         // Start by sending a valid OCSP requests so we know the helpers work
         byte validOcspReq[] = getValidOcspRequest();
         OCSPResp response = sendRawRequestToOcsp(validOcspReq.length, validOcspReq, false);
-        assertEquals("Incorrect response status.", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
+        if (OCSPRespBuilder.SUCCESSFUL != response.getStatus()) {
+            throw new IllegalStateException("Could not send standard raw request, test cannot continue");
+        }
         // Try sending a valid request and then keep sending some more data.
         byte[] buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
         Arrays.fill(buf, (byte) 123);
@@ -1484,27 +1487,31 @@ Content-Type: text/html; charset=iso-8859-1
      *           error
      */
     public void removeDSACA() throws Exception {
-        log.trace(">test98RemoveDSACA()");
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         try {
-            final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
-            CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
+            if (caSession.existsCa(DSA_DN.hashCode())) {
+                final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
+                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
+            }
         } catch (Exception e) {
-            log.error("",e);
+            log.error("", e);
         }
         try {
-            caSession.removeCA(admin, DSA_DN.hashCode());
+            if (caSession.existsCa(DSA_DN.hashCode())) {
+                caSession.removeCA(admin, DSA_DN.hashCode());
+            }
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN " + DSA_DN);
         }
         try {
-            caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
+            if (caSession.existsCa("CN=OCSPDSAIMPCATEST".hashCode())) {
+                caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
+            }
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
         }
-        log.trace("<test98RemoveDSACA()");
-    } // test98OcspDsaGood
+    }
 
     /**
      * removes ECDSA CA
@@ -1565,61 +1572,43 @@ Content-Type: text/html; charset=iso-8859-1
                 + "Content-Length: " + contentLength + "\r\n" + "\r\n";
         // Merge the HTTP headers, the OCSP request and the raw data into one
         // package.
-        final byte[] input = concatByteArrays(headers.getBytes(), payload);
+        byte[] input = concatByteArrays(headers.getBytes(), payload);
         log.debug("HTTP request headers: " + headers);
         log.debug("HTTP headers size: " + headers.getBytes().length);
         log.debug("Size of data to send: " + input.length);
         // Create the socket.
-        final Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         // Send data byte for byte.
-        final OutputStream os = socket.getOutputStream();
-        // Perform call as separate thread to be able to catch hung connections (found on Wildfly 8)
-        final Future<byte[]> future = executor.submit(new Callable<byte[]>() {
-            @Override
-            public byte[] call() throws Exception {
-                if (writeByteByByte) {
-                    int i = 0;
-                    try {
-                        for (i = 0; i < input.length; i++) {
-                            os.write(input[i]);
-                        }
-                    } catch (IOException e) {
-                        log.info("Socket wrote " + i + " bytes before throwing an IOException.");
-                    }
-                } else {
-                    try {
-                        os.write(input);
-                    } catch (IOException e) {
-                        log.info("Could not write to TCP Socket " + e.getMessage());
-                    }
+        OutputStream os = socket.getOutputStream();
+        if (writeByteByByte) {
+            int i = 0;
+            try {
+                for (i = 0; i < input.length; i++) {
+                    os.write(input[i]);
                 }
-                byte rawResponse[] = getHttpResponse(socket.getInputStream());
-                log.info("Response contains: " + rawResponse.length + " bytes.");
-                return rawResponse;
-            };
-        });
-        try {
-            final byte[] rawResponse = future.get(60L, TimeUnit.SECONDS);
-            // Reading the response.
-            return new OCSPResp(rawResponse);
-        } catch (InterruptedException e) {
-            log.info("Could not write to TCP Socket within time limit " + e.getMessage());
-        } catch (ExecutionException e) {
-            log.info("Could not write to TCP Socket within time limit " + e.getMessage());
-        } catch (TimeoutException e) {
-            log.info("Could not write to TCP Socket within time limit " + e.getMessage());
-        } finally {
-            socket.close();
+            } catch (IOException e) {
+                log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+            }
+        } else {
+            try {
+                os.write(input);
+            } catch (IOException e) {
+                log.info("Could not write to TCP Socket " + e.getMessage());
+            }
         }
-        fail("Failed to perform OCSP request to "+httpHost+":"+httpPort+" and get response within timeout.");
-        return null;
+        // Reading the response.
+        byte rawResponse[] = getHttpResponse(socket.getInputStream());
+        log.info("Response contains: " + rawResponse.length + " bytes.");
+        socket.close();
+        return new OCSPResp(rawResponse);
     }
 
     /**
      * Read the payload of a HTTP response as a byte array.
      */
     private byte[] getHttpResponse(InputStream ins) throws IOException {
-        byte buf[] = inputStreamToBytes(ins);
+        byte buf[] = IOUtils.toByteArray(ins);
+        ins.close();
         int i = 0;
         // Removing the HTTP headers. The HTTP headers end at the last
         // occurrence of "\r\n".
@@ -1634,23 +1623,6 @@ Content-Type: text/html; charset=iso-8859-1
         log.debug("Stream length: " + buf.length);
         log.debug("HTTP payload length: " + (buf.length - header.length));
         return ArrayUtils.subarray(buf, header.length, buf.length);
-    }
-
-    /**
-     * For small streams only.
-     */
-    private static byte[] inputStreamToBytes(InputStream in) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        while ( true ) {
-            final int b = in.read();
-            if ( b<0 ) {
-                break;
-            }
-            baos.write(b);
-        }
-        baos.flush();
-        in.close();
-        return  baos.toByteArray();
     }
 
     /**
