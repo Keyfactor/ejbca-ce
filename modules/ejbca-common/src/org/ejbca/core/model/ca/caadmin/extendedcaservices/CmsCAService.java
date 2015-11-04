@@ -116,7 +116,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	private static final String SUBJECTDN      = "subjectdn";
 	private static final String SUBJECTALTNAME = "subjectaltname";
 
-	private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";   
+	private static final String PRIVATESIGNKEYALIAS = "signKey";   
 
 	public CmsCAService(final ExtendedCAServiceInfo serviceinfo)  {
 		super(serviceinfo);
