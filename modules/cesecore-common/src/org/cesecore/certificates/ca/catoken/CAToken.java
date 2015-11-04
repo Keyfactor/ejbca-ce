@@ -66,10 +66,10 @@ public class CAToken extends UpgradeableDataHashMap {
     // The Initial sequence number is 00000-99999 or starts at 00001 according to generated doc 2012-12-03.
     public static final String DEFAULT_KEYSEQUENCE = "00000";
 
-    public static final String SOFTPRIVATESIGNKEYALIAS = "privatesignkeyalias";
-    public static final String SOFTPREVIOUSPRIVATESIGNKEYALIAS = "previousprivatesignkeyalias";
-    public static final String SOFTNEXTPRIVATESIGNKEYALIAS = "nextprivatesignkeyalias";
-    public static final String SOFTPRIVATEDECKEYALIAS = "privatedeckeyalias";
+    public static final String SOFTPRIVATESIGNKEYALIAS = "signKey";
+    public static final String SOFTPREVIOUSPRIVATESIGNKEYALIAS = "prevsignKey";
+    public static final String SOFTNEXTPRIVATESIGNKEYALIAS = "nextsignKey";
+    public static final String SOFTPRIVATEDECKEYALIAS = "encryptKey";
 
     /** A sequence for the keys, updated when keys are re-generated */
     public static final String SEQUENCE = "sequence";
@@ -360,13 +360,13 @@ public class CAToken extends UpgradeableDataHashMap {
                     // be able to use soft keystores that does not have a specific test or default key
                     if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) &&
                     		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null)) {
-                    	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to privatesignkeyalias.");
+                    	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to signKey.");
                     	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
                     	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
                     }
                     if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) &&
                     		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING) == null)) {
-                    	log.info("Setting CAKEYPURPOSE_DEFAULT_STRING to privatedeckeyalias.");
+                    	log.info("Setting CAKEYPURPOSE_DEFAULT_STRING to encryptKey.");
                     	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
                     }
                     setCATokenPropertyData(storeProperties(prop)); // Stores property string in "data"

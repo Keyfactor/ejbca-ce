@@ -55,7 +55,7 @@ public class MessagesTest {
         String keyStorePass = "foo123";
         keyStore.load(is, keyStorePass.toCharArray());
 
-        String privateKeyAlias = "privatesignkeyalias";
+        String privateKeyAlias = "signKey";
         char[] pkPass = null;
         privateKey = (PrivateKey) keyStore.getKey(privateKeyAlias, pkPass);
 

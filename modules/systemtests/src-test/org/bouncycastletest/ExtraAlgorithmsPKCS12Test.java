@@ -123,7 +123,7 @@ public class ExtraAlgorithmsPKCS12Test {
         ks = KeyStore.getInstance("PKCS12", "BC");
         assertNotNull(ks);
         ks.load(null, null);
-        ks.setKeyEntry("privatesignkeyalias", newsignkeys.getPrivate(), null, certchain);
+        ks.setKeyEntry("signKey", newsignkeys.getPrivate(), null, certchain);
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         ks.store(baos, "foo123".toCharArray());
         ksbytes = new String(base64Encode(baos.toByteArray()));
