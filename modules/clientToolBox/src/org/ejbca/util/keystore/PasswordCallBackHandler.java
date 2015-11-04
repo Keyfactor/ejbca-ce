@@ -24,7 +24,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  * 1. That class is not available in other Java implementations
  * 2. That class echoes the password in JDK 5, we don't want that.
  * 
- * @author Tomas Gustavsson, inspired by http://java.sun.com/javase/6/docs/api/javax/security/auth/callback/CallbackHandler.html
  * @version $Id$
  */
 public class PasswordCallBackHandler implements CallbackHandler {
