@@ -70,14 +70,12 @@ public class NameConstraint extends StandardCertificateExtension {
             final List<String> permittedNames = ei.getNameConstraintsPermitted();
             final List<String> excludedNames = ei.getNameConstraintsExcluded();
             
+            // Do not include an empty name constraints extension
             if (permittedNames != null || excludedNames != null) {
                 final GeneralSubtree[] permitted = toGeneralSubtrees(permittedNames);
                 final GeneralSubtree[] excluded = toGeneralSubtrees(excludedNames);
                 
-                // Do not include an empty name constraints extension
-                if (permitted.length != 0 || excluded.length != 0) {
-                    nc = new NameConstraints(permitted, excluded);
-                }
+                nc = new NameConstraints(permitted, excluded);
             }
         }
         
@@ -91,7 +89,7 @@ public class NameConstraint extends StandardCertificateExtension {
      */
     public static GeneralSubtree[] toGeneralSubtrees(List<String> list) {
         if (list == null) {
-            return new GeneralSubtree[0];
+            return null;
         }
         
         GeneralSubtree[] ret = new GeneralSubtree[list.size()];
