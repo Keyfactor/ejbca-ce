@@ -75,10 +75,7 @@ function viewcert(link){
    		</tr>
    	</table>
 
-   
-
-   <f:verbatim>
-    <f:subview id="showcmp" rendered="#{approvalActionManagedBean.approvalRequestComparable}">
+    <h:panelGroup id="showcmp" rendered="#{approvalActionManagedBean.approvalRequestComparable}">
       <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%">
         <h:column>
           <f:facet name="header">
@@ -93,8 +90,8 @@ function viewcert(link){
           <h:outputText value="#{textCompareRow.newvalue}" styleClass="#{textCompareRow.textComparisonColor}"/>
         </h:column>
       </h:dataTable>
-     </f:subview>
-     <f:subview id="shownoncmp" rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}">
+    </h:panelGroup>
+    <h:panelGroup id="shownoncmp" rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}">
       <p align="center">
       <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%">
         <h:column>
@@ -105,8 +102,8 @@ function viewcert(link){
         </h:column>
       </h:dataTable>
       </p>
-     </f:subview>
-     <f:subview id="shownoncmpwithlinks" rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
+    </h:panelGroup>
+    <h:panelGroup id="shownoncmpwithlinks" rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}">
       <p align="center">
       <h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%">
         <h:column>
@@ -126,13 +123,11 @@ function viewcert(link){
         </h:column>
       </h:dataTable>
       </p>
-     </f:subview>
-  </f:verbatim>
-<br/>
-<br/>
-    <h3 align="center"><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
- 
-  <h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%">
+    </h:panelGroup>
+
+    <h3><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
+    <h:outputText value="#{web.text.NONE}" rendered="#{!approvalActionManagedBean.existsApprovals}"/>
+  <h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}">
     <h:column>
       <f:facet name="header">
         <h:panelGroup>
@@ -158,25 +153,22 @@ function viewcert(link){
     <h:column>
       <f:facet name="header">
         <h:panelGroup>
-          <h:outputText value="#{web.text.COMMENT}"/>
+          <h:outputText value="#{web.text.APCOMMENT}"/>
         </h:panelGroup>
       </f:facet>
       <h:outputText value="#{approvalView.comment}"/>
     </h:column>
   </h:dataTable>   
-    <p align="center">
-    <f:subview id="shownonerow" rendered="#{!approvalActionManagedBean.existsApprovals}">
-      <h3 align="center"><h:outputText value="#{web.text.NONE}"/></h3>
-    </f:subview>    
+
     <br /><br /><br />       
-      <f:subview id="showapprovebuttons" rendered="#{approvalActionManagedBean.approvable}">
-        <h:outputText value="#{web.text.COMMENT}"/><h:outputText value=":"/> 
+    <h:panelGroup id="showapprovebuttons" rendered="#{approvalActionManagedBean.approvable}">
+        <h:outputText value="#{web.text.APCOMMENT}"/><h:outputText value=":"/> 
         <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"/><br />
         <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionManagedBean.approve}" onclick="return confirmapprove()"/>
         <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionManagedBean.reject}" onclick="return confirmreject()"/>
-       </f:subview>
-      <h:commandButton  id="button" value="#{web.text.CLOSE}" onclick="self.close()"/>    
-    </p>
+        <h:commandButton id="buttonClose1" value="#{web.text.CLOSE}" onclick="self.close()"/>
+    </h:panelGroup>
+    <h:commandButton id="buttonClose2" value="#{web.text.CLOSE}" onclick="self.close()" rendered="#{!approvalActionManagedBean.approvable}"/>
  </h:form>
 
   <script language="javascript">
