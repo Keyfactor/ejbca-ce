@@ -427,36 +427,36 @@ function checkallfields(){
         </tr>
             <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">defaultKey:</td>
+            <td width="50%" align="right">defaultKey</td>
                 <td><c:out value="<%= catoken.getAliasFromPurpose(0) %>"/>
             </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">certSignKey:</td>
+            <td width="50%" align="right">certSignKey</td>
             <td>
                 <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) %>"/>
             </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">crlSignKey:</td>
+            <td width="50%" align="right">crlSignKey</td>
             <td>
                 <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN) %>"/>
             </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">keyEncryptKey:</td>
+            <td width="50%" align="right">keyEncryptKey</td>
             <td>
                 <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT) %>"/>
             </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">hardTokenEncrypt:</td>
+            <td width="50%" align="right">hardTokenEncrypt</td>
             <td>
                 <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT) %>"/>
             </td>
         </tr>
-        <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">testKey:</td>
+        <tr id="Row<%=row++%2%>">
+            <td width="50%" align="right">testKey</td>
             <td>
                 <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST) %>"/>
             </td>
@@ -492,6 +492,9 @@ function checkallfields(){
             </td>	
         </tr>
         <tr id="Row<%=row%2%>">
+        	<%	if (cryptoTokenIdParam == null || cryptoTokenIdParam.length()==0 || Integer.parseInt(cryptoTokenIdParam)==0) {
+        			row++;		/* For cosmetic. */
+        		} %>
             <td width="50%"  align="right"><strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %></td>
 	        <td>
 	        <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
@@ -578,12 +581,12 @@ function checkallfields(){
 
     
     if (!editca || isUninitialized) {
-        /* If there is no available CryptoToken, there is little point in continuing here.. */
+        /* If there is no available CryptoToken, there is little point in continuing here. */
         if (cryptoTokenIdParam != null && cryptoTokenIdParam.length()>0 && Integer.parseInt(cryptoTokenIdParam)!=0) {
             currentCryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
     %>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">defaultKey: </td>
+            <td width="50%" align="right">defaultKey</td>
             <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_DEFAULTKEY %>" size="1">
                 <%  for (final String alias : cabean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
@@ -602,10 +605,10 @@ function checkallfields(){
             </td>	
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">certSignKey: </td>
+            <td width="50%" align="right">certSignKey</td>
 	        <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY %>" size="1">
-                    <option value="">- Use default key</option>
+                    <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
             	        // If we come accross the (legacy) default signing key alias we use it as selected
             	        final boolean isDefault;
@@ -623,12 +626,12 @@ function checkallfields(){
             </td>	
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">crlSignKey: </td><td><%= ejbcawebbean.getText("CRYPTOTOKEN_USECERTSIGN") %></td>
+            <td width="50%" align="right">crlSignKey</td><td><%= ejbcawebbean.getText("CRYPTOTOKEN_USECERTSIGN") %></td>
 <%/*
-            Instead of letting the user select something that will later be unusable, we will just use the same as for the certSignKey..
+            Instead of letting the user select something that will later be unusable, we will just use the same as for the certSignKey.
 	        <td>
 	            <select name="< %= SELECT_CRYPTOTOKEN_CRLSIGNKEY % >" size="1">
-                    <option value="">- Use default key</option>
+                    <option value="">< %= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") % ></option>
                 < %  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) { % >
                 <option value='<c:out value="< %=alias % >"/>'><c:out value="< %= alias % >"/></option>
                 < %  } % >
@@ -637,10 +640,10 @@ function checkallfields(){
 */%>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">keyEncryptKey: </td>
+            <td width="50%" align="right">keyEncryptKey</td>
 	        <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYENCRYPTKEY %>" size="1">
-                    <option value="">- Use default key</option>
+                    <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
                         <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)) ? "selected=\"selected\" " : "" %>
                           value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
@@ -649,10 +652,10 @@ function checkallfields(){
             </td>	
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">hardTokenEncrypt: </td>
+            <td width="50%" align="right">hardTokenEncrypt</td>
 	        <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY %>" size="1">
-                    <option value="">- Use default key</option>
+                    <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
                     <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT)) ? "selected=\"selected\" " : "" %>
                           value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
@@ -660,11 +663,11 @@ function checkallfields(){
 	            </select>
             </td>
         </tr>
-        <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">testKey: </td>
+        <tr id="Row<%=row++%2%>">
+            <td width="50%" align="right">testKey</td>
 	        <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYTESTKEY %>" size="1">
-                    <option value="">- Use default key</option>
+                    <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
                         final boolean isDefault;
                         if (!editca) {
@@ -715,7 +718,7 @@ function checkallfields(){
         </td>
       </tr>
 
-    <tr  id="Row<%=row%2%>"> 
+    <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence") %>
       </td>
