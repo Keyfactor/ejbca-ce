@@ -304,7 +304,7 @@ conf/cesecore.properties
 conf/databaseprotection.properties
 </source>
 <p>
-It is possible to verify a whole table with the <a href="adminguide.html#Local%20Database%20CLI">Local Database CLI</a>
+It is possible to verify a whole table with the <a href="adminguide.html#Local%20Database%20CLI%20(EJBCA%20Enterprise%20only)">Local Database CLI</a>
 tool. If any row in the table can't be verified the tool will show it. For the
 AuditRecordData table it will also be checked with the sequence number that no
 row is missing.
