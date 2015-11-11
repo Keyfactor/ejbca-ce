@@ -86,6 +86,7 @@
 		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
+		<antcall target="cmpclientclean"/>
 		<antcall target="ctclean"/>
 		<antcall target="certsafeclean"/>
 		<antcall target="edition-specific-clean"/>
@@ -123,6 +124,14 @@
 	<target name="statedumpclean" if="${statedump.exists}">
 		<echo message="Cleaning statedump"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+			
+	<condition property="cmpclient.exists">
+		<available file="${mod.cmpclient.path}/build.xml" />
+	</condition>
+	<target name="cmpclientclean" if="${cmpclient.exists}">
+		<echo message="Cleaning cmpclient"/>
+		<ant antfile="${mod.cmpclient.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
     <condition property="cmpproxy.exists">
@@ -497,6 +506,18 @@
 		    </condition>
 		</fail>
 		<ant antfile="${mod.statedump.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+
+	<target name="cmpclient" depends="ejbca-ejb-cli, buildservicemanifestbuilder">
+		<echo  message="${mod.cmpclient.path}/build.xml" />
+		<fail message="CMP client is not distributed with this version of EJBCA">
+		    <condition>
+		    	<not>
+		    		<available file="${mod.cmpclient.path}/build.xml" />
+		    	</not>
+		    </condition>
+		</fail>
+		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
     

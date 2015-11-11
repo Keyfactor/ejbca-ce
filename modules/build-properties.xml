@@ -124,6 +124,9 @@
 	<property name="mod.statedump.dist" location="${ejbca.dist.path}/statedump" />
 	<property name="mod.statedump.lib" location="${mod.statedump.dist}/statedump.jar" />
 	<property name="mod.statedump.path" location="${mod.path}/statedump" />
+	<property name="mod.cmpclient.dist" location="${ejbca.dist.path}/cmpclient" />
+	<property name="mod.cmpclient.lib" location="${mod.cmpclient.dist}/cmpclient.jar" />
+	<property name="mod.cmpclient.path" location="${mod.path}/cmpclient" />
 	<property name="mod.buildtools.path" location="${mod.path}/buildtools" />
 	<property name="mod.buildtools.build" location="${mod.buildtools.path}/build" />
 	<property name="mod.buildtools.dist" location="${ejbca.dist.path}/buildtools" />
