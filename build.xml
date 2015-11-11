@@ -790,6 +790,7 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
+				<exclude name="modules/cmpclient/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
@@ -856,6 +857,10 @@ SHA-256 checksum: ${cesecoresrcSHA256}
     <condition property="statedump.exists">
     	<available file="${mod.statedump.path}/build.xml" />
     </condition>
+
+    <condition property="cmpclient.exists">
+    	<available file="${mod.cmpclient.path}/build.xml" />
+    </condition>
 	
     <!-- ======================================================================= -->
     <!-- Make a ZIP source release for Statedump, if available.                  -->
@@ -894,6 +899,48 @@ SHA-256 checksum: ${cesecoresrcSHA256}
 File:             ../${statedump.src.basezipfile}.zip
 SHA1 checksum:    ${statedumpsrcSHA1}
 SHA-256 checksum: ${statedumpsrcSHA256}
+        	
+Note that this zip is not standalone but needs to be unzipped inside an existing EJBCA installation and built there.
+        </echo>
+    </target>
+
+    <!-- ======================================================================= -->
+    <!-- Make a ZIP source release for CmpClient, if available.                  -->
+    <!-- Creates a fat source zip containing all CmpClient source files and can  -->
+    <!-- be included in your IDE to be able to browse the source.                -->
+	<!-- 																		 -->
+	<!-- Note that this zip is not standalone but needs to be unzipped inside an -->
+	<!-- existing EJBCA installation and built there.							 -->
+    <!-- ======================================================================= -->
+    <target name="ziprelease-cmpclient-src" if="${cmpclient.exists}">
+        <property name="cmpclient.src.basezipfile" value="cmpclient-${app.version.number}-src"/>
+        <delete file="../${cmpclient.src.basezipfile}.zip"/>
+
+        <property name="cmpclient.src.release.dir" location="${tmp}/cmpclient-release-src"/>
+        <delete dir="${cmpclient.src.release.dir}"/>
+        <mkdir dir="${cmpclient.src.release.dir}"/>
+        <copy todir="${cmpclient.src.release.dir}">
+            <fileset dir="${basedir}/modules/">
+                <include name="cmpclient/**" />
+            </fileset>
+        </copy>
+
+        <zip destfile="../${cmpclient.src.basezipfile}.zip">
+            <zipfileset dir="${cmpclient.src.release.dir}" filemode="600" dirmode="700">
+            </zipfileset>
+        </zip>
+
+        <antcall target="signjar">
+            <param name="signjar.file" value="../${cmpclient.src.basezipfile}.zip"/>
+        </antcall>
+        <checksum file="../${cmpclient.src.basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
+        <checksum file="../${cmpclient.src.basezipfile}.zip" algorithm="SHA1" property="cmpclientsrcSHA1"/>
+        <checksum file="../${cmpclient.src.basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
+        <checksum file="../${cmpclient.src.basezipfile}.zip" algorithm="SHA-256" property="cmpclientsrcSHA256"/>
+        <echo>
+File:             ../${cmpclient.src.basezipfile}.zip
+SHA1 checksum:    ${cmpclientsrcSHA1}
+SHA-256 checksum: ${cmpclientsrcSHA256}
         	
 Note that this zip is not standalone but needs to be unzipped inside an existing EJBCA installation and built there.
         </echo>
@@ -1117,6 +1164,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
 	<target name="poop" >
 		<antcall target="statedump" />
 	</target>
+
+	<target name="cmpclient" depends="deprecated:check" description="Build EJBCA CMP Client">
+		<ant dir="modules" target="cmpclient" />
+    </target>
 	
     <target name="validationtool" depends="doc, deprecated:check" description="Builds the ValidationTool standalone client application">
     	<ant dir="modules" target="validationtool" />
