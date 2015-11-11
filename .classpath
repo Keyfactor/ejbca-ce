@@ -18,6 +18,7 @@
 	<classpathentry kind="src" path="modules/cli-util/src"/>
 	<classpathentry kind="src" path="modules/cli-util/src-test"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
+	<classpathentry kind="src" path="modules/cmpclient/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
 	<classpathentry kind="src" path="modules/crlstore/src"/>
 	<classpathentry kind="src" path="modules/ct/src"/>
