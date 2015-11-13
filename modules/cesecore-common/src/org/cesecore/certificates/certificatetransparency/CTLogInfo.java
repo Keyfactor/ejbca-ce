@@ -17,6 +17,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.util.KeyTools;
 
@@ -27,6 +28,7 @@ import org.cesecore.keys.util.KeyTools;
  */
 public final class CTLogInfo implements Serializable {
 
+    private static final Logger log = Logger.getLogger(CTLogInfo.class);
     private static final long serialVersionUID = 1L;
     
     private final int logId;
@@ -46,6 +48,12 @@ public final class CTLogInfo implements Serializable {
      * @param publicKeyBytes  The ASN1 encoded public key of the log.
      */
     public CTLogInfo(final String url, final byte[] publicKeyBytes) {
+        if (!url.endsWith("/")) {
+            log.error("CT Log URL must end with a slash. URL: "+url); // EJBCA 6.4 didn't enforce this due to a regression 
+        }
+        if (!url.endsWith("/ct/v1/")) {
+            log.warn("CT Log URL should end with /ct/v1/. URL: "+url);
+        }
         this.logId = url.hashCode();
         this.url = url;
         if (publicKeyBytes == null) {
@@ -98,6 +106,19 @@ public final class CTLogInfo implements Serializable {
     
     public void setTimeout(final int timeout) {
         this.timeout = timeout;
+    }
+    
+    /** Makes sure that a URL ends with /ct/v1/ */
+    public static String fixUrl(final String urlToFix) {
+        String url = (urlToFix.endsWith("/") ? urlToFix : urlToFix + "/");
+        if (!url.endsWith("/ct/v1/")) {
+            if (!url.endsWith("/ct/")) {
+                url = url + "ct/v1/";
+            } else {
+                url = url + "v1/";
+            }
+        }
+        return url;
     }
 
 }
