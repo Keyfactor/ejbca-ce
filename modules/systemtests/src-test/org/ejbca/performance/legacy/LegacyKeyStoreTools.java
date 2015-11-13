@@ -416,7 +416,10 @@ public class LegacyKeyStoreTools {
         if (log.isDebugEnabled()) {
             log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
         }
-        final String sigAlg = AlgorithmTools.getSignatureAlgorithms(publicKey).get(0);
+        String sigAlg = (String)AlgorithmTools.getSignatureAlgorithms(publicKey).iterator().next();
+        if ( sigAlg == null ) {
+        	sigAlg = "SHA1WithRSA";
+        }
         if (sigAlg.contains("ECDSA") && explicitEccParameters) {
             log.info("Using explicit parameter encoding for ECC key.");
             publicKey = ECKeyUtil.publicToExplicitParameters(publicKey, "BC");

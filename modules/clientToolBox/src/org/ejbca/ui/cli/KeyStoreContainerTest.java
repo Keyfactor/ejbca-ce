@@ -318,7 +318,7 @@ class KeyStoreContainerTest {
                 return;
             }
             if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof RSAKey ) {
-                this.sigAlgName = "SHA256withRSA";
+                this.sigAlgName = "SHA1withRSA";
                 return;
             }
             if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof DSAKey ) {
