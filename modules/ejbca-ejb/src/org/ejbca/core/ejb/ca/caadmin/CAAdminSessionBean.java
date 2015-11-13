@@ -1741,15 +1741,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         } else {
                             ca = null;
                         }
-                        ca.setCertificateChain(certchain);
-                        CAToken token = new CAToken(ca.getCAId(), new NullCryptoToken().getProperties());
-                        ca.setCAToken(token);
+                        if ( ca!=null ) {
+                            ca.setCertificateChain(certchain);
+                            CAToken token = new CAToken(ca.getCAId(), new NullCryptoToken().getProperties());
+                            ca.setCAToken(token);
 
-                        // set status to active
-                        entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), CAConstants.CA_EXTERNAL, ca));
-                        // cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);
+                            // set status to active
+                            entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), CAConstants.CA_EXTERNAL, ca));
+                            // cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);
+                        }
                     } else {
-                        if (oldcadata.getStatus() == CAConstants.CA_EXTERNAL) {
+                        if (oldcadata!=null && oldcadata.getStatus() == CAConstants.CA_EXTERNAL) {
                             // If it is an external CA we will not import the
                             // certificate later on here, so we want to
                             // update the CA in this instance with the new
@@ -1830,8 +1832,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (!CertTools.isCA(caCertificate)) {
             throw new CertificateImportException("Only CA certificates can be imported using this function.");
         }
-        CA ca = null;
-        CAInfo cainfo = null;
+        final CA ca;
+        final CAInfo cainfo;
 
         // Parameters common for both X509 and CVC CAs
         int certprofileid = CertTools.isSelfSigned(caCertificate) ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
@@ -1859,6 +1861,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo = x509cainfo;
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validity, signedby, null, null);
+        } else {
+            return;
         }
         
         cainfo.setDescription("CA created by certificate import.");
@@ -1871,6 +1875,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Creating a CVC CA (process request)");
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
             ca = CvcCA.getInstance(cvccainfo);
+        } else {
+            return;
         }
         ca.setCertificateChain(certificates);
         CAToken token = new CAToken(ca.getCAId(), new NullCryptoToken().getProperties());
@@ -2425,10 +2431,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
 
             // Sign something to see that we are restoring the right private signature key
-            String testSigAlg = (String) AlgorithmTools.getSignatureAlgorithms(thisCa.getCACertificate().getPublicKey()).iterator().next();
-            if (testSigAlg == null) {
-                testSigAlg = "SHA1WithRSA";
-            }
+            final String testSigAlg = AlgorithmTools.getSignatureAlgorithms(thisCa.getCACertificate().getPublicKey()).get(0);
             // Sign with imported private key
             byte[] input = "Test data...".getBytes();
             Signature signature = Signature.getInstance(testSigAlg, "BC");
@@ -2742,8 +2745,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
-        CAInfo cainfo = null;
-        CA ca = null;
+        final CAInfo cainfo;
+        final CA ca;
         int validity = (int) ((CertTools.getNotAfter(caSignatureCertificate).getTime() - CertTools.getNotBefore(caSignatureCertificate).getTime()) / (24 * 3600 * 1000));
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
@@ -2775,6 +2778,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
             cainfo.setApprovalSettings(approvalsettings);
             ca = CvcCA.getInstance((CVCCAInfo) cainfo);
+        } else {
+            return null;
         }
         // We must activate the token, in case it does not have the default password
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
