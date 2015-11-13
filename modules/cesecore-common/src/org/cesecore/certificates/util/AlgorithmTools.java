@@ -30,10 +30,9 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -70,53 +69,46 @@ import org.ejbca.cvc.OIDField;
  * @version $Id$
  */
 public abstract class AlgorithmTools {
-	
-	/** Log4j instance */
-	private static final Logger log = Logger.getLogger(AlgorithmTools.class);
 
-	/** String used for an unknown keyspec in CA token properties */
-	public static final String KEYSPEC_UNKNOWN = "unknown";
+    /** Log4j instance */
+    private static final Logger log = Logger.getLogger(AlgorithmTools.class);
 
-	/** Signature algorithms supported by RSA keys */
-	private static final Collection<String> SIG_ALGS_RSA;
-	
-	/** Signature algorithms supported by DSA keys */
-	private static final Collection<String> SIG_ALGS_DSA;
-	
-	/** Signature algorithms supported by ECDSA keys */
-	private static final Collection<String> SIG_ALGS_ECDSA;
-	
-	/** Signature algorithms supported by GOST keys */
-    private static final Collection<String> SIG_ALGS_ECGOST3410;
-    
+    /** String used for an unknown keyspec in CA token properties */
+    public static final String KEYSPEC_UNKNOWN = "unknown";
+
+    /** Signature algorithms supported by RSA keys */
+    public static final List<String> SIG_ALGS_RSA = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1,
+            AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1
+    ));
+
+    /** Signature algorithms supported by DSA keys */
+    public static final List<String> SIG_ALGS_DSA = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_SHA1_WITH_DSA
+    ));
+
+    /** Signature algorithms supported by ECDSA keys */
+    public static final List<String> SIG_ALGS_ECDSA = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA
+    ));
+
+    /** Signature algorithms supported by GOST keys */
+    public static final List<String> SIG_ALGS_ECGOST3410 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410
+    ));
+
     /** Signature algorithms supported by DSTU4145 keys */
-    private static final Collection<String> SIG_ALGS_DSTU4145;
-	
-	static {
-		SIG_ALGS_RSA = new LinkedList<String>();
-		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1);
-		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-		
-		SIG_ALGS_DSA = new LinkedList<String>();
-		SIG_ALGS_DSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-		
-		SIG_ALGS_ECDSA = new LinkedList<String>();
-		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
-		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
-		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
-        SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
-		
-		SIG_ALGS_ECGOST3410 = new LinkedList<String>();
-        SIG_ALGS_ECGOST3410.add(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
-        
-        SIG_ALGS_DSTU4145 = new LinkedList<String>();
-        SIG_ALGS_DSTU4145.add(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
-	}
+    public static final List<String> SIG_ALGS_DSTU4145 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145
+    ));
 
-	   /**
+   /**
      * Returns a signing algorithm to use selecting from a list of possible algorithms.
      * 
      * @param sigalgs the list of possible algorithms, ;-separated. Example "SHA1WithRSA;SHA1WithECDSA".
@@ -124,16 +116,14 @@ public abstract class AlgorithmTools {
      * @return A single algorithm to use Example: SHA1WithRSA, SHA1WithDSA or SHA1WithECDSA
      */
     public static String getSigningAlgFromAlgSelection(String sigalgs, PublicKey pk) {
-        String sigAlg = null;
-        String[] algs = StringUtils.split(sigalgs, ';');
-        for(int i = 0; i < algs.length; i++) {
-            if ( AlgorithmTools.isCompatibleSigAlg(pk, algs[i]) ) {
-                sigAlg = algs[i];
-                break;
+        final String[] algs = StringUtils.split(sigalgs, ';');
+        for( final String sigAlg : algs) {
+            if ( AlgorithmTools.isCompatibleSigAlg(pk, sigAlg) ) {
+                log.debug("Using signature algorithm for response: "+sigAlg);
+                return sigAlg;
             }
         }
-        log.debug("Using signature algorithm for response: "+sigAlg);
-        return sigAlg;
+        return null;
     }
 	
 	/**
@@ -171,25 +161,24 @@ public abstract class AlgorithmTools {
 	 * @return Collection of zero or more signature algorithm names
 	 * @see AlgorithmConstants
 	 */
-	public static Collection<String> getSignatureAlgorithms(final PublicKey publickey) {
-		final Collection<String> ret;
+	public static List<String> getSignatureAlgorithms(final PublicKey publickey) {
 		if ( publickey instanceof RSAPublicKey ) {
-			ret = SIG_ALGS_RSA;
-		} else if ( publickey instanceof DSAPublicKey ) {
-			ret = SIG_ALGS_DSA;
-		} else if ( publickey instanceof ECPublicKey ) {
+			return SIG_ALGS_RSA;
+		}
+		if ( publickey instanceof DSAPublicKey ) {
+			return SIG_ALGS_DSA;
+		}
+		if ( publickey instanceof ECPublicKey ) {
 		    final String algo = publickey.getAlgorithm();
             if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                ret = SIG_ALGS_ECGOST3410;
-            } else if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-                ret = SIG_ALGS_DSTU4145;
-            } else {
-                ret = SIG_ALGS_ECDSA;
+                return SIG_ALGS_ECGOST3410;
             }
-		} else {
-			ret = Collections.emptyList();			
+            if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+                return SIG_ALGS_DSTU4145;
+            }
+            return SIG_ALGS_ECDSA;
 		}
-		return ret;
+		return Collections.emptyList();
 	}
 	
 	/**
@@ -344,7 +333,7 @@ public abstract class AlgorithmTools {
 	/** @return a list of aliases for the provided curve name (including the provided name) */
 	public static List<String> getEcKeySpecAliases(final String namedEllipticCurve) {
         final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(namedEllipticCurve);
-	    final List<String> ret = new ArrayList<String>();
+	    final List<String> ret = new ArrayList<>();
 	    ret.add(namedEllipticCurve);
 	    
 	    if (parameterSpec != null) { // GOST and DSTU aren't present in ECNamedCurveTable (and don't have aliases)
@@ -441,7 +430,7 @@ public abstract class AlgorithmTools {
      * @return Signature algorithm name from the certificate as a human readable string, for example SHA1WithRSA.
      */
     public static String getCertSignatureAlgorithmNameAsString(Certificate cert) {
-        String certSignatureAlgorithm = null;
+        String certSignatureAlgorithm;
         if (cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
             certSignatureAlgorithm = x509cert.getSigAlgName();
@@ -457,7 +446,10 @@ public abstract class AlgorithmTools {
                 certSignatureAlgorithm = AlgorithmUtil.getAlgorithmName(oid);
             } catch (NoSuchFieldException e) {
                 log.error("NoSuchFieldException: ", e);
+                return null;
             }
+        } else {
+            return null;
         }
         // Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
         if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.113549.1.1.10")) {
@@ -556,25 +548,29 @@ public abstract class AlgorithmTools {
     public static String getDigestFromSigAlg(String sigAlg) {
         if (sigAlg.toUpperCase().contains("GOST") || sigAlg.toUpperCase().contains("DSTU")) {
             return CMSSignedGenerator.DIGEST_GOST3411;
-        } else {
-            if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId())) {
-                return CMSSignedGenerator.DIGEST_SHA1;
-            } else if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA224.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha224WithRSAEncryption.getId())) {
-                return CMSSignedGenerator.DIGEST_SHA224;
-            } else if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId())) {
-                return CMSSignedGenerator.DIGEST_SHA256;
-            } else if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA384.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha384WithRSAEncryption.getId())) {
-                return CMSSignedGenerator.DIGEST_SHA384;
-            } else if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA512.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha512WithRSAEncryption.getId())) {
-                return CMSSignedGenerator.DIGEST_SHA512;
-            } else if(sigAlg.equals(PKCSObjectIdentifiers.md5WithRSAEncryption.getId())) {
-                return CMSSignedGenerator.DIGEST_MD5;
-            } else if(sigAlg.equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001.getId()) ) {
-                return CMSSignedGenerator.DIGEST_GOST3411;
-            }
+        }
+        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA1;
+        }
+        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA224.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha224WithRSAEncryption.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA224;
+        }
+        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA256;
+        }
+        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA384.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha384WithRSAEncryption.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA384;
+        }
+        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA512.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha512WithRSAEncryption.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA512;
+        }
+        if(sigAlg.equals(PKCSObjectIdentifiers.md5WithRSAEncryption.getId())) {
+            return CMSSignedGenerator.DIGEST_MD5;
+        }
+        if(sigAlg.equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001.getId()) ) {
+            return CMSSignedGenerator.DIGEST_GOST3411;
         }
         return CMSSignedGenerator.DIGEST_SHA1;
-        
     }
 
     /** Calculates which signature algorithm to use given a key type and a digest algorithm
