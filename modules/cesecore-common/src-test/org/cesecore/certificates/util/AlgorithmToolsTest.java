@@ -32,7 +32,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.cesecore.config.CesecoreConfiguration;
@@ -67,27 +68,32 @@ public class AlgorithmToolsTest {
 
     @Test
     public void testGetSignatureAlgorithms() {
-        final List<String> algs = AlgorithmTools.getSignatureAlgorithms(new MockNotSupportedPublicKey());
+        Collection<String> algs = AlgorithmTools.getSignatureAlgorithms(new MockNotSupportedPublicKey());
         assertNotNull("should not return null", algs);
-        assertEquals("no supported algs", 0, algs.size());
+        assertTrue("no supported algs", algs.isEmpty());
     }
 
     @Test
     public void testGetKeyAlgorithmFromSigAlg() {
 
+        Collection<String> sigAlgs;
+
         // Test that key algorithm is RSA for all of its signature algorithms
-        for (final String s : AlgorithmTools.getSignatureAlgorithms(new MockRSAPublicKey()) ) {
-            assertEquals(AlgorithmTools.getKeyAlgorithm(new MockRSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(s));
+        sigAlgs = AlgorithmTools.getSignatureAlgorithms(new MockRSAPublicKey());
+        for (Iterator<String> i = sigAlgs.iterator(); i.hasNext();) {
+            assertEquals(AlgorithmTools.getKeyAlgorithm(new MockRSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(i.next()));
         }
 
         // Test that key algorithm is DSA for all of its signature algorithms
-        for (final String s : AlgorithmTools.getSignatureAlgorithms(new MockDSAPublicKey())) {
-            assertEquals(AlgorithmTools.getKeyAlgorithm(new MockDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(s));
+        sigAlgs = AlgorithmTools.getSignatureAlgorithms(new MockDSAPublicKey());
+        for (Iterator<String> i = sigAlgs.iterator(); i.hasNext();) {
+            assertEquals(AlgorithmTools.getKeyAlgorithm(new MockDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(i.next()));
         }
 
         // Test that key algorithm is ECDSA for all of its signature algorithms
-        for (final String s : AlgorithmTools.getSignatureAlgorithms(new MockECDSAPublicKey())) {
-            assertEquals(AlgorithmTools.getKeyAlgorithm(new MockECDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(s));
+        sigAlgs = AlgorithmTools.getSignatureAlgorithms(new MockECDSAPublicKey());
+        for (Iterator<String> i = sigAlgs.iterator(); i.hasNext();) {
+            assertEquals(AlgorithmTools.getKeyAlgorithm(new MockECDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(i.next()));
         }
 
         // should return a default value

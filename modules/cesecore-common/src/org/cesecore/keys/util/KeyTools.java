@@ -17,8 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -65,7 +63,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.Iterator;
 
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
@@ -96,8 +94,6 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.SignWithWorkingAlgorithm;
-import org.cesecore.certificates.util.SignWithWorkingAlgorithm.Operation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
@@ -452,7 +448,7 @@ public final class KeyTools {
      *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate cacert)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
 
         if (cacert == null) {
@@ -482,7 +478,7 @@ public final class KeyTools {
      *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Collection<Certificate> cacerts)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null) {
             chain = null;
@@ -795,9 +791,9 @@ public final class KeyTools {
     /** @return a buffer with the public key in PEM format */
     public static String getAsPem(final PublicKey publicKey) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try ( final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos)) ) {
-            pemWriter.writeObject(publicKey);
-        }
+        final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos));
+        pemWriter.writeObject(publicKey);
+        pemWriter.close();
         return new String(baos.toByteArray(), "UTF8");
     }
 
@@ -978,41 +974,6 @@ public final class KeyTools {
 
     }
 
-    private static class SignOperation implements Operation {
-
-        public SignOperation( final PrivateKey _key, final byte _dataToBeSigned[] ) {
-            this.key = _key;
-            this.dataToBeSigned = _dataToBeSigned;
-        }
-        final private PrivateKey key;
-        final private byte dataToBeSigned[];
-        private byte[] signatureBV;
-        private String signatureAlgorithm;
-        @Override
-        public void doIt(String signAlgorithm, Provider provider) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-            final Signature signature = Signature.getInstance(signAlgorithm, provider);
-            signature.initSign(this.key);
-            signature.update(this.dataToBeSigned);
-            this.signatureBV = signature.sign();
-            this.signatureAlgorithm = signAlgorithm;
-        }
-        byte[] getSignature() {
-            return this.signatureBV;
-        }
-        String getSignatureAlgorithm() {
-            return this.signatureAlgorithm;
-        }
-    }
-    private static Provider getProvider(final String sProvider) {
-        if ( sProvider==null ) {
-            return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
-        }
-        final Provider provider = Security.getProvider(sProvider);
-        if ( provider!=null ) {
-            return provider;
-        }
-        return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
-    }
     /**
      * Testing a key pair to verify that it is possible to first sign and then verify with it.
      * 
@@ -1020,7 +981,7 @@ public final class KeyTools {
      *            private key to sign a string with
      * @param pub
      *            public key to verify the signature with
-     * @param sProvider
+     * @param provider
      *            A provider used for signing with the private key, or null if "BC" should be used.
      * 
      * @throws InvalidKeyException
@@ -1029,31 +990,31 @@ public final class KeyTools {
      * @throws NoSuchProviderException
      *             if the provider is not installed.
      */
-    public static void testKey(final PrivateKey priv, final PublicKey pub, final String sProvider) throws InvalidKeyException { // NOPMD:this is not a junit test
+    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException { // NOPMD:this is not a junit test
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         final String testSigAlg;
+        {
+            final Iterator<String> i = AlgorithmTools.getSignatureAlgorithms(pub).iterator();
+            final String tmp = i.hasNext() ? i.next() : null;
+            testSigAlg = tmp != null ? tmp : "SHA1WithRSA";
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Testing keys with algorithm: " + pub.getAlgorithm());
+            log.debug("testSigAlg: " + testSigAlg);
+            log.debug("provider: " + provider);
+            log.trace("privateKey: " + priv);
+            log.trace("privateKey class: " + priv.getClass().getName());
+            log.trace("publicKey: " + pub);
+            log.trace("publicKey class: " + pub.getClass().getName());
+        }
         try {
-            if (log.isDebugEnabled()) {
-                final StringWriter sw = new StringWriter();
-                try( final PrintWriter pw = new PrintWriter(sw) ) {
-                    pw.println("Testing a key:");
-                    pw.println(String.format("\tTesting keys with algorithm: %s", pub.getAlgorithm()));
-                    pw.println(String.format("\tprovider: %s", sProvider));
-                    pw.println(String.format("\tprivateKey: %s", priv));
-                    pw.println(String.format("\tprivateKey class: %s", priv.getClass().getName()));
-                    pw.println(String.format("\tpublicKey: %s", pub));
-                    pw.println(String.format("\tpublicKey class: %s", pub.getClass().getName()));
-                    pw.flush();
-                }
-                log.debug(sw.toString());
-            }
             {
-                final SignOperation operation = new SignOperation(priv, input);
-                final List<String> availableSignAlgorithms = AlgorithmTools.getSignatureAlgorithms(pub);
-                SignWithWorkingAlgorithm.doIt(availableSignAlgorithms, getProvider(sProvider), operation);
-                signBV = operation.getSignature();
-                testSigAlg = operation.getSignatureAlgorithm();
+                final Provider prov = Security.getProvider(provider != null ? provider : "BC");
+                final Signature signature = Signature.getInstance(testSigAlg, prov);
+                signature.initSign(priv);
+                signature.update(input);
+                signBV = signature.sign();
                 if (signBV == null) {
                     throw new InvalidKeyException("Result from signing is null.");
                 }
@@ -1063,7 +1024,7 @@ public final class KeyTools {
                 }
             }
             {
-                final Signature signature;
+                Signature signature;
                 try {
                     signature = Signature.getInstance(testSigAlg, "BC");
                 } catch (NoSuchProviderException e) {
@@ -1075,13 +1036,10 @@ public final class KeyTools {
                     throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
                 }
             }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            if (e instanceof NoSuchAlgorithmException || e instanceof SignatureException ) {
-                throw new InvalidKeyException(String.format("Exception testing key: %s", e.getMessage()), e);
-            }
-            throw new Error("This exception should never occur here.", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new InvalidKeyException("Exception testing key: " + e.getMessage(), e);
+        } catch (SignatureException e) {
+            throw new InvalidKeyException("Exception testing key: " + e.getMessage(), e);
         }
     }
 
@@ -1168,7 +1126,8 @@ public final class KeyTools {
         checkValidKeyLength(keyAlg, len);
     }
 
-    public static void checkValidKeyLength(final PublicKey pk) throws InvalidKeyException {
+    public static void checkValidKeyLength(final PublicKey pk) throws InvalidKeyException, NoSuchAlgorithmException,
+    NoSuchProviderException, InvalidAlgorithmParameterException {
         final String keyAlg = AlgorithmTools.getKeyAlgorithm(pk);
         final int len = KeyTools.getKeyLength(pk);
         checkValidKeyLength(keyAlg, len);
