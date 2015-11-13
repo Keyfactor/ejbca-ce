@@ -511,6 +511,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CTLog URL is set.", null));
             return;
         }
+        if (!currentCTLogURL.contains("://")) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CTLog URL must specify a protocol: http:// or https://", null));
+            return;
+        }
         if (currentCTLogPublicKeyFile == null) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Upload of CTLog public key file failed.", null));
             return;
@@ -520,7 +525,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         try {
             byte[] uploadedFileBytes = currentCTLogPublicKeyFile.getBytes();
             byte[] keybytes = KeyTools.getBytesFromPEM(new String(uploadedFileBytes), CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
-            ctlogToAdd = new CTLogInfo(currentCTLogURL, keybytes);
+            ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
             ctlogToAdd.setTimeout(getCurrentCTLogTimeout());
         } catch (IOException e) {
             String msg = "Cannot parse the public key file " + getCurrentCTLogPublicKeyFile().getName() + ". " + e.getLocalizedMessage();
@@ -533,6 +538,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         if(ctlogToAdd != null) {
+            for (CTLogInfo existing : currentConfig.getCtLogs()) {
+                if (StringUtils.equals(existing.getUrl(), ctlogToAdd.getUrl())) {
+                    FacesContext.getCurrentInstance()
+                        .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "A CT Log with that URL already exists: " + existing.getUrl(), null));
+                    return;
+                }
+            }
+            
             List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
             ctlogs.add(ctlogToAdd);
             currentConfig.setCtLogs(ctlogs);
