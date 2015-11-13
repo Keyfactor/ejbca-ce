@@ -106,7 +106,11 @@
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-153.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-153.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-153.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://www.bouncycastle.org/docs/pkixdocs1.5on"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/dom4j-1.6.1.jar"/>
