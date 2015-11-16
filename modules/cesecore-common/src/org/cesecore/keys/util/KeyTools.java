@@ -41,6 +41,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPrivateKey;
@@ -80,6 +81,7 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
@@ -1254,13 +1256,17 @@ public final class KeyTools {
         }
     }
     
-    public static byte[] getBytesFromPublicKeyFile(byte[] file) {
+    public static byte[] getBytesFromPublicKeyFile(byte[] file) throws CertificateParsingException {
         String fileText = Charset.forName("ASCII").decode(java.nio.ByteBuffer.wrap(file)).toString();
         byte[] asn1bytes = getBytesFromPEM(fileText, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
-        if (asn1bytes != null) {
+        if (asn1bytes == null) {
+            asn1bytes = file; // Assume it's in ASN1 format already
+        }
+        try {
+            PublicKeyFactory.createKey(asn1bytes); // Check that it's a valid public key
             return asn1bytes;
-        } else {
-            return file; // Assume it's in ASN1 format already
+        } catch (IOException e) {
+            throw new CertificateParsingException(e);
         }
     }
 }
