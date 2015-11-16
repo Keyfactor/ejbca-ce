@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
 
 /**
@@ -87,7 +87,7 @@ public final class CTLogInfo implements Serializable {
             ensureParsed();
             final MessageDigest md = MessageDigest.getInstance("SHA256");
             final byte[] keyId = md.digest(publicKey.getEncoded());
-            return new String(Hex.encode(keyId)).substring(0, 8).toUpperCase();
+            return Base64.toBase64String(keyId);
         } catch (NoSuchAlgorithmException e) {
             // Should not happen, but not critical.
             return "";
