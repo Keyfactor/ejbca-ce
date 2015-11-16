@@ -46,7 +46,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -524,7 +523,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         CTLogInfo ctlogToAdd = null;
         try {
             byte[] uploadedFileBytes = currentCTLogPublicKeyFile.getBytes();
-            byte[] keybytes = KeyTools.getBytesFromPEM(new String(uploadedFileBytes), CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+            byte[] keybytes = KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
             ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
             ctlogToAdd.setTimeout(getCurrentCTLogTimeout());
         } catch (IOException e) {
