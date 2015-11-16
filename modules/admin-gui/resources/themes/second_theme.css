@@ -22,7 +22,7 @@ body {
 	color: #000;
 	font-size: 11pt;
 }
-code, code *, pre, pre * {
+code, code *, pre, pre *, .monospace {
 	font-family: "Courier New", Courier, monospace;
 }
 a img {

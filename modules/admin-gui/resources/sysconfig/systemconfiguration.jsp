@@ -505,7 +505,7 @@ org.cesecore.authorization.control.AccessControlSession
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}"/>
+				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}" styleClass="monospace"/>
 				<f:facet name="footer">
 					<h:panelGroup>
  	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE} " />
@@ -520,7 +520,7 @@ org.cesecore.authorization.control.AccessControlSession
 				<f:facet name="footer">
 					<h:inputText id="currentTimeout" required="false"
 									value="#{systemConfigMBean.currentCTLogTimeout}"
-									title="#{web.text.FORMAT_INTEGER}"
+									title="#{web.text.FORMAT_MILLISECONDS}"
 									size="10">
    					</h:inputText>
 				</f:facet>
