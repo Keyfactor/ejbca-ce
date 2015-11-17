@@ -214,6 +214,10 @@
       <from-outcome>edit</from-outcome>
       <to-view-id>/sysconfig/customcertextension.jsp</to-view-id>
     </navigation-case>
+    <navigation-case>
+      <from-outcome>view</from-outcome>
+      <to-view-id>/sysconfig/customcertextension.jsp</to-view-id>
+    </navigation-case>
   </navigation-rule>
   	
   <navigation-rule>

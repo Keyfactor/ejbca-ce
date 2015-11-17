@@ -49,7 +49,6 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     @Override
     public int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         return publisherSession.addPublisher(admin, name, publisher);
-
     }
 
     @Override

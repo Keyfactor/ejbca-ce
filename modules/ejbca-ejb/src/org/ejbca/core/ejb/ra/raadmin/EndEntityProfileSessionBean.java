@@ -279,7 +279,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
     	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
+        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
@@ -304,8 +304,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                     }
         		}
         	}
-        } catch (Exception e) {
-            LOG.error(INTRES.getLocalizedMessage("ra.errorgetids"), e);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("CA ID was store in an end entity profile as something other than a number.", e);
         }
         return returnval;
     }

@@ -1,11 +1,11 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
-<%@page import="java.util.Iterator"%>
 <%
-   java.util.TreeMap canames = ejbcawebbean.getInformationMemory().getAllCANames();
-   java.util.TreeMap externalcas = ejbcawebbean.getInformationMemory().getExternalCAs();
+   java.util.Map<String, Integer> canames = ejbcawebbean.getInformationMemory().getCANames();
+   java.util.TreeMap<String, Integer> externalcas = ejbcawebbean.getInformationMemory().getExternalCAs();
    int row = 0;
    
    ramode = cmpConfigClone.getRAMode(alias);
+   
 %>
 
 <script type="text/javascript">
@@ -16,41 +16,43 @@ function reload() {
 }
 
 function enableFormItems() {
+	var authorizedToEdit = <%=authorizedToEdit%>;
 <% if (!ramode) { %>
     // ----- Client Mode -----
+    console.log("foo: " + authorizedToEdit) 
     var dnpartpwd = document.cmpconfiguration.<%= CHECKBOX_DNPART %>.checked;
-    document.cmpconfiguration.<%= LIST_DNPARTS %>.disabled = !dnpartpwd;
+    document.cmpconfiguration.<%= LIST_DNPARTS %>.disabled = (!dnpartpwd || !authorizedToEdit);
     
     var use_vendormode = document.cmpconfiguration.<%= CHECKBOX_CMP_VENDORMODE %>.checked;
-    document.cmpconfiguration.<%= LIST_VENDORCA %>.disabled = !use_vendormode;
-    document.cmpconfiguration.<%= BUTTON_ADDVENDORCA %>.disabled = !use_vendormode;
-    document.cmpconfiguration.<%= BUTTON_REMOVEVENDORCA %>.disabled = !use_vendormode;
+    document.cmpconfiguration.<%= LIST_VENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= BUTTON_ADDVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= BUTTON_REMOVEVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
 <% } else { %>
     // ----- RA Mode -----
     // CMP Authentication Module
     var hmac = document.cmpconfiguration.<%= CHECKBOX_HMAC %>.checked;
-    document.cmpconfiguration.<%= TEXTFIELD_HMACPASSWORD %>.disabled = !hmac;
+    document.cmpconfiguration.<%= TEXTFIELD_HMACPASSWORD %>.disabled = !hmac || !authorizedToEdit;
     
     var specifysecret = document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>[1].checked;
-    document.cmpconfiguration.<%=TEXTFIELD_HMACPASSWORD %>.readOnly = !specifysecret;
+    document.cmpconfiguration.<%=TEXTFIELD_HMACPASSWORD %>.readOnly = !specifysecret || !authorizedToEdit;
     
     if (document.cmpconfiguration.<%= CHECKBOX_EEC %>) {
         var eec = document.cmpconfiguration.<%= CHECKBOX_EEC %>.checked;
-        document.cmpconfiguration.<%= LIST_ECCCAS %>.disabled = !eec;
+        document.cmpconfiguration.<%= LIST_ECCCAS %>.disabled = !eec || !authorizedToEdit;
     }
     
     var options = document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>;
     for (var i = 0; i < options.length; i++) {
-        options[i].disabled = !hmac;
+        options[i].disabled = !hmac || !authorizedToEdit;;
     }
     
     // RA Name Generation Scheme
     var is_dnparts = document.cmpconfiguration.<%= RADIO_NAMEGENSCHEME %>[0].checked;
-    document.cmpconfiguration.<%= LIST_NAMEGENPARAM_DN %>.disabled = !is_dnparts;
-    document.cmpconfiguration.<%= BUTTON_ADD_NAMEGENPARAM_DN %>.disabled = !is_dnparts;
-    document.cmpconfiguration.<%= BUTTON_REMOVE_NAMEGENPARAM_DN %>.disabled = !is_dnparts;
+    document.cmpconfiguration.<%= LIST_NAMEGENPARAM_DN %>.disabled = !is_dnparts || !authorizedToEdit;
+    document.cmpconfiguration.<%= BUTTON_ADD_NAMEGENPARAM_DN %>.disabled = !is_dnparts || !authorizedToEdit;
+    document.cmpconfiguration.<%= BUTTON_REMOVE_NAMEGENPARAM_DN %>.disabled = !is_dnparts || !authorizedToEdit;
     var is_fixed = document.cmpconfiguration.<%= RADIO_NAMEGENSCHEME %>[2].checked;
-    document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPARAM %>.disabled = !is_fixed;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPARAM %>.disabled = !is_fixed || !authorizedToEdit;
 <% } %>
 }
 
@@ -91,12 +93,12 @@ function checkallfields() {
 
 
 <div align="center"> 
-  <h2><c:out value="<%= ejbcawebbean.getText(\"CMPEDITALIAS\") %>" /></h2>
+  <h2><c:out value="<%= ejbcawebbean.getText((authorizedToEdit ? \"CMPEDITALIAS\": \"CMP_VIEW_ALIAS\")) %>" /></h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALIAS\")+ \" : \" + alias %>" /></h3>
 </div>
 
 <form name="cmpconfiguration" method="post" action="<%=THIS_FILENAME %>">
-  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIAS %>'>
+  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIAS%>'>
   <input type="hidden" name='<%= HIDDEN_ALIAS %>' value='<c:out value="<%=alias %>"/>'>
   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
@@ -129,16 +131,16 @@ function checkallfields() {
       </td>
       <td width="50%">
         <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="reload()" onclick="reload()" <%-- IE needs onclick as well, since onchange is delayed until another element is selected --%>
-			<% if(!ramode) { out.write(" CHECKED "); } %> />
+			<% if(!ramode) { out.write(" CHECKED "); } %> <% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPCLIENTMODE\") %>" /></label>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="radio" name="<%=RADIO_CMPMODE%>" value="ra" onchange="reload()" onclick="reload()"
-			<% if(ramode) { out.write(" CHECKED "); } %> />
+			<% if(ramode) { out.write(" CHECKED "); } %>  <% if(!authorizedToEdit) { out.write(" disabled "); } %>/>
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPRAMODE\") %>" /></label>
 		<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>" style="display:none">
 		<noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
 		</noscript> 
       </td>
     </tr> 
@@ -153,20 +155,17 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()">
+        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
           <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
           <% if(currentProtection.equals("pbe"))	pbe = true; %>
-          <% java.util.Iterator iterp = cmpConfigClone.getCmpResponseProtectionList(ramode).iterator();
-             while(iterp.hasNext()){
-            	String p = (String) iterp.next(); 
-          %>   <option <% if(p.equals(currentProtection)){ %> selected <% } %>
-                  value='<c:out value="<%= p%>"/>'><c:out value="<%= p %>"/></option>
+          <% for(String p : cmpConfigClone.getCmpResponseProtectionList(ramode)) { %>   
+          <option <% if(p.equals(currentProtection)){ %> selected <% } %> value='<c:out value="<%= p%>"/>'><c:out value="<%= p %>"/></option>
           <% } %>
         </select>
         <% if(ramode) { %>
        	<noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
 		</noscript>
 		<% } %>
       </td>
@@ -188,19 +187,21 @@ function checkallfields() {
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC)) {
 					out.write(" CHECKED ");
 				}%>
-				id="<%=CHECKBOX_HMAC%>" onchange="enableFormItems()" onclick="enableFormItems()" />
+				id="<%=CHECKBOX_HMAC%>" onchange="enableFormItems()" onclick="enableFormItems()" 
+				 <% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 				<label for="<%=CHECKBOX_HMAC%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_HMAC %>" /></label>
 				<% if(ramode) {%>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					
 					<% String secretvalue = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);	%>
 					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="casecret" onchange="enableFormItems()" onclick="enableFormItems()"
+						<% if(!authorizedToEdit) { out.write(" disabled "); } %>
 						<% 
 							if(secretvalue.equals("-") || secretvalue.length()==0) { 
 								out.write(" CHECKED ");
 								secretvalue = "";
 							}
-						%> />
+						%>   />
 					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACCASECRET\") %>" /></label>
 					&nbsp;&nbsp;&nbsp;
 					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="hmacsecret" onchange="enableFormItems()" onclick="enableFormItems()"
@@ -208,28 +209,28 @@ function checkallfields() {
 							if(! ( secretvalue.equals("-") || (secretvalue.length() == 0) ) ) { 
 								out.write(" CHECKED ");
 							}
-						%> />
+						%>  <% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACSPECIFYSECRET\") %>" /></label>
-					<input type="text" name="<%=TEXTFIELD_HMACPASSWORD %>" value='<c:out value="<%= secretvalue %>"/>' 
+					<input type="text" name="<%=TEXTFIELD_HMACPASSWORD %>" value='<c:out value="<%= secretvalue %>"/>' <% if(!authorizedToEdit) { out.write("disabled"); } %>
         				maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
-        				onmousedown="document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>[1].checked = true; this.readOnly = false; this.focus()">
+        				onmousedown="document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>[1].checked = true; this.readOnly = false; this.focus()"
+        				 >
         		<% } %>
         		<br/>
 		<% if(!pbe) { %>
-		<input type="checkbox" name="<%= CHECKBOX_EEC %>" value="<%=CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE %>"
+		<input type="checkbox" name="<%= CHECKBOX_EEC %>" value="<%=CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
 						out.write(" CHECKED ");
 					}%>
-				id="<%=CHECKBOX_EEC%>" onchange="enableFormItems()" onclick="enableFormItems()" />
+				id="<%=CHECKBOX_EEC%>" onchange="enableFormItems()" onclick="enableFormItems()"  <% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 				<label for="<%=CHECKBOX_EEC%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE %>" /></label>
 				<% if(ramode) {%>
 				&nbsp;&nbsp;&nbsp;
 				<label for="<%=LIST_ECCCAS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPECCISSUERCA\") %>" /></label>
-				<select name="<%=LIST_ECCCAS%>" >
+				<select name="<%=LIST_ECCCAS%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
            				<%  String currentECCCA = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, alias); %>
-           				<% java.util.Iterator itrecc = canames.keySet().iterator();
-           	  			while(itrecc.hasNext()) {
-           		  			String eccca = (String) itrecc.next();
+           				<% 
+           		  		for(String eccca : canames.keySet()) {
            			%>     <option <% if(currentECCCA.equals(eccca)) { %> selected <% } %>
                   				value='<c:out value="<%= eccca%>"/>'><c:out value="<%= eccca %>"/></option> 
            			<% } %>
@@ -240,22 +241,21 @@ function checkallfields() {
 		<% if(!ramode) { %>
 		<input type="checkbox" name="<%= CHECKBOX_REGTOKEN %>" value="<%=CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD %>" 
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)) out.write(" CHECKED ");	%>
-				id="<%=CHECKBOX_REGTOKEN%>" />
+				id="<%=CHECKBOX_REGTOKEN%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 				<label for="<%=CHECKBOX_REGTOKEN%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD %>" /></label><br/>
 
 		<input type="checkbox" name="<%= CHECKBOX_DNPART %>" value="<%=CmpConfiguration.AUTHMODULE_DN_PART_PWD %>"
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_DN_PART_PWD)) {
 						out.write(" CHECKED ");
 					}%>
-				id="<%=CHECKBOX_DNPART%>" onchange="enableFormItems()" onclick="enableFormItems()" />
+				id="<%=CHECKBOX_DNPART%>" onchange="enableFormItems()" onclick="enableFormItems()" 
+				<% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 				<label for="<%=CHECKBOX_DNPART%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_DN_PART_PWD %>" /></label>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<label for="<%=LIST_DNPARTS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHSUBJECTDNPART\") %>" /></label>
-				<select name="<%=LIST_DNPARTS%>" >
+				<select name="<%=LIST_DNPARTS%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> />>
            				<% String currentDnPart = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD, alias);
-           				   Iterator authdnitr = dnfields.iterator();
-           				   while(authdnitr.hasNext()) {
-           				   		String dnpart = (String) authdnitr.next(); %>
+           				   for(String dnpart : dnfields) { %>
            	           	   		<option  value='<c:out value="<%= dnpart %>"/>'  <% if (currentDnPart != null && currentDnPart.equals(dnpart)) { %> selected <% } %> >
            	           	   			<c:out value="<%= dnpart %>"/> 
            	           	   		</option>
@@ -265,13 +265,6 @@ function checkallfields() {
       </td>
     </tr>
 
-
-
-
-
-
-
-    
     
 	<% if(ramode) { %>
 	<!-- ---------------------- RA MODE Specifics ----------------------------- -->
@@ -283,7 +276,7 @@ function checkallfields() {
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" value="<%=CHECKBOX_VALUE %>" 
 			<% if(cmpConfigClone.getAllowRAVerifyPOPO(alias)) out.write(" CHECKED "); %>
- 			id="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" />
+ 			id="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" <% if(!authorizedToEdit) { out.write("disabled"); } %> />
  		<label><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr> 
@@ -302,6 +295,7 @@ function checkallfields() {
       
       	<% boolean checked = false; %>
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.DN %> onchange="enableFormItems()" onclick="enableFormItems()"
+			<% if(!authorizedToEdit) { out.write("disabled"); } %> 
 			<% if(UsernameGeneratorParams.DN.equals(cmpConfigClone.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
@@ -312,26 +306,26 @@ function checkallfields() {
 		<% String pvalue = checked? cmpConfigClone.getRANameGenParams(alias) : ""; %>
 		<label><c:out value="<%= pvalue %>" /></label>
 		&nbsp;&nbsp;&nbsp;
-		<select name="<%=LIST_NAMEGENPARAM_DN%>" >
-          <% Iterator namegendnitr = dnfields.iterator();
-             while(namegendnitr.hasNext()){ 
-             		String dnpart = (String) namegendnitr.next();%>
+		<select name="<%=LIST_NAMEGENPARAM_DN%>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
+          <% 	
+             for(String dnpart : dnfields) {%>
            	 <option  value='<c:out value="<%= dnpart %>"/>' >
            	 	<c:out value="<%= dnpart %>"/> 
            	 </option>
            <% } %>
          </select>
-		<input type="submit" name="<%= BUTTON_ADD_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("ADD") %>">	      	
-		<input type="submit" name="<%= BUTTON_REMOVE_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("REMOVE") %>">
+		<input type="submit" name="<%= BUTTON_ADD_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("ADD") %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>	      	
+		<input type="submit" name="<%= BUTTON_REMOVE_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("REMOVE") %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
 		<br/>
 		
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.RANDOM %> onchange="enableFormItems()" onclick="enableFormItems()"
-			<% if(UsernameGeneratorParams.RANDOM.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> />
+			<% if(UsernameGeneratorParams.RANDOM.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> <% if(!authorizedToEdit) { out.write("disabled"); } %> />
 		<label><c:out value="<%= UsernameGeneratorParams.RANDOM %>" /></label>
 		<br/>
 		
 		<% checked = false; %>
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.FIXED %> onchange="enableFormItems()" onclick="enableFormItems()"
+			<% if(!authorizedToEdit) { out.write("disabled"); } %>
 			<% if(UsernameGeneratorParams.FIXED.equals(cmpConfigClone.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
@@ -340,11 +334,12 @@ function checkallfields() {
 		<label><c:out value="<%= UsernameGeneratorParams.FIXED %>" /></label>
 		&nbsp;&nbsp;&nbsp;
 		<% pvalue = checked? cmpConfigClone.getRANameGenParams(alias) : ""; %>
-        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" value='<c:out value="<%= pvalue %>"/>'
+        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" value='<c:out value="<%= pvalue %>"/>' <% if(!authorizedToEdit) { out.write("disabled"); } %>
 			      	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" id="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" >
 		<br/>
 		
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.USERNAME %> onchange="enableFormItems()" onclick="enableFormItems()"
+			<% if(!authorizedToEdit) { out.write("disabled"); } %>
 			<% if(UsernameGeneratorParams.USERNAME.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %>
 			/>
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPUSEENTIREDNASUSERNAME\") %>" /></label>
@@ -363,7 +358,7 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPREFIX %>" value='<c:out value="<%= cmpConfigClone.getRANameGenPrefix(alias) %>"/>' 
-        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
 
@@ -376,7 +371,7 @@ function checkallfields() {
 	  </td>
       <td width="50%">        
         <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPOSTFIX %>" value='<c:out value="<%= cmpConfigClone.getRANameGenPostfix(alias) %>"/>' 
-        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
 
@@ -390,7 +385,7 @@ function checkallfields() {
 	  </td>
       <td width="50%">        
         <input type="text" name="<%=TEXTFIELD_CMP_RAPASSWORDGENPARAM %>" value='<c:out value="<%= cmpConfigClone.getRAPwdGenParams(alias) %>"/>' 
-        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
 
@@ -403,7 +398,7 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAALLOWCUSTOMSERNO_HELP1\") %>"/></p>
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>  
 			<% if(cmpConfigClone.getAllowRACustomSerno(alias)) out.write(" CHECKED "); %>
  			id="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" />
  		<label><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
@@ -420,16 +415,16 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAEEPROFILE_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPEEPROFILES %>" onchange="reload()" >
+        <select name="<%= LIST_CMPEEPROFILES %>" onchange="reload()" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
           <% String defeep = cmpConfigClone.getRAEEProfile(alias); %>
           <% ceep = defeep; %>
           <% boolean eepselected = false; %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defeep)) { eepselected=true; %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
-          <% java.util.Iterator eeps = ejbcawebbean.getAuthorizedEEProfileNames(AccessRulesConstants.CREATE_END_ENTITY).iterator();
-             while(eeps.hasNext()){
-            	String eep = (String) eeps.next(); 
+          <% 
+
+            for(String eep : ejbcawebbean.getAuthorizedEEProfileNames(AccessRulesConstants.CREATE_END_ENTITY)) { 
           %>   <option <% if(eep.equals(defeep)){ eepselected=true; %> selected <% } %>
                   value='<c:out value="<%= eep%>"/>'><c:out value="<%= eep %>"/></option>
           <% } %>
@@ -452,15 +447,14 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACERTPROFILE_HELP1\") %>"/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPCERTPROFILES %>">
+        <select name="<%= LIST_CMPCERTPROFILES %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
           <% String defcp = cmpConfigClone.getRACertProfile(alias); %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defcp)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
-          <% java.util.Iterator cps = ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep).iterator(); //ejbcawebbean.getAuthorizedCertProfileNames().iterator();
-             while(cps.hasNext()){
-            	String cp = (String) cps.next(); 
+          <% 
+            for(String cp : ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep)) {
           %>   <option <% if(cp.equals(defcp)){ %> selected <% } %>
                   value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
           <% } %>
@@ -478,15 +472,14 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACANAME_HELP1\") %>"/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPRACAS %>">
+        <select name="<%= LIST_CMPRACAS %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
           <% String defca = cmpConfigClone.getRACAName(alias); %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defca)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
-          <% java.util.Iterator cas = ejbcawebbean.getAvailableCAsOfEEProfile(ceep).iterator(); //canames.keySet().iterator();
-             while(cas.hasNext()){
-            	String caname = (String) cas.next();
+          <% 
+            for(String caname : ejbcawebbean.getAvailableCAsOfEEProfile(ceep)) {
           %>   <option <% if(caname.equals(defca)){ %> selected <% } %>
                   value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option>
           <% } %>
@@ -506,12 +499,11 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP1\") %>"/></p> 
       </td>
       <td width="50%"> 
-      	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" >
+      	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
           <% String currentDnPart = cmpConfigClone.getExtractUsernameComponent(alias); %>
           <option  value='<c:out value="DN"/>'  <% if (currentDnPart != null && currentDnPart.equals("DN")) { %> selected <% } %> ><c:out value="DN"/></option>
-          <% Iterator compdnitr = dnfields.iterator();
-             while(compdnitr.hasNext()){ 
-             	String dnpart = (String) compdnitr.next();%>
+          <% 
+             for(String dnpart : dnfields) {%>
            	 <option  value='<c:out value="<%= dnpart %>"/>'  <% if (currentDnPart != null && currentDnPart.equals(dnpart)) { %> selected <% } %> >
            	 	<c:out value="<%= dnpart %>"/> 
            	 </option>
@@ -529,21 +521,20 @@ function checkallfields() {
 		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP1\") %>"/></p> 
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
 			<% if(cmpConfigClone.getVendorMode(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_VENDORMODE%>" onchange="enableFormItems()" onclick="enableFormItems()" />
 		<label for="<%=CHECKBOX_CMP_VENDORMODE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
 		<br/>
 		<p class="help"><c:out value="<%= cmpConfigClone.getVendorCA(alias) %>"/></p>
-        <select name="<%=LIST_VENDORCA%>" >
-           <% java.util.Iterator iterv = externalcas.keySet().iterator();
-           	  while(iterv.hasNext()) {
-           		  String vca = (String) iterv.next();
+        <select name="<%=LIST_VENDORCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
+           <% 
+            for(String vca : externalcas.keySet()) {
            %>     <option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
            <% } %>
         </select>
-        <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  >
-        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  >
+        <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
     
@@ -569,13 +560,12 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_HELP\") %>" /></p>
       </td>
       <td width="50%"> 
-        <select name="<%=LIST_CMPDEFAULTCA%>" >
+        <select name="<%=LIST_CMPDEFAULTCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
            <%  String currentCA = cmpConfigClone.getCMPDefaultCA(alias); %>
            <option <% if(currentCA.equals("")) { %> selected <% } %>
                  	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_DISABLED\") %>"/></option>
-           <% java.util.Iterator iter = canames.keySet().iterator();
-           	  while(iter.hasNext()) {
-           		  String caname = (String) iter.next();
+           <%         	  
+           	for( String caname : canames.keySet() ) {
            		  String cadn = cabean.getCAInfo(caname).getCAInfo().getSubjectDN();
            %>     <option <% if(currentCA.equals(cadn)) { %> selected <% } %>
                   value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
@@ -606,7 +596,7 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWAUTOMATICKEYUPDATE_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
 			<% if(cmpConfigClone.getKurAllowAutomaticUpdate(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" />
 		<label for="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
@@ -621,7 +611,7 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWKURWITHSAMEKEY_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
 			<% if(cmpConfigClone.getKurAllowSameKey(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" />
 		<label for="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label> 
@@ -651,7 +641,7 @@ function checkallfields() {
 	  </td>
       <td width="50%">        
         <input type="text" name="<%=TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH %>" value='<c:out value="<%= cmpConfigClone.getRACertPath(alias) %>"/>' 
-        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
     
@@ -665,7 +655,7 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC_HELP2\") %>"/></p>
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_OMITVERIFICATIONINECC%>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_OMITVERIFICATIONINECC%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
 			<% if(cmpConfigClone.getOmitVerificationsInEEC(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_OMITVERIFICATIONINECC%>" />
 		<label for="<%=CHECKBOX_OMITVERIFICATIONINECC%>"><c:out value="<%= ejbcawebbean.getText(\"OMIT\") %>" /></label> 
@@ -685,7 +675,7 @@ function checkallfields() {
         &nbsp;
       </td>
       <td width="50%" valign="top"> 
-        <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
         &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>

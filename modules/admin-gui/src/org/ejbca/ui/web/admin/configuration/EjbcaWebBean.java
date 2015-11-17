@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -37,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
@@ -54,8 +56,10 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -87,6 +91,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
 import org.ejbca.util.HTMLTools;
@@ -113,17 +118,10 @@ public class EjbcaWebBean implements Serializable {
     public static final int AUTHORIZED_CA_VIEW_CERT = 7;
     public static final int AUTHORIZED_RA_KEYRECOVERY_RIGHTS = 8;
 
-    private static final String[] AUTHORIZED_RA_RESOURCES = {
-        AccessRulesConstants.REGULAR_VIEWENDENTITY,
-        AccessRulesConstants.REGULAR_EDITENDENTITY,
-        AccessRulesConstants.REGULAR_CREATEENDENTITY,
-        AccessRulesConstants.REGULAR_DELETEENDENTITY,
-        AccessRulesConstants.REGULAR_REVOKEENDENTITY,
-        AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY,
-        AccessRulesConstants.REGULAR_VIEWHARDTOKENS,
-        AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-        AccessRulesConstants.REGULAR_KEYRECOVERY
-    };
+    private static final String[] AUTHORIZED_RA_RESOURCES = { AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRulesConstants.REGULAR_EDITENDENTITY,
+            AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+            AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRulesConstants.REGULAR_VIEWHARDTOKENS,
+            AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRulesConstants.REGULAR_KEYRECOVERY };
 
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
@@ -156,7 +154,7 @@ public class EjbcaWebBean implements Serializable {
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
     private String usercommonname = "";
-    private String certificatefingerprint;  // Unique key to identify the admin.. usually a hash of the admin's certificate
+    private String certificatefingerprint; // Unique key to identify the admin.. usually a hash of the admin's certificate
     private InformationMemory informationmemory;
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
@@ -178,13 +176,14 @@ public class EjbcaWebBean implements Serializable {
 
     private void commonInit() throws Exception {
         reloadGlobalConfiguration();
-        reloadCMPConfiguration();
+        reloadCmpConfiguration();
         reloadAvailableExtendedKeyUsagesConfiguration();
         reloadAvailableCustomCertExtensionsConfiguration();
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration, availableExtendedKeyUsagesConfig, availableCustomCertExtensionsConfig);
+                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration, availableExtendedKeyUsagesConfig,
+                    availableCustomCertExtensionsConfig);
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
                 authorizationSession);
@@ -203,7 +202,7 @@ public class EjbcaWebBean implements Serializable {
                 final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
                 administrator = authenticationSession.authenticate(subject);
                 if (administrator == null) {
-                    throw new AuthenticationFailedException("Authentication failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
+                    throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificates[0]));
                 }
             }
             commonInit();
@@ -221,12 +220,12 @@ public class EjbcaWebBean implements Serializable {
             final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
             final BigInteger serno = CertTools.getSerialNumber(certificates[0]);
             certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
-            if(!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
-                throw new RuntimeException("Certificate with SN " +  serno + " did not belong to CA " + issuerDN);
+            if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
+                throw new RuntimeException("Certificate with SN " + serno + " did not belong to CA " + issuerDN);
             }
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
-            	details.put("msg", "Logging in : Administrator Certificate is issued by external CA");
+                details.put("msg", "Logging in : Administrator Certificate is issued by external CA");
             }
             if (WebConfiguration.getAdminLogRemoteAddress()) {
                 details.put("remoteip", request.getRemoteAddr());
@@ -241,7 +240,7 @@ public class EjbcaWebBean implements Serializable {
                     administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
         }
         try {
-            if (resources.length>0 && !authorizationSession.isAuthorized(administrator, resources)) {
+            if (resources.length > 0 && !authorizationSession.isAuthorized(administrator, resources)) {
                 throw new AuthorizationDeniedException("You are not authorized to view this page.");
             }
         } catch (EJBException e) {
@@ -267,10 +266,10 @@ public class EjbcaWebBean implements Serializable {
                     currentadminpreference.getSecondaryLanguage());
             initialized = true;
         }
-        
+
         return globalconfiguration;
     }
-    
+
     /**
      * Method that returns the servername, extracted from the HTTPServlet Request, no protocol, port or application path is returned
      * 
@@ -284,7 +283,7 @@ public class EjbcaWebBean implements Serializable {
         // Remove application path
         requestURL = requestURL.substring(0, firstSlash);
         if (log.isDebugEnabled()) {
-            log.debug("requestServerName: "+requestURL);
+            log.debug("requestServerName: " + requestURL);
         }
         return requestURL;
     }
@@ -426,7 +425,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return true;
     }
-    
+
     /**
      * Checks if the admin have authorization to view the resource without performing any logging. Will simply return a boolean, 
      * no other information 
@@ -682,23 +681,25 @@ public class EjbcaWebBean implements Serializable {
         return dateString;
     }
 
-    public void reloadGlobalConfiguration() throws Exception {
+    public void reloadGlobalConfiguration() {
         globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalconfiguration.initializeAdminWeb();
         if (informationmemory != null) {
             informationmemory.systemConfigurationEdited(globalconfiguration);
         }
     }
-    
-    public void reloadCMPConfiguration() throws Exception {
+
+    public void reloadCmpConfiguration() {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (informationmemory != null) {
-            informationmemory.cmpConfigurationEdited(cmpconfiguration);
+            informationmemory.setCmpConfiguration(cmpconfiguration);
         }
-        
+
     }
+
     
-    public void saveGlobalConfiguration(GlobalConfiguration gc) throws Exception {
+
+    public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, gc);
         informationmemory.systemConfigurationEdited(gc);
         reloadGlobalConfiguration();
@@ -708,17 +709,18 @@ public class EjbcaWebBean implements Serializable {
         globalConfigurationSession.saveConfiguration(administrator, globalconfiguration);
         informationmemory.systemConfigurationEdited(globalconfiguration);
     }
-    
-    public void saveCMPConfiguration() throws AuthorizationDeniedException {
+
+    public void saveCMPConfiguration(CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
+        this.cmpconfiguration = cmpconfiguration;
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
-        informationmemory.cmpConfigurationEdited(cmpconfiguration);
+        informationmemory.setCmpConfiguration(cmpconfiguration);
     }
 
-    public boolean existsAdminPreference() throws Exception {
+    public boolean existsAdminPreference() {
         return adminspreferences.existsAdminPreference(certificatefingerprint);
     }
 
-    public void addAdminPreference(AdminPreference ap) throws Exception {
+    public void addAdminPreference(AdminPreference ap) throws IOException, AdminExistsException {
         currentadminpreference = ap;
         adminspreferences.addAdminPreference(certificatefingerprint, ap);
         adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
@@ -728,23 +730,23 @@ public class EjbcaWebBean implements Serializable {
     public Collection<Integer> getAuthorizedCAIds() {
         return this.informationmemory.getAuthorizedCAIds();
     }
-    
+
     public boolean isAuthorizedToAllCAs() {
         return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
     }
 
-    public void changeAdminPreference(AdminPreference ap) throws Exception {
+    public void changeAdminPreference(AdminPreference ap) throws IOException, AdminDoesntExistException {
         currentadminpreference = ap;
         adminspreferences.changeAdminPreference(certificatefingerprint, ap);
         adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
                 currentadminpreference.getSecondaryLanguage());
     }
 
-    public AdminPreference getDefaultAdminPreference() throws Exception {
+    public AdminPreference getDefaultAdminPreference() {
         return adminspreferences.getDefaultAdminPreference();
-    } // getDefaultAdminPreference()
+    }
 
-    public void saveDefaultAdminPreference(AdminPreference dap) throws Exception {
+    public void saveDefaultAdminPreference(AdminPreference dap) throws AuthorizationDeniedException, IOException {
         adminspreferences.saveDefaultAdminPreference(dap);
 
         // Reload preferences
@@ -859,8 +861,7 @@ public class EjbcaWebBean implements Serializable {
         if (!isHelpEnabled()) {
             return "";
         }
-        return "[<a href=\"" + linkPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" title=\""
-                + getText("OPENHELPSECTION") + "\" >?</a>]";
+        return "[<a href=\"" + linkPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
 
     public String[] getCertSernoAndIssuerdn(String certdata) {
@@ -895,7 +896,7 @@ public class EjbcaWebBean implements Serializable {
                     if (isLocalHost(host)) {
                         // If we are trying to clear the cache on this instance and failed,
                         // we give it another chance using 127.0.0.1 (which is allowed by default)
-                        log.info("Failed to clear cache on local node using '"+host+"'. Will try with 'localhost'.");
+                        log.info("Failed to clear cache on local node using '" + host + "'. Will try with 'localhost'.");
                         if (checkHost("localhost", excludeActiveCryptoTokens)) {
                             succeededHost.append(' ').append(host);
                         } else {
@@ -910,18 +911,20 @@ public class EjbcaWebBean implements Serializable {
         // Invalidate local GUI cache
         initialized = false;
         if (failedHosts.length() > 0) {
-            throw new Exception("Failed to clear cache on hosts ("+failedHosts.toString()+"), but succeeded on ("+succeededHost.toString()+").");
+            throw new Exception("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString()
+                    + ").");
         }
         if (log.isTraceEnabled()) {
             log.trace("<clearClusterCache");
         }
     }
-    
+
     /** Perform HTTP connection to the cluster nodes clear-cache Servlet */
     private boolean checkHost(String hostname, boolean excludeActiveCryptoTokens) throws IOException {
         // get http port of remote host, this requires that all cluster nodes uses the same public htt port
         final int pubport = WebConfiguration.getPublicHttpPort();
-        final String requestUrl = "http://" + hostname + ":" + pubport + "/ejbca/clearcache?command=clearcaches&excludeactivects=" + excludeActiveCryptoTokens;
+        final String requestUrl = "http://" + hostname + ":" + pubport + "/ejbca/clearcache?command=clearcaches&excludeactivects="
+                + excludeActiveCryptoTokens;
         final URL url = new URL(requestUrl);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         if (log.isDebugEnabled()) {
@@ -940,7 +943,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return false;
     }
-    
+
     /** @return true if the provided hostname matches the name reported by the system for localhost */
     private boolean isLocalHost(final String hostname) {
         try {
@@ -956,82 +959,150 @@ public class EjbcaWebBean implements Serializable {
     public EjbLocalHelper getEjb() {
         return ejbLocalHelper;
     }
-    
+
     public EnterpriseEjbLocalHelper getEnterpriseEjb() {
         return enterpriseEjbLocalHelper;
     }
-    
-    
+
     //**********************
     //     CMP
     //**********************
-    
-    public CmpConfiguration getCMPConfiguration() throws Exception {
-        if(cmpconfiguration == null) {
-            reloadCMPConfiguration();
+
+    public CmpConfiguration getCmpConfiguration() {
+        if (cmpconfiguration == null) {
+            reloadCmpConfiguration();
         }
-        return cmpconfiguration;
+        //Clear CMP config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
+       return clearCmpConfigurationFromUnauthorizedAliases(cmpconfiguration);
     }
-    
-    public CmpConfiguration getCmpConfigForEdit(String alias) throws Exception {
-        if(cmpConfigForEdit != null) {
+
+    public CmpConfiguration getCmpConfigForEdit(String alias) {
+        if (cmpConfigForEdit != null) {
             return cmpConfigForEdit;
         }
 
-        reloadCMPConfiguration();
+        reloadCmpConfiguration();
         cmpConfigForEdit = new CmpConfiguration();
         cmpConfigForEdit.setAliasList(new LinkedHashSet<String>());
         cmpConfigForEdit.addAlias(alias);
-        Iterator<String> itr = CmpConfiguration.getAllAliasKeys(alias).iterator();
-        while(itr.hasNext()) {
-            String key = itr.next();
+        for(String key : CmpConfiguration.getAllAliasKeys(alias)) {
             String value = cmpconfiguration.getValue(key, alias);
             cmpConfigForEdit.setValue(key, value, alias);
         }
         return cmpConfigForEdit;
     }
     
-    public void updateCmpConfigFromClone(String alias) {
-        if(cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
-            Iterator<String> itr = CmpConfiguration.getAllAliasKeys(alias).iterator();
-            while(itr.hasNext()) {
-                String key = itr.next();
+    /**
+     * 
+     * 
+     * 
+     * Note that this method modifies the parameter, which is has to due to the design of UpgradableHashMap. 
+     * 
+     * @param cmpConfiguration the full CMP configuration
+     * @return the modified cmpConfiguration, same as the parameter. 
+     */
+    private CmpConfiguration clearCmpConfigurationFromUnauthorizedAliases(final CmpConfiguration cmpConfiguration) {
+        //Copy the configuration, because modifying parameters is nasty
+        CmpConfiguration returnValue = new CmpConfiguration(cmpConfiguration);
+        //Build a lookup map due to the fact that default CA is stored as a SubjectDNs 
+        Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
+        for(int caId : caSession.getAllCaIds()) {           
+            try {
+                CAInfo caInfo = caSession.getCAInfoInternal(caId);
+                subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+            } catch (CADoesntExistsException e) {
+                throw new IllegalStateException("Newly retrieved CA not found.", e);
+            }
+            
+        }
+        Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
+        //Exclude all aliases which refer to CAs that current admin doesn't have access to
+        aliasloop: for (String alias : new ArrayList<>(cmpConfiguration.getAliasList())) {
+            //Collect CA names
+            Set<String> caNames = new HashSet<>();
+            String defaultCaSubjectDn = cmpConfiguration.getCMPDefaultCA(alias);
+            if (!StringUtils.isEmpty(defaultCaSubjectDn)) {
+                caNames.add(subjectDnToCaNameMap.get(defaultCaSubjectDn));
+            }
+            if (cmpConfiguration.getRAMode(alias)) {
+                String authenticationCa = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, alias);
+                if (!StringUtils.isEmpty(authenticationCa)) {
+                    caNames.add(authenticationCa);
+                }
+                caNames.add(cmpconfiguration.getRACAName(alias));
+                String endEntityProfileName = cmpconfiguration.getRAEEProfile(alias);
+                try {
+                    if(!authorizedProfileIds.contains(endEntityProfileSession.getEndEntityProfileId(endEntityProfileName))) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("CMP alias " + alias + " hidden because admin lacks access to a CA used in end entity profile: " + endEntityProfileName);
+                        }
+                        returnValue.removeAlias(alias);
+                        //Profile was not in the authorized list, skip out on this alias. 
+                        continue aliasloop;
+                    }
+                } catch (EndEntityProfileNotFoundException e) {
+                    throw new IllegalStateException("Profile with name " + endEntityProfileName + " was not found in spite of being defined in a CMP RA alias.", e);
+                }
+                //Certificate Profiles are tested implicitly, since we can't choose any CP which isn't part of the EEP, and we can't choose the EEP if we don't have access to its CPs. 
+            }
+            TreeMap<String, Integer> caNameToIdMap = getInformationMemory().getAllCANames();
+            for (String caName : caNames) {
+                if (!caSession.authorizedToCANoLogging(administrator, caNameToIdMap.get(caName))) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CMP alias " + alias + " hidden because admin lacks access to CA rule: " + StandardRules.CAACCESS.resource()
+                                + caNameToIdMap.get(caName));
+                    }
+                    returnValue.removeAlias(alias);
+                    //Our work here is done, skip to the next alias. 
+                    continue aliasloop;
+                }
+            }
+        }
+
+        return returnValue;
+    }
+
+    public void updateCmpConfigFromClone(String alias) throws AuthorizationDeniedException {
+        if (cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
+            for(String key : CmpConfiguration.getAllAliasKeys(alias)) {
                 String value = cmpConfigForEdit.getValue(key, alias);
                 cmpconfiguration.setValue(key, value, alias);
             }
         }
+        saveCMPConfiguration(cmpconfiguration);
     }
-    
+
     public void clearCmpConfigClone() {
         cmpConfigForEdit = null;
     }
-    
+
     public void clearCMPCache() throws Exception {
         globalConfigurationSession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
-        reloadCMPConfiguration();
+        reloadCmpConfiguration();
     }
-    
+
     public Collection<String> getAuthorizedEEProfileNames(final String endentityAccessRule) {
         Map<String, Integer> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule);
         return eeps.keySet();
     }
-    
-    public Collection<String> getAvailableCAsOfEEProfile(String eep) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
-        if(StringUtils.equals(eep, "KeyId")) {
+
+    public Collection<String> getAvailableCAsOfEEProfile(String eep) throws NumberFormatException, CADoesntExistsException,
+            AuthorizationDeniedException {
+        if (StringUtils.equals(eep, "KeyId")) {
             return informationmemory.getAllCANames().keySet();
         }
-        
+
         EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
-        if(p == null) {
+        if (p == null) {
             return new HashSet<String>();
         }
-        
+
         ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
         Set<String> cas = new HashSet<String>();
         Iterator<String> itr = caids.iterator();
-        while(itr.hasNext()) {
+        while (itr.hasNext()) {
             String caid = itr.next();
-            if(caid.equals("1")) {
+            if (caid.equals("1")) {
                 return informationmemory.getAllCANames().keySet();
             }
             CA ca = caSession.getCA(administrator, Integer.parseInt(caid));
@@ -1039,49 +1110,47 @@ public class EjbcaWebBean implements Serializable {
         }
         return cas;
     }
-    
-    public Collection<String> getAvailableCertProfilessOfEEProfile(String eep) throws CADoesntExistsException, AuthorizationDeniedException {
-        if(StringUtils.equals(eep, "KeyId")) {
+
+    public Collection<String> getAvailableCertProfilessOfEEProfile(String eep) {
+        if (StringUtils.equals(eep, "KeyId")) {
             //return getAuthorizedCertProfileNames();
             Map<String, Integer> cps = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames();
             return cps.keySet();
         }
-        
+
         EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
-        if(p == null) {
+        if (p == null) {
             return new HashSet<String>();
         }
-        
+
         ArrayList<String> cpids = (ArrayList<String>) p.getAvailableCertificateProfileIds();
         Set<String> cps = new HashSet<String>();
-        Iterator<String> itr = cpids.iterator();
-        while(itr.hasNext()) {
-            String cpid = itr.next();
+        for(String cpid : cpids) {
             String cpname = certificateProfileSession.getCertificateProfileName(Integer.parseInt(cpid));
             cps.add(cpname);
         }
         return cps;
     }
-    
+
     //*************************************************
     //      AvailableExtendedKeyUsagesConfigration
     //*************************************************
-    
+
     public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() {
-        if(availableExtendedKeyUsagesConfig == null) {
+        if (availableExtendedKeyUsagesConfig == null) {
             reloadAvailableExtendedKeyUsagesConfiguration();
         }
         return availableExtendedKeyUsagesConfig;
     }
- 
+
     public void reloadAvailableExtendedKeyUsagesConfiguration() {
-        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) 
-                globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
+        availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         if (informationmemory != null) {
             informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
         }
     }
-    
+
     public void saveAvailableExtendedKeyUsagesConfiguration(AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
         availableExtendedKeyUsagesConfig = ekuConfig;
@@ -1091,45 +1160,46 @@ public class EjbcaWebBean implements Serializable {
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************
-    
+
     public AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfiguration() {
-        if(availableCustomCertExtensionsConfig == null) {
+        if (availableCustomCertExtensionsConfig == null) {
             reloadAvailableCustomCertExtensionsConfiguration();
         }
         return availableCustomCertExtensionsConfig;
     }
 
     public void reloadAvailableCustomCertExtensionsConfiguration() {
-        availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) 
-                globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         if (informationmemory != null) {
             informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
         }
     }
-    
-    public void saveAvailableCustomCertExtensionsConfiguration(AvailableCustomCertificateExtensionsConfiguration cceConfig) throws AuthorizationDeniedException {
+
+    public void saveAvailableCustomCertExtensionsConfiguration(AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, cceConfig);
         availableCustomCertExtensionsConfig = cceConfig;
         informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
-    
-    
+
     //*******************************
     //         Peer Connector
     //*******************************
-    
+
     private Boolean peerConnectorPresent = null;
+
     /** @return true if the PeerConnectors GUI implementation is present. */
     public boolean isPeerConnectorPresent() {
-        if (peerConnectorPresent==null) {
+        if (peerConnectorPresent == null) {
             try {
                 Class.forName("org.ejbca.ui.web.admin.peerconnector.PeerConnectorsMBean");
                 peerConnectorPresent = Boolean.TRUE;
-            } catch(ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 peerConnectorPresent = Boolean.FALSE;
             }
         }
         return peerConnectorPresent.booleanValue();
     }
-    
+
 }

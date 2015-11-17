@@ -28,7 +28,9 @@ org.cesecore.authorization.control.StandardRules
 "%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); %>
+<%
+    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+%>
 <html>
 <f:view>
 <head>
@@ -45,7 +47,7 @@ org.cesecore.authorization.control.StandardRules
 	<h:form id="currentAliasForm">
 	<h:panelGrid columns="2">
 		<h:outputLink value="adminweb/sysconfig/scepconfiguration.jsf"><h:outputText value="#{web.text.SCEP_ALIAS_NAV_BACK}"/></h:outputLink>
-		<h:commandButton action="#{scepConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		<h:commandButton action="#{scepConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!scepConfigMBean.currentAliasEditMode && scepConfigMBean.allowedToEdit}"/>
 		
 		<h:panelGroup id="placeholder1" />
 		<h:panelGroup id="placeholder2" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
