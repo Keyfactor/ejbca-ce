@@ -131,14 +131,36 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
      */
     @Transient
     public boolean hasAccessToRule(final String rule) {
+        return hasAccessToRule(rule, false);
+    }
+    
+    /**
+     * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
+     * @param rule the rule to check
+     * @param requireRecursive if rule has to be recursive (for an an exact match)
+     * @return true if this Role has access to the given rule. 
+     */
+    @Transient
+    public boolean hasAccessToRule(final String rule, boolean requireRecursive) {
         if(!rule.startsWith("/")) {
             throw new IllegalArgumentException("Rule must start with a \"/\"");
         }
-        //return recurseRules(rule, accessRules.values(), false);
         boolean result = false;
         for(AccessRuleData accessRuleData : accessRules.values()) {
             String currentRule = accessRuleData.getAccessRuleName();
-            if(rule.startsWith(currentRule)) {
+            if(rule.equals(currentRule)) {
+                if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
+                    if(requireRecursive) {
+                        result = accessRuleData.getRecursiveBool();
+                    } else {
+                        result = true;
+                    }
+                    break;
+                } else {
+                    result = false;
+                    break;
+                }
+            } else if(rule.startsWith(currentRule)) {
                 if(rule.length() > currentRule.length()) {
                     if(currentRule.length() > 1 && rule.charAt(currentRule.length()) != '/') {
                         // Not a parent rule but just one with a similar name, compare /foo/bar to /foo_bar,

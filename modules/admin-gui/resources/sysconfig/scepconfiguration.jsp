@@ -26,7 +26,9 @@ org.ejbca.core.model.authorization.AccessRulesConstants,
 org.cesecore.authorization.control.StandardRules
 "%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); %>
+<%
+    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+%>
 <html>
 <f:view>
 <head>
@@ -50,7 +52,8 @@ org.cesecore.authorization.control.StandardRules
 </head>
 <body>
 	<h1>
-		<h:outputText value="#{web.text.SCEP_MANAGEALIASES}"/>
+		<h:outputText value="#{web.text.SCEP_MANAGEALIASES}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		<h:outputText value="#{web.text.SCEP_VIEW_ALIASES}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>		
 		<%= ejbcawebbean.getHelpReference("/adminguide.html#Scep") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
@@ -84,13 +87,13 @@ org.cesecore.authorization.control.StandardRules
 		
 			<h:column>
 				<f:facet name="header"><h:outputText value="#{web.text.SCEP_ACTION}"/></f:facet>
-				<h:commandLink action="#{scepConfigMBean.renameAlias}"
+				<h:commandLink action="#{scepConfigMBean.renameAlias}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
 					onclick="return getInputToField('aliases:newAlias','#{web.text.SCEP_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
 					styleClass="commandLink" title="#{web.text.SCEP_RENAME_ALIAS}">
 					<h:outputText value="#{web.text.RENAME}"/>
 				</h:commandLink>
 				<h:commandLink action="#{scepConfigMBean.deleteAlias}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
-					styleClass="commandLink" title="#{web.text.SCEP_DELETE_ALIAS}">
+					styleClass="commandLink" title="#{web.text.SCEP_DELETE_ALIAS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
 					<h:outputText value="#{web.text.DELETE}"/>
 				</h:commandLink>
 			</h:column>
@@ -98,7 +101,8 @@ org.cesecore.authorization.control.StandardRules
 		</h:dataTable>
 		<br/>
 		<h:commandLink action="#{scepConfigMBean.addAlias}" styleClass="commandLink" title="#{web.text.SCEP_ADD_ALIAS}"
-			onclick="return getInputToField('aliases:newAlias','#{web.text.SCEP_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}');" >
+			onclick="return getInputToField('aliases:newAlias','#{web.text.SCEP_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}');" 
+			rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
 			<h:outputText value="#{web.text.ADD}"/>
 		</h:commandLink>
  

@@ -28,7 +28,9 @@ org.cesecore.authorization.control.StandardRules
 "%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource()); %>
+<%
+    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
+%>
 <html>
 <f:view>
 <head>
@@ -52,26 +54,29 @@ org.cesecore.authorization.control.StandardRules
     		<h:outputText id="currentCEId" value="#{customCertExtensionMBean.currentExtensionGUIInfo.id}" />
 		
 			<h:outputLabel for="currentCEOid" value="#{web.text.OID}"/>
-    		<h:inputText id="currentCEOid" value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" size="25" title="#{web.text.FORMAT_OID}"/>
+    		<h:inputText id="currentCEOid" value="#{customCertExtensionMBean.currentExtensionGUIInfo.oid}" size="25" title="#{web.text.FORMAT_OID}"
+    			disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}"/>
 		
 			<h:outputLabel for="currentCEDisplayName" value="#{web.text.LABEL}"/>
-    		<h:inputText id="currentCEDisplayName" value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" size="35" title="#{web.text.FORMAT_STRING}">
+    		<h:inputText id="currentCEDisplayName" value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" size="35" title="#{web.text.FORMAT_STRING}"
+    			disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}">
     			<f:validator validatorId="legalCharsValidator"/>
     		</h:inputText>
 
 			<h:outputLabel for="currentCustomExtension" value="#{web.text.CUSTOMCERTEXTENSION_CLASS}"/>
 			
 			<h:selectOneMenu  id="currentCustomExtension" value="#{customCertExtensionMBean.currentExtensionGUIInfo.classPath}" title="#{web.text.FORMAT_CLASSPATH}"
-				 onchange="document.getElementById('currentCustomCertExtensionForm:updateButton').click();" valueChangeListener="#{customCertExtensionMBean.updateExtension}">
+				 onchange="document.getElementById('currentCustomCertExtensionForm:updateButton').click();" valueChangeListener="#{customCertExtensionMBean.updateExtension}"
+				 disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}">
 				<f:selectItems value="#{customCertExtensionMBean.availableCustomCertificateExtensions}"/>
 			</h:selectOneMenu>
-			<h:commandButton id="updateButton" action="#{customCertExtensionMBean.update}" value="#{web.text.UPDATE}"/>			
+			<h:commandButton id="updateButton" action="#{customCertExtensionMBean.update}" value="#{web.text.UPDATE}" disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}"/>			
 			<script>document.getElementById('currentCustomCertExtensionForm:updateButton').style.display = 'none'</script>
 					
 			<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}"/>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"/>
-				<h:outputLabel for="currentCECritical" value="#{web.text.CRITICAL}" />
+				<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"
+					disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}"/>
 			</h:panelGroup>
 		</h:panelGrid>
 		<h2><h:outputText value="#{web.text.PROPERTIES}" /></h2>
@@ -83,14 +88,14 @@ org.cesecore.authorization.control.StandardRules
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.VALUE}"/></f:facet>
 				<h:panelGroup>
-					<h:inputText id="currentPropertyValue" value="#{prop.value}" size="35" rendered="#{prop.possibleValuesCount == 0}" />
-					<h:selectOneMenu rendered="#{prop.possibleValuesCount > 0}" value="#{prop.value}">
+					<h:inputText id="currentPropertyValue" value="#{prop.value}" size="35" rendered="#{prop.possibleValuesCount == 0}" disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}" />
+					<h:selectOneMenu rendered="#{prop.possibleValuesCount > 0}" value="#{prop.value}" disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}">
 						<f:selectItems value="#{prop.possibleValues}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>			
 			</h:column>			
 		</h:dataTable>
-	<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.SAVE}" />
+	<h:commandButton action="#{customCertExtensionMBean.saveCurrentExtension}" value="#{web.text.SAVE}" rendered="#{customCertExtensionMBean.allowedToEditCustomCertificateExtension}" />
 	</h:form>
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>

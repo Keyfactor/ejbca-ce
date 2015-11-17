@@ -36,12 +36,14 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class CmpConfiguration extends ConfigurationBase implements Serializable {
 
+    private static final Logger log = Logger.getLogger(CmpConfiguration.class);
+    private static final long serialVersionUID = -2051789798029184421L;
+    
     // Constants: Authentication modules
     public static final String AUTHMODULE_REG_TOKEN_PWD         = "RegTokenPwd";
     public static final String AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
     public static final String AUTHMODULE_HMAC                  = "HMAC";
     public static final String AUTHMODULE_ENDENTITY_CERTIFICATE = "EndEntityCertificate";
-
     
     // Constants: Configuration keys
     public static final String CONFIG_DEFAULTCA               = "defaultca";
@@ -73,18 +75,10 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
                                                         CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY);
-    
-    
+       
     private final String ALIAS_LIST = "aliaslist";
     public static final String CMP_CONFIGURATION_ID = "1";
 
-    
-    
-    private static final long serialVersionUID = -2051789798029184421L;
-
-    private static final Logger log = Logger.getLogger(CmpConfiguration.class);
-    
-    
     // Default Values
     public static final float LATEST_VERSION = 3f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
@@ -127,6 +121,21 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         LinkedHashMap<Object, Object> d = (LinkedHashMap<Object, Object>) dataobj;
         data = d;
     }
+    
+    /**
+     * Copy constructor for {@link CmpConfiguration}
+     */
+    public CmpConfiguration(CmpConfiguration cmpConfiguration) {
+        super();
+        setAliasList(new LinkedHashSet<String>());
+        for(String alias : cmpConfiguration.getAliasList()) {
+            addAlias(alias);
+            for(String key : getAllAliasKeys(alias)) {
+                String value = cmpConfiguration.getValue(key, alias);
+                setValue(key, value, alias);
+            }
+        }
+      }
     
     
     /** Initializes a new cmp configuration with default values. */
@@ -205,7 +214,14 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     
     public String getResponseProtection(String alias) {
         String key = alias + "." + CONFIG_RESPONSEPROTECTION;
-        return getValue(key, alias);
+        String result = getValue(key, alias);
+        if(result == null) {
+            setResponseProtection(alias, DEFAULT_RESPONSE_PROTECTION);
+            return DEFAULT_RESPONSE_PROTECTION;
+        } else {
+            return result;
+        }
+        
     }
     public void setResponseProtection(String alias, String protection) {
         String key = alias + "." + CONFIG_RESPONSEPROTECTION;
@@ -537,9 +553,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             log.error("CMP alias '" + alias + "' does not exist");
         }
     }
-    
-    
-    
    
     public Collection<String> getCmpResponseProtectionList(boolean ramode) {
         ArrayList<String> pl = new ArrayList<String>();
@@ -612,10 +625,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             return;
         }
         
-        Set<String> removeKeys = getAllAliasKeys(alias);
-        Iterator<String> itr = removeKeys.iterator();
-        while(itr.hasNext()) {
-            String key = itr.next();
+        for(String key : getAllAliasKeys(alias)) {
             data.remove(key);
         }
         aliases.remove(alias);

@@ -73,7 +73,6 @@ import org.junit.Test;
 /**
  * Tests the unid-fnr plugin. Read the assert printout {@link #test01()} to understand how to set things up for the test.
  * 
- * @author primelars
  * @version $Id$
  */
 public class CmpRAUnidTest extends CmpTestCase {

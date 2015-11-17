@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -267,12 +268,17 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return currentAliasEditMode;
     }
 
+    public boolean isAllowedToEdit() {
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+    
     public void setCurrentAliasEditMode(boolean currentAliasEditMode) {
-        this.currentAliasEditMode = currentAliasEditMode;
+        this.currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
     }
 
     public void toggleCurrentAliasEditMode() {
         currentAliasEditMode ^= true;
+        currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
     }
 
     /** Build a list sorted by name from the existing SCEP configuration aliases */
