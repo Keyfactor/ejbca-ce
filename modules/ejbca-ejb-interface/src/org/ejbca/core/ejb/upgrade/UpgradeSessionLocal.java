@@ -67,4 +67,6 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     void migrateDatabase624() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase640() throws UpgradeFailedException;	
+    /** For internal user from UpgradeSessionBean only! */
+    void migrateDatabase650() throws UpgradeFailedException;    
 }

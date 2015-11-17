@@ -104,7 +104,9 @@ import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
+import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
@@ -324,6 +326,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("6.4");
+        }
+        if (isLesserThan(oldVersion, "6.5")) {
+            try {
+                upgradeSession.migrateDatabase650();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.5");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -737,17 +747,17 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
             final Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>(rulemap.values());
             for (AccessRuleData rule : rules) {
-                if (StringUtils.equals(StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), rule.getAccessRuleName()) && 
+                if (StringUtils.equals(StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), rule.getAccessRuleName()) && 
                         rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
                     // Now we add a new rule
                     final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
-                    final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource(), AccessRuleState.RULE_ACCEPT, false);
-                    final AccessRuleData editCustomCertExtensionsRule = new AccessRuleData(role.getRoleName(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(), AccessRuleState.RULE_ACCEPT, false);
+                    final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.EKUCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
+                    final AccessRuleData editCustomCertExtensionsRule = new AccessRuleData(role.getRoleName(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
                     newrules.add(editAvailableEKURule);
                     newrules.add(editCustomCertExtensionsRule);
                     try {
                         addAccessRulesToRole(role, newrules);
-                        log.info("Added rule '" + editAvailableEKURule.toString() + "' to role '"+role.getRoleName()+"' since the role contained the '"+StandardRules.REGULAR_EDITSYSTEMCONFIGURATION+"' rule.");
+                        log.info("Added rule '" + editAvailableEKURule.toString() + "' to role '"+role.getRoleName()+"' since the role contained the '"+StandardRules.SYSTEMCONFIGURATION_EDIT+"' rule.");
                     } catch (Exception e) {
                         log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
                     }                
@@ -812,7 +822,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails. 
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private void addReadOnlyRules() throws UpgradeFailedException {
+    private void addReadOnlyRules640() throws UpgradeFailedException {
         try {
             // Any roles that had access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive) 
             // should be given access to /ca_functionality/view_ca
@@ -885,6 +895,84 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
         }
     }
+    
+    /**
+     * Adds the access rules defined in https://jira.primekey.se/browse/ECA-4463
+     * 
+     * These are:   View rules for system configuration, EKU config and CCE config 
+     * 
+     * Any roles which matched the previous auditor role, or which had edit access to the above will be given view access. 
+     * @throws UpgradeFailedException 
+     * 
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    private void addReadOnlyRules650() throws UpgradeFailedException {
+        for (RoleData role : roleAccessSession.getAllRoles()) {
+            //Skip if superadmin 
+            if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
+                continue;
+            }
+            //Find roles which correspond to the old Auditor
+            Collection<AccessRuleTemplate> newRulesFor650 = new ArrayList<AccessRuleTemplate>();
+            newRulesFor650.add(new AccessRuleTemplate(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
+            newRulesFor650.add(new AccessRuleTemplate(StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
+            newRulesFor650.add(new AccessRuleTemplate(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
+            //If role is the old auditor from 6.4.0
+            String rolename = role.getRoleName();
+            try {            
+                if (matches640Auditor(role)) {
+                    List<AccessRuleData> newAccessRules = new ArrayList<AccessRuleData>();
+                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
+                            false));
+                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
+                            false));
+                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
+                            false));
+                    roleMgmtSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
+                } else {
+                    List<AccessRuleData> newAccessRules = new ArrayList<AccessRuleData>();
+                    //Not an Auditor, but there may be other cases where we should grant access. 
+                    if (role.hasAccessToRule(StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
+                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
+                                AccessRuleState.RULE_ACCEPT, false));
+                    }
+                    if (role.hasAccessToRule(StandardRules.EKUCONFIGURATION_EDIT.resource())) {
+                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
+                                false));
+                    }
+                    if (role.hasAccessToRule(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource())) {
+                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
+                                AccessRuleState.RULE_ACCEPT, false));
+                    }
+                    roleMgmtSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
+                }           
+            } catch (RoleNotFoundException e) {
+                throw new UpgradeFailedException("Newly accessed role was not available", e);
+            } catch (AuthorizationDeniedException e) {
+                throw new UpgradeFailedException("Internal admin was denied access.", e);
+            }
+        }
+    }
+    
+    private boolean matches640Auditor(RoleData role) {
+        // We'll tolerate that the role has some external rules added to it
+        // We won't use the method in defaultRoles, because it presumes knowledge of external rules. 
+        //So, simply verify that all rules but the new ones are in the selected role. 
+        Set<String> ignoreRules = new HashSet<String>(Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.EKUCONFIGURATION_VIEW.resource(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource()));
+        for (AccessRuleTemplate auditorRule : DefaultRoles.AUDITOR.getRuleSet()) {
+            if (!ignoreRules.contains(auditorRule.getAccessRuleName()) && !role.hasAccessToRule(auditorRule.getAccessRuleName())) {
+                return false;
+            }
+        }
+        for(String ignoreRule : ignoreRules) {
+            if(role.hasAccessToRule(ignoreRule)) {
+                //We're already a 6.5.0 auditor
+                return false;
+            }
+        }
+        return true;
+    }
+
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private RoleData addAccessRulesToRole(final RoleData role, final Collection<AccessRuleData> accessRules) throws RoleNotFoundException { 
@@ -1031,8 +1119,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         addEKUAndCustomCertExtensionsAccessRulestoRoles();  
         importExtendedKeyUsagesFromFile();
         // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
-        addReadOnlyRules();
+        addReadOnlyRules640();
         log.error("(This is not an error) Completed upgrade procedure to 6.4.0");
+    }
+    
+    /**
+     * EJBCA 6.5.0:
+     * 
+     * 1.   Adds view rules to System Configuration, EKU Configuration and Certificate Extension Configuration. Any roles with edit rights to those pages, or which match the Auditor role
+     *      from 6.4.0 will be automatically upgraded. 
+     * 
+     * @throws UpgradeFailedException if upgrade fails (rolls back)
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase650() throws UpgradeFailedException {
+        addReadOnlyRules650();
+        log.error("(This is not an error) Completed upgrade procedure to 6.5.0");
     }
     
     /**

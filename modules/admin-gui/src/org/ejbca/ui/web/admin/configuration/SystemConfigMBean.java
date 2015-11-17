@@ -50,6 +50,14 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+/**
+ * 
+ * Backing bean for the various system configuration pages. 
+ * 
+ * @version $Id$
+ *
+ */
+
 public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -6653610614851741905L;
@@ -246,6 +254,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private int currentCTLogTimeout;
     private UploadedFile currentCTLogPublicKeyFile = null;
     private boolean excludeActiveCryptoTokensFromClearCaches = true;
+    private boolean customCertificateExtensionViewMode = false;
     
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
@@ -285,14 +294,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public String getSelectedTab() {
         final String tabHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("tab");
         // First, check if the user has requested a valid tab
-        if (tabHttpParam != null && getAvailableTabs().contains(tabHttpParam)) {
+        List<String> availableTabs = getAvailableTabs();
+        if (tabHttpParam != null && availableTabs.contains(tabHttpParam)) {
             // The requested tab is an existing tab. Flush caches so we reload the page content
             flushCache();
             selectedTab = tabHttpParam;
         }
         if (selectedTab == null) {
             // If no tab was requested, we use the first available tab as default
-            selectedTab = getAvailableTabs().get(0);
+            selectedTab = availableTabs.get(0);
         }
         return selectedTab;
     }
@@ -854,7 +864,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public String actionEdit() {
         selectCurrentRowData();
+        customCertificateExtensionViewMode = false;
         return "edit";   // Outcome is defined in faces-config.xml
+    }
+    
+    public String actionView() {
+        selectCurrentRowData();
+        customCertificateExtensionViewMode = true;
+        return "view";   // Outcome is defined in faces-config.xml
+    }
+    
+    public boolean getCustomCertificateExtensionViewMode() {
+        return customCertificateExtensionViewMode;
     }
     
     private void selectCurrentRowData() {
@@ -898,9 +919,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     
+    /** @return true if admin may create new or modify System Configuration. */
+    public boolean isAllowedToEditSystemConfiguration() {
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+    
+    /** @return true if admin may create new or modify existing Extended Key Usages. */
+    public boolean isAllowedToEditExtendedKeyUsages() {
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_EDIT.resource());
+    }
+    
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
-    public boolean isAllowedToModify() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource());
+    public boolean isAllowedToEditCustomCertificateExtension() {
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource());
     }
     
     // ------------------------------------------------
@@ -966,17 +997,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public List<String> getAvailableTabs() {
         AccessControlSession accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
         final List<String> availableTabs = new ArrayList<String>();
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Administrator Preferences");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Extended Key Usages");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Certificate Transparency Logs");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Custom Certificate Extensions");
         }
         return availableTabs;

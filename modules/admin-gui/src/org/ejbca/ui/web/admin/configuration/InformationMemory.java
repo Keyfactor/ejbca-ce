@@ -166,7 +166,7 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     * Returns authorized end entity certificate profile names as a treemap of name (String) -> id (Integer)
+     * Returns authorized end entity  profile names as a treemap of name (String) -> id (Integer)
      */
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
         return this.caauthorization.getAuthorizedEndEntityCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());
@@ -220,19 +220,18 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     * Returns a CA names as a treemap of name (String) -> id (Integer). Also includes external CAs
-     * @throws AuthorizationDeniedException 
+     * Returns names of external, authorized CA's as a treemap of name (String) -> id (Integer). 
      * @throws CADoesntExistsException 
      */
-    public TreeMap<String, Integer> getExternalCAs() throws CADoesntExistsException, AuthorizationDeniedException {
+    public TreeMap<String, Integer> getExternalCAs() throws CADoesntExistsException {
         TreeMap<String, Integer> allcas = this.caauthorization.getAllCANames();
         TreeMap<String, Integer> externalcas = new TreeMap<String, Integer>();
-        Iterator<String> itr = allcas.keySet().iterator();
-        while(itr.hasNext()) {
-            String caname = (String) itr.next();
-            CA ca = casession.getCA(administrator, caname);
-            if (ca.getStatus() == CAConstants.CA_EXTERNAL) {
-                externalcas.put(caname, allcas.get(caname));
+        for (Integer caId : allcas.values()) {
+            if (casession.authorizedToCANoLogging(administrator, caId)) {
+                CAInfo ca = casession.getCAInfoInternal(caId);
+                if (ca.getStatus() == CAConstants.CA_EXTERNAL) {
+                    externalcas.put(ca.getName(), caId);
+                }
             }
         }
         return externalcas;
@@ -553,7 +552,7 @@ public class InformationMemory implements Serializable {
         authorizedaccessrules = null;
     }
     
-    public void cmpConfigurationEdited(CmpConfiguration cmpconfig) {
+    public void setCmpConfiguration(CmpConfiguration cmpconfig) {
         this.cmpconfiguration = cmpconfig;
     }
     

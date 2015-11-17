@@ -22,6 +22,7 @@ import java.util.Set;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -94,9 +95,9 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void addRole(String name) throws AuthorizationDeniedException, RoleExistsException {
         // Authorized to edit administrative privileges
-        if (!authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
+        if (!authorizationsession.isAuthorized(administrator, StandardRules.EDITROLES.resource())) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                    "/system_functionality/edit_administrator_privileges", null);
+                    StandardRules.EDITROLES.resource(), null);
             throw new AuthorizationDeniedException(msg);
         }
         roleManagementSession.create(administrator, name);

@@ -26,6 +26,7 @@
 
 	static final String ACTION                              		= "action";
 	static final String ACTION_EDIT_ALIAS                  		= "actioneditcmpalias";
+	static final String ACTION_VIEW_ALIAS                  		= "actionviewcmpalias";
 	static final String ACTION_EDIT_ALIASES						= "actioneditcmpaliases";
 
 	static final String TEXTFIELD_ALIAS                       	 	= "textfieldalias";
@@ -36,18 +37,19 @@
 	static final String TEXTFIELD_HMACPASSWORD						= "textfieldhmacpassword";
 	static final String TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH		= "textfieldnestedmessagetrustedcertificatespath";
 	
-	static final String BUTTON_ADD_ALIAS						 	= "buttonaliasadd";
+	static final String BUTTON_ADD_ALIAS						= "buttonaliasadd";
 	static final String BUTTON_DELETE_ALIAS					 	= "buttondeletealias";
-	static final String BUTTON_EDIT_ALIAS					 		= "buttoneditalias";
+	static final String BUTTON_EDIT_ALIAS					 	= "buttoneditalias";
+	static final String BUTTON_VIEW_ALIAS						= "buttonviewalias";
 	static final String BUTTON_RENAME_ALIAS					 	= "buttonaliasrename";
-	static final String BUTTON_CLONE_ALIAS						 	= "buttonaliasclone";
+	static final String BUTTON_CLONE_ALIAS						= "buttonaliasclone";
 	static final String BUTTON_SAVE							 	= "buttonsave";
-	static final String BUTTON_CANCEL							 	= "buttoncancel";
-	static final String BUTTON_RELOAD								= "buttonreload";
-	static final String BUTTON_ADDVENDORCA							= "buttonaddvendorca";
-	static final String BUTTON_REMOVEVENDORCA						= "buttonremovevendorca";
-	static final String BUTTON_ADD_NAMEGENPARAM_DN					= "buttonaddnamegenparamdn";
-	static final String BUTTON_REMOVE_NAMEGENPARAM_DN				= "buttonremovenamegenparamdn";
+	static final String BUTTON_CANCEL							= "buttoncancel";
+	static final String BUTTON_RELOAD							= "buttonreload";
+	static final String BUTTON_ADDVENDORCA						= "buttonaddvendorca";
+	static final String BUTTON_REMOVEVENDORCA					= "buttonremovevendorca";
+	static final String BUTTON_ADD_NAMEGENPARAM_DN				= "buttonaddnamegenparamdn";
+	static final String BUTTON_REMOVE_NAMEGENPARAM_DN			= "buttonremovenamegenparamdn";
 	
 	static final String RADIO_CMPMODE								= "radiocmpmode";
 	static final String RADIO_NAMEGENSCHEME						= "radionnamegenscheme";
@@ -91,9 +93,8 @@
 
   // Declare Language file.
 %>
-<% 
-
-  // Initialize environment
+<%
+    // Initialize environment
   String alias = null;
   String includefile = "cmpaliasespage.jspf"; 
 
@@ -104,16 +105,16 @@
   
   boolean ramode = false;
   boolean pbe = false;
+  boolean authorizedToEdit =  ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
 
-  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource()); 
-                                            cabean.initialize(ejbcawebbean); 
+  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource()); 
+                                    cabean.initialize(ejbcawebbean); 
   
   ejbcawebbean.clearCMPCache();
-  CmpConfiguration cmpconfig = ejbcawebbean.getCMPConfiguration();
+  CmpConfiguration cmpconfig = ejbcawebbean.getCmpConfiguration();
   CmpConfiguration cmpConfigClone = null;
 
   String THIS_FILENAME            = gc.getAdminWebPath() +  "/sysconfig/cmpconfiguration.jsp";
-
 %>
  
 <head>
@@ -130,11 +131,30 @@
  	RequestHelper.setDefaultCharacterEncoding(request);
 
   	if( request.getParameter(ACTION) != null){
-    		if( request.getParameter(ACTION).equals(ACTION_EDIT_ALIASES)){
+    		if( request.getParameter(ACTION).equals(ACTION_EDIT_ALIASES)){			
+    			ejbcawebbean.clearCmpConfigClone();    			
+    				if( request.getParameter(BUTTON_VIEW_ALIAS) != null){
+      					// Display  cmpaliaspage.jsp
+     					alias = request.getParameter(SELECT_ALIASES);
+     					if(alias != null){
+       							if(!alias.trim().equals("")){
+    	   								if(!cmpconfig.aliasExists(alias)) {
+    	   										cmpconfig.addAlias(alias);
+    	   								}
+    	   							   	cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
+           								includefile="cmpaliaspage.jspf"; 
+       							}
+     					}
+     					if(alias == null){   
+      							includefile="cmpaliasespage.jspf";     
+     					}
+  				}
     				
-    				ejbcawebbean.clearCmpConfigClone();
-    			
+    				if( request.getParameter(BUTTON_VIEW_ALIAS) != null){
+    				    authorizedToEdit = false;
+    				}
       				if( request.getParameter(BUTTON_EDIT_ALIAS) != null){
+      				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
           					// Display  cmpaliaspage.jsp
          					alias = request.getParameter(SELECT_ALIASES);
          					if(alias != null){
@@ -156,7 +176,7 @@
           					alias = request.getParameter(SELECT_ALIASES);
           					if(alias != null && (!alias.trim().equals("")) ){
               						cmpconfig.removeAlias(alias);
-                					ejbcawebbean.saveCMPConfiguration();
+                					ejbcawebbean.saveCMPConfiguration(cmpconfig);
                 					if(cmpconfig.aliasExists(alias)) {
                 						aliasDeletionFailed = true;
                 					}
@@ -173,7 +193,7 @@
       					    				triedrenametoexistingalias = true;
       					    		} else {
       					    				cmpconfig.renameAlias(oldalias, newalias);
-			      					    	ejbcawebbean.saveCMPConfiguration();
+			      					    	ejbcawebbean.saveCMPConfiguration(cmpconfig);
       					    		}
       					    }
       					    includefile="cmpaliasespage.jspf"; 
@@ -186,7 +206,7 @@
       					    			triedtoaddexistingalias = true;
       					    		} else {
       					    			cmpconfig.addAlias(alias);
-      					    			ejbcawebbean.saveCMPConfiguration();
+      					    			ejbcawebbean.saveCMPConfiguration(cmpconfig);
       					    		}
       					    }
       					    includefile="cmpaliasespage.jspf"; 
@@ -201,20 +221,16 @@
       					    					triedclonetoexistingalias = true;
       					    			} else {
       					        				cmpconfig.cloneAlias(oldalias, newalias);
-					      					    ejbcawebbean.saveCMPConfiguration();
+					      					    ejbcawebbean.saveCMPConfiguration(cmpconfig);
       					    			}
       					    }
       					    includefile="cmpaliasespage.jspf"; 
       				}
 
-    		} // if( request.getParameter(ACTION).equals(ACTION_EDIT_ALIASES))      				
+    		}      				
       				
-      				
-      			
-    
     		
     		if(request.getParameter(ACTION).equals(ACTION_EDIT_ALIAS)) {
-   			
     				alias = request.getParameter(HIDDEN_ALIAS);
     		       	if(alias != null) {
     		       		if(!alias.trim().equals("")) {
@@ -246,7 +262,7 @@
     		           		//response protection
     		    			value = request.getParameter(LIST_CMPRESPONSEPROTECTION);
     						cmpConfigClone.setResponseProtection(alias, value);
-    						if(value.equals("pbe")) {
+    						if(value != null && value.equals("pbe")) {
     								pbe = true;
     						} else {
     								pbe = false;
@@ -396,6 +412,7 @@
     			   			// ------------------- BUTTONS -------------------------
     			            
     			        	if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
+    		      				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     			        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
     			        					value = request.getParameter(LIST_VENDORCA);
     			           					String vendorcas = cmpConfigClone.getVendorCA(alias);
@@ -411,6 +428,7 @@
     			        	}
     			            
     			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
+    		      				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     			           			value = request.getParameter(LIST_VENDORCA);
     			           			String vendorcas = cmpConfigClone.getVendorCA(alias);
     			           			if(StringUtils.contains(vendorcas, value)) {
@@ -477,7 +495,6 @@
     				                	throw new ParameterException(ejbcawebbean.getText("CMPERROREEPNOTFOUND"));
     				                }
     				        		ejbcawebbean.updateCmpConfigFromClone(alias);
-    				           		ejbcawebbean.saveCMPConfiguration();
     			        	   		includefile="cmpaliasespage.jspf";
     			        	}
     				        

@@ -38,6 +38,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for managing the configuration of a single CustomCertificateExtension
+ * 
+ * 
  * @version $Id$
  *
  */
@@ -313,14 +315,9 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         currentExtensionProperties = null;
     }
     
-
-    
-
-    // ----------------------------------------------------------------
-    
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
-    public boolean isAllowedToModify() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource());
+    public boolean isAllowedToEditCustomCertificateExtension() {
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()) && !systemConfigMBean.getCustomCertificateExtensionViewMode();
     }
    
 }

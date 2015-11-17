@@ -79,8 +79,6 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_DELETEENDENTITY                    = REGULAR_RAFUNCTIONALITY+DELETE_END_ENTITY; // Unused, but exists as "raw" string
     public static final String REGULAR_VIEWENDENTITYHISTORY               = REGULAR_RAFUNCTIONALITY+VIEW_END_ENTITY_HISTORY; // Unused, but exists as "raw" string
 
-    public static final String REGULAR_SYSTEMFUNCTIONALITY                = StandardRules.SYSTEMFUNCTIONALITY.resource(); // Unused but the "raw" string /system_functionality is present in admin GUI pages
-
     public static final String REGULAR_VIEWHARDTOKENS                     = REGULAR_RAFUNCTIONALITY + HARDTOKEN_RIGHTS;
     public static final String REGULAR_VIEWPUKS                           = REGULAR_RAFUNCTIONALITY + HARDTOKEN_PUKDATA_RIGHTS;
     public static final String REGULAR_KEYRECOVERY                        = REGULAR_RAFUNCTIONALITY + KEYRECOVERY_RIGHTS;
@@ -91,10 +89,10 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_PEERCONNECTOR_MANAGE               = "/peer/manage"; // org.ejbca.peerconnector.PeerAccessRules.MANAGE
     
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY           = "/hardtoken_functionality";
-    public static final String HARDTOKEN_EDITHARDTOKENISSUERS             = "/hardtoken_functionality/edit_hardtoken_issuers";
-    public static final String HARDTOKEN_EDITHARDTOKENPROFILES            = "/hardtoken_functionality/edit_hardtoken_profiles";
-    public static final String HARDTOKEN_ISSUEHARDTOKENS                  = "/hardtoken_functionality/issue_hardtokens";
-    public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS     = "/hardtoken_functionality/issue_hardtoken_administrators";
+    public static final String HARDTOKEN_EDITHARDTOKENISSUERS             = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/edit_hardtoken_issuers";
+    public static final String HARDTOKEN_EDITHARDTOKENPROFILES            = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/edit_hardtoken_profiles";
+    public static final String HARDTOKEN_ISSUEHARDTOKENS                  = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/issue_hardtokens";
+    public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS     = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/issue_hardtoken_administrators";
     
     // Rules for editing/viewing Service workers
     public static final String SERVICES_BASE                              = "/services";
@@ -127,13 +125,17 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_REVOKEENDENTITY,
                                                            REGULAR_VIEWENDENTITYHISTORY,
                                                            REGULAR_APPROVEENDENTITY,
-                                                           REGULAR_SYSTEMFUNCTIONALITY,
+                                                           StandardRules.SYSTEMFUNCTIONALITY.resource(),
                                                            SERVICES_EDIT,
                                                            SERVICES_VIEW,
                                                            StandardRules.EDITROLES.resource(),
-                                                           StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(),
-                                                           StandardRules.REGULAR_EDITAVAILABLEEKU.resource(),
-                                                           StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource()};
+                                                           StandardRules.SYSTEMCONFIGURATION_EDIT.resource(),
+                                                           StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
+                                                           StandardRules.EKUCONFIGURATION_EDIT.resource(),
+                                                           StandardRules.EKUCONFIGURATION_VIEW.resource(),
+                                                           StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(),
+                                                           StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource()
+                                                           };
                                                        
     // Role Access Rules
     public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()};

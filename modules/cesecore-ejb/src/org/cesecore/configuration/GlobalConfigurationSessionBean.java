@@ -90,20 +90,20 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException {
-        if (StringUtils.equals(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID, configID) && !accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.REGULAR_EDITAVAILABLEEKU.resource(), null);
+        if (StringUtils.equals(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID, configID) && !accessSession.isAuthorized(admin, StandardRules.EKUCONFIGURATION_EDIT.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.EKUCONFIGURATION_EDIT.resource(), null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
             throw new AuthorizationDeniedException(msg);
-        } else if (StringUtils.equals(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID, configID) && !accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource(), null);
+        } else if (StringUtils.equals(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID, configID) && !accessSession.isAuthorized(admin, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(), null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
             throw new AuthorizationDeniedException(msg);            
-        } else if (!accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource(), null);
+        } else if (!accessSession.isAuthorized(admin, StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
@@ -210,18 +210,18 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     
     private void checkAuthorization(final AuthenticationToken admin, final String configID) throws AuthorizationDeniedException {
         if(StringUtils.equals(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID, configID)) {
-            if(!this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLEEKU.resource())) {
+            if(!this.accessSession.isAuthorized(admin, StandardRules.EKUCONFIGURATION_EDIT.resource())) {
                 throw new AuthorizationDeniedException("Authorization was denied to user " + admin
-                        + " to resource " + StandardRules.REGULAR_EDITAVAILABLEEKU.resource() + ". Could not save configuration.");
+                        + " to resource " + StandardRules.EKUCONFIGURATION_EDIT.resource() + ". Could not save configuration.");
             }
         } else if(StringUtils.equals(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID, configID)) {
-            if(!this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource())) {
+            if(!this.accessSession.isAuthorized(admin, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource())) {
                 throw new AuthorizationDeniedException("Authorization was denied to user " + admin
-                        + " to resource " + StandardRules.REGULAR_EDITAVAILABLECUSTOMCERTEXTENSION.resource() + ". Could not save configuration.");
+                        + " to resource " + StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource() + ". Could not save configuration.");
             }
-        } else if(!this.accessSession.isAuthorized(admin, StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource())) {
+        } else if(!this.accessSession.isAuthorized(admin, StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
             throw new AuthorizationDeniedException("Authorization was denied to user " + admin
-                    + " to resource " + StandardRules.REGULAR_EDITSYSTEMCONFIGURATION.resource() + ". Could not save configuration.");
+                    + " to resource " + StandardRules.SYSTEMCONFIGURATION_EDIT.resource() + ". Could not save configuration.");
         }
     }
     
