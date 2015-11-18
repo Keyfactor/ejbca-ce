@@ -1054,7 +1054,7 @@ In practice DN order can be important as comparisons is often done using string 
 </p>
 <p> 
 The most common order is first-to-last (i.e. C,O,CN), but for historical reasons EJBCA uses last-to-first (CN,O,C). 
-Some applications do require first-to-last order however and therefore EJBCA gives you the choice (named as 'non LDAP DN order').
+Some applications do require first-to-last order however and therefore EJBCA gives you the choice (by unchecking 'LDAP DN order').
 There are two places in EJBCA where this can be configured:
 </p>
 <ul>
