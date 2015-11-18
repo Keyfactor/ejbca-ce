@@ -13,16 +13,19 @@
 
 package org.cesecore.keys.util;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -32,6 +35,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
@@ -47,6 +51,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X962Parameters;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
@@ -599,5 +604,39 @@ public class KeyToolsTest {
         log.trace("<testGenKeysDSTU4145AlgorithmSpec");
     }
 
-	
+    /**
+     * Tests {@link KeyTools#getBytesFromPEM} and {@link KeyTools#getBytesFromPublicKeyFile}
+     */
+    @Test
+    public void testGetBytes() throws Exception {
+        final Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        
+        final byte[] der = cert.getPublicKey().getEncoded();
+        final byte[] pem = CertTools.getPEMFromPublicKey(der);
+        
+        // Test getting DER from PEM
+        final String pemString = new String(pem, Charset.forName("ASCII"));
+        byte[] result = KeyTools.getBytesFromPEM(pemString, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+        assertArrayEquals("getBytesFromPEM did not work.", der, result);
+        
+        final String badPem = pemString.substring(0, pemString.length()-10);
+        result = KeyTools.getBytesFromPEM(badPem, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+        assertNull("Result should be null on corrupt data", result);
+        
+        // Test getBytesFromPublicKeyFile
+        result = KeyTools.getBytesFromPublicKeyFile(der);
+        assertArrayEquals("getBytesFromPublicKeyFile on a DER file should be a no-op.", der, result);
+        
+        result = KeyTools.getBytesFromPublicKeyFile(pem);
+        assertArrayEquals("getBytesFromPublicKeyFile on a PEM should also work.", der, result);
+        
+        final byte[] invalid = Arrays.copyOf(der, der.length-1);
+        try {
+            result = KeyTools.getBytesFromPublicKeyFile(invalid);
+            fail("getBytesFromPublicKeyFile on corrupt data should throw");
+        } catch (CertificateParsingException e) {
+            // NOPMD expected
+        }
+    }
+    
 }
