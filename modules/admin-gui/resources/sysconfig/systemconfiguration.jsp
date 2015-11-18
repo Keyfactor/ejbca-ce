@@ -230,7 +230,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
 				<h:outputLabel for="header_autoenrollment" value="#{web.text.AUTOENROLLMENT}" style="font-weight: bold; font-size:1.2em;"/>
-				<%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+				<%= ejbcawebbean.getExternalHelpReference("https://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
 			</h:panelGroup>
 			<h:panelGroup id="header_autoenrollment"/>
 			

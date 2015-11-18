@@ -435,7 +435,7 @@ You must not do an 'ant install' on the new machine just copy things:
 3. Unpack the new EJBCA files and create/edit ejbca.properties
 4. Customize any EJBCA pages for your organization. Add any required security disclaimers.
    Static pages go into src/publicweb/root. For example, my PKI help pages which are posted on
-   the EJBCA site. (http://www.ejbca.org/howto.html)
+   the EJBCA site. (https://www.ejbca.org/guides.html#SensorNet%20PKI)
 5. Do NOT do ant install - this would make a new admin CA
 6. Do 'ant deploywithjbossservices' (as user jboss) on the new machine with JBoss off.
    If you just do 'ant deploy' the CRLs will not update.
