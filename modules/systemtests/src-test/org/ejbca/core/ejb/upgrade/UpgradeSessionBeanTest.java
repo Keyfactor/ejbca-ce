@@ -170,7 +170,7 @@ public class UpgradeSessionBeanTest {
            
            // Verify that sysConfigRole's access rules contained rules to edit available extended key usages and custom certificate extensions
            RoleData upgradedSysConfigRole = roleAccessSession.findRole(sysConfigRoleName);
-           assertEquals(3, upgradedSysConfigRole.getAccessRules().size());
+           assertEquals(6, upgradedSysConfigRole.getAccessRules().size());
            assertTrue(
                    "Role was not upgraded with rule " + StandardRules.SYSTEMCONFIGURATION_EDIT.resource(),
                    upgradedSysConfigRole.getAccessRules().containsValue(
