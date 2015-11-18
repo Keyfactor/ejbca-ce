@@ -28,7 +28,7 @@
 	<p>
 	<ul>
 	<li>Location: Stockholm, Sweden</li>
-    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Installed by: <a href="https://www.primekey.se/">PrimeKey Solutions AB</a></li>
     <li>Trade of Industry: IT-Security</li>
     <li>Solution 1: Internal CA. Operational since 2002. Using EJBCA to authenticate users for access to internal web services and email both from internal network and from internet. Issues both smart cards (using PrimeCard) and soft tokens to users.</li>
     <li>Count of Users: Less than 100</li>
@@ -67,7 +67,7 @@
 	<ul>
 	<li>Organization: <a href="http://www.kgk.se/">KG Knutsson AB</a></li>
 	<li>Location: Sweden</li>
-    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Installed by: <a href="https://www.primekey.se/">PrimeKey Solutions AB</a></li>
     <li>Trade of Industry: Trade and Commerce</li>
     <li>Solution: Pilot installation. Operational since dec 2004. Using EJBCA for issuing digital certificates. In combination with smart cards. Advanced setup with smart cards used for login to Active Directory infrastructure, browsers and email clients. Special use is key backup and recovery.</li>
     <li>Count of Users: Up to 1000</li>
@@ -79,7 +79,7 @@
 	<p>
 	<ul>
 	<li>Location: Sweden</li>
-    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Installed by: <a href="https://www.primekey.se/">PrimeKey Solutions AB</a></li>
     <li>Trade of Industry: Public Sector</li>
     <li>Solution 1: Pilot installation. Operational since 2005. Using EJBCA for issuing certificates for VPN purposes.</li>
     <li>Solution 2: Production installation. Operational since 2005. Using EJBCA for issuing certificates for Microsoft Logon Certificates.</li>
@@ -139,7 +139,7 @@
 	<p>
 	<ul>
 	<li>Location: Sweden</li>
-    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Installed by: <a href="https://www.primekey.se/">PrimeKey Solutions AB</a></li>
     <li>Trade of Industry: Public Sector</li>
     <li>Solution: Operational since feb 2003. Uses smart cards issued to employees. Advanced setup with smart cards used for login to Active Directory infrastructure, browsers and email clients. Special use is key backup and recovery.</li>
     <li>Count of Users: Up to 1000</li>
