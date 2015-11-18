@@ -1256,6 +1256,14 @@ public final class KeyTools {
         }
     }
     
+    /**
+     * Extracts the binary DER data from a public key file. The file may be either in PEM format
+     * or in DER format. In the latter case, the file contents is returned as-is.
+     *  
+     * @param file Data of a PEM or DER file.
+     * @return DER encoded public key.
+     * @throws CertificateParsingException If the data isn't a public key in either PEM or DER format.
+     */
     public static byte[] getBytesFromPublicKeyFile(byte[] file) throws CertificateParsingException {
         String fileText = Charset.forName("ASCII").decode(java.nio.ByteBuffer.wrap(file)).toString();
         byte[] asn1bytes = getBytesFromPEM(fileText, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
