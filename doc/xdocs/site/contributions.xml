@@ -27,7 +27,7 @@
     <p>
     You can donate to EJBCA in a number of ways:
     <ul>
-    <li>By purchasing an Enterprise Support contract. We have ready-made support programs for you. Contact the project admins at <a href="contact.html">contact &amp; support</a>, or see <a href="http://www.primekey.se/">www.primekey.se</a>.</li>
+    <li>By purchasing an Enterprise Support contract. We have ready-made support programs for you. Contact the project admins at <a href="contact.html">contact &amp; support</a>, or see <a href="https://www.primekey.se/">www.primekey.se</a>.</li>
     <li>By hiring us for integration, or sponsoring development of new features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
     <li>Through <a href="donations.html">Donations</a>.</li>
     </ul>
@@ -114,7 +114,7 @@ What you need to know to develop EJBCA
 </subsection>
 <subsection name="Using SVN">
 <p>
-How to connect to the EJBCA svn repository is explained over at <a href="http://ejbca.org/repository.html">repository</a>.
+How to connect to the EJBCA svn repository is explained over at <a href="https://www.ejbca.org/repository.html">repository</a>.
 If you are using Eclipse we recommend the Subversive plug-in, now part of eclipse plug-in repositories.
 </p>
 </subsection>

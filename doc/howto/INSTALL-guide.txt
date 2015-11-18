@@ -7,7 +7,7 @@ NOTE: This is an unofficial guide, read the note below.
 EJBCA version: 3.1.x/3.2.x
 
 This install guide is a complement to the guide present in 'User Guide'.
-The quick install guide in the 'User Guide' at http://ejbca.org/ 
+The quick install guide in the 'User Guide' at https://www.ejbca.org/ 
 should be read first, you can consult this guide for additional 
 information related to MySQL and OpenLDAP.
 

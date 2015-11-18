@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="EJBCA" href="http://ejbca.sourceforge.net/">
+<project name="EJBCA" href="https://www.ejbca.org/">
 
     <title>EJBCA - Open Source PKI Certificate Authority</title>
     <!--logo href="images/ant_logo_large.gif">EJBCA - The J2EE Certificate Authority</logo-->
@@ -31,15 +31,15 @@
 
             <menu name="Other resources">
                 <item name="Guides"                href="/guides.html"/>
-                <item name="Changelog"            href="http://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
+                <item name="Changelog"            href="https://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
                 <item name="References"           href="/references.html"/>
                 <item name="Release cycle"        href="/releasecycle.html"/>
-                <item name="Database schema"      href="http://www.ejbca.org/library/index.html"/>
+                <item name="Database schema"      href="/library/index.html"/>
                 <item name="Blog"      href="http://blog.ejbca.org/"/>
             </menu>
 
             <menu name="Older releases">
-                <item name="Older releases"     href="http://ejbca.org/older_releases/"/>
+                <item name="Older releases"     href="/older_releases/"/>
             </menu>
 
             <menu name="Contributing">

@@ -457,13 +457,13 @@ EJBCA SCEP, using RA mode, has been sucesfully integrated with Cisco ISE. Config
 <subsubsection name="iPhone/iOS">
 <p>
 You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
-<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto that is available together with a support subscription.
+<a href="https://www.primekey.se/">PrimeKey</a> has created a detailed howto that is available together with a support subscription.
 </p>
 </subsubsection>
 <subsubsection name="OpenScep">
 <p>
 OpenScep has does not work with modern OpenSSL implementation (only works with OpenSSL 0.9.6) and also has a bug
-that causes it to crash when receiving SCEP responses. There are <a href="http://www.primekey.se/~tomas/download.html">patches</a> that address these issues though so it can be used.
+that causes it to crash when receiving SCEP responses. There are <a href="https://www.primekey.se/~tomas/download.html">patches</a> that address these issues though so it can be used.
 </p><p>
 To use the <a href="http://openscep.othello.ch/">OpenScep</a> client to request a certificate from this servlet, use the command:
 </p>
@@ -777,7 +777,7 @@ In RA mode, EJBCA supports several CAs and profiles based on the use of configur
 
 <subsection name="CMP and 3GPP/4G/LTE configuration guide">
 <p>
-<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
+<a href="https://www.primekey.se/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
 configure EJBCA for 3GPP/4G/LTE networks using CMP. The guide is available together with a support subscription from PrimeKey. 
 </p>
 </subsection>
@@ -3932,7 +3932,7 @@ If the HSM is peculiar you may have to provide specific attribute parameters as 
 <p>
 At the time of writing, Oracle Java does not have support for SHA256WithRSAandMGF1 (also known as RSASSA-PSS) in the PKCS#11 provider. 
 PrimeKey has made a patch which is waiting for approval in the OpenJDK. 
-You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
+You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
 </p>
 <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
 <p>The patch should work on all HSMs that have support for SHA56WithRSAandMGF1.
@@ -3969,7 +3969,7 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
 </p>
 <p>
 PrimeKey has made a patches for the java issues with ECDSA. These patches are waiting for approval in the OpenJDK 7. 
-You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="http://www.primekey.se/">PrimeKey</a>. 
+You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="https://www.primekey.se/">PrimeKey</a>. 
 </p>
   <subsubsection name="Sun Java PKCS#11 ECC key issue (fixed in recent JDKs)">
   <p>If you are using an very old version of Java/JDK, and the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
@@ -3985,7 +3985,7 @@ You can get a compiled patch together with an installation script for Linux oper
   <p>
   At the time of writing, Oracle Java does not have named curve definitions for the Brainpool curves. 
   PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
-  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
   </p>
   <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2012">ECA-2012</a>.</p>
   <p>The patch should work on all HSMs that have <i>named curve support</i> for Brainpool. It has been tested on SafeNet Luna SA and Utimaco CryptoServer. SafeNet ProtectServer supports Brainpool but not using named curves, see below for brainpool support on ProtectServer using custom domain parameters.</p>
@@ -4003,7 +4003,7 @@ You can get a compiled patch together with an installation script for Linux oper
   <p>
   At the time of writing, Oracle Java does not have support for SHA224WithECDSA in the PKCS#11 provider. 
   PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
-  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
   </p>
   <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2013">ECA-2013</a>.</p>
   <p>The patch should work on all HSMs that have support for SHA224WithECDSA. It has been tested on SafeNet Luna SA and Utimaco CryptoServer.
@@ -6114,7 +6114,7 @@ To set up the demo servlet:
 <source>
 &lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/democertreq" method="post">
   Please fill out the form and click &lt;b>Enroll&lt;/b> to receive your certificate.
-  Read our &lt;a href="http://www.primekey.se/primekey/en/Demo.html">privacy policy&lt;/a>.&lt;br>
+  Read our &lt;a href="https://www.primekey.se/primekey/en/Demo.html">privacy policy&lt;/a>.&lt;br>
   &lt;input name="certificateprofile" value="DemoCertProfile" type="hidden">
   &lt;input name="entityprofile" value="DemoEntityProfile" type="hidden">&lt;br>
   &lt;br>

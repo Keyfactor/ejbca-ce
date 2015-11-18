@@ -793,8 +793,8 @@ If you have created any custom extensions Java classes, you must add:
 "PublicKey caPublicKey" to the parameter list in the getValue method. The value does not have to be handled.
 
 Two more checks are now done before adding a certificate. See
-http://ejbca.org/userguide.html#Enforce%20unique%20public%20keys and
-http://ejbca.org/userguide.html#Enforce%20unique%20DN
+https://ejbca.org/docs/userguide.html#Enforce%20unique%20public%20keys and
+https://ejbca.org/docs/userguide.html#Enforce%20unique%20DN
 These checks are enabled on all CA:s that existed before the upgrading. It should not be any problem to
 have them enabled (different users do not normally share same keys or subject DN) in most installations.
 But if you know that your users shares subject DNs or keys with each other they could be disabled.

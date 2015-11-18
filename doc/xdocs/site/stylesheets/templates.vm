@@ -187,7 +187,7 @@
                 </a>
           </p>
           <p>
-                <a href="http://www.primekey.se/" target="primekey">
+                <a href="https://www.primekey.se/" target="primekey">
                 <img style="border:none; margin-left:20px" src="$relativePath/images/logo-PrimeKey.png" alt="PKI by PrimeKey">
                 </a>
           </p>
@@ -226,7 +226,7 @@
       	<tr>
       	
       	<td>
-	      	<a href="http://www.ejbca.org/"><img src="$relativePath/images/ejbca_pki_by_primekey_logo.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
+	      	<a href="//www.ejbca.org/"><img src="$relativePath/images/ejbca_pki_by_primekey_logo.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
       	</td>
       	<td style="text-align:right">
     	  	<div class="searchcaption">
@@ -242,7 +242,7 @@
 			</form>
       		</div>
       	</td>
-        <td align="center" id="services"><a href="http://www.primekey.se/" target="primekey">PrimeKey Support, Development and Maintenance services</a></td>
+        <td align="center" id="services"><a href="https://www.primekey.se/" target="primekey">PrimeKey Support, Development and Maintenance services</a></td>
 		</tr>
 		</table>
       </div>

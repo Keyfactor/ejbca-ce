@@ -8,7 +8,7 @@ Documentation
 The main documentation for EJBCA is contained in XML format in the xdocs subdirectory.
 You can build nice looking html pages from this by running 
   ant doc
-from the ejbca home directory (EJBCA_HOME). This will produce the same site as displayed on http://www.ejbca.org/ 
+from the ejbca home directory (EJBCA_HOME). This will produce the same site as displayed on https://www.ejbca.org/ 
 (or an earlier or later version).
 The docs will be located in EJBCA_HOME/tmp/htdocs.
 The User's Guide is in the file xdocs/manual.xml.
@@ -25,7 +25,7 @@ There is also a good batch of documentation at http://wiki.ejbca.org/
 
 Installation
 ------------
-Follow the installation instructions in the User's Guide, either built above, or from http://www.ejbca.org/.
+Follow the installation instructions in the User's Guide, either built above, or from https://www.ejbca.org/.
 
 PDF
 ---
