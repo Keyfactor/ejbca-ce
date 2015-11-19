@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Memory settings can be specified using parameters like: JAVA_OPT="-Xms20480m -Xmx20480m -XX:MaxPermSize=384m" run.sh ....
-java ${JAVA_OPT} -server -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+ExplicitGCInvokesConcurrent -XX:-UseGCOverheadLimit -Djava.endorsed.dirs=`dirname "$0"`/endorsed -jar `dirname "$0"`/ejbca-db-cli.jar "$@"
+java ${JAVA_OPT} -server -XX:+UseConcMarkSweepGC -XX:+ExplicitGCInvokesConcurrent -XX:-UseGCOverheadLimit -Djava.endorsed.dirs=`dirname "$0"`/endorsed -jar `dirname "$0"`/ejbca-db-cli.jar "$@"
 
 ERRORLEVEL="$?"
 if [ "x${ERRORLEVEL}" = "x1" ] ; then
