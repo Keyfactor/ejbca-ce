@@ -38,6 +38,9 @@
     	    </path>
     		<map from="${mod.ejbca-ws-cli.dist}/" to=""/>
     	</pathconvert>
+    	<copy todir="${build.dir}">
+    		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
+    	</copy>
     	<jar destfile="${mod.ejbca-ws-cli.lib}">
             <manifest>
     			<attribute name="Class-path" value="${ejbca-ws-cli.dependencies} ./" />
