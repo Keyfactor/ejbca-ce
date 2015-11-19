@@ -245,6 +245,8 @@ public abstract class CertTools {
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
     public static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----";
     public static final String END_PUBLIC_KEY = "-----END PUBLIC KEY-----";
+    public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
+    public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
     public static final String BEGIN_X509_CRL_KEY = "-----BEGIN X509 CRL-----";
     public static final String END_X509_CRL_KEY = "-----END X509 CRL-----";
 
@@ -1325,6 +1327,14 @@ public abstract class CertTools {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream printStream = new PrintStream(baos);
         writeAsPemEncoded(printStream, publicKeyBytes, BEGIN_PUBLIC_KEY, END_PUBLIC_KEY);
+        printStream.close();
+        return baos.toByteArray();
+    }
+
+    public static byte[] getPEMFromPrivateKey(final byte[] privateKeyBytes) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream printStream = new PrintStream(baos);
+        writeAsPemEncoded(printStream, privateKeyBytes, BEGIN_PRIVATE_KEY, END_PRIVATE_KEY);
         printStream.close();
         return baos.toByteArray();
     }
