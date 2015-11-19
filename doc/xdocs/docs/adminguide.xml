@@ -5804,6 +5804,16 @@ cd dist/ejbca-db-cli
 ./run.sh</source>
  <p>The cli contains command that directly accesses a database, export, import, copy, verify audit log and OCSP monitoring. 
  Run the command to get a description about all available commands.</p>
+<p>To verify database protection just make sure that you have conf/databaseprotection.properties configured. If you are using database protection for your CA, you can use the same file.
+For verification, you can also use a verification token, without the private key, so you can do verification on another host from the CA.</p>
+<p>You can also use the DB tool to create databaseprotection in case you started off not enabling it, and want to enable it later.</p>
+<ul>
+<li>Shut down EJBCA</li>
+<li>Configure databaseprotection.properties and build ejbca-db-cli (so the propereties file is included in dist/ejbca-db-cli/conf</li>
+<li>Export the database with db-cli</li>
+<li>Drop the database</li>
+<li>Import the database with db-cli</li>
+</ul>
 </subsection>
 
 <subsection name="Validation/Conformance Check Tool (EJBCA Enterprise only)">
