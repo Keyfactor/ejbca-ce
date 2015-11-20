@@ -72,7 +72,7 @@ org.cesecore.keybind.InternalKeyBindingRules
        final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.SYSTEMCONFIGURATION_VIEW.resource();
        final String EDITAVAILABLEEKU_RESOURCE			   = StandardRules.EKUCONFIGURATION_VIEW.resource();
        final String EDITCUSTOMCERTEXTENSION_RESOURCE	   = StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource();
-       final String ADMINPRIVILEGES_RESOURCE               = StandardRules.EDITROLES.resource();
+       final String ADMINPRIVILEGES_RESOURCE               = StandardRules.VIEWROLES.resource();
        final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.VIEW.resource();
  %>
 <%  

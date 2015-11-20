@@ -32,6 +32,7 @@ public enum StandardRules {
 	CREATECRL(CAFUNCTIONALITY.resource()+"/create_crl"),
 	SYSTEMFUNCTIONALITY("/system_functionality"),
 	EDITROLES(SYSTEMFUNCTIONALITY.resource()+"/edit_administrator_privileges"),
+	VIEWROLES(SYSTEMFUNCTIONALITY.resource()+"/view_administrator_privileges"),
 	RECOVERY("/recovery"),
 	BACKUP(RECOVERY.resource()+"/backup"),
 	RESTORE(RECOVERY.resource()+"/restore"),

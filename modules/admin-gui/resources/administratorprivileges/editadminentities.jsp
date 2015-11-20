@@ -11,9 +11,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
- // Original version by Philip Vendil.
- 
+  
 %>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
@@ -28,7 +26,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
 <%
-	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.EDITROLES.resource()); 
+	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource()); 
 %>
 
 <html>
@@ -43,7 +41,10 @@
 <body>
 
 <div align="center">
-	<h2><h:outputText value="#{web.text.EDITADMINS}"/></h2>
+	<h2>
+		<h:outputText value="#{web.text.EDITADMINS}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
+		<h:outputText value="#{web.text.VIEWADMINS}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
+	</h2>
 	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}"
   			rendered="#{not empty rolesManagedBean.currentRole}"/></h3>
 
@@ -60,11 +61,13 @@
 		</h:outputLink>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
 			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole && not rolesManagedBean.basicRuleSet.forceAdvanced}">
-			<h:outputText value="#{web.text.EDITACCESSRULES}"/>
+			<h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
+			<h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
 		</h:outputLink>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
 			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole && rolesManagedBean.basicRuleSet.forceAdvanced}">
-			<h:outputText value="#{web.text.EDITACCESSRULES}"/>
+			<h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
+			<h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>			
 		</h:outputLink>
 	</h:panelGrid>
   
@@ -76,25 +79,25 @@
 	<h:dataTable value="#{rolesManagedBean.admins}" var="admin" style="width: 100%;" id="adminsTable" 
 		headerClass="listHeader" rowClasses="Row0,Row1" columnClasses="caColumn,typeColumn,withColumn,typeColumn,valueColumn,commandColumn">
 		<h:column>
-			<f:facet name="header">
-				<h:panelGroup>
+			<f:facet name="header" >
+				<h:panelGroup >
 					<h:outputText value="#{web.text.CA}" /><br />
-					<h:selectOneMenu id="caId" value="#{rolesManagedBean.matchCaId}">
+					<h:selectOneMenu id="caId" value="#{rolesManagedBean.matchCaId}" rendered="#{rolesManagedBean.authorizedToEdit}">
 						<f:selectItems value="#{rolesManagedBean.availableCaIds}" />
 					</h:selectOneMenu>
-					<br /><h:outputText value="&nbsp;" escape="false"/>
+					<h:outputText value="<br/>&nbsp;" escape="false" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{rolesManagedBean.issuingCA}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
-				<h:panelGroup>
+				<h:panelGroup> 
 					<h:outputText value="#{web.text.MATCHWITH}" /><br />
-					<h:selectOneMenu id="matchWith" binding="#{rolesManagedBean.matchWithMenu}">
+					<h:selectOneMenu id="matchWith" binding="#{rolesManagedBean.matchWithMenu}" rendered="#{rolesManagedBean.authorizedToEdit}">
 						<f:selectItems value="#{rolesManagedBean.matchWithItems}" />
 					</h:selectOneMenu> 
-					<br /><h:outputText value="&nbsp;" escape="false"/>
+					<h:outputText value="<br/>&nbsp;" escape="false" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{rolesManagedBean.adminsMatchWith}"/>
@@ -103,10 +106,10 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHTYPE}" /><br />
-					<h:selectOneMenu id="matchType" value="#{rolesManagedBean.matchType}">
+					<h:selectOneMenu id="matchType" value="#{rolesManagedBean.matchType}"rendered="#{rolesManagedBean.authorizedToEdit}">
 						<f:selectItems value="#{rolesManagedBean.matchTypeTexts}" />
 					</h:selectOneMenu> 
-					<br /><h:outputText value="&nbsp;" escape="false"/>
+					<h:outputText value="<br/>&nbsp;" escape="false" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{rolesManagedBean.adminsMatchType}"/>
@@ -115,11 +118,11 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHVALUE}" /><br />
-					<h:inputText id="matchValue" value="#{rolesManagedBean.matchValue}">
+					<h:inputText id="matchValue" value="#{rolesManagedBean.matchValue}" rendered="#{rolesManagedBean.authorizedToEdit}">
 						<f:validator validatorId="legalCharsValidator" />
 						<f:validator validatorId="hexSerialNumberValidator" />
 					</h:inputText>
-					<br /><h:outputText value="&nbsp;" escape="false"/>
+					<h:outputText value="<br/>&nbsp;" escape="false" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputText value="#{admin.matchValue}" rendered="#{rolesManagedBean.accessMatchValuesAsMap['CertificateAuthenticationToken:WITH_SERIALNUMBER'] ne admin.matchWith}"/> 
@@ -131,7 +134,7 @@
 		</h:column>
 		<h:column>
 			<f:facet name="header">
-				<h:panelGroup>
+				<h:panelGroup rendered="#{rolesManagedBean.authorizedToEdit}">
 					<br />
 					<h:commandButton action="#{rolesManagedBean.addAdmin}" value="#{web.text.ADD}"
 						styleClass="commandButton"/>
@@ -139,8 +142,8 @@
 				</h:panelGroup>
 			</f:facet>
 			<h:commandLink action="#{rolesManagedBean.deleteAdmin}" title="#{web.text.DELETE}"
-				styleClass="commandLink" onclick="return confirm('#{web.text.AREYOUSURE}');" immediate="true">
-				<h:outputText value="#{web.text.DELETE}"/>
+				styleClass="commandLink" onclick="return confirm('#{web.text.AREYOUSURE}');" immediate="true" rendered="#{rolesManagedBean.authorizedToEdit}">
+				<h:outputText value="#{web.text.DELETE}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 				<f:param name="primaryKey" value="#{admin.primaryKey}"/>
 			</h:commandLink>
 		</h:column>

@@ -253,6 +253,7 @@ public class UpgradeSessionBeanTest {
             newRules.add(StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.EKUCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
+            newRules.add(StandardRules.VIEWROLES.resource());
             //Create an auditor according to 6.4.0, i.e. ignoring the new rules.
             List<AccessRuleData> oldAuditorRules = new ArrayList<AccessRuleData>();
             for (AccessRuleTemplate accessRuleTemplate : DefaultRoles.AUDITOR.getRuleSet()) {
@@ -273,6 +274,7 @@ public class UpgradeSessionBeanTest {
             oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
             oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.EKUCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
             oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false));
+            oldEditAdminRules.add(new AccessRuleData(editSystemAdminName, StandardRules.EDITROLES.resource(), AccessRuleState.RULE_ACCEPT, false));
             editSystemAdmin = roleManagementSession.addAccessRulesToRole(alwaysAllowtoken, editSystemAdmin, oldEditAdminRules);
             //Perform upgrade. 
             upgradeSession.upgrade(null, "6.4.0", false);

@@ -917,6 +917,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             newRulesFor650.add(new AccessRuleTemplate(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
             newRulesFor650.add(new AccessRuleTemplate(StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
             newRulesFor650.add(new AccessRuleTemplate(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
+            newRulesFor650.add(new AccessRuleTemplate(StandardRules.VIEWROLES.resource(), AccessRuleState.RULE_ACCEPT, false));
             //If role is the old auditor from 6.4.0
             String rolename = role.getRoleName();
             try {            
@@ -927,6 +928,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     newAccessRules.add(new AccessRuleData(rolename, StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
                             false));
                     newAccessRules.add(new AccessRuleData(rolename, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
+                            false));
+                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.VIEWROLES.resource(), AccessRuleState.RULE_ACCEPT,
                             false));
                     roleMgmtSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
                 } else {
@@ -944,6 +947,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         newAccessRules.add(new AccessRuleData(rolename, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
                                 AccessRuleState.RULE_ACCEPT, false));
                     }
+                    if (role.hasAccessToRule(StandardRules.EDITROLES.resource())) {
+                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.VIEWROLES.resource(),
+                                AccessRuleState.RULE_ACCEPT, false));
+                    }                   
                     roleMgmtSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
                 }           
             } catch (RoleNotFoundException e) {
@@ -1128,6 +1135,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      * 1.   Adds view rules to System Configuration, EKU Configuration and Certificate Extension Configuration. Any roles with edit rights to those pages, or which match the Auditor role
      *      from 6.4.0 will be automatically upgraded. 
+     * 2.   Adds view rules to Roles. Any roles with edit rights roles, or which match the Auditor role from 6.4.0 will be automatically upgraded. 
      * 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
