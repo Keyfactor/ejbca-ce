@@ -869,7 +869,8 @@
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*.java"/>
-				    <include name="org/cesecore/certificates/ca/*.java"/>                    
+					<include name="org/ejbca/core/model/authorization/AccessRuleTemplate.java"/>     
+					<include name="org/ejbca/core/model/authorization/DefaultRoles.java"/>   
 				</fileset>
 				<fileset dir="${this.dir}/../edition-specific/src-interface">
 					<include name="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionLocal.java" />

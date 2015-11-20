@@ -1815,15 +1815,19 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 </ul>
 <li>Auditor:</li>
 <ul>
-<li>has full read access to the audit log</li>
+<li>has full read access to the Audit Log</li>
 <li>has full read access to authorized CAs</li>
-<li>has full read access to Certificate Profiles</li>
+<li>has full read access to authorized Certificate Profiles</li>
 <li>has full read access to Crypto Tokens and keys</li>
-<li>has full read access to Publishers</li>
-<li>has full read access to End Entity Profiles</li>
+<li>has full read access to authorized Publishers</li>
+<li>has full read access to authorized End Entities</li>
+<li>has full read access to authorized End Entity Profiles</li>
+<li>has limited read access to Administrator Roles</li>
 <li>has full read access to Internal Key Bindings</li>
 <li>has full read access to Peer Systems</li>
 <li>has full read access to Services</li>
+<li>has full read access to SCEP aliases and authorized CMP aliases</li>
+<li>has full read access to all system configuration</li>
 </ul>
 </ul>
 </p>
@@ -1834,7 +1838,8 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 When editing access rules, you can click on 'Advanced mode' to get access to advanced access rule configuration. 
 In this mode you will see all available access rules, in detail, and can accept or reject specific rules for the role you are editing.
 The rules are numberous, and new rules may be included in new versions of EJBCA. They have somewhat human readable names and can often be figured out. 
-See ' About Roles and Rules' below for a detailed description how the principe of access rules work.  
+See 'About Roles and Rules' below for a detailed description how the principe of access rules work. Note that rules not available to the current 
+admin will be disabled, and rules pertaining to CA's and Crypto Tokens that the admin doesn't have access to will be hidden.  
 </p>
 <p>Using advanced access rules you can define you own roles in detail and construct a role set suitable for most auditing schemes.</p>
 </subsection>

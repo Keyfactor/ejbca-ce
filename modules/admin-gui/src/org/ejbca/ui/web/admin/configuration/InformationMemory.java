@@ -27,9 +27,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -96,6 +94,7 @@ public class InformationMemory implements Serializable {
     Map<Integer, String> roldIdMap = null;
 
     Map<String, Set<String>> authorizedaccessrules = null;
+    Map<String, Set<String>> redactedAccessRules = null;
 
     GlobalConfiguration globalconfiguration = null;
     CmpConfiguration cmpconfiguration = null;
@@ -400,10 +399,8 @@ public class InformationMemory implements Serializable {
         return endentityavailablecas.get(Integer.valueOf(endentityprofileid));
     }
 
-    /**
-     * Returns a administrators set of authorized available accessrules.
-     * 
-     * @return A HashSet containing the administrators authorized available accessrules.
+    /** 
+     * @return a map containing the administrator's authorized available accessr ules, sorted by category
      */
 
     public Map<String, Set<String>> getAuthorizedAccessRules(final String endentityAccessRule) {
@@ -414,6 +411,20 @@ public class InformationMemory implements Serializable {
                     userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules());
         }
         return authorizedaccessrules;
+    }
+    
+    /**
+     * @return a map containing all available access rules, with unauthorized CAs, End Entity Profiles, Crypto Tokens and Certificate Profiles missing. 
+     */
+
+    public Map<String, Set<String>> getRedactedAccessRules(final String endentityAccessRule) {
+        if (redactedAccessRules == null) {
+            redactedAccessRules = complexAccessControlSession.getAuthorizedAvailableAccessRules(administrator,
+                    globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
+                    globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule),
+                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules(), true);
+        }
+        return redactedAccessRules;
     }
     
     public Set<String> getAuthorizedAccessRulesUncategorized(final String endentityAccessRule) {

@@ -79,6 +79,7 @@ public class RolesManagedBean extends BaseManagedBean {
     
     
     private String currentRoleName = null;
+    private RoleData currentRole = null;
     private String matchCaId = null;
     
     private HtmlSelectOneMenu matchWithMenu;
@@ -91,7 +92,7 @@ public class RolesManagedBean extends BaseManagedBean {
 
     private String newRoleName = "new";
 
-    private Map<String, List<AccessRuleData>> accessRulesViewCache = null;
+    private Map<String, List<AccessRuleData>> allRulesViewCache = null;
     
     // Simple from backing
     public String getNewRoleName() {
@@ -100,6 +101,14 @@ public class RolesManagedBean extends BaseManagedBean {
 
     public void setNewRoleName(String newRoleName) {
         this.newRoleName = newRoleName;
+    }
+    
+    public boolean hasAccessToRule(String rule, boolean isRecursive) {
+        if(currentRole == null) {
+            return false;
+        } else {
+            return currentRole.hasAccessToRule(rule, isRecursive);
+        }
     }
 
     /** @return a List of authorized roles */
@@ -539,7 +548,7 @@ public class RolesManagedBean extends BaseManagedBean {
                 } else {
                     //Examine if we're trying to submit two rules which aren't the exact same.
                     if (!rule.equals(rulesToReplaceWith.get(rule.getPrimaryKey()))) {
-                        throw new Error("RolesManagedBean tried to save two overlapping rules (" + rule.getAccessRuleName()
+                        throw new IllegalStateException("RolesManagedBean tried to save two overlapping rules (" + rule.getAccessRuleName()
                                 + ") with different values.");
                     }
                 }
@@ -558,41 +567,36 @@ public class RolesManagedBean extends BaseManagedBean {
                 globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
     }
 
-    //
-    // Advanced access rules (mostly used by editadvancedaccessrules.jsp)
-    //
 
-
-    /** @return a cached list of all the available access rules holding the current state */
+    /** @return a cached list of all the available access rules */
     private Map<String, List<AccessRuleData>> getAccessRules() {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">getAccessRules");
-    	}
-        if (accessRulesViewCache == null) {
-            RoleData role = getCurrentRoleObject();
-            Map<String, Set<String>> allAvailableRules = getAuthorizationDataHandler().getAvailableAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
-            accessRulesViewCache = getCategorizedRuleSet(role, allAvailableRules);
+        log.trace(">getAccessRules");
+        if (allRulesViewCache == null) {
+            RoleData role = getCurrentRoleObject();      
+            Map<String, Set<String>> redactedRules = getAuthorizationDataHandler()
+                    .getRedactedAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
+            allRulesViewCache = getCategorizedRuleSet(role, redactedRules);
+            Map<String, Set<String>> allAvailableRules = getAuthorizationDataHandler()
+                    .getAvailableAccessRules(AccessRulesConstants.CREATE_END_ENTITY);      
         }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<getAccessRules");
-    	}
-        return accessRulesViewCache;
+        log.trace("<getAccessRules");
+        return allRulesViewCache;
     }
 
     /**
      *  Takes a role and a set of rules, returning map (sorted by category) of all rules, with set states for those rules contained in the role
      * 
      * @param role a Role
-     * @param allRules a list of all rules
+     * @param redactedRules a list of all rules, barring unauthorized CAs, CPs, EEPs, CryptoTokens 
      * @return the sought map
      */
-    private Map<String, List<AccessRuleData>> getCategorizedRuleSet(RoleData role, Map<String, Set<String>> allRules) {
+    private Map<String, List<AccessRuleData>> getCategorizedRuleSet(RoleData role, Map<String, Set<String>> redactedRules) {
         Map<String, List<AccessRuleData>> result = new LinkedHashMap<String, List<AccessRuleData>>();
         Map<Integer, AccessRuleData> knownRules = role.getAccessRules();
-        if (allRules != null) {
-            for (String category : allRules.keySet()) {
+        if (redactedRules != null) {
+            for (String category : redactedRules.keySet()) {
                 List<AccessRuleData> subset = new ArrayList<AccessRuleData>();
-                for (String rule : allRules.get(category)) {
+                for (String rule : redactedRules.get(category)) {
                     Integer key = AccessRuleData.generatePrimaryKey(role.getRoleName(), rule);
                     if (!knownRules.containsKey(key)) {
                         // Access rule can not be found, create a new AccessRuleData that we can return
@@ -714,14 +718,14 @@ public class RolesManagedBean extends BaseManagedBean {
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
-        accessRulesViewCache = null; // We want this to be re-read
+        allRulesViewCache = null; // We want this to be re-read
         basicAccessRuleSetEncoderCache = null; // We want this to be re-read
         getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
     }
 
     /** Invalidates local cache */
     public void restoreAdvancedAccessRules() {
-        accessRulesViewCache = null; // We want this to be re-read
+        allRulesViewCache = null; // We want this to be re-read
     }
 
     //
@@ -752,6 +756,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** Setter for current role used were applicable. */
     public void setCurrentRole(String currentRoleName) {
         this.currentRoleName = currentRoleName;
+        this.currentRole = ejbLocalHelper.getRoleAccessSession().findRole(currentRoleName);
     }
 
     /** @return true if logged on administrator is allowed to edit current role */
@@ -764,6 +769,11 @@ public class RolesManagedBean extends BaseManagedBean {
         return false;
     }
 
+    /** @return true if logged on administrator is allowed to edit current role */
+    public boolean isAuthorizedToEdit() {
+        return ejbLocalHelper.getAccessControlSession().isAuthorizedNoLogging(getAdmin(), StandardRules.EDITROLES.resource());
+    }
+    
     //
     // Helper functions
     //

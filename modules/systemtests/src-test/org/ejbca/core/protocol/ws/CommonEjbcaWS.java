@@ -176,7 +176,6 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -205,7 +204,6 @@ import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
-import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
@@ -271,7 +269,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final String BADCANAME = "BadCaName";
 
-    private static final String CA1_WSTESTUSER1 = "CA1_WSTESTUSER1";
+    protected static final String CA1_WSTESTUSER1 = "CA1_WSTESTUSER1";
     private static final String CA1_WSTESTUSER2 = "CA1_WSTESTUSER2";
     private static final String CA2_WSTESTUSER1 = "CA2_WSTESTUSER1";
     protected static final String CA1_WSTESTUSER1CVCRSA = "TstCVCRSA";
@@ -1981,263 +1979,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         Store certStore = cmsSignedData.getCertificates();
         assertTrue(certStore.getMatches(null).size() == 1);
 
-    }
-
-    protected void keyRecover() throws Exception {
-        log.trace(">keyRecover");
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean krenabled = gc.getEnableKeyRecovery();
-        if (krenabled == true) {
-            gc.setEnableKeyRecovery(false);
-            globalConfigurationSession.saveConfiguration(intAdmin, gc);
-        }
-
-        boolean trows = false;
-        try {
-            // This should throw an exception that key recovery is not enabled
-            ejbcaraws.keyRecoverNewest(CA1_WSTESTUSER1);
-        } catch (EjbcaException_Exception e) {
-            trows = true;
-            // e.printStackTrace();
-            assertEquals(e.getMessage(), "Keyrecovery have to be enabled in the system configuration in order to use this command.");
-        }
-        assertTrue(trows);
-
-        // Set key recovery enabled
-        gc.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveConfiguration(intAdmin, gc);
-
-        trows = false;
-        try {
-            // This should throw an exception that the user does not exist
-            ejbcaraws.keyRecoverNewest("sdfjhdiuwerw43768754###");
-        } catch (NotFoundException_Exception e) {
-            trows = true;
-            // e.printStackTrace();
-            assertEquals(e.getMessage(), "Wrong username or password");
-        }
-        assertTrue(trows);
-
-        // Add a new End entity profile, KEYRECOVERY
-        EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(DnComponents.COMMONNAME);
-        profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
-        profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
-        profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
-        profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
-        profile.setReUseKeyRecoveredCertificate(true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        endEntityProfileSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
-        assertTrue("Unable to create KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfile("KEYRECOVERY") != null);
-
-        // Add a new user, set token to P12, status to new and end entity
-        // profile to key recovery
-        UserDataVOWS user1 = new UserDataVOWS();
-        user1.setKeyRecoverable(true);
-        user1.setUsername("WSTESTUSERKEYREC1");
-        user1.setPassword("foo456");
-        user1.setClearPwd(true);
-        user1.setSubjectDN("CN=WSTESTUSERKEYREC1");
-        user1.setCaName(getAdminCAName());
-        user1.setEmail(null);
-        user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
-        user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
-        user1.setEndEntityProfileName("KEYRECOVERY");
-        user1.setCertificateProfileName("ENDUSER");
-        ejbcaraws.editUser(user1);
-
-        KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
-        assertNotNull(ks);
-        Enumeration<String> en = ks.aliases();
-        String alias = en.nextElement();
-        if(!ks.isKeyEntry(alias)) {
-            alias = en.nextElement();
-        }
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectDN().toString());
-        PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-
-        // This should work now
-        ejbcaraws.keyRecoverNewest("WSTESTUSERKEYREC1");
-
-        // Set status to keyrecovery
-        UserMatch usermatch = new UserMatch();
-        usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-        usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSERKEYREC1");
-        List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas != null);
-        assertTrue(userdatas.size() == 1);
-        userdatas.get(0).setStatus(EndEntityConstants.STATUS_KEYRECOVERY);
-        ejbcaraws.editUser(userdatas.get(0));
-        // A new PK12 request now should return the same key and certificate
-        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "PKCS12", "foo456");
-        assertNotNull(ks2);
-        en = ks2.aliases();
-        alias = (String) en.nextElement();
-        // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
-        if(!ks2.isKeyEntry(alias)) {
-            alias = (String) en.nextElement();
-        }
-        X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
-        PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
-
-        // Compare certificates
-        assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
-        // Compare keys
-        String key1 = new String(Hex.encode(privK.getEncoded()));
-        String key2 = new String(Hex.encode(privK2.getEncoded()));
-        assertEquals(key1, key2);
-        log.trace("<keyRecover");
-    }
-
-    protected void keyRecoverAny() throws Exception {
-        log.trace(">keyRecoverAny");
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean krenabled = gc.getEnableKeyRecovery();
-        if (!krenabled == true) {
-            gc.setEnableKeyRecovery(true);
-            globalConfigurationSession.saveConfiguration(intAdmin, gc);
-        }
-
-        // Add a new user, set token to P12, status to new and end entity
-        // profile to key recovery
-        UserDataVOWS user1 = new UserDataVOWS();
-        user1.setKeyRecoverable(true);
-        user1.setUsername("WSTESTUSERKEYREC2");
-        user1.setPassword("foo456");
-        user1.setClearPwd(true);
-        user1.setSubjectDN("CN=WSTESTUSERKEYREC2");
-        user1.setCaName(getAdminCAName());
-        user1.setEmail(null);
-        user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
-        user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
-        user1.setEndEntityProfileName("KEYRECOVERY");
-        user1.setCertificateProfileName("ENDUSER");
-        ejbcaraws.editUser(user1);
-        
-        UserMatch usermatch = new UserMatch();
-        usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-        usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSERKEYREC2");
-        
-        List<java.security.KeyStore> keyStores = new ArrayList<java.security.KeyStore>();
-        
-        // generate 4 certificates
-        for (int i=0; i < 4; i++) {
-            List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertTrue(userdatas != null);
-            assertTrue(userdatas.size() == 1);
-            user1 = userdatas.get(0);
-            // Surely not all of these properties need to be set again?
-            user1.setKeyRecoverable(true);
-            user1.setUsername("WSTESTUSERKEYREC2");
-            user1.setPassword("foo456");
-            user1.setClearPwd(true);
-            user1.setSubjectDN("CN=WSTESTUSERKEYREC2");
-            user1.setCaName(getAdminCAName());
-            user1.setEmail(null);
-            user1.setSubjectAltName(null);
-            user1.setStatus(UserDataVOWS.STATUS_NEW);
-            user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
-            user1.setEndEntityProfileName("KEYRECOVERY");
-            user1.setCertificateProfileName("ENDUSER");
-            ejbcaraws.editUser(user1);
-            
-            KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
-            assertNotNull(ks);
-            keyStores.add(ks);
-        }
-        
-        // user should have 4 certificates
-        assertTrue(keyStores.size() == 4);
-        
-        // recover all keys
-        for (java.security.KeyStore ks : keyStores){
-            Enumeration<String> en = ks.aliases();
-            String alias = (String) en.nextElement();
-            // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
-            if(!ks.isKeyEntry(alias)) {
-                alias = (String) en.nextElement();
-            }
-            X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-            assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC2");
-            PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-            log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
-            
-            // recover key
-            ejbcaraws.keyRecover("WSTESTUSERKEYREC2",cert.getSerialNumber().toString(16),cert.getIssuerDN().toString());
-            
-            // A new PK12 request now should return the same key and certificate
-            KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
-            assertNotNull(ks2);
-            en = ks2.aliases();
-            alias = (String) en.nextElement();
-            // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
-            if(!ks.isKeyEntry(alias)) {
-                alias = (String) en.nextElement();
-            }
-            X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-            assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC2");
-            PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
-
-            // Compare certificates
-            assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
-            // Compare keys
-            String key1 = new String(Hex.encode(privK.getEncoded()));
-            String key2 = new String(Hex.encode(privK2.getEncoded()));
-            assertEquals(key1, key2);
-
-        }
-        log.trace("<keyRecoverAny");
-    }
-
-    protected void getAvailableCAs() throws Exception {
-        log.trace(">getAvailableCAs");
-        Collection<Integer> ids = caSession.getAuthorizedCaIds(intAdmin);
-        List<NameAndId> cas = ejbcaraws.getAvailableCAs();
-        assertNotNull(cas);
-        assertEquals(cas.size(), ids.size());
-        boolean found = false;
-        for (NameAndId n : cas) {
-            if (n.getName().equals(getAdminCAName())) {
-                found = true;
-            }
-        }
-        assertTrue(found);
-        log.trace("<getAvailableCAs");
-    }
-
-    protected void getAuthorizedEndEntityProfiles() throws Exception {
-        log.trace(">getAuthorizedEndEntityProfiles");
-        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(intAdmin, AccessRulesConstants.CREATE_END_ENTITY);
-        List<NameAndId> profs = ejbcaraws.getAuthorizedEndEntityProfiles();
-        assertNotNull(profs);
-        assertEquals(profs.size(), ids.size());
-        boolean foundkeyrec = false;
-        for (NameAndId n : profs) {
-            log.info("name: " + n.getName());
-            if (n.getName().equals("KEYRECOVERY")) {
-                foundkeyrec = true;
-            }
-            boolean found = false;
-            for (Integer i : ids) {
-                // All ids must be in profs
-                if (n.getId() == i) {
-                    found = true;
-                }
-            }
-            assertTrue("Unable to find profile '" + n.getName() + "' among authorized EEPs reported by Remote EJB call.", found);
-        }
-        assertTrue("Could not find KEYRECOVERY end entity profile among authorized profiles.", foundkeyrec);
-        log.trace("<getAuthorizedEndEntityProfiles");
     }
 
     protected void getEndEntityProfileFromID() throws Exception {

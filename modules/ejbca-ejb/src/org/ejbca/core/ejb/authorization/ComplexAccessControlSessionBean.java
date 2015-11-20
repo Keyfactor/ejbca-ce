@@ -217,6 +217,15 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     public Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
             boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
             Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules) {
+        return getAuthorizedAvailableAccessRules(authenticationToken, enableendentityprofilelimitations, usehardtokenissuing, usekeyrecovery,
+                authorizedEndEntityProfileIds, authorizedUserDataSourceIds, customaccessrules, false);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
+            boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
+            Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules, boolean restrictToCaChecks) {
         if (log.isTraceEnabled()) {
             log.trace(">getAuthorizedAvailableAccessRules");
         }
@@ -226,7 +235,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         Set<String> roleRules = new LinkedHashSet<String>();      
         roleRules.add(AccessRulesConstants.ROLEACCESSRULES[0]);
         roleRules.add(AccessRulesConstants.ROLEACCESSRULES[1]);
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()) || restrictToCaChecks) {
             roleRules.add(StandardRules.ROLE_ROOT.resource());
         }
         accessrules.put("ROLEBASEDACCESSRULES", roleRules);
@@ -235,7 +244,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         Set<String> standardRules = new LinkedHashSet<String>();          
         // Insert Standard Access Rules.
         for (int i = 0; i < AccessRulesConstants.STANDARDREGULARACCESSRULES.length; i++) {
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.STANDARDREGULARACCESSRULES[i])) {
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.STANDARDREGULARACCESSRULES[i]) || restrictToCaChecks) {
                 standardRules.add(AccessRulesConstants.STANDARDREGULARACCESSRULES[i]);
             }
         }
@@ -243,22 +252,22 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             for (int i = 0; i < AccessRulesConstants.HARDTOKENACCESSRULES.length; i++) {
                 standardRules.add(AccessRulesConstants.HARDTOKENACCESSRULES[i]);
             }
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWHARDTOKENS) || restrictToCaChecks) {
                 standardRules.add(AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
             }
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWPUKS)) {
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWPUKS) || restrictToCaChecks) {
                 standardRules.add(AccessRulesConstants.REGULAR_VIEWPUKS);
             }
         }
         if (usekeyrecovery) {
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY) || restrictToCaChecks) {
                 standardRules.add(AccessRulesConstants.REGULAR_KEYRECOVERY);
             }
         }
         // Insert custom access rules
         for (int i = 0; i < customaccessrules.length; i++) {
             if (!customaccessrules[i].trim().equals("")) {
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, customaccessrules[i].trim())) {
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, customaccessrules[i].trim()) || restrictToCaChecks) {
                     standardRules.add(customaccessrules[i].trim());
                 }
 
@@ -268,7 +277,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         
         // Insert available CA access rules
         Set<String> caAccessRules = new LinkedHashSet<String>();     
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESSBASE.resource())) {
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESSBASE.resource()) || restrictToCaChecks) {
             caAccessRules.add(StandardRules.CAACCESSBASE.resource());
         }
         for (int caId : caSession.getAuthorizedCaIds(authenticationToken)) {
@@ -280,7 +289,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         Set<String> endEntityProfileRules = new LinkedHashSet<String>();     
         if (enableendentityprofilelimitations) {
             // Add most basic rule if authorized to it.
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEBASE)) {
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEBASE) || restrictToCaChecks) {
                 endEntityProfileRules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
             } else {
                 // Add it to SuperAdministrator anyway
@@ -331,16 +340,16 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
        
         // Insert User data source access rules
         Set<String> userDataSourceRules = new HashSet<String>();
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEBASE)) {
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEBASE) || restrictToCaChecks) {
             userDataSourceRules.add(AccessRulesConstants.USERDATASOURCEBASE);
         }
         for (int id : authorizedUserDataSourceIds) {
             if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEPREFIX + id
-                    + AccessRulesConstants.UDS_FETCH_RIGHTS)) {
+                    + AccessRulesConstants.UDS_FETCH_RIGHTS) || restrictToCaChecks) {
                 userDataSourceRules.add(AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS);
             }
             if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.USERDATASOURCEPREFIX + id
-                    + AccessRulesConstants.UDS_REMOVE_RIGHTS)) {
+                    + AccessRulesConstants.UDS_REMOVE_RIGHTS) || restrictToCaChecks) {
                 userDataSourceRules.add(AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS);
             }
         }
@@ -351,7 +360,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         for (AccessRulePlugin accessRulePlugin : serviceLoader) {
             Set<String> pluginRules = new LinkedHashSet<String>();
             for (String rule : accessRulePlugin.getRules()) {
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, rule) || restrictToCaChecks) {
                     pluginRules.add(rule);
                 }
             }

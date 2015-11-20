@@ -28,7 +28,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
  
 <% 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.EDITROLES.resource()); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource()); 
 %>
  
 <html>
@@ -44,7 +44,10 @@
  
  <div align="center">
 
-	<h2><h:outputText value="#{web.text.EDITACCESSRULES}" /></h2>
+	<h2>
+		<h:outputText value="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.authorizedToEdit}"/> 
+		<h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!rolesManagedBean.authorizedToEdit}" />
+	</h2>
 	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}" /></h3>
 
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
@@ -61,7 +64,8 @@
 		</h:outputLink>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentRole=#{rolesManagedBean.currentRole}"
 			title="#{web.text.EDITADMINS}" rendered="#{not empty rolesManagedBean.currentRole}">
-			<h:outputText value="#{web.text.EDITADMINS}"/>
+			<h:outputText value="#{web.text.EDITADMINS}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
+			<h:outputText value="#{web.text.VIEWADMINS}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
 		</h:outputLink>
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
 			rendered="#{not empty rolesManagedBean.currentRole && !rolesManagedBean.basicRuleSet.forceAdvanced}"
@@ -90,7 +94,7 @@
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RULE}" />
 				</f:facet>
-				<h:selectOneMenu id="selectrole" value="#{accessRule.state}">
+				<h:selectOneMenu id="selectrole" value="#{accessRule.state}" disabled="#{!rolesManagedBean.authorizedToEdit ||  !rolesManagedBean.hasAccessToRule(rolesManagedBean.parsedAccessRule, accessRule.recursive)}">
 					<f:selectItems value="#{rolesManagedBean.accessRuleStates}" />
 				</h:selectOneMenu> 
 			</h:column>
@@ -98,7 +102,7 @@
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RECURSIVE}" />
 				</f:facet>
-				<h:selectBooleanCheckbox value="#{accessRule.recursive}" />
+				<h:selectBooleanCheckbox value="#{accessRule.recursive}" disabled="#{!rolesManagedBean.authorizedToEdit}"/>
 			</h:column>
 		</h:dataTable>
 		</h:column>
@@ -106,9 +110,9 @@
 	
 	<h:panelGrid styleClass="edit-bottom" width="100%" columns="1" style="text-align: center;">
 		<h:panelGroup>
-			<h:commandButton action="#{rolesManagedBean.saveAdvancedAccessRules}" value="#{web.text.SAVE}"/>
+			<h:commandButton action="#{rolesManagedBean.saveAdvancedAccessRules}" value="#{web.text.SAVE}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 			<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
-			<h:commandButton action="#{rolesManagedBean.restoreAdvancedAccessRules}" value="#{web.text.RESTORE}"/>
+			<h:commandButton action="#{rolesManagedBean.restoreAdvancedAccessRules}" value="#{web.text.RESTORE}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 		</h:panelGroup>
 	</h:panelGrid>
 	

@@ -56,6 +56,23 @@ public interface ComplexAccessControlSession {
      * @param usekeyrecovery Include Key Recovery access rules
      * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
      * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
+     * @param restrictToCaChecks set to true if checks should only be made on CAs, CryptoTokens, End Entity Profiles and Certificate Profiles
+     * @return a LinkedHashMap of strings representing the available access rules, keyed by category
+     */
+    Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
+            boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
+            Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules, boolean restrictToCaChecks);
+    
+    /**
+     * Method used to collect an administrators available access rules based on which rule he himself is authorized to.
+     * 
+     * @param admin is the administrator calling the method.
+     * @param availableCaIds A Collection<Integer> of all CA IDs
+     * @param enableendentityprofilelimitations Include End Entity Profile access rules
+     * @param usehardtokenissuing Include Hard Token access rules
+     * @param usekeyrecovery Include Key Recovery access rules
+     * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
+     * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
      * @return a LinkedHashMap of strings representing the available access rules, keyed by category
      */
     Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,

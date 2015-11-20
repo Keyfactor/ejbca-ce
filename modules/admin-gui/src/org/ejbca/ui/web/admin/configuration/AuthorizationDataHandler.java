@@ -199,6 +199,16 @@ public class AuthorizationDataHandler implements Serializable {
     public Map<String, Set<String>> getAvailableAccessRules(final String endentityAccessRule) {
         return this.informationmemory.getAuthorizedAccessRules(endentityAccessRule);
     }
+    
+    /**
+     * Method returning all the available access rules authorized to administrator to manage.
+     * 
+     * @returns a map of sets of strings with available access rules, sorted by category
+     */
+    public Map<String, Set<String>> getRedactedAccessRules(final String endentityAccessRule) {
+        return this.informationmemory.getRedactedAccessRules(endentityAccessRule);
+    }
+
 
     /**
      * Method returning all the available access rules authorized to administrator to manage.
