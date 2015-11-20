@@ -25,7 +25,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
 <%
-	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.EDITROLES.resource()); 
+	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource()); 
 %>
 
 <html>
@@ -39,7 +39,11 @@
 
 <body>
 
-<h1><h:outputText value="#{web.text.MANAGEROLES}" /><%= ejbcawebbean.getHelpReference("/userguide.html#Administrator%20Roles") %></h1>
+<h1>
+<h:outputText value="#{web.text.MANAGEROLES}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
+<h:outputText value="#{web.text.VIEWROLES}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
+<%= ejbcawebbean.getHelpReference("/userguide.html#Administrator%20Roles") %>
+</h1>
 
 <div>
 	<p><h:messages layout="table" errorClass="alert"/></p>
@@ -73,22 +77,22 @@
 				<h:outputText value="#{web.text.ACCESSRULES}"/>
 			</h:outputLink>
 		</h:column>
-		<h:column>
+		<h:column rendered="#{rolesManagedBean.authorizedToEdit}">
 			<h:commandLink action="#{rolesManagedBean.renameRole}"
 				onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('groupList:currentRole','#{role.roleName}', '#{web.text.ONLYCHARACTERS}');"
-				styleClass="commandLink" title="#{web.text.RENAMEROLE}">
-				<h:outputText value="#{web.text.RENAME}"/>
+				styleClass="commandLink" title="#{web.text.RENAMEROLE}" rendered="#{rolesManagedBean.authorizedToEdit}">
+				<h:outputText value="#{web.text.RENAME}" />
 			</h:commandLink>
 			<h:commandLink action="#{rolesManagedBean.deleteRole}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('groupList:currentRole','#{role.roleName}', '#{web.text.ONLYCHARACTERS}');"
-				styleClass="commandLink" title="#{web.text.DELETEROLE}">
-				<h:outputText value="#{web.text.DELETE}"/>
+				styleClass="commandLink" title="#{web.text.DELETEROLE}" >
+				<h:outputText value="#{web.text.DELETE}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 			</h:commandLink>
 		</h:column>
 	</h:dataTable>
 	<p>
-	<h:commandLink action="#{rolesManagedBean.addRole}" styleClass="commandLink" title="#{web.text.ADDROLE}"
+	<h:commandLink action="#{rolesManagedBean.addRole}" styleClass="commandLink" title="#{web.text.ADDROLE}" 
 		onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}');" >
-		<h:outputText value="#{web.text.ADD}"/>
+		<h:outputText value="#{web.text.ADD}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 	</h:commandLink>
 	</p>
 	</h:form >

@@ -129,6 +129,7 @@ public abstract class AccessRulesConstants {
                                                            SERVICES_EDIT,
                                                            SERVICES_VIEW,
                                                            StandardRules.EDITROLES.resource(),
+                                                           StandardRules.VIEWROLES.resource(),
                                                            StandardRules.SYSTEMCONFIGURATION_EDIT.resource(),
                                                            StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
                                                            StandardRules.EKUCONFIGURATION_EDIT.resource(),

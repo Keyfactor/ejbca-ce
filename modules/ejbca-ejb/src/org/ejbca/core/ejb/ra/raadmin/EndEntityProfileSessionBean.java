@@ -279,15 +279,16 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
     	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE)) {
+        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
         	for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
         		// Check if all profiles available CAs exists in authorizedcaids.
         		final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
+                boolean authorizedToProfile = true;
+
         		if (availableCasString != null) {
-        			boolean authorizedToProfile = true;
         			for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
         			    final int caIdInt = Integer.parseInt(caidString);
         			    // with root rule access you can edit profiles with missing CA ids
