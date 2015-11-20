@@ -1165,6 +1165,8 @@ public final class KeyTools {
     public static String keyspecToKeyalg(String keyspec) {
         if (StringUtils.isNumeric(keyspec)) {
             return AlgorithmConstants.KEYALGORITHM_RSA;
+        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            return AlgorithmConstants.KEYALGORITHM_RSA;
         } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
             return AlgorithmConstants.KEYALGORITHM_DSA;
         } else if (AlgorithmTools.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
@@ -1181,7 +1183,7 @@ public final class KeyTools {
      * is to be used together with a separate "keyalg" value.
      */
     public static String shortenKeySpec(String keyspec) {
-        if (keyspec.startsWith("DSA")) {
+        if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA) || keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA) ) {
             return keyspec.substring(3);
         } else {
             return keyspec;
