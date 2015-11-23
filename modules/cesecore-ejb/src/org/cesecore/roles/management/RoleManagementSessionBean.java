@@ -437,22 +437,20 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     /*
-     * FIXME: Test this method! 
      */
     public Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken) {
         List<RoleData> result = new ArrayList<RoleData>();
         for (RoleData role : roleAccessSession.getAllRoles()) {
-            if (isAuthorizedToEditRole(authenticationToken, role)) {
+            if (isAuthorizedToRole(authenticationToken, role)) {
                 result.add(role);
             }
         }
         return result;
     }
-   
-    
+        
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+    public boolean isAuthorizedToRole(AuthenticationToken authenticationToken, RoleData role) {
         if (role == null) {
             return false;
         }
@@ -522,7 +520,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
      */
     private void assertAuthorizedToEditRole(final AuthenticationToken authenticationToken, final RoleData role) throws AuthorizationDeniedException {
         assertAuthorizedToEditRoles(authenticationToken);
-        if(!isAuthorizedToEditRole(authenticationToken, role)) {
+        if(!isAuthorizedToRole(authenticationToken, role)) {
             String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.notauthorizedtoeditrole", authenticationToken.toString(), role.getRoleName());
             throw new AuthorizationDeniedException(msg);
         }

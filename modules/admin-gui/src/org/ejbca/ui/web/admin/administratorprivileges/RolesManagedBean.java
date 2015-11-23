@@ -32,6 +32,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -40,11 +41,13 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -111,10 +114,26 @@ public class RolesManagedBean extends BaseManagedBean {
         }
     }
 
-    /** @return a List of authorized roles */
+    /** @return a List of all roles, excepting ones that refer to CA's which the current role doesn't have access to. */
     public List<RoleData> getRoles() {
         List<RoleData> roles = new ArrayList<RoleData>();
-        roles.addAll(getAuthorizationDataHandler().getRoles());
+        RoleAccessSessionLocal roleAccessSession = getEjbcaWebBean().getEjb().getRoleAccessSession();
+        CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
+        roleLoop: for(RoleData role : roleAccessSession.getAllRoles()) {
+            // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
+            for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
+                if (!caSession.authorizedToCA(getAdmin(), accessUserAspect.getCaId())) {
+                    continue roleLoop;
+                }
+            }
+            // Secondly, walk through all CAs and make sure that there are no differences. 
+            for (Integer caId : caSession.getAllCaIds()) {
+                if(!caSession.authorizedToCANoLogging(getAdmin(), caId) && role.hasAccessToRule(StandardRules.CAACCESS.resource() + caId)) {
+                    continue roleLoop;
+                }
+            }
+            roles.add(role);
+        }
         Collections.sort(roles);
         return roles;
     }
@@ -575,9 +594,7 @@ public class RolesManagedBean extends BaseManagedBean {
             RoleData role = getCurrentRoleObject();      
             Map<String, Set<String>> redactedRules = getAuthorizationDataHandler()
                     .getRedactedAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
-            allRulesViewCache = getCategorizedRuleSet(role, redactedRules);
-            Map<String, Set<String>> allAvailableRules = getAuthorizationDataHandler()
-                    .getAvailableAccessRules(AccessRulesConstants.CREATE_END_ENTITY);      
+            allRulesViewCache = getCategorizedRuleSet(role, redactedRules);   
         }
         log.trace("<getAccessRules");
         return allRulesViewCache;
@@ -759,15 +776,7 @@ public class RolesManagedBean extends BaseManagedBean {
         this.currentRole = ejbLocalHelper.getRoleAccessSession().findRole(currentRoleName);
     }
 
-    /** @return true if logged on administrator is allowed to edit current role */
-    public boolean isAuthorizedToRole() {
-        for (RoleData role : getAuthorizationDataHandler().getRoles()) {
-            if (role.getRoleName().equals(getCurrentRole())) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     /** @return true if logged on administrator is allowed to edit current role */
     public boolean isAuthorizedToEdit() {
