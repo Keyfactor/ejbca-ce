@@ -167,11 +167,9 @@ function checkallfields() {
 	</h2>
 	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}" /></h3>
 
-	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
-
 </div>
 	
-	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
+	<h:panelGroup>
 	<div><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></div>
 	<h:messages layout="table" errorClass="alert"/>
   
@@ -249,8 +247,8 @@ function checkallfields() {
 			&nbsp;
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:commandButton action="#{rolesManagedBean.saveAccessRules}" onclick="return checkallfields();" value="#{web.text.SAVE}"/>
-			<h:commandButton action="cancel" value="#{web.text.RESTORE}"/>
+			<h:commandButton action="#{rolesManagedBean.saveAccessRules}" onclick="return checkallfields();" value="#{web.text.SAVE}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
+			<h:commandButton action="cancel" value="#{web.text.RESTORE}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 		</h:panelGroup>
 	</h:panelGrid>
 	</h:form>

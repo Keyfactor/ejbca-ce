@@ -510,7 +510,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             /* The authentication created for unauthorizedRole doesn't have access to the CA that created 
              * authorizedRole, hence authorization failure.
              */
-            assertFalse("Authorization should have been denied", roleManagementSession.isAuthorizedToEditRole(momAuthenticationToken, authorizedRole));
+            assertFalse("Authorization should have been denied", roleManagementSession.isAuthorizedToRole(momAuthenticationToken, authorizedRole));
 
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
@@ -560,7 +560,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
                     AccessMatchType.TYPE_EQUALCASE, authorizedRoleName));
             authorizedRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleSubjects);
             // Just a quick check here that CA access works. Not a test per say, so no assert. 
-            if (!roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
+            if (!roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
                 throw new RuntimeException("Authorization should have been allowed");
             }
 
@@ -568,7 +568,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             authorizedRoleRules.add(accessRuleManagementSession.createRule("/bar", authorizedRoleName, AccessRuleState.RULE_ACCEPT, true));
             authorizedRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleRules);
             //Just a quick check that authorization for common rules still works. Not a test per say, so no assert. 
-            if (!roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
+            if (!roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
                 throw new RuntimeException("Authorization should have been allowed");
             }
 
@@ -579,7 +579,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             //unAuthorizedRole doesn't have access to /foo, which authorizedRole does. 
             assertFalse("Authorization should have been denied." + " A role was given authorization for another role containing rules "
                     + "that that role itself didn't have access to.",
-                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
+                    roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole));
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
@@ -641,7 +641,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
                     AccessMatchType.TYPE_EQUALCASE, authorizedRoleName));
             authorizedRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleSubjects);
             // Just a quick check here that CA access works. Not a test per say, so no assert. 
-            if (!roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
+            if (!roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
                 throw new RuntimeException("Authorization should have been allowed");
             }
             Collection<AccessRuleData> authorizedRoleRules = new ArrayList<AccessRuleData>();
@@ -662,7 +662,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             accessControlSession.forceCacheExpire();
             // Check privileges here. 
             assertFalse("Role was given access to another role even though denied resources available to that role.",
-                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
+                    roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole));
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
@@ -713,7 +713,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
                     AccessMatchType.TYPE_EQUALCASE, authorizedRoleName));
             authorizedRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleSubjects);
             // Just a quick check here that CA access works. Not a test per say, so no assert. 
-            if (!roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
+            if (!roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
                 throw new RuntimeException("Authorization should have been allowed");
             }
 
@@ -725,7 +725,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
              * unauthorizedRole does not have access to /bar/xyz
              */
             assertFalse("Unauthorized access to rule, had access to recursive subrule which should have been denied.",
-                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
+                    roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole));
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
@@ -775,7 +775,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
                     AccessMatchType.TYPE_EQUALCASE, authorizedRoleName));
             authorizedRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleSubjects);
             // Just a quick check here that CA access works. Not a test per say, so no assert. 
-            if (!roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
+            if (!roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
                 throw new RuntimeException("Authorization should have been allowed");
             }
 
@@ -786,7 +786,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
              * unauthorizedRole does not have recursive access, while authorizedRole does. 
              */
             assertFalse("Unauthorized access to rule, had access to recursive rule without being recursive itself.",
-                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
+                    roleManagementSession.isAuthorizedToRole(unauthorizedRoleAuthenticationToken, authorizedRole));
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);

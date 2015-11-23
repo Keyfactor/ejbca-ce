@@ -45,14 +45,11 @@
 		<h:outputText value="#{web.text.EDITADMINS}" rendered="#{rolesManagedBean.authorizedToEdit}"/>
 		<h:outputText value="#{web.text.VIEWADMINS}" rendered="#{!rolesManagedBean.authorizedToEdit}"/>
 	</h2>
-	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}"
-  			rendered="#{not empty rolesManagedBean.currentRole}"/></h3>
-
-	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{empty rolesManagedBean.currentRole && !rolesManagedBean.authorizedToRole}"/>
+	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}" rendered="#{not empty rolesManagedBean.currentRole}"/></h3>
 </div>
 
 
-	<h:panelGroup rendered="#{not empty rolesManagedBean.currentRole && rolesManagedBean.authorizedToRole}">
+	<h:panelGroup rendered="#{not empty rolesManagedBean.currentRole}">
  
 	<h:panelGrid styleClass="edit-top" width="100%" columns="1" rowClasses="Row0,Row1" style="text-align: right;">
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf"

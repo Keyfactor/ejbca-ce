@@ -49,11 +49,9 @@
 		<h:outputText value="#{web.text.VIEWACCESSRULES}" rendered="#{!rolesManagedBean.authorizedToEdit}" />
 	</h2>
 	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}" /></h3>
-
-	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
 </div>	
 
-	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
+	<h:panelGroup>
  
 	<h:messages layout="table" errorClass="alert"/>
  
