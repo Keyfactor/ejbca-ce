@@ -539,7 +539,7 @@ public class RequestInstance {
 		} catch (AuthorizationDeniedException e) {
 		    iErrorMessage = intres.getLocalizedMessage("certreq.authorizationdenied") + e.getLocalizedMessage();
 		} catch(CertificateCreateException e) {
-		    if(e.getErrorCode().equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+		    if (e.getErrorCode()!=null && e.getErrorCode().equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
 		        iErrorMessage = e.getLocalizedMessage();
 		    } else {
 		        debug.takeCareOfException(e);
