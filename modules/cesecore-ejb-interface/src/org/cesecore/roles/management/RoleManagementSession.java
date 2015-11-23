@@ -179,7 +179,7 @@ public interface RoleManagementSession {
      * @param role the role to check against.
      * @return true if the subject has access.
      */
-    boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role);
+    boolean isAuthorizedToRole(AuthenticationToken authenticationToken, RoleData role);
     
     /**
      * Checks that the given {@link AuthenticationToken} has access to all the rules it's planning use. 
