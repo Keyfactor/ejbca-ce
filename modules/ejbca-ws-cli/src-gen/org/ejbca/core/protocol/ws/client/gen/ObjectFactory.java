@@ -151,8 +151,8 @@ public class ObjectFactory {
     private final static QName _CaCertResponseResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseResponse");
     private final static QName _CAOfflineException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CAOfflineException");
     private final static QName _CreateCRL_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRL");
-    private final static QName _GetProfileResponseReturn_QNAME = new QName("", "return");
     private final static QName _CaCertResponseForRolloverArg1_QNAME = new QName("", "arg1");
+    private final static QName _GetLatestCRLResponseReturn_QNAME = new QName("", "return");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
@@ -2444,27 +2444,9 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
-    public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetProfileResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponseForRollover.class)
     public JAXBElement<byte[]> createCaCertResponseForRolloverArg1(byte[] value) {
         return new JAXBElement<byte[]>(_CaCertResponseForRolloverArg1_QNAME, byte[].class, CaCertResponseForRollover.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
-    public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, ((byte[]) value));
     }
 
     /**
@@ -2480,9 +2462,27 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
+    public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_GetLatestCRLResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
+    public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_GetLatestCRLResponseReturn_QNAME, byte[].class, GetProfileResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
     @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
     public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_GetLatestCRLResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
     }
 
 }
