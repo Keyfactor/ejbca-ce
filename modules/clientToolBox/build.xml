@@ -20,7 +20,7 @@
 			<include name="bcpkix-*.jar"/>
 			<include name="cert-cvc-*.jar"/>
 			<include name="ldap.jar"/>
-			<include name="commons-collections-3.2.jar"/>
+			<include name="commons-collections-3.2.2.jar"/>
 			<include name="commons-configuration-1.6.jar"/>
 			<include name="commons-logging-1.1.1.jar"/>
 			<include name="commons-io-*.jar"/>
