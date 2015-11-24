@@ -42,12 +42,15 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
     private static final Logger log = Logger.getLogger(InternalKeyBindingGenerateCsrCommand.class);
 
     private static final String GENKEYPAIR_KEY = "--genkeypair";
+    private static final String SUBJECTDN_KEY = "--subjectdn";
     private static final String CSR_FILE_KEY = "-f";
 
     {
         registerParameter(Parameter.createFlag(GENKEYPAIR_KEY, "Set to generate a \"next\" key pair"));
         registerParameter(new Parameter(CSR_FILE_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Destination file for the CSR."));
+        registerParameter(new Parameter(SUBJECTDN_KEY, "CSR Subject DN", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The Subject Distinguiser Name to put in the CSR."));
     }
 
     @Override
@@ -75,7 +78,8 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
             }
             getLogger().info("Next key pair alias is " + nextKeyAlias);
         }
-        final byte[] certificateRequestBytes = internalKeyBindingMgmtSession.generateCsrForNextKey(getAdmin(), internalKeyBindingId);
+        final String optionalSubjectDN = parameters.get(SUBJECTDN_KEY);
+        final byte[] certificateRequestBytes = internalKeyBindingMgmtSession.generateCsrForNextKey(getAdmin(), internalKeyBindingId, optionalSubjectDN);
         if (certificateRequestBytes == null) {
             getLogger().error("Unable to generate CSR for " + nextKeyAlias);
             return CommandResult.FUNCTIONAL_FAILURE;

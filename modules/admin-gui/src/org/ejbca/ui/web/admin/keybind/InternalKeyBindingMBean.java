@@ -555,7 +555,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         try {
             final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
-            final byte[] pkcs10 = internalKeyBindingSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId);
+            final byte[] pkcs10 = internalKeyBindingSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId, null);
             final byte[] pemEncodedPkcs10 = CertTools.getPEMFromCertificateRequest(pkcs10);
             final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             final OutputStream outputStream = response.getOutputStream();

@@ -223,8 +223,9 @@ public class InternalKeyBindingMgmtTest {
                     EndEntityConstants.TOKEN_USERGEN, 0, null);
             endEntityInformation.setPassword("foo123");
             // Request a CSR for the key pair
-            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId);
+            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, null);
             RequestMessage req = new PKCS10RequestMessage(csr);
+            assertEquals("CN="+KEY_BINDING_NAME, req.getRequestDN());
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntityInformation, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
             certFpToDelete = CertTools.getFingerprintAsString(keyBindingCertificate);
@@ -263,13 +264,14 @@ public class InternalKeyBindingMgmtTest {
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, null);
             log.debug("Created InternalKeyBinding with id " + internalKeyBindingId);
             // Request a CSR for the key pair
-            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId);
+            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, "CN="+KEY_BINDING_NAME+",O=workflow");
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
                     EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
                     EndEntityConstants.TOKEN_USERGEN, 0, null);
             user.setPassword("foo123");
             RequestMessage req = new PKCS10RequestMessage(csr);
+            assertEquals("CN="+KEY_BINDING_NAME+",O=workflow", req.getRequestDN());
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
             certFpToDelete = CertTools.getFingerprintAsString(keyBindingCertificate);
@@ -280,6 +282,9 @@ public class InternalKeyBindingMgmtTest {
             // Verify that it was the right certificate it found
             assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), boundCertificateFingerprint);
             // ...so now we have a mapping between a certificate in the database and a key pair in a CryptoToken
+            // A final check that the CSR's subject is normally based on the existing certs for renewals
+            final byte[] csr2 = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, null);
+            assertEquals("CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, new PKCS10RequestMessage(csr2).getRequestDN());
         } finally {
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
             internalCertStoreSession.removeCertificate(certFpToDelete);
