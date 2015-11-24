@@ -48,7 +48,14 @@ import org.apache.log4j.Logger;
  */
 public class CachingKeyStoreWrapper {
     /** Similar to Java's KeyStore.Entry */
+    private static final Logger log = Logger.getLogger(CachingKeyStoreWrapper.class);
+    private final ReentrantLock updateLock = new ReentrantLock(false);
+    private final KeyStore keyStore;
+    private final KeyStoreCache keyStoreCache;
     private class KeyStoreMapEntry {
+        public final Key key;
+        public final Certificate[] certificateChain;
+        public final boolean isTrusted;
         public KeyStoreMapEntry(final String alias, final KeyStore keyStore) throws KeyStoreException {
             if (keyStore.isCertificateEntry(alias)) {
                 // See if there is a TrustedCertificateEntry instead
@@ -65,7 +72,7 @@ public class CachingKeyStoreWrapper {
                 tmpKey = keyStore.getKey(alias, null);
             } catch (KeyStoreException e) {
                 throw e;
-            } catch (Exception e) {
+            } catch (@SuppressWarnings("unused") Exception e) {
                 tmpKey = null;
             }
             this.key = tmpKey;
@@ -119,6 +126,7 @@ public class CachingKeyStoreWrapper {
         public Entry getEntry() {
             if ( this.isTrusted  ) {
                 assert this.certificateChain!=null;
+                // No constructor puts more than one certificate in the chain when trusted.
                 assert this.certificateChain.length==1;
                 return new TrustedCertificateEntry(this.certificateChain[0]);
             }
@@ -128,18 +136,14 @@ public class CachingKeyStoreWrapper {
             }
             return new SecretKeyEntry((SecretKey) this.key);
         }
-        public final Key key;
-        public final Certificate[] certificateChain;
-        public final boolean isTrusted;
     }
 
-    private static final Logger log = Logger.getLogger(CachingKeyStoreWrapper.class);
-    private final ReentrantLock updateLock = new ReentrantLock(false);
-    private final KeyStore keyStore;
-    private final KeyStoreCache keyStoreCache;
     private class KeyStoreCache {
-        public KeyStoreCache(final KeyStore keyStore, final Logger log) throws KeyStoreException {
-            this.cache = new HashMap<String, KeyStoreMapEntry>();
+        private HashMap<String, KeyStoreMapEntry> cache;
+
+        @SuppressWarnings("synthetic-access")
+        public KeyStoreCache(final KeyStore keyStore) throws KeyStoreException {
+            this.cache = new HashMap<>();
             // Load the whole public KeyStore content (aliases and certificate) into the cache
             final Enumeration<String> aliases = keyStore.aliases();
             while (aliases.hasMoreElements()) {
@@ -150,15 +154,13 @@ public class CachingKeyStoreWrapper {
                 }
             }
         }
-        private HashMap<String, KeyStoreMapEntry> cache;
-
         public void addEntry(final String alias, final  KeyStoreMapEntry newEntry) {
-            final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(this.cache);
+            final HashMap<String, KeyStoreMapEntry> clone = new HashMap<>(this.cache);
             clone.put(alias, newEntry);
             this.cache = clone;
         }
         public void removeEntry(final String alias) {
-            final HashMap<String, KeyStoreMapEntry> clone = new HashMap<String, KeyStoreMapEntry>(this.cache);
+            final HashMap<String, KeyStoreMapEntry> clone = new HashMap<>(this.cache);
             clone.remove(alias);
             this.cache = clone;
         }
@@ -166,7 +168,7 @@ public class CachingKeyStoreWrapper {
             return this.cache.get(alias);
         }
         public Enumeration<String> getAliases() {
-            return new Vector<String>(this.cache.keySet()).elements();
+            return new Vector<>(this.cache.keySet()).elements();
         }
     }
 
@@ -186,7 +188,7 @@ public class CachingKeyStoreWrapper {
             log.debug("cachingEnabled: " + cachingEnabled);
         }
         if (cachingEnabled) {
-            this.keyStoreCache = new KeyStoreCache(keyStore, log);
+            this.keyStoreCache = new KeyStoreCache(keyStore);
         } else {
             this.keyStoreCache = null;
         }
