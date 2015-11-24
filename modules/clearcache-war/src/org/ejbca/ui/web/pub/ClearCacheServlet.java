@@ -156,6 +156,10 @@ public class ClearCacheServlet extends HttpServlet {
                     ocspResponseGeneratorSession.clearCTFailFastCache();
                     log.debug("CT caches cleared");
                 }
+                ocspResponseGeneratorSession.clearOcspRequestSignerRevocationStatusCache();
+                if (log.isDebugEnabled()) {
+                    log.debug("OCSP request signer revocation status cache cleared.");
+                }
                 certificateStoreSession.reloadCaCertificateCache(); 
                 if(log.isDebugEnabled()) {
                     log.debug("Certificate Store cache cleared and reloaded.");
