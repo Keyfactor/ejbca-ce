@@ -35,7 +35,10 @@ public abstract class RudInternalKeyBindingCommand extends BaseInternalKeyBindin
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         Integer internalKeyBindingId = null;
-        final String internalKeyBindingName = parameters.get(KEYBINDING_NAME_KEY);
+        String internalKeyBindingName = parameters.get(KEYBINDING_NAME_KEY);
+        if (internalKeyBindingName!=null) {
+            internalKeyBindingName = internalKeyBindingName.trim();
+        }
         internalKeyBindingId = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class).getIdFromName(
                 internalKeyBindingName);
         if (internalKeyBindingId == null) {

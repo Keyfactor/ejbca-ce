@@ -119,7 +119,7 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         endEntityInformation.setPassword("foo123");
         // Request a CSR for the key pair
-        final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId);
+        final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId, null);
         RequestMessage req = new PKCS10RequestMessage(csr);
         certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, signSession.fetchCertGenParams());
         String before = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId).getCertificateId();

@@ -358,7 +358,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final int internalKeyBindingId = ocspSigningCacheEntry.getOcspKeyBinding().getId();
         final byte[] pkcs10CertificationRequest;
         try {
-            pkcs10CertificationRequest = internalKeyBindingMgmtSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId);
+            pkcs10CertificationRequest = internalKeyBindingMgmtSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId, null);
         } catch (AuthorizationDeniedException e) {
             throw new KeyRenewalFailedException(e);
         }
