@@ -17,27 +17,32 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore.ProtectionParameter;
 import java.security.KeyStoreException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.ProviderException;
 import java.security.Signature;
 import java.security.cert.Certificate;
-import java.security.interfaces.DSAKey;
-import java.security.interfaces.ECKey;
 import java.security.interfaces.RSAKey;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.SignWithWorkingAlgorithm;
+import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
@@ -108,11 +113,9 @@ class KeyStoreContainerTest {
                     termOut.println("Not testing keys with alias "+alias+". No certificate exists.");
                 }
             } catch (ClassCastException ce) {
-                termOut.println("Not testing keys with alias "+alias+". Not a private key.");
-            } catch (KeyStoreException ce) {
-                termOut.println("Not testing keys with alias "+alias+". KeyStoreException getting key: "+ce.getMessage());
-            } catch (ProviderException ce) {
-                termOut.println("Not testing keys with alias "+alias+". ProviderException getting key: "+ce.getMessage());
+                termOut.println(String.format("Not testing keys with alias %s. Not a private key. Exception: %s", alias, ce.getMessage()));
+            } catch (KeyStoreException | ProviderException ce) {
+                termOut.println(String.format("Not testing keys with alias %s. KeyStoreException getting key: %s", alias, ce.getMessage()));
             }
         }
         return testSet.toArray(new NormalTest[testSet.size()]);
@@ -274,7 +277,7 @@ class KeyStoreContainerTest {
                 final InputStream is = new FileInputStream(FILENAME);
                 isFileNotAvailable = false;
                 return is;
-            } catch (FileNotFoundException e) {
+            } catch (@SuppressWarnings("unused") FileNotFoundException e) {
                 // Apparently it never existed or has been removed during the test
                 isFileNotAvailable = true;
                 return null;
@@ -285,6 +288,7 @@ class KeyStoreContainerTest {
          * @param signature
          * @throws Exception
          */
+        @SuppressWarnings("synthetic-access")
         public static void updateWithTestData(final Signature signature) throws Exception {
             try (final InputStream is = getInput() ) {
                 log.trace("Start updating ...");
@@ -307,25 +311,39 @@ class KeyStoreContainerTest {
         }
     }
 
+    private class SignO implements Operation<GeneralSecurityException> {
+        private String workingAlgorithm;
+        @Override
+        public void doIt(String signAlgorithm, Provider provider) throws GeneralSecurityException {
+            final Signature sign = Signature.getInstance(signAlgorithm, provider);
+            sign.initSign(KeyStoreContainerTest.this.keyPair.getPrivate());
+            sign.update("Kort string att signera!".getBytes());
+            sign.sign();
+            this.workingAlgorithm = signAlgorithm;
+        }
+        public String getWorkingAlgorithm() {
+            return this.workingAlgorithm;
+        }
+    }
     class Sign implements Test {
         private final String sigAlgName;
         private byte signBA[];
         private Signature signature;
         private boolean result;
-        Sign() {
-            if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof ECKey ) {
-                this.sigAlgName = "SHA256withECDSA";
-                return;
+        @SuppressWarnings("synthetic-access")
+        Sign() throws NoSuchProviderException, GeneralSecurityException {
+            final SignO operation = new SignO();
+            // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
+            final List<String> availableAlogorithms = AlgorithmTools.getSignatureAlgorithms(KeyStoreContainerTest.this.keyPair.getPublic());
+            SignWithWorkingAlgorithm.doIt(availableAlogorithms, KeyStoreContainerTest.this.providerName, operation);
+            this.sigAlgName = operation.getWorkingAlgorithm();
+            if ( this.sigAlgName==null ) {
+                throw new GeneralSecurityException(
+                        String.format(
+                                "Not possible to find working signing algorithm for key with alias '%s' using the provider '%s'.",
+                                KeyStoreContainerTest.this.alias,
+                                KeyStoreContainerTest.this.providerName));
             }
-            if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof RSAKey ) {
-                this.sigAlgName = "SHA1withRSA";
-                return;
-            }
-            if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof DSAKey ) {
-                this.sigAlgName = "SHA1withDSA";
-                return;
-            }
-            this.sigAlgName = null;
         }
         @SuppressWarnings("synthetic-access")
         @Override
@@ -483,7 +501,7 @@ class KeyStoreContainerTest {
             boolean isCryptoAvailable = true;
             try {
                 this.totalDecryptTime += test(new Crypto());
-            } catch( CryptoNotAvailableForThisAlgorithm e ) {
+            } catch( @SuppressWarnings("unused") CryptoNotAvailableForThisAlgorithm e ) {
                 isCryptoAvailable = false;
             } catch( Exception e) {
                 this.totalDecryptTime = -1;

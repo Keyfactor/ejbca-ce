@@ -17,9 +17,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -64,7 +67,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.List;
 
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
@@ -98,6 +101,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -154,16 +158,15 @@ public final class KeyTools {
             log.trace(">genKeys(" + keySpec + ", " + keyAlg + ")");
         }
 
-        KeyPairGenerator keygen;
+        final KeyPairGenerator keygen;
         try {
             keygen = KeyPairGenerator.getInstance(keyAlg, BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm " + keyAlg + "was not recognized.", e);
-         } catch (NoSuchProviderException e) {
-             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-         }
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+        }
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-            AlgorithmParameterSpec ecSpec = null;
             if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
                 log.debug("Generating named curve ECDSA key pair: " + keySpec);
                 // We have EC keys
@@ -171,26 +174,25 @@ public final class KeyTools {
                 keygen.initialize(bcSpec, new SecureRandom());
                 // The old code should work in BC v1.50b6 and later, but in vesions prior to that the below produces a key with explicit parameter encoding instead of named curves.
                 // There is a test for this in KeyToolsTest.testGenKeysECDSAx9
-//                ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);
-//                if (ecSpec == null) {
-//                    throw new InvalidAlgorithmParameterException("keySpec " + keySpec + " is invalid for ECDSA.");
-//                }
-//                keygen.initialize(ecSpec, new SecureRandom());
+                //                ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);
+                //                if (ecSpec == null) {
+                //                    throw new InvalidAlgorithmParameterException("keySpec " + keySpec + " is invalid for ECDSA.");
+                //                }
+                //                keygen.initialize(ecSpec, new SecureRandom());
             } else if (algSpec != null) {
                 log.debug("Generating ECDSA key pair from AlgorithmParameterSpec: " + algSpec);
-                ecSpec = algSpec;
-                keygen.initialize(ecSpec, new SecureRandom());
+                keygen.initialize(algSpec, new SecureRandom());
             } else if (StringUtils.equals(keySpec, "implicitlyCA")) {
                 log.debug("Generating implicitlyCA encoded ECDSA key pair");
                 // If the keySpec is null, we have "implicitlyCA" defined EC parameters
                 // The parameters were already installed when we installed the provider
                 // We just make sure that ecSpec == null here
-                keygen.initialize(ecSpec, new SecureRandom());
+                keygen.initialize(null, new SecureRandom());
             } else {
                 throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
             }
         } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-            AlgorithmParameterSpec ecSpec = null;
+            final AlgorithmParameterSpec ecSpec;
             if(keySpec != null) {
                 log.debug("Generating keys from given key specifications : " + keySpec);
                 ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keySpec);
@@ -204,7 +206,7 @@ public final class KeyTools {
             }
             keygen.initialize(ecSpec, new SecureRandom());
         } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-            AlgorithmParameterSpec ecSpec = null;
+            final AlgorithmParameterSpec ecSpec;
             if(keySpec != null) {
                 log.debug("Generating keys from given key specifications : " + keySpec);
                 ecSpec = dstuOidToAlgoParams(keySpec);
@@ -290,36 +292,35 @@ public final class KeyTools {
      * @throws InvalidKeySpecException if the key specification in pkwithparams was invalid
      */
     public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final PublicKey pkwithparams) throws InvalidKeySpecException {
-        PublicKey ret = pk;
-        if ((pk instanceof PublicKeyEC) && (pkwithparams instanceof PublicKeyEC)) {
-            final PublicKeyEC pkec = (PublicKeyEC) pk;
-            // The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
-            final ECParameterSpec spec = pkec.getParams();
-            if (spec == null) {
-                final PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
-                final ECParameterSpec pkspec = pkecp.getParams();
-                if (pkspec != null) {
-                    final org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec, false);
-                    final java.security.spec.ECPoint p = pkec.getW();
-                    final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
-                    final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
-                    KeyFactory keyfact;
-                    try {
-                        keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
-                    } catch (NoSuchAlgorithmException e) {
-                       throw new IllegalStateException("ECDSA was an unknown algorithm", e);
-                    } catch (NoSuchProviderException e) {
-                        throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-                    }
-                    ret = keyfact.generatePublic(pubKey);
-                } else {
-                    log.info("pkwithparams does not have any params.");
-                }
-            }
-        } else {
+        if ( !(pk instanceof PublicKeyEC) || !(pkwithparams instanceof PublicKeyEC) ) {
             log.info("Either pk or pkwithparams is not a PublicKeyEC: " + pk.toString() + ", " + pkwithparams.toString());
+            return pk;
         }
-        return ret;
+        final PublicKeyEC pkec = (PublicKeyEC) pk;
+        final ECParameterSpec spec = pkec.getParams();
+        if (spec != null) {
+            return pk;// the key allready has its parameters.
+        }
+        // The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
+        final PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
+        final ECParameterSpec pkspec = pkecp.getParams();
+        if (pkspec == null) {
+            log.info("pkwithparams does not have any params.");
+            return pk;
+        }
+        final org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec, false);
+        final java.security.spec.ECPoint p = pkec.getW();
+        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
+        final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
+        final KeyFactory keyfact;
+        try {
+            keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("ECDSA was an unknown algorithm", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+        }
+        return keyfact.generatePublic(pubKey);
     }
 
     /**
@@ -331,46 +332,46 @@ public final class KeyTools {
      *         key and the "implicitlyCA" encoding is used.
      */
     public static int getKeyLength(final PublicKey pk) {
-        int len = -1;
         if (pk instanceof RSAPublicKey) {
             final RSAPublicKey rsapub = (RSAPublicKey) pk;
-            len = rsapub.getModulus().bitLength();
-        } else if (pk instanceof JCEECPublicKey) {
+            return rsapub.getModulus().bitLength();
+        }
+        if (pk instanceof JCEECPublicKey) {
             final JCEECPublicKey ecpriv = (JCEECPublicKey) pk;
             final org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
             if (spec != null) {
-                len = spec.getN().bitLength();
-            } else {
-                // We support the key, but we don't know the key length
-                len = 0;
+                return spec.getN().bitLength();
             }
-        } else if (pk instanceof BCECPublicKey) {
+            // We support the key, but we don't know the key length
+            return 0;
+        }
+        if (pk instanceof BCECPublicKey) {
             final BCECPublicKey ecpriv = (BCECPublicKey) pk;
             final org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
             if (spec != null) {
-                len = spec.getN().bitLength();
-            } else {
-                // We support the key, but we don't know the key length
-                len = 0;
+                return spec.getN().bitLength();
             }
-        } else if (pk instanceof ECPublicKey) {
+            // We support the key, but we don't know the key length
+            return 0;
+        }
+        if (pk instanceof ECPublicKey) {
             final ECPublicKey ecpriv = (ECPublicKey) pk;
             final java.security.spec.ECParameterSpec spec = ecpriv.getParams();
             if (spec != null) {
-                len = spec.getOrder().bitLength(); // does this really return something we expect?
-            } else {
-                // We support the key, but we don't know the key length
-                len = 0;
+                return spec.getOrder().bitLength(); // does this really return something we expect?
             }
-        } else if (pk instanceof DSAPublicKey) {
+            // We support the key, but we don't know the key length
+            return 0;
+        }
+        if (pk instanceof DSAPublicKey) {
             final DSAPublicKey dsapub = (DSAPublicKey) pk;
             if (dsapub.getParams() != null) {
-                len = dsapub.getParams().getP().bitLength();
-            } else {
-                len = dsapub.getY().bitLength();
+                return dsapub.getParams().getP().bitLength();
             }
+            return dsapub.getY().bitLength();
         }
-        return len;
+        // Unknown key type
+        return -1;
     }
 
     /**
@@ -384,17 +385,18 @@ public final class KeyTools {
         if (pk == null) {
             return null;
         }
-        AlgorithmParameterSpec ret = null;
         if (pk instanceof RSAPublicKey) {
             log.debug("getKeyGenSpec: RSA");
             final RSAPublicKey rpk = (RSAPublicKey) pk;
-            ret = new RSAKeyGenParameterSpec(getKeyLength(pk), rpk.getPublicExponent());
-        } else if (pk instanceof DSAPublicKey) {
+            return new RSAKeyGenParameterSpec(getKeyLength(pk), rpk.getPublicExponent());
+        }
+        if (pk instanceof DSAPublicKey) {
             log.debug("getKeyGenSpec: DSA");
             final DSAPublicKey dpk = (DSAPublicKey) pk;
             final DSAParams params = dpk.getParams();
-            ret = new DSAParameterSpec(params.getP(), params.getQ(), params.getG());
-        } else if (pk instanceof ECPublicKey) {
+            return new DSAParameterSpec(params.getP(), params.getQ(), params.getG());
+        }
+        if (pk instanceof ECPublicKey) {
             log.debug("getKeyGenSpec: ECPublicKey");
             final ECPublicKey ecpub = (ECPublicKey) pk;
             final java.security.spec.ECParameterSpec sunsp = ecpub.getParams();
@@ -415,8 +417,9 @@ public final class KeyTools {
                 log.debug("Order: " + params.getOrder().toString(16));
                 log.debug("CoFactor: " + params.getCofactor());
             }
-            ret = params;
-        } else if (pk instanceof JCEECPublicKey) {
+            return params;
+        }
+        if (pk instanceof JCEECPublicKey) {
             log.debug("getKeyGenSpec: JCEECPublicKey");
             final JCEECPublicKey ecpub = (JCEECPublicKey) pk;
             final org.bouncycastle.jce.spec.ECParameterSpec bcsp = ecpub.getParameters();
@@ -424,11 +427,11 @@ public final class KeyTools {
             // TODO: this probably does not work for key generation with the Sun PKCS#11 provider. Maybe seed needs to be set to null as above? Or
             // something else, the BC curve is it the same?
             final ECParameterSpec params = new ECNamedCurveSpec(null, curve, bcsp.getG(), bcsp.getN(), bcsp.getH());
-            ret = params;
+            return params;
             // EllipticCurve ecc = new EllipticCurve(curve.)
             // ECParameterSpec sp = new ECParameterSpec(, bcsp.getG(), bcsp.getN(), bcsp.getH().intValue());
         }
-        return ret;
+        return null;
     }
 
     /**
@@ -450,8 +453,8 @@ public final class KeyTools {
      *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate cacert)
-            throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-        Certificate[] chain;
+            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        final Certificate[] chain;
 
         if (cacert == null) {
             chain = null;
@@ -480,13 +483,12 @@ public final class KeyTools {
      *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Collection<Certificate> cacerts)
-            throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-        Certificate[] chain;
+            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        final Certificate[] chain;
         if (cacerts == null) {
             chain = null;
         } else {
-            chain = new Certificate[cacerts.size()];
-            chain = cacerts.toArray(chain);
+            chain = cacerts.toArray(new Certificate[cacerts.size()]);
         }
         return createP12(alias, privKey, cert, chain);
     } // createP12
@@ -688,7 +690,7 @@ public final class KeyTools {
      * Convert a KeyStore to PEM format.
      */
     public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException, CertificateEncodingException,
-            IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
+    IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Find the key private key entry in the keystore
@@ -706,64 +708,58 @@ public final class KeyTools {
             }
         }
 
-        byte[] privKeyEncoded = "".getBytes();
-
-        if (serverPrivKey != null) {
-            privKeyEncoded = serverPrivKey.getEncoded();
-        }
+        final byte[] privKeyEncoded = serverPrivKey!=null ? serverPrivKey.getEncoded() : "".getBytes();
 
         final Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
         final X509Certificate userX509Certificate = (X509Certificate) chain[0];
+        {
+            final byte[] output = userX509Certificate.getEncoded();
+            final String sn = CertTools.getSubjectDN(userX509Certificate);
 
-        final byte[] output = userX509Certificate.getEncoded();
-        String sn = CertTools.getSubjectDN(userX509Certificate);
+            final String subjectdnpem = sn.replace(',', '/');
+            final String issuerdnpem = CertTools.getIssuerDN(userX509Certificate).replace(',', '/');
 
-        String subjectdnpem = sn.replace(',', '/');
-        String issuerdnpem = CertTools.getIssuerDN(userX509Certificate).replace(',', '/');
+            buffer.write(BAG_ATTRIBUTES);
+            buffer.write(FRIENDLY_NAME);
+            buffer.write(alias.getBytes());
+            buffer.write(NL);
+            buffer.write(BEGIN_PRIVATE_KEY);
+            buffer.write(NL);
 
-        buffer.write(BAG_ATTRIBUTES);
-        buffer.write(FRIENDLY_NAME);
-        buffer.write(alias.getBytes());
-        buffer.write(NL);
-        buffer.write(BEGIN_PRIVATE_KEY);
-        buffer.write(NL);
+            final byte[] privKey = Base64.encode(privKeyEncoded);
+            buffer.write(privKey);
+            buffer.write(NL);
+            buffer.write(END_PRIVATE_KEY);
+            buffer.write(NL);
+            buffer.write(BAG_ATTRIBUTES);
+            buffer.write(FRIENDLY_NAME);
+            buffer.write(alias.getBytes());
+            buffer.write(NL);
+            buffer.write(SUBJECT_ATTRIBUTE);
+            buffer.write(subjectdnpem.getBytes());
+            buffer.write(NL);
+            buffer.write(ISSUER_ATTRIBUTE);
+            buffer.write(issuerdnpem.getBytes());
+            buffer.write(NL);
+            buffer.write(BEGIN_CERTIFICATE);
+            buffer.write(NL);
 
-        final byte[] privKey = Base64.encode(privKeyEncoded);
-        buffer.write(privKey);
-        buffer.write(NL);
-        buffer.write(END_PRIVATE_KEY);
-        buffer.write(NL);
-        buffer.write(BAG_ATTRIBUTES);
-        buffer.write(FRIENDLY_NAME);
-        buffer.write(alias.getBytes());
-        buffer.write(NL);
-        buffer.write(SUBJECT_ATTRIBUTE);
-        buffer.write(subjectdnpem.getBytes());
-        buffer.write(NL);
-        buffer.write(ISSUER_ATTRIBUTE);
-        buffer.write(issuerdnpem.getBytes());
-        buffer.write(NL);
-        buffer.write(BEGIN_CERTIFICATE);
-        buffer.write(NL);
-
-        final byte[] userCertB64 = Base64.encode(output);
-        buffer.write(userCertB64);
-        buffer.write(NL);
-        buffer.write(END_CERTIFICATE);
-        buffer.write(NL);
-
+            final byte[] userCertB64 = Base64.encode(output);
+            buffer.write(userCertB64);
+            buffer.write(NL);
+            buffer.write(END_CERTIFICATE);
+            buffer.write(NL);
+        }
         if (!CertTools.isSelfSigned(userX509Certificate)) {
             for (int num = 1; num < chain.length; num++) {
                 final X509Certificate tmpX509Cert = (X509Certificate) chain[num];
-                sn = CertTools.getSubjectDN(tmpX509Cert);
+                final String sn = CertTools.getSubjectDN(tmpX509Cert);
 
-                String cn = CertTools.getPartFromDN(sn, "CN");
-                if (StringUtils.isEmpty(cn)) {
-                    cn = "Unknown";
-                }
+                final String cnTmp = CertTools.getPartFromDN(sn, "CN");
+                final String cn = StringUtils.isEmpty(cnTmp) ? cnTmp : "Unknown";
 
-                subjectdnpem = sn.replace(',', '/');
-                issuerdnpem = CertTools.getIssuerDN(tmpX509Cert).replace(',', '/');
+                final String subjectdnpem = sn.replace(',', '/');
+                final String issuerdnpem = CertTools.getIssuerDN(tmpX509Cert).replace(',', '/');
 
                 buffer.write(BAG_ATTRIBUTES);
                 buffer.write(FRIENDLY_NAME);
@@ -793,9 +789,9 @@ public final class KeyTools {
     /** @return a buffer with the public key in PEM format */
     public static String getAsPem(final PublicKey publicKey) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos));
-        pemWriter.writeObject(publicKey);
-        pemWriter.close();
+        try ( final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos)) ) {
+            pemWriter.writeObject(publicKey);
+        }
         return new String(baos.toByteArray(), "UTF8");
     }
 
@@ -839,39 +835,39 @@ public final class KeyTools {
         }
 
         // If we came here, we have a cert which is not root cert in 'cert'
-        final ArrayList<Certificate> array = new ArrayList<Certificate>();
+        final ArrayList<Certificate> array = new ArrayList<>();
 
         for (int i = 0; i < certchain.length; i++) {
             array.add(certchain[i]);
         }
 
-        boolean stop = false;
-
-        while (!stop) {
+        while ( true ) {
             final X509Certificate cert = (X509Certificate) array.get(array.size() - 1);
             final String ialias = CertTools.getPartFromDN(CertTools.getIssuerDN(cert), "CN");
             final Certificate[] chain1 = keyStore.getCertificateChain(ialias);
 
             if (chain1 == null) {
-                stop = true;
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Loaded certificate chain with length " + chain1.length + " with alias '" + ialias + "'.");
-                }
+                break;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Loaded certificate chain with length " + chain1.length + " with alias '" + ialias + "'.");
+            }
 
-                if (chain1.length == 0) {
-                    log.error("No RootCA certificate found!");
-                    stop = true;
-                }
+            if (chain1.length == 0) {
+                log.error("No RootCA certificate found!");
+                break;
+            }
+            boolean isSelfSigned = false;
+            for (int j = 0; j < chain1.length && !isSelfSigned; j++) {
+                array.add(chain1[j]);
 
-                for (int j = 0; j < chain1.length; j++) {
-                    array.add(chain1[j]);
-
-                    // If one cert is slefsigned, we have found a root certificate, we don't need to go on anymore
-                    if (CertTools.isSelfSigned(chain1[j])) {
-                        stop = true;
-                    }
+                // If one cert is slefsigned, we have found a root certificate, we don't need to go on anymore
+                if (CertTools.isSelfSigned(chain1[j])) {
+                    isSelfSigned = true;
                 }
+            }
+            if ( isSelfSigned ) {
+                break;
             }
         }
 
@@ -901,25 +897,19 @@ public final class KeyTools {
     public static SubjectKeyIdentifier createSubjectKeyId(final PublicKey pubKey) {
         try {
             final ASN1Sequence keyASN1Sequence;
-            ASN1InputStream pubKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(pubKey.getEncoded()));
-            try {
+            try( final ASN1InputStream pubKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(pubKey.getEncoded())); ) {
                 final Object keyObject = pubKeyAsn1InputStream.readObject();
                 if (keyObject instanceof ASN1Sequence) {
                     keyASN1Sequence = (ASN1Sequence) keyObject;
                 } else {
                     // PublicKey key that don't encode to a ASN1Sequence. Fix this by creating a BC object instead.
                     final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), "BC").translateKey(pubKey);
-                    ASN1InputStream altKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded()));
-                    try {
+                    try ( final ASN1InputStream altKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded())) ) {
                         keyASN1Sequence = (ASN1Sequence) altKeyAsn1InputStream.readObject();
-                    } finally {
-                        altKeyAsn1InputStream.close();
                     }
                 }
                 X509ExtensionUtils x509ExtensionUtils = new BcX509ExtensionUtils();
-                return x509ExtensionUtils.createSubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
-            } finally {
-                pubKeyAsn1InputStream.close();
+                return x509ExtensionUtils.createSubjectKeyIdentifier(SubjectPublicKeyInfo.getInstance(keyASN1Sequence));
             }
         } catch (Exception e) {
             final RuntimeException e2 = new RuntimeException("error creating key"); // NOPMD
@@ -976,6 +966,41 @@ public final class KeyTools {
 
     }
 
+    private static class SignOperation implements Operation<GeneralSecurityException> {
+
+        public SignOperation( final PrivateKey _key, final byte _dataToBeSigned[] ) {
+            this.key = _key;
+            this.dataToBeSigned = _dataToBeSigned;
+        }
+        final private PrivateKey key;
+        final private byte dataToBeSigned[];
+        private byte[] signatureBV;
+        private String signatureAlgorithm;
+        @Override
+        public void doIt(String signAlgorithm, Provider provider) throws GeneralSecurityException {
+            final Signature signature = Signature.getInstance(signAlgorithm, provider);
+            signature.initSign(this.key);
+            signature.update(this.dataToBeSigned);
+            this.signatureBV = signature.sign();
+            this.signatureAlgorithm = signAlgorithm;
+        }
+        public byte[] getSignature() {
+            return this.signatureBV;
+        }
+        public String getSignatureAlgorithm() {
+            return this.signatureAlgorithm;
+        }
+    }
+    private static Provider getProvider(final String sProvider) {
+        if ( sProvider==null ) {
+            return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
+        }
+        final Provider provider = Security.getProvider(sProvider);
+        if ( provider!=null ) {
+            return provider;
+        }
+        return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
+    }
     /**
      * Testing a key pair to verify that it is possible to first sign and then verify with it.
      * 
@@ -983,7 +1008,7 @@ public final class KeyTools {
      *            private key to sign a string with
      * @param pub
      *            public key to verify the signature with
-     * @param provider
+     * @param sProvider
      *            A provider used for signing with the private key, or null if "BC" should be used.
      * 
      * @throws InvalidKeyException
@@ -992,31 +1017,32 @@ public final class KeyTools {
      * @throws NoSuchProviderException
      *             if the provider is not installed.
      */
-    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException { // NOPMD:this is not a junit test
+    public static void testKey(final PrivateKey priv, final PublicKey pub, final String sProvider) throws InvalidKeyException { // NOPMD:this is not a junit test
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         final String testSigAlg;
-        {
-            final Iterator<String> i = AlgorithmTools.getSignatureAlgorithms(pub).iterator();
-            final String tmp = i.hasNext() ? i.next() : null;
-            testSigAlg = tmp != null ? tmp : "SHA1WithRSA";
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Testing keys with algorithm: " + pub.getAlgorithm());
-            log.debug("testSigAlg: " + testSigAlg);
-            log.debug("provider: " + provider);
-            log.trace("privateKey: " + priv);
-            log.trace("privateKey class: " + priv.getClass().getName());
-            log.trace("publicKey: " + pub);
-            log.trace("publicKey class: " + pub.getClass().getName());
-        }
         try {
+            if (log.isDebugEnabled()) {
+                final StringWriter sw = new StringWriter();
+                try( final PrintWriter pw = new PrintWriter(sw) ) {
+                    pw.println("Testing a key:");
+                    pw.println(String.format("\tTesting keys with algorithm: %s", pub.getAlgorithm()));
+                    pw.println(String.format("\tprovider: %s", sProvider));
+                    pw.println(String.format("\tprivateKey: %s", priv));
+                    pw.println(String.format("\tprivateKey class: %s", priv.getClass().getName()));
+                    pw.println(String.format("\tpublicKey: %s", pub));
+                    pw.println(String.format("\tpublicKey class: %s", pub.getClass().getName()));
+                    pw.flush();
+                }
+                log.debug(sw.toString());
+            }
             {
-                final Provider prov = Security.getProvider(provider != null ? provider : "BC");
-                final Signature signature = Signature.getInstance(testSigAlg, prov);
-                signature.initSign(priv);
-                signature.update(input);
-                signBV = signature.sign();
+                final SignOperation operation = new SignOperation(priv, input);
+                // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
+                final List<String> availableSignAlgorithms = AlgorithmTools.getSignatureAlgorithms(pub);
+                SignWithWorkingAlgorithm.doIt(availableSignAlgorithms, getProvider(sProvider), operation);
+                signBV = operation.getSignature();
+                testSigAlg = operation.getSignatureAlgorithm();
                 if (signBV == null) {
                     throw new InvalidKeyException("Result from signing is null.");
                 }
@@ -1026,7 +1052,7 @@ public final class KeyTools {
                 }
             }
             {
-                Signature signature;
+                final Signature signature;
                 try {
                     signature = Signature.getInstance(testSigAlg, "BC");
                 } catch (NoSuchProviderException e) {
@@ -1038,10 +1064,10 @@ public final class KeyTools {
                     throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
                 }
             }
-        } catch (NoSuchAlgorithmException e) {
-            throw new InvalidKeyException("Exception testing key: " + e.getMessage(), e);
-        } catch (SignatureException e) {
-            throw new InvalidKeyException("Exception testing key: " + e.getMessage(), e);
+        } catch ( InvalidKeyException e ) {
+            throw e;
+        } catch ( GeneralSecurityException e ) {
+            throw new InvalidKeyException(String.format("Exception testing key: %s", e.getMessage()), e);
         }
     }
 
@@ -1117,9 +1143,9 @@ public final class KeyTools {
         final String keyAlg = keyspecToKeyalg(keyspec);
         final int len;
         if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
-            len = Integer.valueOf(keyspec); 
+            len = Integer.parseInt(keyspec); 
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            len = Integer.valueOf(keyspec.substring(3));
+            len = Integer.parseInt(keyspec.substring(3));
         } else {
             // Assume it's elliptic curve
             final KeyPair kp = KeyTools.genKeys(keyspec, keyAlg);
@@ -1128,8 +1154,7 @@ public final class KeyTools {
         checkValidKeyLength(keyAlg, len);
     }
 
-    public static void checkValidKeyLength(final PublicKey pk) throws InvalidKeyException, NoSuchAlgorithmException,
-    NoSuchProviderException, InvalidAlgorithmParameterException {
+    public static void checkValidKeyLength(final PublicKey pk) throws InvalidKeyException {
         final String keyAlg = AlgorithmTools.getKeyAlgorithm(pk);
         final int len = KeyTools.getKeyLength(pk);
         checkValidKeyLength(keyAlg, len);
@@ -1144,12 +1169,12 @@ public final class KeyTools {
             // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
             // will ever use that to we will allow it.
             if ((len > 0) && (len < 224)) {
-                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", len);
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", Integer.valueOf(len));
                 throw new InvalidKeyException(msg);
             }                            
         } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(keyAlg) || AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlg)) {
             if (len < 1024) {
-                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", len);
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", Integer.valueOf(len));
                 throw new InvalidKeyException(msg);
             }
         }
@@ -1165,17 +1190,20 @@ public final class KeyTools {
     public static String keyspecToKeyalg(String keyspec) {
         if (StringUtils.isNumeric(keyspec)) {
             return AlgorithmConstants.KEYALGORITHM_RSA;
-        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
-            return AlgorithmConstants.KEYALGORITHM_RSA;
-        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            return AlgorithmConstants.KEYALGORITHM_DSA;
-        } else if (AlgorithmTools.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
-            return AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-        } else if (AlgorithmTools.isDstu4145Enabled() && keyspec.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
-            return AlgorithmConstants.KEYALGORITHM_DSTU4145;
-        } else {
-            return AlgorithmConstants.KEYALGORITHM_ECDSA;
         }
+        if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            return AlgorithmConstants.KEYALGORITHM_RSA;
+        }
+        if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            return AlgorithmConstants.KEYALGORITHM_DSA;
+        }
+        if (AlgorithmTools.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+            return AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+        }
+        if (AlgorithmTools.isDstu4145Enabled() && keyspec.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+            return AlgorithmConstants.KEYALGORITHM_DSTU4145;
+        }
+        return AlgorithmConstants.KEYALGORITHM_ECDSA;
     }
     
     /**
@@ -1185,9 +1213,8 @@ public final class KeyTools {
     public static String shortenKeySpec(String keyspec) {
         if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA) || keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA) ) {
             return keyspec.substring(3);
-        } else {
-            return keyspec;
         }
+        return keyspec;
     }
     
     /**
@@ -1196,9 +1223,8 @@ public final class KeyTools {
     public static String keyalgspecToKeyspec(String keyalg, String keyspec) {
         if ("DSA".equals(keyalg)) {
             return "DSA" + keyspec;
-        } else {
-            return keyspec;
         }
+        return keyspec;
     }
 
     /** 
@@ -1207,30 +1233,19 @@ public final class KeyTools {
      * @return the ASN.1 encoded PublicKey as a Java Object
      */
     public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
-        PublicKey pubKey = null;
-        final ASN1InputStream in = new ASN1InputStream(asn1EncodedPublicKey);
         try {
-            final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
+            final SubjectPublicKeyInfo keyInfo;
+            try ( final ASN1InputStream in = new ASN1InputStream(asn1EncodedPublicKey) ) {
+                keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
+            }
             final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
             final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), "BC");
-            pubKey = keyFact.generatePublic(xKeySpec);
-        } catch (IOException e) {
+            return keyFact.generatePublic(xKeySpec);
+        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
             log.debug("Unable to decode PublicKey.", e);
-        } catch (NoSuchAlgorithmException e) {
-            log.debug("Unable to decode PublicKey.", e);
-        } catch (NoSuchProviderException e) {
-            log.debug("Unable to decode PublicKey.", e);
-        } catch (InvalidKeySpecException e) {
-            log.debug("Unable to decode PublicKey.", e);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                log.debug("Unable to close input stream.");
-            }
         }
-        return pubKey;
+        return null;
     }
     
     /**
@@ -1242,18 +1257,18 @@ public final class KeyTools {
      * @return The first entry of the matching type, or null if it couldn't be parsed.
      */
     public static byte[] getBytesFromPEM(String pem, String beginMarker, String endMarker) {
-        int start = pem.indexOf(beginMarker);
-        int end = pem.indexOf(endMarker, start);
+        final int start = pem.indexOf(beginMarker);
+        final int end = pem.indexOf(endMarker, start);
         if (start == -1 || end == -1) {
             log.debug("Could not find "+beginMarker+" and "+endMarker+" lines in PEM");
             return null;
         }
         
-        String base64 = pem.substring(start + beginMarker.length(), end);
+        final String base64 = pem.substring(start + beginMarker.length(), end);
         try {
             return Base64.decode(base64.getBytes("ASCII"));
         } catch (UnsupportedEncodingException e) {
-            log.debug("Invalid byte in PEM data");
+            log.debug(String.format("Invalid byte in PEM data: %s", e.getMessage()));
             return null;
         }
     }
@@ -1266,11 +1281,12 @@ public final class KeyTools {
      * @return DER encoded public key.
      * @throws CertificateParsingException If the data isn't a public key in either PEM or DER format.
      */
-    public static byte[] getBytesFromPublicKeyFile(byte[] file) throws CertificateParsingException {
-        String fileText = Charset.forName("ASCII").decode(java.nio.ByteBuffer.wrap(file)).toString();
-        byte[] asn1bytes = getBytesFromPEM(fileText, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
-        if (asn1bytes == null) {
-            asn1bytes = file; // Assume it's in ASN1 format already
+    public static byte[] getBytesFromPublicKeyFile(final byte[] file) throws CertificateParsingException {
+        final String fileText = Charset.forName("ASCII").decode(java.nio.ByteBuffer.wrap(file)).toString();
+        final byte[] asn1bytes;
+        {
+            final byte[] tmpBytes = getBytesFromPEM(fileText, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+            asn1bytes = tmpBytes!=null ? tmpBytes : file; // Assume it's in ASN1 format already if null
         }
         try {
             PublicKeyFactory.createKey(asn1bytes); // Check that it's a valid public key
