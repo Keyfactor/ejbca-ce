@@ -561,7 +561,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
+    public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId, String optionalSubjectDN) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
         if (!this.accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
@@ -580,7 +580,28 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final PublicKey publicKey = this.cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
         final CryptoToken cryptoToken = this.cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
         final PrivateKey privateKey = cryptoToken.getPrivateKey(keyPairAlias);
-        final X500Name x500Name = CertTools.stringToBcX500Name("CN=Should be ignore by CA");
+        String requestSubjectDN = optionalSubjectDN;
+        if (requestSubjectDN==null || requestSubjectDN.trim().isEmpty()) {
+            requestSubjectDN = "CN="+internalKeyBinding.getName();
+            // Try to look up the currently mapped certificates SubjectDN and use that
+            final String fingerprint = internalKeyBinding.getCertificateId();
+            if (fingerprint!=null) {
+                final Certificate certificate = certificateStoreSession.findCertificateByFingerprint(fingerprint);
+                if (certificate!=null) {
+                    requestSubjectDN = CertTools.getSubjectDN(certificate);
+                }
+            }
+        }
+        // Validate that this can be used, and if not just put a default here so automation always works
+        try {
+            requestSubjectDN = CertTools.stringToBcX500Name(requestSubjectDN).toString();
+        } catch (IllegalArgumentException e) {
+            requestSubjectDN = "";
+        }
+        if (requestSubjectDN.isEmpty()) {
+            requestSubjectDN = "CN=Should be replaced with trusted value by CA";
+        }
+        final X500Name x500Name = CertTools.stringToBcX500Name(requestSubjectDN);
         final String providerName = cryptoToken.getSignProviderName();
         final GetCSROperation operation = new GetCSROperation(x500Name, publicKey, privateKey);
         // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
