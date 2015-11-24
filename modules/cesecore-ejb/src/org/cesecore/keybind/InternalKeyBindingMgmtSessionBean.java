@@ -20,7 +20,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -82,6 +84,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.SignWithWorkingAlgorithm;
 import org.cesecore.util.CertTools;
 
 /**
@@ -520,17 +523,52 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
         return publicKey;
     }
+    private static class MyException extends Exception {
+        private static final long serialVersionUID = 1L;
 
+        public MyException( Exception e ) {
+            super(e.getMessage(), e);
+        }
+    }
+    private static class GetCSROperation implements SignWithWorkingAlgorithm.Operation<MyException> {
+        final private X500Name x500Name;
+        final private PublicKey publicKey;
+        final private PrivateKey privateKey;
+        private byte resultingCSR[];
+
+        public GetCSROperation(
+                final X500Name _x500Name,
+                final PublicKey _publicKey,
+                final PrivateKey _privateKey) {
+            this.x500Name = _x500Name;
+            this.publicKey = _publicKey;
+            this.privateKey = _privateKey;
+            this.resultingCSR = null;
+        }
+        @Override
+        public void doIt(final String signAlgorithm, final Provider provider) throws MyException  {
+            try {
+                this.resultingCSR = CertTools.genPKCS10CertificationRequest(
+                        signAlgorithm, this.x500Name, this.publicKey, new DERSet(), this.privateKey, provider.getName())
+                        .getEncoded();
+            } catch (OperatorCreationException|IOException e) {
+                throw new MyException(e);
+            }
+        }
+        public byte[] getCSR() {
+            return this.resultingCSR;
+        }
+    }
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
+        if (!this.accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final InternalKeyBinding internalKeyBinding = this.internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String keyPairAlias;
@@ -539,27 +577,27 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } else {
             keyPairAlias = nextKeyPairAlias;
         }
-        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
-        // Chose first available signature algorithm
-        final Collection<String> availableSignatureAlgorithms = AlgorithmTools.getSignatureAlgorithms(publicKey);
-        final String signatureAlgorithm = availableSignatureAlgorithms.iterator().next();
-        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+        final PublicKey publicKey = this.cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
+        final CryptoToken cryptoToken = this.cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
         final PrivateKey privateKey = cryptoToken.getPrivateKey(keyPairAlias);
         final X500Name x500Name = CertTools.stringToBcX500Name("CN=Should be ignore by CA");
         final String providerName = cryptoToken.getSignProviderName();
+        final GetCSROperation operation = new GetCSROperation(x500Name, publicKey, privateKey);
+        // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
+        final List<String> availableSignatureAlgorithms = AlgorithmTools.getSignatureAlgorithms(publicKey);
         try {
-            return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, x500Name, publicKey, new DERSet(), privateKey, providerName)
-                    .getEncoded();
-        } catch (OperatorCreationException e) {
-            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
-                    + keyPairAlias + ". " + e.getMessage());
-        } catch (IOException e) {
-            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
-                    + keyPairAlias + ". " + e.getMessage());
+            if ( SignWithWorkingAlgorithm.doIt(availableSignatureAlgorithms, providerName, operation) ) {
+                return operation.getCSR();
+            }
+            log.info( String.format("No working signing algorithm found for key with alias %s.", keyPairAlias) );
+        } catch( MyException|NoSuchProviderException e ) {
+            log.info(String.format(
+                    "CSR generation failed. internalKeyBindingId=%d, cryptoTokenId=%d, keyPairAlias=%s. %s",
+                    Integer.valueOf(internalKeyBindingId), Integer.valueOf(cryptoTokenId), keyPairAlias,
+                    e.getMessage()));
         }
         return null;
     }
-
     @Override
     public String updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
             throws AuthorizationDeniedException, CertificateImportException {
@@ -938,7 +976,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             details.put("added:"+key, newValue);
         } else if (oldValue != null && newValue == null) {
             details.put("removed:"+key, oldValue);
-        } else if (!oldValue.equals(newValue)) {
+        } else if (oldValue != null && !oldValue.equals(newValue)) {
             details.put("changed:"+key, newValue);
         }
     }

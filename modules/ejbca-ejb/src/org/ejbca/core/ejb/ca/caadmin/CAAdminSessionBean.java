@@ -2425,10 +2425,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
 
             // Sign something to see that we are restoring the right private signature key
-            String testSigAlg = (String) AlgorithmTools.getSignatureAlgorithms(thisCa.getCACertificate().getPublicKey()).iterator().next();
-            if (testSigAlg == null) {
-                testSigAlg = "SHA1WithRSA";
-            }
+            // BC should support the first algorithm so there is no need to use the SignWithWorkingAlgorithm class.
+            final String testSigAlg = AlgorithmTools.getSignatureAlgorithms(thisCa.getCACertificate().getPublicKey()).get(0);
             // Sign with imported private key
             byte[] input = "Test data...".getBytes();
             Signature signature = Signature.getInstance(testSigAlg, "BC");
