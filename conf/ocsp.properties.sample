@@ -200,6 +200,11 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default: false
 #ocsp.signaturerequired=false
 
+# Cache time of revocation checks of the OCSP request signer's certificate in milliseconds.
+# Set to 0 to never cache this revocation information.
+# Default: 60000
+#ocsp.reqsigncertrevcachetime=60000
+
 # Timeout setting for the Global OCSP configuration cache. Once the cache has timed out it will be reread from the 
 # database.
 #

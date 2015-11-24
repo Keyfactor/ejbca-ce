@@ -122,6 +122,7 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.CryptoProviderException;
@@ -245,6 +246,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (ct != null) {
             ct.clearCaches();
         }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void clearOcspRequestSignerRevocationStatusCache() {
+        OcspRequestSignerStatusCache.INSTANCE.flush();
     }
 
     @Override
@@ -746,9 +753,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             if (enforceRequestSigning) {
                 // If it verifies OK, check if it is revoked
-                final CertificateStatus status = certificateStoreSession.getStatus(signercertIssuerName, signercertSerNo);
+                final String cacheLookupKey = OcspRequestSignerStatusCache.INSTANCE.createCacheLookupKey(signercertIssuerName, signercertSerNo);
+                CertificateStatus status = OcspRequestSignerStatusCache.INSTANCE.getCachedCertificateStatus(cacheLookupKey);
+                if (status==null) {
+                    status = certificateStoreSession.getStatus(signercertIssuerName, signercertSerNo);
+                    OcspRequestSignerStatusCache.INSTANCE.updateCachedCertificateStatus(cacheLookupKey, status);
+                }
                 /*
-                 * If rci == null it means the certificate does not exist in database, we then treat it as ok, because it may be so that only revoked
+                 * CertificateStatus.NOT_AVAILABLE means that the certificate does not exist in database. We treat this as ok, because it may be so that only revoked
                  * certificates is in the (external) OCSP database.
                  */
                 if (status.equals(CertificateStatus.REVOKED)) {

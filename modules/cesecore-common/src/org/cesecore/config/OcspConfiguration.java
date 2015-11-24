@@ -38,6 +38,7 @@ public class OcspConfiguration {
     @Deprecated // Deprecated in 6.2.4, remains to allow migration from previous versions
     public static final String DEFAULT_RESPONDER = "ocsp.defaultresponder";
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
+    public static final String REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME = "ocsp.reqsigncertrevcachetime";
     public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
@@ -126,6 +127,21 @@ public class OcspConfiguration {
             log.warn(SIGNING_CERTD_VALID_TIME + " is not a decimal integer. Using default 5 minutes");
         }
         return timeInSeconds*1000;
+    }
+
+    /**
+     * The interval on which new OCSP signing certificates are loaded in milliseconds
+     */
+    public static long getRequestSigningCertRevocationCacheTimeMs() {
+        long timeInSeconds;
+        final long defaultTimeInSeconds = 60*1000L; // 1 minute
+        try {
+            timeInSeconds = Long.parseLong(ConfigurationHolder.getString(REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME));
+        } catch (NumberFormatException e) {
+            timeInSeconds = defaultTimeInSeconds;
+            log.warn(REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME + " is not a decimal long. Using default "+defaultTimeInSeconds+" ms.");
+        }
+        return timeInSeconds;
     }
 
     /**
