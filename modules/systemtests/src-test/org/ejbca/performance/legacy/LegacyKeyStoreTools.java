@@ -416,10 +416,8 @@ public class LegacyKeyStoreTools {
         if (log.isDebugEnabled()) {
             log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
         }
-        String sigAlg = (String)AlgorithmTools.getSignatureAlgorithms(publicKey).iterator().next();
-        if ( sigAlg == null ) {
-        	sigAlg = "SHA1WithRSA";
-        }
+        // This is just a test. First algorithm in the list should work for the test key.
+        final String sigAlg = AlgorithmTools.getSignatureAlgorithms(publicKey).get(0);
         if (sigAlg.contains("ECDSA") && explicitEccParameters) {
             log.info("Using explicit parameter encoding for ECC key.");
             publicKey = ECKeyUtil.publicToExplicitParameters(publicKey, "BC");

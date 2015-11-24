@@ -15,8 +15,10 @@ package org.cesecore.keys.util;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.math.BigInteger;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -38,6 +40,7 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.crypto.KeyGenerator;
 
@@ -55,12 +58,15 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCSException;
+import org.cesecore.CesecoreException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
+import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
@@ -95,11 +101,11 @@ public class KeyStoreTools {
     }
     
     public void setKeyEntry(String alias, Key key, Certificate chain[]) throws KeyStoreException {
-    	getKeyStore().setKeyEntry(alias, key, null, chain);
+        getKeyStore().setKeyEntry(alias, key, null, chain);
     }
     
     private void deleteAlias(String alias) throws KeyStoreException {
-    	getKeyStore().deleteEntry(alias);
+        getKeyStore().deleteEntry(alias);
     }
     /** Deletes an entry in the keystore
      * 
@@ -139,7 +145,30 @@ public class KeyStoreTools {
         getKeyStore().setEntry(newAlias, getKeyStore().getEntry(oldAlias, null), null);
     }
 
-    private X509Certificate getSelfCertificate(String myname, long validity, String sigAlg, KeyPair keyPair) throws InvalidKeyException,
+    private class KeyStoreCertSignOperation implements Operation<OperatorCreationException> {
+
+        public KeyStoreCertSignOperation(
+                final PrivateKey pk,
+                final X509v3CertificateBuilder cb) {
+            this.privateKey = pk;
+            this.certificateBuilder = cb;
+        }
+        final private PrivateKey privateKey;
+        final private X509v3CertificateBuilder certificateBuilder;
+        private X509CertificateHolder result;
+
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void doIt(String sigAlg, Provider provider) throws OperatorCreationException {
+            log.debug("Keystore signing algorithm " + sigAlg);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider.getName()).build(this.privateKey), 20480);
+            this.result = this.certificateBuilder.build(signer);
+        }
+        public X509CertificateHolder getResult() {
+            return this.result;
+        }
+    }
+    private X509Certificate getSelfCertificate(String myname, long validity, List<String> sigAlgs, KeyPair keyPair) throws InvalidKeyException,
             CertificateException {
         final long currentTime = new Date().getTime();
         final Date firstDate = new Date(currentTime - 24 * 60 * 60 * 1000);
@@ -152,143 +181,111 @@ public class KeyStoreTools {
         }
 
         try {
-            final X509v3CertificateBuilder cg = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
-            log.debug("Keystore signing algorithm " + sigAlg);
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(this.providerName).build(keyPair.getPrivate()), 20480);
-            final X509CertificateHolder cert = cg.build(signer);
+            final X509v3CertificateBuilder cb = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
+            final KeyStoreCertSignOperation kscso = new KeyStoreCertSignOperation(keyPair.getPrivate(), cb);
+            SignWithWorkingAlgorithm.doIt(sigAlgs, this.providerName, kscso);
+            final X509CertificateHolder cert = kscso.getResult();
+            if ( cert==null ) {
+                return null;
+            }
             return (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
         } catch (OperatorCreationException e) {
             log.error("Error creating content signer: ", e);
             throw new CertificateException(e);
         } catch (IOException e) {
             throw new CertificateException("Could not read certificate", e);
+        } catch (NoSuchProviderException e) {
+            throw new CertificateException(String.format("Provider '%s' is not existing.", this.providerName), e);
         }
     }
 
-    private void generateEC(final String name, final String keyEntryName) throws InvalidAlgorithmParameterException {
+    private void generateEC(final String ecNamedCurveBc, final String keyAlias) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
-        	log.trace(">generate EC: curve name "+name+", keyEntryName "+keyEntryName);
+            log.trace(">generate EC: curve name "+ecNamedCurveBc+", keyEntryName "+keyAlias);
         }
-        // Generate the EC Keypair
-        KeyPairGenerator kpg;
+        if (StringUtils.contains(Security.getProvider(this.providerName).getClass().getName(), "iaik")) {
+            throw new InvalidAlgorithmParameterException("IAIK ECC key generation not implemented.");
+        }
+        final ECGenParameterSpec keyParams;
+        if (StringUtils.equals(ecNamedCurveBc,"implicitlyCA")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Generating implicitlyCA encoded ECDSA key pair");
+            }
+            // If the keySpec is null, we have "implicitlyCA" defined EC parameters
+            // The parameters were already installed when we installed the provider
+            // We just make sure that ecSpec == null here
+            keyParams = null;
+        } else {
+            // Convert it to the OID if possible since the human friendly name might differ in the provider
+            final String oidOrName = AlgorithmTools.getEcKeySpecOidFromBcName(ecNamedCurveBc);
+            if (log.isDebugEnabled()) {
+                log.debug("keySpecification '"+ecNamedCurveBc+"' transformed into OID " + oidOrName);
+            }
+            keyParams = new ECGenParameterSpec(oidOrName);
+        }
         try {
-            kpg = KeyPairGenerator.getInstance("EC", this.providerName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm " + "EC" + "was not recognized.", e);
-         } catch (NoSuchProviderException e) {
-             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-         }
-        try {
-			Provider prov = Security.getProvider(this.providerName);
-			if (StringUtils.contains(prov.getClass().getName(), "iaik")) {
-        		throw new InvalidAlgorithmParameterException("IAIK ECC key generation not implemented.");
-        		/*
-        		ECDSAPrivateKey privateKeyTemplate = new ECDSAPrivateKey();
-        		privateKeyTemplate.getSign().setBooleanValue(Boolean.TRUE);
-        		privateKeyTemplate.getToken().setBooleanValue(Boolean.FALSE);
-
-        		ECDSAPublicKey publicKeyTemplate = new ECDSAPublicKey();
-        		publicKeyTemplate.getVerify().setBooleanValue(Boolean.TRUE);
-        		publicKeyTemplate.getToken().setBooleanValue(Boolean.FALSE);
-
-        		ObjectID eccCurveObjectID = new ObjectID(objectID);
-        		publicKeyTemplate.getEcdsaParams().setByteArrayValue(DerCoder.encode(eccCurveObjectID));
-
-        		PKCS11KeyPairGenerationSpec keyPairGenerationSpec =
-        			new PKCS11KeyPairGenerationSpec(tokenManager, publicKeyTemplate, privateKeyTemplate, 
-        					PKCS11Spec.USE_READ_WRITE_SESSION, PKCS11Spec.USE_USER_SESSION);
-
-        		keyPairGenerator.initialize(keyPairGenerationSpec);
-				*/
-        	}
-        	    final ECGenParameterSpec ecSpec;
-                if (StringUtils.equals(name,"implicitlyCA")) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Generating implicitlyCA encoded ECDSA key pair");
-                    }
-                    // If the keySpec is null, we have "implicitlyCA" defined EC parameters
-                    // The parameters were already installed when we installed the provider
-                    // We just make sure that ecSpec == null here
-                    ecSpec = null;
-                } else {
-                    // Convert it to the OID if possible since the human friendly name might differ in the provider
-                    final String oidOrName = AlgorithmTools.getEcKeySpecOidFromBcName(name);
-                    if (log.isDebugEnabled()) {
-                        log.debug("keySpecification '"+name+"' transformed into OID " + oidOrName);
-                    }
-                    ecSpec = new ECGenParameterSpec(oidOrName);
-                }
-        		kpg.initialize(ecSpec);        		
+            generateKeyPair(
+                    keyParams, keyAlias,
+                    AlgorithmConstants.KEYALGORITHM_EC,
+                    AlgorithmTools.SIG_ALGS_ECDSA);
         } catch( InvalidAlgorithmParameterException e ) {
-            log.debug("EC name "+name+" not supported.");
+            log.debug("EC name "+ecNamedCurveBc+" not supported.");
             throw e;
         }
-        generateKeyPair(kpg, keyEntryName, "SHA1withECDSA");
         if (log.isTraceEnabled()) {
-        	log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
+            log.trace("<generate: curve name "+ecNamedCurveBc+", keyEntryName "+keyAlias);
         }
     }
     
-    private void generateExtraEC(final String name, final String keyEntryName, final String algInstanceName, final String sigAlgName)
-            throws InvalidAlgorithmParameterException {
-     if (log.isTraceEnabled()) {
-            log.trace(">generate "+algInstanceName+": curve name "+name+", keyEntryName "+keyEntryName);
+    private void generateExtraEC(
+            final String name, final String keyAlias, final String keyAlgorithm,
+            final List<String> sigAlgNames) throws InvalidAlgorithmParameterException {
+        if (log.isTraceEnabled()) {
+            log.trace(">generate "+keyAlgorithm+": curve name "+name+", keyEntryName "+keyAlias);
         }
         // Generate the EC Keypair
-        final KeyPairGenerator kpg;
+        final ECGenParameterSpec keyParams = new ECGenParameterSpec(name);
         try {
-            kpg = KeyPairGenerator.getInstance(algInstanceName, this.providerName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm " + name + "was not recognized.", e);
-         } catch (NoSuchProviderException e) {
-             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-         }
-        try {
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
-            kpg.initialize(ecSpec);
+            generateKeyPair(keyParams, keyAlias, keyAlgorithm, sigAlgNames);
         } catch( InvalidAlgorithmParameterException e ) {
-            log.debug("EC "+algInstanceName+" name "+name+" not supported.");
+            log.debug("EC "+keyAlgorithm+" name "+name+" not supported.");
             throw e;
         }
-        generateKeyPair(kpg, keyEntryName, sigAlgName);
         if (log.isTraceEnabled()) {
-            log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
+            log.trace("<generate: curve name "+name+", keyEntryName "+keyAlias);
         }
     }
 
     private void generateGOST3410(final String name, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
-        generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_ECGOST3410, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+        generateExtraEC(
+                name, keyEntryName, AlgorithmConstants.KEYALGORITHM_ECGOST3410,
+                AlgorithmTools.SIG_ALGS_ECGOST3410);
     }
     
     private void generateDSTU4145(final String name, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
-        generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_DSTU4145, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
+        generateExtraEC(
+                name, keyEntryName, AlgorithmConstants.KEYALGORITHM_DSTU4145,
+                AlgorithmTools.SIG_ALGS_DSTU4145);
     }
 
-    private void generateRSA(final int keySize, final String keyEntryName) {
+    private void generateRSA(final int keySize, final String keyEntryName) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
             log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
         }
-        // Generate the RSA Keypair
-        final KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance("RSA", this.providerName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm " + "RSA" + "was not recognized.", e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-        }
-        kpg.initialize(keySize);
-        generateKeyPair(kpg, keyEntryName, "SHA1withRSA");
+        generateKeyPair(
+                new SizeAlgorithmParameterSpec(keySize), keyEntryName,
+                AlgorithmConstants.KEYALGORITHM_RSA,
+                AlgorithmTools.SIG_ALGS_RSA);
         if (log.isTraceEnabled()) {
             log.trace("<generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
         }
     }
 
-    private void generateDSA(final int keySize, final String keyEntryName) {
+    private void generateDSA(final int keySize, final String keyAlias) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
-            log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
+            log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyAlias);
         }
         // Generate the RSA Keypair
         final KeyPairGenerator kpg;
@@ -300,9 +297,11 @@ public class KeyStoreTools {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
         kpg.initialize(keySize);
-        generateKeyPair(kpg, keyEntryName, "SHA1withDSA");
+        generateKeyPair(
+                new SizeAlgorithmParameterSpec(keySize), keyAlias,
+                AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmTools.SIG_ALGS_DSA);
         if (log.isTraceEnabled()) {
-            log.trace("<generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
+            log.trace("<generate: keySize " + keySize + ", keyEntryName " + keyAlias);
         }
     }
 
@@ -324,7 +323,7 @@ public class KeyStoreTools {
 
             try {
                 generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
-            } catch (NumberFormatException e) {
+            } catch (@SuppressWarnings("unused") NumberFormatException e) {
                 generateEC(keySpec, keyEntryName);
             }
         }
@@ -341,59 +340,68 @@ public class KeyStoreTools {
      */
     public void generateKey(final String algorithm, final int keysize,
                             final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException {
-    	KeyGenerator generator = KeyGenerator.getInstance(algorithm, this.providerName);
+        KeyGenerator generator = KeyGenerator.getInstance(algorithm, this.providerName);
         generator.init(keysize);
         Key key = generator.generateKey();
         setKeyEntry(keyEntryName, key, null);
     }
 
     /** Generates keys in the Keystore token.
-     * @param spec AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec. 
-     * @param keyEntryName
+     * @param keyParams AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec. 
+     * @param keyAlias
      * @throws InvalidAlgorithmParameterException 
      * @throws CertificateException 
      * @throws IOException 
      */
-    public void generateKeyPair(final AlgorithmParameterSpec spec, final String keyEntryName) throws InvalidAlgorithmParameterException,
+    public void generateKeyPair(final AlgorithmParameterSpec keyParams, final String keyAlias) throws InvalidAlgorithmParameterException,
             CertificateException, IOException {
         if (log.isTraceEnabled()) {
-        	log.trace(">generate from AlgorithmParameterSpec: "+spec.getClass().getName());
+            log.trace(">generate from AlgorithmParameterSpec: "+keyParams.getClass().getName());
         }
         // Generate the Keypair
-        final String algorithm;
-        final String sigAlg;
-        final String specName = spec.getClass().getName();
-        if (specName.contains("DSA")) {
-        	algorithm = "DSA";
-            sigAlg = "SHA1withDSA";
-        } else if (specName.contains("RSA")) {
-        	algorithm = "RSA";
-            sigAlg = "SHA1withRSA";
+        final String keyAlgorithm;
+        final List<String> certSignAlgorithms;
+        final String specName = keyParams.getClass().getName();
+        if (specName.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DSA;
+            certSignAlgorithms = AlgorithmTools.SIG_ALGS_DSA;
+        } else if (specName.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
+            certSignAlgorithms = AlgorithmTools.SIG_ALGS_RSA;
         } else {
-            algorithm = "EC";
-            sigAlg = "SHA1withECDSA";
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_EC;
+            certSignAlgorithms = AlgorithmTools.SIG_ALGS_ECDSA;
         }
+        generateKeyPair(keyParams, keyAlias, keyAlgorithm, certSignAlgorithms);
+    }
+    private class SizeAlgorithmParameterSpec implements AlgorithmParameterSpec {
+        public SizeAlgorithmParameterSpec(final int _keySize) {
+            this.keySize = _keySize;
+        }
+        public final int keySize;
+    }
+    private void generateKeyPair(
+            final AlgorithmParameterSpec keyParams, final String keyAlias,
+            final String keyAlgorithm,
+            final List<String> certSignAlgorithms) throws InvalidAlgorithmParameterException {
         final KeyPairGenerator kpg;
         try {
-            kpg = KeyPairGenerator.getInstance(algorithm, this.providerName);
+            kpg = KeyPairGenerator.getInstance(keyAlgorithm, this.providerName);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm " + algorithm + " was not recognized.", e);
+            throw new IllegalStateException("Algorithm " + keyAlgorithm + " was not recognized.", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
         try {
-            kpg.initialize(spec);
+            if ( keyParams instanceof SizeAlgorithmParameterSpec ) {
+                kpg.initialize(((SizeAlgorithmParameterSpec)keyParams).keySize);
+            } else {
+                kpg.initialize(keyParams);
+            }
         } catch( InvalidAlgorithmParameterException e ) {
             log.debug("Algorithm parameters not supported: "+e.getMessage());
             throw e;
         }
-        generateKeyPair(kpg, keyEntryName, sigAlg);
-        if (log.isTraceEnabled()) {
-        	log.trace("<generate from AlgorithmParameterSpec: "+spec.getClass().getName());
-        }
-    }
-    
-    private void generateKeyPair(final KeyPairGenerator kpg, final String keyEntryName, final String sigAlgName) {
         // We will make a loop to retry key generation here. Using the IAIK provider it seems to give
         // CKR_OBJECT_HANDLE_INVALID about every second time we try to store keys
         // But if we try again it succeeds
@@ -403,10 +411,10 @@ public class KeyStoreTools {
             try {
                 log.debug("generating...");
                 final KeyPair keyPair = kpg.generateKeyPair();
-                X509Certificate[] chain = new X509Certificate[1];
-                chain[0] = getSelfCertificate("CN=some guy, L=around, C=US", (long) 30 * 24 * 60 * 60 * 365, sigAlgName, keyPair);
-                log.debug("Creating certificate with entry " + keyEntryName + '.');
-                setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
+                final X509Certificate selfSignedCert = getSelfCertificate("CN=some guy, L=around, C=US", (long) 30 * 24 * 60 * 60 * 365, certSignAlgorithms, keyPair);
+                final X509Certificate chain[] = new X509Certificate[]{selfSignedCert};
+                log.debug("Creating certificate with entry " + keyAlias + '.');
+                setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
                 break; // success no need to try more
             } catch (KeyStoreException e) {
                 log.info("Failed to generate or store new key, will try 3 times. This was try: " + bar, e);
@@ -416,58 +424,113 @@ public class KeyStoreTools {
                throw new KeyCreationException("Dummy certificate chain was created with an invalid key" , e);
             }
         }
+        if (log.isTraceEnabled()) {
+            log.trace("<generate from AlgorithmParameterSpec: "+(keyParams!=null ? keyParams.getClass().getName() : "null"));
+        }
     }
 
+    private class MyOperation implements Operation<CesecoreException> {
+
+        public MyOperation(final String _alias, final String _sDN, final boolean _explicitEccParameters, final PublicKey publicKey) {
+            this.alias = _alias;
+            this.sDN = _sDN;
+            this.explicitEccParameters = _explicitEccParameters;
+            this.certReq = null;
+            this.publicKeyTmp = publicKey;
+        }
+        final private String alias;
+        final private String sDN;
+        final private boolean explicitEccParameters;
+        final private PublicKey publicKeyTmp;
+        private PKCS10CertificationRequest certReq;
+
+        @SuppressWarnings("synthetic-access")
+        private void doItTry(final String signAlgorithm, final Provider provider) throws IllegalArgumentException, GeneralSecurityException, OperatorCreationException  {
+            final PublicKey publicKey;
+            {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format(
+                            "alias: %s SHA1 of public key: %s",
+                            this.alias,
+                            CertTools.getFingerprintAsString(this.publicKeyTmp.getEncoded())
+                            ));
+                }
+                if (signAlgorithm.contains("ECDSA") && this.explicitEccParameters) {
+                    log.info("Using explicit parameter encoding for ECC key.");
+                    publicKey = ECKeyUtil.publicToExplicitParameters(this.publicKeyTmp, "BC");
+                } else {
+                    log.info("Using named curve parameter encoding for ECC key.");
+                    publicKey = this.publicKeyTmp;
+                }
+            }
+            final PrivateKey privateKey = getPrivateKey(this.alias);
+            final X500Name sDNName = this.sDN!=null ? new X500Name(this.sDN) : new X500Name("CN="+this.alias);
+            this.certReq = CertTools.genPKCS10CertificationRequest(
+                    signAlgorithm,
+                    sDNName,
+                    publicKey, new DERSet(),
+                    privateKey,
+                    provider.getName() );
+        }
+        @Override
+        public void doIt(final String signAlgorithm, final Provider provider) throws CesecoreException {
+            try {
+                doItTry(signAlgorithm, provider);
+            } catch (OperatorCreationException | GeneralSecurityException e) {
+                throw new CesecoreException("Not possible to sign CSR.", e);
+            }
+        }
+        public PKCS10CertificationRequest getResult() {
+            return this.certReq;
+        }
+    }
     /** Generates a certificate request (CSR) in PKCS#10 format and writes to file
      * @param alias for the key to be used
-     * @param dn the DN to be used. If null the 'CN=alias' will be used
+     * @param sDN the DN to be used. If null the 'CN=alias' will be used
      * @param explicitEccParameters false should be default and will use NamedCurve encoding of ECC public keys (IETF recommendation), use true to include all parameters explicitly (ICAO ePassport requirement).
-     * @throws Exception
+     * @throws GeneralSecurityException
+     * @throws CesecoreException
+     * @throws OperatorCreationException
+     * @throws PKCSException
+     * @throws IOException
      */
-    public void generateCertReq(String alias, String sDN, boolean explicitEccParameters) throws Exception {
-        PublicKey publicKey = getCertificate(alias).getPublicKey();
-        final PrivateKey privateKey = getPrivateKey(alias);
+    public void generateCertReq(String alias, String sDN, boolean explicitEccParameters) throws GeneralSecurityException, CesecoreException, OperatorCreationException, PKCSException, IOException {
+        final PublicKey publicKey = getCertificate(alias).getPublicKey();
         if (log.isDebugEnabled()) {
             log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
         }
-        String sigAlg = (String)AlgorithmTools.getSignatureAlgorithms(publicKey).iterator().next();
-        if ( sigAlg == null ) {
-        	sigAlg = "SHA1WithRSA";
+        // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
+        final List<String> sigAlg = AlgorithmTools.getSignatureAlgorithms(publicKey);
+        final MyOperation operation = new MyOperation(alias, sDN, explicitEccParameters, publicKey);
+        SignWithWorkingAlgorithm.doIt(sigAlg, this.providerName, operation);
+        final PKCS10CertificationRequest certReq = operation.getResult();
+        if ( certReq==null ) {
+            throw new CesecoreException("Not to sign CSR.");
         }
-        if (sigAlg.contains("ECDSA") && explicitEccParameters) {
-            log.info("Using explicit parameter encoding for ECC key.");
-            publicKey = ECKeyUtil.publicToExplicitParameters(publicKey, "BC");
-        } else {
-            log.info("Using named curve parameter encoding for ECC key.");
-        }
-        X500Name sDNName = sDN!=null ? new X500Name(sDN) : new X500Name("CN="+alias);
-        final PKCS10CertificationRequest certReq =
-            CertTools.genPKCS10CertificationRequest( sigAlg,
-                                            sDNName,
-                                            publicKey, new DERSet(),
-                                            privateKey,
-                                            this.keyStore.getProvider().getName() );
-        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
+        final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
         if ( !certReq.isSignatureValid(verifier) ) {
             String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
-            throw new Exception(msg);
+            throw new CesecoreException(msg);
         }
         String filename = alias+".pem";
-        final Writer writer = new FileWriter(filename);
-        writer.write(CertTools.BEGIN_CERTIFICATE_REQUEST+"\n");
-        writer.write(new String(Base64.encode(certReq.getEncoded())));
-        writer.write("\n"+CertTools.END_CERTIFICATE_REQUEST+"\n");
-        writer.close();
+        try( final Writer writer = new FileWriter(filename) ) {
+            writer.write(CertTools.BEGIN_CERTIFICATE_REQUEST+"\n");
+            writer.write(new String(Base64.encode(certReq.getEncoded())));
+            writer.write("\n"+CertTools.END_CERTIFICATE_REQUEST+"\n");
+        }
         log.info("Wrote csr to file: "+filename);
     }
-    
+
     /**
      * Install certificate chain to key in keystore.
      * @param file name of the file with chain. Starting with the certificate of the key. Ending with the root certificate.
      * @throws Exception
      */
     public void installCertificate(final String fileName) throws Exception {
-        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
+        final X509Certificate chain[];
+        try( final InputStream is = new FileInputStream(fileName) ) {
+            chain = ((Collection<?>)CertTools.getCertsFromPEM(is)).toArray(new X509Certificate[0]);
+        }
         final PublicKey importPublicKey = chain[0].getPublicKey();
         final String importKeyHash = CertTools.getFingerprintAsString(importPublicKey.getEncoded());
         final Enumeration<String> eAlias = getKeyStore().aliases();
@@ -498,14 +561,17 @@ public class KeyStoreTools {
      * @throws Exception
      */
     public void installTrustedRoot(String fileName) throws Exception {
-        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
+        final X509Certificate chain[];
+        try( final InputStream is = new FileInputStream(fileName) ) {
+            chain = ((Collection<?>)CertTools.getCertsFromPEM(is)).toArray(new X509Certificate[0]);
+        }
         if ( chain.length<1 ) {
             throw new Exception("No certificate in file");
         }
         // assume last cert in chain is root if more than 1
         getKeyStore().setCertificateEntry("trusted", chain[chain.length-1]);
     }
-    private PrivateKey getPrivateKey(String alias) throws Exception {
+    private PrivateKey getPrivateKey(String alias) throws GeneralSecurityException {
         final PrivateKey key = (PrivateKey)getKey(alias);
         if ( key==null ) {
             String msg = intres.getLocalizedMessage("token.errornokeyalias", alias);
@@ -513,7 +579,7 @@ public class KeyStoreTools {
         }
         return key;
     }
-    private Key getKey(String alias) throws Exception, IOException {
+    private Key getKey(String alias) throws GeneralSecurityException {
         return getKeyStore().getKey(alias, null);
     }
     private X509Certificate getCertificate( String alias ) throws KeyStoreException {
