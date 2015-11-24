@@ -120,7 +120,7 @@ public class HSMKeyTool extends ClientToolBox {
         System.err.println();
     }
     private static String commandString(String[] sa) {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         for ( int i=0; i<sa.length; i++) {
             sb.append(sa[i]);
             if (i+1<sa.length) {
@@ -162,7 +162,7 @@ public class HSMKeyTool extends ClientToolBox {
     }
     final static String KEY_SPEC_DESC = "all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn";
     private static void printCommandString( final String args[], final boolean withCharedLib, Object... objects) {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         sb.append(args[0]);
         sb.append(' ');
         sb.append(args[1]);

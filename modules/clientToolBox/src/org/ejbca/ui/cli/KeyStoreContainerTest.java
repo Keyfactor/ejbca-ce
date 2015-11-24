@@ -128,7 +128,7 @@ class KeyStoreContainerTest {
             final ProtectionParameter protectionParameter) throws Exception {
         termOut.println("Test of keystore with ID "+storeID+'.');
         NormalTest tests[] = null;
-        final KeyStoreTools keyStore = getKeyStore(
+        final KeyStoreTools keyStore = getKeyStoreTools(
                 p11moduleName, storeID, slotLabelType, protectionParameter);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
@@ -154,7 +154,7 @@ class KeyStoreContainerTest {
                                     final String alias,
                                     final boolean isSign,
                                     final ProtectionParameter protectionParameter) throws Exception {
-        final KeyStoreTools keyStore = getKeyStore(
+        final KeyStoreTools keyStore = getKeyStoreTools(
                 p11moduleName, storeID, slotLabelType, protectionParameter);
         if ( !keyStore.getKeyStore().isKeyEntry(alias) ) {
             termErr.println("Key alias does not exist.");
@@ -170,15 +170,15 @@ class KeyStoreContainerTest {
                 -1,
                 isSign);
     }
-    static private KeyStoreTools getKeyStore(
+    static private KeyStoreTools getKeyStoreTools(
             final String p11moduleName,
             final String storeID,
             final Pkcs11SlotLabelType slotLabelType,
             final ProtectionParameter protectionParameter) throws Exception {
-        KeyStoreTools keyStore = null;
-        while( keyStore==null ) {
+        KeyStoreTools keyStoreTools = null;
+        while( keyStoreTools==null ) {
             try {
-                keyStore = KeyStoreToolsFactory.getInstance(
+                keyStoreTools = KeyStoreToolsFactory.getInstance(
                         p11moduleName, storeID, slotLabelType, null, protectionParameter);
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 log.error("Not possible to load keys.", t);
@@ -189,7 +189,7 @@ class KeyStoreContainerTest {
                 }
             }
         }
-        return keyStore;
+        return keyStoreTools;
     }
     private interface Test {
         void prepare() throws Exception;

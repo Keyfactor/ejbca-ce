@@ -130,6 +130,9 @@ public class KeyStoreTools {
     }
     /**
      * Rename the alias of an entry.
+     * This has just been tested on pkcs#11 keystores. On other keystore it might
+     * be that you will get two aliases for the same key (copy). But on p11
+     * we know that the oldAlias is not existing after the method is called.
      *  
      * @param oldAlias is the current name
      * @param newAlias is the new name
