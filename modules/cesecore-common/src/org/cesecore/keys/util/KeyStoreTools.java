@@ -432,9 +432,9 @@ public class KeyStoreTools {
         }
     }
 
-    private class MyOperation implements Operation<CesecoreException> {
+    private class CreateCsrOperation implements Operation<CesecoreException> {
 
-        public MyOperation(final String _alias, final String _sDN, final boolean _explicitEccParameters, final PublicKey publicKey) {
+        public CreateCsrOperation(final String _alias, final String _sDN, final boolean _explicitEccParameters, final PublicKey publicKey) {
             this.alias = _alias;
             this.sDN = _sDN;
             this.explicitEccParameters = _explicitEccParameters;
@@ -504,7 +504,7 @@ public class KeyStoreTools {
         }
         // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
         final List<String> sigAlg = AlgorithmTools.getSignatureAlgorithms(publicKey);
-        final MyOperation operation = new MyOperation(alias, sDN, explicitEccParameters, publicKey);
+        final CreateCsrOperation operation = new CreateCsrOperation(alias, sDN, explicitEccParameters, publicKey);
         SignWithWorkingAlgorithm.doIt(sigAlg, this.providerName, operation);
         final PKCS10CertificationRequest certReq = operation.getResult();
         if ( certReq==null ) {
