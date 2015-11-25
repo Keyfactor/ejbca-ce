@@ -1303,48 +1303,48 @@ public abstract class CertTools {
      */
     public static byte[] getPemFromCertificateChain(Collection<Certificate> certs) throws CertificateEncodingException  {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream printStream = new PrintStream(baos);
-        for (final Certificate certificate : certs) {
-            printStream.println("Subject: " + CertTools.getSubjectDN(certificate));
-            printStream.println("Issuer: " + CertTools.getIssuerDN(certificate));
-            writeAsPemEncoded(printStream, certificate.getEncoded(), BEGIN_CERTIFICATE, END_CERTIFICATE);
+        try ( final PrintStream printStream = new PrintStream(baos) ) {
+            for (final Certificate certificate : certs) {
+                printStream.println("Subject: " + CertTools.getSubjectDN(certificate));
+                printStream.println("Issuer: " + CertTools.getIssuerDN(certificate));
+                writeAsPemEncoded(printStream, certificate.getEncoded(), BEGIN_CERTIFICATE, END_CERTIFICATE);
+            }
         }
-        printStream.close();
         return baos.toByteArray();
     }
 
     /** @return a CRL in PEM-format as a byte array. */
     public static byte[] getPEMFromCrl(byte[] crlBytes) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream printStream = new PrintStream(baos);
-        writeAsPemEncoded(printStream, crlBytes, BEGIN_X509_CRL_KEY, END_X509_CRL_KEY);
-        printStream.close();
+        try ( final PrintStream printStream = new PrintStream(baos) ) {
+            writeAsPemEncoded(printStream, crlBytes, BEGIN_X509_CRL_KEY, END_X509_CRL_KEY);
+        }
         return baos.toByteArray();
     }
 
     /** @return a PublicKey in PEM-format as a byte array. */
     public static byte[] getPEMFromPublicKey(final byte[] publicKeyBytes) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream printStream = new PrintStream(baos);
-        writeAsPemEncoded(printStream, publicKeyBytes, BEGIN_PUBLIC_KEY, END_PUBLIC_KEY);
-        printStream.close();
+        try ( final PrintStream printStream = new PrintStream(baos) ) {
+            writeAsPemEncoded(printStream, publicKeyBytes, BEGIN_PUBLIC_KEY, END_PUBLIC_KEY);
+        }
         return baos.toByteArray();
     }
 
     public static byte[] getPEMFromPrivateKey(final byte[] privateKeyBytes) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream printStream = new PrintStream(baos);
-        writeAsPemEncoded(printStream, privateKeyBytes, BEGIN_PRIVATE_KEY, END_PRIVATE_KEY);
-        printStream.close();
+        try ( final PrintStream printStream = new PrintStream(baos) ) {
+            writeAsPemEncoded(printStream, privateKeyBytes, BEGIN_PRIVATE_KEY, END_PRIVATE_KEY);
+        }
         return baos.toByteArray();
     }
 
     /** @return a PublicKey in PEM-format as a byte array. */
     public static byte[] getPEMFromCertificateRequest(final byte[] certificateRequestBytes) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream printStream = new PrintStream(baos);
-        writeAsPemEncoded(printStream, certificateRequestBytes, BEGIN_CERTIFICATE_REQUEST, END_CERTIFICATE_REQUEST);
-        printStream.close();
+        try ( final PrintStream printStream = new PrintStream(baos) ) {
+            writeAsPemEncoded(printStream, certificateRequestBytes, BEGIN_CERTIFICATE_REQUEST, END_CERTIFICATE_REQUEST);
+        }
         return baos.toByteArray();
     }
 
