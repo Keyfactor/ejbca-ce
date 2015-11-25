@@ -1,5 +1,9 @@
 <%
   boolean authorizedToEdit = ejbcarabean.authorizedToEditEndEntityProfiles();
+
+  int[] statuses = ViewEndEntityHelper.statusids;
+  String[] statustexts = ViewEndEntityHelper.statustexts;
+
   profiledata = ejbcarabean.getTemporaryEndEntityProfile();
   if(profiledata == null){
     profiledata = ejbcarabean.getEndEntityProfile(profile);
@@ -64,7 +68,7 @@
     <% for(int i=0; i < profiledata.getSubjectAltNameFieldOrderLength(); i++){ %>
     altnamesfieldtypes[<%=i %>] = <%=profiledata.getSubjectAltNameFieldsInOrder(i)[EndEntityProfile.FIELDTYPE]%>
     <%}%>
-
+  
 function checkallfields(){
     var illegalfields = 0;
     var fieldname;
@@ -1619,7 +1623,8 @@ if (!editerrors.isEmpty()) {
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
-        <input type="submit" name="<%=BUTTON_DELETEALL_NOTIFICATION%>" value="<%= ejbcawebbean.getText("DELETEALL") %>" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit ? "" : "disabled"%>/>
+        <input type="submit" name="<%=BUTTON_DELETEALL_NOTIFICATION%>" value="<%= ejbcawebbean.getText("DELETEALL") %>"
+        	 <%=(profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit && (profiledata.getUserNotifications().size() > 0)) ? "" : "disabled"%>/>
       </td>
       <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"SENDNOTIFICATION\") %>" /></strong>
@@ -1627,7 +1632,7 @@ if (!editerrors.isEmpty()) {
       </td>
       <td width="50%" valign="top"> 
         <% used = profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0); %>
-        <input type="checkbox" name="<%=CHECKBOX_USE_SENDNOTIFICATION %>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_USE_SENDNOTIFICATION %>"  id="<%=CHECKBOX_USE_SENDNOTIFICATION %>" value="<%=CHECKBOX_VALUE %>" 
         onclick="checkusecheckbox('<%=CHECKBOX_USE_SENDNOTIFICATION %>', '<%=CHECKBOX_SENDNOTIFICATION%>', '<%=CHECKBOX_REQUIRED_SENDNOTIFICATION %>'); checkuseemailfield();usenotificationchange()"
            <% if(used)
                  out.write("CHECKED");
@@ -1647,15 +1652,94 @@ if (!editerrors.isEmpty()) {
                 out.write("CHECKED");
            %> id="<%=CHECKBOX_REQUIRED_SENDNOTIFICATION%>" />
         <label for="<%=CHECKBOX_REQUIRED_SENDNOTIFICATION%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
+        <%if(ejbcarabean.getTemporaryEndEntityProfileNotification() == null) {  %>
+         	<input type="submit" name="<%=BUTTON_ADD_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADD") %>" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> />
+         <% } else { %>
+         	<input type="submit" name="<%=BUTTON_ADD_ANOTHER_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADDANOTHER") %>" <% if(!used || !authorizedToEdit) out.write(" disabled "); %>
+         		onClick='return checkallfields()'/>        	
+         <% } %>
       </td>
     </tr>
 
+    <% if(ejbcarabean.getTemporaryEndEntityProfileNotification() != null) { %>
+     <%-- add new notification input form section --%>
+    <tr id="Row<%=row%2%>">
+      <td width="10%" valign="middle" align="center"> 
+        <input type="submit" name="<%=BUTTON_DELETE_TEMPORARY_NOTIFICATION%>" value="<%= ejbcawebbean.getText("CANCEL") %>" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> />
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSENDER\") %>" />
+      </td>
+      <td width="50%" valign="top">
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" id="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="45" maxlength="255" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> title="<%= ejbcawebbean.getText("FORMAT_EMAILADDRESS") %>"/>
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>">       
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONRECIPIENT\") %>" />
+      </td>
+      <td width="50%" valign="top">
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="45" maxlength="255" value="USER" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> title="<%= ejbcawebbean.getText("FORMAT_EMAILADDRESS") %>"/>
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONEVENTS\") %>" />
+      </td>
+      <td width="50%" valign="top"> 
+        <select name="<%=SELECT_NOTIFICATIONEVENTS %>" size="7" multiple <% if(!used || !authorizedToEdit) out.write(" disabled "); %>>
+     
+               <% for(int ev1=0;ev1< statuses.length;ev1++){%>
+                <option
+               <%    // Default values
+                     if ( (statuses[ev1] == EndEntityConstants.STATUS_NEW) || (statuses[ev1] == EndEntityConstants.STATUS_KEYRECOVERY) || (statuses[ev1] == EndEntityConstants.STATUS_INITIALIZED) )
+                        out.write(" selected "); 
+                %>
+                   value='<c:out value="<%= statuses[ev1] %>"/>'><c:out value="<%= statustexts[ev1] %>"/>
+                 <%}%>
+           </option>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>">       
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSUBJECT\") %>" />
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
+      </td>
+      <td width="50%" valign="top">
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="45" maxlength="1024" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONMESSAGE\") %>" /> 
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
+      </td>
+      <td width="50%" valign="top">
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols="45" rows="8" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit ? "" : "disabled"%> ></textarea>
+      </td>
+    </tr>
+    <% } %>
+
       <%-- List of already defined user notifications. --%>
-      <% Collection col = profiledata.getUserNotifications();
-         int j = 0;
+      <% List<UserNotification> col = profiledata.getUserNotifications();
+         Collections.reverse(col);
+         int j = col.size()-1;
          used = profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0);
-         for (Iterator uiter = col.iterator(); uiter.hasNext(); j++) {
-             UserNotification not = (UserNotification)uiter.next();
+         for (Iterator<UserNotification> uiter = col.iterator(); uiter.hasNext(); j--) {
+             UserNotification not = uiter.next();
        %>
     <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
@@ -1694,8 +1778,7 @@ if (!editerrors.isEmpty()) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONEVENTS\") %>" />
       </td>
       <td width="50%"> 
-      <% int[] statuses = ViewEndEntityHelper.statusids;
-      String[] statustexts = ViewEndEntityHelper.statustexts;
+      <% 
       Collection evcol = not.getNotificationEventsCollection();
       for(int ev2=0;ev2< statuses.length;ev2++) {
             if ( evcol.contains(String.valueOf(statuses[ev2])) ) { %>
@@ -1747,79 +1830,9 @@ if (!editerrors.isEmpty()) {
     </tr>
     <% } // while (iter.hasNext()) %>
     
-    <%-- add new notification input form section --%>
-    <tr id="Row<%=row%2%>">
-      <td width="10%" valign="middle" align="center"> 
-        <input type="submit" name="<%=BUTTON_ADD_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADD") %>" <% if(!used || !authorizedToEdit) out.write(" disabled "); %>/>
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSENDER\") %>" />
-      </td>
-      <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="45" maxlength="255" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> title="<%= ejbcawebbean.getText("FORMAT_EMAILADDRESS") %>"/>
-      </td>
-    </tr>
-    <tr  id="Row<%=row%2%>">       
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONRECIPIENT\") %>" />
-      </td>
-      <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="45" maxlength="255" value="USER" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> title="<%= ejbcawebbean.getText("FORMAT_EMAILADDRESS") %>"/>
-      </td>
-    </tr>
-    <tr  id="Row<%=row%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONEVENTS\") %>" />
-      </td>
-      <td width="50%" valign="top"> 
-        <select name="<%=SELECT_NOTIFICATIONEVENTS %>" size="7" multiple <% if(!used || !authorizedToEdit) out.write(" disabled "); %>>
-            <% int[] statuses = ViewEndEntityHelper.statusids;
-               String[] statustexts = ViewEndEntityHelper.statustexts;
-              %>
-               <% for(int ev1=0;ev1< statuses.length;ev1++){%>
-                <option
-               <%    // Default values
-                     if ( (statuses[ev1] == EndEntityConstants.STATUS_NEW) || (statuses[ev1] == EndEntityConstants.STATUS_KEYRECOVERY) || (statuses[ev1] == EndEntityConstants.STATUS_INITIALIZED) )
-                        out.write(" selected "); 
-                %>
-                   value='<c:out value="<%= statuses[ev1] %>"/>'><c:out value="<%= statustexts[ev1] %>"/>
-                 <%}%>
-           </option>
-        </select>
-      </td>
-    </tr>
-    <tr  id="Row<%=row%2%>">       
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSUBJECT\") %>" />
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
-      </td>
-      <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="45" maxlength="1024" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONMESSAGE\") %>" /> 
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
-      </td>
-      <td width="50%" valign="top">
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols="45" rows="8" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit ? "" : "disabled"%> ></textarea>
-      </td>
-    </tr>
+   
     
-    <tr  id="Row<%=row%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
