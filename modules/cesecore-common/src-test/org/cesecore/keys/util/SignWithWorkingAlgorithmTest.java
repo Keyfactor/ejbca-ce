@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -61,9 +60,9 @@ public class SignWithWorkingAlgorithmTest {
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA
     ));
-    private class MyOperation implements Operation<GeneralSecurityException> {
+    private class SignOperation implements SignWithWorkingAlgorithm.Operation<GeneralSecurityException> {
 
-        public MyOperation( final KeyPair kp ) {
+        public SignOperation( final KeyPair kp ) {
             this.keyPair = kp;
         }
         final private byte bvOriginal[] = "Här är orginalet!".getBytes();
@@ -117,7 +116,7 @@ public class SignWithWorkingAlgorithmTest {
      */
     @Test
     public void n1BC512() throws NoSuchProviderException, GeneralSecurityException {
-        final MyOperation operation = new MyOperation(generateKeyPair(512));
+        final SignOperation operation = new SignOperation(generateKeyPair(512));
         assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
         assertTrue(operation.verifySignature());
         assertEquals(5, operation.getNrOfCalls());
@@ -130,7 +129,7 @@ public class SignWithWorkingAlgorithmTest {
      */
     @Test
     public void n2BC2048() throws NoSuchProviderException, GeneralSecurityException {
-        final MyOperation operation = new MyOperation(generateKeyPair(2048));
+        final SignOperation operation = new SignOperation(generateKeyPair(2048));
         assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
@@ -143,7 +142,7 @@ public class SignWithWorkingAlgorithmTest {
      */
     @Test
     public void n3SunRsaSign512() throws NoSuchProviderException, GeneralSecurityException {
-        final MyOperation operation = new MyOperation(generateKeyPair(512));
+        final SignOperation operation = new SignOperation(generateKeyPair(512));
         assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, "SunRsaSign", operation) );
         assertTrue(operation.verifySignature());
         assertEquals(6, operation.getNrOfCalls());
@@ -156,7 +155,7 @@ public class SignWithWorkingAlgorithmTest {
      */
     @Test
     public void n4SunRsaSign2048() throws NoSuchProviderException, GeneralSecurityException {
-        final MyOperation operation = new MyOperation(generateKeyPair(2048));
+        final SignOperation operation = new SignOperation(generateKeyPair(2048));
         assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, "SunRsaSign", operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
@@ -169,7 +168,7 @@ public class SignWithWorkingAlgorithmTest {
      */
     @Test
     public void n5BC1024() throws NoSuchProviderException, GeneralSecurityException {
-        final MyOperation operation = new MyOperation(generateKeyPair(1024));
+        final SignOperation operation = new SignOperation(generateKeyPair(1024));
         assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
@@ -182,7 +181,7 @@ public class SignWithWorkingAlgorithmTest {
      */
     @Test
     public void n6SunRsaSign1024() throws NoSuchProviderException, GeneralSecurityException {
-        final MyOperation operation = new MyOperation(generateKeyPair(1024));
+        final SignOperation operation = new SignOperation(generateKeyPair(1024));
         assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, "SunRsaSign", operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());

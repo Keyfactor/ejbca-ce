@@ -13,10 +13,10 @@
 package org.cesecore.keys.util;
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
@@ -66,8 +66,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
-import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /**
@@ -148,7 +146,7 @@ public class KeyStoreTools {
         getKeyStore().setEntry(newAlias, getKeyStore().getEntry(oldAlias, null), null);
     }
 
-    private class KeyStoreCertSignOperation implements Operation<OperatorCreationException> {
+    private class KeyStoreCertSignOperation implements SignWithWorkingAlgorithm.Operation<OperatorCreationException> {
 
         public KeyStoreCertSignOperation(
                 final PrivateKey pk,
@@ -432,7 +430,7 @@ public class KeyStoreTools {
         }
     }
 
-    private class CreateCsrOperation implements Operation<CesecoreException> {
+    private class CreateCsrOperation implements SignWithWorkingAlgorithm.Operation<CesecoreException> {
 
         public CreateCsrOperation(final String _alias, final String _sDN, final boolean _explicitEccParameters, final PublicKey publicKey) {
             this.alias = _alias;
@@ -515,11 +513,10 @@ public class KeyStoreTools {
             String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
             throw new CesecoreException(msg);
         }
-        String filename = alias+".pem";
-        try( final Writer writer = new FileWriter(filename) ) {
-            writer.write(CertTools.BEGIN_CERTIFICATE_REQUEST+"\n");
-            writer.write(new String(Base64.encode(certReq.getEncoded())));
-            writer.write("\n"+CertTools.END_CERTIFICATE_REQUEST+"\n");
+        final String filename = alias+".pem";
+        
+        try( final OutputStream os = new FileOutputStream(filename) ) {
+            os.write( CertTools.getPEMFromCertificateRequest(certReq.getEncoded()) );
         }
         log.info("Wrote csr to file: "+filename);
     }
