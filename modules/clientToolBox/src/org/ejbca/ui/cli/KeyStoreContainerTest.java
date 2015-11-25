@@ -42,7 +42,6 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.SignWithWorkingAlgorithm;
-import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
@@ -311,7 +310,7 @@ class KeyStoreContainerTest {
         }
     }
 
-    private class SignO implements Operation<GeneralSecurityException> {
+    private class SignOperation implements SignWithWorkingAlgorithm.Operation<GeneralSecurityException> {
         private String workingAlgorithm;
         @Override
         public void doIt(String signAlgorithm, Provider provider) throws GeneralSecurityException {
@@ -332,7 +331,7 @@ class KeyStoreContainerTest {
         private boolean result;
         @SuppressWarnings("synthetic-access")
         Sign() throws NoSuchProviderException, GeneralSecurityException {
-            final SignO operation = new SignO();
+            final SignOperation operation = new SignOperation();
             // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
             final List<String> availableAlogorithms = AlgorithmTools.getSignatureAlgorithms(KeyStoreContainerTest.this.keyPair.getPublic());
             SignWithWorkingAlgorithm.doIt(availableAlogorithms, KeyStoreContainerTest.this.providerName, operation);

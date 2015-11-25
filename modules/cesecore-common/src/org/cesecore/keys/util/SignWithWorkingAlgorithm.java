@@ -131,7 +131,6 @@ public class SignWithWorkingAlgorithm<E extends Exception> {
             {
                 final String signAlgorithm= signAlgorithmMap.get(this.mapKey);
                 if ( signAlgorithm!=null ) {
-                    this.lock.unlock();
                     operation.doIt(signAlgorithm, provider);
                     instanceMap.remove(this.mapKey);
                     return true;
