@@ -86,6 +86,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -136,7 +137,8 @@ public class RAInterfaceBean implements Serializable {
     private String[] printerNames = null;
     private String importedProfileName = null;
     
-    private EndEntityProfile temporateendentityprofile = null;
+    private EndEntityProfile temporaryEndEntityProfile = null;
+    private UserNotification temporaryNotification = null;
     
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {
@@ -583,6 +585,14 @@ public class RAInterfaceBean implements Serializable {
     public void renameEndEntityProfile(String oldname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
     	profiles.renameEndEntityProfile(oldname, newname);
     }
+    
+    public void setTemporaryEndEntityProfileNotification(UserNotification userNotification) {
+        temporaryNotification = userNotification;
+    }
+    
+    public UserNotification getTemporaryEndEntityProfileNotification() {
+        return temporaryNotification;
+    }
 
     public void cloneEndEntityProfile(String originalname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
     	profiles.cloneEndEntityProfile(originalname, newname);
@@ -821,11 +831,11 @@ public class RAInterfaceBean implements Serializable {
      *  so things can be canceled later
      */
     public EndEntityProfile getTemporaryEndEntityProfile(){
-    	return this.temporateendentityprofile;
+    	return this.temporaryEndEntityProfile;
     }
 
     public void setTemporaryEndEntityProfile(EndEntityProfile profile){
-    	this.temporateendentityprofile = profile;
+    	this.temporaryEndEntityProfile = profile;
     }
 
     UserDataSourceSession getUserDataSourceSession(){

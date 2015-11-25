@@ -47,8 +47,10 @@
   static final String BUTTON_UPLOADFILE        = "buttonuploadfile";
  
   static final String BUTTON_ADD_NOTIFICATION    = "buttonaddnotification";
+  static final String BUTTON_ADD_ANOTHER_NOTIFICATION = "buttonaddanothernotification";
   static final String BUTTON_DELETEALL_NOTIFICATION = "buttondeleteallnotification";
   static final String BUTTON_DELETE_NOTIFICATION = "buttondeleltenotification";
+  static final String BUTTON_DELETE_TEMPORARY_NOTIFICATION = "buttondeletetemporarynotification";
  
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
@@ -761,6 +763,7 @@
               * Add user notice.
               */
              if(request.getParameter(BUTTON_ADD_NOTIFICATION) != null) {
+                 ejbcarabean.setTemporaryEndEntityProfileNotification(new UserNotification());
                  ejbcarabean.setTemporaryEndEntityProfile(profiledata);
                  includefile = "endentityprofilepage.jspf";
              }
@@ -768,7 +771,7 @@
               * Remove all user notices.
               */
              if(request.getParameter(BUTTON_DELETEALL_NOTIFICATION) != null) {
-                 ArrayList emptynot = new ArrayList();
+                 List<UserNotification> emptynot = new ArrayList<UserNotification>();
                  profiledata.setUserNotifications(emptynot);
                  ejbcarabean.setTemporaryEndEntityProfile(profiledata);
                  includefile = "endentityprofilepage.jspf";
@@ -780,6 +783,9 @@
             		 ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_SENDNOTIFICATION))) {
                  boolean removed = false;
                  final int numnots = profiledata.getUserNotifications().size();
+                 if(request.getParameter(BUTTON_DELETE_TEMPORARY_NOTIFICATION) != null) {
+                     ejbcarabean.setTemporaryEndEntityProfileNotification(null);
+                 }
                  for(int i = 0; i < numnots; i++) {
                      String delete = request.getParameter(BUTTON_DELETE_NOTIFICATION + i);
                      
