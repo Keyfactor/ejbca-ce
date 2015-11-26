@@ -129,7 +129,7 @@
 <li>Direct Validation Authority (OCSP responder) updates from CA to VA. Ideal for low latency revocation and white listing.</li>
 <li><a href="docs/externalra.html">External RA</a> with a polling model for RA to CA communication, for high security environments.</li>
 <li>Create Crypto Tokens and CAs, generate keys and add and remove administrators through the Web Service API.</li>
-<li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality State and Country).</li>
+<li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality, State and Country).</li>
 <li>Additional algorithms using HSMs through PKCS#11, <a href="docs/adminguide.html#Using%20SHA256WithRSAandMGF1%20(RSASSA-PSS)">RSASSA-PSS (SHA256WithRSAAndMGF1)</a>. Available through patches for Java.</li>
 <li>Support for Windows Autoenrollment with add-on autoenrollment proxy module.</li>
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
