@@ -845,6 +845,7 @@
                  }         
                  if (removed) {
                    ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+                   ejbcarabean.setTemporaryEndEntityProfileNotification(null);
                    includefile = "endentityprofilepage.jspf";
                  }
              }
@@ -881,6 +882,7 @@
              if(request.getParameter(BUTTON_SAVE) != null && editerrors.isEmpty()){             
                  ejbcarabean.changeEndEntityProfile(profile,profiledata);
                  ejbcarabean.setTemporaryEndEntityProfile(null);
+                 ejbcarabean.setTemporaryEndEntityProfileNotification(null);
                  includefile="endentityprofilespage.jspf";  
              }
              
@@ -891,6 +893,7 @@
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
              ejbcarabean.setTemporaryEndEntityProfile(null);
+             ejbcarabean.setTemporaryEndEntityProfileNotification(null);
              includefile="endentityprofilespage.jspf";
            }
       }
@@ -913,6 +916,7 @@
 		      profiledata.setPrinterSVGData(filecontent);
 		      profiledata.setPrinterSVGFileName(templateFilename);
 		      ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+              ejbcarabean.setTemporaryEndEntityProfileNotification(null);
   		      fileuploadsuccess = true;
 		    }
 		  }catch(IOException ioe){
