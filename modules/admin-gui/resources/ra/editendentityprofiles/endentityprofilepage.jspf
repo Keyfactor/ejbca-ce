@@ -75,8 +75,6 @@ function checkallfields(){
 
     if(!checkfieldforlegalcharswithchangeable("document.editprofile.<%=TEXTFIELD_USERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS2") %>"))
       illegalfields++;
- 
-
 
     for(var i=0; i < numbersubjectdnfields; i++){
       if( dnfieldtypes[i] != <%= DnComponents.dnIdToProfileId(DNFieldExtractor.E) %>){
@@ -109,24 +107,31 @@ function checkallfields(){
     }
     <% } %>
 
-    if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){            
-      if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.value) == ""){
-        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSENDER", true) %>");
-        illegalfields++;
-      } 
+   
+    if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){ 
+    	
+    	//Check the prototype
+    <%if(ejbcarabean.getTemporaryEndEntityProfileNotification() != null) {  %>
+    	if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.value) == ""){
+	        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSENDER", true) %>");
+	        illegalfields++;
+	      } 
+	
+	      if(!checkfieldforlegalemailchars("document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>","<%= ejbcawebbean.getText("NOTIFICATIONSENDERNOTVALID") %>")) {
+	      	illegalfields++;
+	      }
+	
+	      if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.value) == ""){
+	        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSUBJECT", true) %>");
+	        illegalfields++;
+	      } 
+	      if(trim(document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.value) == ""){
+	        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONMESSAGE", true) %>");
+	        illegalfields++;
+	      } 
+  <% } %>	    	    	
+  }
 
-      if(!checkfieldforlegalemailchars("document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>","<%= ejbcawebbean.getText("NOTIFICATIONSENDERNOTVALID") %>"))
-      illegalfields++;
-
-      if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.value) == ""){
-        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSUBJECT", true) %>");
-        illegalfields++;
-      } 
-      if(trim(document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.value) == ""){
-        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONMESSAGE", true) %>");
-        illegalfields++;
-      }             
-    }
     
     if(document.editprofile.<%=CHECKBOX_USE_PRINTING%>.checked){            
       if(trim(document.editprofile.<%=SELECT_PRINTINGPRINTERNAME%>.value) == "-1"){
@@ -201,8 +206,7 @@ function checkkeyrecusebox(){
 
 function usenotificationchange(){
 	var disable = !document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked;
-	var names = ["<%=BUTTON_DELETEALL_NOTIFICATION%>",
-	             "<%=BUTTON_DELETE_NOTIFICATION%>",
+	var names = ["<%=BUTTON_DELETE_NOTIFICATION%>",
 	             "<%=BUTTON_ADD_NOTIFICATION%>",
 	             "<%=BUTTON_ADD_ANOTHER_NOTIFICATION%>",
 	             "<%=BUTTON_DELETE_TEMPORARY_NOTIFICATION%>",
@@ -219,6 +223,8 @@ function usenotificationchange(){
 			}
 		}
 	}
+	//Delete All should always be disabled if there are no notifications
+	document.editprofile.<%=BUTTON_DELETEALL_NOTIFICATION%>.disabled = disable || <%=profiledata.getUserNotifications().size() == 0%>;
 }
 
 function useprintingchange(){
