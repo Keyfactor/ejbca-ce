@@ -127,14 +127,6 @@ public class SignWithWorkingAlgorithm {
         try {
             if ( this.signAlgorithm!=null ) {
                 operation.doIt(this.signAlgorithm, this.provider);
-                // If we get a problem that some keys don't work with the selected
-                // provider we may:
-                // 1. catch the exception her
-                // 2. this.signAlgorithm = null;
-                // 3. Throw the caught exception again
-                // But it will be batter to avoid this by other mean.
-                // For example to order the list after hash length with the shortest
-                // first.
                 return true;
             }
             for ( final String trySignAlgorithm : this.availableSignAlgorithms ) {
