@@ -276,7 +276,7 @@ class KeyStoreContainerTest {
                 final InputStream is = new FileInputStream(FILENAME);
                 isFileNotAvailable = false;
                 return is;
-            } catch (@SuppressWarnings("unused") FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 // Apparently it never existed or has been removed during the test
                 isFileNotAvailable = true;
                 return null;
@@ -500,7 +500,7 @@ class KeyStoreContainerTest {
             boolean isCryptoAvailable = true;
             try {
                 this.totalDecryptTime += test(new Crypto());
-            } catch( @SuppressWarnings("unused") CryptoNotAvailableForThisAlgorithm e ) {
+            } catch(CryptoNotAvailableForThisAlgorithm e ) {
                 isCryptoAvailable = false;
             } catch( Exception e) {
                 this.totalDecryptTime = -1;

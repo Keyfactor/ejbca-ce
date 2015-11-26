@@ -1061,7 +1061,6 @@ public class ProtocolScepHttpTest {
             final RecipientInformationStore recipients = ed.getRecipientInfos();
             Store certstore;
 
-            @SuppressWarnings("unchecked")
             Collection<RecipientInformation> c = recipients.getRecipients();
             assertEquals(c.size(), 1);
             Iterator<RecipientInformation> riIterator = c.iterator();

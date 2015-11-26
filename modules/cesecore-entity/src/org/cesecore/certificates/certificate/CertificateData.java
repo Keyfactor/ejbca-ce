@@ -1035,7 +1035,6 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     
     /** @return return the query results as a List of maximum 500 elements. */
-    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
         return findByExpireDateWithLimit(entityManager, expireDate, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
@@ -1053,7 +1052,6 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     
     /** @return return the query results as a List of maximum 500 elements. */
-    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN) {
         return findByExpireDateAndIssuerWithLimit(entityManager, expireDate, issuerDN, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
@@ -1072,7 +1070,6 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     
     /** @return return the query results as a List of maximum 500 elements. */
-    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateAndTypeWithLimit(EntityManager entityManager, long expireDate, int certificateType) {
         return findByExpireDateAndTypeWithLimit(entityManager, expireDate, certificateType, CertificateConstants.MAXIMUM_QUERY_ROWCOUNT);
     }

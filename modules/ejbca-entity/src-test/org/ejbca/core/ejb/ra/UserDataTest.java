@@ -65,7 +65,6 @@ public class UserDataTest {
 
     }
 
-	@SuppressWarnings("deprecation")
     @Test
     public void test02UserDataVOToEndEntityInformation() throws Exception {
         UserDataVO data = new UserDataVO();

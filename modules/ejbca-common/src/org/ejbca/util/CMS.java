@@ -96,7 +96,6 @@ public class CMS {
     public static void decrypt(final InputStream is, OutputStream os, PrivateKey key, String providerName) throws Exception  {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
-        @SuppressWarnings("unchecked")
         final Iterator<RecipientInformation>  it = new CMSEnvelopedDataParser(bis).getRecipientInfos().getRecipients().iterator();
         if (it.hasNext()) {
             final RecipientInformation recipientInformation = it.next();

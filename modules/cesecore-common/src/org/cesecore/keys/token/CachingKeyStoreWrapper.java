@@ -72,7 +72,7 @@ public class CachingKeyStoreWrapper {
                 tmpKey = keyStore.getKey(alias, null);
             } catch (KeyStoreException e) {
                 throw e;
-            } catch (@SuppressWarnings("unused") Exception e) {
+            } catch (Exception e) {
                 tmpKey = null;
             }
             this.key = tmpKey;

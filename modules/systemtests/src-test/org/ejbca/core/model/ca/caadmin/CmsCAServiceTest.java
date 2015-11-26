@@ -159,7 +159,6 @@ public class CmsCAServiceTest extends CaTestCase {
         assertNotNull(resp);
         CMSSignedData csd = new CMSSignedData(respdoc);
         SignerInformationStore infoStore = csd.getSignerInfos();
-        @SuppressWarnings("unchecked")
         Collection<SignerInformation> signers = infoStore.getSigners();
         Iterator<SignerInformation> iter = signers.iterator();
         if (iter.hasNext()) {
