@@ -202,7 +202,10 @@ function checkkeyrecusebox(){
 function usenotificationchange(){
 	var disable = !document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked;
 	var names = ["<%=BUTTON_DELETEALL_NOTIFICATION%>",
+	             "<%=BUTTON_DELETE_NOTIFICATION%>",
 	             "<%=BUTTON_ADD_NOTIFICATION%>",
+	             "<%=BUTTON_ADD_ANOTHER_NOTIFICATION%>",
+	             "<%=BUTTON_DELETE_TEMPORARY_NOTIFICATION%>",
 	             "<%=TEXTFIELD_NOTIFICATIONSENDER%>",
 	             "<%=TEXTFIELD_NOTIFICATIONRCPT%>",
 	             "<%=SELECT_NOTIFICATIONEVENTS%>",
