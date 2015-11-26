@@ -412,7 +412,7 @@ public class KeyStoreTools {
             try {
                 log.debug("generating...");
                 final KeyPair keyPair = kpg.generateKeyPair();
-                final X509Certificate selfSignedCert = getSelfCertificate("CN=some guy, L=around, C=US", (long) 30 * 24 * 60 * 60 * 365, certSignAlgorithms, keyPair);
+                final X509Certificate selfSignedCert = getSelfCertificate("CN=Dummy certificate created by a CESeCore application", (long) 30 * 24 * 60 * 60 * 365, certSignAlgorithms, keyPair);
                 final X509Certificate chain[] = new X509Certificate[]{selfSignedCert};
                 log.debug("Creating certificate with entry " + keyAlias + '.');
                 setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
@@ -448,21 +448,19 @@ public class KeyStoreTools {
         @SuppressWarnings("synthetic-access")
         private void doItTry(final String signAlgorithm, final Provider provider) throws IllegalArgumentException, GeneralSecurityException, OperatorCreationException  {
             final PublicKey publicKey;
-            {
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format(
-                            "alias: %s SHA1 of public key: %s",
-                            this.alias,
-                            CertTools.getFingerprintAsString(this.publicKeyTmp.getEncoded())
-                            ));
-                }
-                if (signAlgorithm.contains("ECDSA") && this.explicitEccParameters) {
-                    log.info("Using explicit parameter encoding for ECC key.");
-                    publicKey = ECKeyUtil.publicToExplicitParameters(this.publicKeyTmp, "BC");
-                } else {
-                    log.info("Using named curve parameter encoding for ECC key.");
-                    publicKey = this.publicKeyTmp;
-                }
+            if (log.isDebugEnabled()) {
+                log.debug(String.format(
+                        "alias: %s SHA1 of public key: %s",
+                        this.alias,
+                        CertTools.getFingerprintAsString(this.publicKeyTmp.getEncoded())
+                        ));
+            }
+            if (signAlgorithm.contains("ECDSA") && this.explicitEccParameters) {
+                log.info("Using explicit parameter encoding for ECC key.");
+                publicKey = ECKeyUtil.publicToExplicitParameters(this.publicKeyTmp, "BC");
+            } else {
+                log.info("Using named curve parameter encoding for ECC key.");
+                publicKey = this.publicKeyTmp;
             }
             final PrivateKey privateKey = getPrivateKey(this.alias);
             final X500Name sDNName = this.sDN!=null ? new X500Name(this.sDN) : new X500Name("CN="+this.alias);
