@@ -216,7 +216,7 @@ public class ParameterHandler {
             }
             if (missingArguments.size() > 0) {
                 sb.append("\n");
-                sb.append(tab(1) + "The following mandatory arguments are missing or poorly formed:\n");
+                sb.append(tab(1) + "The following mandatory arguments are missing or poorly formed, use --help for more information:\n");
                 int longestKeyWord = 0;
                 for (Parameter missingParameter : missingArguments) {
                     if (missingParameter.getKeyWord().length() > longestKeyWord) {
