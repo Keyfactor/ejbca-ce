@@ -1517,7 +1517,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">timeOutReloadCaCertificateCache");
         }
         // Cancel any waiting timers of this type
-        @SuppressWarnings("unchecked")
         final Collection<Timer> timers = timerService.getTimers();
         for (final Timer timer : timers) {
             if (timer.getInfo() instanceof Integer) {
@@ -1544,7 +1543,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">getTimerCount");
         }
         int count = 0;
-        @SuppressWarnings("unchecked")
         final Collection<Timer> timers = timerService.getTimers();
         for (final Timer timer : timers) {
             if (timer.getInfo() instanceof Integer) {

@@ -324,7 +324,7 @@ public class KeyStoreTools {
 
             try {
                 generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
-            } catch (@SuppressWarnings("unused") NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 generateEC(keySpec, keyEntryName);
             }
         }

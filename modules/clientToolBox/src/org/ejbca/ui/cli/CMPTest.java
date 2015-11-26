@@ -888,7 +888,6 @@ class CMPTest extends ClientToolBox {
     /* (non-Javadoc)
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
-    @SuppressWarnings("unused")
     @Override
 	protected void execute(String[] args) {
         final String hostName;
