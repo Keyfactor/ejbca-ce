@@ -36,13 +36,14 @@ import org.apache.log4j.Logger;
  * @version $Id$
  *
  */
-public class SignWithWorkingAlgorithm<E extends Exception> {
+public class SignWithWorkingAlgorithm {
     /** Log4j instance */
-    private static final Logger log = Logger.getLogger(SignWithWorkingAlgorithm.class);
-    final private static Map<Integer, String> signAlgorithmMap = new HashMap<>();
-    final private static Map<Integer, SignWithWorkingAlgorithm<?>> instanceMap = new HashMap<>();
+    final private static Logger log = Logger.getLogger(SignWithWorkingAlgorithm.class);
+    final private static Map<Integer, SignWithWorkingAlgorithm> instanceMap = new HashMap<>();
+    final private Provider provider;
+    final private List<String> availableSignAlgorithms;
+    private String signAlgorithm;
     final private Lock lock;
-    final private Integer mapKey;
 
     /**
      * An object of a class implementing this interface must be constructed
@@ -98,57 +99,56 @@ public class SignWithWorkingAlgorithm<E extends Exception> {
             final Provider provider,
             final Operation<E> operation) throws E {
         final Integer mapKey = new Integer(availableSignAlgorithms.hashCode()^provider.hashCode());
-        {
-            final String signAlgorithm = signAlgorithmMap.get(mapKey);
-            if ( signAlgorithm!=null ) {
-                operation.doIt(signAlgorithm, provider);
-                return true;
-            }
-        }
-        final SignWithWorkingAlgorithm<E> instance;
+        final SignWithWorkingAlgorithm instance;
         synchronized (instanceMap) {
-            @SuppressWarnings("unchecked")
-            final SignWithWorkingAlgorithm<E> waitInstance = (SignWithWorkingAlgorithm<E>)instanceMap.get(mapKey);
+            final SignWithWorkingAlgorithm waitInstance = instanceMap.get(mapKey);
             if ( waitInstance==null ) {
-                instance = new SignWithWorkingAlgorithm<>(mapKey);
+                instance = new SignWithWorkingAlgorithm(provider, availableSignAlgorithms);
                 instanceMap.put(mapKey, instance);
             } else {
                 instance = waitInstance;
             }
         }
-        return instance.tryOutWorkingAlgorithm(availableSignAlgorithms, provider, operation);
+        return instance.doIt(operation);
     }
-    private SignWithWorkingAlgorithm(final Integer _mapKey) {
-        this.mapKey = _mapKey;
+    private SignWithWorkingAlgorithm(
+            final Provider _provider,
+            final List<String> _availableSignAlgorithms) {
+        this.provider = _provider;
         this.lock = new ReentrantLock();
+        this.availableSignAlgorithms = _availableSignAlgorithms;
     }
-    private boolean tryOutWorkingAlgorithm(
-            final List<String> availableSignAlgorithms,
-            final Provider provider,
-            final Operation<E> operation) throws E{
+    private <E extends Exception>boolean doIt(final Operation<E> operation) throws E {
+        if ( this.signAlgorithm!=null ) {
+            operation.doIt(this.signAlgorithm, this.provider);
+            return true;
+        }
         this.lock.lock();
         try {
-            {
-                final String signAlgorithm= signAlgorithmMap.get(this.mapKey);
-                if ( signAlgorithm!=null ) {
-                    operation.doIt(signAlgorithm, provider);
-                    instanceMap.remove(this.mapKey);
-                    return true;
-                }
-            }
-            for ( final String signAlgorithm : availableSignAlgorithms ) {
-                try {
-                    operation.doIt(signAlgorithm, provider);
-                } catch( final Exception e ) {
-                    log.info(String.format("Signature algorithm '%s' not working for provider '%s'. Exception: %s", signAlgorithm, provider, e.getMessage()));
-                    continue;
-                }
-                log.info(String.format("Signature algorithm '%s' working for provider '%s'.", signAlgorithm, provider));
-                signAlgorithmMap.put(this.mapKey, signAlgorithm);
-                instanceMap.remove(this.mapKey);
+            if ( this.signAlgorithm!=null ) {
+                operation.doIt(this.signAlgorithm, this.provider);
+                // If we get a problem that some keys don't work with the selected
+                // provider we may:
+                // 1. catch the exception her
+                // 2. this.signAlgorithm = null;
+                // 3. Throw the caught exception again
+                // But it will be batter to avoid this by other mean.
+                // For example to order the list after hash length with the shortest
+                // first.
                 return true;
             }
-            log.info(String.format("No valid signing algorithm found for the provider '%s'.",  provider));
+            for ( final String trySignAlgorithm : this.availableSignAlgorithms ) {
+                try {
+                    operation.doIt(trySignAlgorithm, this.provider);
+                } catch( final Exception e ) {
+                    log.info(String.format("Signature algorithm '%s' not working for provider '%s'. Exception: %s", trySignAlgorithm, this.provider, e.getMessage()));
+                    continue;
+                }
+                log.info(String.format("Signature algorithm '%s' working for provider '%s'.", trySignAlgorithm, this.provider));
+                this.signAlgorithm = trySignAlgorithm;
+                return true;
+            }
+            log.info(String.format("No valid signing algorithm found for the provider '%s'.",  this.provider));
             return false;
         } finally {
             this.lock.unlock();
