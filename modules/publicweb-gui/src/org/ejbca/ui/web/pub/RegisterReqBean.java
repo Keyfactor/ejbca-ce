@@ -49,6 +49,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.DNFieldDescriber;
+import org.ietf.ldap.LDAPDN;
 
 /**
  * Used by enrol/reg*.jsp for self-registration. This bean implements
@@ -70,7 +71,7 @@ public class RegisterReqBean {
     private final GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejbLocalHelper.getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
     // Form fields
-    private final Map<String,String> formDNFields = new HashMap<String,String>();
+    private String subjectDN = "";
     private String subjectAltName = "";
     private String subjectDirAttrs = "";
     
@@ -315,6 +316,19 @@ public class RegisterReqBean {
         }
     }
     
+    /** Appends a field to a Subject DN, Subject Alternative Name, or Subject Directory Attributes. */
+    private static String appendToDN(final String dn, final String dnName, final String value) {
+        final String field = LDAPDN.escapeRDN(dnName.toUpperCase(Locale.ROOT) + "=" + value);
+        if (dn.isEmpty()) {
+            return field;
+        } else {
+            return dn + ", " + field;
+        }
+    }
+    
+    /**
+     * Reads all parameters from the request. Used to receive the parameters from both step 1 and step 2.
+     */
     public void initialize(final HttpServletRequest request) {
         if (!"POST".equalsIgnoreCase(request.getMethod())) {
             internalError("Internal error: Invalid request method.");
@@ -331,6 +345,7 @@ public class RegisterReqBean {
         String usernameMapping = getUsernameMapping();
 
         // Get all fields
+        final Map<String,String> dnFields = new HashMap<String,String>();
         @SuppressWarnings("rawtypes")
         Enumeration en = request.getParameterNames();
         while (en.hasMoreElements()) {
@@ -341,33 +356,22 @@ public class RegisterReqBean {
             if (key.startsWith("dnfield_")) {
                 if (!value.isEmpty()) {
                     String dnName = DNFieldDescriber.extractSubjectDnNameFromId(eeprofile, id);
-                    formDNFields.put(dnName, value);
+                    subjectDN = appendToDN(subjectDN, dnName, value);
+                    dnFields.put(dnName.toUpperCase(Locale.ROOT), value);
                 }
             }
             
             if (key.startsWith("altnamefield_")) {
                 if (!value.isEmpty()) {
                     String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
-                    String field = org.ietf.ldap.LDAPDN.escapeRDN(altName + "=" + value);
-                    
-                    if (subjectAltName.isEmpty()) {
-                        subjectAltName = field;
-                    } else {
-                        subjectAltName += ", " + field;
-                    }
+                    subjectAltName = appendToDN(subjectAltName, altName, value);
                 }
             }
             
             if (key.startsWith("dirattrfield_")) {
                 if (!value.isEmpty()) {
                     String dirAttr = DNFieldDescriber.extractSubjectDirAttrFromId(eeprofile, id);
-                    String field = org.ietf.ldap.LDAPDN.escapeRDN(dirAttr + "=" + value);
-                    
-                    if (subjectDirAttrs.isEmpty()) {
-                        subjectDirAttrs = field;
-                    } else {
-                        subjectDirAttrs += ", " + field;
-                    }
+                    subjectDirAttrs = appendToDN(subjectDirAttrs, dirAttr, value);
                 }
             }
         }
@@ -376,8 +380,8 @@ public class RegisterReqBean {
         if (isUsernameVisible()) {
             username = request.getParameter("username");
         } else {
-            username = formDNFields.get(usernameMapping);
-            if (!formDNFields.isEmpty() && username == null) {
+            username = dnFields.get(usernameMapping.toUpperCase(Locale.ROOT));
+            if (!dnFields.isEmpty() && username == null) {
                 internalError("DN field of usernamemapping doesn't exist: "+usernameMapping);
             }
         }
@@ -390,19 +394,13 @@ public class RegisterReqBean {
         String tokenStr = request.getParameter("tokenType");
         tokenType = Integer.parseInt(tokenStr != null ? tokenStr : getDefaultTokenType());
         if ("1".equals(request.getParameter("emailindn"))) {
-            formDNFields.put("e", email);
+            subjectDN = appendToDN(subjectDN, "E", email);
         }
         
         if (request.getParameter("emailinaltname") != null) {
             String id = request.getParameter("emailinaltname");
             String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
-            String field = org.ietf.ldap.LDAPDN.escapeRDN(altName + "=" + email);
-            
-            if (subjectAltName.isEmpty()) {
-                subjectAltName = field;
-            } else {
-                subjectAltName += ", " + field;
-            }
+            subjectAltName = appendToDN(subjectAltName, altName, email);
         }
         
         remoteAddress = request.getRemoteAddr();
@@ -453,18 +451,6 @@ public class RegisterReqBean {
     public void internalError(String message) {
         errors.add(message);
         log.info(message);
-    }
-    
-    private String getSubjectDN() {
-        boolean first = true;
-        StringBuilder sb = new StringBuilder();
-        for (Entry<String,String> field : formDNFields.entrySet()) {
-            if (first) { first = false; } 
-            else { sb.append(", "); }
-            
-            sb.append(org.ietf.ldap.LDAPDN.escapeRDN(field.getKey().toUpperCase(Locale.ROOT) + "=" + field.getValue()));
-        }
-        return sb.toString();
     }
     
     private void assignDirAttrs(EndEntityInformation endEntity) {
@@ -523,7 +509,6 @@ public class RegisterReqBean {
             return;
         }
         
-        final String subjectDN = getSubjectDN();
         final int numApprovalsRequired = 1;
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public web registration, from IP "+remoteAddress));
         
