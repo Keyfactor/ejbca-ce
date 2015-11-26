@@ -210,7 +210,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         try {
             CMSSignedData csd = new CMSSignedData(scepmsg);
             SignerInformationStore infoStore = csd.getSignerInfos();
-            @SuppressWarnings("unchecked")
             Collection<SignerInformation> signers = infoStore.getSigners();
             Iterator<SignerInformation> iter = signers.iterator();
             if (iter.hasNext()) {
@@ -390,7 +389,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
         CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
         RecipientInformationStore recipients = ed.getRecipientInfos();
-        @SuppressWarnings("unchecked")
         Collection<RecipientInformation> c = recipients.getRecipients();
         Iterator<RecipientInformation> it = c.iterator();
         byte[] decBytes = null;
