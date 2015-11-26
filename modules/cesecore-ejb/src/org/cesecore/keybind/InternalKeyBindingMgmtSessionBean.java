@@ -523,14 +523,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
         return publicKey;
     }
-    private static class MyException extends Exception {
+    private static class GetCSROperationException extends Exception {
         private static final long serialVersionUID = 1L;
 
-        public MyException( Exception e ) {
+        public GetCSROperationException( Exception e ) {
             super(e.getMessage(), e);
         }
     }
-    private static class GetCSROperation implements SignWithWorkingAlgorithm.Operation<MyException> {
+    private static class GetCSROperation implements SignWithWorkingAlgorithm.Operation<GetCSROperationException> {
         final private X500Name x500Name;
         final private PublicKey publicKey;
         final private PrivateKey privateKey;
@@ -546,13 +546,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             this.resultingCSR = null;
         }
         @Override
-        public void doIt(final String signAlgorithm, final Provider provider) throws MyException  {
+        public void doIt(final String signAlgorithm, final Provider provider) throws GetCSROperationException  {
             try {
                 this.resultingCSR = CertTools.genPKCS10CertificationRequest(
                         signAlgorithm, this.x500Name, this.publicKey, new DERSet(), this.privateKey, provider.getName())
                         .getEncoded();
             } catch (OperatorCreationException|IOException e) {
-                throw new MyException(e);
+                throw new GetCSROperationException(e);
             }
         }
         public byte[] getCSR() {
@@ -611,7 +611,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 return operation.getCSR();
             }
             log.info( String.format("No working signing algorithm found for key with alias %s.", keyPairAlias) );
-        } catch( MyException|NoSuchProviderException e ) {
+        } catch( GetCSROperationException|NoSuchProviderException e ) {
             log.info(String.format(
                     "CSR generation failed. internalKeyBindingId=%d, cryptoTokenId=%d, keyPairAlias=%s. %s",
                     Integer.valueOf(internalKeyBindingId), Integer.valueOf(cryptoTokenId), keyPairAlias,
