@@ -56,13 +56,10 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_STATE}*"/></h:panelGroup></f:facet>
-			<h:panelGroup rendered="#{tokenAndCa.first}">
-				<h:graphicImage rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
-				<h:graphicImage rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
-				<h:outputText value=" #{web.text.ACTIVE}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
-				<h:outputText value=" #{web.text.OFFLINE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
-			</h:panelGroup>
-			<h:outputText rendered="#{!tokenAndCa.first}" escape="false" value=" &#12291;"/>
+			<h:graphicImage rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
+			<h:graphicImage rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
+			<h:outputText value=" #{web.text.ACTIVE}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+			<h:outputText value=" #{web.text.OFFLINE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_ACTION}"/></h:panelGroup></f:facet>
@@ -71,7 +68,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 				<h:outputText value=" #{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
 				<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
 			</h:panelGroup>
-			<h:outputText rendered="#{!tokenAndCa.first}" escape="false" value=" &#12291;"/>
+			<h:outputText rendered="#{!tokenAndCa.first}" escape="false" value=""/>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_NAME}"/></h:panelGroup></f:facet>
@@ -88,13 +85,13 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_SACTION}"/></h:panelGroup></f:facet>
-			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState or tokenAndCa.cryptoToken.stateChangeDisabled}"/>
+			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState}"/>
 			<h:outputText value=" #{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.ca.active}"/>
 			<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.ca.active}"/>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_MONITORED}"/></h:panelGroup></f:facet>
-			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.monitoredNewState}" disabled="#{!tokenAndCa.cryptoToken.existing or not cAActivationMBean.authorizedToBasicFunctions}"/>
+			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.monitoredNewState}" disabled="#{(!tokenAndCa.ca.monitoredNewState and !tokenAndCa.cryptoToken.existing) or !cAActivationMBean.authorizedToBasicFunctions}"/>
 			<h:outputText value="#{web.text.ACTIVATECAS_HCHECK}"/>
 		</h:column>
 		<f:facet name="footer">
