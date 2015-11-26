@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.infrastructure.parameter.enums;
  * This enum declares the four types of CLI inputs possible. These are:
  *      ARGUMENT
  *          A switch and an associated value following that switch. The switch should never be alone, but the value may be if the parameter is 
- *          declared standaloe.
+ *          declared standalone.
  *      FLAG
  *          A switch without a following input value, such as --verbose
  *      INPUT
