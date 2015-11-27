@@ -67,8 +67,6 @@ public class CAToken extends UpgradeableDataHashMap {
     public static final String DEFAULT_KEYSEQUENCE = "00000";
 
     public static final String SOFTPRIVATESIGNKEYALIAS = "signKey";
-    public static final String SOFTPREVIOUSPRIVATESIGNKEYALIAS = "prevsignKey";
-    public static final String SOFTNEXTPRIVATESIGNKEYALIAS = "nextsignKey";
     public static final String SOFTPRIVATEDECKEYALIAS = "encryptKey";
 
     /** A sequence for the keys, updated when keys are re-generated */
