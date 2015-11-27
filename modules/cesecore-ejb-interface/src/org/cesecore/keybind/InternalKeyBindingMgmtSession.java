@@ -160,12 +160,12 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the unique identifier of the InternalKeyBinding
-     * @param optionalSubjectDN is the Subject DN to put in the CSR. If null the currently mapped certificate's SubjectDN will be used (if present).
+     * @param name the subjectDN to be used in the CSR as binary encoded X500Name (X500Name.getEncoded), or null. If null the currently mapped certificate's SubjectDN will be used (if present) and if not a default (CN=Internal Key Binding Name), 
      * @return the a new PKCS#10 request for the InternalKeyBinding
      * @throws AuthorizationDeniedException is the authentication token is not authorized to this operation
      * @throws CryptoTokenOfflineException if the key pair is not available
      */
-    byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId, String optionalSubjectDN) throws AuthorizationDeniedException, CryptoTokenOfflineException;
+    byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] name) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /** 
      * Update the key mapping if there is a newer certificate in the database or a certificate matching the nextKey.

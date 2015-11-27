@@ -12,16 +12,19 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -104,8 +107,30 @@ public class InternalKeyBindingGenerateCsrCommandTest {
         String[] args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath() };
         command.execute(args);
         try {
-            new PKCS10RequestMessage(FileTools.readFiletoBuffer(csrFile.getAbsolutePath()));
+            PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(FileTools.readFiletoBuffer(csrFile.getAbsolutePath()));
+            assertEquals("Wrong DN in generated request", "CN=InternalKeyBindingGenerateCsrCommandTest", msg.getRequestDN());
         } catch (Exception e) {
+            e.printStackTrace();
+            fail("A correct CSR was not generated.");
+        }
+        args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath(), "--subjectdn", "C=SE,O=org,CN=name", "--x500dnorder"};
+        command.execute(args);
+        try {
+            PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(FileTools.readFiletoBuffer(csrFile.getAbsolutePath()));
+            JcaPKCS10CertificationRequest jcareq = new JcaPKCS10CertificationRequest(msg.getCertificationRequest().getEncoded());
+            assertEquals("Wring order of DN, should be X500 with C first", "C=SE,O=org,CN=name", jcareq.getSubject().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("A correct CSR was not generated.");
+        }
+        args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath(), "--subjectdn", "C=SE,O=org,CN=name"};
+        command.execute(args);
+        try {
+            PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(FileTools.readFiletoBuffer(csrFile.getAbsolutePath()));
+            JcaPKCS10CertificationRequest jcareq = new JcaPKCS10CertificationRequest(msg.getCertificationRequest().getEncoded());
+            assertEquals("Wring order of DN, should be LDAP with CN first", "CN=name,O=org,C=SE", jcareq.getSubject().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
             fail("A correct CSR was not generated.");
         }
     }
