@@ -1,5 +1,6 @@
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.beans.Beans;
 import java.io.IOException;
 
 import javax.ejb.EJB;
@@ -63,13 +64,13 @@ public class CAExportServlet extends HttpServlet {
      * @param req The request.
      * @param res The response.
 	 */
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
+    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws IOException, ServletException {
 	    log.trace(">doGet()");
 	    // Check if authorized
-	    EjbcaWebBean ejbcawebbean= (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
+	    EjbcaWebBean ejbcawebbean= (EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
 	    if ( ejbcawebbean == null ) {
 	      try {
-	    	  ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBean.class.getName());
+	    	  ejbcawebbean = (EjbcaWebBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBean.class.getName());
 	      } catch (ClassNotFoundException e) {
 	    	  throw new ServletException(e.getMessage());
 	      } catch (Exception e) {

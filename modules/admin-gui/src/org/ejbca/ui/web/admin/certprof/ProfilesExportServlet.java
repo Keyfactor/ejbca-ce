@@ -18,7 +18,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,13 +35,16 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -61,13 +67,14 @@ public class ProfilesExportServlet extends HttpServlet {
 
     private static final long serialVersionUID = -8091852234056712787L;
     private static final Logger log = Logger.getLogger(ProfilesExportServlet.class);
-    private static final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProfilesExportServlet"));
 
 
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private WebAuthenticationProviderSessionLocal authenticationSession;
     
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -79,7 +86,7 @@ public class ProfilesExportServlet extends HttpServlet {
         log.trace("<doPost()");
     }
 
-    public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
+    public void doGet(HttpServletRequest request,  HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         final String type = request.getParameter("profileType");
         
@@ -90,10 +97,23 @@ public class ProfilesExportServlet extends HttpServlet {
         ByteArrayOutputStream zbaos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(zbaos);
         
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null) {
+            throw new ServletException("This servlet requires certificate authentication!");
+        }
+
+        final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certs[0]);
+        AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+        AuthenticationToken authenticationToken = authenticationSession.authenticate(subject);
+        if (authenticationToken == null) {
+            throw new IOException("Authorization denied for certificate: " + CertTools.getSubjectDN(certs[0]));
+        }
+        
         if(StringUtils.equalsIgnoreCase(type, "cp")) {
             zipfilename = "certprofiles.zip";
       
-            Collection<Integer> certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(alwaysAllowAuthenticationToken, 0);
+            Collection<Integer> certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0);
             totalprofiles = certprofids.size();
             log.info("Exporting non-fixed certificate profiles");
                 for (int profileid : certprofids) {
@@ -132,7 +152,7 @@ public class ProfilesExportServlet extends HttpServlet {
             
             zipfilename = "entityprofiles.zip";
             
-            Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(alwaysAllowAuthenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+            Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
             totalprofiles = endentityprofids.size();
             log.info("Exporting non-fixed end entity profiles");
             for (int profileid : endentityprofids) {
