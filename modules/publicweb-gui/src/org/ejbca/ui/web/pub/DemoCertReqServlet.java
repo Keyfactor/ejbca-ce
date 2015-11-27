@@ -141,7 +141,6 @@ public class DemoCertReqServlet extends HttpServlet {
         ServletDebug debug = new ServletDebug(request, response);
 
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DemoCertReqServlet: "+request.getRemoteAddr()));
-        //Admin admin = new Admin(Admin.TYPE_RA_USER, request.getRemoteAddr());
         RequestHelper.setDefaultCharacterEncoding(request);
 
         String dn = null;
