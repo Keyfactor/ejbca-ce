@@ -99,5 +99,11 @@
 		<echo message="The use of 'runocsp' target in EJBCA is deprecated. OCSP are now included the main run command" />
 		<antcall target="deprecated:notify" />
 	</target>
+	
+	<target name="ejbca-util.jar">
+		<property name="deprecated.detected" value="true" />
+		<echo message="The use of 'ejbca-util.jar' target in EJBCA is deprecated. The command has been replaced by 'ejbca-common.jar" />
+		<antcall target="deprecated:notify" />
+	</target>
 </project>
 
