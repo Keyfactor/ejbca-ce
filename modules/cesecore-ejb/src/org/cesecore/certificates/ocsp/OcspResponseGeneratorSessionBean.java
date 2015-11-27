@@ -75,11 +75,13 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -161,6 +163,7 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
@@ -660,16 +663,19 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.debug("Requestor name is null");
             }
         } else {
-            if (log.isDebugEnabled()) {
-                String requestor = CertTools.stringToBCDNString( ocspRequest.getRequestorName().getName().toString());
-                log.debug("Requestor name is: " + requestor);
-            }
-            if (transactionLogger.isEnabled()) {
-                String requestor = CertTools.stringToBCDNString( ocspRequest.getRequestorName().getName().toString());
-                transactionLogger.paramPut(TransactionLogger.REQ_NAME, requestor);
+            if (transactionLogger.isEnabled() || log.isDebugEnabled()) {
+                final X500Name requestorDirectoryName = (X500Name) ocspRequest.getRequestorName().getName();
+                final String requestor = CertTools.stringToBCDNString(requestorDirectoryName.toString());
+                final String requestorRaw = GeneralName.directoryName + ": " + X500Name.getInstance(CeSecoreNameStyle.INSTANCE, requestorDirectoryName).toString();
+                if (transactionLogger.isEnabled()) {
+                    transactionLogger.paramPut(TransactionLogger.REQ_NAME, requestor);
+                    transactionLogger.paramPut(TransactionLogger.REQ_NAME_RAW, requestorRaw);
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Requestor name is: '" + requestor + "' Raw: '" + requestorRaw + "'");
+                }
             }
         }
-
         /**
          * check the signature if contained in request. if the request does not contain a signature and the servlet is configured in the way the a
          * signature is required we send back 'sigRequired' response.
@@ -1103,10 +1109,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (ocspSigningCacheEntry != null) {
                     if (transactionLogger.isEnabled()) {
                         // This will be the issuer DN of the signing certificate, whether an OCSP responder or an internal CA  
-                        String issuerNameDn = CertTools.getIssuerDN(ocspSigningCacheEntry.getFullCertificateChain().get(0));
-                        transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, issuerNameDn);
+                        transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, ocspSigningCacheEntry.getSigningCertificateIssuerDn());
+                        transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
                     }
-                } else { 
+                } else {
                     /*
                      * if the certId was issued by an unknown CA 
                      * 

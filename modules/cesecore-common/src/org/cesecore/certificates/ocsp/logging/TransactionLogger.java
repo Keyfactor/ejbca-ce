@@ -16,7 +16,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.OcspConfiguration;
 
 /**
- * TODO: DOCUMENT ME.
+ * OCSP transaction logger.
  * 
  * @version $Id$
  *
@@ -25,15 +25,19 @@ public class TransactionLogger extends PatternLogger {
 
     private static final long serialVersionUID = 1722398387512931482L;
     /**
-     * The Common Name (CN) of the client making the request
+     * The BC normalized subject Distinguished Name of the client making the request
      */
     public static final String REQ_NAME = "REQ_NAME";
+    /** 
+     * The Unnormalized subject Distinguished Name of the client making the request
+     */
+    public static final String REQ_NAME_RAW = "REQ_NAME_RAW";
     /**
-     * DN of the issuer of the certificate used to sign the request.
+     * The BC normalized issuer Distinguished Name of the certificate used to sign the request.
      */
     public static final String SIGN_ISSUER_NAME_DN = "SIGN_ISSUER_NAME_DN";
     /**
-     * Subject Name of the certificate used to sign the request.
+     * The BC normalized Subject Distinguished Name of the certificate used to sign the request.
      */
     public static final String SIGN_SUBJECT_NAME = "SIGN_SUBJECT_NAME";
     /**
@@ -41,9 +45,13 @@ public class TransactionLogger extends PatternLogger {
      */
     public static final String SIGN_SERIAL_NO = "SIGN_SERIAL_NO";
     /**
-     * The subject DN of the issuer of a requested certificate
+     * The BC normalized issuer Distinguished Name of the requested certificate
      */
     public static final String ISSUER_NAME_DN = "ISSUER_NAME_DN";
+    /**
+     * The unnormalized issuer Distinguished Name of the requested certificate
+     */
+    public static final String ISSUER_NAME_DN_RAW = "ISSUER_NAME_DN_RAW";
     
     /**
      * Algorithm used by requested certificate to hash issuer key and issuer name
@@ -67,19 +75,20 @@ public class TransactionLogger extends PatternLogger {
     public static final String FORWARDED_FOR = "FORWARDED_FOR";
 
     public TransactionLogger(Integer logId, String sessionId, String clientIp) {
-        super( OcspConfiguration.getTransactionLog(), TransactionLogger.class, OcspConfiguration.getTransactionLogPattern(), OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
-        
+        super(OcspConfiguration.getTransactionLog(), TransactionLogger.class, OcspConfiguration.getTransactionLogPattern(),
+                OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
         paramPut(PatternLogger.LOG_ID, logId);
         paramPut(PatternLogger.SESSION_ID, sessionId);
         paramPut(PatternLogger.CLIENT_IP, clientIp);
-        
         paramPut(PatternLogger.STATUS, "0");
         paramPut(REQ_NAME, "0");
+        paramPut(REQ_NAME_RAW, "0");
         paramPut(SIGN_ISSUER_NAME_DN, "0");
         paramPut(SIGN_SUBJECT_NAME, "0");
         paramPut(SIGN_SERIAL_NO, "0");
         paramPut(NUM_CERT_ID, "0");
         paramPut(ISSUER_NAME_DN, "0");
+        paramPut(ISSUER_NAME_DN_RAW, "0");
         paramPut(PatternLogger.ISSUER_NAME_HASH, "0");
         paramPut(PatternLogger.ISSUER_KEY, "0");
         paramPut(DIGEST_ALGOR, "0");
