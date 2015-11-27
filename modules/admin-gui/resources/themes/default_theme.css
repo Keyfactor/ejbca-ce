@@ -616,10 +616,6 @@ h3#welcome {
 div#information {
 	margin-top: .5em;
 }
-#information code {
-	font-size: 1.15em;
-/*	font-weight: bold;	/**/
-}
 div#home {
 	margin-top: 1.5em;
 }
