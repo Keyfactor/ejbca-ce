@@ -33,7 +33,7 @@
 		<path location="${build-test.dir}"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.easymock.classpath"/>
-		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
+		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
 	<target name="jar" depends = "cesecore-common, cesecore-ejb-interface">
