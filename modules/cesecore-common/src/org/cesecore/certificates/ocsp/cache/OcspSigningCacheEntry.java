@@ -42,6 +42,8 @@ public class OcspSigningCacheEntry {
     private final X509Certificate ocspSigningCertificate;
     private final List<X509Certificate> fullCertificateChain;
     private final X509Certificate signingCertificate;
+    private final String signingCertificateIssuerDn;
+    private final String signingCertificateIssuerDnRaw;
     private final transient PrivateKey privateKey;
     private final String signatureProviderName;
     private final OcspKeyBinding ocspKeyBinding;
@@ -85,6 +87,8 @@ public class OcspSigningCacheEntry {
             // This is just a placeholder cache entry
             respId = null;
             signingCertificateForOcspSigning = true;
+            signingCertificateIssuerDn = null;
+            signingCertificateIssuerDnRaw = null;
         } else {
             // Pre-calculate the Responder ID
             if (responderIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
@@ -102,6 +106,8 @@ public class OcspSigningCacheEntry {
             } else {
                 signingCertificateForOcspSigning = CertTools.isOCSPCert(signingCertificate);
             }
+            signingCertificateIssuerDn = CertTools.getIssuerDN(signingCertificate);
+            signingCertificateIssuerDnRaw = signingCertificate.getIssuerDN().getName();
         }
         if (fullCertificateChain==null) {
             responseCertChain = null;
@@ -130,6 +136,12 @@ public class OcspSigningCacheEntry {
 
     /** @return the certificate that will be used to sign the OCSP response. This is either an OCSP signing certificate or a CA certificate. */
     public X509Certificate getSigningCertificate() { return signingCertificate; }
+
+    /** @return the Issuer DN of the certificate that will be used to sign the OCSP response. BC normalized. */
+    public String getSigningCertificateIssuerDn() { return signingCertificateIssuerDn; }
+
+    /** @return the Issuer DN of the certificate that will be used to sign the OCSP response. Not normalized. */
+    public String getSigningCertificateIssuerDnRaw() { return signingCertificateIssuerDnRaw; }
 
     /** @return the private key that will be used to sign the OCSP response. */
     public PrivateKey getPrivateKey() { return privateKey; }
