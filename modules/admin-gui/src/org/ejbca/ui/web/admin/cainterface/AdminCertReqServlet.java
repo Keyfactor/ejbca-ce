@@ -56,7 +56,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 
-
 /**
  * This is a servlet that is used for creating a user into EJBCA and retrieving her certificate.
  * This servlet requires authentication of the administrator, specifically it requires that the
@@ -115,20 +114,18 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  */
 public class AdminCertReqServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 1L;
-	private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
-    
-    private final static byte[] BEGIN_CERT =
-        "-----BEGIN CERTIFICATE-----".getBytes();
+    private static final long serialVersionUID = 1L;
+    private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
+
+    private final static byte[] BEGIN_CERT = "-----BEGIN CERTIFICATE-----".getBytes();
     private final static int BEGIN_CERT_LENGTH = BEGIN_CERT.length;
-    
-    private final static byte[] END_CERT =
-        "-----END CERTIFICATE-----".getBytes();
+
+    private final static byte[] END_CERT = "-----END CERTIFICATE-----".getBytes();
     private final static int END_CERT_LENGTH = END_CERT.length;
-    
+
     private final static byte[] NL = "\n".getBytes();
     private final static int NL_LENGTH = NL.length;
-    
+
     @EJB
     private SignSessionLocal signSession;
     @EJB
@@ -137,13 +134,13 @@ public class AdminCertReqServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
-        	CryptoProviderTools.installBCProvider();	// Install BouncyCastle provider
+            CryptoProviderTools.installBCProvider(); // Install BouncyCastle provider
         } catch (Exception e) {
             throw new ServletException(e);
         }
-    	if (signSession==null || authenticationSession==null) {
-    		log.error("Local EJB injection failed.");
-    	}
+        if (signSession == null || authenticationSession == null) {
+            log.error("Local EJB injection failed.");
+        }
     }
 
     /**
@@ -168,31 +165,28 @@ public class AdminCertReqServlet extends HttpServlet {
      *
      * PublicKey's encoded-format has to be RSA X.509.
      */
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException
-    {        
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         // Check if authorized
-        EjbcaWebBean ejbcawebbean= getEjbcaWebBean(request);
-        try{
+        EjbcaWebBean ejbcawebbean = getEjbcaWebBean(request);
+        try {
             ejbcawebbean.initialize(request, "/ra_functionallity/create_end_entity");
-        } catch(Exception e){
+        } catch (Exception e) {
             throw new IOException("Authorization Denied");
         }
-        
+
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certs == null) {
             throw new ServletException("This servlet requires certificate authentication!");
         }
-        
-        
+
         final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         credentials.add(certs[0]);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         AuthenticationToken admin = authenticationSession.authenticate(subject);
         if (admin == null) {
-            throw new IOException("Authorization denied for certificate: "+CertTools.getSubjectDN(certs[0]));
+            throw new IOException("Authorization denied for certificate: " + CertTools.getSubjectDN(certs[0]));
         }
- 
+
         RequestHelper.setDefaultCharacterEncoding(request);
 
         byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));
@@ -200,13 +194,13 @@ public class AdminCertReqServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, missing 'pkcs10req'!");
             return;
         }
-        
+
         RAInterfaceBean rabean = getRaBean(request);
-        
+
         // Decompose the PKCS#10 request, and create the user.
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(buffer);
         String dn = p10.getCertificationRequest().getSubject().toString();
-        
+
         String username = request.getParameter("username");
         if (username == null || username.trim().length() == 0) {
             username = dn;
@@ -216,21 +210,21 @@ public class AdminCertReqServlet extends HttpServlet {
         // need null check here?
         // Before doing anything else, check if the user name is unique and ok.
         username = checkUsername(rabean, username);
-        
+
         UserView newuser = new UserView();
         newuser.setUsername(username);
-        
+
         newuser.setSubjectDN(dn);
         newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
         newuser.setKeyRecoverable(false);
-        
+
         String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
         if (email == null) {
-        	email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
+            email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
         } else {
             newuser.setEmail(email);
         }
-        
+
         String tmp = null;
         int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
         if ((tmp = request.getParameter("entityprofile")) != null) {
@@ -239,11 +233,11 @@ public class AdminCertReqServlet extends HttpServlet {
                 reqId = rabean.getEndEntityProfileId(tmp);
             } catch (EndEntityProfileNotFoundException e) {
                 throw new ServletException("No such end entity profile: " + tmp, e);
-            }       
+            }
             eProfileId = reqId;
         }
         newuser.setEndEntityProfileId(eProfileId);
-        
+
         int cProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         if ((tmp = request.getParameter("certificateprofile")) != null) {
             CAInterfaceBean cabean = getCaBean(request);
@@ -254,27 +248,26 @@ public class AdminCertReqServlet extends HttpServlet {
             cProfileId = reqId;
         }
         newuser.setCertificateProfileId(cProfileId);
-        
+
         int caid = 0;
         if ((tmp = request.getParameter("ca")) != null) {
             // TODO: get requested CA to sign with
         }
         newuser.setCAId(caid);
-        
-        
+
         String password = request.getParameter("password");
         if (password == null) {
-        	password = "";
+            password = "";
         }
         newuser.setPassword(password);
         newuser.setClearTextPassword(false);
-        
+
         try {
             rabean.addUser(newuser);
         } catch (Exception e) {
             throw new ServletException("Error adding user: " + e.toString(), e);
         }
-        
+
         byte[] pkcs7;
         try {
             p10.setUsername(username);
@@ -294,38 +287,31 @@ public class AdminCertReqServlet extends HttpServlet {
         } catch (CesecoreException e) {
             // EJBCA did not accept any of all parameters in the request.
             throw new ServletException(e);
-		} catch (AuthorizationDeniedException e) {
+        } catch (AuthorizationDeniedException e) {
             // Weird authorization error.
             throw new ServletException(e);
-		} catch (CertificateExtensionException e) {
-		    throw new ServletException(e);
+        } catch (CertificateExtensionException e) {
+            throw new ServletException(e);
         }
         if (log.isDebugEnabled()) {
-        	log.debug("Created certificate (PKCS7) for " + username);
+            log.debug("Created certificate (PKCS7) for " + username);
         }
         sendNewB64Cert(Base64.encode(pkcs7), response);
-        
+
     }
-    
-    
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException
-    {
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         response.setHeader("Allow", "POST");
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The certificate request servlet only handles the POST method.");
         log.trace("<doGet()");
     } // doGet
-    
-    
-    private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
-    throws IOException
-    {
+
+    private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out) throws IOException {
         out.setContentType("application/octet-stream");
         out.setHeader("Content-Disposition", "filename=cert.pem");
-        out.setContentLength(b64cert.length +
-                BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 *NL_LENGTH));
-        
+        out.setContentLength(b64cert.length + BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 * NL_LENGTH));
+
         ServletOutputStream os = out.getOutputStream();
         os.write(BEGIN_CERT);
         os.write(NL);
@@ -335,26 +321,24 @@ public class AdminCertReqServlet extends HttpServlet {
         os.write(NL);
         out.flushBuffer();
     }
-    
-    
+
     /**
      *
      */
-    private final static byte[] pkcs10Bytes(String pkcs10)
-    {
-    	byte[] bytes = null;
+    private final static byte[] pkcs10Bytes(String pkcs10) {
+        byte[] bytes = null;
         if (pkcs10 != null) {
             byte[] reqBytes = pkcs10.getBytes();
             try {
                 // A real PKCS10 PEM request
                 String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-                String endKey   = "-----END CERTIFICATE REQUEST-----";
+                String endKey = "-----END CERTIFICATE REQUEST-----";
                 bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
             } catch (IOException e) {
                 try {
                     // Keytool PKCS10 PEM request
                     String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-                    String endKey   = "-----END NEW CERTIFICATE REQUEST-----";
+                    String endKey = "-----END NEW CERTIFICATE REQUEST-----";
                     bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
                 } catch (IOException e2) {
                     // IE PKCS10 Base64 coded request
@@ -364,19 +348,17 @@ public class AdminCertReqServlet extends HttpServlet {
         }
         return bytes;
     }
-    
-    
+
     /**
      *
      */
-    private final RAInterfaceBean getRaBean(HttpServletRequest req)
-    throws ServletException
-    {
+    private final RAInterfaceBean getRaBean(HttpServletRequest req) throws ServletException {
         HttpSession session = req.getSession();
         RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
         if (rabean == null) {
             try {
-                rabean = (RAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
+                rabean = (RAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(),
+                        org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new ServletException(e);
             } catch (Exception e) {
@@ -391,39 +373,37 @@ public class AdminCertReqServlet extends HttpServlet {
         }
         return rabean;
     }
-    
-    
+
     /**
      *
      */
-    private final EjbcaWebBean getEjbcaWebBean(HttpServletRequest req)
-    throws ServletException
-    {
+    private final EjbcaWebBean getEjbcaWebBean(HttpServletRequest req) throws ServletException {
         HttpSession session = req.getSession();
-        EjbcaWebBean ejbcawebbean= (EjbcaWebBean)session.getAttribute("ejbcawebbean");
-        if ( ejbcawebbean == null ){
+        EjbcaWebBean ejbcawebbean = (EjbcaWebBean) session.getAttribute("ejbcawebbean");
+        if (ejbcawebbean == null) {
             try {
-                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
+                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(),
+                        org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
             } catch (ClassNotFoundException exc) {
                 throw new ServletException(exc.getMessage());
-            }catch (Exception exc) {
-                throw new ServletException (" Cannot create bean of class "+org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName(), exc);
+            } catch (Exception exc) {
+                throw new ServletException(" Cannot create bean of class " + org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName(), exc);
             }
             session.setAttribute("ejbcawebbean", ejbcawebbean);
         }
         return ejbcawebbean;
     }
+
     /**
      *
      */
-    private final CAInterfaceBean getCaBean(HttpServletRequest req)
-    throws ServletException
-    {
+    private final CAInterfaceBean getCaBean(HttpServletRequest req) throws ServletException {
         HttpSession session = req.getSession();
         CAInterfaceBean cabean = (CAInterfaceBean) session.getAttribute("cabean");
         if (cabean == null) {
             try {
-                cabean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
+                cabean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(),
+                        org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new ServletException(e);
             } catch (Exception e) {
@@ -438,35 +418,31 @@ public class AdminCertReqServlet extends HttpServlet {
         }
         return cabean;
     }
-    
-    
+
     /**
      *
      */
-    private final String checkUsername(RAInterfaceBean rabean, String username)
-    throws ServletException
-    {
+    private final String checkUsername(RAInterfaceBean rabean, String username) throws ServletException {
         if (username != null) {
-        	username = username.trim();
+            username = username.trim();
         }
         if (username == null || username.length() == 0) {
             throw new ServletException("Username must not be empty.");
         }
-        
+
         String msg = null;
         try {
             if (rabean.userExist(username)) {
                 msg = "User '" + username + "' already exists.";
             }
         } catch (Exception e) {
-            throw new ServletException("Error checking username '" + username +
-                    ": " + e.toString(), e);
+            throw new ServletException("Error checking username '" + username + ": " + e.toString(), e);
         }
         if (msg != null) {
             throw new ServletException(msg);
         }
-        
+
         return username;
     }
-    
+
 }
