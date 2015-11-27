@@ -23,7 +23,7 @@ body {
 	font-size: 11pt;
 }
 code, code *, pre, pre *, .monospace {
-	font-family: "Courier New", Courier, monospace;
+	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", Courier, monospace;
 }
 a img {
 	border-width: 0px;
@@ -444,12 +444,15 @@ table tr.section td,
 table tr.title td {
 	font-size: 1.25em;
 }
-/* DN & attributes */
+/* Fields */
 table tr td .dn {
 	white-space: pre-wrap;
 }
 table tr td .attribute {
 	white-space: pre !important;
+}
+table tr td code.fingerprint {
+	font-size: 1.05em;
 }
 
 /* --- Form: Edit */
