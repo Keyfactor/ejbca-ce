@@ -481,12 +481,14 @@ LOG_ID, An integer identifying that starts from 1 and is increased for every rec
 SESSION_ID A random 32 Byte long String generated when the OCSP-responder is started.<br/>
 STATUS, The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;<br/>
 CLIENT_IP, IP of the client making the request.<br/>
-REQ_NAME, The Distinguished Name (DN) of the client making the request.<br/>
-SIGN_ISSUER_NAME_DN, DN of the issuer of the certificate used to sign the request.<br/>
-SIGN_SUBJECT_NAME, Subject Name of the certificate used to sign the request.<br/>
+REQ_NAME, The BC normalized Distinguished Name of the client making the request.<br/>
+REQ_NAME_RAW, The unnormalized Distinguished Name of the client making the request.<br/>
+SIGN_ISSUER_NAME_DN, The BC normalized issuer Distinguished Name of the certificate used to sign the request.<br/>
+SIGN_SUBJECT_NAME, The BC normalized Subject Distinguished Name of the certificate used to sign the request.<br/>
 SIGN_SERIAL_NO, Certificate serial number of the certificate used to sign the request.<br/>
 NUM_CERT_ID, The number of certificates to check revocation status for.<br/>
-ISSUER_NAME_DN, The subject DN of the issuer of a requested certificate.<br/>
+ISSUER_NAME_DN, The BC normalized issuer Distinguished Name of the requested certificate.<br/>
+ISSUER_NAME_DN_RAW, The unnormalized issuer Distinguished Name of the requested certificate.<br/>
 ISSUER_NAME_HASH, SHA1 hash of the issuer DN.<br/>
 ISSUER_KEY, The public key of the issuer of a requested certificate.<br/>
 DIGEST_ALGOR, Algorithm used by requested certificate to hash issuer key and issuer name.<br/>
@@ -554,6 +556,37 @@ For other application servers you can configure conf/log4j-<i>appserver</i>.xml.
 If you are using JBoss EAP 6 you need to have the property 'org.jboss.as.logging.per-deployment=true' if you use an application specific log4j configuration.
 This can be configured in standalone.xml, or using the JBoss CLI.
 </note>
+Alternatively you could modify standalone.xml directly similar to the following:
+  <source>
+&lt;periodic-rotating-file-handler name="OCSPTRANSACTION" autoflush="true">
+    &lt;formatter>
+        &lt;pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+    &lt;/formatter>
+    &lt;file relative-to="jboss.server.log.dir" path="transactions.log"/>
+    &lt;suffix value=".yyyy-MM-dd"/>
+    &lt;append value="true"/>
+&lt;/periodic-rotating-file-handler>
+&lt;periodic-rotating-file-handler name="OCSPAUDIT" autoflush="true">
+    &lt;formatter>
+        &lt;pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+    &lt;/formatter>
+    &lt;file relative-to="jboss.server.log.dir" path="audit.log"/>
+    &lt;suffix value=".yyyy-MM-dd"/>
+    &lt;append value="true"/>
+&lt;/periodic-rotating-file-handler>
+&lt;logger category="org.cesecore.certificates.ocsp.logging.TransactionLogger" use-parent-handlers="false">
+    &lt;level name="DEBUG"/>
+    &lt;handlers>
+        &lt;handler name="OCSPTRANSACTION"/>
+    &lt;/handlers>
+&lt;/logger>
+&lt;logger category="org.cesecore.certificates.ocsp.logging.AuditLogger" use-parent-handlers="false">
+    &lt;level name="DEBUG"/>
+    &lt;handlers>
+        &lt;handler name="OCSPAUDIT"/>
+    &lt;/handlers>
+&lt;/logger>
+  </source>
   </subsection>
 
   <subsection name="Safer Log4j Logging">
