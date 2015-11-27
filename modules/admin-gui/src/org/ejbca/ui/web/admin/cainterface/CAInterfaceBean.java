@@ -1214,7 +1214,8 @@ public class CAInterfaceBean implements Serializable {
     public List<Entry<String,String>> getAvailbleKeySpecs() {
         final List<Entry<String,String>> ret = new ArrayList<Entry<String,String>>();
         // Legacy idea: Never use larger keys than 2048 bit RSA for CMS signing
-        final int[] SIZES_RSA = {1024, 1536, 2048, /*4096, 8192*/};
+        // Reference: RFC 6485 - The Profile for Algorithms and Key Sizes for Use in the Resource PKI. [§ 3, and 5]
+        final int[] SIZES_RSA = {1024, 1536, 2048, 3072, 4096/*, 6144, 8192*/};
         final int[] SIZES_DSA = {1024};
         for (int size : SIZES_RSA) {
             ret.add(new SimpleEntry<String,String>(String.valueOf(size), "RSA "+size));
