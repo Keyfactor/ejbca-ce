@@ -903,7 +903,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void doesUserFullfillEndEntityProfile(final EndEntityInformation userdata, final boolean clearpwd) throws UserDoesntFullfillEndEntityProfile {
-    	doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), userdata.getDN(), userdata.getSubjectAltName(), "", userdata.getEmail(), 
+        String subjectdirattr = "";
+        final ExtendedInformation ei = userdata.getExtendedinformation();
+        if (ei != null) {
+            subjectdirattr = ei.getSubjectDirectoryAttributes();
+        }
+        
+        doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), userdata.getDN(), userdata.getSubjectAltName(), subjectdirattr, userdata.getEmail(), 
     											userdata.getCertificateProfileId(), clearpwd, userdata.getKeyRecoverable(), userdata.getSendNotification(), 
     											userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
         //Checking if the cardnumber is required and set
