@@ -18,7 +18,7 @@
 		<path refid="lib.commons-httpclient.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-                <path location="${mod.cesecore-common.lib}"/>
+        <path location="${mod.cesecore-common.lib}"/>
 	</path>
 	
 	<path id="compile-jbosslog4jsafer.classpath">

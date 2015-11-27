@@ -10,7 +10,6 @@
 
 	<path id="compile.classpath">
 		<path refid="lib.jee.classpath" />
-		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
@@ -19,7 +18,6 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
-		<path refid="lib.ldap.classpath"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 	</path>
@@ -31,7 +29,7 @@
 		<path location="${build-test.dir}"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.easymock.classpath"/>
-		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
+		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
 	<target name="jar">

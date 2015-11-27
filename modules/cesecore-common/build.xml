@@ -41,7 +41,7 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.easymock.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
-		<fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/>
+		<path refid="lib.commons-codec.classpath"/>
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
 	</path>
 
