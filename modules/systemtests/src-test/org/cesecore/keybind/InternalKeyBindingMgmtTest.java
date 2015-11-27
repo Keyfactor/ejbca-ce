@@ -25,6 +25,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -223,8 +225,18 @@ public class InternalKeyBindingMgmtTest {
                     EndEntityConstants.TOKEN_USERGEN, 0, null);
             endEntityInformation.setPassword("foo123");
             // Request a CSR for the key pair
-            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, null);
-            RequestMessage req = new PKCS10RequestMessage(csr);
+            // First make a couple of requests with different DN to see that that part works
+            final X500Name x500name = CertTools.stringToBcX500Name("CN=name,O=org,C=SE", false);
+            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, x500name.getEncoded());
+            final JcaPKCS10CertificationRequest jcareq = new JcaPKCS10CertificationRequest(csr);
+            assertEquals("Wrong order of DN, should be X500 with C first", "C=SE,O=org,CN=name", jcareq.getSubject().toString());
+            final X500Name x500name2 = CertTools.stringToBcX500Name("CN=name,O=org,C=SE", true);
+            final byte[] csr2 = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, x500name2.getEncoded());
+            final JcaPKCS10CertificationRequest jcareq2 = new JcaPKCS10CertificationRequest(csr2);
+            assertEquals("Wrong order of DN, should be LDAP with CN first", "CN=name,O=org,C=SE", jcareq2.getSubject().toString());
+            // Now make the request that we will actually use
+            final byte[] csr3 = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, null);
+            final RequestMessage req = new PKCS10RequestMessage(csr3);
             assertEquals("CN="+KEY_BINDING_NAME, req.getRequestDN());
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntityInformation, req,
                     X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
@@ -242,6 +254,10 @@ public class InternalKeyBindingMgmtTest {
             final String actualCertificateFingerprint = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(alwaysAllowToken, internalKeyBindingId).getCertificateId();
             assertFalse("After certificate renewal the same certificate still in use.",
                     boundCertificateFingerprint.equals(actualCertificateFingerprint));
+            // Check DN in generated CSR when we have a bound certificate, should be the DN of the old certificate
+            final byte[] csr4 = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, null);
+            final JcaPKCS10CertificationRequest jcareq4 = new JcaPKCS10CertificationRequest(csr4);
+            assertEquals("Wrong DN, should be from the bound certificate", "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, jcareq4.getSubject().toString());
         } finally {
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
             internalCertStoreSession.removeCertificate(certFpToDelete);
@@ -264,7 +280,7 @@ public class InternalKeyBindingMgmtTest {
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, null);
             log.debug("Created InternalKeyBinding with id " + internalKeyBindingId);
             // Request a CSR for the key pair
-            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, "CN="+KEY_BINDING_NAME+",O=workflow");
+            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, CertTools.stringToBcX500Name("CN="+KEY_BINDING_NAME+",O=workflow", true).getEncoded());
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
                     EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,

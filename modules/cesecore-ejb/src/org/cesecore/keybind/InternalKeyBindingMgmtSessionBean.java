@@ -523,7 +523,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId, String optionalSubjectDN) throws AuthorizationDeniedException,
+    public byte[] generateCsrForNextKey(final AuthenticationToken authenticationToken, final int internalKeyBindingId, final byte[] name) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
@@ -543,28 +543,36 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final String signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
         final PrivateKey privateKey = cryptoToken.getPrivateKey(keyPairAlias);
-        String requestSubjectDN = optionalSubjectDN;
-        if (requestSubjectDN==null || requestSubjectDN.trim().isEmpty()) {
-            requestSubjectDN = "CN="+internalKeyBinding.getName();
+        final X500Name x500Name;
+        if (name != null) {
+        	// If there was a parameter, use that
+            x500Name = X500Name.getInstance(name);
+        } else {
             // Try to look up the currently mapped certificates SubjectDN and use that
             final String fingerprint = internalKeyBinding.getCertificateId();
-            if (fingerprint!=null) {
+            if (fingerprint != null) {
                 final Certificate certificate = certificateStoreSession.findCertificateByFingerprint(fingerprint);
-                if (certificate!=null) {
-                    requestSubjectDN = CertTools.getSubjectDN(certificate);
+                if (certificate != null) {
+                    if (certificate instanceof X509Certificate) {
+                        x500Name = X500Name.getInstance(((X509Certificate)certificate).getSubjectX500Principal().getEncoded());
+                        if (log.isDebugEnabled()) {
+                        	log.debug("Using subject DN from active X.509 certificate '" + x500Name.toString() + "'");
+                        }
+                    } else {
+                        x500Name = CertTools.stringToBcX500Name(CertTools.getSubjectDN(certificate));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Using subject DN from active " + certificate.getType() +" certificate '" + x500Name.toString() + "'");
+                        }
+                    }
+                } else {
+                	// No mapped certificate exists, and no parameter, use default value
+                    x500Name = CertTools.stringToBcX500Name("CN="+internalKeyBinding.getName());                
                 }
+            } else {
+                // No mapped certificate exists, and no parameter, use default value
+                x500Name = CertTools.stringToBcX500Name("CN="+internalKeyBinding.getName());                
             }
         }
-        // Validate that this can be used, and if not just put a default here so automation always works
-        try {
-            requestSubjectDN = CertTools.stringToBcX500Name(requestSubjectDN).toString();
-        } catch (IllegalArgumentException e) {
-            requestSubjectDN = "";
-        }
-        if (requestSubjectDN.isEmpty()) {
-            requestSubjectDN = "CN=Should be replaced with trusted value by CA";
-        }
-        final X500Name x500Name = CertTools.stringToBcX500Name(requestSubjectDN);
         final String providerName = cryptoToken.getSignProviderName();
         try {
             return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, x500Name, publicKey, new DERSet(), privateKey, providerName)

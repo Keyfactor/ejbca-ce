@@ -19,6 +19,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -42,15 +43,18 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
     private static final Logger log = Logger.getLogger(InternalKeyBindingGenerateCsrCommand.class);
 
     private static final String GENKEYPAIR_KEY = "--genkeypair";
-    private static final String SUBJECTDN_KEY = "--subjectdn";
     private static final String CSR_FILE_KEY = "-f";
+    private static final String SUBJECTDN_KEY = "--subjectdn";
+    private static final String SUBJECTDN_ORDER_KEY = "--x500dnorder";
 
     {
-        registerParameter(Parameter.createFlag(GENKEYPAIR_KEY, "Set to generate a \"next\" key pair"));
+        registerParameter(Parameter.createFlag(GENKEYPAIR_KEY, "Set to generate a \"next\" key pair with the same key specification as the current and a new alias.".
+                concat("If a nextKey reference already exists, it will be replaced with a reference to the new key")));
         registerParameter(new Parameter(CSR_FILE_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Destination file for the CSR."));
-        registerParameter(new Parameter(SUBJECTDN_KEY, "CSR Subject DN", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The Subject Distinguiser Name to put in the CSR."));
+        registerParameter(new Parameter(SUBJECTDN_KEY, "Subject DN", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Subject DN in the generated CSR, if left out default subject DN will be used (CN=Should be ignored by CA)."));
+        registerParameter(Parameter.createFlag(SUBJECTDN_ORDER_KEY, "(when using --subjectdn) Use this flag to specify that the DN order in the CSR should be X500 (C=SE,O=org,CN=name) instead of the default (CN=name,O=org,C=SE)"));
     }
 
     @Override
@@ -63,8 +67,20 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
             InvalidKeyException, CryptoTokenOfflineException, InvalidAlgorithmParameterException {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-
+        
         final boolean switchGenKeyPair = parameters.containsKey(GENKEYPAIR_KEY);
+        final String csrSubjectDN = parameters.get(SUBJECTDN_KEY);
+        // If contains key we want to boolean to be false, because LDAP DN order is "true"
+        final boolean x500dnorder = !parameters.containsKey(SUBJECTDN_ORDER_KEY);
+
+        final X500Name x500Name;
+        if (csrSubjectDN != null) {
+            x500Name = CertTools.stringToBcX500Name(csrSubjectDN, x500dnorder);
+            getLogger().info("Using subject DN from argument '" + x500Name.toString() + "', with order "+x500dnorder);
+        } else {
+            getLogger().info("Using default subject DN, from existing mapped certificate if it is present");
+            x500Name = null;
+        }
 
         String nextKeyAlias;
         if (switchGenKeyPair) {
@@ -78,8 +94,7 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
             }
             getLogger().info("Next key pair alias is " + nextKeyAlias);
         }
-        final String optionalSubjectDN = parameters.get(SUBJECTDN_KEY);
-        final byte[] certificateRequestBytes = internalKeyBindingMgmtSession.generateCsrForNextKey(getAdmin(), internalKeyBindingId, optionalSubjectDN);
+        final byte[] certificateRequestBytes = internalKeyBindingMgmtSession.generateCsrForNextKey(getAdmin(), internalKeyBindingId, x500Name != null ? x500Name.getEncoded():null);
         if (certificateRequestBytes == null) {
             getLogger().error("Unable to generate CSR for " + nextKeyAlias);
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -101,7 +116,7 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
 
     @Override
     public String getFullHelpText() {
-        return getCommandDescription()+ " Optionally generates a new \"next\" key pair and otherwise returns the current public key.";
+        return getCommandDescription()+ " Optionally generates a new \"next\" key pair and otherwise returns the current public key. \nThe subjectDN in the CSR will be set to the currently mapped certificate's SubjectDN (if present) and if not a default DN of (CN=Internal Key Binding Name). A subjectDN can also be set using the parameter --subjectdn (see --help)";    
     }
 
     protected Logger getLogger() {
