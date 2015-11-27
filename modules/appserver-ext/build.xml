@@ -12,7 +12,6 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 
 	<path id="compile-jbosslogsigning.classpath">
-		<path refid="lib.jboss-log4j.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.commons-httpclient.classpath"/>
