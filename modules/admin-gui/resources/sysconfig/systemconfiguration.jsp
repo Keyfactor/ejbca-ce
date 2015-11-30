@@ -546,7 +546,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogTimeout}"/>
+				<h:outputText value="#{systemConfigMBean.ctLogTimeout}" styleClass="numberCell"/>
 				<f:facet name="footer">
 					<h:inputText id="currentTimeout" required="false"
 									value="#{systemConfigMBean.currentCTLogTimeout}"

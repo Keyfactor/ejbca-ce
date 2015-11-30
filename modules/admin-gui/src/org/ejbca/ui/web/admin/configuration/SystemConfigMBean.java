@@ -529,13 +529,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Upload of CTLog public key file failed.", null));
             return;
         }
+        final int timeout = getCurrentCTLogTimeout();
+        if (timeout < 0) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Timeout value may not be negative.", null));
+            return;
+        }
         
         CTLogInfo ctlogToAdd = null;
         try {
             byte[] uploadedFileBytes = currentCTLogPublicKeyFile.getBytes();
             byte[] keybytes = KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
             ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
-            ctlogToAdd.setTimeout(getCurrentCTLogTimeout());
+            ctlogToAdd.setTimeout(timeout);
         } catch (IOException e) {
             String msg = "Cannot parse the public key file " + getCurrentCTLogPublicKeyFile().getName() + ". " + e.getLocalizedMessage();
             log.info(msg);
