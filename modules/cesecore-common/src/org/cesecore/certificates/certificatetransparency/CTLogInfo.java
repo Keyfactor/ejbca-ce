@@ -104,7 +104,11 @@ public final class CTLogInfo implements Serializable {
         return timeout;
     }
     
+    /** Sets the timeout in milliseconds when sending a request to the log server */
     public void setTimeout(final int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("Timeout value is negative");
+        }
         this.timeout = timeout;
     }
     

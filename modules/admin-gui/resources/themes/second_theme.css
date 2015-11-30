@@ -314,6 +314,11 @@ table.grid td {
 	border: 1px solid #6F9AD3;
 }
 
+.numberCell {
+	display: block;
+	text-align: right;
+}
+
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT > FORMS */
