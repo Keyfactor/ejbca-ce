@@ -106,6 +106,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * System tests for EndEntityCertificateAuthenticationModule
+ * 
+ * @version $Id$
+ *
+ */
+
 public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(EndEntityCertAuthModuleTest.class);
