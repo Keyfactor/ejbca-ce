@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 /**
  * Use {@link #add()} to add a handler to {@link java.util.logging.Logger} that logs to {@link org.apache.log4j.Logger}
  * 
- * @author lars
  * @version $Id$
  *
  */
