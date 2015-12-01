@@ -106,6 +106,12 @@ public class RolesManagedBean extends BaseManagedBean {
         this.newRoleName = newRoleName;
     }
     
+    /**
+     * 
+     * @param rule
+     * @param isRecursive
+     * @return true if the currently edited role has access to a rule. 
+     */
     public boolean hasAccessToRule(String rule, boolean isRecursive) {
         if(currentRole == null) {
             return false;
@@ -114,6 +120,17 @@ public class RolesManagedBean extends BaseManagedBean {
         }
     }
 
+    /**
+     * 
+     * @param rule
+     * @param isRecursive
+     * @return true if the current admin is authorized to a rule
+     */
+    public boolean isAuthorizedToRule(String rule, boolean isRecursive) {
+        AccessControlSessionLocal accessControlSession = ejbLocalHelper.getAccessControlSession();
+        return accessControlSession.isAuthorizedNoLogging(getAdmin(), isRecursive, rule);
+    }
+    
     /** @return a List of all roles, excepting ones that refer to CA's which the current role doesn't have access to. */
     public List<RoleData> getRoles() {
         List<RoleData> roles = new ArrayList<RoleData>();
