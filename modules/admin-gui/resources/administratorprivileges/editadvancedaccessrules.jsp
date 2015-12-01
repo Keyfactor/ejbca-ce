@@ -92,7 +92,7 @@
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RULE}" />
 				</f:facet>
-				<h:selectOneMenu id="selectrole" value="#{accessRule.state}" disabled="#{!rolesManagedBean.authorizedToEdit ||  !rolesManagedBean.hasAccessToRule(rolesManagedBean.parsedAccessRule, accessRule.recursive)}">
+				<h:selectOneMenu id="selectrole" value="#{accessRule.state}" disabled="#{!rolesManagedBean.authorizedToEdit ||  !rolesManagedBean.isAuthorizedToRule(rolesManagedBean.parsedAccessRule, accessRule.recursive)}">
 					<f:selectItems value="#{rolesManagedBean.accessRuleStates}" />
 				</h:selectOneMenu> 
 			</h:column>
@@ -100,7 +100,7 @@
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RECURSIVE}" />
 				</f:facet>
-				<h:selectBooleanCheckbox value="#{accessRule.recursive}" disabled="#{!rolesManagedBean.authorizedToEdit}"/>
+				<h:selectBooleanCheckbox value="#{accessRule.recursive}" disabled="#{!rolesManagedBean.authorizedToEdit || !rolesManagedBean.isAuthorizedToRule(rolesManagedBean.parsedAccessRule, accessRule.recursive)}"/>
 			</h:column>
 		</h:dataTable>
 		</h:column>
