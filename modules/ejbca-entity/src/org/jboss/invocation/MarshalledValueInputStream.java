@@ -50,6 +50,7 @@ public class MarshalledValueInputStream
 {
    private static Logger log = Logger.getLogger(MarshalledValueInputStream.class);
    /** A class wide cache of proxy classes populated by resolveProxyClass */
+   @SuppressWarnings("rawtypes")
    private static WeakValueHashMap classCache;
 
    /** Enable local caching of resolved proxy classes. This can only be used
@@ -57,6 +58,7 @@ public class MarshalledValueInputStream
     *
     * @param flag true to enable caching, false to disable it
     */
+   @SuppressWarnings("rawtypes")
    public static void useClassCache(boolean flag)
    {
       if( flag == true )
@@ -86,6 +88,7 @@ public class MarshalledValueInputStream
     *
     * @throws IOException   Any exception thrown by the underlying OutputStream.
     */
+   @SuppressWarnings({ "unchecked", "rawtypes" })
    protected Class resolveClass(ObjectStreamClass v)
       throws IOException, ClassNotFoundException
    {
@@ -126,6 +129,7 @@ public class MarshalledValueInputStream
       return resolvedClass;
    }
 
+   @SuppressWarnings({ "unchecked", "rawtypes" })
    protected Class resolveProxyClass(String[] interfaces)
       throws IOException, ClassNotFoundException
    {
