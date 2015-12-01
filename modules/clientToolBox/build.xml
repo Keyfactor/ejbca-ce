@@ -2,7 +2,7 @@
 <project name="clientToolBox" default="build">
 	<description>
 		A stand alone CLI toolbox for interacting with EJBCA
-    </description>
+	</description>
 
 	<dirname property="this.dir" file="${ant.file.clientToolBox}"/>
 	<property name="appserver.type" value="dummy. clientToolBox is not using any appserver."/>
@@ -13,6 +13,8 @@
 	<property name="intresources.dir" location="${this.dir}/intresources"/>
 
 	<path id="clientToolBox.lib.classpath">
+		<!-- Do NOT include any EJBCA jars here.
+		     Instead add "src path" for the compile target if needed.-->
 		<fileset dir="${ejbca.home}/lib">
 			<include name="log4j-1.2.16.jar"/>
 			<include name="bcprov-*.jar"/>
@@ -25,9 +27,6 @@
 			<include name="commons-logging-1.1.1.jar"/>
 			<include name="commons-io-*.jar"/>
 		</fileset>
-		<path refid="lib.jee.classpath"/>
-		<path location="${mod.ejbca-common.lib}"/>
-		<path location="${mod.ejbca-common-web.lib}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">
@@ -71,10 +70,12 @@
 				<path refid="lib.bouncycastle.classpath"/>
 				<path refid="clientToolBox.lib.classpath"/>
 				<!--
-               	<path refid="clientToolBox.endorsed.classpath"/>
-               	-->
+				   <path refid="clientToolBox.endorsed.classpath"/>
+				-->
 			</classpath>
-			<src  path="${src.dir}"/>
+			<src path="${src.dir}"/>
+			<src path="${mod.ejbca-common.path}/src" />
+			<src path="${mod.ejbca-common-web.path}/src" />
 			<src path="${mod.ejbca-ws.path}/src" />
 			<src path="${mod.ejbca-ws-cli.path}/src" />
 			<src path="${mod.ejbca-ws-cli.path}/src-gen" />
@@ -89,31 +90,23 @@
 			<include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
 			<include name="org/ejbca/core/protocol/ocsp/extension/unid/OCSPUnidResponse.java" />
 		</javac>
-		<javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
-			<classpath>
-				<path refid="lib.bouncycastle.classpath"/>
-				<path refid="clientToolBox.lib.classpath"/>
-			</classpath>
-			<src  path="${src.dir}"/>
-		</javac>
-
 	</target>
 
 	<target name="setup">
-		<mkdir dir="${mod.clientToolBox.dist}" />
+		<mkdir dir="${mod.clientToolBox.dist}"/>
 		<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/lib -->
 		<pathconvert property="lib.clientToolBox.classpath.property" pathsep=" ">
 			<path refid="clientToolBox.lib.classpath" />
-			<map from="${ejbca.home}/" to="" />
+			<map from="${ejbca.home}/" to=""/>
 		</pathconvert>
 		<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
-			<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}" />
+			<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>
 		</copy>
 		<!-- Copy scripts etc to mod.clientToolBox.dist -->
 		<copy todir="${mod.clientToolBox.dist}">
-			<fileset file="${mod.ejbca-ws-cli.path}/resources/ejbcawsracli.properties" />
+			<fileset file="${mod.ejbca-ws-cli.path}/resources/ejbcawsracli.properties"/>
 			<fileset dir="${this.dir}/resources">
-				<include name="ejbcaClientToolBox.bat" />
+				<include name="ejbcaClientToolBox.bat"/>
 				<include name="ejbcaClientToolBox.sh"/>
 				<include name="README"/>
 				<include name="properties/**/*.*"/>
