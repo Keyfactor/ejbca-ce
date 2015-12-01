@@ -48,8 +48,8 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
     private static final String SUBJECTDN_ORDER_KEY = "--x500dnorder";
 
     {
-        registerParameter(Parameter.createFlag(GENKEYPAIR_KEY, "Set to generate a \"next\" key pair with the same key specification as the current and a new alias.".
-                concat("If a nextKey reference already exists, it will be replaced with a reference to the new key")));
+        registerParameter(Parameter.createFlag(GENKEYPAIR_KEY, "Set to generate a \"next\" key pair with the same key specification as the current and a new alias."
+                + " If a nextKey reference already exists, it will be replaced with a reference to the new key"));
         registerParameter(new Parameter(CSR_FILE_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Destination file for the CSR."));
         registerParameter(new Parameter(SUBJECTDN_KEY, "Subject DN", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -72,16 +72,17 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
         final String csrSubjectDN = parameters.get(SUBJECTDN_KEY);
         // If contains key we want to boolean to be false, because LDAP DN order is "true"
         final boolean x500dnorder = !parameters.containsKey(SUBJECTDN_ORDER_KEY);
-
         final X500Name x500Name;
         if (csrSubjectDN != null) {
             x500Name = CertTools.stringToBcX500Name(csrSubjectDN, x500dnorder);
             getLogger().info("Using subject DN from argument '" + x500Name.toString() + "', with order "+x500dnorder);
         } else {
+            if (parameters.containsKey(SUBJECTDN_ORDER_KEY)) {
+                getLogger().warn(SUBJECTDN_ORDER_KEY + " is defined, but " + SUBJECTDN_KEY + " is not.");
+            }
             getLogger().info("Using default subject DN, from existing mapped certificate if it is present");
             x500Name = null;
         }
-
         String nextKeyAlias;
         if (switchGenKeyPair) {
             nextKeyAlias = internalKeyBindingMgmtSession.generateNextKeyPair(getAdmin(), internalKeyBindingId);
@@ -122,5 +123,4 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
     protected Logger getLogger() {
         return log;
     }
-
 }

@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -47,6 +48,7 @@ import org.junit.Test;
  */
 public class InternalKeyBindingGenerateCsrCommandTest {
 
+    private static final Logger log = Logger.getLogger(InternalKeyBindingGenerateCsrCommandTest.class);
     private static final String TESTCLASS_NAME = InternalKeyBindingGenerateCsrCommandTest.class.getSimpleName();
 
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
@@ -110,7 +112,7 @@ public class InternalKeyBindingGenerateCsrCommandTest {
             PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(FileTools.readFiletoBuffer(csrFile.getAbsolutePath()));
             assertEquals("Wrong DN in generated request", "CN=InternalKeyBindingGenerateCsrCommandTest", msg.getRequestDN());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             fail("A correct CSR was not generated.");
         }
         args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath(), "--subjectdn", "C=SE,O=org,CN=name", "--x500dnorder"};
@@ -120,7 +122,7 @@ public class InternalKeyBindingGenerateCsrCommandTest {
             JcaPKCS10CertificationRequest jcareq = new JcaPKCS10CertificationRequest(msg.getCertificationRequest().getEncoded());
             assertEquals("Wring order of DN, should be X500 with C first", "C=SE,O=org,CN=name", jcareq.getSubject().toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             fail("A correct CSR was not generated.");
         }
         args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath(), "--subjectdn", "C=SE,O=org,CN=name"};
@@ -130,7 +132,7 @@ public class InternalKeyBindingGenerateCsrCommandTest {
             JcaPKCS10CertificationRequest jcareq = new JcaPKCS10CertificationRequest(msg.getCertificationRequest().getEncoded());
             assertEquals("Wring order of DN, should be LDAP with CN first", "CN=name,O=org,C=SE", jcareq.getSubject().toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             fail("A correct CSR was not generated.");
         }
     }
