@@ -112,6 +112,19 @@ public interface CryptoTokenManagementSession {
             char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, NoSuchSlotException;
 
+    /**
+     * Changes the name and key placeholders of a CryptoToken. Doesn't de-activate the crypto token,
+     * and can't be used to change any other properties (e.g. PKCS#11 slot etc.) or the authentication code.
+     *
+     * @param authenticationToken
+     * @param cryptoTokenId Id of the existing crypto token
+     * @param newName New name of the crypto token.
+     * @param newPlaceholders New key placeholders, in the same format as they are stored in the crypto token properties.
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenNameInUseException If the new name is already in use.
+     */
+    void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String newName, String newPlaceholders) throws AuthorizationDeniedException, CryptoTokenNameInUseException;
+    
     /** @return value object with non-sensitive information about the CryptoToken for UI use or similar, or null if token does not exist. */
     CryptoTokenInfo getCryptoTokenInfo(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
