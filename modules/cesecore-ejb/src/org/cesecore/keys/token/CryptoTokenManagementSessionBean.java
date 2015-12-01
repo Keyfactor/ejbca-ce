@@ -274,6 +274,38 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             log.trace("<saveCryptoToken: " + tokenName + ", " + cryptoTokenId);
         }
     }
+    
+    @Override
+    public void saveCryptoToken(final AuthenticationToken authenticationToken, final int cryptoTokenId,
+            final String newName, final String newPlaceholders) throws AuthorizationDeniedException, CryptoTokenNameInUseException {
+        if (log.isTraceEnabled()) {
+            log.trace(">saveCryptoToken: cryptoTokenId=" + cryptoTokenId + ", newName=" + newName);
+        }
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(),
+                    authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        final String oldName = cryptoToken.getTokenName();
+        cryptoToken.setTokenName(newName);
+        final Properties properties = cryptoToken.getProperties();
+        final String oldPlaceholders = cryptoToken.getProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY);
+        properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newPlaceholders);
+        cryptoToken.setProperties(properties);
+        
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Modified name/placeholders of CryptoToken with id " + cryptoTokenId);
+        putDelta("name", oldName, newName, details);
+        putDelta("keyPlaceholders", oldPlaceholders, newPlaceholders, details);
+        
+        cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+        if (log.isTraceEnabled()) {
+            log.trace("<saveCryptoToken: cryptoTokenId=" + cryptoTokenId + ", newName=" + newName);
+        }
+    }
 
     // Only removes reference
     @Override
