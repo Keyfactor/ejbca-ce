@@ -64,7 +64,7 @@ public class MarshalledValueOutputStream
    /**
     * @throws IOException   Any exception thrown by the underlying OutputStream.
     */
-   protected void annotateClass(Class cl) throws IOException
+   protected void annotateClass(@SuppressWarnings("rawtypes") Class cl) throws IOException
    {
       super.annotateClass(cl);
    }
@@ -72,7 +72,7 @@ public class MarshalledValueOutputStream
    /**
     * @throws IOException   Any exception thrown by the underlying OutputStream.
     */
-   protected void annotateProxyClass(Class cl) throws IOException
+   protected void annotateProxyClass(@SuppressWarnings("rawtypes") Class cl) throws IOException
    {
       super.annotateProxyClass(cl);
    }
@@ -97,6 +97,7 @@ public class MarshalledValueOutputStream
       return obj;
    }
 
+   @SuppressWarnings("rawtypes")
    private static class EnableReplaceObjectAction implements PrivilegedAction
    {
       MarshalledValueOutputStream os;
@@ -109,7 +110,8 @@ public class MarshalledValueOutputStream
          os.enableReplaceObject(true);
          return null;
       }
-      static void enableReplaceObject(MarshalledValueOutputStream os)
+      @SuppressWarnings("unchecked")
+    static void enableReplaceObject(MarshalledValueOutputStream os)
       {
          EnableReplaceObjectAction action = new EnableReplaceObjectAction(os);
          AccessController.doPrivileged(action);
