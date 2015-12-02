@@ -95,7 +95,8 @@ class SecurityActions
 
       TCLAction PRIVILEGED = new TCLAction()
       {
-         private final PrivilegedAction getTCLPrivilegedAction = new PrivilegedAction()
+         @SuppressWarnings("rawtypes")
+        private final PrivilegedAction getTCLPrivilegedAction = new PrivilegedAction()
          {
             public Object run()
             {
@@ -103,12 +104,14 @@ class SecurityActions
             }
          };
 
-         public ClassLoader getContextClassLoader()
+         @SuppressWarnings("unchecked")
+        public ClassLoader getContextClassLoader()
          {
             return (ClassLoader) AccessController.doPrivileged(getTCLPrivilegedAction);
          }
 
-         public ClassLoader getContextClassLoader(final Thread thread)
+         @SuppressWarnings({ "unchecked", "rawtypes" })
+        public ClassLoader getContextClassLoader(final Thread thread)
          {
             return (ClassLoader)AccessController.doPrivileged(new PrivilegedAction()
             {
@@ -119,7 +122,8 @@ class SecurityActions
             });
          }
 
-         public void setContextClassLoader(final ClassLoader cl)
+         @SuppressWarnings({ "unchecked", "rawtypes" })
+        public void setContextClassLoader(final ClassLoader cl)
          {
             AccessController.doPrivileged(
                new PrivilegedAction()
@@ -133,7 +137,8 @@ class SecurityActions
             );
          }
 
-         public void setContextClassLoader(final Thread thread, final ClassLoader cl)
+         @SuppressWarnings({ "unchecked", "rawtypes" })
+        public void setContextClassLoader(final Thread thread, final ClassLoader cl)
          {
             AccessController.doPrivileged(
                new PrivilegedAction()
