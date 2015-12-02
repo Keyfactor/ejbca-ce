@@ -13,20 +13,20 @@
 	<property name="intresources.dir" location="${this.dir}/intresources"/>
 
 	<path id="clientToolBox.lib.classpath">
-		<!-- Do NOT include any EJBCA jars here.
-		     Instead add "src path" for the compile target if needed.-->
-		<fileset dir="${ejbca.home}/lib">
-			<include name="log4j-1.2.16.jar"/>
-			<include name="bcprov-*.jar"/>
-			<include name="commons-lang-2.5.jar"/>
-			<include name="bcpkix-*.jar"/>
-			<include name="cert-cvc-*.jar"/>
-			<include name="ldap.jar"/>
-			<include name="commons-collections-3.2.2.jar"/>
-			<include name="commons-configuration-1.6.jar"/>
-			<include name="commons-logging-1.1.1.jar"/>
-			<include name="commons-io-*.jar"/>
-		</fileset>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-io.classpath"/>	
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+		<path refid="lib.log4j.classpath"/> 		
+		<path location="${mod.cesecore-common.lib}"/>
+		<path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-common.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
+		<path location="${mod.ejbca-ws-client.lib}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">
@@ -67,28 +67,10 @@
 		<mkdir dir="${build.dir}" />
 		<javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath>
-				<path refid="lib.bouncycastle.classpath"/>
 				<path refid="clientToolBox.lib.classpath"/>
-				<!--
-				   <path refid="clientToolBox.endorsed.classpath"/>
-				-->
 			</classpath>
 			<src path="${src.dir}"/>
-			<src path="${mod.ejbca-common.path}/src" />
-			<src path="${mod.ejbca-common-web.path}/src" />
-			<src path="${mod.ejbca-ws.path}/src" />
-			<src path="${mod.ejbca-ws-cli.path}/src" />
-			<src path="${mod.ejbca-ws-cli.path}/src-gen" />
-			<src path="${mod.ejbca-entity.path}/src" />
-			<src path="${mod.va.path}/src-war" />
-			<src path="${mod.cesecore-common.path}/src" />
-			<src path="${mod.cesecore-ejb-interface.path}/src" />
 			<include name="org/ejbca/ui/cli/ClientToolBox.java" />
-			<include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
-			<include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />
-			<include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
-			<include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
-			<include name="org/ejbca/core/protocol/ocsp/extension/unid/OCSPUnidResponse.java" />
 		</javac>
 	</target>
 
