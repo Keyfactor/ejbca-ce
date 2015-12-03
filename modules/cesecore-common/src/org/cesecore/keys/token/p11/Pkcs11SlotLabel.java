@@ -98,8 +98,9 @@ public class Pkcs11SlotLabel {
         }
         // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
-
-        log.debug("slot spec: " + this.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("slot spec: " + toString());
+        }
         if ( this.type==Pkcs11SlotLabelType.SUN_FILE ) {// if sun cfg file then we do not know the name of the p11 module and wemust quit.
             FileInputStream fileInputStream;
             try {
@@ -225,7 +226,9 @@ public class Pkcs11SlotLabel {
         try {
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIK_PKCS11_CLASS);
-            log.info("Using IAIK PKCS11 provider: " + IAIK_PKCS11_CLASS);
+            if (log.isDebugEnabled()) {
+                log.debug("Using IAIK PKCS11 provider: " + IAIK_PKCS11_CLASS);
+            }
             // iaik PKCS11 has Properties as constructor argument
             ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
             // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
@@ -237,19 +240,8 @@ public class Pkcs11SlotLabel {
                 log.info("Adding IAIK JCE provider for Delegation: " + IAIK_JCEPROVIDER_CLASS);
                 Security.addProvider(iaikProvider);
             }
-        } catch (InvocationTargetException e) {
-            // NOPMD: Ignore, reflection related errors are handled elsewhere
-        } catch (InstantiationException e) {
-            // NOPMD: Ignore, reflection related errors are handled elsewhere
-        } catch (IllegalAccessException e) {
-            // NOPMD: Ignore, reflection related errors are handled elsewhere
-        } catch (IllegalArgumentException e) {
-            // NOPMD: Ignore, reflection related errors are handled elsewhere
-        } catch (NoSuchMethodException e) {
-            // NOPMD: Ignore, reflection related errors are handled elsewhere
-        } catch (SecurityException e) {
-            // NOPMD: Ignore, reflection related errors are handled elsewhere
-        } catch (ClassNotFoundException e) {
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException |
+                NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             // NOPMD: Ignore, reflection related errors are handled elsewhere
         }
         return ret;
@@ -358,7 +350,9 @@ public class Pkcs11SlotLabel {
         // Sun PKCS11 has InputStream as constructor argument
         @SuppressWarnings("unchecked")
         final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
-        log.info("Using SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
+        if (log.isDebugEnabled()) {
+            log.debug("Using SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
+        }
         return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
     }
 
