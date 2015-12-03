@@ -31,12 +31,18 @@ import org.cesecore.config.OcspConfiguration;
 public enum OcspExtensionsCache {
     INSTANCE;
 
-    private static final Logger log = Logger.getLogger(OcspExtensionsCache.class);
+    private static Logger log; // static initialization happens after the enum instance is constructed, so we can't initialize the logger here
 
     private Map<String, OCSPExtension> extensionMap;
 
     private OcspExtensionsCache() {
+        initializeLogger();
         reloadCache(buildExtensionsMap());
+    }
+    
+    /** Helper method to assign the log, which can't be done directly from the constructor */
+    private static void initializeLogger() {
+        log = Logger.getLogger(OcspExtensionsCache.class);
     }
 
     /**
