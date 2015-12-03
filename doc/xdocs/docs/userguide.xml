@@ -1266,6 +1266,9 @@ If you define values as required and non-modifyable you can specify one or more 
 <li>[0-9A-Za-z ]+ allows digits and English letters and spaces</li>
 <li>.+@.+ allows strings containing "@", for example e-mail addresses</li>
 <li>[a-zA-Z0-9+._-]+@[a-zA-Z0-9.-]+ allows e-mail addresses with English characters only</li>
+<li>[a-zA-Z0-9+._-]+@yourdomain\.com allows only e-mails from a specific domain</li>
+<li>[a-zA-Z0-9._-]+\.yourdomain\.com allows only subdomains of yourdomain.com (but not yourdomain.com itself)</li>
+<li>([a-zA-Z0-9._-]+\.)?yourdomain\.com allows yourdomain.com with or without a subdomain</li>
 </ul>
 <p>
 When having several fields of a certain type with mixed required and not required fields some special handling might be needed when adding users using web sevrice API.
