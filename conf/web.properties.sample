@@ -94,11 +94,12 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #httpsserver.bindaddress.pubhttps=0.0.0.0
 #httpsserver.bindaddress.privhttps=0.0.0.0
 
-# Defines the available languages by ISO 639-1 language codes separated with a comma (example: en,zh).
+# Defines the available languages by ISO 639-1 language codes separated with a comma (example: en,fr).
 # If you are not sure that you know how to add a new language (languagefile.xx.properties, etc.), 
 # we suggest you stick with the default the first time you install if you wan't to add your own language.
-# Otherwise you may not be able to log in to the Admin GUI.
-# Default: en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh
+# Note: some available languages have not a usable completeness; before add them, check it with the command:
+#       modules/admin-gui/resources/languages/language-tool.sh -s
+# Default: en,bs,cs,de,fr,ja,pt,sv,uk,zh
 #web.availablelanguages=en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh
 
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
