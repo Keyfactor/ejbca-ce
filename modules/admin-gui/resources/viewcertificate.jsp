@@ -540,7 +540,7 @@ function confirmrepublish(){
 	                for(int i=0; i<extendedkeyusage.length; i++){
 	                  if(i>0)
 	                    out.write(", ");
-	                  out.write(extendedkeyusage[i]);
+	                  out.write(ejbcawebbean.getText(extendedkeyusage[i]));
 	                }                
 	                if(extendedkeyusage == null || extendedkeyusage.length == 0)
 	                  out.write(ejbcawebbean.getText("EKU_NONE"));                       
