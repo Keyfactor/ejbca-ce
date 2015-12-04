@@ -372,7 +372,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     /** Method to find all users in database */
-    public UserView[] findAllUsers(int index,int size) throws FinderException {
+    public UserView[] findAllUsers(int index, int size) throws FinderException {
        usersView.setUsers(endEntityManagementSession.findAllUsersWithLimit(administrator), informationmemory.getCAIdToNameMap());
        return usersView.getUsers(index,size);
     }
