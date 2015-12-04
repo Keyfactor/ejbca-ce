@@ -135,6 +135,10 @@ function roleupdated() {
 		selectcas.disabled = false;
 		selectendentityprofiles.disabled = false;
 		selectAll(selectendentityrules, true, false);
+		selectSome(selectendentityrules, [
+		                      			'<%=BasicAccessRuleSet.ENDENTITY_VIEW %>',
+		                      			'<%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %>',
+		                      		], true);
 		selectSome(selectinternalkeybindingrules, [
 		    '<%= InternalKeyBindingRules.VIEW.resource() %>'
 			], true);
