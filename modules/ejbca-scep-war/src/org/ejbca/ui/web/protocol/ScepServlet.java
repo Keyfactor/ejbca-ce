@@ -595,12 +595,18 @@ public class ScepServlet extends HttpServlet {
                     }
                 }
                 if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("SCEP client certificate renewal/enrollment with alias '"+alias+"'");
+                    }
                     ResponseMessage resp = scepClientCertificateRenewal.performOperation(administrator, reqmsg, scepConfig, alias);
                     if (resp != null) {
                         ret = resp.getResponseMessage();
                     }
                 } else {                
                     // Get the certificate 
+                    if (log.isDebugEnabled()) {
+                        log.debug("SCEP certificate enrollment with alias '"+alias+"'");
+                    }
                     ResponseMessage resp = signsession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
                     if (resp != null) {
                         ret = resp.getResponseMessage();
