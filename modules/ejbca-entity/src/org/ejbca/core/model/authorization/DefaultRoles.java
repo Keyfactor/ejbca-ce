@@ -84,8 +84,8 @@ public enum DefaultRoles {
             new AccessRuleTemplate(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false),
-            new AccessRuleTemplate(StandardRules.VIEWROLES.resource(), AccessRuleState.RULE_ACCEPT, false)
-
+            new AccessRuleTemplate(StandardRules.VIEWROLES.resource(), AccessRuleState.RULE_ACCEPT, false),
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false)
             ),
     HARDTOKENISSUER("HARDTOKENISSUER");
 
@@ -130,7 +130,20 @@ public enum DefaultRoles {
         for (AccessRuleTemplate template : externalRules) {
             combinedRules.put(template.getAccessRuleName(), template);
         }
-        if (combinedRules.size() != rules.size()) {            
+        if (combinedRules.size() != rules.size()) {
+            ruleloop : for(AccessRuleTemplate combinedRule : combinedRules.values()) {
+                boolean found = false;
+                for(AccessRuleData rule : rules) {
+                    if(rule.getAccessRuleName().equals(combinedRule.getAccessRuleName())) {
+                        found = true;
+                        continue ruleloop;
+                    }
+                    
+                }
+                if(!found) {
+                    System.err.println("Unfound rule: " + combinedRule.getAccessRuleName());
+                }
+            }
             return false;
         } else {
             for (AccessRuleData rule : rules) {

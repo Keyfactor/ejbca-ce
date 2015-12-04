@@ -234,16 +234,16 @@ public class UpgradeSessionBeanTest {
     }
     
     /**
-     * This test checks the automatic upgrade to 6.5.0, namely that:
+     * This test checks the automatic upgrade to 6.4.2, namely that:
      * 
-     * 1. Auditors are given the new default rights introduced in 6.5.0
+     * 1. Auditors are given the new default rights introduced in 6.4.2
      * 2. That roles that had edit access to pages that have been given read rights now also have read rights. 
      * @throws AuthorizationDeniedException 
      * @throws RoleExistsException 
      * @throws RoleNotFoundException 
      */
     @Test
-    public void testUpgradeTo650AuditorRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    public void testUpgradeTo642AuditorRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         final String oldAuditorName = "640Auditor"; 
         final String editSystemAdminName = "EditSystemAdmin";
         RoleData oldAuditor = roleManagementSession.create(alwaysAllowtoken, oldAuditorName);
@@ -254,6 +254,7 @@ public class UpgradeSessionBeanTest {
             newRules.add(StandardRules.EKUCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
             newRules.add(StandardRules.VIEWROLES.resource());
+            newRules.add(AccessRulesConstants.REGULAR_VIEWENDENTITY);
             //Create an auditor according to 6.4.0, i.e. ignoring the new rules.
             List<AccessRuleData> oldAuditorRules = new ArrayList<AccessRuleData>();
             for (AccessRuleTemplate accessRuleTemplate : DefaultRoles.AUDITOR.getRuleSet()) {
@@ -283,8 +284,10 @@ public class UpgradeSessionBeanTest {
             for (String newRule : newRules) {
                 assertTrue("6.4.0 Auditor role should have been given access to rule " + newRule + " during upgrade.",
                         upgradedAuditor.hasAccessToRule(newRule));
-                assertTrue("Role with edit right should have been given access to rule " + newRule + " during upgrade.",
-                        upgradedEditSystemAdmin.hasAccessToRule(newRule));
+                if (!newRule.equals(AccessRulesConstants.REGULAR_VIEWENDENTITY)) {
+                    assertTrue("Role with edit right should have been given access to rule " + newRule + " during upgrade.",
+                            upgradedEditSystemAdmin.hasAccessToRule(newRule));
+                }
             }
         } finally {
             try {
