@@ -1409,7 +1409,6 @@ public abstract class CertTools {
      * 
      * @return X509CRL
      * 
-     * @throws CertificateException if the byte array does not contain a correct CRL.
      * @throws CRLException if the byte array does not contain a correct CRL.
      */
     public static X509CRL getCRLfromByteArray(byte[] crl) throws CRLException {
