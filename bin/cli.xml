@@ -80,7 +80,11 @@ appserver.home         : ${appserver.home}
 		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
+		<!-- note that this available only works when there is a full path, otherwise the keytool command runs in user.dir and available looks in bin... -->
 		<available file="${trust.keystore}" property="javatruststore.file.present"/>
+		<echo>set: ${javatruststore.file.present}</echo>
+		<!-- If this did not set the property it might be that we did not give a ful path, in which case we should try again from the user.dir, where keytool is run -->
+		<available file="${user.dir}/${trust.keystore}" property="javatruststore.file.present"/>
         <antcall target="ejbca:javatruststore-removeold"/>
 	    <ejbca:keytool arg="-v -alias &quot;${ca.name}&quot; -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${trust.keystore}' -storepass ${trust.password} -noprompt"/>
 	    <delete file="${java.io.tmpdir}/rootca.der"/>
