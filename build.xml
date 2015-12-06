@@ -70,7 +70,7 @@
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
 	
-    <target name="javatruststore" depends="testforgnujava, deprecated:check" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
+    <target name="javatruststore" depends="testforgnujava, deprecated:check" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123). Avoid special characters such as $ in the password.">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:javatruststore" />
         <antcall target="jee:deploytruststore" />
     </target>
