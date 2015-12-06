@@ -275,6 +275,43 @@ For production use you should use a real database instead of the embedded one.</
 </p>
 </subsubsection>
 
+<subsubsection name="Extending the Sun PKCS#11 implementation">
+<p>
+In order to change the CKA_MODIFIABLE attribute of a private key to FALSE directly
+after it has been generated the Sun PKCS#11 implementation must be extended. This
+extension must be done by adding classes to "Installed Extensions" classpath.
+See https://docs.oracle.com/javase/tutorial/ext/basics/install.html
+</p><p>
+This is achieved by putting the '$EJBCA_HOME/dist/ext/primekey-sunP11.jar' in one 
+of the directories that is defined by the 'java.ext.dirs' system property. You
+can put the jar in '$JAVA_HOME/jre/lib/ext'. You may also change the property to
+include the directory of the jar. Here is an example:
+</p>
+<p><source>
+JAVA_OPTS="-Djava.ext.dirs=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/ext:$EJBCA_HOME/dist/ext" $JBOSS_HOME/bin/standalone.sh
+</source></p>
+<p>
+But be sure to keep '$JAVA_HOME/jre/lib/ext' in the classpath.
+</p><p>
+If you use '$EJBCA_HOME/dist/ejbcaClientToolBox.sh' you don't have to bother.
+The script is taking care of it.
+</p><p>
+Everything will work without this jar in the classpath but if not in classpath
+the CKA_MODIFIABLE will be TRUE for every key that is generated. A warning will
+be written once to log4j to notify about this.
+</p><p>
+The reason to set CKA_MODIFIABLE to FALSE is that it should not be possible
+to set CKA_DERIVE to TRUE. If CKA_DERIVE is true it might be possible to extract
+the private key from some HSMs.
+</p><p>
+Some HSMs refuses to set CKA_MODIFIABLE to FALSE (the PKCS#11 standard says that
+this behavior is OK). To check use:
+</p>
+<p><source>
+$EJBCA_HOME/dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test
+</source></p>
+</subsubsection>
+
 <subsubsection name="Configure application server">
 <p>Due to differences, and bugs, in different application servers you have to configure your application server with some settings, and EJBCA with server specific settings.
 <br/>See the <a href="#Application servers">application servers</a> section.</p>

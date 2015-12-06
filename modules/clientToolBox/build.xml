@@ -81,6 +81,9 @@
 			<path refid="clientToolBox.lib.classpath" />
 			<map from="${ejbca.home}/" to=""/>
 		</pathconvert>
+		<copy todir="${mod.clientToolBox.dist}/ext" flatten="true">
+			<fileset dir="${ext.dist}" />
+		</copy>
 		<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
 			<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>
 		</copy>

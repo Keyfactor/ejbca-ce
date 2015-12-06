@@ -8,38 +8,20 @@ if [ -z ${TOOLBOX_HOME} ] ; then
 	TOOLBOX_HOME=`echo $(dirname ${0})`
 fi
 
-JAVACMD=`which java`
 # Check that JAVA_HOME is set
-if [ -z ${JAVA_HOME} ]; then
-    if [ -z ${JAVACMD} ]
-    then
-        echo "You must set JAVA_HOME before running the EJBCA cli."
-        exit 1
-    fi
+if [ "x${JAVA_HOME}" = "x" ]; then
+	javaCmd="java"
+	JAVA_HOME=$(dirname $(dirname $(readlink -f $(which ${javaCmd}))))
 else
-    JAVACMD=${JAVA_HOME}/bin/java
+    javaCmd=${JAVA_HOME}/bin/java
 fi
 
-if [ -z ${NFAST_HOME} ]; then
-    NFAST_HOME=~nfast
-fi
-NFAST_JARS=$NFAST_HOME/java/classes
-if [ -d ${NFAST_JARS} ] ; then
-    for jar in rsaprivenc.jar nfjava.jar kmjava.jar kmcsp.jar jutils.jar; do
-        CLASSES="$CLASSES:$NFAST_JARS/$jar"
-    done
+if [ "x${JAVA_EXT}" = "x" ] ; then
+	JAVA_EXT="${JAVA_HOME}/lib/ext:/usr/java/packages/lib/ext:${TOOLBOX_HOME}/ext"
 fi
 
-endorsed="-Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed"
-if [ "x${JAVA_OPT}" = "x" ] ; then
-	JAVA_OPT=${endorsed}
-else
-	JAVA_OPT="${JAVA_OPT} ${endorsed}"
-fi
+JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${JAVA_EXT}"
+
 # Finally run java
-#set -x
-if [ "x$CLASSES" = "x" ] ; then
-	${JAVACMD} ${JAVA_OPT} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
-else
-	${JAVACMD} ${JAVA_OPT} -cp ${CLASSES} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
-fi
+set -x
+${javaCmd} ${JAVA_OPT} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"

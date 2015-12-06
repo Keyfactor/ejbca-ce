@@ -2933,6 +2933,7 @@ attributes(*, CKO_PRIVATE_KEY, *) = {
   CKA_DECRYPT = true
   CKA_SIGN = true
   CKA_UNWRAP = true
+  CKA_DERIVE = false
 }
 disabledMechanisms = {
   CKM_SHA1_RSA_PKCS
