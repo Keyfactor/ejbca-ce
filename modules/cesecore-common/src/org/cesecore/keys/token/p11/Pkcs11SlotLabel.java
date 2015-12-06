@@ -222,7 +222,6 @@ public class Pkcs11SlotLabel {
         if (log.isDebugEnabled()) {
             log.debug(prop.toString());
         }
-        Provider ret = null;
         try {
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIK_PKCS11_CLASS);
@@ -230,7 +229,7 @@ public class Pkcs11SlotLabel {
                 log.debug("Using IAIK PKCS11 provider: " + IAIK_PKCS11_CLASS);
             }
             // iaik PKCS11 has Properties as constructor argument
-            ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
+            final Provider ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
             // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
             // to support algorithm delegation
             @SuppressWarnings("unchecked")
@@ -244,7 +243,7 @@ public class Pkcs11SlotLabel {
                 NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             // NOPMD: Ignore, reflection related errors are handled elsewhere
         }
-        return ret;
+        return null;
     }
 
     /**
@@ -290,6 +289,7 @@ public class Pkcs11SlotLabel {
             // is false.
             pw.println("}");
             pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
+            pw.println("  CKA_DERIVE = false");
             pw.println("  CKA_TOKEN = true"); // all created private keys should be permanent. They should not only exist during the session.
             pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
             pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
