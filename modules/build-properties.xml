@@ -149,6 +149,7 @@
     <property name="java.target.version" value="${java.specification.version}"/>
 	<property name="externalra.enabled" value="false"/>
 	<property name="ejbcaws.enabled" value="true" />
+	<property name="ext.dist" location="${ejbca.dist.path}/ext" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
 	<condition property="externalra.enabled.true">
 		<and>

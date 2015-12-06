@@ -83,25 +83,25 @@ public class KeyStoreTools {
         this.keyStore = _keyStore;
         this.providerName = _providerName;
     }
-    
+
     /**
      * @return the name of the Provider used by this container
      */
     public String getProviderName() {
         return this.providerName;
     }
-    
+
     /**
      * @return a reference to the KeyStore for this container
      */
     public CachingKeyStoreWrapper getKeyStore() {
         return this.keyStore;
     }
-    
+
     public void setKeyEntry(String alias, Key key, Certificate chain[]) throws KeyStoreException {
         getKeyStore().setKeyEntry(alias, key, null, chain);
     }
-    
+
     private void deleteAlias(String alias) throws KeyStoreException {
         getKeyStore().deleteEntry(alias);
     }
@@ -237,7 +237,7 @@ public class KeyStoreTools {
             log.trace("<generate: curve name "+ecNamedCurveBc+", keyEntryName "+keyAlias);
         }
     }
-    
+
     private void generateExtraEC(
             final String name, final String keyAlias, final String keyAlgorithm,
             final List<String> sigAlgNames) throws InvalidAlgorithmParameterException {
@@ -341,9 +341,9 @@ public class KeyStoreTools {
      */
     public void generateKey(final String algorithm, final int keysize,
                             final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException {
-        KeyGenerator generator = KeyGenerator.getInstance(algorithm, this.providerName);
+        final KeyGenerator generator = KeyGenerator.getInstance(algorithm, this.providerName);
         generator.init(keysize);
-        Key key = generator.generateKey();
+        final Key key = generator.generateKey();
         setKeyEntry(keyEntryName, key, null);
     }
 
@@ -416,6 +416,7 @@ public class KeyStoreTools {
                 final X509Certificate chain[] = new X509Certificate[]{selfSignedCert};
                 log.debug("Creating certificate with entry " + keyAlias + '.');
                 setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
+                PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);
                 break; // success no need to try more
             } catch (KeyStoreException e) {
                 log.info("Failed to generate or store new key, will try 3 times. This was try: " + bar, e);

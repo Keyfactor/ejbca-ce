@@ -49,7 +49,7 @@ public class Pkcs11Wrapper {
     private final long slotList[];
 
     private Pkcs11Wrapper(final String fileName) {
-        Class<? extends Object> p11Class;
+        final Class<? extends Object> p11Class;
         try {
             p11Class = Class.forName("sun.security.pkcs11.wrapper.PKCS11");
         } catch (ClassNotFoundException e) {
@@ -98,7 +98,7 @@ public class Pkcs11Wrapper {
             log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
-        Method getInstanceMethod;
+        final Method getInstanceMethod;
         try {
             getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
                     new Class[] { String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class });
