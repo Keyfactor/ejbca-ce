@@ -1,3 +1,24 @@
+EJBCA 6.4.1, 2015-12-01
+---
+Bug
+	[ECA-4262] - Name constraints encoding incorrect in a certain case
+	[ECA-4535] - ArrayIndexOutOfBounds when upgrading EJBCA 4 installations
+	[ECA-4582] - Regression: Edit end entity profile notifications bug
+	[ECA-4592] - Approvals contains no relevant information
+	[ECA-4602] - CMP: EEC authmodule - Checking for CA authorization does not work
+	[ECA-4623] - Handle CertificateCreateException with null ErrorCode in public web
+	[ECA-4631] - Security Issue
+
+Improvement
+	[ECA-4574] - GUI: System Configuration sub-section order
+	[ECA-4575] - GUI: Better CryptoToken alias default value
+	[ECA-4576] - Several SAN DNSname in EMPTY profile
+	[ECA-4577] - GUI: SHA-256 by default in CA creation form
+	[ECA-4583] - GUI: CryptoToken page usability (private key export)
+	[ECA-4595] - GUI: CA creation form usability
+	[ECA-4612] - Security Issue
+
+
 EJBCA 6.4.0, 2015-10-26
 ---
 Bug
