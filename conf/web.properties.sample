@@ -22,7 +22,7 @@
 # Password for java trust keystore (p12/truststore.jks). Default is changeit
 # This truststore will contain the CA-certificate after running 'ant javatruststore'
 # Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default ManagementCA
-# Note: avoid special characters that needs escaping, such as $, in the password. These may not be properly handled by ant
+# Note: avoid special characters that need escaping, such as $, in the password. These may not be properly handled by ant.
 java.trustpassword=changeit
 
 # The CN and DN of the super administrator.
