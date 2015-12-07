@@ -1,3 +1,27 @@
+EJBCA 6.4.1
+-----------
+This maintenance release contains 14 new features, bug fixes and improvements. Below is a selection of the most noteworthy. Upgrading to this 
+version will require no manual upgrade steps. 
+
+- Improvements:
+    * Apache commons-collections library has been upgraded to version 3.2.2
+    
+- Bug Fixes:
+	* Fixed checking CA authorization in CMP RA mode when using EndEntityCertificate authentication module
+	* Regression: A technology upgrade cause relevant information to not be displayed in the approvals screen.
+	* Regression: A usability issue regarding Notifications in End Entity Profiles has been solved.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  A selection of known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	End entity profiles can't be deleted in high volume databases: https://jira.primekey.se/browse/ECA-4158
+	* 	Some ECDSA key specifier missing in drop down menu for crypto tokens: https://jira.primekey.se/browse/ECA-4251	
+    * 	Certificate profile key length restriction ignored when creating CA: https://jira.primekey.se/browse/ECA-4310
+    *	Race condition when multiple RA threads are requesting certificates for the same user: https://jira.primekey.se/browse/ECA-4347
+
+
 EJBCA 6.4.0
 -----------
 Only our second major release for 2015, EJBCA 6.4.0 represents a huge step into the future for EJBCA, introducing a slew of new 
