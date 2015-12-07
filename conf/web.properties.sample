@@ -229,6 +229,12 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.62.file=/usr/local/lib/opensc-pkcs11.so
 #cryptotoken.p11.lib.63.name=OpenSC
 #cryptotoken.p11.lib.63.file=C:/Windows/system32/opensc-pkcs11.dll
+#cryptotoken.p11.lib.70.name=Bull TrustWay CryptoBox
+#cryptotoken.p11.lib.70.file=/usr/lib64/libcryptobox_clnt.so
+#cryptotoken.p11.lib.71.name=Bull TrustWay PCI Crypto Card
+#cryptotoken.p11.lib.71.file=/usr/lib64/libgpkcs11cc2000.so
+#cryptotoken.p11.lib.72.name=Bull TrustWay Proteccio
+#cryptotoken.p11.lib.72.file=/usr/lib64/libnethsm64.so
 #
 # You can add your own values with an available number, or override numbers from defaults...
 #cryptotoken.p11.lib.255.name=P11 Proxy
