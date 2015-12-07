@@ -13,12 +13,16 @@
 
 package org.ejbca.ui.cli.ca;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
+import java.util.Arrays;
 import java.util.Collection;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -58,14 +62,20 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
     private static final String SUPERADMIN_CN_KEY = "-superadmincn";
 
     {
-        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Name of the affected CA. If the CA is present, it must either be waiting for a certificate response from an external CA or itself be " 
+        registerParameter(new Parameter(
+                CA_NAME_KEY,
+                "CA Name",
+                MandatoryMode.MANDATORY,
+                StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT,
+                "Name of the affected CA. If the CA is present, it must either be waiting for a certificate response from an external CA or itself be "
                         + "an external CA, in which case its certificate will be updated. If the CA is not present, a new CA will be added using the imported certificate chain."));
         registerParameter(new Parameter(FILE_KEY, "File Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "A file containing a PEM encoded certificate. If the CA is waiting for a CSR, this certificate should be the response. " 
-                        + "If the CA is an externally imported CA, then it will be updated using this certificate. " 
+                "A file containing a certificate, in either PEM or DER format. If the CA is waiting for a CSR, this certificate should be the response. "
+                        + "If the CA is an externally imported CA, then it will be updated using this certificate. "
                         + "If the CA doesn't exist it will be imported using this certificate. "));
-        registerParameter(Parameter.createFlag(INIT_AUTH_KEY,  "This flag may be used when importing an external CA and will create a super administrator (full access) issued by that CA."));
+        registerParameter(Parameter.createFlag(INIT_AUTH_KEY,
+                "This flag may be used when importing an external CA and will create a super administrator (full access) issued by that CA."));
         registerParameter(new Parameter(SUPERADMIN_CN_KEY, "CN", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Required when using " + INIT_AUTH_KEY + ". The Common Name (CN) for the created super administrator."));
     }
@@ -78,26 +88,46 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         String caName = parameters.get(CA_NAME_KEY);
-        String pemFile = parameters.get(FILE_KEY);
-    
+        String certificateFile = parameters.get(FILE_KEY);
+
         boolean initAuth = parameters.containsKey(INIT_AUTH_KEY);
         String superAdminCN = parameters.get(SUPERADMIN_CN_KEY);
-        if(initAuth && StringUtils.isEmpty(superAdminCN)) {
-            log.error("Error: " + INIT_AUTH_KEY + " flag was used, but super administrator Common Name was not defined with the " + SUPERADMIN_CN_KEY + " switch.");
+        if (initAuth && StringUtils.isEmpty(superAdminCN)) {
+            log.error("Error: " + INIT_AUTH_KEY + " flag was used, but super administrator Common Name was not defined with the " + SUPERADMIN_CN_KEY
+                    + " switch.");
         }
         try {
-            CryptoProviderTools.installBCProvider();
+            CryptoProviderTools.installBCProviderIfNotAvailable();
+            Certificate certificate;
             Collection<Certificate> certs;
             try {
-                certs = CertTools.getCertsFromPEM(pemFile);
+                try {
+                    //Try to parse as PEM
+                    certs = CertTools.getCertsFromPEM(certificateFile);
+                    if (certs.size() != 1) {
+                        log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    } else {
+                        certificate = certs.iterator().next();
+                    }
+                } catch (CertificateParsingException e) {
+                    //Try parsing as binary instead.
+                    try {
+                        certificate = CertTools.getCertfromByteArray(IOUtils.toByteArray(new FileInputStream(certificateFile)));
+                        certs = Arrays.asList(certificate);
+                    } catch (CertificateParsingException e2) {
+                        log.error("Error: " + certificateFile + " does not contain a certificate, either in PEM or in binary format.");
+                        return CommandResult.CLI_FAILURE;
+                    }
+                }
             } catch (FileNotFoundException e) {
-                log.error("Error: " + pemFile + " was not a file, not found or could otherwise not be opened.");
+                log.error("Error: " + certificateFile + " was not a file, not found or could otherwise not be opened.");
                 return CommandResult.CLI_FAILURE;
-            } catch (CertificateParsingException e) {
-                log.error("Error: " + pemFile + " does not contain a certificate.");
-                return CommandResult.CLI_FAILURE;
+            } catch(IOException e) {
+                log.error("Unknown IOException was caught", e);
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-            
+
             /* 
              * We need to check if the CA already exists to determine what to do:
              *  - If CA already exist, it might be a sub CA that is waiting for certificate from an external CA
@@ -105,42 +135,36 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
              *    getCAInfo throws an exception (CADoesntExistsException) if the CA does not exists, that is how we check if the CA exists 
              */
             CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-            try {   
+            try {
                 CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
                 if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
-                    if(initAuth) {
+                    if (initAuth) {
                         log.warn("Warning: " + INIT_AUTH_KEY + " was defined but was ignored when receiving a CSR.");
                     }
-                    if (certs.size() != 1) {
-                        log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
-                        return CommandResult.FUNCTIONAL_FAILURE;
-                    }
+
                     log.info("CA '" + caName
                             + "' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
                     X509ResponseMessage resp = new X509ResponseMessage();
-                    resp.setCertificate(certs.iterator().next());
-                    caAdminSession.receiveResponse(getAuthenticationToken(), cainfo.getCAId(),
-                            resp, null, null);
+                    resp.setCertificate(certificate);
+                    caAdminSession.receiveResponse(getAuthenticationToken(), cainfo.getCAId(), resp, null, null);
                     log.info("Received certificate response and activated CA " + caName);
                 } else if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
-                    if(initAuth) {
+                    if (initAuth) {
                         log.warn("Warning: " + INIT_AUTH_KEY + " was defined but was ignored when updating an externally imported CA.");
-                    }       
+                    }
                     // CA exists and this is assumed to be an update of the imported CA certificate
-                    log.info("CA '" + caName
-                            + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
+                    log.info("CA '" + caName + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
                     caAdminSession.importCACertificateUpdate(getAuthenticationToken(), cainfo.getCAId(), EJBTools.wrapCertCollection(certs));
                     log.info("Updated certificate chain for imported external CA " + caName);
                 } else {
-                    log.error("CA '" + caName
-                            + "' already exists and is not waiting for certificate response from an external CA.");
+                    log.error("CA '" + caName + "' already exists and is not waiting for certificate response from an external CA.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 return CommandResult.SUCCESS;
             } catch (CADoesntExistsException e) {
                 // CA does not exist, we can import the certificate
                 if (initAuth) {
-                    String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
+                    String subjectdn = CertTools.getSubjectDN(certificate);
                     Integer caid = Integer.valueOf(subjectdn.hashCode());
                     initAuthorizationModule(getAuthenticationToken(), caid.intValue(), superAdminCN);
                 }
@@ -148,7 +172,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 log.info("Imported CA " + caName);
                 return CommandResult.SUCCESS;
             }
-        }  catch (CAExistsException e) {
+        } catch (CAExistsException e) {
             log.error(e.getMessage());
         } catch (IllegalCryptoTokenException e) {
             log.error(e.getMessage());
@@ -178,7 +202,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
     public String getFullHelpText() {
         return getCommandDescription();
     }
-    
+
     @Override
     protected Logger getLogger() {
         return log;
