@@ -28,7 +28,8 @@ org.cesecore.util.CertTools,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
 org.ejbca.ui.web.RequestHelper,
-org.ejbca.util.HTMLTools
+org.ejbca.util.HTMLTools,
+org.ejbca.ui.web.admin.cainterface.CAInfoView
 "%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -85,7 +86,7 @@ org.ejbca.util.HTMLTools
     }
   }
 
-  TreeMap canames = ejbcawebbean.getInformationMemory().getAllCANames();
+  TreeMap<String, Integer> canames = ejbcawebbean.getInformationMemory().getAllCANames();
 
 %>
 <head>
@@ -131,12 +132,17 @@ function getPasswordAndSubmit(formname) {
 
 	<br />
   <% // Display CA info one by one.
-     Iterator iter = canames.keySet().iterator();
+
+  	 List<String> caNameList = new ArrayList<String>(canames.keySet());
+  	 Collections.sort(caNameList, new Comparator<String>() {
+  	   	public int compare(String o1, String o2) {
+  	   	    return o1.compareToIgnoreCase(o2);
+  	   	}
+  	 });
      int number = 0;
-     while(iter.hasNext()){
-       String caname = (String) iter.next();  
+     for(String caname : caNameList) { 
        int caid = ((Integer) canames.get(caname)).intValue();
-       org.ejbca.ui.web.admin.cainterface.CAInfoView cainfo = null;
+       CAInfoView cainfo = null;
        try {
            cainfo = cabean.getCAInfo(caid);
        } catch (AuthorizationDeniedException e) {
@@ -216,81 +222,74 @@ function getPasswordAndSubmit(formname) {
              out.write(ejbcawebbean.getText("NOCRLHAVEBEENGENERATED"));
            }else{
            boolean expired = crlinfo.getExpireDate().compareTo(new Date()) < 0; %>
-<%=ejbcawebbean.getText("LATESTCRL") + ": "  
-  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getCreateDate()) + ","%>
+		<%=ejbcawebbean.getText("LATESTCRL") + ": " + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getCreateDate()) + ","%>
         <% if(expired){
               out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getExpireDate()) + "</font>");
            }else{
               out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getExpireDate()));
            } 
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + crlinfo.getLastCRLNumber()); %>  
-<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
-<br />
-<%        } %>
+		<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
+		<br />
+		<% } %>
 
-<% // Delta CRLs 
- 	       CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), true);
-	       if(deltacrlinfo == null){ 
-     	       if (cainfo.getCAInfo().getDeltaCRLPeriod() > 0) {
-    	           out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));
-     	       } else {
-     	           out.write(ejbcawebbean.getText("DELTACRLSNOTENABLED"));
-     	       }
-	         %> <br /> <%
-	       }else{
-	       	 boolean expired = deltacrlinfo.getExpireDate().compareTo(new Date()) < 0; %>
-	<%=ejbcawebbean.getText("LATESTDELTACRL") + ": "  
-	  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getCreateDate()) + ","%>
-	        <% if(expired){
-	              out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getExpireDate()) + "</font>");
-	           }else{
-	              out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getExpireDate()));
-	           } 
-           out.write(", " + ejbcawebbean.getText("NUMBER") + " " + deltacrlinfo.getLastCRLNumber()); %>  
-<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=deltacrl&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>" ><%=ejbcawebbean.getText("GETDELTACRL") %></a></i>
-<br />
-<br />
-<%        } %>
+		<% // Delta CRLs 
+ 	    CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), true);
+	    if(deltacrlinfo == null){ 
+     		if (cainfo.getCAInfo().getDeltaCRLPeriod() > 0) {
+    	    	out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));
+     	    } else {
+     	    	out.write(ejbcawebbean.getText("DELTACRLSNOTENABLED"));
+     	    } %> 
+     	 <br /> 
+     	 <% } else {
+	       		boolean expired = deltacrlinfo.getExpireDate().compareTo(new Date()) < 0; %>
+		 <%=ejbcawebbean.getText("LATESTDELTACRL") + ": " + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getCreateDate()) + ","%>
+	     <% if(expired){
+	     		out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getExpireDate()) + "</font>");
+	        } else {
+	        	out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getExpireDate()));
+	        } 
+            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + deltacrlinfo.getLastCRLNumber()); %>  
+		<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=deltacrl&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>" ><%=ejbcawebbean.getText("GETDELTACRL") %></a></i>
+		<br />
+		<br />
+		<% } %>
 
-<% // Display createcrl if admin is authorized
+	  <% // Display createcrl if admin is authorized
       if(createcrlrights){ %>
-<br />
-<form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
-<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
-<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
-<%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
-       <% 
-       if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE ) {
-       %>
-<input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
-       <% }else{
-           out.write(ejbcawebbean.getText("CAISNTACTIVE"));
-          } 
-       if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
-<br />
-<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
-<%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
-       <%
-       if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) {
-       %>
-<input type='submit' name='<%=BUTTON_CREATEDELTACRL + number %>' value='<%=ejbcawebbean.getText("CREATEDELTACRL") %>'>
-       <% } else {
-            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
-          }
-       } %>
-</form>
-<%    } %>
-<br />
-<hr />
-<% 
-    number++;
-  }  %>
+		<br />
+		<form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
+			<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
+			<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
+			<%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
+       		<% if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE ) {	%>
+				<input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
+       		<% }else{
+           		out.write(ejbcawebbean.getText("CAISNTACTIVE"));
+         		} 
+       		if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
+			<br />
+			<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
+			<%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
+      		<% if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) { %>
+				<input type='submit' name='<%=BUTTON_CREATEDELTACRL + number %>' value='<%=ejbcawebbean.getText("CREATEDELTACRL") %>'>
+       		<% } else {
+            	out.write(ejbcawebbean.getText("CAISNTACTIVE"));
+          	   }
+       		} %>
+		</form>
+	<% } %>
+		<br />
+		<br />
+	<%  number++;
+	} %>
    
 
-<% // Include Footer 
-   String footurl =  globalconfiguration.getFootBanner(); %>
+		<% // Include Footer 
+   		String footurl =  globalconfiguration.getFootBanner(); %>
    
-  <jsp:include page="<%= footurl %>" />
-</form>
-</body>
+  		<jsp:include page="<%= footurl %>" />
+		</form>
+	</body>
 </html>
