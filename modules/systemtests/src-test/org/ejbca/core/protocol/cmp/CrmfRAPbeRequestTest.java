@@ -180,6 +180,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
         this.caSession.removeCA(ADMIN, this.caid);
         
+        cmpConfiguration.removeAlias(ALIAS);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
