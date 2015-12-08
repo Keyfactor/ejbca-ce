@@ -171,6 +171,14 @@
   <p>
   There is a simple command line client for testing which is under dist/ejbca-ws-cli/cvcwscli.sh. This can be used to make requests and to parse, print and verify requests and certificates.
   </p>
+  <note>
+  Please note that IS end entity naming (CN, etc) must not be changed once a certificate has been issued to the IS end entity, as this will cause all future renewal to fail. Should this occur, 
+  a new IS end entity must be created.
+  </note>
+  <br/>
+  <note>
+  Existing IS end entities should not be reused for new systems or when replacing an old IS, but a new one should always be created.
+  </note>
   </section>
   
   <section name="Authentication and Signature Terminals">
