@@ -22,7 +22,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -101,7 +100,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.util.SignWithWorkingAlgorithm.Operation;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -966,9 +964,9 @@ public final class KeyTools {
 
     }
 
-    private static class SignOperation implements Operation<GeneralSecurityException> {
+    private static class SignDataOperation implements ISignOperation {
 
-        public SignOperation( final PrivateKey _key, final byte _dataToBeSigned[] ) {
+        public SignDataOperation( final PrivateKey _key, final byte _dataToBeSigned[] ) {
             this.key = _key;
             this.dataToBeSigned = _dataToBeSigned;
         }
@@ -977,11 +975,16 @@ public final class KeyTools {
         private byte[] signatureBV;
         private String signatureAlgorithm;
         @Override
-        public void doIt(String signAlgorithm, Provider provider) throws GeneralSecurityException {
-            final Signature signature = Signature.getInstance(signAlgorithm, provider);
-            signature.initSign(this.key);
-            signature.update(this.dataToBeSigned);
-            this.signatureBV = signature.sign();
+        public void taskWithSigning(String signAlgorithm, Provider provider) throws TaskWithSigningException {
+            final Signature signature;
+            try {
+                signature = Signature.getInstance(signAlgorithm, provider);
+                signature.initSign(this.key);
+                signature.update(this.dataToBeSigned);
+                this.signatureBV = signature.sign();
+            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                throw new TaskWithSigningException(String.format("Signing of data failed: %s", e.getMessage()), e);
+            }
             this.signatureAlgorithm = signAlgorithm;
         }
         public byte[] getSignature() {
@@ -1014,6 +1017,7 @@ public final class KeyTools {
      * @throws InvalidKeyException
      *             if the public key can not be used to verify a string signed by the private key, because the key is wrong or the signature operation
      *             fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
+     * @throws TaskWithSigningException 
      * @throws NoSuchProviderException
      *             if the provider is not installed.
      */
@@ -1037,10 +1041,10 @@ public final class KeyTools {
                 log.debug(sw.toString());
             }
             {
-                final SignOperation operation = new SignOperation(priv, input);
+                final SignDataOperation operation = new SignDataOperation(priv, input);
                 // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
                 final List<String> availableSignAlgorithms = AlgorithmTools.getSignatureAlgorithms(pub);
-                SignWithWorkingAlgorithm.doIt(availableSignAlgorithms, getProvider(sProvider), operation);
+                SignWithWorkingAlgorithm.doSignTask(availableSignAlgorithms, getProvider(sProvider), operation);
                 signBV = operation.getSignature();
                 testSigAlg = operation.getSignatureAlgorithm();
                 if (signBV == null) {
@@ -1055,7 +1059,7 @@ public final class KeyTools {
                 final Signature signature;
                 try {
                     signature = Signature.getInstance(testSigAlg, "BC");
-                } catch (NoSuchProviderException e) {
+                } catch (NoSuchProviderException | NoSuchAlgorithmException e) {
                     throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
                 }
                 signature.initVerify(pub);
@@ -1066,7 +1070,7 @@ public final class KeyTools {
             }
         } catch ( InvalidKeyException e ) {
             throw e;
-        } catch ( GeneralSecurityException e ) {
+        } catch (  TaskWithSigningException | SignatureException e ) {
             throw new InvalidKeyException(String.format("Exception testing key: %s", e.getMessage()), e);
         }
     }

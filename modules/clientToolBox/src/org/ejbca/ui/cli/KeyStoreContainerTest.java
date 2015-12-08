@@ -18,14 +18,17 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStore.ProtectionParameter;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.ProviderException;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAKey;
 import java.util.Arrays;
@@ -41,8 +44,10 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.ISignOperation;
 import org.cesecore.keys.util.PKCS11Utils;
 import org.cesecore.keys.util.SignWithWorkingAlgorithm;
+import org.cesecore.keys.util.TaskWithSigningException;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
@@ -224,7 +229,6 @@ class KeyStoreContainerTest {
             this.byteLength = (this.modulusLength+7)/8-11;
             this.original = this.testS.substring(0, this.byteLength).getBytes();
         }
-        @SuppressWarnings("synthetic-access")
         @Override
         public void prepare() throws Exception {
             this.cipherEnCryption = Cipher.getInstance(this.pkcs1Padding);
@@ -311,14 +315,19 @@ class KeyStoreContainerTest {
         }
     }
 
-    private class SignOperation implements SignWithWorkingAlgorithm.Operation<GeneralSecurityException> {
+    private class SignOperation implements ISignOperation {
         private String workingAlgorithm;
         @Override
-        public void doIt(String signAlgorithm, Provider provider) throws GeneralSecurityException {
-            final Signature sign = Signature.getInstance(signAlgorithm, provider);
-            sign.initSign(KeyStoreContainerTest.this.keyPair.getPrivate());
-            sign.update("Kort string att signera!".getBytes());
-            sign.sign();
+        public void taskWithSigning(String signAlgorithm, Provider provider) throws TaskWithSigningException {
+            final Signature sign;
+            try {
+                sign = Signature.getInstance(signAlgorithm, provider);
+                sign.initSign(KeyStoreContainerTest.this.keyPair.getPrivate());
+                sign.update("Kort string att signera!".getBytes());
+                sign.sign();
+            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                throw new TaskWithSigningException("Signing failed", e);
+            }
             this.workingAlgorithm = signAlgorithm;
         }
         public String getWorkingAlgorithm() {
@@ -331,11 +340,11 @@ class KeyStoreContainerTest {
         private Signature signature;
         private boolean result;
         @SuppressWarnings("synthetic-access")
-        Sign() throws NoSuchProviderException, GeneralSecurityException {
+        Sign() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
             final SignOperation operation = new SignOperation();
             // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
             final List<String> availableAlogorithms = AlgorithmTools.getSignatureAlgorithms(KeyStoreContainerTest.this.keyPair.getPublic());
-            SignWithWorkingAlgorithm.doIt(availableAlogorithms, KeyStoreContainerTest.this.providerName, operation);
+            SignWithWorkingAlgorithm.doSignTask(availableAlogorithms, KeyStoreContainerTest.this.providerName, operation);
             this.sigAlgName = operation.getWorkingAlgorithm();
             if ( this.sigAlgName==null ) {
                 throw new GeneralSecurityException(
@@ -345,7 +354,6 @@ class KeyStoreContainerTest {
                                 KeyStoreContainerTest.this.providerName));
             }
         }
-        @SuppressWarnings("synthetic-access")
         @Override
         public void prepare() throws Exception {
             this.signature = Signature.getInstance(this.sigAlgName, KeyStoreContainerTest.this.providerName);
@@ -382,7 +390,7 @@ class KeyStoreContainerTest {
         private StressTest(
                 final String alias,
                 final KeyPair keyPair,
-                final String providerName) throws Exception {
+                final String providerName) {
             super(alias, keyPair, providerName);
             this.performanceTest = new PerformanceTest();
         }

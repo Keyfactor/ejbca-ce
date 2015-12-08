@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -32,8 +31,10 @@ import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.UnrecoverableEntryException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
@@ -59,7 +60,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
-import org.cesecore.CesecoreException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
@@ -111,11 +111,8 @@ public class KeyStoreTools {
      * @return keystore identifier
      * 
      * @throws KeyStoreException 
-     * @throws IOException 
-     * @throws CertificateException 
-     * @throws NoSuchAlgorithmException 
      */
-    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public void deleteEntry(final String alias) throws KeyStoreException {
         if ( alias!=null ) {
             deleteAlias(alias);
             return;
@@ -134,35 +131,38 @@ public class KeyStoreTools {
      *  
      * @param oldAlias is the current name
      * @param newAlias is the new name
-     * @return keystore identifier
-     * @throws UnrecoverableEntryException 
-     * @throws NoSuchAlgorithmException 
-     * @throws KeyStoreException 
-     * @throws IOException 
-     * @throws CertificateException 
      */
-    public void renameEntry( String oldAlias, String newAlias ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, CertificateException, IOException {
+    public void renameEntry( String oldAlias, String newAlias ) {
         // only one key with same public part (certificate) is existing on a p11 token. this has been tested.
-        getKeyStore().setEntry(newAlias, getKeyStore().getEntry(oldAlias, null), null);
+        try {
+            getKeyStore().setEntry(newAlias, getKeyStore().getEntry(oldAlias, null), null);
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
+            throw new KeyUtilRuntimeException("Renaming entry failed.", e);
+        }
     }
 
-    private class KeyStoreCertSignOperation implements SignWithWorkingAlgorithm.Operation<OperatorCreationException> {
+    private class CertificateSignOperation implements ISignOperation {
 
-        public KeyStoreCertSignOperation(
+        final private PrivateKey privateKey;
+        final private X509v3CertificateBuilder certificateBuilder;
+        private X509CertificateHolder result;
+
+        public CertificateSignOperation(
                 final PrivateKey pk,
                 final X509v3CertificateBuilder cb) {
             this.privateKey = pk;
             this.certificateBuilder = cb;
         }
-        final private PrivateKey privateKey;
-        final private X509v3CertificateBuilder certificateBuilder;
-        private X509CertificateHolder result;
-
         @SuppressWarnings("synthetic-access")
         @Override
-        public void doIt(String sigAlg, Provider provider) throws OperatorCreationException {
+        public void taskWithSigning(String sigAlg, Provider provider) throws TaskWithSigningException {
             log.debug("Keystore signing algorithm " + sigAlg);
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider.getName()).build(this.privateKey), 20480);
+            final ContentSigner signer;
+            try {
+                signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider.getName()).build(this.privateKey), 20480);
+            } catch (OperatorCreationException e) {
+                throw new TaskWithSigningException(String.format("Signing certificate failed: %s", e.getMessage()), e);
+            }
             this.result = this.certificateBuilder.build(signer);
         }
         public X509CertificateHolder getResult() {
@@ -183,20 +183,20 @@ public class KeyStoreTools {
 
         try {
             final X509v3CertificateBuilder cb = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
-            final KeyStoreCertSignOperation kscso = new KeyStoreCertSignOperation(keyPair.getPrivate(), cb);
-            SignWithWorkingAlgorithm.doIt(sigAlgs, this.providerName, kscso);
-            final X509CertificateHolder cert = kscso.getResult();
+            final CertificateSignOperation cso = new CertificateSignOperation(keyPair.getPrivate(), cb);
+            SignWithWorkingAlgorithm.doSignTask(sigAlgs, this.providerName, cso);
+            final X509CertificateHolder cert = cso.getResult();
             if ( cert==null ) {
-                return null;
+                throw new CertificateException("Self signing of certificate failed.");
             }
             return (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-        } catch (OperatorCreationException e) {
+        } catch (TaskWithSigningException e) {
             log.error("Error creating content signer: ", e);
             throw new CertificateException(e);
         } catch (IOException e) {
             throw new CertificateException("Could not read certificate", e);
         } catch (NoSuchProviderException e) {
-            throw new CertificateException(String.format("Provider '%s' is not existing.", this.providerName), e);
+            throw new CertificateException(String.format("Provider '%s' does not exist.", this.providerName), e);
         }
     }
 
@@ -351,11 +351,8 @@ public class KeyStoreTools {
      * @param keyParams AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec. 
      * @param keyAlias
      * @throws InvalidAlgorithmParameterException 
-     * @throws CertificateException 
-     * @throws IOException 
      */
-    public void generateKeyPair(final AlgorithmParameterSpec keyParams, final String keyAlias) throws InvalidAlgorithmParameterException,
-            CertificateException, IOException {
+    public void generateKeyPair(final AlgorithmParameterSpec keyParams, final String keyAlias) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
             log.trace(">generate from AlgorithmParameterSpec: "+keyParams.getClass().getName());
         }
@@ -376,10 +373,10 @@ public class KeyStoreTools {
         generateKeyPair(keyParams, keyAlias, keyAlgorithm, certSignAlgorithms);
     }
     private class SizeAlgorithmParameterSpec implements AlgorithmParameterSpec {
+        final int keySize;
         public SizeAlgorithmParameterSpec(final int _keySize) {
             this.keySize = _keySize;
         }
-        public final int keySize;
     }
     private void generateKeyPair(
             final AlgorithmParameterSpec keyParams, final String keyAlias,
@@ -408,7 +405,6 @@ public class KeyStoreTools {
         // But if we try again it succeeds
         int bar = 0;
         while (bar < 3) {
-            bar++;
             try {
                 log.debug("generating...");
                 final KeyPair keyPair = kpg.generateKeyPair();
@@ -419,35 +415,39 @@ public class KeyStoreTools {
                 PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);
                 break; // success no need to try more
             } catch (KeyStoreException e) {
-                log.info("Failed to generate or store new key, will try 3 times. This was try: " + bar, e);
+                if ( bar<3 ) {
+                    log.info("Failed to generate or store new key, will try 3 times. This was try: " + bar, e);
+                } else {
+                    throw new KeyCreationException("Signing failed.", e);
+                }
             } catch(CertificateException e) {
                 throw new KeyCreationException("Can't create keystore because dummy certificate chain creation failed.",e);
             } catch (InvalidKeyException e) {
                throw new KeyCreationException("Dummy certificate chain was created with an invalid key" , e);
             }
+            bar++;
         }
         if (log.isTraceEnabled()) {
             log.trace("<generate from AlgorithmParameterSpec: "+(keyParams!=null ? keyParams.getClass().getName() : "null"));
         }
     }
 
-    private class CreateCsrOperation implements SignWithWorkingAlgorithm.Operation<CesecoreException> {
-
-        public CreateCsrOperation(final String _alias, final String _sDN, final boolean _explicitEccParameters, final PublicKey publicKey) {
-            this.alias = _alias;
-            this.sDN = _sDN;
-            this.explicitEccParameters = _explicitEccParameters;
-            this.certReq = null;
-            this.publicKeyTmp = publicKey;
-        }
+    private class SignCsrOperation implements ISignOperation {
         final private String alias;
         final private String sDN;
         final private boolean explicitEccParameters;
         final private PublicKey publicKeyTmp;
         private PKCS10CertificationRequest certReq;
 
+        public SignCsrOperation(final String _alias, final String _sDN, final boolean _explicitEccParameters, final PublicKey publicKey) {
+            this.alias = _alias;
+            this.sDN = _sDN;
+            this.explicitEccParameters = _explicitEccParameters;
+            this.certReq = null;
+            this.publicKeyTmp = publicKey;
+        }
         @SuppressWarnings("synthetic-access")
-        private void doItTry(final String signAlgorithm, final Provider provider) throws IllegalArgumentException, GeneralSecurityException, OperatorCreationException  {
+        private void signCSR(final String signAlgorithm, final Provider provider) throws NoSuchAlgorithmException, NoSuchProviderException, UnrecoverableKeyException, KeyStoreException, OperatorCreationException, TaskWithSigningException {
             final PublicKey publicKey;
             if (log.isDebugEnabled()) {
                 log.debug(String.format(
@@ -471,13 +471,18 @@ public class KeyStoreTools {
                     publicKey, new DERSet(),
                     privateKey,
                     provider.getName() );
+            if ( this.certReq==null) {
+                throw new TaskWithSigningException("Not possible to sign CSR.");
+            }
         }
         @Override
-        public void doIt(final String signAlgorithm, final Provider provider) throws CesecoreException {
+        public void taskWithSigning(final String signAlgorithm, final Provider provider) throws TaskWithSigningException {
             try {
-                doItTry(signAlgorithm, provider);
-            } catch (OperatorCreationException | GeneralSecurityException e) {
-                throw new CesecoreException("Not possible to sign CSR.", e);
+                signCSR(signAlgorithm, provider);
+            } catch (TaskWithSigningException e) {
+                throw e;
+            } catch (OperatorCreationException | UnrecoverableKeyException | NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
+                throw new TaskWithSigningException(String.format("Not possible to sign CSR: %s", e.getMessage()), e);
             }
         }
         public PKCS10CertificationRequest getResult() {
@@ -488,89 +493,86 @@ public class KeyStoreTools {
      * @param alias for the key to be used
      * @param sDN the DN to be used. If null the 'CN=alias' will be used
      * @param explicitEccParameters false should be default and will use NamedCurve encoding of ECC public keys (IETF recommendation), use true to include all parameters explicitly (ICAO ePassport requirement).
-     * @throws GeneralSecurityException
-     * @throws CesecoreException
-     * @throws OperatorCreationException
-     * @throws PKCSException
-     * @throws IOException
      */
-    public void generateCertReq(String alias, String sDN, boolean explicitEccParameters) throws GeneralSecurityException, CesecoreException, OperatorCreationException, PKCSException, IOException {
-        final PublicKey publicKey = getCertificate(alias).getPublicKey();
-        if (log.isDebugEnabled()) {
-            log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
+    public void generateCertReq(String alias, String sDN, boolean explicitEccParameters) {
+        try {
+            final PublicKey publicKey = getCertificate(alias).getPublicKey();
+            if (log.isDebugEnabled()) {
+                log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
+            }
+            // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
+            final List<String> sigAlg = AlgorithmTools.getSignatureAlgorithms(publicKey);
+            final SignCsrOperation operation = new SignCsrOperation(alias, sDN, explicitEccParameters, publicKey);
+            SignWithWorkingAlgorithm.doSignTask(sigAlg, this.providerName, operation);
+            final PKCS10CertificationRequest certReq = operation.getResult();
+            final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
+            if ( !certReq.isSignatureValid(verifier) ) {
+                final String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
+                throw new KeyUtilRuntimeException(msg);
+            }
+            final String filename = alias+".pem";
+
+            try( final OutputStream os = new FileOutputStream(filename) ) {
+                os.write( CertTools.getPEMFromCertificateRequest(certReq.getEncoded()) );
+            }
+            log.info("Wrote csr to file: "+filename);
+        } catch (KeyStoreException | NoSuchProviderException | TaskWithSigningException | OperatorCreationException | PKCSException | IOException  e) {
+            throw new KeyUtilRuntimeException("", e);
         }
-        // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
-        final List<String> sigAlg = AlgorithmTools.getSignatureAlgorithms(publicKey);
-        final CreateCsrOperation operation = new CreateCsrOperation(alias, sDN, explicitEccParameters, publicKey);
-        SignWithWorkingAlgorithm.doIt(sigAlg, this.providerName, operation);
-        final PKCS10CertificationRequest certReq = operation.getResult();
-        if ( certReq==null ) {
-            throw new CesecoreException("Not to sign CSR.");
-        }
-        final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
-        if ( !certReq.isSignatureValid(verifier) ) {
-            String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
-            throw new CesecoreException(msg);
-        }
-        final String filename = alias+".pem";
-        
-        try( final OutputStream os = new FileOutputStream(filename) ) {
-            os.write( CertTools.getPEMFromCertificateRequest(certReq.getEncoded()) );
-        }
-        log.info("Wrote csr to file: "+filename);
     }
 
     /**
      * Install certificate chain to key in keystore.
      * @param file name of the file with chain. Starting with the certificate of the key. Ending with the root certificate.
-     * @throws Exception
      */
-    public void installCertificate(final String fileName) throws Exception {
-        final X509Certificate chain[];
+    public void installCertificate(final String fileName) {
         try( final InputStream is = new FileInputStream(fileName) ) {
-            chain = ((Collection<?>)CertTools.getCertsFromPEM(is)).toArray(new X509Certificate[0]);
-        }
-        final PublicKey importPublicKey = chain[0].getPublicKey();
-        final String importKeyHash = CertTools.getFingerprintAsString(importPublicKey.getEncoded());
-        final Enumeration<String> eAlias = getKeyStore().aliases();
-        boolean notFound = true;
-        while ( eAlias.hasMoreElements() && notFound ) {
-            final String alias = eAlias.nextElement();
-            final PublicKey hsmPublicKey = getCertificate(alias).getPublicKey();
-            if (log.isDebugEnabled()) {
-                log.debug("alias: " + alias + " SHA1 of public hsm key: " + CertTools.getFingerprintAsString(hsmPublicKey.getEncoded())
-                          + " SHA1 of first public key in chain: " + importKeyHash
-                          +  (chain.length==1?"":("SHA1 of last public key in chain: " + CertTools.getFingerprintAsString(chain[chain.length-1].getPublicKey().getEncoded()))));
+            final X509Certificate chain[];
+            chain = CertTools.getCertsFromPEM(is).toArray(new X509Certificate[0]);
+            final PublicKey importPublicKey = chain[0].getPublicKey();
+            final String importKeyHash = CertTools.getFingerprintAsString(importPublicKey.getEncoded());
+            final Enumeration<String> eAlias = getKeyStore().aliases();
+            boolean notFound = true;
+            while ( eAlias.hasMoreElements() && notFound ) {
+                final String alias = eAlias.nextElement();
+                final PublicKey hsmPublicKey = getCertificate(alias).getPublicKey();
+                if (log.isDebugEnabled()) {
+                    log.debug("alias: " + alias + " SHA1 of public hsm key: " + CertTools.getFingerprintAsString(hsmPublicKey.getEncoded())
+                    + " SHA1 of first public key in chain: " + importKeyHash
+                    +  (chain.length==1?"":("SHA1 of last public key in chain: " + CertTools.getFingerprintAsString(chain[chain.length-1].getPublicKey().getEncoded()))));
+                }
+                if ( hsmPublicKey.equals(importPublicKey) ) {
+                    log.info("Found a matching public key for alias \"" + alias + "\".");
+                    getKeyStore().setKeyEntry(alias, getPrivateKey(alias), null, chain);
+                    notFound = false;
+                }
             }
-            if ( hsmPublicKey.equals(importPublicKey) ) {
-                log.info("Found a matching public key for alias \"" + alias + "\".");
-                getKeyStore().setKeyEntry(alias, getPrivateKey(alias), null, chain);
-                notFound = false;
+            if ( notFound ) {
+                final String msg = intres.getLocalizedMessage("token.errorkeynottoken", importKeyHash);
+                throw new KeyUtilRuntimeException(msg);
             }
-        }
-        if ( notFound ) {
-            final String msg = intres.getLocalizedMessage("token.errorkeynottoken", importKeyHash);
-            throw new Exception(msg);
+        } catch (IOException | CertificateParsingException | KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
+            throw new KeyUtilRuntimeException("Failed to install cert chain into keystore.", e);
         }
     }
     
     /**
      * Install trusted root in trust store
      * @param File name of the trusted root.
-     * @throws Exception
      */
-    public void installTrustedRoot(String fileName) throws Exception {
-        final X509Certificate chain[];
+    public void installTrustedRoot(String fileName) {
         try( final InputStream is = new FileInputStream(fileName) ) {
-            chain = ((Collection<?>)CertTools.getCertsFromPEM(is)).toArray(new X509Certificate[0]);
+            final List<Certificate> chain = CertTools.getCertsFromPEM(is);
+            if ( chain.size()<1 ) {
+                throw new KeyUtilRuntimeException("No certificate in file");
+            }
+            // assume last cert in chain is root if more than 1
+            getKeyStore().setCertificateEntry("trusted", chain.get(chain.size()-1));
+        } catch (IOException | CertificateParsingException | KeyStoreException e) {
+            throw new KeyUtilRuntimeException("Failing to install trusted certificate.", e);
         }
-        if ( chain.length<1 ) {
-            throw new Exception("No certificate in file");
-        }
-        // assume last cert in chain is root if more than 1
-        getKeyStore().setCertificateEntry("trusted", chain[chain.length-1]);
     }
-    private PrivateKey getPrivateKey(String alias) throws GeneralSecurityException {
+    private PrivateKey getPrivateKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
         final PrivateKey key = (PrivateKey)getKey(alias);
         if ( key==null ) {
             String msg = intres.getLocalizedMessage("token.errornokeyalias", alias);
@@ -578,7 +580,7 @@ public class KeyStoreTools {
         }
         return key;
     }
-    private Key getKey(String alias) throws GeneralSecurityException {
+    private Key getKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
         return getKeyStore().getKey(alias, null);
     }
     private X509Certificate getCertificate( String alias ) throws KeyStoreException {

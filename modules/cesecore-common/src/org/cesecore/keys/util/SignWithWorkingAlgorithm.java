@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 
 /**
- * Call {@link #doIt(List, Provider, Operation)} or {@link #doIt(List, String, Operation)}
+ * Call {@link #doSignTask(List, Provider, ISignOperation)} or {@link #doSignTask(List, String, ISignOperation)}
  * when you want to sign with any working algorithm in the list.
  * This is usable when working with HSMs. Different HSMs may support different
  * algorithms. Use this class when you just want to sign with any algorithm
@@ -46,58 +46,40 @@ public class SignWithWorkingAlgorithm {
     final private Lock lock;
 
     /**
-     * An object of a class implementing this interface must be constructed
-     * before using {@link SignWithWorkingAlgorithm}.
-     *
-     */
-    public interface Operation<E extends Exception> {
-        /**
-         * This method must implement the signing.
-         * The method is called for each algorithm in the list passed to
-         * {@link SignWithWorkingAlgorithm#doIt(List, Provider, Operation)}
-         * until a working one is found.
-         * @param signAlgorithm
-         * @param provider
-         * @throws E
-         */
-        public void doIt(String signAlgorithm, Provider provider) throws E;
-    }
-
-    /**
-     * Finds the registered provider from sProvider and calls {@link #doIt(List, Provider, Operation)}.
+     * Finds the registered provider from sProvider and calls {@link #doSignTask(List, Provider, ISignOperation)}.
      * @param availableSignAlgorithms algorithms to choose from.
      * @param sProvider provider name
      * @param operation operation the performs the signing
      * @return true if the signing was done.
-     * @throws E exception thrown by {@link Operation#doIt(String, Provider)}
      * @throws NoSuchProviderException if the provider is not found.
+     * @throws TaskWithSigningException  thrown if {@link ISignOperation#taskWithSigning(String, Provider)} is failing.
      */
-    public static <E extends Exception>boolean doIt(
+    public static boolean doSignTask(
             final List<String> availableSignAlgorithms,
             final String sProvider,
-            final Operation<E> operation) throws E, NoSuchProviderException {
+            final ISignOperation operation) throws NoSuchProviderException, TaskWithSigningException {
         final Provider provider = Security.getProvider(sProvider);
         if ( provider==null ) {
             throw new NoSuchProviderException();
         }
-        return doIt(availableSignAlgorithms, provider, operation);
+        return doSignTask(availableSignAlgorithms, provider, operation);
     }
     /**
      * First time each algorithm in availableSignAlgorithms are tried until the 
-     * {@link Operation#doIt(String, Provider) is successfully completed.
+     * {@link ISignOperation#taskWithSigning(String, Provider) is successfully completed.
      * The working algorithm is saved after the first time. Succeeding calls
      * with same availableSignAlgorithms and provider will directly use the 
      * algorithm that was working the first time.
      * @param availableSignAlgorithms algorithms to choose from.
      * @param provider
-     * @param operation operation the performs the signing
+     * @param operation operation that performs the signing
      * @return true if the signing was done.
-     * @throws E
+     * @throws TaskWithSigningException thrown if {@link ISignOperation#taskWithSigning(String, Provider)} is failing.
      */
-    public static <E extends Exception>boolean doIt(
+    public static boolean doSignTask(
             final List<String> availableSignAlgorithms,
             final Provider provider,
-            final Operation<E> operation) throws E {
+            final ISignOperation operation) throws TaskWithSigningException {
         final Integer mapKey = new Integer(availableSignAlgorithms.hashCode()^provider.hashCode());
         final SignWithWorkingAlgorithm instance;
         synchronized (instanceMap) {
@@ -109,7 +91,7 @@ public class SignWithWorkingAlgorithm {
                 instance = waitInstance;
             }
         }
-        return instance.doIt(operation);
+        return instance.tryOutWorkingAlgorithm(operation);
     }
     private SignWithWorkingAlgorithm(
             final Provider _provider,
@@ -118,20 +100,20 @@ public class SignWithWorkingAlgorithm {
         this.lock = new ReentrantLock();
         this.availableSignAlgorithms = _availableSignAlgorithms;
     }
-    private <E extends Exception>boolean doIt(final Operation<E> operation) throws E {
+    private boolean tryOutWorkingAlgorithm(final ISignOperation operation) throws TaskWithSigningException {
         if ( this.signAlgorithm!=null ) {
-            operation.doIt(this.signAlgorithm, this.provider);
+            operation.taskWithSigning(this.signAlgorithm, this.provider);
             return true;
         }
         this.lock.lock();
         try {
             if ( this.signAlgorithm!=null ) {
-                operation.doIt(this.signAlgorithm, this.provider);
+                operation.taskWithSigning(this.signAlgorithm, this.provider);
                 return true;
             }
             for ( final String trySignAlgorithm : this.availableSignAlgorithms ) {
                 try {
-                    operation.doIt(trySignAlgorithm, this.provider);
+                    operation.taskWithSigning(trySignAlgorithm, this.provider);
                 } catch( final Exception e ) {
                     log.info(String.format("Signature algorithm '%s' not working for provider '%s'. Exception: %s", trySignAlgorithm, this.provider, e.getMessage()));
                     continue;
