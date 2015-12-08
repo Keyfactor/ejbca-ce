@@ -104,6 +104,85 @@
   
   </subsection>
   
+  <subsection name="Migrating Microsoft CA to EJBCA">
+  <p>Using the same generic methods to import CA keys and certificate, and import all issued user certificates. After such a complete migration the old CA can be decommissioned, 
+  the only important information to keep being audit logs in order to have a full audit trail over the CAs complete lifetime.</p>
+  <p>Disclaimer: The guide is written at a certain point in time, both EJBCA commands and MS commands may change as new versions are released. Look for the latest information in case some commands fail.
+  </p>
+  <subsubsection name="Export the MS CA key and import it into EJBCA">
+  <p>We use the built-in functionality to <a href="https://support.microsoft.com/en-us/kb/298138">backup</a> a MS CA. This will give us a PKCS#12 that we can import in EJBCA.</p>
+  <ul>
+    <li>Start a new "mmc" and add the "Certificate Authority" snap-in. Right-click the CA to export → All tasks → Back up CA.</li>
+    <li>Follow the wizard and select "Private key and CA certificate", somewhere to store the p12-file and a password.</li>
+    <li>Copy the p12-file to the EJBCA machine.</li>
+    <li>Run:</li>
+  </ul>
+  <source>
+$EJBCA_HOME/bin/ejbca.sh ca importca "MS CA v1" /path/mscakey.p12  
+  </source>
+  <p>The CA should now appear in the EJBCA Admin GUI.</p>
+  </subsubsection>  
+  <subsubsection name="Import existing certificates into EJBCA">
+  <p><strong>Importing certificates one at the time</strong></p>
+  <ul>
+  <li>Certificate can be exported from the CA-snapin by opening each certificate and clicking "copy to file..".</li>
+  <li>Convert the certificate to PEM format with openssl:</li>
+  </ul>
+  <source>
+openssl x509 -in certificate.crt -inform DER -out certificate.pem -outform PEM
+  </source>
+  <ul>
+  <li>Import to EJBCA with:</li>
+  </ul>
+  <source>
+$EJBCA_HOME/bin/ejbca.sh ca importcert username password "MS CA v1" status certificate.pem EndEntityProfile CertProfile
+  </source>
+  <p>However this only suitable if you have a few certificates.</p>
+  <p><strong>Importing the entire certificate database</strong></p>
+  <p>The entire certificate database is stored in \window\system32\CertLog\CA-name.edb. Certutil.exe that comes with windows server can be used to dump the different posts from the database.
+  </p>
+  <source>
+certutil -schema
+  </source>
+  <p>shows the name of all possible column to dump.</p>
+  <p>To dump all certificates with their UPN, TemplateName, Disposition (Issued, Revoked) and the PEM-encoded certificate, type:</p>
+  <source>
+certutil -view -restrict "GeneralFlags>0" /out "UPN,CertificateTemplate,Disposition,RawCertificate" > certdump.txt
+  </source>
+  <p>All that we need to do now to migrate the MS CA is use a script that:</p>
+  <ul>
+    <li>Locates next line that starts with "Row"</li>
+    <li>Parses UPN</li>
+    <li>Parses TempateName</li>
+    <li>Parses certificate status from the Disposition-field</li>
+    <li>writes PEM-certificate to temporary file</li>
+    <li>runs the import-CLI</li>
+    <ul>
+        <li>Username: UPN-TempateName</li>
+        <li>Password: foo123</li>
+        <li>CA name: From the command line of the script. Should be the name of the imported MS CA.</li>
+        <li>status: ACTIVE if issued and REVOKED if revoked</li>
+        <li>filename: the temporary file</li>
+        <li>EndEntityProfile: TemplateName (this of course have to exist.. maybe easily importable from this page)</li>
+        <li>CertificateProfile: TemplateName (this of course have to exist.. maybe easily importable from this page)</li>
+    </ul>
+    <li>Start over until there are no more "Row"s</li>
+  </ul>
+  <p>EJBCA comes with such a script. After compiling EJBCA with ant:</p>
+  <source>
+cd $EJBCA_HOME/tmp/bin/classes/
+java org.ejbca.ui.cli.ImportMSCACertificates /path/certdump.txt "MS CA v1"  
+  </source>  
+  </subsubsection>
+  <subsubsection name="Issue certificates for SmartCard Logon, DCs, EFS etc">
+  <ul>
+    <li>EJBCA and SmartCard Logon is described <a href="#Microsoft%20smart%20card%20logon">here</a> and <a href="#EJBCA%20with%20GemSAFE%20Toolbox">here</a>.</li>
+    <li>Autoenroll is done with a separate Autoenroll Gateway component. Contact <a href="https://www.primekey.se/">PrimeKey</a> for information on this.</li>
+    <li>The Wiki has an <a href="http://wiki.ejbca.org/sample-certificates">index of sample MS certificates</a> can be used for configuring new certificate profiles.</li>
+  </ul>
+  </subsubsection>
+  </subsection>
+  
   </section>
   <section name="EJBCA and Apple iOS">
   <p>
