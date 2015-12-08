@@ -20,6 +20,7 @@
 		<path refid="lib.commons-beanutils.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
 		<path location="${mod.ejbca-entity.lib}"/>
