@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -24,6 +25,7 @@ import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +62,7 @@ public class SignWithWorkingAlgorithmTest {
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA
     ));
-    private class SignOperation implements SignWithWorkingAlgorithm.Operation<GeneralSecurityException> {
+    private class SignOperation implements ISignOperation {
 
         public SignOperation( final KeyPair kp ) {
             this.keyPair = kp;
@@ -71,12 +73,17 @@ public class SignWithWorkingAlgorithmTest {
         private String usedAlgorithm;
         private int nrOfCalls = 0;
         @Override
-        public void doIt(final String algorithm, final Provider provider) throws GeneralSecurityException {
+        public void taskWithSigning(final String algorithm, final Provider provider) throws TaskWithSigningException {
             this.nrOfCalls++;
-            final Signature signature = Signature.getInstance(algorithm, provider);
-            signature.initSign(this.keyPair.getPrivate());
-            signature.update(this.bvOriginal);
-            this.bvSignature = signature.sign();
+            final Signature signature;
+            try {
+                signature = Signature.getInstance(algorithm, provider);
+                signature.initSign(this.keyPair.getPrivate());
+                signature.update(this.bvOriginal);
+                this.bvSignature = signature.sign();
+            } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                throw new TaskWithSigningException("Signing failed", e);
+            }
             this.usedAlgorithm = algorithm;
         }
         public boolean verifySignature() throws GeneralSecurityException {
@@ -113,11 +120,12 @@ public class SignWithWorkingAlgorithmTest {
      * short for first algorithms.
      * @throws NoSuchProviderException
      * @throws GeneralSecurityException
+     * @throws TaskWithSigningException 
      */
     @Test
-    public void n1BC512() throws NoSuchProviderException, GeneralSecurityException {
+    public void n1BC512() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
         final SignOperation operation = new SignOperation(generateKeyPair(512));
-        assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
+        assertTrue( SignWithWorkingAlgorithm.doSignTask(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
         assertTrue(operation.verifySignature());
         assertEquals(5, operation.getNrOfCalls());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, operation.getUsedAlgorithm());
@@ -126,11 +134,12 @@ public class SignWithWorkingAlgorithmTest {
      * Second time the right key is picked directly.
      * @throws NoSuchProviderException
      * @throws GeneralSecurityException
+     * @throws TaskWithSigningException 
      */
     @Test
-    public void n2BC2048() throws NoSuchProviderException, GeneralSecurityException {
+    public void n2BC2048() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
         final SignOperation operation = new SignOperation(generateKeyPair(2048));
-        assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
+        assertTrue( SignWithWorkingAlgorithm.doSignTask(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, operation.getUsedAlgorithm());
@@ -139,11 +148,12 @@ public class SignWithWorkingAlgorithmTest {
      * The provider SunRsaSign is not supporting MGF1 so we have to try one more time.
      * @throws NoSuchProviderException
      * @throws GeneralSecurityException
+     * @throws TaskWithSigningException 
      */
     @Test
-    public void n3SunRsaSign512() throws NoSuchProviderException, GeneralSecurityException {
+    public void n3SunRsaSign512() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
         final SignOperation operation = new SignOperation(generateKeyPair(512));
-        assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, "SunRsaSign", operation) );
+        assertTrue( SignWithWorkingAlgorithm.doSignTask(SIG_ALGS_RSA, "SunRsaSign", operation) );
         assertTrue(operation.verifySignature());
         assertEquals(6, operation.getNrOfCalls());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, operation.getUsedAlgorithm());
@@ -152,11 +162,12 @@ public class SignWithWorkingAlgorithmTest {
      * Second time the right key is picked directly.
      * @throws NoSuchProviderException
      * @throws GeneralSecurityException
+     * @throws TaskWithSigningException 
      */
     @Test
-    public void n4SunRsaSign2048() throws NoSuchProviderException, GeneralSecurityException {
+    public void n4SunRsaSign2048() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
         final SignOperation operation = new SignOperation(generateKeyPair(2048));
-        assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, "SunRsaSign", operation) );
+        assertTrue( SignWithWorkingAlgorithm.doSignTask(SIG_ALGS_RSA, "SunRsaSign", operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, operation.getUsedAlgorithm());
@@ -165,11 +176,12 @@ public class SignWithWorkingAlgorithmTest {
      * Just checking that right algorithm is stilled picked for the BC provider.
      * @throws NoSuchProviderException
      * @throws GeneralSecurityException
+     * @throws TaskWithSigningException 
      */
     @Test
-    public void n5BC1024() throws NoSuchProviderException, GeneralSecurityException {
+    public void n5BC1024() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
         final SignOperation operation = new SignOperation(generateKeyPair(1024));
-        assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
+        assertTrue( SignWithWorkingAlgorithm.doSignTask(SIG_ALGS_RSA, BouncyCastleProvider.PROVIDER_NAME, operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, operation.getUsedAlgorithm());
@@ -178,11 +190,12 @@ public class SignWithWorkingAlgorithmTest {
      * Just checking that right algorithm is stilled picked for the SunRsaSign provider.
      * @throws NoSuchProviderException
      * @throws GeneralSecurityException
+     * @throws TaskWithSigningException 
      */
     @Test
-    public void n6SunRsaSign1024() throws NoSuchProviderException, GeneralSecurityException {
+    public void n6SunRsaSign1024() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
         final SignOperation operation = new SignOperation(generateKeyPair(1024));
-        assertTrue( SignWithWorkingAlgorithm.doIt(SIG_ALGS_RSA, "SunRsaSign", operation) );
+        assertTrue( SignWithWorkingAlgorithm.doSignTask(SIG_ALGS_RSA, "SunRsaSign", operation) );
         assertTrue(operation.verifySignature());
         assertEquals(1, operation.getNrOfCalls());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, operation.getUsedAlgorithm());
