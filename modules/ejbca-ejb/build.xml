@@ -91,11 +91,7 @@
 		<map from="${src.dir}/" to=""/>
 	</pathconvert>
 
-
-	<!-- Import taget "dependecy-check" -->
-	<import file="${this.dir}/build-dependencies.xml"/>
-
-	<target name="clean" depends="dependecy-check-clean" description="Clean up this module">
+	<target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
@@ -131,7 +127,7 @@
 		<antcall target="ejbca-ejb"/>
 	</target>
 	
-	<target name="compile-tests" depends="with.clover, cesecore-ejb, dependecy-check, compile-tests-external-deps">
+	<target name="compile-tests" depends="with.clover, cesecore-ejb, compile-tests-external-deps">
 		<mkdir dir="${build-test.dir}" />
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
