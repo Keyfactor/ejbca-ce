@@ -5,10 +5,6 @@
 
 	<import file="${cesecore-common.dir}/../build.xml"/>
 
-	<property name="build-sunP11.dir" location="${cesecore-common.dir}/build-sunP11"/>
-	<property name="src-sunP11.dir" location="${cesecore-common.dir}/src-sunP11"/>
-	<property name="sunP11.lib" location="${ext.dist}/primekey-sunP11.jar"/>
-
 	<property name="build.dir" location="${cesecore-common.dir}/build"/>
 	<property name="build-test.dir" location="${cesecore-common.dir}/build-test"/>
 	<property name="src-test.dir" location="${cesecore-common.dir}/src-test"/>
@@ -49,19 +45,7 @@
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
 	</path>
 
-	<available classpath="${java.ext.dirs}" classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
-
-	<target name="sunP11" if="SunPKCS11.present" description="Build sun p11 extra jar">
-		<mkdir dir="${build-sunP11.dir}" />
-		<javac destdir="${build-sunP11.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
-			<src path="${src-sunP11.dir}"/>
-		</javac>
-		<jar jarfile="${sunP11.lib}">
-			<fileset dir="${build-sunP11.dir}"/>
-		</jar>
-	</target>
-
-	<target name="jar" depends="sunP11">
+	<target name="jar">
 		<mkdir dir="${cesecore-common.dir}/build/classes"/>
 		<javac srcdir="${cesecore-common.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath"/>
@@ -82,8 +66,6 @@
 		<delete dir="${cesecore-common.dir}/dist"/>
 		<delete dir="${build.dir}"/>
 		<delete dir="${build-test.dir}"/>
-		<delete dir="${build-sunP11.dir}"/>
-		<delete file="${sunP11.lib}"/>
 
 	</target>
 
