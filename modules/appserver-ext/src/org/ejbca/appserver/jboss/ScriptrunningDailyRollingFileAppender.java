@@ -2,6 +2,8 @@ package org.ejbca.appserver.jboss;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -18,7 +20,6 @@ import org.apache.log4j.spi.LoggingEvent;
  * 
  * This was the only way I could find to implement the desired functionality.
  * 
- * @author tomas
  * @version $Id$
  */
 public class ScriptrunningDailyRollingFileAppender extends FileAppender {
@@ -93,11 +94,34 @@ public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 	/** This is from org.jboss.logging.appender.DailyRollingFileAppender,
 	 *  which will make the directory structure for the set log file. 
 	 */
+	@Override
 	public void setFile(final String filename)
 	{
-		org.jboss.logging.appender.FileAppender.Helper.makePath(filename);
+		makePath(filename);
 		super.setFile(filename);
 	}
+	
+	/**
+	 * Copied from org.jboss.logging.appender.FileAppender.Helper.makePath(String filename);
+	 * 
+	 */
+    private static void makePath(final String filename) {
+        File dir;
+
+        try {
+            URL url = new URL(filename.trim());
+            dir = new File(url.getFile()).getParentFile();
+        } catch (MalformedURLException e) {
+            dir = new File(filename.trim()).getParentFile();
+        }
+
+        if (!dir.exists()) {
+            boolean success = dir.mkdirs();
+            if (!success) {
+                LogLog.error("Failed to create directory structure: " + dir);
+            }
+        }
+    }
 
 	/**
 	     The <b>DatePattern</b> takes a string in the same format as

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
+	<classpathentry kind="src" path="modules/appserver-ext/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src-sunP11"/>
 	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src"/>
@@ -24,6 +25,9 @@
 	<classpathentry kind="src" path="modules/crlstore/src"/>
 	<classpathentry kind="src" path="modules/ct/src"/>
 	<classpathentry kind="src" path="modules/ct/src-test"/>
+	<classpathentry kind="src" path="modules/edition-specific/src-ejb"/>
+	<classpathentry kind="src" path="modules/edition-specific/src-interface"/>
+	<classpathentry kind="src" path="modules/edition-specific-ee/src-ejb"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src"/>
@@ -70,10 +74,6 @@
 	<classpathentry kind="src" path="modules/va/src-war"/>
 	<classpathentry kind="src" path="modules/validationtool/src"/>
 	<classpathentry kind="src" path="modules/validationtool/test"/>
-	<classpathentry kind="src" path="modules/edition-specific/src-interface"/>
-	<classpathentry kind="src" path="modules/edition-specific/src-ejb"/>
-	<classpathentry kind="src" path="modules/edition-specific-ee/src-ejb"/>
-	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="lib" path="lib/xstream/xmlpull-1.1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.2.jar"/>
