@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.token.p11.exception.P11RuntimeException;
 import org.cesecore.util.FileTools;
 
 /**
@@ -102,13 +103,15 @@ public class Pkcs11SlotLabel {
             log.debug("slot spec: " + toString());
         }
         if ( this.type==Pkcs11SlotLabelType.SUN_FILE ) {// if sun cfg file then we do not know the name of the p11 module and wemust quit.
-            FileInputStream fileInputStream;
             try {
-                fileInputStream = new FileInputStream(libFile);
+                try ( final FileInputStream fileInputStream = new FileInputStream(libFile) ) {
+                    return getSunP11Provider(fileInputStream);
+                }
             } catch (FileNotFoundException e) {
                 throw new IllegalArgumentException("File " + libFile + " was not found.");
+            } catch ( IOException e ) {
+                throw new P11RuntimeException(String.format("The file %s can not be closed after use.", libFile), e);
             }
-            return getSunP11Provider(fileInputStream);
         }
         final long slot;
         final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile); // must be called before any provider is created for libFile
@@ -126,6 +129,7 @@ public class Pkcs11SlotLabel {
             //Be generous and allow numbers to act as indexes as well
             slot = Long.parseLong((this.value.charAt(0) == 'i' ? this.value.substring(1) : this.value));
             break;
+            //$CASES-OMITTED$
         default:
             throw new IllegalStateException("This should not ever happen if all type of slots are tested.");
         }
@@ -147,7 +151,7 @@ public class Pkcs11SlotLabel {
 
     /** @return a List of "slotId;tokenLabel" in the (indexed) order we get the from the P11 */
     public static List<String> getExtendedTokenLabels(final File libFile) {
-        final List<String> tokenLabels = new ArrayList<String>();
+        final List<String> tokenLabels = new ArrayList<>();
         final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile);
         final long slots[] = p11.getSlotList();
         if (log.isDebugEnabled()) {
@@ -222,6 +226,7 @@ public class Pkcs11SlotLabel {
         if (log.isDebugEnabled()) {
             log.debug(prop.toString());
         }
+        final Provider ret;
         try {
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIK_PKCS11_CLASS);
@@ -229,12 +234,20 @@ public class Pkcs11SlotLabel {
                 log.debug("Using IAIK PKCS11 provider: " + IAIK_PKCS11_CLASS);
             }
             // iaik PKCS11 has Properties as constructor argument
-            final Provider ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
+            ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException |
+                NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+            return null;
+        }
+        if ( ret==null ) {
+            return null;
+        }
+        try {
             // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
             // to support algorithm delegation
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> jceImplClass = (Class<? extends Provider>) Class.forName(IAIK_JCEPROVIDER_CLASS);
-            Provider iaikProvider = jceImplClass.getConstructor().newInstance();
+            final Provider iaikProvider = jceImplClass.getConstructor().newInstance();
             if (Security.getProvider(iaikProvider.getName()) == null) {
                 log.info("Adding IAIK JCE provider for Delegation: " + IAIK_JCEPROVIDER_CLASS);
                 Security.addProvider(iaikProvider);
@@ -243,7 +256,7 @@ public class Pkcs11SlotLabel {
                 NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             // NOPMD: Ignore, reflection related errors are handled elsewhere
         }
-        return null;
+        return ret;
     }
 
     /**
@@ -261,73 +274,72 @@ public class Pkcs11SlotLabel {
         // Properties for the SUN PKCS#11 provider
         final String sSlot = Long.toString(slot);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintWriter pw = new PrintWriter(baos);
-        pw.println("name = " + libFile.getName() + "-slot" + sSlot);
-        try {
-            pw.println("library = " + libFile.getCanonicalPath());
-        } catch (IOException e) {
-            throw new RuntimeException("Could for unknown reason not construct canonical filename.", e);
-        }
-        if (sSlot != null) {
-            pw.println("slot" + (type.isEqual(Pkcs11SlotLabelType.SLOT_INDEX) ? "ListIndex" : "") + " = " + sSlot);
-        }
-        if (attributesFile != null) {
-            byte[] attrs;
+        try( final PrintWriter pw = new PrintWriter(baos) ) {
+            pw.println("name = " + libFile.getName() + "-slot" + sSlot);
             try {
-                attrs = FileTools.readFiletoBuffer(attributesFile);
-            } catch (FileNotFoundException e) {
-                throw new IllegalArgumentException("File " + attributesFile + " was not found.", e);
+                pw.println("library = " + libFile.getCanonicalPath());
+            } catch (IOException e) {
+                throw new RuntimeException("Could for unknown reason not construct canonical filename.", e);
             }
-            pw.println(new String(attrs));
-        } else {
-            // setting the attributes like this should work for most HSMs.
-            pw.println("attributes(*, CKO_PUBLIC_KEY, *) = {");
-            pw.println("  CKA_TOKEN = false"); // Do not save public keys permanent in order to save space.
-            pw.println("  CKA_ENCRYPT = true");
-            pw.println("  CKA_VERIFY = true");
-            pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE
-            // is false.
-            pw.println("}");
-            pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
-            pw.println("  CKA_DERIVE = false");
-            pw.println("  CKA_TOKEN = true"); // all created private keys should be permanent. They should not only exist during the session.
-            pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
-            pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
-            pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
-            pw.println("  CKA_DECRYPT = true");
-            pw.println("  CKA_SIGN = true");
-            if (privateKeyLabel != null && privateKeyLabel.length() > 0) {
-                pw.print("  CKA_LABEL = 0h");
-                pw.println(new String(Hex.encode(privateKeyLabel.getBytes())));
+            if (sSlot != null) {
+                pw.println("slot" + (type.isEqual(Pkcs11SlotLabelType.SLOT_INDEX) ? "ListIndex" : "") + " = " + sSlot);
             }
-            pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
-            pw.println("}");
-            if ( CesecoreConfiguration.p11disableHashingSignMechanisms() ) {
-                pw.println("disabledMechanisms = {");
-                // by disabling these mechanisms the hashing will be done in the application instead of the HSM.
-                pw.println("  CKM_SHA1_RSA_PKCS");
-                pw.println("  CKM_SHA256_RSA_PKCS");
-                pw.println("  CKM_SHA384_RSA_PKCS");
-                pw.println("  CKM_SHA512_RSA_PKCS");
-                pw.println("  CKM_MD2_RSA_PKCS");
-                pw.println("  CKM_MD5_RSA_PKCS");
-                pw.println("  CKM_DSA_SHA1");
-                pw.println("  CKM_ECDSA_SHA1");
+            if (attributesFile != null) {
+                byte[] attrs;
+                try {
+                    attrs = FileTools.readFiletoBuffer(attributesFile);
+                } catch (FileNotFoundException e) {
+                    throw new IllegalArgumentException("File " + attributesFile + " was not found.", e);
+                }
+                pw.println(new String(attrs));
+            } else {
+                // setting the attributes like this should work for most HSMs.
+                pw.println("attributes(*, CKO_PUBLIC_KEY, *) = {");
+                pw.println("  CKA_TOKEN = false"); // Do not save public keys permanent in order to save space.
+                pw.println("  CKA_ENCRYPT = true");
+                pw.println("  CKA_VERIFY = true");
+                pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE
+                // is false.
+                pw.println("}");
+                pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
+                pw.println("  CKA_DERIVE = false");
+                pw.println("  CKA_TOKEN = true"); // all created private keys should be permanent. They should not only exist during the session.
+                pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
+                pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
+                pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
+                pw.println("  CKA_DECRYPT = true");
+                pw.println("  CKA_SIGN = true");
+                if (privateKeyLabel != null && privateKeyLabel.length() > 0) {
+                    pw.print("  CKA_LABEL = 0h");
+                    pw.println(new String(Hex.encode(privateKeyLabel.getBytes())));
+                }
+                pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
+                pw.println("}");
+                if ( CesecoreConfiguration.p11disableHashingSignMechanisms() ) {
+                    pw.println("disabledMechanisms = {");
+                    // by disabling these mechanisms the hashing will be done in the application instead of the HSM.
+                    pw.println("  CKM_SHA1_RSA_PKCS");
+                    pw.println("  CKM_SHA256_RSA_PKCS");
+                    pw.println("  CKM_SHA384_RSA_PKCS");
+                    pw.println("  CKM_SHA512_RSA_PKCS");
+                    pw.println("  CKM_MD2_RSA_PKCS");
+                    pw.println("  CKM_MD5_RSA_PKCS");
+                    pw.println("  CKM_DSA_SHA1");
+                    pw.println("  CKM_ECDSA_SHA1");
+                    pw.println("}");
+                }
+                pw.println("attributes(*, CKO_SECRET_KEY, *) = {");
+                pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
+                pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
+                pw.println("  CKA_ENCRYPT = true");
+                pw.println("  CKA_DECRYPT = true");
+                pw.println("  CKA_SIGN = true");
+                pw.println("  CKA_VERIFY = true");
+                pw.println("  CKA_WRAP = true");// for unwrapping of session keys,
+                pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
                 pw.println("}");
             }
-            pw.println("attributes(*, CKO_SECRET_KEY, *) = {");
-            pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
-            pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
-            pw.println("  CKA_ENCRYPT = true");
-            pw.println("  CKA_DECRYPT = true");
-            pw.println("  CKA_SIGN = true");
-            pw.println("  CKA_VERIFY = true");
-            pw.println("  CKA_WRAP = true");// for unwrapping of session keys,
-            pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
-            pw.println("}");
         }
-        pw.flush();
-        pw.close();
         if (log.isDebugEnabled()) {
             log.debug(baos.toString());
         }

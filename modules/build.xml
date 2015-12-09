@@ -56,6 +56,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.sunP11.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -194,7 +195,11 @@
 	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
-        
+
+	<target name="sunP11" description="Build the Sun P11 extension">
+			<ant antfile="${mod.sunP11.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+
     <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
     <target name="cesecore-entity" depends="-build-cesecore-entity, -copy-cesecore-entities, -copy-cesecore-common"/>
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
@@ -209,7 +214,7 @@
             <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="false"/>
         </target>
         
-        <target name="-build-cesecore-common">
+        <target name="-build-cesecore-common" depends="sunP11">
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="false"/>
         </target>
         
