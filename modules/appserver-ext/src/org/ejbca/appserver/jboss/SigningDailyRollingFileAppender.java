@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,6 +18,7 @@ import java.util.TimeZone;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
@@ -37,7 +40,6 @@ import org.cesecore.util.FileTools;
  * 
  * This was the only way I could find to implement the desired functionality.
  * 
- * @author tomas
  * @version $Id$
  */
 public class SigningDailyRollingFileAppender extends FileAppender {
@@ -105,12 +107,34 @@ public class SigningDailyRollingFileAppender extends FileAppender {
 	/** This is from org.jboss.logging.appender.DailyRollingFileAppender,
 	 *  which will make the directory structure for the set log file. 
 	 */
-	public void setFile(final String filename)
-	{
-		org.jboss.logging.appender.FileAppender.Helper.makePath(filename);
+	@Override
+	public void setFile(final String filename){
+	    makePath(filename);
 		super.setFile(filename);
 	}
 
+	/**
+     * Copied from org.jboss.logging.appender.FileAppender.Helper.makePath(String filename);
+     * 
+     */
+    private static void makePath(final String filename) {
+        File dir;
+
+        try {
+            URL url = new URL(filename.trim());
+            dir = new File(url.getFile()).getParentFile();
+        } catch (MalformedURLException e) {
+            dir = new File(filename.trim()).getParentFile();
+        }
+
+        if (!dir.exists()) {
+            boolean success = dir.mkdirs();
+            if (!success) {
+                LogLog.error("Failed to create directory structure: " + dir);
+            }
+        }
+    }
+	
 	/**
 	     The <b>DatePattern</b> takes a string in the same format as
 	     expected by {@link SimpleDateFormat}. This options determines the
@@ -339,14 +363,12 @@ class SignerThread implements Runnable { // NOPMD this is not run in the ejb app
 			HttpClient client = new HttpClient();
 
 			//establish a connection within 5 seconds
-			client.setConnectionTimeout(5000);
-			//client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);			
+			client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);			
 			PostMethod method = new PostMethod(urlstr);
 			method.setParameter("http.socket.timeout", "5000");
 			method.setRequestHeader("Content-Type", "application/timestamp-query");
-			method.setRequestBody(new ByteArrayInputStream(timeStampRequest.getEncoded()));
-			//method.setRequestEntity(new InputStreamRequestEntity(new ByteArrayInputStream(timeStampRequest.getEncoded())));
-			//method.setContentChunked(true);
+			method.setRequestEntity(new InputStreamRequestEntity(new ByteArrayInputStream(timeStampRequest.getEncoded())));
+			method.setContentChunked(true);
 			InputStream input = null;
 			ByteArrayOutputStream baos = null;
 			byte[] replyBytes = null;
