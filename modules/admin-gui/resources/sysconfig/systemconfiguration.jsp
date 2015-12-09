@@ -31,17 +31,13 @@ org.cesecore.authorization.AuthorizationDeniedException
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <%
     AccessControlSession accessControlSession = ejbcawebbean.getEjb().getAccessControlSession();
-	GlobalConfiguration globalconfiguration = null;
-	if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
-	} else if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
-		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.EKUCONFIGURATION_VIEW.resource());
-	} else if(accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
-		globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
-	}
-	if(globalconfiguration == null) {
-	    throw new AuthorizationDeniedException("Admin was not authorized to any existing configuraiton.");
-	}
+    GlobalConfiguration globalconfiguration = null;
+    globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); // will check authorization of the page below
+    if (!accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) &&
+        !accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.EKUCONFIGURATION_VIEW.resource()) &&
+        !accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
+        throw new AuthorizationDeniedException("Administrator was not authorized to any configuration.");
+    }
 %>
 <html>
 <f:view>
