@@ -91,6 +91,8 @@
     <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.webdist-war.path" location="${mod.path}/ejbca-webdist-war" />
     <property name="mod.webdist-war.war" location="${mod.dist.path}/webdist.war" />
+    <property name="mod.sunP11.dist" location="${ejbca.dist.path}/ext" />
+    <property name="mod.sunP11.path" location="${mod.path}/sunP11" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
@@ -149,7 +151,6 @@
     <property name="java.target.version" value="${java.specification.version}"/>
 	<property name="externalra.enabled" value="false"/>
 	<property name="ejbcaws.enabled" value="true" />
-	<property name="ext.dist" location="${ejbca.dist.path}/ext" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
 	<condition property="externalra.enabled.true">
 		<and>

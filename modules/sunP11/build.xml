@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="sunP11" basedir="../.." default="build">
+	<property environment="env" />
+	<dirname property="sunP11.dir" file="${ant.file.sunP11}"/>
+
+	<import file="${sunP11.dir}/../build.xml"/>
+
+	<property name="build.dir" location="${sunP11.dir}/build"/>
+	<property name="src.dir" location="${sunP11.dir}/src"/>
+	<property name="sunP11.lib" location="${mod.sunP11.dist}/primekey-sunP11.jar"/>
+
+	<available classpath="${java.ext.dirs}" classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
+
+	<target name="build" if="SunPKCS11.present" description="Build sun p11 extra jar">
+		<mkdir dir="${build.dir}" />
+		<javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+			<src path="${src.dir}"/>
+		</javac>
+		<jar jarfile="${sunP11.lib}">
+			<fileset dir="${build.dir}"/>
+		</jar>
+	</target>
+
+	<target name="clean" depends="">
+		<delete dir="${build.dir}"/>
+		<delete file="${sunP11.lib}"/>
+	</target>
+</project>
