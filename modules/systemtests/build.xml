@@ -221,6 +221,7 @@
 				<path refid="${runone-internal.classpath}" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
