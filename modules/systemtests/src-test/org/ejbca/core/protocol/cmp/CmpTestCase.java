@@ -35,6 +35,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -51,6 +52,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -817,16 +820,22 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected static String getProperty(String key, String defaultValue) {
-        final String testProperties = System.getProperty("sun.java.command");
-        int cutFrom = testProperties.indexOf(key+"=");
-        String result = null;
-        if (cutFrom >= 0) {
-            int to = testProperties.indexOf(" ", cutFrom + key.length() + 1);
-            result = testProperties.substring(cutFrom + key.length() + 1, (to >= 0 ? to : testProperties.length())).trim();
-        } else {
-            return defaultValue;
+        //If being run from command line
+        String result = System.getProperty(key);
+        if (result == null) {
+            //If being run from Eclipse
+            final String testProperties = System.getProperty("sun.java.command");
+            int cutFrom = testProperties.indexOf(key + "=");
+            if (cutFrom >= 0) {
+                int to = testProperties.indexOf(" ", cutFrom + key.length() + 1);
+                result = testProperties.substring(cutFrom + key.length() + 1, (to >= 0 ? to : testProperties.length())).trim();
+            }
         }
-        return result;
+        if (result == null) {
+            return defaultValue;
+        } else {
+            return result;
+        }
     }
 
     private static int getProperty(String key, int defaultValue) {
