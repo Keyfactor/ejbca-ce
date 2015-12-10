@@ -218,7 +218,7 @@ public abstract class CmpTestCase extends CaTestCase {
             try {
                 this.certProfileSession.addCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
             } catch (CertificateProfileExistsException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }
@@ -230,7 +230,7 @@ public abstract class CmpTestCase extends CaTestCase {
             try {
                 this.endEntityProfileSession.addEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
             } catch (EndEntityProfileExistsException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }
@@ -817,8 +817,13 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected static String getProperty(String key, String defaultValue) {
-        final String result = System.getProperty(key);
-        if (result == null || result.length() < 1 || result.startsWith("$")) {
+        final String testProperties = System.getProperty("sun.java.command");
+        int cutFrom = testProperties.indexOf(key+"=");
+        String result = null;
+        if (cutFrom >= 0) {
+            int to = testProperties.indexOf(" ", cutFrom + key.length() + 1);
+            result = testProperties.substring(cutFrom + key.length() + 1, (to >= 0 ? to : testProperties.length())).trim();
+        } else {
             return defaultValue;
         }
         return result;
