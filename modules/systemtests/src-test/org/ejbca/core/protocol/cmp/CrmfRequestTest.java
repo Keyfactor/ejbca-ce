@@ -120,7 +120,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     public CrmfRequestTest() throws Exception {
