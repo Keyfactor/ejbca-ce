@@ -10,12 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.util;
+package org.cesecore.keys.token.p11;
 
 import java.lang.reflect.Method;
 import java.security.Key;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.p11.exception.P11RuntimeException;
 
 /**
  * The normal way to access PKCS#11 is with a JCA/JCE provider. But there are
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
  * functionality that the library needs. This class will be used to access such
  * functions.
  * 
- * Functionality of the Sun PKCS#11 implementation used but this class is not
+ * Functionalities of the Sun PKCS#11 implementation are used but this class is not
  * using this implementation directly - the class sun.security.pkcs11.CESeCoreUtils
  * is used to provide the interface to the Sun PKCS#11 implementation.
  * 
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
  * of this.
  * 
  * If CESeCoreUtils is not in the classpath then this class will work as a
- * dummy and just return each call without doidng anything.
+ * dummy and just return each call without doing anything.
  * 
  * When CESeCoreUtils is not in the classpath a warning will be written
  * to {@link Logger}.
@@ -51,10 +52,12 @@ public class PKCS11Utils {
     private static final Logger log = Logger.getLogger(PKCS11Utils.class);
     private static PKCS11Utils p11utils = null;
     private final Method makeKeyUnmodifiable;
+    private final Method isKeyModifiable;
     private final Method securityInfo;
 
-    private PKCS11Utils( final Method _makeKeyUnmodifiable, final Method _securityInfo ) {
+    private PKCS11Utils( final Method _makeKeyUnmodifiable, final Method _isKeyModifiable, final Method _securityInfo ) {
         this.makeKeyUnmodifiable = _makeKeyUnmodifiable;
+        this.isKeyModifiable = _isKeyModifiable;
         this.securityInfo = _securityInfo;
     }
 
@@ -77,12 +80,13 @@ public class PKCS11Utils {
             log.warn(String.format(
                     "Class '%s' not available. The attribute of all generated keys will have 'CKA_MODIFYABLE=TRUE'. A '%s' exception was thrown with the message '%s'.",
                     className, e.getClass().getName(), e.getMessage() ));
-            p11utils = new PKCS11Utils(null, null);
+            p11utils = new PKCS11Utils(null, null, null);
             return p11utils;
         }
         try {
             p11utils = new PKCS11Utils(
                     clazz.getMethod("makeKeyUnmodifiable", new Class[]{String.class, Key.class}),
+                    clazz.getMethod("isKeyModifiable", new Class[]{String.class, Key.class}),
                     clazz.getMethod("securityInfo", new Class[]{String.class, Key.class, StringBuilder.class}) );
         } catch (NoSuchMethodException e) {
             throw new Error(String.format("Not compatible version of %s. Required methods not found.", className), e);
@@ -97,7 +101,9 @@ public class PKCS11Utils {
      * @param providerName
      */
     public void makeKeyUnmodifiable( final Key key, final String providerName) {
+        final String sError = "Not possible to set the attribute CKA_MODIFIABLE to false for the key object.";
         if ( this.makeKeyUnmodifiable==null ) {
+            log.warn(sError);
             return;
         }
         try {
@@ -111,7 +117,28 @@ public class PKCS11Utils {
                 }
             }
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new P11RuntimeException(sError,e);
+        }
+    }
+
+    /**
+     * Reads the CKA_MODIFIABLE attribute of the p11 key object.
+     * @param key
+     * @param providerName
+     * @return the value of CKA_MODIFIABLE
+     */
+    public boolean isKeyModifiable( final Key key, final String providerName ) {
+        final String sError = "Not possible to read the attribute CKA_MODIFIABLE for the key object.";
+        if ( this.isKeyModifiable==null ) {
+            log.warn(sError);
+            return true;// we say modifiable when we can't find out.
+        }
+        try {
+            final Object oResult = this.isKeyModifiable.invoke(null, new Object[]{providerName, key});
+            assert oResult instanceof Boolean;
+            return ((Boolean)oResult).booleanValue();
+        } catch (ReflectiveOperationException e) {
+            throw new P11RuntimeException(sError, e);
         }
     }
 
@@ -130,7 +157,7 @@ public class PKCS11Utils {
         try {
             this.securityInfo.invoke(null, new Object[]{providerName, key, sb});
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new P11RuntimeException("Not possible to read attributes from key object.", e);
         }
     }
 

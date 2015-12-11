@@ -91,8 +91,8 @@
     <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.webdist-war.path" location="${mod.path}/ejbca-webdist-war" />
     <property name="mod.webdist-war.war" location="${mod.dist.path}/webdist.war" />
-    <property name="mod.sunP11.dist" location="${ejbca.dist.path}/ext" />
-    <property name="mod.sunP11.path" location="${mod.path}/sunP11" />
+    <property name="mod.cesecore-p11.dist" location="${ejbca.dist.path}/ext" />
+    <property name="mod.cesecore-p11.path" location="${mod.path}/cesecore-p11" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />

@@ -449,4 +449,12 @@ public final class CesecoreConfiguration {
     public static long getCTFastFailBackOff() {
         return getLongValue("ct.fastfail.backoff", 1000L, "milliseconds");
     }
+
+    /**
+     * @return true if key should be unmodifiable after generation.
+     */
+    public static boolean makeKeyUnmodifiableAfterGeneration() {
+        final String value = ConfigurationHolder.getString("pkcs11.makeKeyUnmodifiableAfterGeneration");
+        return value!=null && Boolean.parseBoolean(value.trim());
+    }
 }

@@ -190,6 +190,16 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Default: true
 #cryptotoken.keystorecache=true
 
+# Setting the PKCS#11 attribute CKA_MODIFYABLE to FALSE after a key is generated.
+#
+# This is only done if the file '$EJBCA_HOME/dist/ext/cesecore-p11.jar' has been
+# deployed to the 'java.ext.dirs' classpath (https://docs.oracle.com/javase/tutorial/ext/basics/install.html).
+# If true and if the jar is not deployed then a warning will be written to the
+# log each time a key (all key types even none p11) is generated.
+# If the key is not a PKCS#11 key then nothing is done.
+# Default: false
+#pkcs11.makeKeyUnmodifiableAfterGeneration=true
+
 # ------------------- Authentication Key Binding settings -------------------
 # Configuration of available cipher suites for outgoing SSL/TLS connections
 # that can be selected for an Authentication Key Binding.

@@ -24,4 +24,8 @@ public class P11RuntimeException extends RuntimeException {
     public P11RuntimeException(final String message, final Exception cause) {
         super( message, cause );
     }
+
+    public P11RuntimeException(final String message) {
+        super( message );
+    }
 }
