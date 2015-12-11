@@ -66,6 +66,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
+import org.cesecore.keys.token.p11.PKCS11Utils;
 import org.cesecore.util.CertTools;
 
 /**
@@ -412,7 +413,9 @@ public class KeyStoreTools {
                 final X509Certificate chain[] = new X509Certificate[]{selfSignedCert};
                 log.debug("Creating certificate with entry " + keyAlias + '.');
                 setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
-                PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);
+                if ( CesecoreConfiguration.makeKeyUnmodifiableAfterGeneration() ) {
+                    PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);
+                }
                 break; // success no need to try more
             } catch (KeyStoreException e) {
                 if ( bar<3 ) {
@@ -517,7 +520,7 @@ public class KeyStoreTools {
             }
             log.info("Wrote csr to file: "+filename);
         } catch (KeyStoreException | NoSuchProviderException | TaskWithSigningException | OperatorCreationException | PKCSException | IOException  e) {
-            throw new KeyUtilRuntimeException("", e);
+            throw new KeyUtilRuntimeException("Failed to generate a certificate request.", e);
         }
     }
 
