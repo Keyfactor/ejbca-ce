@@ -82,7 +82,7 @@
 			<map from="${ejbca.home}/" to=""/>
 		</pathconvert>
 		<copy todir="${mod.clientToolBox.dist}/ext" flatten="true">
-			<fileset dir="${mod.sunP11.dist}" />
+			<fileset dir="${mod.cesecore-p11.dist}" />
 		</copy>
 		<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
 			<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>

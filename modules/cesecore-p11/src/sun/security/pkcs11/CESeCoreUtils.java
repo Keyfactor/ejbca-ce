@@ -60,7 +60,7 @@ public class CESeCoreUtils {
      * @return true if the attribute is false.
      * @throws PKCS11Exception
      */
-    public static boolean isModifiable(final String providerName, final Key key) throws PKCS11Exception {
+    public static boolean isKeyModifiable(final String providerName, final Key key) throws PKCS11Exception {
         final KeyData d = KeyData.getIt(providerName, key);
         if ( d==null ) {
             return true;

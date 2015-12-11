@@ -41,11 +41,11 @@ import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.token.p11.PKCS11Utils;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.ISignOperation;
-import org.cesecore.keys.util.PKCS11Utils;
 import org.cesecore.keys.util.SignWithWorkingAlgorithm;
 import org.cesecore.keys.util.TaskWithSigningException;
 import org.ejbca.util.PerformanceTest;
