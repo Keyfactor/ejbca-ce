@@ -720,7 +720,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         cryptoToken.testKeyPair(alias);
     }
 
-    /** @return a CryptoToken for the requested Id of authorized and it exists. Never returns null. */
     private void assertAuthorization(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource)
             throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, resource)) {
@@ -730,6 +729,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     }
 
+    /** @return a CryptoToken for the requested Id if authorized and it exists. Never returns null. */
     private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         if (cryptoToken == null) {
