@@ -24,6 +24,12 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.GeneralName;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public abstract class BaseCmpMessage implements Serializable {
 
 	private static final long serialVersionUID = 1L;
