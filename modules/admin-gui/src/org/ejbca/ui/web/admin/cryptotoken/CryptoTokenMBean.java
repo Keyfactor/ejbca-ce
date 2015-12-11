@@ -472,7 +472,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             }
         }
         if (msg != null) {
-            log.info("Message displayed to user: " + msg);
+            if (log.isDebugEnabled()) {
+                log.debug("Message displayed to user: " + msg);
+            }
             super.addNonTranslatedErrorMessage(msg);
         }
     }
@@ -852,7 +854,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /** Invoked when admin requests a new key pair generation. */
     public void generateNewKeyPair() {
-        log.info(">generateNewKeyPair");
+        if (log.isTraceEnabled()) {
+            log.trace(">generateNewKeyPair");
+        }
         try {
             cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), getNewKeyPairSpec());
         } catch (CryptoTokenOfflineException e) {
@@ -867,12 +871,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             }
         }
         flushCaches();
-        log.info("<generateNewKeyPair");
+        if (log.isTraceEnabled()) {
+            log.trace("<generateNewKeyPair");
+        }
     }
     
     /** Invoked when admin requests key pair generation from a template placeholder */
     public void generateFromTemplate() {
-        log.info(">generateFromTemplate");
+        if (log.isTraceEnabled()) {
+            log.trace(">generateFromTemplate");
+        }
         final KeyPairGuiInfo keyPairGuiInfo = (KeyPairGuiInfo) keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
         final String keyspec = KeyTools.keyalgspecToKeyspec(keyPairGuiInfo.getKeyAlgorithm(), keyPairGuiInfo.getRawKeySpec());
@@ -890,7 +898,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             }
         }
         flushCaches();
-        log.info("<generateFromTemplate");
+        if (log.isTraceEnabled()) {
+            log.trace("<generateFromTemplate");
+        }
     }
     
     /** Invoked when admin requests a test of a key pair. */
