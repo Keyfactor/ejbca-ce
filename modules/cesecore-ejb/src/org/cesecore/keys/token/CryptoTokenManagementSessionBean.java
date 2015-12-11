@@ -729,7 +729,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     }
 
-    /** @return a CryptoToken for the requested Id if authorized and it exists. Never returns null. */
+    /** @return a CryptoToken for the requested Id if exists. Never returns null. */
     private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         if (cryptoToken == null) {
