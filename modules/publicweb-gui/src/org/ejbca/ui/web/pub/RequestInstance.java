@@ -93,6 +93,9 @@ public class RequestInstance {
 	private static final Logger log = Logger.getLogger(RequestInstance.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
+    /** Max size of request parameters that we will receive */
+    private static final int REQUEST_MAX_SIZE = 10000;
+    
     private class IncomatibleTokenTypeException extends EjbcaException {
         private static final long serialVersionUID = 5435852400591856793L;
 
@@ -634,7 +637,7 @@ public class RequestInstance {
             final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
             diskFileItemFactory.setSizeThreshold(9999);
             ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-			upload.setSizeMax(10000);
+			upload.setSizeMax(REQUEST_MAX_SIZE);
             List<FileItem> items = upload.parseRequest(request);
 			Iterator<FileItem> iter = items.iterator();
 			while (iter.hasNext()) {
@@ -657,13 +660,25 @@ public class RequestInstance {
 		Object o = params.get(param);
 		if (o != null) {
 			if (o instanceof String) {
-				ret = (String) o;
+			    if ( ((String)o).length() > REQUEST_MAX_SIZE ) {
+			        if (log.isDebugEnabled()) {
+			            log.debug("Parameter '"+param+"' exceed size limit of "+REQUEST_MAX_SIZE);
+			        }
+			    } else {
+			        ret = (String) o;
+			    }
 			} else if (o instanceof String[]) { // keygen is of this type
-				// for some reason...
-				String[] str = (String[]) o;
-				if ((str != null) && (str.length > 0)) {
-					ret = str[0];
-				}
+			    // for some reason...
+			    String[] str = (String[]) o;
+			    if ((str != null) && (str.length > 0)) {
+			        if ( str[0].length() > REQUEST_MAX_SIZE ) {
+			            if (log.isDebugEnabled()) {
+			                log.debug("Parameter (first in list) '"+param+"' exceed size limit of "+REQUEST_MAX_SIZE);
+			            }	                    
+			        } else {
+			            ret = str[0];
+			        }
+			    }
 			} else {
 				log.debug("Can not cast object of type: " + o.getClass().getName());
 			}
