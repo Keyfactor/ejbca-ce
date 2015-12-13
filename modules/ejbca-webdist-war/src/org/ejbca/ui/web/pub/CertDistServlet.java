@@ -162,9 +162,15 @@ public class CertDistServlet extends HttpServlet {
             issuerdn = CertTools.stringToBCDNString(issuerdn);
         }    
 		int caid = 0; 
-		if(req.getParameter(CAID_PROPERTY) != null){
-		  caid = Integer.parseInt(req.getParameter(CAID_PROPERTY));
-		}    
+		try {
+		    if(req.getParameter(CAID_PROPERTY) != null){
+		        caid = Integer.parseInt(req.getParameter(CAID_PROPERTY));
+		    }    
+		} catch (NumberFormatException e) {
+		    log.debug("Invalid CAId: ", e);
+		    res.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid CAId.");
+		    return;
+		}
         // See if the client wants the response cert or CRL in PEM format (default is DER)
         String format = req.getParameter(FORMAT_PROPERTY); 
         command = req.getParameter(COMMAND_PROPERTY_NAME);
@@ -327,12 +333,12 @@ public class CertDistServlet extends HttpServlet {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
             boolean pkcs7 = false;
-            if (lev != null) {
-                level = Integer.parseInt(lev);
-            }else {
-                pkcs7 = true;
-            }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
+                if (lev != null) {
+                    level = Integer.parseInt(lev);
+                }else {
+                    pkcs7 = true;
+                }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
                 Certificate[] chain = null;
                 chain = getCertificateChain(caid, issuerdn);
                 // chain.length-1 is last cert in chain (root CA)
@@ -397,6 +403,10 @@ public class CertDistServlet extends HttpServlet {
                     res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
                     return;
                 }
+            } catch (NumberFormatException e) {
+                log.debug("Invalid level number should be a number: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid level, should be a number.");
+                return;
             } catch (Exception e) {
                 log.debug("Error getting CA certificates: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");

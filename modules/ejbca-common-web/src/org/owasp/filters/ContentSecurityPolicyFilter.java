@@ -193,7 +193,13 @@ public class ContentSecurityPolicyFilter implements Filter {
         for (String header : this.cspHeaders) {
             httpResponse.setHeader(header, policiesBuffer.toString());
         }
-
+        // Also add X-XSS-Protection, newer header. 
+        // See https://www.owasp.org/index.php/List_of_useful_HTTP_headers
+        // https://blogs.msdn.microsoft.com/ie/2008/07/02/ie8-security-part-iv-the-xss-filter/
+        httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
+        // Also X-Content-Type-Options, see https://blogs.msdn.microsoft.com/ie/2008/09/02/ie8-security-part-vi-beta-2-update/
+        httpResponse.setHeader("X-Content-Type-Options", "nosniff");
+        
         /* Step 3 : Let request continue chain filter */
         fchain.doFilter(request, response);
     }
