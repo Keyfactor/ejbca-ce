@@ -215,9 +215,11 @@ public class CertificateFinderBean {
     public void lookupCertificateInfo(String issuer, String serno) {
         BigInteger sernoBigInt = CertTools.getSerialNumberFromString(serno);
         Certificate cert = mStoreSession.findCertificateByIssuerAndSerno(issuer, sernoBigInt);
-        this.issuerDN = CertTools.getIssuerDN(cert);
-        this.subjectDN = CertTools.getSubjectDN(cert);
-        this.serialNumber = CertTools.getSerialNumberAsString(cert);
+        if (cert != null) {
+            this.issuerDN = CertTools.getIssuerDN(cert);
+            this.subjectDN = CertTools.getSubjectDN(cert);
+            this.serialNumber = CertTools.getSerialNumberAsString(cert);
+        }
     }
     
     /**

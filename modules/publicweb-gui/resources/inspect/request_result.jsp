@@ -8,17 +8,21 @@ org.apache.commons.fileupload.disk.DiskFileItemFactory"%>
 <jsp:useBean id="dump" class="org.ejbca.ui.web.pub.inspect.CertAndRequestDumpBean" scope="page" />
          
              <%
-            final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-            diskFileItemFactory.setSizeThreshold(9999);
-            ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-			upload.setSizeMax(10000);
-			List<FileItem> items = upload.parseRequest(request);
-			for(FileItem item : items) {
+            // Check that we have a file upload request
+            boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+            if (isMultipart) {
+              final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+              diskFileItemFactory.setSizeThreshold(9999);
+              ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
+			  upload.setSizeMax(10000);
+			  List<FileItem> items = upload.parseRequest(request);
+			  for(FileItem item : items) {
 				if (!item.isFormField()) {
 					InputStream is = item.getInputStream();
 					byte[] bytes = FileTools.readInputStreamtoBuffer(is);
 					dump.setBytes(bytes);
 				}
+			  }
 			}
              %>
             <h1 class="title"><c:out value="Certificate/CSR dump" /></h1>

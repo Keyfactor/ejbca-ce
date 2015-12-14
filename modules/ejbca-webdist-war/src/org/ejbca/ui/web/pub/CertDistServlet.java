@@ -234,6 +234,11 @@ public class CertDistServlet extends HttpServlet {
             try {
                 // Serial number in hex
                 Certificate cert = storesession.findCertificateByIssuerAndSerno(dn, new BigInteger(serno, 16));
+                if (cert == null) {
+                    log.debug("Error getting End Entity certificate, not found: ");
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting End Entity certificate, not found.");
+                    return;
+                }
                 sendEndEntityCert(administrator, req, res, format, cert);
             } catch (NumberFormatException e) {
                 log.debug("Error getting End Entity certificate, invalid serial number (hex): ", e);
