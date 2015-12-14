@@ -948,12 +948,12 @@ public abstract class CertTools {
             throw new IllegalArgumentException("getSerialNumberFromString: cert is null");
         }
         BigInteger ret;
-        if (sernoString.length() != 5) {
-            // This can not be a CVC certificate sequence, so it must be a hex encoded regular certificate serial number
-            ret = new BigInteger(sernoString, 16);
-        } else {
-            // We try to handle the different cases of CVC certificate sequences, see StringTools.KEY_SEQUENCE_FORMAT
-            try {
+        try {
+            if (sernoString.length() != 5) {
+                // This can not be a CVC certificate sequence, so it must be a hex encoded regular certificate serial number
+                ret = new BigInteger(sernoString, 16);
+            } else {
+                // We try to handle the different cases of CVC certificate sequences, see StringTools.KEY_SEQUENCE_FORMAT
                 if (NumberUtils.isNumber(sernoString)) {
                     ret = NumberUtils.createBigInteger(sernoString);
                 } else {
@@ -979,11 +979,11 @@ public abstract class CertTools {
                         }
                     }
                 }
-            } catch (NumberFormatException e) {
-                // If we can't make the sequence into a serial number big integer, set it to 0
-                log.debug("getSerialNumber: NumberFormatException for sequence: " + sernoString);
-                ret = BigInteger.valueOf(0);
             }
+        } catch (NumberFormatException e) {
+            // If we can't make the sequence into a serial number big integer, set it to 0
+            log.debug("getSerialNumber: NumberFormatException for sequence: " + sernoString);
+            ret = BigInteger.valueOf(0);
         }
         return ret;
     }
