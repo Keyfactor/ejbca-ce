@@ -83,4 +83,13 @@ public class InternalResourcesTest {
         assertEquals("Test sv-SE", res);
         assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv", "foo $bar \\haaaar").toString());
     }
+
+    /** Test that we don't allow unlimited recursion in the language strings */
+    @Test
+    public void testMessageStringWithRecursive() {
+        InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
+        String res = intres.getLocalizedMessage("raadmin.testparams", "recurse {0}", Integer.valueOf(3), null, Boolean.TRUE, "bye");
+        assertEquals("Test recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse recurse {0} 3  true bye message {0} ", res);
+    }
+
 }
