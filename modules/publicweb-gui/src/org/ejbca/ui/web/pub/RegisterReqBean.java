@@ -270,6 +270,10 @@ public class RegisterReqBean {
         }
     }
     
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     public static class TokenTypeInfo {
         private final String key;
         private final String text;

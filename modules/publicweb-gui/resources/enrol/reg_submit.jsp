@@ -13,7 +13,9 @@
 <%
 
 reg.initialize(request);
-reg.submit();
+if (reg.isInitialized()) {
+  reg.submit();
+}
 
 %>
 
