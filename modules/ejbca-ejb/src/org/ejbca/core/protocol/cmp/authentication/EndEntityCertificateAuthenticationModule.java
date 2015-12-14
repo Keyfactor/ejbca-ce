@@ -221,7 +221,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         
         //Check that msg is signed
         if(msg.getProtection() == null) {
-            this.errorMessage = "PKI Message is not athenticated properly. No PKI protection is found.";
+            this.errorMessage = "PKI Message is not authenticated properly. No PKI protection is found.";
             return false;
         }
         
