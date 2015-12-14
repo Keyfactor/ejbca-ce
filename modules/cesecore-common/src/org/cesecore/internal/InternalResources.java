@@ -236,14 +236,17 @@ public class InternalResources implements Serializable {
         final String placeHolder = placeHolders[placeHolderIndex];
         final int placeHolderLength = placeHolder.length();
         int currentIndex = -placeHolderLength;
+        int bar = 20; // never allow more than 20 placeholders to avoid recursion
         if (replacementObject==null) {
-            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1) {
+            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1 && bar > 0) {
                 sb.delete(currentIndex-1, currentIndex+placeHolderLength);
+                bar--;
             }
         } else {
             final String replacement = replacementObject.toString();
-            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1) {
+            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1 && bar > 0) {
                 sb.replace(currentIndex-1, currentIndex+placeHolderLength, replacement);
+                bar--;
             }
         }
     }
