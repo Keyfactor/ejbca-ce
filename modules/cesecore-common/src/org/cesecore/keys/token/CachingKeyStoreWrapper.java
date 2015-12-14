@@ -14,6 +14,7 @@ package org.cesecore.keys.token;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStore.Entry;
@@ -146,9 +147,10 @@ public class CachingKeyStoreWrapper {
             this.cache = new HashMap<>();
             // Load the whole public KeyStore content (aliases and certificate) into the cache
             final Enumeration<String> aliases = keyStore.aliases();
+            final boolean isSunP11 = keyStore.getProvider().getName().indexOf("SunPKCS11")==0;
             while (aliases.hasMoreElements()) {
                 final String alias = aliases.nextElement();
-                this.cache.put(alias, new KeyStoreMapEntry(alias, keyStore));
+                this.cache.put(fixBadUTF8(alias, isSunP11), new KeyStoreMapEntry(alias, keyStore));
                 if (log.isDebugEnabled()) {
                     log.debug("KeyStore has alias: " + alias);
                 }
@@ -169,6 +171,21 @@ public class CachingKeyStoreWrapper {
         }
         public Enumeration<String> getAliases() {
             return new Vector<>(this.cache.keySet()).elements();
+        }
+        private String fixBadUTF8(final String orig, final boolean isSunP11) {
+            if ( !isSunP11 ) {
+                return orig;
+            }
+            try {
+                final byte bvIn[] = orig.getBytes("UTF-16BE");
+                final byte bvOut[] = new byte[bvIn.length/2];
+                for ( int i=1; i<bvIn.length; i += 2) {
+                    bvOut[i/2] = (byte)(bvIn[i]&0xff);
+                }
+                return new String(bvOut, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new InternalError("UTF-16BE and UTF-8 must be implemented for all JREs.");
+            }
         }
     }
 
