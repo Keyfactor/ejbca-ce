@@ -1,3 +1,11 @@
+EJBCA 6.5.0
+-----------
+
+A couple of error messages for CMP was changed. 
+- When submitting a request with a URL that does not match an existing CMP alias, now a HTTP 404 (not found) is returned instead of a CMP badRequest error message.
+- When trying to revoke a certificate that was already revoked, now a CMP certRevoked error message is returned instead of a CMP badRequest error message.
+
+
 EJBCA 6.4.1
 -----------
 This maintenance release contains 14 new features, bug fixes and improvements. Below is a selection of the most noteworthy. Upgrading to this 
