@@ -69,9 +69,9 @@ public class CmpAliasTest extends CmpTestCase {
 
     /**
      * Sends a CMP request with the alias requestAlias in the URL and expects a CMP error message 
-     * that extractedAlias does not  exist.
+     * if that extractedAlias does not  exist.
      * 
-     * @param requestAlias the alias that is  specified in the URL
+     * @param requestAlias the alias that is specified in the URL
      * @param extractedAlias the alias that EJBCA will use to handle the CMP request
      * @throws Exception
      */
@@ -94,33 +94,7 @@ public class CmpAliasTest extends CmpTestCase {
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-type", "application/pkixcmp");
             con.connect();
-            assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode()); // OK response (will use alias "alias123")
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // This works for small requests, and CMP requests are small enough
-            InputStream in = con.getInputStream();
-            int b = in.read();
-            while (b != -1) {
-                baos.write(b);
-                b = in.read();
-            }
-            baos.flush();
-            in.close();
-            byte[] respBytes = baos.toByteArray();
-            assertNotNull(respBytes);
-            assertTrue(respBytes.length > 0);
-
-            ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(respBytes));
-            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
-            assertNotNull(respObject);
-            
-            final PKIBody body = respObject.getBody();
-            assertEquals(23, body.getType());
-            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "Wrong URL. CMP alias '" + extractedAlias + "' does not exist";
-            assertEquals(expectedErrMsg, errMsg);
-            inputStream.close();
+            assertEquals("Unexpected HTTP response code.", 404, con.getResponseCode()); // A cmp alias that does not will result in a HTTP not found error 
         } finally {
             if(cmpconfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
                 cmpconfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
@@ -150,7 +124,7 @@ public class CmpAliasTest extends CmpTestCase {
         sendCmpRequest(cmpConfig, "alias??&!!foo", "alias"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
                                                              // as CMP alias, a substring of the first alphanumeric characters, in this 
                                                              // case: alias
-        sendCmpRequest(cmpConfig, "??##!!&", "cmp"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
+        sendCmpRequest(cmpConfig, "??##!!&", "cmp"); // Specifying alias with non-alphanumeric characters cause EJBCA to use, 
                                                      // as CMP alias, a substring of the first alphanumeric characters, in this 
                                                      // case: empty string, which means that the default alias "cmp" will be used
 

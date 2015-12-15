@@ -64,6 +64,10 @@ public class FailInfo implements Serializable {
      */
     public static final FailInfo BAD_POP = new FailInfo(9);
     /**
+     * RFC4210 PKIFailureInfo certRevoked. "the certificate has already been revoked"
+     */
+    public static final FailInfo CERT_REVOKED = new FailInfo(10);
+    /**
      * Not authorized
      */
     public static final FailInfo NOT_AUTHORIZED = new FailInfo(23);

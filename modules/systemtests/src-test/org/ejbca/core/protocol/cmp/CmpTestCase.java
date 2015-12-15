@@ -1092,7 +1092,7 @@ public abstract class CmpTestCase extends CaTestCase {
             info = rrc.getStatus()[0];
             assertNotNull(info);
             assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().intValue());
-            assertEquals(PKIFailureInfo.badRequest, info.getFailInfo().intValue());
+            assertEquals(expectedPKIFailInfo, info.getFailInfo().intValue());
         } else {
             CertRepMessage c = null;
             if (exptag == CmpPKIBodyConstants.INITIALIZATIONRESPONSE || exptag == CmpPKIBodyConstants.CERTIFICATIONRESPONSE) {

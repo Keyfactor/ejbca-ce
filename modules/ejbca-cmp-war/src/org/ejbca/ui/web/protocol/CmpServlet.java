@@ -30,6 +30,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -128,6 +129,11 @@ public class CmpServlet extends HttpServlet {
                 resp = cmpMessageDispatcherLocal.dispatch(admin, ba, alias);
             } catch (IOException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+                log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
+                return;
+            } catch (NoSuchAliasException e) {
+                // The CMP alias does not exist
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
                 log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
                 return;
             }
