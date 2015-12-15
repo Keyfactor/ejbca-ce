@@ -184,7 +184,7 @@ public class CachingKeyStoreWrapper {
                 }
                 return new String(bvOut, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                throw new InternalError("UTF-16BE and UTF-8 must be implemented for all JREs.");
+                throw new IllegalStateException("UTF-16BE and UTF-8 must be implemented for all JREs.");
             }
         }
     }
