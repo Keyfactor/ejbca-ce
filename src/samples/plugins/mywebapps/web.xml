@@ -43,4 +43,23 @@
         <url-pattern>/counter</url-pattern>
     </servlet-mapping>
 
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+    </session-config>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
 </web-app>
