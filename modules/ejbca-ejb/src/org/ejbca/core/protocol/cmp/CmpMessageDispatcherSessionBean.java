@@ -107,14 +107,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 		this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 	}
 
-	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
-	 * 
-	 * @param ba der encoded CMP message as a byte array, length limit of this byte array must be enforced by caller
-     * @param confAlias the cmp alias we want to use for this request
-	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
-	 * @throws IOException 
-     * @throws NoSuchAliasException if the confAlias does not exist among configured cmp aliases
-	 */
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public ResponseMessage dispatch(final AuthenticationToken admin, final byte[] ba, String confAlias) throws IOException, NoSuchAliasException {
@@ -137,7 +129,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
 	    if(!cmpConfiguration.aliasExists(confAlias)) {
-	        final String msg = intres.getLocalizedMessage("cmp.nosuchalias");
+	        final String msg = intres.getLocalizedMessage("cmp.nosuchalias", confAlias);
 	        log.info(msg);
 	        throw new NoSuchAliasException(msg);
 	    }
