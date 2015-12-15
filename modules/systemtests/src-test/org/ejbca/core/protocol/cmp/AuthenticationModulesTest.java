@@ -65,6 +65,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -362,10 +363,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
             fingerprint = CertTools.getFingerprintAsString(admCert);
 
             CMPCertificate[] extraCert = getCMPCert(admCert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(msg);
             //******************************************''''''
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             sig.initVerify(admCert.getPublicKey());
             sig.update(CmpMessageHelper.getProtectedBytes(msg));
             boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -1300,7 +1301,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            String expectedErrMsg = "PKI Message is not athenticated properly. No PKI protection is found.";
+            String expectedErrMsg = "PKI Message is not authenticated properly. No PKI protection is found.";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
             inputStream.close();
