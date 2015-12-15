@@ -1374,7 +1374,7 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 </subsubsection>
 </subsection>
 <subsection name="CMP error messages">
-<p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on in which stage the error is, and which type of error, a different error is returned.
+<p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.
 Below is a non-exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
 <ul>
 <li>Submitting a request with a URL that does not match an existing CMP alias: HTTP 404 (not found)</li>
@@ -1382,8 +1382,8 @@ Below is a non-exhaustive list of CMP error codes (don't use as definite guide, 
 <li>Submitting a CMP RA message not authorized: a signed CMP notAuthorized error message</li>
 <li>Trying to revoke a non existing certificate: a signed CMP badCertId error message</li>
 <li>Trying to issue a certificate from a non existing CA: an unsigned CMP wrongAuthority error message</li>
-<li>Submitting a message with bad POP: an unsigned CMP badPOP error message</li>
-<li>Submitting a CMP client mode enrol request with wrong user/enrol code: an unsigned CMP notAuthorized error message</li>
+<li>Submitting a CMP request with bad POP: an unsigned CMP badPOP error message</li>
+<li>Submitting a CMP client mode enrollment request with wrong user/enrollment code: an unsigned CMP notAuthorized error message</li>
 <li>Internal processing error due to invalid configuration such as missing profiles: an unsigned CMP badRequest error message</li>
 <li>Other internal errors: an unsigned CMP error message with various error codes</li>
 </ul>
