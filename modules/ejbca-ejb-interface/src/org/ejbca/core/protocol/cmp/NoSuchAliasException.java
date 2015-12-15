@@ -10,17 +10,28 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
+ 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
+import org.ejbca.core.EjbcaException;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
+
 
 /**
+ * Error due to wrong CMP alias
+ *
  * @version $Id$
  */
-public interface CmpMessageDispatcherSession {
-	public ResponseMessage dispatch(AuthenticationToken admin, byte[] derObject, String confAlias) throws IOException, NoSuchAliasException;
+public class NoSuchAliasException extends EjbcaException {
+
+    private static final long serialVersionUID = -5521689458199668528L;
+    /**
+     * Constructor used to create exception with an error message. Calls the same constructor in
+     * base class <code>Exception</code>.
+     *
+     * @param message Human readable error message, can not be NULL.
+     */
+    public NoSuchAliasException(String message) {
+        super(message);
+    }
 }
