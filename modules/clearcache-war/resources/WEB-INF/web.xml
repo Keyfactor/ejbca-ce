@@ -31,7 +31,15 @@
         <servlet-name>EJBCAClearCacheServlet</servlet-name>
         <!-- / below is relative to the context path in application.xml, i.e. clearcache -->
         <url-pattern>/</url-pattern>
-    </servlet-mapping>    
+    </servlet-mapping>  
+    
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+    </session-config>
+      
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>restricted methods</web-resource-name>
