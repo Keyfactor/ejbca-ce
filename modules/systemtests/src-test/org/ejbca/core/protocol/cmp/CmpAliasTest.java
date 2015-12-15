@@ -31,6 +31,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public class CmpAliasTest extends CmpTestCase {
     
     private static final Logger log = Logger.getLogger(CmpAliasTest.class);
