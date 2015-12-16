@@ -1449,10 +1449,15 @@ public abstract class CertTools {
         try {
             signerCert.checkValidity();
         } catch (CertificateExpiredException e) {
-            log.error(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+            }
             return false;
         } catch (CertificateNotYetValidException e) {
-            log.error(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+            if (log.isDebugEnabled()) {
+
+                log.debug(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+            }
             return false;
         }
         final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
@@ -1463,10 +1468,12 @@ public abstract class CertTools {
         try {
             signerCert.checkValidity(warnDate);
         } catch (CertificateExpiredException e) {
-            log.warn(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber(), signerCert.getIssuerDN(),
-                    signerCert.getNotAfter()));
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber(), signerCert.getIssuerDN(),
+                        signerCert.getNotAfter()));
+            }
         } catch (CertificateNotYetValidException e) {
-            throw new Error("This should never happen.", e);
+            throw new IllegalStateException("This should never happen.", e);
         }
         if (log.isDebugEnabled()) {
             log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
