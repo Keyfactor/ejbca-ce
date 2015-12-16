@@ -132,16 +132,10 @@ public enum DefaultRoles {
         }
         if (combinedRules.size() != rules.size()) {
             ruleloop : for(AccessRuleTemplate combinedRule : combinedRules.values()) {
-                boolean found = false;
                 for(AccessRuleData rule : rules) {
                     if(rule.getAccessRuleName().equals(combinedRule.getAccessRuleName())) {
-                        found = true;
                         continue ruleloop;
-                    }
-                    
-                }
-                if(!found) {
-                    System.err.println("Unfound rule: " + combinedRule.getAccessRuleName());
+                    }                    
                 }
             }
             return false;
