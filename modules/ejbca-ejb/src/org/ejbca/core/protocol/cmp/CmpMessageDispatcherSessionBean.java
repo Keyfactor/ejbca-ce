@@ -144,7 +144,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
 			log.error(eMsg, t);
 			// If we could not read the message, we should return an error BAD_REQUEST
-			return CmpMessageHelper.createUnprotectedErrorMessage(null, FailInfo.BAD_REQUEST, eMsg);
+			return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
 		}
 		try {
 			final PKIBody body = req.getBody();
@@ -234,7 +234,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				if (unknownMessageType > -1) {
 					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
 					log.error(eMsg);
-					return CmpMessageHelper.createUnprotectedErrorMessage(null, FailInfo.BAD_REQUEST, eMsg);
+					return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
 				}
 				throw new Exception("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}
