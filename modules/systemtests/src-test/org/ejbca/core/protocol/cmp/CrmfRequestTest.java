@@ -18,10 +18,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -371,6 +373,28 @@ public class CrmfRequestTest extends CmpTestCase {
         boolean veriStatus = CmpMessageHelper.verifyCertBasedPKIProtection(msg, this.keys.getPublic());
         assertTrue("Verification failed.", veriStatus);
         log.trace("<test07SignedConfirmationMessage()");
+    }
+    
+    @Test
+    public void testUnsignedConfirmationMessage() throws Exception {
+        log.trace(">testUnsignedConfirmationMessage()");
+        CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
+        //cmpConfRes.setSignKeyInfo(this.testx509ca.getCertificateChain(), this.keys.getPrivate(), null);
+        cmpConfRes.setSender(new GeneralName(USER_DN));
+        cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
+        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW");
+        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY");
+        cmpConfRes.setTransactionId("DAxFS");
+        cmpConfRes.create();
+        byte[] resp = cmpConfRes.getResponseMessage();
+        PKIMessage msg = PKIMessage.getInstance(ASN1Primitive.fromByteArray(resp));
+        try {
+            CmpMessageHelper.verifyCertBasedPKIProtection(msg, this.keys.getPublic());
+            fail("Attempting to verify signature on an unsigned message should have failed.");
+        } catch (SignatureException e) {
+            //As expected
+        }
+        log.trace("<testUnsignedConfirmationMessage()");
     }
 
     @Test

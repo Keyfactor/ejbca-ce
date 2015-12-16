@@ -30,7 +30,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
- * @author tomas
+ * 
  * @version $Id$
  */
 public class GeneralCmpMessage extends BaseCmpMessage {

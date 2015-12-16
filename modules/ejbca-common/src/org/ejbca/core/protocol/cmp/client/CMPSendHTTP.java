@@ -42,12 +42,12 @@ public class CMPSendHTTP {
 		this.responseCode = rc;
 	}
 
-	public static CMPSendHTTP doIt(final byte[] message, final String hostName,
+	public static CMPSendHTTP sendMessage(final byte[] message, final String hostName,
 	        final int port, final String urlPath, final boolean doClose) throws MalformedURLException, IOException {
-	    return doIt(message, "http://"+hostName+":"+port+urlPath, doClose);
+	    return sendMessage(message, "http://"+hostName+":"+port+urlPath, doClose);
 	}
 
-	public static CMPSendHTTP doIt(final byte[] message, final String url, final boolean doClose) throws MalformedURLException, IOException {
+	public static CMPSendHTTP sendMessage(final byte[] message, final String url, final boolean doClose) throws MalformedURLException, IOException {
 		boolean isError = true;
 		final HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
 		try {

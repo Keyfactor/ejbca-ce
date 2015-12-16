@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -394,7 +395,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //Verify the signature of msg using the public key of extraCert
         //-------------------------------------------------------------
         try {
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             sig.initVerify(extraCert.getPublicKey());
             sig.update(CmpMessageHelper.getProtectedBytes(msg));
             if (sig.verify(msg.getProtection().getBytes())) {

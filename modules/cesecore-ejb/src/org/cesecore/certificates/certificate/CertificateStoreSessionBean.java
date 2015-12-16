@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -488,7 +489,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     try {
                         CertTools.verify(x509Certificate, trustedChain, CertTools.getNotBefore(x509Certificate));
                         signedByRolloverCAKey = true;
-                    } catch (Exception e) {
+                    } catch (CertPathValidatorException e) {
                         // NOPMD
                     }
                     boolean isRollover = signedByRolloverCAKey &&

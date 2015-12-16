@@ -342,7 +342,7 @@ class CMPTest extends ClientToolBox {
         }
         @SuppressWarnings("synthetic-access")
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
-            final CMPSendHTTP send = CMPSendHTTP.doIt(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
+            final CMPSendHTTP send = CMPSendHTTP.sendMessage(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
             if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
             	StressTest.this.performanceTest.getLog().error(intres.getLocalizedMessage("cmp.responsecodenotok", Integer.valueOf(send.responseCode)));
             	return null;
