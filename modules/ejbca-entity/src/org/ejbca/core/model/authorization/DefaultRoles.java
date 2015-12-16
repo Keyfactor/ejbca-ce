@@ -131,13 +131,6 @@ public enum DefaultRoles {
             combinedRules.put(template.getAccessRuleName(), template);
         }
         if (combinedRules.size() != rules.size()) {
-            ruleloop : for(AccessRuleTemplate combinedRule : combinedRules.values()) {
-                for(AccessRuleData rule : rules) {
-                    if(rule.getAccessRuleName().equals(combinedRule.getAccessRuleName())) {
-                        continue ruleloop;
-                    }                    
-                }
-            }
             return false;
         } else {
             for (AccessRuleData rule : rules) {
