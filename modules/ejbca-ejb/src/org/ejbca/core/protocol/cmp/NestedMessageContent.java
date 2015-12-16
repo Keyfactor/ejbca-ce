@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.util.Base64;
@@ -165,7 +166,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     if (log.isDebugEnabled()) {
                         log.debug("Verifying message signature using algorithm id: "+algId);
                     }
-                    Signature sig = Signature.getInstance(algId, "BC");
+                    Signature sig = Signature.getInstance(algId, BouncyCastleProvider.PROVIDER_NAME);
                     sig.initVerify(cert.getPublicKey());
                     sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
                     ret = sig.verify(raSignedMessage.getProtection().getBytes());

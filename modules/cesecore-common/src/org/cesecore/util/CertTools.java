@@ -2181,8 +2181,10 @@ public abstract class CertTools {
 
     private static ASN1Sequence getAltnameSequence(byte[] value) {
         ASN1Primitive oct = null;
+        ASN1InputStream stream = new ASN1InputStream(new ByteArrayInputStream(value));
         try {
-            oct = (new ASN1InputStream(new ByteArrayInputStream(value)).readObject());
+            oct = stream.readObject();
+            stream.close();
         } catch (IOException e) {
             throw new RuntimeException("Could not read ASN1InputStream", e);
         }
@@ -2576,42 +2578,48 @@ public abstract class CertTools {
     /**
      * Check the certificate with CA certificate.
      * 
-     * @param certificate cert to verify
-     * @param caCertChain collection of X509Certificate
+     * @param certificate certificate to verify
+     * @param caCertChain collection of X509Certificates
      * @param date Date to verify at, or null to use current time.
      * @param optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
-     * @throws Exception if verification failed
+     * @throws CertPathValidatorException if certificate could not be validated
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain, Date date, PKIXCertPathChecker...pkixCertPathCheckers) throws Exception {
+    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain, Date date, PKIXCertPathChecker... pkixCertPathCheckers)
+            throws CertPathValidatorException {
         try {
             ArrayList<Certificate> certlist = new ArrayList<Certificate>();
             // Create CertPath
             certlist.add(certificate);
             // Add other certs...
-            CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
-            java.security.cert.CertPath cp = cf.generateCertPath(certlist);
+            CertPath cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(certlist);
             
             // Create TrustAnchor. Since EJBCA use BouncyCastle provider, we assume
             // certificate already in correct order
             X509Certificate[] cac = (X509Certificate[]) caCertChain.toArray(new X509Certificate[] {});
-            java.security.cert.TrustAnchor anchor = new java.security.cert.TrustAnchor(cac[0], null);
+            TrustAnchor anchor = new TrustAnchor(cac[0], null);
             // Set the PKIX parameters
-            java.security.cert.PKIXParameters params = new java.security.cert.PKIXParameters(java.util.Collections.singleton(anchor));
+            PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
             for (final PKIXCertPathChecker pkixCertPathChecker : pkixCertPathCheckers) {
                 params.addCertPathChecker(pkixCertPathChecker);
             }
             params.setRevocationEnabled(false);
             params.setDate(date);
-            java.security.cert.CertPathValidator cpv = java.security.cert.CertPathValidator.getInstance("PKIX", "BC");
-            java.security.cert.PKIXCertPathValidatorResult result = (java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
+            CertPathValidator cpv = CertPathValidator.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+            PKIXCertPathValidatorResult result = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
             if (log.isDebugEnabled()) {
                 log.debug("Certificate verify result: " + result.toString());
             }
-        } catch (java.security.cert.CertPathValidatorException cpve) {
-            throw new Exception("Invalid certificate or certificate not issued by specified CA: " + cpve.getMessage());
-        } catch (Exception e) {
-            throw new Exception("Error checking certificate chain: " + e.getMessage());
+        } catch (CertPathValidatorException cpve) {
+            throw new CertPathValidatorException("Invalid certificate or certificate not issued by specified CA: " + cpve.getMessage());
+        } catch (CertificateException e) {
+            throw new IllegalArgumentException("Something was wrong with the supplied certificate", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider not found.", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Algorithm PKIX was not found.", e);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalArgumentException("Either ca certificate chain was empty, or the certificate was on an inappropraite type for a PKIX path checker.", e);
         }
         return true;
     }
@@ -2619,12 +2627,12 @@ public abstract class CertTools {
     /**
      * Check the certificate with CA certificate.
      * 
-     * @param certificate cert to verify
-     * @param caCertChain collection of X509Certificate
+     * @param certificate certificate to verify
+     * @param caCertChain collection of X509Certificates
      * @return true if verified OK
-     * @throws Exception if verification failed
+     * @throws CertPathValidatorException if verification failed
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain) throws Exception {
+    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain) throws CertPathValidatorException {
         return verify(certificate, caCertChain, null);
     }
     
@@ -2633,8 +2641,8 @@ public abstract class CertTools {
      * The trusted certificates list can either be end entity certificates, in this case, only this certificate by this issuer 
      * is trusted; or it could be CA certificates, in this case, all certificates issued by this CA are trusted.
      * 
-     * @param certificate cert to verify
-     * @param trustedCertificates collection of trusted X509Certificate
+     * @param certificate certificate to verify
+     * @param trustedCertificates collection of trusted X509Certificates
      * @param optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      */
@@ -2673,7 +2681,7 @@ public abstract class CertTools {
                     log.debug("Trusting certificate with SubjectDN '" + getSubjectDN(certificate) + "' and issuerDN '" + getIssuerDN(certificate) + "'.");
                 }
                 return true;
-            } catch (Exception e) {
+            } catch (CertPathValidatorException e) {
                 //Do nothing. Just try the next trusted certificate chain in the list
             }
             

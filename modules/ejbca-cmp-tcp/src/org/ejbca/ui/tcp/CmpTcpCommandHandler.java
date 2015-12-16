@@ -34,7 +34,6 @@ import org.quickserver.net.server.DataType;
 /**
  * Class receiving TCP messages from QuickServer (receives quickserver events) and routing them to the correct CMP handler class.
  * 
- * @author tomas
  * @version $Id$
  */
 public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHandler  {
@@ -75,7 +74,6 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		} else {
 			// We must use an administrator with rights to create users
 			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpTcp: "+handler.getHostAddress()));
-			//final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
 			final ResponseMessage resp;
 			try {
 				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message, "tcp");

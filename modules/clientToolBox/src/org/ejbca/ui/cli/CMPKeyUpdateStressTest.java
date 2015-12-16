@@ -296,7 +296,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
 		@SuppressWarnings("synthetic-access")
 		private byte[] sendCmpHttp(final byte[] message) throws Exception {
-			final CMPSendHTTP send = CMPSendHTTP.doIt(message, this.cliArgs.hostName, this.cliArgs.port, this.cliArgs.urlPath, false);
+			final CMPSendHTTP send = CMPSendHTTP.sendMessage(message, this.cliArgs.hostName, this.cliArgs.port, this.cliArgs.urlPath, false);
 			if (send.responseCode != HttpURLConnection.HTTP_OK) {
 				this.performanceTest.getLog().error(
 						intres.getLocalizedMessage("cmp.responsecodenotok", Integer.valueOf(send.responseCode)));

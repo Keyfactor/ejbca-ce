@@ -33,5 +33,5 @@ public interface CmpMessageDispatcherSession {
      * @throws IOException if the message can not be parsed
      * @throws NoSuchAliasException if the confAlias does not exist among configured cmp aliases
      */
-	public ResponseMessage dispatch(AuthenticationToken admin, byte[] derObject, String confAlias) throws IOException, NoSuchAliasException;
+	ResponseMessage dispatch(AuthenticationToken admin, byte[] derObject, String confAlias) throws IOException, NoSuchAliasException;
 }

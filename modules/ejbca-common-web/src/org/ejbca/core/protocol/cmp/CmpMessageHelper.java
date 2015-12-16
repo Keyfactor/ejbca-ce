@@ -80,6 +80,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -228,17 +229,28 @@ public class CmpMessageHelper {
      * @param pubKey the public key used to verify the signature
      * @return true if verification is ok or false if verification fails
      * @throws NoSuchAlgorithmException message is signed by an unknown algorithm
-     * @throws NoSuchProviderException the BouncyCastle (BC) provider is not installed
      * @throws InvalidKeyException pubKey is not valid for signature verification
      * @throws SignatureException if the passed-in signature is improperly encoded or of the wrong type, if this signature algorithm is unable to process the input data provided, etc.
      */
     public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException, SignatureException {
+             InvalidKeyException, SignatureException {
+        if(pKIMessage.getProtection() == null) {
+            throw new SignatureException("Message was not signed.");
+        }
         AlgorithmIdentifier sigAlg = pKIMessage.getHeader().getProtectionAlg();
+        if(sigAlg == null) {
+            throw new SignatureException("No signature algorithm was provided.");
+        }
+      
         if (LOG.isDebugEnabled()) {
             LOG.debug("Verifying signature with algorithm: " + sigAlg.getAlgorithm().getId());
         }
-        Signature sig = Signature.getInstance(sigAlg.getAlgorithm().getId(), "BC");
+        Signature sig;
+        try {
+            sig = Signature.getInstance(sigAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider not installed.", e);
+        }
         sig.initVerify(pubKey);
         sig.update(CmpMessageHelper.getProtectedBytes(pKIMessage));
         boolean result = sig.verify(pKIMessage.getProtection().getBytes());
@@ -319,7 +331,7 @@ public class CmpMessageHelper {
             mout.writeObject(msg);
             mout.close();
         } catch (IOException e) {
-            throw new IllegalStateException("Caught unexpected IOException.");
+            throw new IllegalStateException("Caught unexpected IOException.", e);
         }
         return baos.toByteArray();
     }
@@ -346,22 +358,41 @@ public class CmpMessageHelper {
      * @return IResponseMessage that can be sent to user
      */
     public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText) {
+        
+        if (msg != null) {
+            return createUnprotectedErrorMessage(msg.getHeader(), failInfo, failText);
+        } else {
+            return createUnprotectedErrorMessage(failInfo, failText);
+        }
+        
+    }
+    
+    /**
+     * creates a very simple error message in response to msg (that's why we switch sender and recipient)
+     * @param msg
+     * @param status
+     * @param failInfo
+     * @param failText
+     * @return IResponseMessage that can be sent to user
+     */
+    public static ResponseMessage createUnprotectedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText) {
+        if (pkiHeader == null) {
+            return createUnprotectedErrorMessage(failInfo, failText);
+        }
+        
         // Create a failure message
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + failText);
         }
         CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
         resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-        if (msg != null) {
-            resp.setRecipientNonce(msg.getSenderNonce());
-            resp.setSender(msg.getRecipient());
-            resp.setRecipient(msg.getSender());
-            resp.setTransactionId(msg.getTransactionId());
-        } else {
-            // We didn't even have a request to get these from, so send back some dummy values
-            resp.setSender(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Sender")));
-            resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
-        }
+        
+        
+            resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
+            resp.setSender(pkiHeader.getRecipient());
+            resp.setRecipient(pkiHeader.getSender());
+            resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));
+  
         resp.setFailInfo(failInfo);
         resp.setFailText(failText);
         try {
@@ -376,6 +407,25 @@ public class CmpMessageHelper {
         return resp;
     }
 
+    public static ResponseMessage createUnprotectedErrorMessage(FailInfo failInfo, String failText) {
+        CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
+        resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+        // We didn't even have a request to get these from, so send back some dummy values
+        resp.setSender(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Sender")));
+        resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
+        resp.setFailInfo(failInfo);
+        resp.setFailText(failText);
+        try {
+            resp.create();
+        } catch (InvalidKeyException e) {
+            LOG.error("Exception during CMP processing: ", e);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.error("Exception during CMP processing: ", e);
+        } catch (NoSuchProviderException e) {
+            LOG.error("Exception during CMP processing: ", e);
+        } 
+        return resp;
+    }
     /**
      * creates a simple error message in response to msg.
      * 

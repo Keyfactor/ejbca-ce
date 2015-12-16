@@ -78,7 +78,6 @@ public class CmpPbeVerifyer {
 			LOG.debug("Mac type is: "+macOid);
 		}
 		salt = pp.getSalt().getOctets();
-		//log.info("Salt: "+new String(salt));
 	}
 	
 	public boolean verify(String raAuthenticationSecret) throws  InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {

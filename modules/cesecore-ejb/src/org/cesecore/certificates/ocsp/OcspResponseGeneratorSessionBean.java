@@ -30,6 +30,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -474,7 +475,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         try {
             CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
-        } catch (Exception e) {
+        } catch (CertPathValidatorException e) {
             // Apparently the built chain could not be used to validate the leaf certificate
             // this could happen if the CA keys were renewed, but the subject DN did not change
             log.info("Unable to build a valid certificate chain for OCSP signing certificate with Subject DN '" +

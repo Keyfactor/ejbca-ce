@@ -26,6 +26,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -325,7 +326,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             try {
                 CertTools.verify(actualSignerCertificate, Arrays.asList(new Certificate[] {caCertificate}));
                 assertTrue("", shouldVerify);
-            } catch (Exception e) {
+            } catch (CertPathValidatorException e) {
                 assertFalse("Please update the test when the responder improvement after renewal has improved.", shouldVerify);
             }
             SingleResp[] singleResponses = basicOcspResponse.getResponses();

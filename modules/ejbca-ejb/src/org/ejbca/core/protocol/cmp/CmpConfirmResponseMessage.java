@@ -142,6 +142,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 			}
 			// If we could not create the signed response message, create a non-protected one instead.
 			if (responseMessage == null) {
+			    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 				responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
 			}
 		}
