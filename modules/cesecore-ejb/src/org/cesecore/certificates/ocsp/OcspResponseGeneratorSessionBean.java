@@ -349,12 +349,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             // Check if CA cert has been revoked somehow. Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. 
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
-                                log.warn("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
+                                log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                         + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate.");
                             }
                             //Check if CA cert is expired
                             if (!CertTools.isCertificateValid(caCertificateChain.get(0))) {
-                                log.warn("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
+                                log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                         + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate.");
                             }
                             //Add an entry with just a chain and nothing else
