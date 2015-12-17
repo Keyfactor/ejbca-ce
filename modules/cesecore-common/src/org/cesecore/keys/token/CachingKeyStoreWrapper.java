@@ -292,10 +292,6 @@ public class CachingKeyStoreWrapper {
 
     /** @see java.security.KeyStore#setKeyEntry(String, Key, char[], Certificate[]) */
     public void setKeyEntry(final String alias, final Key key, final char[] password, final Certificate[] chain) throws KeyStoreException {
-        // Removal of old key is only needed for sun-p11 with none ASCII chars in the alias.
-        // But it makes no harm to always do it and it should be fast.
-        // If not done the entry will not be stored correctly in the p11 KeyStore.
-        this.keyStore.deleteEntry(makeBadUTF8(alias));
         this.keyStore.setKeyEntry(alias, key, password, chain);
         if (this.keyStoreCache==null) {
             return;
