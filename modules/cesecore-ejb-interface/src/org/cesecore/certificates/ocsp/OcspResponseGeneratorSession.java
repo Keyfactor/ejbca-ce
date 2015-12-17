@@ -36,6 +36,7 @@ public interface OcspResponseGeneratorSession {
      * @param requestBytes a byte array representing an encoded OCSPRequest.
      * @param requestCertificates An array of Certificates from the original HttpServletRequest
      * @param remoteAddress Remote address, most likely extracted from the HttpServletRequest
+     * @param xForwardedFor Value of X-Forwarded-For header if it was present in the request.
      * @param auditLogger The AuditLogger to use for this transaction
      * @param transactionLogger The TransactionLogger to use for this transaction
      * 
@@ -44,7 +45,7 @@ public interface OcspResponseGeneratorSession {
      * @throws OCSPException if OCSP response generation fails
      */
     OcspResponseInformation getOcspResponse(byte[] requestBytes,
-            X509Certificate[] requestCertificates, String remoteAddress, StringBuffer requestUrl, AuditLogger auditLogger,
+            X509Certificate[] requestCertificates, String remoteAddress, String xForwardedFor, StringBuffer requestUrl, AuditLogger auditLogger,
             TransactionLogger transactionLogger) throws MalformedRequestException, OCSPException;
     
     /** Reloads the cache of OCSP signers. */

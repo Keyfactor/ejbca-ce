@@ -212,6 +212,7 @@ public class OCSPServlet extends HttpServlet {
 
     private void processOcspRequest(HttpServletRequest request, HttpServletResponse response, final HttpMethod httpMethod) throws ServletException {
         final String remoteAddress = request.getRemoteAddr();
+        final String xForwardedFor = StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For"));
         final StringBuffer requestUrl = request.getRequestURL();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
@@ -228,7 +229,6 @@ public class OCSPServlet extends HttpServlet {
                 transactionLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
                 transactionLogger.paramPut(PatternLogger.SESSION_ID, sessionID);
                 transactionLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
-                final String xForwardedFor = StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For"));
                 transactionLogger.paramPut(TransactionLogger.FORWARDED_FOR, xForwardedFor);
             }
             OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
@@ -237,7 +237,7 @@ public class OCSPServlet extends HttpServlet {
                 byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
                 X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
-                        requestBytes, requestCertificates, remoteAddress, requestUrl, auditLogger, transactionLogger);
+                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger);
             } catch (MalformedRequestException e) {
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);

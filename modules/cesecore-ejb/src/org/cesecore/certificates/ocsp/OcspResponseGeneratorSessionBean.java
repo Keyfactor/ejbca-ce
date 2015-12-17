@@ -1014,7 +1014,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
-            StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger)
+            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger)
             throws MalformedRequestException, OCSPException {
         //Check parameters
         if (auditLogger == null) {
@@ -1099,8 +1099,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (hashbytes != null) {
                     hash = new String(Hex.encode(hashbytes));
                 }
-                String infoMsg = intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash, remoteAddress);
-                log.info(infoMsg);
+                if (xForwardedFor==null) {
+                    log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash, remoteAddress));
+                } else {
+                    log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequestwxff", certId.getSerialNumber().toString(16), hash, remoteAddress, xForwardedFor));
+                }
                 // Locate the CA which gave out the certificate
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                 if(ocspSigningCacheEntry == null) {
@@ -1167,9 +1170,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // If we've ended up here it's because the signer issuer certificate was revoked. 
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
-                    infoMsg = intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate),
-                            CertTools.getSubjectDN(caCertificate));
-                    log.info(infoMsg);
+                    log.info(intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate),
+                            CertTools.getSubjectDN(caCertificate)));
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
                     if (transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
@@ -1273,14 +1275,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                         addArchiveCutoff = checkAddArchiveCuttoff(caCertificateSubjectDn, certId);
                     }
-                    
                     if (log.isDebugEnabled()) {
                         log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
                                 + status.certificateProfileId);
                     }
-                    
-                    infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
-                    log.info(infoMsg);
+                    log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                     OCSPResponseItem respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if (addArchiveCutoff) {
                         addArchiveCutoff(respItem);
