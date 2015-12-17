@@ -53,7 +53,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 public class PKCS11TestRunner extends CryptoTokenRunner {
 
     private static final String DEFAULT_TOKEN_PIN = "userpin1";
-    private static final String ALIAS = "signKeyAlias";
+    private static final String ALIAS = "signKeyAlias åäöÅÄÖnâćŋA©Ba";
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE

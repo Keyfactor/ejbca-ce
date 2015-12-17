@@ -49,8 +49,10 @@ import org.cesecore.util.StringTools;
  */
 public abstract class CATokenTestBase {
 
-    private static final Logger log = Logger.getLogger(CATokenTestBase.class);
+	private static final Logger log = Logger.getLogger(CATokenTestBase.class);
 	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin("userpin1");
+	private static final String DEFAULT_KEY = "defaultKey ÅaÄÖbåäöc«»©“”nµA";
+	protected static final String ENCRYPTION_KEY = "encryptionKey ÅaÄbbÖcccäâãêëẽć©A";
 
 	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
 	NoSuchAlgorithmException, CertificateException, IOException,
@@ -90,15 +92,15 @@ public abstract class CATokenTestBase {
 			//catoken.generateKeys(cryptoToken, tokenpin.toCharArray(), false, true);
             final String firstSignKeyAlias = catoken.generateNextSignKeyAlias();
             cryptoToken.generateKeyPair(keySpecification, firstSignKeyAlias);
-            cryptoToken.generateKeyPair("1024", "encryptionKey");
+            cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
             catoken.activateNextSignKey();
 			Properties p = catoken.getProperties();
             assertEquals(null, p.getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
-            assertEquals("Expected to use default key.", "encryptionKey", catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+            assertEquals("Expected to use default key.", ENCRYPTION_KEY, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
 			assertEquals(CAToken.DEFAULT_KEYSEQUENCE, p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY));
             assertEquals("rsatest0000"+(seq+1), p.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING));
             assertEquals("rsatest0000"+(seq+1), p.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING));
-            assertEquals("encryptionKey", p.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
+            assertEquals(ENCRYPTION_KEY, p.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
             assertEquals("rsatest0000"+(seq), p.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS));
 			// Now sequence should be 1, generated and activated new keys
 			seq += 1;
@@ -150,7 +152,7 @@ public abstract class CATokenTestBase {
 			assertEquals("0000"+(seq), p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY));
             assertEquals("rsatest0000"+(seq+1), p.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING));
             assertEquals("rsatest0000"+(seq+1), p.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING));
-            assertEquals("encryptionKey", p.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
+            assertEquals(ENCRYPTION_KEY, p.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));
             assertEquals("rsatest0000"+(seq), p.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS));
             assertNull(p.getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING));
 			String previousSequence = p.getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
@@ -240,7 +242,7 @@ public abstract class CATokenTestBase {
 			assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
 		} finally {
 			// Clean up and delete our generated keys
-            cryptoToken.deleteEntry("encryptionKey");
+            cryptoToken.deleteEntry(ENCRYPTION_KEY);
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("rsatest0000"+i);
             }
@@ -282,7 +284,7 @@ public abstract class CATokenTestBase {
 		Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE);
         final String firstSignKeyAlias = catoken.generateNextSignKeyAlias();
         cryptoToken.generateKeyPair(keySpecification, firstSignKeyAlias);
-        cryptoToken.generateKeyPair("1024", "encryptionKey");
+        cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
         catoken.activateNextSignKey();
 		// Now sequence should be 1, generated and activated new keys
 		seq += 1;
@@ -319,7 +321,7 @@ public abstract class CATokenTestBase {
 	CryptoTokenAuthenticationFailedException,
 	InvalidAlgorithmParameterException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
-		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
+		final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		try {
 			// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
 			catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -331,7 +333,7 @@ public abstract class CATokenTestBase {
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("ecctest0000"+i);
             }
-			cryptoToken.deleteEntry("encryptionKey");
+			cryptoToken.deleteEntry(ENCRYPTION_KEY);
 
 			// Try to delete something that does not exist, it should work without error
 			cryptoToken.deleteEntry("sdkfjhsdkfjhsd4447");
@@ -346,7 +348,7 @@ public abstract class CATokenTestBase {
 
 			// Generate the first key, will get name rsatest+nextsequence = rsatest00001
 			Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE);
-			cryptoToken.generateKeyPair("1024", "encryptionKey");
+			cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
 	        final String firstSignKeyAlias = catoken.generateNextSignKeyAlias();
 	        cryptoToken.generateKeyPair(keySpecification, firstSignKeyAlias);
 	        catoken.activateNextSignKey();
@@ -540,8 +542,8 @@ public abstract class CATokenTestBase {
 		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		try {
 		    cryptoToken.activate(TOKEN_PIN.toCharArray());
-		    cryptoToken.generateKeyPair(keySpecification, "defaultKey");
-		    catoken.setNextCertSignKey("defaultKey");
+		    cryptoToken.generateKeyPair(keySpecification, DEFAULT_KEY);
+		    catoken.setNextCertSignKey(DEFAULT_KEY);
 		    catoken.activateNextSignKey();
 		    PublicKey publicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
 		    KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),

@@ -12,10 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Enumeration;
@@ -228,17 +228,17 @@ public class CAToken extends UpgradeableDataHashMap {
      */
     private String storeProperties(Properties caTokenProperties) {
         this.keyStrings = new PurposeMapping(caTokenProperties);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(baos);
-        Enumeration<Object> e = caTokenProperties.keys();
-        while (e.hasMoreElements()) {
-            Object s = e.nextElement();
-            if (caTokenProperties.get(s) != null) {
-                writer.println(s + "=" + caTokenProperties.get(s));
+        final StringWriter sw = new StringWriter();
+        try ( final PrintWriter writer = new PrintWriter(sw); ) {
+            final Enumeration<Object> e = caTokenProperties.keys();
+            while (e.hasMoreElements()) {
+                final Object s = e.nextElement();
+                if (caTokenProperties.get(s) != null) {
+                    writer.println(s + "=" + caTokenProperties.get(s));
+                }
             }
         }
-        writer.close();
-        return baos.toString();
+        return sw.toString();
     }
 
     /** Sets the propertydata used to configure this CA Token. */
@@ -254,16 +254,16 @@ public class CAToken extends UpgradeableDataHashMap {
         return getPropertiesFromString(propertyStr);
     }
     
-    public static Properties getPropertiesFromString(String propertyStr) {
+    public static Properties getPropertiesFromString(final String propertyStr) {
         final Properties prop = new Properties();
         if (StringUtils.isNotEmpty(propertyStr)) {
             try {
-				// If the input string contains \ (backslash on windows) we must convert it to \\
-				// Otherwise properties.load will parse it as an escaped character, and that is not good
-				propertyStr = StringUtils.replace(propertyStr, "\\", "\\\\");
-                prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
+                // If the input string contains \ (backslash on windows) we must convert it to \\
+                // Otherwise properties.load will parse it as an escaped character, and that is not good
+                final String propertyStrAdjusted = StringUtils.replace(propertyStr, "\\", "\\\\");
+                prop.load(new StringReader(propertyStrAdjusted));
                 // Trim whitespace in values
-                for (Object keyObj : prop.keySet()) {
+                for (final Object keyObj : prop.keySet()) {
                     String key = (String)keyObj;
                     String value = prop.getProperty(key);
                     prop.setProperty(key, value.trim());
