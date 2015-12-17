@@ -100,6 +100,10 @@ public class KeyStoreTools {
     }
 
     public void setKeyEntry(String alias, Key key, Certificate chain[]) throws KeyStoreException {
+        // Removal of old key is only needed for sun-p11 with none ASCII chars in the alias.
+        // But it makes no harm to always do it and it should be fast.
+        // If not done the entry will not be stored correctly in the p11 KeyStore.
+        getKeyStore().deleteEntry(alias);
         getKeyStore().setKeyEntry(alias, key, null, chain);
     }
 
