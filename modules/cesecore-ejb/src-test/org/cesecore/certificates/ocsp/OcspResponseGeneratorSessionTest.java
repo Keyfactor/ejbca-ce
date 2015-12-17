@@ -54,7 +54,7 @@ public class OcspResponseGeneratorSessionTest {
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         try {
-            ocspResponseGeneratorSession.getOcspResponse(fakeRequest, null, null, null, auditLogger, transactionLogger);
+            ocspResponseGeneratorSession.getOcspResponse(fakeRequest, null, null, null, null, auditLogger, transactionLogger);
         } catch (MalformedRequestException e) {
             caught = true;
         }
