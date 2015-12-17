@@ -359,7 +359,11 @@ public abstract class BaseCryptoToken implements CryptoToken {
     
     @Override
     public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
-       keyStore.setKeyEntry(alias, key, password, chain);
+        // Removal of old key is only needed for sun-p11 with none ASCII chars in the alias.
+        // But it makes no harm to always do it and it should be fast.
+        // If not done the entry will not be stored correctly in the p11 KeyStore.
+        this.keyStore.deleteEntry(alias);
+        this.keyStore.setKeyEntry(alias, key, password, chain);
     }
 
     /**
