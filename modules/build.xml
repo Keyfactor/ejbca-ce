@@ -119,10 +119,7 @@
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-    <condition property="statedump.exists">
-    	<available file="${mod.statedump.path}/build.xml" />
-    </condition>
-	<target name="statedumpclean" if="${statedump.exists}">
+	<target name="statedumpclean" if="${mod.statedump.exists}">
 		<echo message="Cleaning statedump"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
@@ -458,7 +455,7 @@
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface" description="Build EJBCA EJB module">
+	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb" description="Build EJBCA EJB module">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -501,17 +498,15 @@
 		<ant antfile="${mod.va.path}/build.xml" target="va-publisher.jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 	
-	<target name="statedump" depends="ejbca-ejb-cli, va-publisher, buildservicemanifestbuilder">
+	<target name="statedump" depends="ejbca-ejb-cli, va-publisher, peerconnector, buildservicemanifestbuilder">
 		<echo  message="${mod.statedump.path}/build.xml" />
-		<fail message="StateDump tool is not distributed with this version of EJBCA">
-		    <condition>
-		    	<not>
-		    		<available file="${mod.statedump.path}/build.xml" />
-		    	</not>
-		    </condition>
-		</fail>
-		<ant antfile="${mod.statedump.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<fail message="StateDump tool is not distributed with this version of EJBCA" unless="${mod.statedump.exists}"/>
+		<ant antfile="${mod.statedump.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
+	
+    <target name="statedump-ejb" depends="peerconnector" if="${mod.statedump.exists}">
+        <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+    </target>
 
 	<target name="cmpclient" depends="ejbca-ejb-cli, buildservicemanifestbuilder">
 		<echo  message="${mod.cmpclient.path}/build.xml" />

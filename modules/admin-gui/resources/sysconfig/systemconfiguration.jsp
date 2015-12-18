@@ -629,6 +629,50 @@ org.cesecore.authorization.AuthorizationDeniedException
 		</h:dataTable>
 	</h:form>
 
+
+	<%-- Statedump --%>
+
+    <h:form id="statedumpform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Statedump'}">
+        <h:panelGroup>
+            <h4>
+            <h:outputText value="#{web.text.STATEDUMPTAB_TITLE}"/>
+            <%= ejbcawebbean.getHelpReference("/adminguide.html#Statedump") %></h4>
+            <br/>
+        </h:panelGroup>
+        
+        <h:panelGroup>
+            <h:outputText value="#{web.text.STATEDUMPTAB_WARNING}"/>
+        </h:panelGroup>
+        
+        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+            <h:panelGroup>
+                &nbsp;
+            </h:panelGroup>
+            <h:panelGroup>
+                &nbsp;
+            </h:panelGroup>
+            
+            <h:outputText value="#{web.text.STATEDUMPTAB_LOCALTEMPLATE}"/>
+            <h:selectOneMenu value="#{systemConfigMBean.statedumpDir}" disabled="#{!systemConfigMBean.statedumpTemplatesVisible}">
+                <f:selectItems value="#{systemConfigMBean.statedumpAvailableTemplates}"/>
+            </h:selectOneMenu>
+            
+            <%--<h:outputText value="#{web.text.STATEDUMPTAB_ZIPFILE}"/>
+            <t:inputFileUpload id="statedumpFile" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>--%>
+            
+            <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
+            <h:panelGroup>
+                <h:selectBooleanCheckbox id="statedumpLockdownAfterImport"/>
+                <h:outputLabel for="statedumpLockdownAfterImport" value="#{web.text.STATEDUMPTAB_LOCKDOWN_CHECKBOX}" />
+            </h:panelGroup>
+            
+            <h:panelGroup>
+                &nbsp;
+            </h:panelGroup>
+            <h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.importStatedump}"/>
+        </h:panelGrid>
+    </h:form>
+
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />

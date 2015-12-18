@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,9 +32,11 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -48,6 +51,12 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.statedump.ejb.StatedumpImportOptions;
+import org.ejbca.statedump.ejb.StatedumpImportResult;
+import org.ejbca.statedump.ejb.StatedumpObjectKey;
+import org.ejbca.statedump.ejb.StatedumpResolution;
+import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -255,9 +264,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private UploadedFile currentCTLogPublicKeyFile = null;
     private boolean excludeActiveCryptoTokensFromClearCaches = true;
     private boolean customCertificateExtensionViewMode = false;
+    private UploadedFile statedumpFile = null;
+    private String statedumpDir = null;
+    private boolean statedumpLockdownAfterImport = false;
     
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    /** Session bean for importing statedump. Will be null if statedump isn't available */
+    private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
+
     
     public SystemConfigMBean() {
         super();
@@ -355,6 +370,155 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    
+    public String getStatedumpDir() {
+        return statedumpDir;
+    }
+    
+    public void setStatedumpDir(final String statedumpDir) {
+        this.statedumpDir = statedumpDir;
+    }
+    
+    public UploadedFile getStatedumpFile() {
+        return statedumpFile;
+    }
+    
+    public void setStatedumpFile(final UploadedFile statedumpFile) {
+        this.statedumpFile = statedumpFile;
+    }
+    
+    public boolean getStatedumpLockdownAfterImport() {
+        return statedumpLockdownAfterImport;
+    }
+    
+    public void setStatedumpLockdownAfterImport(final boolean statedumpLockdownAfterImport) {
+        this.statedumpLockdownAfterImport = statedumpLockdownAfterImport;
+    }
+    
+    public boolean isStatedumpAvailable() {
+        // TODO check if statedump should be disabled also (e.g. if upgraded from < 6.4.2/6.5 or the "lockdown statedump" checkbox was checked)
+        return statedumpSession != null;
+    }
+    
+    // TODO move to e.g. WebConfiguration and implement properly
+    private String getStatedumpTemplatesBasedir() {
+        // typically it should be something in /opt
+        return "/home/samuellb/gui_statedumps";
+    }
+    
+    /**
+     * Lists all available statedumps in the configured statedump templates directory.
+     * 
+     * @return A map from the directory names (not full path) to language strings to be used as descriptions.
+     */
+    // TODO move to a separate bean
+    private Map<String,String> getAvailableStatedumpTemplates() {
+        final Map<String,String> templates = new HashMap<>();
+        final String baseDir = getStatedumpTemplatesBasedir();
+        final File dir = new File(baseDir);
+        for (File entry : dir.listFiles()) {
+            if (entry.isDirectory() && !entry.isHidden() && !entry.getName().startsWith(".")) { // also ignore . and .. on windows
+                try {
+                    final String langString = FileUtils.readFileToString(new File(entry, "name.txt"), "UTF-8").split("[\n\r]", 2)[0];
+                    templates.put(entry.getName(), langString);
+                } catch (IOException e) {
+                    log.info("Can't read name.txt of statedump \""+entry.getPath()+"\"", e);
+                }
+            }
+        }
+        return templates;
+    }
+    
+    public List<SelectItem> getStatedumpAvailableTemplates() {
+        final List<SelectItem> templates = new ArrayList<>();
+        templates.add(new SelectItem("", getEjbcaWebBean().getText("NONE")));
+        for (Map.Entry<String,String> entry : getAvailableStatedumpTemplates().entrySet()) {
+            final String description = getEjbcaWebBean().getText(entry.getValue());
+            templates.add(new SelectItem(entry.getKey(), description));
+        }
+        return templates;
+    }
+    
+    public boolean isStatedumpTemplatesVisible() {
+        final String basedir = getStatedumpTemplatesBasedir();
+        return basedir != null && !basedir.isEmpty() && new File(basedir).isDirectory();
+    }
+    
+    private void importStatedump(final File path, final boolean lockdown) throws IOException, AuthorizationDeniedException {
+        final StatedumpImportOptions options = new StatedumpImportOptions();
+        options.setLocation(path);
+        options.setMergeCryptoTokens(true);
+        
+        // TODO prompt for passwords and overwrite
+        StatedumpImportResult result = statedumpSession.performDryRun(getAdmin(), options);
+        for (final StatedumpObjectKey key : result.getConflicts()) {
+            log.info("Will overwrite "+key);
+            options.addConflictResolution(key, StatedumpResolution.OVERWRITE);
+        }
+        for (final StatedumpObjectKey key : result.getPasswordsNeeded()) {
+            log.info("Will use dummy 'foo123' password for "+key+", please disable or change it!");
+            options.addPassword(key, "foo123");
+        }
+        
+        log.info("Performing statedump import");
+        statedumpSession.performImport(getAdmin(), options);
+        log.info("Statedump successfully imported.");
+        
+        // Lock down after import
+        if (lockdown) {
+            // TODO lock down
+            // TODO show another tab, because statedump is locked down now! 
+        }
+        
+        // TODO show notice messages from statedump
+        super.addNonTranslatedInfoMessage("State dump was successfully imported.");
+    }
+    
+    private void importStatedump(byte[] zip, boolean lockdown) throws IOException {
+        // Create temporary directory
+        // TODO
+        
+        // Unpack the zip file
+        // TODO unpack zip file
+        
+        // Import statedump
+        //importStatedump(tempdir, lockdown);
+        
+        // Clean up
+        // TODO
+    }
+    
+    public void importStatedump() {
+        final boolean importFromDir = (statedumpDir != null && !statedumpDir.isEmpty());
+        
+        // TODO should perhaps have separate forms instead (one for import from local directory, one from import from ZIP file upload)
+        if (!importFromDir && statedumpFile == null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please select a statedump to import.", null));
+            return;
+        }
+        
+        if (importFromDir && statedumpFile != null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please import from either a directory or an uploaded ZIP file, but not both.", null));
+            return;
+        }
+
+        try {
+            if (importFromDir) {
+                final File basedir = new File(getStatedumpTemplatesBasedir());
+                importStatedump(new File(basedir, statedumpDir), statedumpLockdownAfterImport);
+            } else {
+                byte[] uploadedFileBytes = statedumpFile.getBytes();
+                importStatedump(uploadedFileBytes, statedumpLockdownAfterImport);
+            }
+        } catch (Exception e) {
+            String msg = "Statedump import failed. " + e.getLocalizedMessage();
+            log.info(msg, e);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+        
+        // Clear GUI caches
+        // TODO
+    }
     
     /** Invoked when admin saves the configurations */
     public void saveCurrentConfig() {
@@ -1014,6 +1178,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Custom Certificate Extensions");
+        }
+        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), true, StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
+            availableTabs.add("Statedump");
         }
         return availableTabs;
     }

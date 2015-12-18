@@ -83,6 +83,7 @@
        <!--@doc.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->
+       <!--@statedump-ejb.jar@-->
        <!--@peerconnector-ejb.jar@-->
        <!--@peerconnector.rar@-->
        <!--@peerconnector.war@-->

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.ejbca.ui.cli.infrastructure.io.OverwriteResponse;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler;
@@ -49,23 +48,31 @@ public abstract class CommandBase implements CliCommandPlugin {
         registerParameter(Parameter.createFlag(ParameterHandler.VERBOSE_KEY, "Set this value for verbose output of parameter values."));
     }
 
-    protected static OverwriteResponse getValueFoundResponse(OverwriteResponse defaultResponse) {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+    /**
+     * Prompts for "y" or "n".
+     * 
+     * @param prompt Prompt string. The string " (y/n) " will be appended.
+     * @param defaultYes If "yes" should be the default. Otherwise "no" will be the default.
+     * @return True if "yes" was answered, false if "no" was answered.
+     */
+    protected static boolean readYesNo(final String prompt, final boolean defaultYes) {
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        final String promptLine = prompt + (defaultYes ? " (Y/n) " : " (y/N) ");
         try {
             while (true) { // until a valid response has been provided
-                System.out.print(OverwriteResponse.getQueryText() + " [default=" + defaultResponse.getResponse().toUpperCase() + "] ");
+                System.out.print(promptLine);
                 System.out.flush();
 
-                String input = bufferedReader.readLine();
+                final String input = bufferedReader.readLine().trim();
                 if (input.isEmpty()) {
-                    return defaultResponse;
+                    System.out.println(defaultYes ? "Yes." : "No.");
+                    return defaultYes;
+                } else if (input.equalsIgnoreCase("y")) {
+                    return true;
+                } else if (input.equalsIgnoreCase("n")) {
+                    return false;
                 } else {
-                    OverwriteResponse result = OverwriteResponse.getResponseFromInput(input);
-                    if (result == null) {
-                        System.out.println("Input not recognized: '" + input + "'");
-                    } else {
-                        return result;
-                    }
+                    System.out.println("Input not recognized: '" + input + "'");
                 }
             }
         } catch (IOException e) {

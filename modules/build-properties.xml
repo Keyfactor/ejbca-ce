@@ -126,6 +126,8 @@
 	<property name="mod.statedump.dist" location="${ejbca.dist.path}/statedump" />
 	<property name="mod.statedump.lib" location="${mod.statedump.dist}/statedump.jar" />
 	<property name="mod.statedump.path" location="${mod.path}/statedump" />
+	<property name="mod.statedump-common.lib" location="${mod.dist.path}/statedump-common.jar" />
+	<property name="mod.statedump-ejb.lib" location="${mod.dist.path}/statedump-ejb.jar" />
 	<property name="mod.cmpclient.dist" location="${ejbca.dist.path}/cmpclient" />
 	<property name="mod.cmpclient.lib" location="${mod.cmpclient.dist}/cmpclient.jar" />
 	<property name="mod.cmpclient.path" location="${mod.path}/cmpclient" />
@@ -255,8 +257,6 @@
 		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
 	</path>
 	
-	<path id="lib.log4j.classpath"><pathelement location="${ejbca.home}/lib/log4j-1.2.16.jar"/></path>
-	
 	<path id="lib.json.classpath"><fileset dir="${ejbca.home}/lib/ct" includes="json-simple-*.jar"/></path>
 	
 	<path id="lib.ejbca-common.classpath">
@@ -359,5 +359,9 @@
 	<condition property="ejbca-db-cli.available">
 		<available file="${mod.ejbca-entity.path}/src-cli/org" type="dir"/>
 	</condition>
+	
+    <condition property="mod.statedump.exists">
+        <available file="${mod.statedump.path}/build.xml" />
+    </condition>
 
 </project>
