@@ -1440,7 +1440,7 @@ public abstract class CertTools {
 
     /**
      * Checks if a certificate is valid.
-     * Does also print a WARN if the certificate is about to expire.
+     * Does also print a DEBUG if the certificate is about to expire.
      * 
      * @param signerCert the certificate to be tested
      * @return true if the certificate is valid
