@@ -61,6 +61,8 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.statedump.ejb.StatedumpSession;
+import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 
 /**
  * Helper methods to get EJB session interfaces.
@@ -77,7 +79,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	
 	public static final String DEFAULT_MODULE = "ejbca-ejb";
 
-	private Context getInitialContext() throws NamingException {
+	public Context getInitialContext() throws NamingException {
 		try {
 			initialContextLock.lock();
 			if (initialContext == null) {
@@ -94,13 +96,16 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	 * or an application server that support global JNDI names (introduced in EJB 3.1).
 	 * @return a reference to the bridge SSB
 	 * 
+	 * @param name Name of bean, without the "Bean" suffix
+	 * @param classname Fully qualified name of the bean, without the "Bean" suffix 
+	 * @param module Module of the bean. Must be specified.
 	 * @throws LocalLookupException if local lookup couldn't be made.
 	 */
-	private EjbBridgeSessionLocal getEjbLocal() {
-		EjbBridgeSessionLocal ret = null;
+	private <T> T getLocalBean(final String name, final String classname, final String module) {
+		T ret = null;
 		try {
 			if (!useEjb31GlobalJndiName) {
-				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:comp/env/EjbBridgeSession");
+				ret = (T) getInitialContext().lookup("java:comp/env/"+name);
 			}
 		} catch (NamingException e) {
 			// Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
@@ -112,12 +117,16 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 		}
 		try {
 			if (useEjb31GlobalJndiName) {
-				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/"+DEFAULT_MODULE+"/EjbBridgeSessionBean!org.ejbca.core.ejb.EjbBridgeSessionLocal");
+				ret = (T) getInitialContext().lookup("java:global/ejbca/"+module+"/"+name+"Bean!"+classname+"Local");
 			}
 		} catch (NamingException e) {
-			throw new LocalLookupException("Cannot lookup EjbBridgeSessionLocal.", e);
+			throw new LocalLookupException("Cannot lookup "+name+"Local.", e);
 		}
 		return ret;
+	}
+	
+	private EjbBridgeSessionLocal getEjbLocal() {
+	    return getLocalBean("EjbBridgeSession", "org.ejbca.core.ejb.EjbBridgeSession", DEFAULT_MODULE);
 	}
 
 	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return getEjbLocal().getAccessRuleManagementSession(); }
@@ -160,4 +169,14 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return getEjbLocal().getCryptoTokenManagementSession(); }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return getEjbLocal().getInternalKeyBindingMgmtSession(); }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
+    
+    /** 
+     * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
+     * and in this case this is properly handled  by returning null.
+     * 
+     * @return A statedump session object, or null if not available.
+     */
+    public StatedumpSessionLocal getStatedumpSession() {
+        return getLocalBean("StatedumpSession", "org.ejbca.statedump.ejb.StatedumpSession", StatedumpSession.STATEDUMP_MODULE);
+    }
 }
