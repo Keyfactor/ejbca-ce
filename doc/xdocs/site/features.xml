@@ -75,7 +75,7 @@
   <subsection name="Administration features">
 <ul>
 <li>Simple installation and configuration.</li>
-<li>Administration thrugh Web GUI, command line or Web Services.</li>
+<li>Administration through Web GUI, command line or Web Services.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
 <li>Configurable entity profiles for different types of users.</li>
 <li>Notification system for e-mail notification to users and administrators when a user is added or certificates expire etc.</li>
