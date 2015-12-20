@@ -35,11 +35,13 @@
   viewendentityhelper.row = 0;
 
     // Initialize EditEndEntityBean
-    ExtendedInformation userEi = viewendentityhelper.userdata.getExtendedInformation();
-    if (userEi == null) {
-        userEi = new ExtendedInformation();
+    if (viewendentityhelper.userdata != null) {
+        ExtendedInformation userEi = viewendentityhelper.userdata.getExtendedInformation();
+        if (userEi == null) {
+            userEi = new ExtendedInformation();
+        }
+        editendentitybean.setExtendedInformation(userEi);
     }
-    editendentitybean.setExtendedInformation(userEi);
 %>
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
