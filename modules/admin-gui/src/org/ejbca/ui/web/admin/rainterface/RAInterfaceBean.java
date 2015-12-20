@@ -360,13 +360,13 @@ public class RAInterfaceBean implements Serializable {
     public UserView findUserForEdit(String username) throws AuthorizationDeniedException {
     	UserView userview = null;
     	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-    	if (this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-    		if (!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_END_ENTITY, false)) {
-    			throw new AuthorizationDeniedException("Not authorized to edit user.");
-    		}
-    	}
     	if (user != null) {
-    		userview = new UserView(user, informationmemory.getCAIdToNameMap());
+    	    if (this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+    	        if (!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_END_ENTITY, false)) {
+    	            throw new AuthorizationDeniedException("Not authorized to edit user.");
+    	        }
+    	    }
+    	    userview = new UserView(user, informationmemory.getCAIdToNameMap());
     	}
     	return userview;
     }
