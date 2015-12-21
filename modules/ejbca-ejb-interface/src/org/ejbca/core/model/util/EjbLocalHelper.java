@@ -79,7 +79,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	
 	public static final String DEFAULT_MODULE = "ejbca-ejb";
 
-	public Context getInitialContext() throws NamingException {
+	private static Context getInitialContext() throws NamingException {
 		try {
 			initialContextLock.lock();
 			if (initialContext == null) {
@@ -96,16 +96,13 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	 * or an application server that support global JNDI names (introduced in EJB 3.1).
 	 * @return a reference to the bridge SSB
 	 * 
-	 * @param name Name of bean, without the "Bean" suffix
-	 * @param classname Fully qualified name of the bean, without the "Bean" suffix 
-	 * @param module Module of the bean. Must be specified.
 	 * @throws LocalLookupException if local lookup couldn't be made.
 	 */
-	private <T> T getLocalBean(final String name, final String classname, final String module) {
-		T ret = null;
+	private EjbBridgeSessionLocal getEjbLocal() {
+		EjbBridgeSessionLocal ret = null;
 		try {
 			if (!useEjb31GlobalJndiName) {
-				ret = (T) getInitialContext().lookup("java:comp/env/"+name);
+				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:comp/env/EjbBridgeSession");
 			}
 		} catch (NamingException e) {
 			// Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
@@ -117,16 +114,12 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 		}
 		try {
 			if (useEjb31GlobalJndiName) {
-				ret = (T) getInitialContext().lookup("java:global/ejbca/"+module+"/"+name+"Bean!"+classname+"Local");
+				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/"+DEFAULT_MODULE+"/EjbBridgeSessionBean!org.ejbca.core.ejb.EjbBridgeSessionLocal");
 			}
 		} catch (NamingException e) {
-			throw new LocalLookupException("Cannot lookup "+name+"Local.", e);
+			throw new LocalLookupException("Cannot lookup EjbBridgeSessionLocal.", e);
 		}
 		return ret;
-	}
-	
-	private EjbBridgeSessionLocal getEjbLocal() {
-	    return getLocalBean("EjbBridgeSession", "org.ejbca.core.ejb.EjbBridgeSession", DEFAULT_MODULE);
 	}
 
 	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return getEjbLocal().getAccessRuleManagementSession(); }
@@ -169,7 +162,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return getEjbLocal().getCryptoTokenManagementSession(); }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return getEjbLocal().getInternalKeyBindingMgmtSession(); }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
-    
+
     /** 
      * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
      * and in this case this is properly handled  by returning null.
@@ -177,6 +170,20 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
      * @return A statedump session object, or null if not available.
      */
     public StatedumpSessionLocal getStatedumpSession() {
-        return getLocalBean("StatedumpSession", "org.ejbca.statedump.ejb.StatedumpSession", StatedumpSession.STATEDUMP_MODULE);
+        try {
+            if (!useEjb31GlobalJndiName) {
+                return (StatedumpSessionLocal) getInitialContext().lookup("java:comp/env/StatedumpSession");
+            }
+        } catch (NamingException e) {
+            // NOPMD ignore and continue
+        }
+        
+        // Try using EJB 3.1 name
+        try {
+            return (StatedumpSessionLocal) getInitialContext().lookup("java:global/ejbca/"+StatedumpSession.STATEDUMP_MODULE+"/StatedumpSessionBean!org.ejbca.statedump.ejb.StatedumpSessionLocal");
+        } catch (NamingException e) {
+            return null; // this is the common case, since statedump is an internal tool and is not included with EJBCA
+        }
     }
+
 }
