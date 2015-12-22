@@ -58,7 +58,7 @@ See <a href="https://docs.jboss.org/author/display/AS7/Securing+the+Management+I
 </subsubsection>
 <subsubsection name="Disable specific HTTP methods">
 <p>EJBCA by default limits the use of PUT|DELETE|TRACE|OPTIONS in it's web applications, but if you are unsure you can further enfoce it.</p>
-<p>You can use the same Apache front end as for JBoss 5, or you can use a RewriteValve in standalone.xml</p>
+<p>You can use an Apache front end, or you can use a RewriteValve in standalone.xml</p>
 <source>
 &lt;subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false"&gt;
     &lt;connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/&gt;
