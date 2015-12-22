@@ -35,7 +35,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -52,8 +51,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -91,7 +88,6 @@ import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIConfirmContent;
-import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
@@ -158,6 +154,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -249,7 +246,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
-            throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID);
     }
@@ -281,7 +278,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
-            throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         // Validity can have notBefore, notAfter or both
         ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
         if (notBefore != null) {
@@ -370,7 +367,12 @@ public abstract class CmpTestCase extends CaTestCase {
             mout.close();
             byte[] popoProtectionBytes = baos.toByteArray();            
             String    sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
-            Signature sig = Signature.getInstance(sigalg, "BC");
+            Signature sig;
+            try {
+                sig = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
+            } catch (NoSuchProviderException e) {
+               throw new IllegalStateException("BouncyCastle provider not found.", e);
+            }
             sig.initSign(keys.getPrivate());
             sig.update(popoProtectionBytes);
             DERBitString bs = new DERBitString(sig.sign());
@@ -1184,6 +1186,41 @@ public abstract class CmpTestCase extends CaTestCase {
             log.debug("Reset status to NEW");
         }
         return user;
+    }
+    
+    protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid) throws AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException, CADoesntExistsException {
+        // Make USER that we know...
+        boolean userExists = false;
+        final int cpID;
+        final int eepID;
+        final X500Name userDN;
+        if (useDnOverride) {
+            cpID = this.cpDnOverrideId;
+            eepID = this.eepDnOverrideId;
+            userDN = new X500Name(dn);
+        } else {
+            cpID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
+            eepID = SecConst.EMPTY_ENDENTITYPROFILE;
+            userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
+        }
+        final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
+                new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, 0, null);
+        user.setPassword("foo123");
+        log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN);
+        try {
+            this.endEntityManagementSession.addUser(ADMIN, user, true);
+        } catch (Exception e) {
+            userExists = true;
+        }
+
+        if (userExists) {
+            log.debug("USER already exists: " + user.getUsername() + ", foo123, " + userDN);
+            this.endEntityManagementSession.changeUser(ADMIN, user, true);
+            this.endEntityManagementSession.setUserStatus(ADMIN, user.getUsername(), EndEntityConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        return userDN;
     }
 
     protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore,

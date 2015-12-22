@@ -51,6 +51,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
@@ -217,8 +218,7 @@ public class CrmfRequestTest extends CmpTestCase {
         X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, this.keys.getPrivate(), this.keys.getPublic(), "SHA256WithRSA", false);
         ArrayList<Certificate> signCertColl = new ArrayList<Certificate>();
         signCertColl.add(signCert);
-        CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
-        // PKIMessage req = protectPKIMessage(req1, false, "foo123", "mykeyid", 567);
+        CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -236,7 +236,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test03CrmfHttpOkUser() throws Exception {
         log.trace(">test03CrmfHttpOkUser");
         // Create a new good USER
-        final X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true);
+        final X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -309,54 +309,7 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace("<test05BadBytes");
     }
 
-    /*
-    public void test06TelefonicaGermany() throws Exception {
-    	log.trace(">test05TelefonicaGermany");
-    
-    	HexBinaryAdapter adapter = new HexBinaryAdapter();
-        byte[] nonce = adapter.unmarshal("219F0452");			//CmpMessageHelper.createSenderNonce();
-        byte[] transid = adapter.unmarshal("46E72888");			//CmpMessageHelper.createSenderNonce();
-        
-        byte[] resp = sendCmpHttp(telefonica, 200);
-        //sender = USER_DN, recepient = ISSUER_DN. This does not sound right though!!!
-        checkCmpResponseGeneral(resp, "C=cn,ST=sh,L=qc,O=wl,OU=lte,CN=enbca", "C=CN,O=Huawei,OU=Wireless Network Product Line,CN=21030533610000000012 eNodeB", cacert, nonce, transid, true, null);
-        
-    	/ *
-        byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, cacert, nonce, transid, true, null);
-        X509Certificate cert = checkCmpCertRepMessage(USER_DN, cacert, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
-        assertNull("AltNames was not null (" + altNames + ").", altNames);
-
-        // Send a confirm message to the CA
-        String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(USER_DN, cacert, nonce, transid, hash, reqId);
-        assertNotNull(confirm);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(confirm);
-        ba = bao.toByteArray();
-        // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, cacert, nonce, transid, false, null);
-        checkCmpPKIConfirmMessage(USER_DN, cacert, resp);
-
-        // Now revoke the bastard!
-        PKIMessage rev = genRevReq(ISSUER_DN, USER_DN, cert.getSerialNumber(), cacert, nonce, transid, true);
-        assertNotNull(rev);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(rev);
-        ba = bao.toByteArray();
-        // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, cacert, nonce, transid, false, null);
-        checkCmpFailMessage(resp, "No PKI protection to verify.", 23, reqId, 1);
-        * /
-    	log.trace("<test05TelefonicaGermany");
-    }
-    */
-
+   
     @Test
     public void test07SignedConfirmationMessage() throws Exception {
         log.trace(">test07SignedConfirmationMessage()");
@@ -403,7 +356,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Create a new good USER
         String cmpsntestUsername = "cmpsntest";
         String cmpsntest2Username = "cmpsntest2";
-        final X500Name userDN1 = createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest", true);
+        final X500Name userDN1 = createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest", true, this.caid);
         
         try {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -440,7 +393,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Create another USER with the subjectDN serialnumber spelled "SERIALNUMBER" instead of "SN"
         KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         
-        final X500Name userDN2 = createCmpUser(cmpsntest2Username, "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true);
+        final X500Name userDN2 = createCmpUser(cmpsntest2Username, "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true, this.caid);
         req = genCertReq(ISSUER_DN, userDN2, keys2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
         ir = (CertReqMessages) req.getBody().getContent();
@@ -508,7 +461,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // --------------- Send a CRMF request with the whole DN as username with escapable characters --------------- //
         final String sRequestName = "CN=another\0nullguy%00<do>";
         // Create a new good USER
-        final X500Name requestName = createCmpUser(sRequestName, sRequestName, false);
+        final X500Name requestName = createCmpUser(sRequestName, sRequestName, false, this.caid);
 
         try {
             PKIMessage req = genCertReq(ISSUER_DN, requestName, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null);
@@ -555,7 +508,7 @@ public class CrmfRequestTest extends CmpTestCase {
         KeyPair key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         
         // Create a new good USER
-        final X500Name dn = createCmpUser(username, sDN, false);
+        final X500Name dn = createCmpUser(username, sDN, false, this.caid);
 
         try {
         
@@ -709,42 +662,7 @@ public class CrmfRequestTest extends CmpTestCase {
     
     
     
-    private X500Name createCmpUser(String username, String dn, boolean useDnOverride) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-            EjbcaException, FinderException, CADoesntExistsException {
-        // Make USER that we know...
-        boolean userExists = false;
-        final int cpID;
-        final int eepID;
-        final X500Name userDN;
-        if ( useDnOverride ) {
-            cpID = this.cpDnOverrideId;
-            eepID = this.eepDnOverrideId;
-            userDN = new X500Name(dn);
-        } else {
-            cpID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
-            eepID = SecConst.EMPTY_ENDENTITYPROFILE;
-            userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
-        }
-        final EndEntityInformation user = new EndEntityInformation(
-                username, dn, this.caid, null, username + "@primekey.se",
-                new EndEntityType(EndEntityTypes.ENDUSER),
-                eepID, cpID, SecConst.TOKEN_SOFT_PEM, 0, null );
-        user.setPassword("foo123");
-        log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN);
-        try {
-            this.endEntityManagementSession.addUser(ADMIN, user, true); 
-        } catch (Exception e) {
-            userExists = true;
-        }
 
-        if (userExists) {
-            log.debug("USER already exists: " + user.getUsername() + ", foo123, " + userDN);
-            this.endEntityManagementSession.changeUser(ADMIN, user, true);
-            this.endEntityManagementSession.setUserStatus(ADMIN, user.getUsername(), EndEntityConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        return userDN;
-    }
 
     static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
             + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
