@@ -37,7 +37,7 @@ public abstract class AuditorQueryHelper {
     /**
      * Build and executing audit log queries that are safe from SQL injection.
      * 
-     * @param token the requesting entity
+     * @param token the requesting entity. Will also limit the results to authorized CAs. 
      * @param validColumns a Set of legal column names
      * @param device the name of the audit log device
      * @param conditions the list of conditions to transform into a query
@@ -65,7 +65,7 @@ public abstract class AuditorQueryHelper {
             }
             // Validate that the column we are adding to the SQL WHERE clause is exactly one of the legal column names
             if (!validColumns.contains(condition.getColumn())) {
-                throw new RuntimeException(ERROR_MSG);
+                throw new IllegalArgumentException(ERROR_MSG);
             }
             Object conditionValue = condition.getValue();
             if (AuditLogEntry.FIELD_TIMESTAMP.equals(condition.getColumn())) {
@@ -98,14 +98,14 @@ public abstract class AuditorQueryHelper {
             case LESS_THAN:
                 whereClause.append("a.").append(condition.getColumn()).append(" < ?").append(i); break;
             default:
-                throw new RuntimeException(ERROR_MSG);    
+                throw new IllegalArgumentException(ERROR_MSG);    
             }
             // The condition value will be added to the query using JPA's setParameter (safe from SQL injection)
             parameters.add(conditionValue);
         }
         // Validate that the column we are adding to the SQL ORDER clause is exactly one of the legal column names
         if (!validColumns.contains(sortColumn)) {
-            throw new RuntimeException(ERROR_MSG);
+            throw new IllegalArgumentException(ERROR_MSG);
         }
         final String orderClause = new StringBuilder("a.").append(sortColumn).append(sortOrder?" ASC":" DESC").toString();
         return new EjbLocalHelper().getEjbcaAuditorSession().selectAuditLog(token, device, firstResult, maxResults, whereClause.toString(), orderClause, parameters);
