@@ -1029,7 +1029,11 @@ public class EjbcaWebBean implements Serializable {
                 if (!StringUtils.isEmpty(authenticationCa)) {
                     caNames.add(authenticationCa);
                 }
-                caNames.add(cmpconfiguration.getRACAName(alias));
+                final String raCaName = cmpconfiguration.getRACAName(alias);
+                if (!"ProfileDefault".equals(raCaName)) {
+                    // "ProfileDefault" is not a CA name and if the profile default is used, this will be implicitly checked be checking access to the EEP
+                    caNames.add(raCaName);
+                }
                 String endEntityProfileName = cmpconfiguration.getRAEEProfile(alias);
                 try {
                     if(!authorizedProfileIds.contains(endEntityProfileSession.getEndEntityProfileId(endEntityProfileName))) {

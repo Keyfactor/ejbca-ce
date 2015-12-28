@@ -1119,8 +1119,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         Map<Integer, String> caidToName = getEjbcaWebBean().getInformationMemory().getCAIdToNameMap();
         List<Integer> allCaIds = caSession.getAllCaIds();
         for(int caid : allCaIds) {
-            String caname = caidToName.get(caid);
-            ret.add(new SelectItem(caid, caname));
+            if (caSession.authorizedToCANoLogging(getAdmin(), caid)) {
+                String caname = caidToName.get(caid);
+                ret.add(new SelectItem(caid, caname));
+            } else {
+                ret.add(new SelectItem(0, "<Unauthorized CA>", "A CA that the current admin lack access to.", true));
+            }
         }
         return ret;
     }

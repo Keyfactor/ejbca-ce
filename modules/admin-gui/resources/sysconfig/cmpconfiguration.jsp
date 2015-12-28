@@ -105,10 +105,11 @@
   
   boolean ramode = false;
   boolean pbe = false;
-  boolean authorizedToEdit =  ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
 
   GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource()); 
                                     cabean.initialize(ejbcawebbean); 
+  boolean authorizedToEdit =  ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+
   
   ejbcawebbean.clearCMPCache();
   CmpConfiguration cmpconfig = ejbcawebbean.getCmpConfiguration();
@@ -136,23 +137,20 @@
     				if( request.getParameter(BUTTON_VIEW_ALIAS) != null){
       					// Display  cmpaliaspage.jsp
      					alias = request.getParameter(SELECT_ALIASES);
-     					if(alias != null){
-       							if(!alias.trim().equals("")){
-    	   								if(!cmpconfig.aliasExists(alias)) {
-    	   										cmpconfig.addAlias(alias);
-    	   								}
-    	   							   	cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
-           								includefile="cmpaliaspage.jspf"; 
-       							}
+     					if(alias != null) {
+       						if(!alias.trim().equals("")){
+    	   						if(!cmpconfig.aliasExists(alias)) {
+    	   							cmpconfig.addAlias(alias);
+    	   						}
+    	   					  	cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
+           						includefile="cmpaliaspage.jspf"; 
+       						}
+     					} else {
+      						includefile="cmpaliasespage.jspf";     
      					}
-     					if(alias == null){   
-      							includefile="cmpaliasespage.jspf";     
-     					}
-  				}
-    				
-    				if( request.getParameter(BUTTON_VIEW_ALIAS) != null){
     				    authorizedToEdit = false;
-    				}
+  					}
+    				
       				if( request.getParameter(BUTTON_EDIT_ALIAS) != null){
       				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
           					// Display  cmpaliaspage.jsp
@@ -412,7 +410,6 @@
     			   			// ------------------- BUTTONS -------------------------
     			            
     			        	if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
-    		      				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     			        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
     			        					value = request.getParameter(LIST_VENDORCA);
     			           					String vendorcas = cmpConfigClone.getVendorCA(alias);
@@ -428,7 +425,6 @@
     			        	}
     			            
     			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
-    		      				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     			           			value = request.getParameter(LIST_VENDORCA);
     			           			String vendorcas = cmpConfigClone.getVendorCA(alias);
     			           			if(StringUtils.contains(vendorcas, value)) {

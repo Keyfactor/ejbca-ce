@@ -139,7 +139,7 @@ public class RolesManagedBean extends BaseManagedBean {
         roleLoop: for(RoleData role : roleAccessSession.getAllRoles()) {
             // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
             for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-                if (!caSession.authorizedToCA(getAdmin(), accessUserAspect.getCaId())) {
+                if (!caSession.authorizedToCANoLogging(getAdmin(), accessUserAspect.getCaId())) {
                     continue roleLoop;
                 }
             }
