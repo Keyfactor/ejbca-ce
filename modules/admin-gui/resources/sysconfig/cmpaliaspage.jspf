@@ -19,7 +19,6 @@ function enableFormItems() {
 	var authorizedToEdit = <%=authorizedToEdit%>;
 <% if (!ramode) { %>
     // ----- Client Mode -----
-    console.log("foo: " + authorizedToEdit) 
     var dnpartpwd = document.cmpconfiguration.<%= CHECKBOX_DNPART %>.checked;
     document.cmpconfiguration.<%= LIST_DNPARTS %>.disabled = (!dnpartpwd || !authorizedToEdit);
     
