@@ -136,6 +136,7 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
     
     /**
      * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
+     * 
      * @param rule the rule to check
      * @param requireRecursive if rule has to be recursive (for an an exact match)
      * @return true if this Role has access to the given rule. 
@@ -155,26 +156,27 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
                     } else {
                         result = true;
                     }
-                    break;
                 } else {
                     result = false;
                     break;
                 }
-            } else if(rule.startsWith(currentRule)) {
-                if(rule.length() > currentRule.length()) {
-                    if(currentRule.length() > 1 && rule.charAt(currentRule.length()) != '/') {
-                        // Not a parent rule but just one with a similar name, compare /foo/bar to /foo_bar,
-                        // also ignoring the root "/" rule. 
-                        continue;
+            } else if (rule.startsWith(currentRule) || currentRule.startsWith(rule)) {
+                if (rule.length() > currentRule.length() && currentRule.length() > 1 && rule.charAt(currentRule.length()) != '/') {
+                    // Not a parent rule but just one with a similar name, compare /foo/bar to /foo_bar,
+                    // also ignoring the root "/" rule. 
+                    continue;
+                } else if (rule.length() < currentRule.length() && rule.length() > 1 && currentRule.charAt(rule.length()) != '/') {
+                    //This is not a subrule (i.e rule == /foo, currentRule == /foo/bar
+                    continue;
+                } else {
+                    if (accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT) && accessRuleData.getRecursive()) {
+                        // A possible match, but there may be a contraindicator down the line
+                        result = true;
+                    } else if (accessRuleData.getInternalState().equals(AccessRuleState.RULE_DECLINE)) {
+                        // Definitely a non-match, break. 
+                        result = false;
+                        break;
                     }
-                }
-                if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT) && accessRuleData.getRecursive()) {
-                    // A possible match, but there may be a contraindicator down the line
-                    result = true;                   
-                } else if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_DECLINE)) {
-                    // Definitely a non-match, break. 
-                    result = false;
-                    break;
                 }
             }
         }
