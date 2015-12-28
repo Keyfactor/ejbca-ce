@@ -345,6 +345,7 @@ public class AuditorManagedBean implements Serializable {
 		if (log.isDebugEnabled()) {
 			log.debug("Reloading audit load. selectedDevice=" + device);
 		}
+	    updateCaIdToNameMap();
 		try {
 	        final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 	        results = AuditorQueryHelper.getResults(authenticationToken, columnNameMap.keySet(), device, getConditions(), sortColumn, sortOrder, startIndex-1, maxResults);
@@ -357,7 +358,6 @@ public class AuditorManagedBean implements Serializable {
 		    }
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid search conditions: " + e.getMessage()));
 		}
-		updateCaIdToNameMap();
 		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
 	}
 	
@@ -368,8 +368,11 @@ public class AuditorManagedBean implements Serializable {
 	private void updateCaIdToNameMap() {
 		final Map<Integer, String> map = caSession.getCAIdToNameMap();
 		final Map<Object, String> ret = new HashMap<Object, String>();
+		final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 		for (final Entry<Integer,String> entry : map.entrySet()) {
-			ret.put(entry.getKey().toString(), entry.getValue());
+            if (caSession.authorizedToCANoLogging(authenticationToken, entry.getKey())) {
+                ret.put(entry.getKey().toString(), entry.getValue());
+            }
 		}
 		caIdToNameMap = ret;
 	}

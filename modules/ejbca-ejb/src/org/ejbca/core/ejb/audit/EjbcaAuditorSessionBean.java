@@ -12,7 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.audit;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -22,6 +25,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
@@ -30,6 +34,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 
 /**
@@ -47,6 +52,8 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
     private EntityManager entityManager;
     @EJB
     private AccessControlSessionLocal accessControlSession;
+    @EJB
+    private CaSessionLocal caSession;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -85,7 +92,20 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
                 query.setParameter(i, parameters.get(i));
             }
         }
-        return (List<? extends AuditLogEntry>) query.getResultList();
+
+        //Prune out result pertaining to unauthorized CAs
+        Set<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(token));
+        List<AuditLogEntry> resultList = new ArrayList<>();
+        for(AuditLogEntry auditLogEntry : (List<AuditLogEntry>) query.getResultList()) {
+            if(!StringUtils.isEmpty(auditLogEntry.getCustomId())) {
+                if(!authorizedCaIds.contains(Integer.valueOf(auditLogEntry.getCustomId()))) {
+                    continue;
+                }
+            }
+            resultList.add(auditLogEntry);
+        }
+        return resultList;
+        
     }
 
     /**

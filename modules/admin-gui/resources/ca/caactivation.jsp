@@ -85,7 +85,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_SACTION}"/></h:panelGroup></f:facet>
-			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState}"/>
+			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState or !cAActivationMBean.authorizedToBasicFunctions}"/>
 			<h:outputText value=" #{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.ca.active}"/>
 			<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.ca.active}"/>
 		</h:column>
@@ -101,7 +101,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 	<h:panelGrid columns="3">
 		<h:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="#{web.text.ACTIVATECAS_ACTCODE}:"/>
 		<h:inputSecret rendered="#{cAActivationMBean.activationCodeShown}" id="authCode" value="#{cAActivationMBean.authenticationCode}"/>
-		<h:commandButton action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}" disabled="#{not cAActivationMBean.authorizedToBasicFunctions }" />
+		<h:commandButton action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}" rendered="#{cAActivationMBean.authorizedToBasicFunctions }" />
 	</h:panelGrid>
 	</h:form>
  
