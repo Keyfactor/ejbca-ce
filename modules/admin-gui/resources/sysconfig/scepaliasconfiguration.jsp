@@ -51,6 +51,7 @@ org.cesecore.authorization.control.StandardRules
 		
 		<h:panelGroup id="placeholder1" />
 		<h:panelGroup id="placeholder2" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		<h:panelGroup id="placeholder3" rendered="#{scepConfigMBean.currentAliasEditMode || !scepConfigMBean.allowedToEdit}"/>
 		
 		<h:outputLabel for="currentAlias" value="#{web.text.SCEP_ALIAS}:"/>
 		<h:panelGroup id="currentAlias">

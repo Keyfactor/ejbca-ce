@@ -103,7 +103,7 @@ org.cesecore.keybind.InternalKeyBindingRules
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_STATUS}"/></f:facet>
 			<h:outputText value="#{web.text[guiInfo.status]}"/>
 		</h:column>
-		<h:column>
+		<h:column rendered="#{!internalKeyBindingMBean.forbiddenToEdit}">
    			<f:facet name="header">
    				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
    			</f:facet>
@@ -148,7 +148,11 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h:panelGrid>
 	</h:form>
 	<h:form id="defaultResponder" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
-		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER} "/><%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %></h3>
+		<h3>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
+			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %>
+		</h3>
 		<h:panelGrid columns="3">
 			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
 				<f:selectItems value="#{internalKeyBindingMBean.defaultResponerTargets}"/>
