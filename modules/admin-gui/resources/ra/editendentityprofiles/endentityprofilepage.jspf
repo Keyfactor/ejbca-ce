@@ -1632,8 +1632,10 @@ if (!editerrors.isEmpty()) {
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
+       <% if(authorizedToEdit) { %>
         <input type="submit" name="<%=BUTTON_DELETEALL_NOTIFICATION%>" value="<%= ejbcawebbean.getText("DELETEALL") %>"
-        	 <%=(profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && authorizedToEdit && (profiledata.getUserNotifications().size() > 0)) ? "" : "disabled"%>/>
+        	 <%=(profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) && (profiledata.getUserNotifications().size() > 0)) ? "" : "disabled"%>/>
+        <% } %>
       </td>
       <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"SENDNOTIFICATION\") %>" /></strong>
@@ -1661,12 +1663,14 @@ if (!editerrors.isEmpty()) {
                 out.write("CHECKED");
            %> id="<%=CHECKBOX_REQUIRED_SENDNOTIFICATION%>" />
         <label for="<%=CHECKBOX_REQUIRED_SENDNOTIFICATION%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
-        <%if(ejbcarabean.getTemporaryEndEntityProfileNotification() == null) {  %>
-         	<input type="submit" name="<%=BUTTON_ADD_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADD") %>" <% if(!used || !authorizedToEdit) out.write(" disabled "); %> />
-         <% } else { %>
-         	<input type="submit" name="<%=BUTTON_ADD_ANOTHER_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADDANOTHER") %>" <% if(!used || !authorizedToEdit) out.write(" disabled "); %>
-         		onClick='return checkallfields()'/>        	
-         <% } %>
+        <%  if(authorizedToEdit) {
+        		if(ejbcarabean.getTemporaryEndEntityProfileNotification() == null) {  %>
+         			<input type="submit" name="<%=BUTTON_ADD_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADD") %>" <% if(!used) out.write(" disabled "); %> />
+         <% 	} else { %>
+         		<input type="submit" name="<%=BUTTON_ADD_ANOTHER_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADDANOTHER") %>" <% if(!used) out.write(" disabled "); %>
+         			onClick='return checkallfields()'/>        	
+         <% 	} 
+            }%>
       </td>
     </tr>
 
@@ -1920,8 +1924,11 @@ if (!editerrors.isEmpty()) {
     </tr>  
     <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
-         <input type="submit" name="<%= BUTTON_UPLOADTEMPLATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
+         <% if(authorizedToEdit) { %>
+         	<input type="submit" name="<%= BUTTON_UPLOADTEMPLATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
+      	  <% } %>
       </td>
+      
       <td width="40%" valign="top" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"CURRENTTEMPLATE\") %>" />
       </td>
