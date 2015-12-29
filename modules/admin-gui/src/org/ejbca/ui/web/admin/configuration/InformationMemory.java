@@ -218,19 +218,16 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     * Returns names of external, authorized CA's as a treemap of name (String) -> id (Integer). 
+     * Returns authorized external CA names as a treemap of name (String) -> id (Integer).
      * @throws CADoesntExistsException 
      */
     public TreeMap<String, Integer> getExternalCAs() throws CADoesntExistsException {
-        TreeMap<String, Integer> allcas = this.caauthorization.getAllCANames();
         TreeMap<String, Integer> externalcas = new TreeMap<String, Integer>();
-        for (Integer caId : allcas.values()) {
-            if (casession.authorizedToCANoLogging(administrator, caId)) {
-                CAInfo ca = casession.getCAInfoInternal(caId);
-                if (ca.getStatus() == CAConstants.CA_EXTERNAL) {
-                    externalcas.put(ca.getName(), caId);
-                }
-            }
+        for (Integer caId : caauthorization.getAuthorizedCAIds()) {
+            CAInfo caInfo = casession.getCAInfoInternal(caId);
+            if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                externalcas.put(caInfo.getName(), caId);
+            }          
         }
         return externalcas;
     }
