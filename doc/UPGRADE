@@ -29,6 +29,30 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.4.0 to EJBCA 6.4.2
+-------------------------------
+EJBCA 6.4.2 adds a couple of additional rules to any existing Auditors introduced since 6.4.0, as well as their analogs (i.e. an admin with edit
+rights will be given view rights as well). This upgrade will happen automatically and the database version will be set to 6.4.2. 
+
+The changes will be as follows. Any roles matching up to the 6.4.0 Auditors will be given the full set of rules, while non-auditors will be handled 
+as follows:
+
+Currently accessed rules:											Future accessed rules: 
+/system_functionality/edit_systemconfiguration						/system_functionality/view_systemconfiguration	
+/system_functionality/edit_available_extended_key_usages			/system_functionality/view_available_extended_key_usages
+/system_functionality/edit_available_custom_certificate_extensions	/system_functionality/view_available_custom_certificate_extensions	
+/system_functionality/edit_administrator_privileges					/system_functionality/view_administrator_privileges		
+					
+Auditors will receive all of the above rules, in addition to:
+																	/ra_functionality/view_end_entity
+
+The additional pages available to the Auditor are the following:
+Page Name:						Notes:
+Search End Entities
+Administrator Roles
+CMP Configuration
+SCEP Configuration
+System Configuration 
 
 From EJBCA 6.3.2 up to EJBCA 6.4.0
 -------------------------------
