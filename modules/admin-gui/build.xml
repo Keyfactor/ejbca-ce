@@ -22,7 +22,6 @@
 		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
-		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.tomahawk.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
@@ -36,9 +35,6 @@
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path location="${mod.statedump-common.lib}"/>
-        <!-- Temporary solution until Statedump has been refactored -->
-        <!--<path location="${mod.statedump.lib}"/>
-        <path location="${mod.cli-util.lib}"/>-->
 	</path>
 	
     <target name="clean" description="Clean up this module">

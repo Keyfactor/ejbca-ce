@@ -632,7 +632,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
 	<%-- Statedump --%>
 
-    <h:form id="statedumpform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Statedump'}">
+    <h:form id="statedumpform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Statedump' and systemConfigMBean.statedumpAvailable}">
         <h:panelGroup>
             <h4>
             <h:outputText value="#{web.text.STATEDUMPTAB_TITLE}"/>

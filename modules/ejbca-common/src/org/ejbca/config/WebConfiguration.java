@@ -256,4 +256,8 @@ public class WebConfiguration {
         }
         return availableP11AttributeFiles;
     }
+
+    public static String getStatedumpTemplatesBasedir() {
+        return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
+    }
 }

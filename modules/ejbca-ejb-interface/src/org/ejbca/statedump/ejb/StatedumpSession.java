@@ -13,6 +13,7 @@
 package org.ejbca.statedump.ejb;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,5 +49,15 @@ public interface StatedumpSession {
      * @throws IOException If the files in the dump are malformed.
      */
     StatedumpImportResult performImport(AuthenticationToken admin, StatedumpImportOptions options) throws AuthorizationDeniedException, IOException;
+
+    
+    String getTemplatesBasedir(AuthenticationToken admin) throws AuthorizationDeniedException;
+
+    /**
+     * Lists all available statedumps in the configured statedump templates directory.
+     * 
+     * @return A map from the directory names (not full path) to language strings to be used as descriptions.
+     */
+    Map<String, String> getAvailableTemplates(AuthenticationToken admin) throws AuthorizationDeniedException;
 
 }
