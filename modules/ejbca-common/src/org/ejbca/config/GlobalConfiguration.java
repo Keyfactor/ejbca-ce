@@ -179,6 +179,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
     
     private static final   String CTLOGS              = "ctlogs";
+    
+    private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
 
     private static final   String LANGUAGEFILENAME      =  "languagefilename";
     private static final   String MAINFILENAME          =  "mainfilename";
@@ -561,6 +563,14 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
         HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<Integer,CTLogInfo>(getCTLogs());
         logs.remove(ctlogId);
         setCTLogs(logs);
+    }
+    
+    public boolean getStatedumpLockedDown() {
+        return getBoolean(STATEDUMP_LOCKDOWN, false);
+    }
+    
+    public void setStatedumpLockedDown(final boolean value) {
+        data.put(STATEDUMP_LOCKDOWN, value);
     }
 
     @Override
