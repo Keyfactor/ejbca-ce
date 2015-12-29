@@ -1,3 +1,13 @@
+EJBCA 6.4.2, 2015-12-29
+---
+Bug
+    [ECA-4555] - PKCS#11 credentials are displayed incorrectly when creating CryptoToken
+    [ECA-4646] - Clear caches failing with NPE in OcspExtensionsCache when an extension class is not found
+
+Improvement
+    [ECA-4463] - Add additional pages to Auditor Role
+    [ECA-4682] - Log X-Forwarded-For if present in OCSP requests
+
 EJBCA 6.4.1, 2015-12-01
 ---
 Bug
