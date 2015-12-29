@@ -35,7 +35,7 @@ public class RoleDataTest {
         final String roleName = "role";
         RoleData testRole = new RoleData(1, roleName);
         Map<Integer, AccessRuleData> accessRules = new HashMap<Integer, AccessRuleData>();
-        accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, false));
+        accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true));
         accessRules.put(2, new AccessRuleData(roleName, "/foo/bar", AccessRuleState.RULE_DECLINE, true));
         accessRules.put(3, new AccessRuleData(roleName, "/xyz", AccessRuleState.RULE_DECLINE, true));
         accessRules.put(4, new AccessRuleData(roleName, "/xyz_abc", AccessRuleState.RULE_ACCEPT, true));
@@ -46,7 +46,7 @@ public class RoleDataTest {
 
 
         testRole.setAccessRules(accessRules);
-        assertFalse("Was incorrectly given access to a rule that should have state unknown", testRole.hasAccessToRule("/"));
+        assertFalse("Was incorrectly given access to a rule that should have state unknown", testRole.hasAccessToRule("/", false));
         assertTrue("Should have been given access to a rule which was explicitly accepted.", testRole.hasAccessToRule("/fuu"));
         assertFalse("Was incorrectly given access to a rule which was explicitly denied.",testRole.hasAccessToRule("/foo/bar"));
         assertFalse("Was incorrectly given access to a rule which was denied in a subrule.",testRole.hasAccessToRule("/foo/bar/xyz"));  
@@ -59,6 +59,21 @@ public class RoleDataTest {
         assertFalse("Was incorrectly given access to a rule which was explicitly denied.", testRole.hasAccessToRule("/recursivewithdenied/denied", true));
         assertFalse("Should not have been given access to a rule ", testRole.hasAccessToRule("/non_recursive", true));
         assertFalse("Should not have been given access to a rule with recursive required", testRole.hasAccessToRule("/non_recursive", true));
+    }
+    
+    /**
+     * Make sure that access to root is never given by mistake. 
+     */
+    @Test
+    public void testHasAccessToRoot() {
+        final String roleName = "role";
+        RoleData testRole = new RoleData(1, roleName);
+        Map<Integer, AccessRuleData> accessRules = new HashMap<Integer, AccessRuleData>();
+        accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true));
+
+        testRole.setAccessRules(accessRules);
+        assertFalse("Was incorrectly given access to root.", testRole.hasAccessToRule("/", false));
+        
     }
 
 }

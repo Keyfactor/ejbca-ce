@@ -165,7 +165,7 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
                     // Not a parent rule but just one with a similar name, compare /foo/bar to /foo_bar,
                     // also ignoring the root "/" rule. 
                     continue;
-                } else if (rule.length() < currentRule.length() && rule.length() > 1 && currentRule.charAt(rule.length()) != '/') {
+                } else if (rule.length() < currentRule.length() && currentRule.charAt(rule.length()) != '/') {
                     //This is not a subrule (i.e rule == /foo, currentRule == /foo/bar
                     continue;
                 } else {
