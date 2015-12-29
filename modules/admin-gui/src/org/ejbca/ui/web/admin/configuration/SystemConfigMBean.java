@@ -32,7 +32,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -395,56 +394,32 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         this.statedumpLockdownAfterImport = statedumpLockdownAfterImport;
     }
     
+    /** Returns true if EJBCA was built with Statedump (from EJBCA 6.5.0 or later) and it hasn't been locked down in the user interface. */
     public boolean isStatedumpAvailable() {
-        // TODO check if statedump should be disabled also (e.g. if upgraded from < 6.4.2/6.5 or the "lockdown statedump" checkbox was checked)
-        return statedumpSession != null;
-    }
-    
-    // TODO move to e.g. WebConfiguration and implement properly
-    private String getStatedumpTemplatesBasedir() {
-        // typically it should be something in /opt
-        return "/home/samuellb/gui_statedumps";
-    }
-    
-    /**
-     * Lists all available statedumps in the configured statedump templates directory.
-     * 
-     * @return A map from the directory names (not full path) to language strings to be used as descriptions.
-     */
-    // TODO move to a separate bean
-    private Map<String,String> getAvailableStatedumpTemplates() {
-        final Map<String,String> templates = new HashMap<>();
-        final String baseDir = getStatedumpTemplatesBasedir();
-        final File dir = new File(baseDir);
-        File[] files = dir.listFiles();
-        if (files != null) {
-            for (File entry : files) {
-                if (entry.isDirectory() && !entry.isHidden() && !entry.getName().startsWith(".")) { // also ignore . and .. on windows
-                    try {
-                        final String langString = FileUtils.readFileToString(new File(entry, "name.txt"), "UTF-8").split("[\n\r]", 2)[0];
-                        templates.put(entry.getName(), langString);
-                    } catch (IOException e) {
-                        log.info("Can't read name.txt of statedump \""+entry.getPath()+"\"", e);
-                    }
-                }
-            }
-        }
-        return templates;
+        return statedumpSession != null && !getGlobalConfiguration().getStatedumpLockedDown();
     }
     
     public List<SelectItem> getStatedumpAvailableTemplates() {
         final List<SelectItem> templates = new ArrayList<>();
-        templates.add(new SelectItem("", getEjbcaWebBean().getText("NONE")));
-        for (Map.Entry<String,String> entry : getAvailableStatedumpTemplates().entrySet()) {
-            final String description = getEjbcaWebBean().getText(entry.getValue());
-            templates.add(new SelectItem(entry.getKey(), description));
+        try {
+            templates.add(new SelectItem("", getEjbcaWebBean().getText("NONE")));
+            for (Map.Entry<String,String> entry : statedumpSession.getAvailableTemplates(getAdmin()).entrySet()) {
+                final String description = getEjbcaWebBean().getText(entry.getValue());
+                templates.add(new SelectItem(entry.getKey(), description));
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.debug("Authorization was denied to list statedump templates");
         }
         return templates;
     }
     
     public boolean isStatedumpTemplatesVisible() {
-        final String basedir = getStatedumpTemplatesBasedir();
-        return basedir != null && !basedir.isEmpty() && new File(basedir).isDirectory();
+        try {
+            final String basedir = statedumpSession.getTemplatesBasedir(getAdmin());
+            return basedir != null && !basedir.isEmpty() && new File(basedir).isDirectory();
+        } catch (AuthorizationDeniedException e) {
+            return false;
+        }
     }
     
     private void importStatedump(final File path, final boolean lockdown) throws IOException, AuthorizationDeniedException {
@@ -464,16 +439,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         
         log.info("Performing statedump import");
-        statedumpSession.performImport(getAdmin(), options);
+        result = statedumpSession.performImport(getAdmin(), options);
         log.info("Statedump successfully imported.");
         
         // Lock down after import
         if (lockdown) {
-            // TODO lock down
-            // TODO show another tab, because statedump is locked down now! 
+            log.info("Locking down Statedump in the Admin Web.");
+            getGlobalConfiguration(); // sets globalConfig
+            globalConfig.setStatedumpLockedDown(true);
+            getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
         }
         
-        // TODO show notice messages from statedump
+        // Done, add result messages
+        for (String msg : result.getNotices()) {
+            super.addNonTranslatedInfoMessage(msg);
+        }
         super.addNonTranslatedInfoMessage("State dump was successfully imported.");
     }
     
@@ -504,10 +484,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please import from either a directory or an uploaded ZIP file, but not both.", null));
             return;
         }
+        
+        if (getGlobalConfiguration().getStatedumpLockedDown()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Statedump has been locked down on this EJBCA installation and is not available.", null));
+            return;
+        }
 
         try {
             if (importFromDir) {
-                final File basedir = new File(getStatedumpTemplatesBasedir());
+                final File basedir = new File(statedumpSession.getTemplatesBasedir(getAdmin()));
                 importStatedump(new File(basedir, statedumpDir), statedumpLockdownAfterImport);
             } else {
                 byte[] uploadedFileBytes = statedumpFile.getBytes();
@@ -520,7 +505,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         
         // Clear GUI caches
-        // TODO
+        try {
+            getEjbcaWebBean().clearClusterCache(true); // exclude crypto tokens
+        } catch (Exception e) {
+            String msg = "Statedump was successfull, but the cached could not be cleared automatically. Please manually restart your browser or JBoss. "+ e.getLocalizedMessage();
+            log.info(msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
     }
     
     /** Invoked when admin saves the configurations */
