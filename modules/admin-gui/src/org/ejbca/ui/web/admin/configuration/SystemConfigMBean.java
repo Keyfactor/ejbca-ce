@@ -416,13 +416,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final Map<String,String> templates = new HashMap<>();
         final String baseDir = getStatedumpTemplatesBasedir();
         final File dir = new File(baseDir);
-        for (File entry : dir.listFiles()) {
-            if (entry.isDirectory() && !entry.isHidden() && !entry.getName().startsWith(".")) { // also ignore . and .. on windows
-                try {
-                    final String langString = FileUtils.readFileToString(new File(entry, "name.txt"), "UTF-8").split("[\n\r]", 2)[0];
-                    templates.put(entry.getName(), langString);
-                } catch (IOException e) {
-                    log.info("Can't read name.txt of statedump \""+entry.getPath()+"\"", e);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File entry : files) {
+                if (entry.isDirectory() && !entry.isHidden() && !entry.getName().startsWith(".")) { // also ignore . and .. on windows
+                    try {
+                        final String langString = FileUtils.readFileToString(new File(entry, "name.txt"), "UTF-8").split("[\n\r]", 2)[0];
+                        templates.put(entry.getName(), langString);
+                    } catch (IOException e) {
+                        log.info("Can't read name.txt of statedump \""+entry.getPath()+"\"", e);
+                    }
                 }
             }
         }
