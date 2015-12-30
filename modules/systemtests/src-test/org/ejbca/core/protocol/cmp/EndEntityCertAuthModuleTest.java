@@ -673,7 +673,67 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
         }
     }
+    
+    /**
+     * Sends a revocation request signed by RA2Admin to revoke a certificate issued by a CA RA2Admin is not authorized to. Expected: Fail
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void test04RevocationRequest() throws Exception {
 
+        String username = "ra1testuser";
+        String fingerprintCert = null;
+        try {
+            
+            // Issue a cert by CA1
+            String userDN = "CN="+username;
+            createUser(username, userDN, "foo123", true, ca1.getCAId(), 
+                    endEntityProfileSession.getEndEntityProfileId(EEP1), certProfileSession.getCertificateProfileId(CP1));
+            KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
+            Certificate cert = signSession.createCertificate(ADMIN, username, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
+            assertNotNull("No certificate to revoke.", cert);
+            fingerprintCert = CertTools.getFingerprintAsString(cert);
+
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genRevReq(ca1.getSubjectDN(), new X500Name(userDN), CertTools.getSerialNumber(cert), ca1.getCACertificate(), 
+                    nonce, transid, false, pAlg, null);
+            assertNotNull("Generating revocation request failed.", msg);
+
+            // Sign the revocation request with RA2 Admin
+            CMPCertificate[] extraCert = getCMPCert(ra2admincert);
+            PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            // Send the CMP request to RA2. Expected: Fail
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(protectedMsg);
+            byte[] ba = bao.toByteArray();
+            byte[] resp = sendCmpHttp(ba, 200, RA2_ALIAS);
+            checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
+                    msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
+                    false, null, null);
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            final PKIMessage respObject;
+            try {
+                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            } finally {
+                asn1InputStream.close();
+            }
+            assertNotNull(respObject);
+            PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
+            assertEquals(expectedErrMsg, errMsg);
+
+        } finally {
+            internalCertStoreSession.removeCertificate(fingerprintCert);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
+        }
+    }
     
     
     
