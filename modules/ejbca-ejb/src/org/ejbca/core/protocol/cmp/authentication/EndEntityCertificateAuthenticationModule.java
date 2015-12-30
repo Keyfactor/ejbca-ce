@@ -32,6 +32,10 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.RevDetails;
+import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -255,7 +259,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         if(omitVerifications && (!ramode || !authenticated)) {
             this.errorMessage = "Omitting some verifications can only be accepted in RA mode and when the " +
-            		             "CMP request has already been authenticated, for example, through the use of NestedMessageContent";
+                                 "CMP request has already been authenticated, for example, through the use of NestedMessageContent";
             return false;
         }
         
@@ -463,31 +467,33 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         AuthenticationToken reqAuthToken = authenticationProviderSession.authenticate(subject);
         
-        final int caid = getRaCaId((DEROctetString) msg.getHeader().getSenderKID());
-        if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
-            if(log.isDebugEnabled()) {
-                log.debug("Administrator " + reqAuthToken.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
-            }
-            return false;
-        } else {
-            if(log.isDebugEnabled()) {
-                log.debug("Administrator " + reqAuthToken.toString() + " is authorized to access CA with ID " + caid);
-            }
-        }
-        
-        final int eeprofid;
-        final String eepname;
-        try {
-            eeprofid = getRaEndEntityProfileId((DEROctetString) msg.getHeader().getSenderKID());
-            eepname = eeProfileSession.getEndEntityProfileName(eeprofid);
-        } catch (EndEntityProfileNotFoundException e) {
-            log.error(e.getLocalizedMessage(), e);
-            return false;
-        }
-        
         final int tagnr = msg.getBody().getType();
         if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) || (tagnr == CmpPKIBodyConstants.KEYUPDATEREQUEST) ) {
         
+            
+            final int caid = getRaCaId((DEROctetString) msg.getHeader().getSenderKID());
+            if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
+                }
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " is authorized to access CA with ID " + caid);
+                }
+            }
+            
+            final int eeprofid;
+            final String eepname;
+            try {
+                eeprofid = getRaEndEntityProfileId((DEROctetString) msg.getHeader().getSenderKID());
+                eepname = eeProfileSession.getEndEntityProfileName(eeprofid);
+            } catch (EndEntityProfileNotFoundException e) {
+                log.error(e.getLocalizedMessage(), e);
+                return false;
+            }
+            
+            
             if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_END_ENTITY)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Administrator " + reqAuthToken.toString() + " was not authorized to create end entities with EndEntityProfile " + eepname);
@@ -521,18 +527,19 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 }
             }
         } else if(tagnr == CmpPKIBodyConstants.REVOCATIONREQUEST) {
-            
-            if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.REVOKE_END_ENTITY)) {
+            final String issuerdn = getIssuerDNFromRevRequest((RevReqContent) msg.getBody().getContent());
+            final int caid = issuerdn.hashCode();
+            if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
                 if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " is not authorized to revoke end entities with EndEntityProfile " + eepname);
+                    log.debug("Administrator " + reqAuthToken.toString() + " NOT authorized to revoke certificates issues by " + issuerdn);
                 }
                 return false;
             } else {
                 if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " was authorized to revoke end entities with EndEntityProfile " + eepname);
+                    log.debug("Administrator " + reqAuthToken.toString() + " is authorized to revoke certificates issued by " + issuerdn);
                 }
             }
-            
+
             if(!authSession.isAuthorizedNoLogging(reqAuthToken, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Administrator " + reqAuthToken.toString() + " is not authorized to revoke End Entities");
@@ -565,6 +572,28 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights)
                     && authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
+    }
+
+    /**
+     * Returns the IssuerDN specified in the CMP revocation request
+     * @param revReq
+     * @return the IssuerDN
+     */
+    private String getIssuerDNFromRevRequest(final RevReqContent revReq) {
+        RevDetails rd;
+        try {
+            rd = revReq.toRevDetailsArray()[0];
+        } catch(Exception e) {
+            log.debug("Could not parse the revocation request. Trying to parse it as novosec generated message.");
+            rd = CmpMessageHelper.getNovosecRevDetails(revReq);
+            log.debug("Succeeded in parsing the novosec generated request.");
+        }
+        final CertTemplate ct = rd.getCertDetails();
+        final X500Name issuer = ct.getIssuer();
+        if(issuer != null) {
+            return ct.getIssuer().toString();    
+        }
+        return "";
     }
 
     /**
