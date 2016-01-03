@@ -209,6 +209,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.21.file=/usr/lunapci/lib/libCryptoki2_64.so
 #cryptotoken.p11.lib.22.name=SafeNet Luna PCI
 #cryptotoken.p11.lib.22.file=/Program Files/LunaPCI/cryptoki.dll
+#cryptotoken.p11.lib.23.name=SafeNet Luna Client
+#cryptotoken.p11.lib.23.file=/usr/safenet/lunaclient/lib/libCryptoki2_64.so
 #cryptotoken.p11.lib.30.name=Utimaco
 #cryptotoken.p11.lib.30.file=/opt/utimaco/p11/libcs2_pkcs11.so
 #cryptotoken.p11.lib.31.name=Utimaco
