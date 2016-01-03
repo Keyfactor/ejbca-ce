@@ -252,7 +252,7 @@
 
 #macro (footer)
       <p class="copyright" style="text-align:center;">
-        &copy;&nbsp;2002-2015 PrimeKey Solutions AB. EJBCA<sup>&#174;</sup> is a registered trademark of PrimeKey Solutions AB.
+        &copy;&nbsp;2002-2016 PrimeKey Solutions AB. EJBCA<sup>&#174;</sup> is a registered trademark of PrimeKey Solutions AB.
         <script type="text/javascript"><!--
                 document.write(" - "+"Last Published: " + document.lastModified);
               //  -->
