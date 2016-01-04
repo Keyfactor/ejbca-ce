@@ -448,6 +448,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             getGlobalConfiguration(); // sets globalConfig
             globalConfig.setStatedumpLockedDown(true);
             getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
+            if (log.isDebugEnabled()) {
+                final boolean state = getEjbcaWebBean().getGlobalConfiguration().getStatedumpLockedDown();
+                log.debug("Statedump lockdown state changed to "+state);
+            }
+        } else {
+            log.debug("Not locking down statedump.");
         }
         
         // Done, add result messages

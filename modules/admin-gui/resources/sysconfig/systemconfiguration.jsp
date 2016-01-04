@@ -662,7 +662,7 @@ org.cesecore.authorization.AuthorizationDeniedException
             
             <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="statedumpLockdownAfterImport"/>
+                <h:selectBooleanCheckbox id="statedumpLockdownAfterImport" value="#{systemConfigMBean.statedumpLockdownAfterImport}"/>
                 <h:outputLabel for="statedumpLockdownAfterImport" value="#{web.text.STATEDUMPTAB_LOCKDOWN_CHECKBOX}" />
             </h:panelGroup>
             
