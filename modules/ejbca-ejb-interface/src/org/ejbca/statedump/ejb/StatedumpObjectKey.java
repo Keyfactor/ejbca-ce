@@ -48,6 +48,11 @@ public final class StatedumpObjectKey implements Serializable {
     }
     
     @Override
+    public String toString() {
+        return type+" "+name+" ("+id+")";
+    }
+    
+    @Override
     public boolean equals(final Object o) {
         if (o instanceof StatedumpObjectKey) {
             final StatedumpObjectKey sc = (StatedumpObjectKey)o;
