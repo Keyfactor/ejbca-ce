@@ -93,6 +93,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.internal.InternalResources;
@@ -365,7 +366,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				return true;
 			}
 			final String id = algId.getAlgorithm().getId();
-			if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId())) {
+			if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) || id.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId())) {
 				if (this.firstTime) {
 					this.firstTime = false;
 					this.isSign = true;
@@ -384,7 +385,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 					return false;
 				}
 			} else {
-				this.performanceTest.getLog().error("No valid algorithm.");
+				this.performanceTest.getLog().error(String.format("No valid algorithm: '%s'", id));
 				return false;
 			}
 
@@ -394,7 +395,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				final DERBitString bs = respObject.getProtection();
 				final Signature sig;
 				try {
-					sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+					sig = Signature.getInstance(id);
 					sig.initVerify(this.cacert);
 					sig.update(protBytes);
 					if (!sig.verify(bs.getBytes())) {
