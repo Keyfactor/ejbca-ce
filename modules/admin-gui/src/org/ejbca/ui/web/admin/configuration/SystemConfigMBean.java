@@ -445,13 +445,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         // Lock down after import
         if (lockdown) {
             log.info("Locking down Statedump in the Admin Web.");
-            getGlobalConfiguration(); // sets globalConfig
-            globalConfig.setStatedumpLockedDown(true);
-            getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
-            if (log.isDebugEnabled()) {
-                final boolean state = getEjbcaWebBean().getGlobalConfiguration().getStatedumpLockedDown();
-                log.debug("Statedump lockdown state changed to "+state);
-            }
+            lockDownStatedump();
         } else {
             log.debug("Not locking down statedump.");
         }
@@ -477,12 +471,31 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         // TODO
     }
     
+    private void lockDownStatedump() throws AuthorizationDeniedException {
+        getGlobalConfiguration(); // sets globalConfig
+        globalConfig.setStatedumpLockedDown(true);
+        getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
+        if (log.isDebugEnabled()) {
+            final boolean state = getEjbcaWebBean().getGlobalConfiguration().getStatedumpLockedDown();
+            log.debug("Statedump lockdown state changed to "+state);
+        }
+    }
+    
     public void importStatedump() {
         final boolean importFromDir = (statedumpDir != null && !statedumpDir.isEmpty());
         
-        // TODO should perhaps have separate forms instead (one for import from local directory, one from import from ZIP file upload)
         if (!importFromDir && statedumpFile == null) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please select a statedump to import.", null));
+            if (statedumpLockdownAfterImport) {
+                try {
+                    lockDownStatedump();
+                } catch (AuthorizationDeniedException e) {
+                    final String msg = "Authorization denied: "+e.getLocalizedMessage();
+                    log.info(msg);
+                    super.addNonTranslatedErrorMessage(msg);
+                }
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please select a statedump to import.", null));
+            }
             return;
         }
         
