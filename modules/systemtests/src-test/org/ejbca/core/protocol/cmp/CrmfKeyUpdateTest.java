@@ -127,7 +127,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private final byte[] nonce = CmpMessageHelper.createSenderNonce();
     private final byte[] transid = CmpMessageHelper.createSenderNonce();
     private final int caid;
-    private final Certificate cacert;
+    private final X509Certificate cacert;
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private final String cmpAlias = "CrmfKeyUpdateTestCmpConfigAlias";
@@ -148,7 +148,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
         this.caid = this.testx509ca.getCAId();
-        this.cacert = this.testx509ca.getCACertificate();
+        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
     }
 
     @Override
@@ -1522,7 +1522,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         return this.getClass().getSimpleName(); 
     }
     
-    private static X509Certificate checkKurCertRepMessage(X500Name eeDN, Certificate issuerCert, byte[] retMsg, int requestId) throws Exception {
+    private static X509Certificate checkKurCertRepMessage(X500Name eeDN, X509Certificate issuerCert, byte[] retMsg, int requestId) throws Exception {
         //
         // Parse response message
         //
@@ -1571,10 +1571,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final X509Certificate respCaCert = (X509Certificate) CertTools.getCertfromByteArray(respCmpCaCert.getEncoded());
         assertEquals(CertTools.getFingerprintAsString(issuerCert), CertTools.getFingerprintAsString(respCaCert));
         
-        Collection<Certificate> cacerts = new ArrayList<Certificate>();
+        Collection<X509Certificate> cacerts = new ArrayList<>();
         cacerts.add(issuerCert);
         assertTrue(CertTools.verify(cert, cacerts));
-        cacerts = new ArrayList<Certificate>();
+        cacerts = new ArrayList<>();
         cacerts.add(respCaCert);
         assertTrue(CertTools.verify(cert,  cacerts));
         return cert;

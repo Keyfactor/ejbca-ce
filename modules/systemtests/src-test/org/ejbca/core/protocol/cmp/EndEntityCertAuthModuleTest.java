@@ -437,7 +437,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), testUserDN, ca1.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                     .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, ca1.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca1.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -479,7 +479,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                     .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);

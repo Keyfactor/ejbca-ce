@@ -257,21 +257,24 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
     
     @Override
-    public Collection< Collection<Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException {
+    public List<Collection<X509Certificate>> getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException {
         
         List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
         if(trustedReferences == null) {
             return null;
         }
         
-        Collection<Collection<Certificate> > trustedCerts = new ArrayList< Collection<Certificate> >();
+        List<Collection<X509Certificate> > trustedCerts = new ArrayList<>();
         if(trustedReferences.size()==0) {
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
             // This is done by adding all CAs' certificate chains to trustedCerts
             List<Integer> allCAs = caSession.getAllCaIds();
             for(int caid : allCAs) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caid);
-                trustedCerts.add(caInfo.getCertificateChain());
+                //Quick and dirty cast
+                Collection<Certificate> certificateChain = caInfo.getCertificateChain();
+                Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));                
+                trustedCerts.add(x509CertificateChain);
             }
             
             if(log.isDebugEnabled()) {
@@ -283,21 +286,25 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 if (trustedReference.getCertificateSerialNumberDecimal()==null) {
                     // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
                     // CA certificate chain to be used for issuer verification
-                    trustedCerts.add(caInfo.getCertificateChain());
+                    Collection<Certificate> certificateChain = caInfo.getCertificateChain();
+                    Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));    
+                    trustedCerts.add(x509CertificateChain);
                 } else {
                     // If a cert serialnumber is specified, then we trust only this certificate. We create a certificate collection 
                     // containing this certificate and it's issuer's certificate chain to be used for issuer verification
                     X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
                                 caInfo.getSubjectDN(), trustedReference.fetchCertificateSerialNumber());
                     if(cert!=null) {
-                        ArrayList<Certificate> leafCertChain = new ArrayList<Certificate>();
+                        ArrayList<X509Certificate> leafCertChain = new ArrayList<>();
                         leafCertChain.add(cert);
                         String issuer = CertTools.getIssuerDN(cert);
                         CAInfo issuerInfo = caSession.getCAInfoInternal(issuer.hashCode());
-                        leafCertChain.addAll((ArrayList<Certificate>) issuerInfo.getCertificateChain());
+                        Collection<Certificate> certificateChain = issuerInfo.getCertificateChain();             
+                        leafCertChain.addAll(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                         trustedCerts.add(leafCertChain);                
                     } else {
-                        log.info("No (trusted) certificate with issuer '"+caInfo.getSubjectDN()+"' and serialNo "+trustedReference.fetchCertificateSerialNumber().toString(16)+" could be found for authentication key binding "+internalKeyBinding.getName()+"."); 
+                        log.info("No (trusted) certificate with issuer '"+caInfo.getSubjectDN()+"' and serialNo "+trustedReference.fetchCertificateSerialNumber().toString(16)
+                                +" could be found for authentication key binding "+internalKeyBinding.getName()+"."); 
                     }
                 }
             }

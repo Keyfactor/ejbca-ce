@@ -324,7 +324,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             assertEquals("Response was not signed by the expected certificate.", CertTools.getFingerprintAsString(expectedSigningCertificate), CertTools.getFingerprintAsString(actualSignerCertificate));
             assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(expectedSigningCertificate.getPublicKey())));
             try {
-                CertTools.verify(actualSignerCertificate, Arrays.asList(new Certificate[] {caCertificate}));
+                CertTools.verify(actualSignerCertificate, Arrays.asList(new X509Certificate[] {caCertificate}));
                 assertTrue("", shouldVerify);
             } catch (CertPathValidatorException e) {
                 assertFalse("Please update the test when the responder improvement after renewal has improved.", shouldVerify);

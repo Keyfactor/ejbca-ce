@@ -257,7 +257,7 @@ public interface CertificateStoreSession {
      * @param findRollover Whether a rollover or normal certificate should be returned.
      * @return the sought result, or null if none exists.
      */
-    X509Certificate findLatestX509CertificateBySubject(String subjectDN, Certificate rolloverCA, boolean findRollover);
+    X509Certificate findLatestX509CertificateBySubject(String subjectDN, X509Certificate rolloverCA, boolean findRollover);
     
     /**
      * Finds username for a given certificate serial number.

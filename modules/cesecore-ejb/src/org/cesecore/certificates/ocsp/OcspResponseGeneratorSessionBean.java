@@ -474,7 +474,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             caCertificateChain.add(currentLevelCertificate);
         }
         try {
-            CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
+            CertTools.verify(leafCertificate, new ArrayList<X509Certificate>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
         } catch (CertPathValidatorException e) {
             // Apparently the built chain could not be used to validate the leaf certificate
             // this could happen if the CA keys were renewed, but the subject DN did not change
@@ -505,7 +505,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 return null;
             }
             try {
-                CertTools.verify(leafCertificate, new ArrayList<Certificate>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
+                CertTools.verify(leafCertificate, new ArrayList<>(caCertificateChain), new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
             } catch (Exception e2) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +

@@ -157,7 +157,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     private final byte[] nonce;
     private final byte[] transid;
     private final int caid;
-    private final Certificate cacert;
+    private final X509Certificate cacert;
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private final static String ALIAS = "AuthenticationModuleTstConfAlias";
@@ -188,7 +188,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
         this.caid = this.testx509ca.getCAId();
-        this.cacert = this.testx509ca.getCACertificate();
+        this.cacert = (X509Certificate) testx509ca.getCACertificate();
     }
 
     @Override

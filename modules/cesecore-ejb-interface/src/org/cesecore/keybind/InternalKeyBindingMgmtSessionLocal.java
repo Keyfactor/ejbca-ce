@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 
@@ -70,5 +70,5 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @return a collection of the trusted certificates along with their issuers' certificate chains or null if no trusted certificates or CAs are specified
      * @throws CADoesntExistsException
      */
-    Collection< Collection<Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException;
+    List< Collection<X509Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException;
 }

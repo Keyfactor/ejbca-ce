@@ -929,7 +929,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertArrayEquals("Was '"+actual+"' expected '"+expected+"'.", expected.getEncoded(), actual.getEncoded() );
     }
 
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, Certificate cacert, byte[] retMsg, int requestId) throws Exception {
+    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] retMsg, int requestId) throws Exception {
         //
         // Parse response message
         //
@@ -976,10 +976,10 @@ public abstract class CmpTestCase extends CaTestCase {
         final X509Certificate respCaCert = (X509Certificate) CertTools.getCertfromByteArray(respCmpCaCert.getEncoded());
         assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
 
-        Collection<Certificate> cacerts = new ArrayList<Certificate>();
+        Collection<X509Certificate> cacerts = new ArrayList<>();
         cacerts.add(cacert);
         assertTrue(CertTools.verify(cert, cacerts));
-        cacerts = new ArrayList<Certificate>();
+        cacerts = new ArrayList<>();
         cacerts.add(respCaCert);
         assertTrue(CertTools.verify(cert,  cacerts));
         
