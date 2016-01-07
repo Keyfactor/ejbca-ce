@@ -388,7 +388,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         chain.addAll(getCaCertificateChain(sslCertificate));
         final String alias = authenticationKeyBinding.getKeyPairAlias();
         try {
-            Collection< Collection<Certificate> > trustedCertificates = internalKeyBindingMgmtSession.getListOfTrustedCertificates(authenticationKeyBinding);
+            List< Collection<X509Certificate> > trustedCertificates = internalKeyBindingMgmtSession.getListOfTrustedCertificates(authenticationKeyBinding);
             final TrustManager trustManagers[] = new X509TrustManager[] { new ClientX509TrustManager(trustedCertificates) };
             final KeyManager keyManagers[] = new X509KeyManager[] { new ClientX509KeyManager(alias, cryptoToken.getPrivateKey(alias), chain) };
             // Now construct a SSLContext using these (possibly wrapped) KeyManagers, and the TrustManagers.

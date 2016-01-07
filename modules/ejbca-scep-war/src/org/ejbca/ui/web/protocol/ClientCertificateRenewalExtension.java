@@ -89,9 +89,9 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
         //Investigate if this could be a Client Certificate Renewal request  
         CA ca = signSession.getCAFromRequest(authenticationToken, reqmsg, false);
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-        final Certificate rolloverCACert = (ca.getRolloverCertificateChain() != null ? ca.getRolloverCertificateChain().iterator().next() : null);
+        final X509Certificate rolloverCACert = (X509Certificate) (ca.getRolloverCertificateChain() != null ? ca.getRolloverCertificateChain().iterator().next() : null);
         final String keyAlias;
-        final Certificate cacert;
+        final X509Certificate cacert;
         final boolean useRolloverCert;
         if (ca.getUseNextCACert(reqmsg)) {
             keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
@@ -102,7 +102,7 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             }            
         } else {
             keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            cacert = ca.getCACertificate();
+            cacert = (X509Certificate) ca.getCACertificate();
             useRolloverCert = false;
         }
         

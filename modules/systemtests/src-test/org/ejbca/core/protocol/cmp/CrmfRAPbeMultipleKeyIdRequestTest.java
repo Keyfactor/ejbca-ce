@@ -119,8 +119,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
     final private int caid1;
     final private int caid2;
-    final private Certificate cacert1;
-    final private Certificate cacert2;
+    final private X509Certificate cacert1;
+    final private X509Certificate cacert2;
     
     final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     final private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -144,7 +144,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                this.cacert1 = CertTools.getCertfromByteArray(cert.getEncoded());
+                this.cacert1 = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             } else {
                 this.cacert1 = null;
             }
@@ -160,7 +160,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                this.cacert2 = CertTools.getCertfromByteArray(cert.getEncoded());
+                this.cacert2 = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             } else {
                 this.cacert2 = null;
             }
