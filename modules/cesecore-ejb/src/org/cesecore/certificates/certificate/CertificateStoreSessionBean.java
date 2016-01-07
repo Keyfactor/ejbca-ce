@@ -465,12 +465,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     
     @Override
-    public X509Certificate findLatestX509CertificateBySubject(String subjectDN, Certificate rolloverCA, boolean findRollover) {
+    public X509Certificate findLatestX509CertificateBySubject(String subjectDN, X509Certificate rolloverCA, boolean findRollover) {
         final Collection<CertificateDataWrapper> certificateDatas = getCertificateDatasBySubject(subjectDN);
         X509Certificate result = null;
-        Collection<Certificate> trustedChain = null;
+        Collection<X509Certificate> trustedChain = null;
         if (rolloverCA != null) {
-            trustedChain = new ArrayList<Certificate>();
+            trustedChain = new ArrayList<>();
             trustedChain.add(rolloverCA);
         }
 

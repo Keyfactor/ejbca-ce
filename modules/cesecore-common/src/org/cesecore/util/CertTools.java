@@ -1121,11 +1121,11 @@ public abstract class CertTools {
     public static CertificateFactory getCertificateFactory(final String provider) {
         final String prov;
         if (provider == null) {
-            prov = "BC";
+            prov = BouncyCastleProvider.PROVIDER_NAME;
         } else {
             prov = provider;
         }
-        if ("BC".equals(prov)) {
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(prov)) {
             CryptoProviderTools.installBCProviderIfNotAvailable();
         }
         try {
@@ -1139,27 +1139,45 @@ public abstract class CertTools {
     }
 
     public static CertificateFactory getCertificateFactory() {
-        return getCertificateFactory("BC");
+        return getCertificateFactory(BouncyCastleProvider.PROVIDER_NAME);
     }
 
+   /**
+    * Reads certificates in PEM-format from a filename.
+    * The stream may contain other things between the different certificates.
+    * 
+    * @param certFilename filename of the file containing the certificates in PEM-format
+    * @return Ordered List of Certificates, first certificate first, or empty List
+    * @throws FileNotFoundException if certFile was not found
+    * @throws CertificateParsingException if the file contains an incorrect certificate.
+    * 
+    * @deprecated Use org.cesecore.util.CertTools.getCertsFromPEM(String, Class<T>) instead
+    */
+    @Deprecated
+   public static List<Certificate> getCertsFromPEM(String certFilename) throws FileNotFoundException, CertificateParsingException {
+        return getCertsFromPEM(certFilename, Certificate.class);
+    }
+    
     /**
      * Reads certificates in PEM-format from a filename.
      * The stream may contain other things between the different certificates.
      * 
      * @param certFilename filename of the file containing the certificates in PEM-format
+     * @param returnType a Class specifying the desired return type. Certificate can be used if return type is unknown.
+     * 
      * @return Ordered List of Certificates, first certificate first, or empty List
      * @throws FileNotFoundException if certFile was not found
      * @throws CertificateParsingException if the file contains an incorrect certificate.
      */
-    public static List<Certificate> getCertsFromPEM(String certFilename) throws FileNotFoundException, CertificateParsingException {
+    public static <T extends Certificate> List<T> getCertsFromPEM(String certFilename, Class<T> returnType) throws FileNotFoundException, CertificateParsingException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM: certFilename=" + certFilename);
         }
         InputStream inStrm = null;
-        final List<Certificate> certs;
+        final List<T> certs;
         try {
             inStrm = new FileInputStream(certFilename);
-            certs = getCertsFromPEM(inStrm);
+            certs = getCertsFromPEM(inStrm, returnType);
         } finally {
             if (inStrm != null) {
                 try {
@@ -1181,13 +1199,32 @@ public abstract class CertTools {
      * 
      * @param certstream the input stream containing the certificates in PEM-format
      * @return Ordered List of Certificates, first certificate first, or empty List
+     *
+     * @throws CertificateParsingException if the stream contains an incorrect certificate.
+     * 
+     * @deprecated Use org.cesecore.util.CertTools.getCertsFromPEM(InputStream, Class<T>) instead. 
+     */
+    @Deprecated
+    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateParsingException {
+        return getCertsFromPEM(certstream, Certificate.class);
+    }
+    
+    
+    
+    /**
+     * Reads certificates in PEM-format from an InputStream. 
+     * The stream may contain other things between the different certificates.
+     * 
+     * @param certstream the input stream containing the certificates in PEM-format
+     * @param returnType specifies the desired certificate type. Certificate can be used if certificate type is unknown.
+     * @return Ordered List of Certificates, first certificate first, or empty List
      * @exception CertificateParsingException if the stream contains an incorrect certificate.
      */
-    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateParsingException {
+    public static <T extends Certificate> List<T> getCertsFromPEM(InputStream certstream, Class<T> returnType) throws CertificateParsingException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM");
         }
-        ArrayList<Certificate> ret = new ArrayList<Certificate>();
+        ArrayList<T> ret = new ArrayList<>();
         String beginKeyTrust = "-----BEGIN TRUSTED CERTIFICATE-----";
         String endKeyTrust = "-----END TRUSTED CERTIFICATE-----";
         BufferedReader bufRdr = null;
@@ -1226,7 +1263,7 @@ public abstract class CertTools {
                     byte[] certbuf = Base64.decode(ostr.toByteArray());
                     ostr.close();
                     // Phweeew, were done, now decode the cert from file back to Certificate object
-                    Certificate cert = getCertfromByteArray(certbuf);
+                    T cert = getCertfromByteArray(certbuf, returnType);
                     ret.add(cert);
                 }
 
@@ -1355,6 +1392,7 @@ public abstract class CertTools {
         printStream.println(endKey);
     }
 
+
     /**
      * Creates Certificate from byte[], can be either an X509 certificate or a CVCCertificate
      * 
@@ -1364,42 +1402,98 @@ public abstract class CertTools {
      * @return a Certificate 
      * @throws CertificateParsingException if certificate couldn't be parsed from cert
      * 
+     * @deprecated Use org.cesecore.util.CertTools.getCertfromByteArray(byte[], String, Class<T>) instead. 
      */
+    @Deprecated
     public static Certificate getCertfromByteArray(byte[] cert, String provider) throws CertificateParsingException {
-        Certificate ret = null;
+        return getCertfromByteArray(cert, provider, Certificate.class);
+    }
+    
+    /**
+     * Creates Certificate from byte[], can be either an X509 certificate or a CVCCertificate
+     * 
+     * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate
+     * @param provider provider for example "SUN" or "BC", use null for the default provider (BC)
+     * @param returnType the type of Certificate to be returned. Certificate can be used if certificate type is unknown.
+     * 
+     * @return a Certificate 
+     * @throws CertificateParsingException if certificate couldn't be parsed from cert, or if the incorrect return type was specified.
+     * 
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Certificate> T getCertfromByteArray(byte[] cert, String provider, Class<T> returnType) throws CertificateParsingException {
+        T ret = null;
         String prov = provider;
         if (provider == null) {
             prov = BouncyCastleProvider.PROVIDER_NAME;
         }
-        try {
-            final CertificateFactory cf = CertTools.getCertificateFactory(prov);
-            ret = cf.generateCertificate(new ByteArrayInputStream(cert));
-        } catch (CertificateException e) {
-            log.debug("CertificateException trying to read X509Certificate.", e);
-        }
-        if (ret == null) {
-            // We could not create an X509Certificate, see if it is a CVC certificate instead
+          
+        if(returnType.equals(X509Certificate.class)) {
+            ret = (T) parseX509Certificate(prov, cert);
+        } else if(returnType.equals(CardVerifiableCertificate.class)) {
+            ret = (T) parseCardVerifiableCertificate(prov, cert);
+        } else {
+            //Let's guess...
             try {
-                final CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
-                ret = new CardVerifiableCertificate(parsedObject);
-            } catch (ParseException e) {
-                log.debug("ParseException trying to read CVCCertificate.", e);
-            } catch (ConstructionException e) {
-                log.debug("ConstructionException trying to read CVCCertificate.", e);
-            } 
+                ret = (T) parseX509Certificate(prov, cert);
+            } catch (CertificateParsingException e) {
+                try {
+                    ret = (T) parseCardVerifiableCertificate(prov, cert);
+                } catch (CertificateParsingException e1) {
+                    throw new CertificateParsingException("No certificate could be parsed from byte array. See debug logs for details.");
+                }
+            }
         }
-        if(ret == null) {
-            throw new CertificateParsingException("No certificate could be parsed from byte array. See debug logs for details.");
-        }
+        
         return ret;
     }
+    
+    private static X509Certificate parseX509Certificate(String provider, byte[] cert) throws CertificateParsingException {
+        final CertificateFactory cf = CertTools.getCertificateFactory(provider);
+        try {
+            X509Certificate result = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));
+            if(result != null) {
+                return result;
+            } else {
+                throw new CertificateException("Could not parse byte array as X509Certificate.");
+            }        
+        } catch (CertificateException e) {
+            throw new CertificateParsingException("Could not parse byte array as X509Certificate.", e);
+        }
+    }
+    
+    private static CardVerifiableCertificate parseCardVerifiableCertificate(String provider, byte[] cert) throws CertificateParsingException {
+        // We could not create an X509Certificate, see if it is a CVC certificate instead
+        try {
+            final CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
+            return new CardVerifiableCertificate(parsedObject);
+        } catch (ParseException e) {
+            throw new CertificateParsingException("ParseException trying to read CVCCertificate.", e);
+        } catch (ConstructionException e) {
+            throw new CertificateParsingException("ConstructionException trying to read CVCCertificate.", e);
+        } 
+    }
 
+   
+    
     /**
      * 
      * @throws CertificateParsingException if the byte array does not contain a proper certificate.
+     * 
+     * @deprecated Use org.cesecore.util.CertTools.getCertfromByteArray(byte[], Class<T>) to specify return type instead.
      */
+    @Deprecated
     public static Certificate getCertfromByteArray(byte[] cert) throws CertificateParsingException {
-        return getCertfromByteArray(cert, BouncyCastleProvider.PROVIDER_NAME);
+        return getCertfromByteArray(cert, Certificate.class);
+    }
+    
+    /**
+     * @param returnType the type of Certificate to be returned. Certificate can be used if certificate type is unknown.
+     * 
+     * @throws CertificateParsingException if the byte array does not contain a proper certificate.
+     */
+    public static <T extends Certificate> T getCertfromByteArray(byte[] cert, Class<T> returnType) throws CertificateParsingException {
+        return getCertfromByteArray(cert, BouncyCastleProvider.PROVIDER_NAME, returnType);
     }
 
     /**
@@ -2592,7 +2686,7 @@ public abstract class CertTools {
      * @return true if verified OK
      * @throws CertPathValidatorException if certificate could not be validated
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain, Date date, PKIXCertPathChecker... pkixCertPathCheckers)
+    public static boolean verify(Certificate certificate, Collection<X509Certificate> caCertChain, Date date, PKIXCertPathChecker... pkixCertPathCheckers)
             throws CertPathValidatorException {
         try {
             ArrayList<Certificate> certlist = new ArrayList<Certificate>();
@@ -2603,7 +2697,7 @@ public abstract class CertTools {
             
             // Create TrustAnchor. Since EJBCA use BouncyCastle provider, we assume
             // certificate already in correct order
-            X509Certificate[] cac = (X509Certificate[]) caCertChain.toArray(new X509Certificate[] {});
+            X509Certificate[] cac = caCertChain.toArray(new X509Certificate[] {});
             TrustAnchor anchor = new TrustAnchor(cac[0], null);
             // Set the PKIX parameters
             PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
@@ -2639,7 +2733,7 @@ public abstract class CertTools {
      * @return true if verified OK
      * @throws CertPathValidatorException if verification failed
      */
-    public static boolean verify(Certificate certificate, Collection<Certificate> caCertChain) throws CertPathValidatorException {
+    public static boolean verify(Certificate certificate, Collection<X509Certificate> caCertChain) throws CertPathValidatorException {
         return verify(certificate, caCertChain, null);
     }
     
@@ -2653,7 +2747,7 @@ public abstract class CertTools {
      * @param optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      */
-    public static boolean verifyWithTrustedCertificates(Certificate certificate, Collection< Collection<Certificate> > trustedCertificates, PKIXCertPathChecker...pkixCertPathCheckers) {
+    public static boolean verifyWithTrustedCertificates(Certificate certificate, List< Collection<X509Certificate>> trustedCertificates, PKIXCertPathChecker...pkixCertPathCheckers) {
         
         if(trustedCertificates == null) {
             if(log.isDebugEnabled()) {
@@ -2670,7 +2764,7 @@ public abstract class CertTools {
         }
         
         BigInteger certSN = getSerialNumber(certificate);
-        for(Collection<Certificate> trustedCertChain : trustedCertificates) {
+        for(Collection<X509Certificate> trustedCertChain : trustedCertificates) {
             Certificate trustedCert = trustedCertChain.iterator().next();
             BigInteger trustedCertSN = getSerialNumber(trustedCert);
             if(certSN.equals(trustedCertSN)) {

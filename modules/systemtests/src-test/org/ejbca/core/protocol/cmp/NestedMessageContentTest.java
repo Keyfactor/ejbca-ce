@@ -167,7 +167,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
     private final int caid;
-    private final Certificate cacert;
+    private final X509Certificate cacert;
     private final CA testx509ca;
     private static final X500Name SUBJECT_DN= CertTools.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, O=SE");
     private final String issuerDN;
@@ -191,7 +191,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
         this.caid = this.testx509ca.getCAId();
-        this.cacert = this.testx509ca.getCACertificate();
+        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
     }
 
     @Override
