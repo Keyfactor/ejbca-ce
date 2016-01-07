@@ -10,7 +10,6 @@
 package org.ejbca.ui.web.protocol;
 
 import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
