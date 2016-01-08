@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -495,9 +496,9 @@ public class AuditorManagedBean implements Serializable {
     private void updateCmsSigningCas() {
         final Map<Integer, String> map = caSession.getCAIdToNameMap();
         cmsSigningCaOptions.clear();
-        for (final Entry<Integer,String> entry : map.entrySet()) {
+        for (int caid :  caSession.getAuthorizedCaIds(EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject())) {
             // TODO: Would be nice to check if the CMS signer service is activated here before we add it
-            cmsSigningCaOptions.add(new SelectItem(entry.getKey(), entry.getValue()));
+            cmsSigningCaOptions.add(new SelectItem(caid, map.get(caid)));
         }
         if (cmsSigningCa == null && !cmsSigningCaOptions.isEmpty()) {
             cmsSigningCa = (Integer) cmsSigningCaOptions.get(0).getValue();
