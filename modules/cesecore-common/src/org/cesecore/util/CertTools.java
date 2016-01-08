@@ -73,7 +73,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -558,7 +557,7 @@ public abstract class CertTools {
             log.debug("Searching for EMail Address in Subject DN");
             ArrayList<String> emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
             if (!emails.isEmpty()) {
-                return (String) emails.get(0);
+                return emails.get(0);
             }
         }
         return null;
@@ -1792,12 +1791,7 @@ public abstract class CertTools {
         random.setSeed(new Date().getTime());
         random.nextBytes(serno);
 
-        SubjectPublicKeyInfo pkinfo;
-        try {
-            pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(publicKey.getEncoded()));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Provided public key could not be read to ASN1Primitive", e);
-        }
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
                 firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
 
@@ -1861,115 +1855,55 @@ public abstract class CertTools {
     /**
      * Get the authority key identifier from a certificate extensions
      * 
-     * @param cert certificate containing the extension
+     * @param certificate certificate containing the extension
      * @return byte[] containing the authority key identifier, or null if it does not exist
      */
-    public static byte[] getAuthorityKeyId(Certificate cert) {
-        if (cert == null) {
-            return null;
-        }
-        if (cert instanceof X509Certificate) {
-            X509Certificate x509cert = (X509Certificate) cert;
-                    
-            byte[] extvalue = x509cert.getExtensionValue("2.5.29.35");
-            if (extvalue == null) {
-                return null;
-            }
-            try {
-                ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
-                try {
-                    DEROctetString oct = (DEROctetString) (octAsn1InputStream.readObject());
-                    ASN1InputStream keyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
-                    try {
-                        AuthorityKeyIdentifier keyId = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyAsn1InputStream.readObject());
-                        return keyId.getKeyIdentifier();
-                    } finally {
-                        keyAsn1InputStream.close();
-                    }
-                } finally {
-                    octAsn1InputStream.close();
-                }
-            } catch (IOException e) {
-                throw new IllegalStateException("Could not parse authority key identifier from certificate.", e);
+    public static byte[] getAuthorityKeyId(final Certificate certificate) {
+        if (certificate != null && certificate instanceof X509Certificate) {
+            final ASN1Primitive asn1Sequence = getExtensionValue((X509Certificate) certificate, Extension.authorityKeyIdentifier.getId()); // "2.5.29.35"
+            if (asn1Sequence != null) {
+                return AuthorityKeyIdentifier.getInstance(asn1Sequence).getKeyIdentifier();
             }
         }
         return null;
-    } // getAuthorityKeyId
+    }
 
     /**
      * Get the subject key identifier from a certificate extensions
      * 
-     * @param cert certificate containing the extension
+     * @param certificate certificate containing the extension
      * @return byte[] containing the subject key identifier, or null if it does not exist
      */
-    public static byte[] getSubjectKeyId(Certificate cert) {
-        if (cert == null) {
-            return null;
-        }
-        if (cert instanceof X509Certificate) {
-            X509Certificate x509cert = (X509Certificate) cert;
-            byte[] extvalue = x509cert.getExtensionValue("2.5.29.14");
-            if (extvalue == null) {
-                return null;
-            }
-            ASN1InputStream extvalueAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
-            try {
-                try {
-                    ASN1OctetString str = ASN1OctetString.getInstance(extvalueAsn1InputStream.readObject());
-                    ASN1InputStream strAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
-                    try {
-                        SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(strAsn1InputStream.readObject());
-                        return keyId.getKeyIdentifier();
-                    } finally {
-                        strAsn1InputStream.close();
-                    }
-                } finally {
-                    extvalueAsn1InputStream.close();
-                }
-            } catch (IOException e) {
-                throw new IllegalStateException("Could not parse subject key ID from certificate.", e);
+    public static byte[] getSubjectKeyId(final Certificate certificate) {
+        if (certificate != null && certificate instanceof X509Certificate) {
+            final ASN1Primitive asn1Sequence = getExtensionValue((X509Certificate) certificate, Extension.subjectKeyIdentifier.getId()); // "2.5.29.14"
+            if (asn1Sequence != null) {
+                return SubjectKeyIdentifier.getInstance(asn1Sequence).getKeyIdentifier();
             }
         }
         return null;
-    } // getSubjectKeyId
+    }
 
     /**
      * Get a certificate policy ID from a certificate policies extension
      * 
-     * @param cert certificate containing the extension
+     * @param certificate certificate containing the extension
      * @param pos position of the policy id, if several exist, the first is as pos 0
      * @return String with the certificate policy OID, or null if an id at the given position does not exist
      * @throws IOException if extension can not be parsed
      */
-    public static String getCertificatePolicyId(Certificate cert, int pos) throws IOException {
-        String ret = null;
-        if (cert instanceof X509Certificate) {
-            X509Certificate x509cert = (X509Certificate) cert;
-            byte[] extvalue = x509cert.getExtensionValue(Extension.certificatePolicies.getId());
-            if (extvalue == null) {
-                return null;
-            }
-            ASN1InputStream extAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
-            try {
-                DEROctetString oct = (DEROctetString) (extAsn1InputStream.readObject());
-                ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
-                try {
-                    ASN1Sequence seq = (ASN1Sequence) octAsn1InputStream.readObject();
-                    // Check the size so we don't ArrayIndexOutOfBounds
-                    if (seq.size() < pos + 1) {
-                        return null;
-                    }
-                    PolicyInformation pol = PolicyInformation.getInstance((ASN1Sequence) seq.getObjectAt(pos));
-                    ret = pol.getPolicyIdentifier().getId();
-                } finally {
-                    octAsn1InputStream.close();
+    public static String getCertificatePolicyId(Certificate certificate, int pos) throws IOException {
+        if (certificate != null && certificate instanceof X509Certificate) {
+            final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
+            if (asn1Sequence != null) {
+                // Check the size so we don't ArrayIndexOutOfBounds
+                if (asn1Sequence.size() >= pos + 1) {
+                    return PolicyInformation.getInstance(asn1Sequence.getObjectAt(pos)).getPolicyIdentifier().getId();
                 }
-            } finally {
-                extAsn1InputStream.close();
             }
         }
-        return ret;
-    } // getCertificatePolicyId
+        return null;
+    }
 
     /**
      * Gets the Microsoft specific UPN altName (altName, OtherName).
@@ -1989,10 +1923,8 @@ public abstract class CertTools {
             X509Certificate x509cert = (X509Certificate) cert;
             Collection<List<?>> altNames = x509cert.getSubjectAlternativeNames();
             if (altNames != null) {
-                Iterator<List<?>> i = altNames.iterator();
-                while (i.hasNext()) {
-                    ASN1Sequence seq = getAltnameSequence((List<?>) i.next());
-                    ret = getUPNStringFromSequence(seq);
+                for (final List<?> next : altNames) {
+                    ret = getUPNStringFromSequence(getAltnameSequence(next));
                     if (ret != null) {
                         break;
                     }
@@ -2000,7 +1932,7 @@ public abstract class CertTools {
             }
         }
         return ret;
-    } // getUPNAltName
+    }
 
     /**
      * Helper method for the above method
@@ -2058,7 +1990,7 @@ public abstract class CertTools {
             if (altNames != null) {
                 Iterator<List<?>> i = altNames.iterator();
                 while (i.hasNext()) {
-                    ASN1Sequence seq = getAltnameSequence((List<?>) i.next());
+                    ASN1Sequence seq = getAltnameSequence(i.next());
                     ret = getPermanentIdentifierStringFromSequence(seq);
                     if (ret != null) {
                         break;
@@ -2255,7 +2187,7 @@ public abstract class CertTools {
             if (altNames != null) {
                 Iterator<List<?>> i = altNames.iterator();
                 while (i.hasNext()) {
-                    ASN1Sequence seq = getAltnameSequence((List<?>) i.next());
+                    ASN1Sequence seq = getAltnameSequence(i.next());
                     if (seq != null) {
                         String guid = CertTools.getGUIDStringFromSequence(seq);
                         if (guid != null) {
@@ -2282,10 +2214,8 @@ public abstract class CertTools {
 
     private static ASN1Sequence getAltnameSequence(byte[] value) {
         ASN1Primitive oct = null;
-        ASN1InputStream stream = new ASN1InputStream(new ByteArrayInputStream(value));
         try {
-            oct = stream.readObject();
-            stream.close();
+            oct = ASN1Primitive.fromByteArray(value);
         } catch (IOException e) {
             throw new RuntimeException("Could not read ASN1InputStream", e);
         }
@@ -2587,10 +2517,8 @@ public abstract class CertTools {
             // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
             principals.add(new DERTaggedObject(true, 0, new ASN1Integer(0)));
             // The names themselves are yet another sequence
-            final Iterator<String> i = principalarr.iterator();
             final ASN1EncodableVector names = new ASN1EncodableVector();
-            while (i.hasNext()) {
-                String principalName = (String) i.next();
+            for (final String principalName : principalarr) {
                 names.add(new DERGeneralString(principalName));
             }
             principals.add(new DERTaggedObject(true, 1, new DERSequence(names)));
@@ -2846,11 +2774,11 @@ public abstract class CertTools {
                 if (obj == null) {
                     return null;
                 }
-                ASN1Sequence distributionPoints = (ASN1Sequence) obj;
-                for (int i = 0; i < distributionPoints.size(); i++) {
-                    ASN1Sequence distrPoint = (ASN1Sequence) distributionPoints.getObjectAt(i);
-                    for (int j = 0; j < distrPoint.size(); j++) {
-                        ASN1TaggedObject tagged = (ASN1TaggedObject) distrPoint.getObjectAt(j);
+                ASN1Sequence crlDistributionPoints = (ASN1Sequence) obj;
+                for (int i = 0; i < crlDistributionPoints.size(); i++) {
+                    ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
+                    for (int j = 0; j < distributionPoint.size(); j++) {
+                        ASN1TaggedObject tagged = (ASN1TaggedObject) distributionPoint.getObjectAt(j);
                         if (tagged.getTagNo() == 0) {
                             String url = getStringFromGeneralNames(tagged.getObject());
                             if (url != null) {
@@ -2944,32 +2872,15 @@ public abstract class CertTools {
         return ret;
     }
 
-    /** Reads PrivateKeyUsagePeriod extension from a certificate
-     * 
-     */
+    /** @return PrivateKeyUsagePeriod extension from a certificate */
     public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(final X509Certificate cert) {
         PrivateKeyUsagePeriod res = null;
         final byte[] extvalue = cert.getExtensionValue(Extension.privateKeyUsagePeriod.getId());
-        if ((extvalue != null) && (extvalue.length > 0)) {
+        if (extvalue != null && extvalue.length > 0) {
             if (log.isTraceEnabled()) {
                 log.trace("Found a PrivateKeyUsagePeriod in the certificate with subject: " + cert.getSubjectDN().toString());
             }
-            ASN1InputStream extAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
-            try {
-            try {
-                final DEROctetString oct = (DEROctetString) (extAsn1InputStream.readObject());
-                ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
-                try {
-                    res = PrivateKeyUsagePeriod.getInstance((ASN1Sequence) octAsn1InputStream.readObject());
-                } finally {
-                    octAsn1InputStream.close();
-                }
-            } finally {
-                extAsn1InputStream.close();
-            }
-            } catch(IOException e) {
-                throw new IllegalStateException("Unknown IOException caught when trying to parse certificate.", e);
-            }
+            res = PrivateKeyUsagePeriod.getInstance(DEROctetString.getInstance(extvalue).getOctets());
         }
         return res;
     }
@@ -2984,9 +2895,7 @@ public abstract class CertTools {
         if (cert == null) {
             return null;
         }
-        byte[] bytes = cert.getExtensionValue(oid);
-        return getDerObjectFromByteArray(bytes);
-
+        return getDerObjectFromByteArray(cert.getExtensionValue(oid));
     }
 
     /**
@@ -2999,19 +2908,15 @@ public abstract class CertTools {
         if (crl == null || oid == null) {
             return null;
         }
-        byte[] bytes = crl.getExtensionValue(oid);
-        return getDerObjectFromByteArray(bytes);
+        return getDerObjectFromByteArray(crl.getExtensionValue(oid));
     }
 
     private static ASN1Primitive getDerObjectFromByteArray(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
         try {
-            ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
-            aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-            return aIn.readObject();
+            return ASN1Primitive.fromByteArray(ASN1OctetString.getInstance(bytes).getOctets());
         } catch (IOException e) {
             throw new RuntimeException("Caught an unexected IOException", e);
         }
@@ -3029,7 +2934,7 @@ public abstract class CertTools {
             return null;
         }
         DERTaggedObject taggedObject = (DERTaggedObject) namesSequence.getObjectAt(0);
-        if (taggedObject.getTagNo() != 6) { // uniformResourceIdentifier [6] IA5String,
+        if (taggedObject.getTagNo() != GeneralName.uniformResourceIdentifier) { // uniformResourceIdentifier [6] IA5String,
             return null;
         }
         return new String(ASN1OctetString.getInstance(taggedObject, false).getOctets());
@@ -3690,7 +3595,7 @@ public abstract class CertTools {
             if (log.isDebugEnabled()) {
                 log.debug("Looking in cacertmap for '" + CertTools.getSubjectDN(currentcert) + "'");
             }
-            Certificate nextcert = (Certificate) cacertmap.get(CertTools.getSubjectDN(currentcert));
+            Certificate nextcert = cacertmap.get(CertTools.getSubjectDN(currentcert));
             if (nextcert == null) {
                 if(log.isDebugEnabled()) {
                     log.debug("Dumping keys of CA certificate map:");
@@ -3809,8 +3714,7 @@ public abstract class CertTools {
         ContentSigner signer;
         CertificationRequestInfo reqInfo;
         try {
-            ASN1Sequence seq = (ASN1Sequence) ASN1Primitive.fromByteArray(publickey.getEncoded());
-            SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);
+            SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publickey.getEncoded());
             reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
 
             if (provider == null) {
