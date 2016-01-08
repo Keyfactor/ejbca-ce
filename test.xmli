@@ -34,7 +34,7 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
-    <!--   	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" />
+       	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" />
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test" />        	       	       
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" />  
        	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" />              	       	 	
@@ -45,7 +45,7 @@
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
     	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
-    	<antcall target="optionaltestct" inheritrefs="true"/>-->
+    	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
     	<antcall target="createreport"/>
     </target>
