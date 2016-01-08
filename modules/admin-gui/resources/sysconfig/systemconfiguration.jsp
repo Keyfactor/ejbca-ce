@@ -657,8 +657,8 @@ org.cesecore.authorization.AuthorizationDeniedException
                 <f:selectItems value="#{systemConfigMBean.statedumpAvailableTemplates}"/>
             </h:selectOneMenu>
             
-            <%--<h:outputText value="#{web.text.STATEDUMPTAB_ZIPFILE}"/>
-            <t:inputFileUpload id="statedumpFile" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>--%>
+            <h:outputText value="#{web.text.STATEDUMPTAB_ZIPFILE}"/>
+            <t:inputFileUpload id="statedumpFile" value="#{systemConfigMBean.statedumpFile}" title="#{web.text.STATEDUMPTAB_ZIPFILE_TOOLTIP}"/>
             
             <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
             <h:panelGroup>
