@@ -137,14 +137,12 @@
     				if( request.getParameter(BUTTON_VIEW_ALIAS) != null){
       					// Display  cmpaliaspage.jsp
      					alias = request.getParameter(SELECT_ALIASES);
-     					if(alias != null) {
-       						if(!alias.trim().equals("")){
-    	   						if(!cmpconfig.aliasExists(alias)) {
-    	   							cmpconfig.addAlias(alias);
-    	   						}
-    	   					  	cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
-           						includefile="cmpaliaspage.jspf"; 
-       						}
+     					if(alias != null && !alias.trim().equals("")) {
+    	   					if(!cmpconfig.aliasExists(alias)) {
+    	   						cmpconfig.addAlias(alias);
+    	   					}
+    	   					cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
+           					includefile="cmpaliaspage.jspf"; 
      					} else {
       						includefile="cmpaliasespage.jspf";     
      					}
