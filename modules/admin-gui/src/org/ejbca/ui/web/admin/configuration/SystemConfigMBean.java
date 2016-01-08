@@ -12,9 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -32,6 +38,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -457,18 +464,71 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         super.addNonTranslatedInfoMessage("State dump was successfully imported.");
     }
     
-    private void importStatedump(byte[] zip, boolean lockdown) throws IOException {
+    private void importStatedump(byte[] zip, boolean lockdown) throws IOException, AuthorizationDeniedException {
+        // Check that it's a ZIP file
+        if (zip.length < 2 || zip[0] != 'P' || zip[1] != 'K') {
+            throw new IOException("File is not a valid zip file.");
+        }
+        
         // Create temporary directory
-        // TODO
+        final Path tempdirPath = Files.createTempDirectory("ejbca_statedump_gui");
+        final File tempdir = tempdirPath.toFile();
+        log.info("Importing " + zip.length + " byte statedump zip file, using temporary directory " + tempdir);
         
         // Unpack the zip file
-        // TODO unpack zip file
-        
-        // Import statedump
-        //importStatedump(tempdir, lockdown);
-        
-        // Clean up
-        // TODO
+        try (final ZipInputStream zipStream = new ZipInputStream(new ByteArrayInputStream(zip))) {
+            boolean empty = true;
+            while (true) {
+                final ZipEntry entry = zipStream.getNextEntry();
+                if (entry == null) { break; }
+                if (entry.isDirectory()) {
+                    zipStream.closeEntry();
+                    continue;
+                }
+                
+                final String name = entry.getName().replaceFirst("^.*/([^/]+)$", "$1");
+                if (name.matches("[a-z0-9_-]+\\.xml")) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Extracting zip file entry " + name + " into temporary directory");
+                    }
+                    
+                    if (entry.getSize() == 0) {
+                        log.debug("Ignoring empty file");
+                        zipStream.closeEntry();
+                        continue;
+                    } else if (entry.getSize() < 0 || 100*entry.getCompressedSize() < entry.getSize()) {
+                        throw new IOException("Zip file contains a file with extreme compression factor (100x or more). Aborting.");
+                    }
+                    
+                    // Create file exclusively (don't overwrite, and don't write to special devices or operating system special files)
+                    final Path filepath = Files.createFile(new File(tempdir, name).toPath());
+                    try (final FileOutputStream fos = new FileOutputStream(filepath.toFile())) {
+                        final byte[] buff = new byte[16*1024];
+                        while (true) {
+                            int len = zipStream.read(buff);
+                            if (len <= 0) { break; }
+                            fos.write(buff, 0, len);
+                        }
+                    }
+                    zipStream.closeEntry();
+                    empty = false;
+                } else if (log.isDebugEnabled()) {
+                    log.debug("Ignoring zip file entry " + name);
+                }
+            }
+            
+            if (empty) {
+                throw new IOException("Zip file didn't contain any statedump xml files.");
+            }
+            
+            // Import statedump
+            importStatedump(tempdir, lockdown);
+            
+        } finally {
+            // Clean up
+            log.debug("Removing temporary directory for statedump XML files");
+            FileUtils.deleteDirectory(tempdir);
+        }
     }
     
     private void lockDownStatedump() throws AuthorizationDeniedException {
