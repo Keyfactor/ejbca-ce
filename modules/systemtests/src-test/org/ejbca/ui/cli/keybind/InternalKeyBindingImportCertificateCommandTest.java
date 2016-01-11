@@ -140,7 +140,7 @@ public class InternalKeyBindingImportCertificateCommandTest {
         // Now export the same cert
         String[] argsexport = new String[] { TESTCLASS_NAME, certificateExportFile.getAbsolutePath() };
         commandexport.execute(argsexport);
-        List<Certificate> certs = CertTools.getCertsFromPEM(certificateExportFile.getAbsolutePath());
+        List<Certificate> certs = CertTools.getCertsFromPEM(certificateExportFile.getAbsolutePath(), Certificate.class);
         assertEquals("One certificate should be returned", 1, certs.size());
         Certificate cert = certs.get(0);
         assertEquals("Same certificate should have been exported as was imported", certSerial, CertTools.getSerialNumberAsString(cert));

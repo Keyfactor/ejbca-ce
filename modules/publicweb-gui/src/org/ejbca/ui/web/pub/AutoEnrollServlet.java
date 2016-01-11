@@ -244,14 +244,14 @@ public class AutoEnrollServlet extends HttpServlet {
 	        } catch (Exception e) {
 	            log.error("Could not add user "+username, e);
 	        }
-	        Certificate cert=null;
+	        X509Certificate cert=null;
 	        debugInfo += "Request: " + requestData + "\n";
 	        req.setUsername(username);
 	        req.setPassword(password);
 	        ResponseMessage resp;
 	        try {
 	            resp = signSession.createCertificate(internalAdmin, req, X509ResponseMessage.class, null);
-	            cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+	            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
 	            result = signSession.createPKCS7(internalAdmin, cert, true);
 	            debugInfo += "Resulting cert: " + new String(Base64.encode(result, true)) + "\n"; 
 	        } catch (Exception e) {

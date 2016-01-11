@@ -364,7 +364,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         }
 
         byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(filename), "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-        Certificate cert = CertTools.getCertfromByteArray(bytes);
+        Certificate cert = CertTools.getCertfromByteArray(bytes, Certificate.class);
         return cert;
 
     }

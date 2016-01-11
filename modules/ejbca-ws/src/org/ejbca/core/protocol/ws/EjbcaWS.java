@@ -1230,13 +1230,13 @@ public class EjbcaWS implements IEjbcaWS {
             CertificateExtensionException, CertificateParsingException {
         byte[] retval = null;
         final ResponseMessage resp = signSession.createCertificate(admin, msg, X509ResponseMessage.class, null);
-        final java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        final java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), java.security.cert.Certificate.class);
         if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
             retval = cert.getEncoded();
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
-            retval = signSession.createPKCS7(admin, cert, false);
+            retval = signSession.createPKCS7(admin, (X509Certificate) cert, false);
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
-            retval = signSession.createPKCS7(admin, cert, true);
+            retval = signSession.createPKCS7(admin, (X509Certificate) cert, true);
         }
         if (hardTokenSN != null) {
             hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);

@@ -101,7 +101,7 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 			if (!StringUtils.equalsIgnoreCase(certfile, "null")) {
 				try {
 					FileInputStream in = new FileInputStream(certfile);
-					Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+					Collection<Certificate> certs = CertTools.getCertsFromPEM(in, Certificate.class);
 					Iterator<Certificate> iter = certs.iterator();
 					if (iter.hasNext()) {
 						incert = iter.next();
@@ -109,7 +109,7 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 				} catch (IOException e) {
 					// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
 					byte[] bytes = FileTools.readFiletoBuffer(certfile);
-					incert = CertTools.getCertfromByteArray(bytes); // check if it is a good cert, decode PEM if it is PEM, etc
+					incert = CertTools.getCertfromByteArray(bytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
 				}				
 				getPrintStream().println("Using certificate with subjectDN '"+CertTools.getSubjectDN(incert)+"', and issuerDN '"+CertTools.getIssuerDN(incert)+"'.");
 				logcert = new org.ejbca.core.protocol.ws.client.gen.Certificate(incert);

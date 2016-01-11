@@ -103,7 +103,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
             try {
                 try {
                     //Try to parse as PEM
-                    certs = CertTools.getCertsFromPEM(certificateFile);
+                    certs = CertTools.getCertsFromPEM(certificateFile, Certificate.class);
                     if (certs.size() != 1) {
                         log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
                         return CommandResult.FUNCTIONAL_FAILURE;
@@ -113,7 +113,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 } catch (CertificateParsingException e) {
                     //Try parsing as binary instead.
                     try {
-                        certificate = CertTools.getCertfromByteArray(IOUtils.toByteArray(new FileInputStream(certificateFile)));
+                        certificate = CertTools.getCertfromByteArray(IOUtils.toByteArray(new FileInputStream(certificateFile)), Certificate.class);
                         certs = Arrays.asList(certificate);
                     } catch (CertificateParsingException e2) {
                         log.error("Error: " + certificateFile + " does not contain a certificate, either in PEM or in binary format.");

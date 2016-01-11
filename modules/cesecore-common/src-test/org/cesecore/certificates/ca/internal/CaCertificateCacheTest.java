@@ -117,15 +117,15 @@ public class CaCertificateCacheTest {
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
 		Collection<Certificate> certs = new ArrayList<Certificate>();
-		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
+		X509Certificate testrootcert = CertTools.getCertfromByteArray(testroot, X509Certificate.class);
 		certs.add(testrootcert);
-		X509Certificate testrootnewcert = (X509Certificate)CertTools.getCertfromByteArray(testrootnew);
+		X509Certificate testrootnewcert = CertTools.getCertfromByteArray(testrootnew, X509Certificate.class);
 		certs.add(testrootnewcert);
-		X509Certificate testsubcert = (X509Certificate)CertTools.getCertfromByteArray(testsub);
+		X509Certificate testsubcert = CertTools.getCertfromByteArray(testsub, X509Certificate.class);
 		certs.add(testsubcert);
-		Certificate testcvccert = CertTools.getCertfromByteArray(testcvc);
+		Certificate testcvccert = CertTools.getCertfromByteArray(testcvc, Certificate.class);
 		certs.add(testcvccert);
-		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
+		X509Certificate testscepcert = CertTools.getCertfromByteArray(testscepca, X509Certificate.class);
 		certs.add(testscepcert);
 		CaCertificateCache cache = CaCertificateCache.INSTANCE;
 		cache.loadCertificates(certs);
@@ -154,15 +154,15 @@ public class CaCertificateCacheTest {
 	@Test
 	public void test02loadCertificates() throws Exception {
 		Collection<Certificate> certs = new ArrayList<Certificate>();
-		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
+		X509Certificate testrootcert = CertTools.getCertfromByteArray(testroot, X509Certificate.class);
 		certs.add(testrootcert);
-		X509Certificate testrootnewcert = (X509Certificate)CertTools.getCertfromByteArray(testrootnew);
+		X509Certificate testrootnewcert = CertTools.getCertfromByteArray(testrootnew, X509Certificate.class);
 		certs.add(testrootnewcert);
-		X509Certificate testsubcert = (X509Certificate)CertTools.getCertfromByteArray(testsub);
+		X509Certificate testsubcert = CertTools.getCertfromByteArray(testsub, X509Certificate.class);
 		certs.add(testsubcert);
-		Certificate testcvccert = CertTools.getCertfromByteArray(testcvc);
+		Certificate testcvccert = CertTools.getCertfromByteArray(testcvc, Certificate.class);
 		certs.add(testcvccert);
-		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
+		X509Certificate testscepcert = CertTools.getCertfromByteArray(testscepca, X509Certificate.class);
 		certs.add(testscepcert);
 		CaCertificateCache cache =  CaCertificateCache.INSTANCE;
 		cache.loadCertificates(certs);

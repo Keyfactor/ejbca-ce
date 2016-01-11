@@ -144,12 +144,12 @@ public class CADataHandler implements Serializable {
   public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CertificateImportException {
       Collection<Certificate> certs = null;
       try {
-          certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+          certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
       } catch (CertificateException e) {
           log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
           // See if it is a single binary certificate
           certs = new ArrayList<Certificate>();
-          certs.add(CertTools.getCertfromByteArray(certbytes));
+          certs.add(CertTools.getCertfromByteArray(certbytes, Certificate.class));
       }
       caadminsession.importCACertificateUpdate(administrator, caId, EJBTools.wrapCertCollection(certs));
       info.cAsEdited();
@@ -161,11 +161,11 @@ public class CADataHandler implements Serializable {
   public void importCACert(String caname, byte[] certbytes) throws Exception {
 	  Collection<Certificate> certs = null;
 	  try {
-		  certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+		  certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
 	  } catch (CertificateException e) {
 		  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
 		  // See if it is a single binary certificate
-		  Certificate cert = CertTools.getCertfromByteArray(certbytes);
+		  Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
 		  certs = new ArrayList<Certificate>();
 		  certs.add(cert);
 	  }
@@ -282,14 +282,14 @@ public class CADataHandler implements Serializable {
       List<Certificate> certChain = null;
       if (caChainBytes != null) {
           try {
-              certChain = CertTools.getCertsFromPEM(new ByteArrayInputStream(caChainBytes));
+              certChain = CertTools.getCertsFromPEM(new ByteArrayInputStream(caChainBytes), Certificate.class);
               if (certChain.size()==0) {
                   throw new Exception("Awkward code flow.."); // TODO
               }
           } catch (Exception e) {
               // Maybe it's just a single binary CA cert
               try {
-                  Certificate cert = CertTools.getCertfromByteArray(caChainBytes);
+                  Certificate cert = CertTools.getCertfromByteArray(caChainBytes, Certificate.class);
                   certChain = new ArrayList<Certificate>();
                   certChain.add(cert);
               } catch (CertificateParsingException e2) {
@@ -315,11 +315,11 @@ public class CADataHandler implements Serializable {
 	  try {
           final List<Certificate> certChain = new ArrayList<Certificate>();
 		  try {
-		      certChain.addAll(CertTools.getCertsFromPEM(new ByteArrayInputStream(certBytes)));
+		      certChain.addAll(CertTools.getCertsFromPEM(new ByteArrayInputStream(certBytes), Certificate.class));
           } catch (CertificateException e) {
               log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
               // See if it is a single binary certificate
-              certChain.add(CertTools.getCertfromByteArray(certBytes));
+              certChain.add(CertTools.getCertfromByteArray(certBytes, Certificate.class));
           }
 		  if (certChain.size()==0) {
 		      throw new Exception("No certificate(s) could be read.");

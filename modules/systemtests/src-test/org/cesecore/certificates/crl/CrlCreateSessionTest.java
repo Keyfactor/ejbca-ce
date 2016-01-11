@@ -231,7 +231,7 @@ public class CrlCreateSessionTest {
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(
                     BouncyCastleProvider.PROVIDER_NAME).build(rootcakp.getPrivate()), 20480);
             final X509CertificateHolder certHolder = certbuilder.build(signer);
-            final X509Certificate subcacert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded(), "BC");
+            final X509Certificate subcacert = CertTools.getCertfromByteArray(certHolder.getEncoded(), BouncyCastleProvider.PROVIDER_NAME, X509Certificate.class);
             
             // Replace sub CA certificate with a sub CA cert containing the test AKID
             subcainfo = (X509CAInfo)caSession.getCAInfo(authenticationToken, subcaname);

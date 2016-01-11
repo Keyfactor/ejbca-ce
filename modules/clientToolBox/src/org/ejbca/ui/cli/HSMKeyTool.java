@@ -432,8 +432,8 @@ public class HSMKeyTool extends ClientToolBox {
             try( final InputStream is=new FileInputStream(newCertPath) ) {
                 newCertBytes = IOUtils.toByteArray(is);
             }
-            final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, BouncyCastleProvider.PROVIDER_NAME);
-            final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, BouncyCastleProvider.PROVIDER_NAME);
+            final Certificate oldCert = CertTools.getCertfromByteArray(oldCertBytes, BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
+            final Certificate newCert = CertTools.getCertfromByteArray(newCertBytes, BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
             final boolean isCVCA = (oldCert instanceof CardVerifiableCertificate);
             if (isCVCA != (newCert instanceof CardVerifiableCertificate)) {
                 log.error("Error: Old and new certificates are not of the same type (X509 / CVC)");

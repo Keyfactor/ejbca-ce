@@ -111,7 +111,7 @@ public class OCSPUnidExtension implements OCSPExtension {
                     } catch( Exception t ) {
                         bytes = bFromFile; // assume binary data (.der)
                     }
-                    final X509Certificate  cert = (X509Certificate) CertTools.getCertfromByteArray(bytes);
+                    final X509Certificate  cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
                     this.trustedCerts.add(cert.getSerialNumber());
                 } catch (CertificateException e) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
@@ -136,7 +136,7 @@ public class OCSPUnidExtension implements OCSPExtension {
             byte[] bytes = FileTools.getBytesFromPEM(FileTools
                     .readFiletoBuffer(cacertfile),
                     CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-            cacert = CertTools.getCertfromByteArray(bytes);
+            cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", "file", "cacertfile", e.getMessage());
             m_log.error(errMsg, e);

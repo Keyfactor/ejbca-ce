@@ -242,7 +242,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     log.debug("Reading certificate from " + filepath);
                 }
 
-                racerts.add((X509Certificate) CertTools.getCertsFromPEM(filepath).iterator().next());
+                racerts.add((X509Certificate) CertTools.getCertsFromPEM(filepath, X509Certificate.class).iterator().next());
                 if(log.isDebugEnabled()) {
                     log.debug("Added " + certFile + " to the list of trusted RA certificates");
                 }

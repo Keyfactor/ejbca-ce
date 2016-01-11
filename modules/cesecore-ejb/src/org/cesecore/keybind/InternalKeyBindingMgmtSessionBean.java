@@ -744,7 +744,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // UnDERify
         final Certificate certificate;
         try {
-            certificate = CertTools.getCertfromByteArray(derEncodedCertificate);
+            certificate = CertTools.getCertfromByteArray(derEncodedCertificate, Certificate.class);
         } catch (CertificateException e) {
             throw new CertificateImportException(e);
         }

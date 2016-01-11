@@ -143,7 +143,7 @@ public class CertAndRequestDumpBean {
 		} catch (Exception e) {
 			try {
 				// this was not parseable, try to see it it was a PEM certificate
-				final Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(cvcdata));
+				final Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(cvcdata), Certificate.class);
 				final Certificate cert = col.iterator().next();
 	        	ret = CertificateParser.parseCVCObject(cert.getEncoded());
 			} catch (Exception ie) {
@@ -159,9 +159,9 @@ public class CertAndRequestDumpBean {
 		  Certificate cert = null;
 		  Collection<Certificate> cachain = null;
 		  try {
-			  final Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+			  final Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
 			  final Iterator<Certificate> iter = certs.iterator();
-			  cert = (Certificate) iter.next();	
+			  cert = iter.next();	
 			  if (iter.hasNext()) {
 				  // There is a complete certificate chain returned here
 				  cachain = new ArrayList<Certificate>();
@@ -172,7 +172,7 @@ public class CertAndRequestDumpBean {
 			  }
 		  } catch (CertificateException e) {
 			  // See if it is a single binary certificate
-			  cert = CertTools.getCertfromByteArray(certbytes);
+			  cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
 		  }
 		  return cert;
 	}

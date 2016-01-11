@@ -139,7 +139,7 @@ public class CaImportCaCertCommandTest {
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").setProvider(
                 BouncyCastleProvider.PROVIDER_NAME).build(keys.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
     }
 

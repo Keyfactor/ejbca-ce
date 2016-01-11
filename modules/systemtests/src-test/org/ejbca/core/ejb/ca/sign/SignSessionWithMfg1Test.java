@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
@@ -116,7 +117,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         X509Certificate retcert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_MFG1_ENTITY_NAME, "foo123", selfcert);
         // RSA with MGF1 is not supported by sun, so we must transfer this
         // (serialized) cert to a BC cert
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(retcert.getEncoded());
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(retcert.getEncoded(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -171,7 +172,7 @@ public class SignSessionWithMfg1Test extends SignSessionCommon {
         p10.setUsername("foorsamgf1ca");
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();

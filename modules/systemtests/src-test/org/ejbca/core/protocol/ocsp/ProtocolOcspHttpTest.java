@@ -276,7 +276,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     public void setUp() throws Exception {
         CaTestCase.removeTestCA();
         CaTestCase.createTestCA();
-        unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
+        unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes, X509Certificate.class);
         helper.reloadKeys();
         log.debug("httpReqPath=" + httpReqPath);
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
@@ -1661,7 +1661,7 @@ Content-Type: text/html; charset=iso-8859-1
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             if (pk instanceof JCEECPublicKey) {
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;

@@ -165,7 +165,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(key_pair
                                 .getPrivate()), 20480);
                         final X509CertificateHolder certHolder = certbuilder.build(signer);
-                        final X509Certificate certificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+                        final X509Certificate certificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
                         final String fingerprint = CertTools.getFingerprintAsString(certificate);
                         // We add all certificates that does not have a user already to "missing_user_name"

@@ -138,7 +138,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
     		recoverNewestCert = in.readBoolean();
     		String certString = (String) in.readObject();    		
     		try {
-				cert = CertTools.getCertfromByteArray(Base64.decode(certString.getBytes("UTF8")));
+				cert = CertTools.getCertfromByteArray(Base64.decode(certString.getBytes("UTF8")), Certificate.class);
 			} catch (CertificateException e) {
 				log.debug("Error deserializing certificate", e);
 				throw new IOException(e.getMessage());

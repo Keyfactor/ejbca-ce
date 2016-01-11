@@ -85,7 +85,7 @@ public class GetCaCertCommandTest {
         File resultFile = testFolder.newFile(RESULT_FILENAME);
         String[] args = new String[] { rootCa.getName(), resultFile.getAbsolutePath()};
         command.execute(args);
-        Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
+        Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath(), Certificate.class).get(0);
         assertNotNull("No certificate was produced.", result);
         assertTrue("Root cert was not delivered.", rootCa.getCACertificate().equals(result));
     }
@@ -95,7 +95,7 @@ public class GetCaCertCommandTest {
         File resultFile = testFolder.newFile(RESULT_FILENAME);
         String[] args = new String[] { cainfo.getName(), resultFile.getAbsolutePath()};
         command.execute(args);
-        Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
+        Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath(), Certificate.class).get(0);
         assertNotNull("No certificate was produced.", result);
         assertTrue("SubCa cert was not delivered.", new ArrayList<Certificate>( caSession.getCAInfo(authenticationToken, cainfo.getCAId()).getCertificateChain()).get(0).equals(result));
     }
