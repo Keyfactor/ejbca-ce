@@ -86,7 +86,7 @@ public class GeneralPurposeCustomPublisherTest {
 
     @Before
     public void setUp() throws IOException, InterruptedException {
-    	admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
+        admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
         gpcPublisher = new GeneralPurposeCustomPublisher();
         // Make sure an external command exists for testing purposes
         command = null;
