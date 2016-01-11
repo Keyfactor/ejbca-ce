@@ -38,6 +38,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -83,6 +84,11 @@ public class CaRemovePublisherCommandTest {
         }
         CaTestCase.removeTestCA(CA_NAME);
         CaTestCase.createTestCA(CA_NAME);
+    }
+    
+    @AfterClass
+    public static void afterClass() throws AuthorizationDeniedException {
+        CaTestCase.removeTestCA(CA_NAME);
     }
 
     @Test

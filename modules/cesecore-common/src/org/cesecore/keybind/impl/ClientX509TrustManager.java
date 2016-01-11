@@ -35,10 +35,7 @@ public class ClientX509TrustManager implements X509TrustManager {
     
     public ClientX509TrustManager(final List< Collection<X509Certificate>> trustedCertificates) {
         if (trustedCertificates!=null) {
-            trustedCertificatesChains = new ArrayList<>();
-            for(Collection<X509Certificate> col : trustedCertificates) {
-                this.trustedCertificatesChains.add(col);
-            }
+            trustedCertificatesChains = new ArrayList<>(trustedCertificates);
         }
     }
 
