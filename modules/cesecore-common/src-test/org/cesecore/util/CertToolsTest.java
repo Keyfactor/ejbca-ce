@@ -69,6 +69,7 @@ import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -692,7 +693,7 @@ public class CertToolsTest {
         String alt3 = "EmailAddress=ejbca@primekey.se, dNSName=www.primekey.se, uniformResourceIdentifier=http://www.primekey.se/ejbca";
         assertEquals(CertTools.getPartFromDN(alt3, CertTools.EMAIL2), "ejbca@primekey.se");
 
-        Certificate cert = CertTools.getCertfromByteArray(guidcert);
+        Certificate cert = CertTools.getCertfromByteArray(guidcert, Certificate.class);
         String upn = CertTools.getUPNAltName(cert);
         assertEquals(upn, "guid@foo.com");
         String guid = CertTools.getGuidAltName(cert);
@@ -710,7 +711,7 @@ public class CertToolsTest {
         assertNotNull(gns);
         
         // Test cert containing permanentIdentifier
-        cert = CertTools.getCertfromByteArray(permanentIdentifierCert);
+        cert = CertTools.getCertfromByteArray(permanentIdentifierCert, Certificate.class);
         upn = CertTools.getUPNAltName(cert);
         assertEquals("upn1@example.com", upn);
         String permanentIdentifier = CertTools.getPermanentIdentifierAltName(cert);
@@ -815,9 +816,9 @@ public class CertToolsTest {
     @Test
     public void test06CertOps() throws Exception {
         log.trace(">test06CertOps()");
-        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         assertFalse(CertTools.isCA(cert));
-        Certificate gcert = CertTools.getCertfromByteArray(guidcert);
+        Certificate gcert = CertTools.getCertfromByteArray(guidcert, Certificate.class);
         assertEquals("Wrong issuerDN", CertTools.getIssuerDN(cert), CertTools.stringToBCDNString("CN=TestCA,O=AnaTom,C=SE"));
         assertEquals("Wrong subjectDN", CertTools.getSubjectDN(cert), CertTools.stringToBCDNString("CN=p12test,O=PrimeTest,C=SE"));
         assertEquals("Wrong subject key id", new String(Hex.encode(CertTools.getSubjectKeyId(cert))),
@@ -1073,18 +1074,18 @@ public class CertToolsTest {
     public void test13GetSubjectAltNameString() throws Exception {
         log.trace(">test13GetSubjectAltNameString()");
 
-        String altNames = CertTools.getSubjectAlternativeName(CertTools.getCertfromByteArray(altNameCert));
+        String altNames = CertTools.getSubjectAlternativeName(CertTools.getCertfromByteArray(altNameCert, Certificate.class));
         log.debug(altNames);
         String name = CertTools.getPartFromDN(altNames, CertTools.UPN);
         assertEquals("foo@a.se", name);
-        assertEquals("foo@a.se", CertTools.getUPNAltName(CertTools.getCertfromByteArray(altNameCert)));
+        assertEquals("foo@a.se", CertTools.getUPNAltName(CertTools.getCertfromByteArray(altNameCert, Certificate.class)));
         name = CertTools.getPartFromDN(altNames, CertTools.URI);
         assertEquals("http://www.a.se/", name);
         name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
         assertEquals("tomas@a.se", name);
-        name = CertTools.getEMailAddress(CertTools.getCertfromByteArray(altNameCert));
+        name = CertTools.getEMailAddress(CertTools.getCertfromByteArray(altNameCert, Certificate.class));
         assertEquals("tomas@a.se", name);
-        name = CertTools.getEMailAddress(CertTools.getCertfromByteArray(testcert));
+        name = CertTools.getEMailAddress(CertTools.getCertfromByteArray(testcert, Certificate.class));
         assertNull(name);
         name = CertTools.getEMailAddress(null);
         assertNull(name);
@@ -1097,12 +1098,12 @@ public class CertToolsTest {
 
     @Test
     public void test14QCStatement() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(qcRefCert);
+        Certificate cert = CertTools.getCertfromByteArray(qcRefCert, Certificate.class);
         // log.debug(cert);
         assertEquals("rfc822name=municipality@darmstadt.de", QCStatementExtension.getQcStatementAuthorities(cert));
         Collection<String> ids = QCStatementExtension.getQcStatementIds(cert);
         assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
-        Certificate cert2 = CertTools.getCertfromByteArray(qcPrimeCert);
+        Certificate cert2 = CertTools.getCertfromByteArray(qcPrimeCert, Certificate.class);
         assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert2));
         ids = QCStatementExtension.getQcStatementIds(cert2);
         assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
@@ -1115,7 +1116,7 @@ public class CertToolsTest {
 
     @Test
     public void test15AiaOcspUri() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(aiaCert);
+        Certificate cert = CertTools.getCertfromByteArray(aiaCert, Certificate.class);
         // log.debug(cert);
         assertEquals("http://localhost:8080/ejbca/publicweb/status/ocsp", CertTools.getAuthorityInformationAccessOcspUrl(cert));
     }
@@ -1124,7 +1125,7 @@ public class CertToolsTest {
     public void test16GetSubjectAltNameStringWithDirectoryName() throws Exception {
         log.trace(">test16GetSubjectAltNameStringWithDirectoryName()");
 
-        Certificate cer = CertTools.getCertfromByteArray(altNameCertWithDirectoryName);
+        Certificate cer = CertTools.getCertfromByteArray(altNameCertWithDirectoryName, Certificate.class);
         String altNames = CertTools.getSubjectAlternativeName(cer);
         log.debug(altNames);
 
@@ -1187,10 +1188,10 @@ public class CertToolsTest {
     @Test
     public void test17SubjectDirectoryAttributes() throws Exception {
         log.trace(">test17SubjectDirectoryAttributes()");
-        Certificate cer = CertTools.getCertfromByteArray(subjDirAttrCert);
+        Certificate cer = CertTools.getCertfromByteArray(subjDirAttrCert, Certificate.class);
         String ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
         assertEquals("countryOfCitizenship=TR", ret);
-        cer = CertTools.getCertfromByteArray(subjDirAttrCert2);
+        cer = CertTools.getCertfromByteArray(subjDirAttrCert2, Certificate.class);
         ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
         assertEquals("countryOfResidence=SE, countryOfCitizenship=SE, gender=M, placeOfBirth=Stockholm, dateOfBirth=19710425", ret);
         log.trace("<test17SubjectDirectoryAttributes()");
@@ -1261,7 +1262,7 @@ public class CertToolsTest {
 
     @Test
     public void test20cvcCert() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(cvccert);
+        Certificate cert = CertTools.getCertfromByteArray(cvccert, Certificate.class);
         assertNotNull(cert);
         PublicKey pk = cert.getPublicKey();
         assertNotNull(pk);
@@ -1387,8 +1388,8 @@ public class CertToolsTest {
     @Test
     public void test22CreateCertChain() throws Exception {
         // Test creating a certificate chain for CVC CAs
-        Certificate cvccertroot = CertTools.getCertfromByteArray(cvccertchainroot);
-        Certificate cvccertsub = CertTools.getCertfromByteArray(cvccertchainsub);
+        Certificate cvccertroot = CertTools.getCertfromByteArray(cvccertchainroot, Certificate.class);
+        Certificate cvccertsub = CertTools.getCertfromByteArray(cvccertchainsub, Certificate.class);
         assertTrue(CertTools.isCA(cvccertsub)); // DV is a CA also
         assertTrue(CertTools.isCA(cvccertroot));
 
@@ -1404,11 +1405,11 @@ public class CertToolsTest {
         assertEquals("CN=HSMCVCA,C=SE", CertTools.getSubjectDN(certroot));
 
         // Test creating a certificate chain for X509CAs
-        Certificate x509certsubsub = CertTools.getCertfromByteArray(x509certchainsubsub);
+        Certificate x509certsubsub = CertTools.getCertfromByteArray(x509certchainsubsub, Certificate.class);
         assertTrue(CertTools.isCA(x509certsubsub));
-        Certificate x509certsub = CertTools.getCertfromByteArray(x509certchainsub);
+        Certificate x509certsub = CertTools.getCertfromByteArray(x509certchainsub, Certificate.class);
         assertTrue(CertTools.isCA(x509certsub));
-        Certificate x509certroot = CertTools.getCertfromByteArray(x509certchainroot);
+        Certificate x509certroot = CertTools.getCertfromByteArray(x509certchainroot, Certificate.class);
         assertTrue(CertTools.isCA(x509certroot));
         certlist = new ArrayList<Certificate>();
         certlist.add(x509certsub);
@@ -1450,7 +1451,7 @@ public class CertToolsTest {
         URL url;
         // Test with normal cert
         try {
-            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITH_URI.getBytes()));
+            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITH_URI.getBytes()), Certificate.class);
             url = CertTools.getCrlDistributionPoint(certs.iterator().next());
             assertNotNull(url);
         } catch (CertificateParsingException ex) {
@@ -1458,7 +1459,7 @@ public class CertToolsTest {
         }
         // Test with cert that contains CDP without URI
         try {
-            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITHOUT_URI.getBytes()));
+            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITHOUT_URI.getBytes()), Certificate.class);
             url = CertTools.getCrlDistributionPoint(certs.iterator().next());
             assertNull(url);
         } catch (CertificateParsingException ex) {
@@ -1490,7 +1491,7 @@ public class CertToolsTest {
         ret = CertTools.getGeneralNameString(0, names[0].getName());
         assertEquals("krb5principal=foo/A.SE@P.SE", ret);
 
-        Certificate krbcert = CertTools.getCertfromByteArray(krb5principalcert);
+        Certificate krbcert = CertTools.getCertfromByteArray(krb5principalcert, Certificate.class);
         String s = CertTools.getSubjectAlternativeName(krbcert);
         assertEquals("krb5principal=foo/bar@P.COM", s);
     }
@@ -1537,7 +1538,7 @@ public class CertToolsTest {
         assertEquals(271610737, serno.intValue());
 
         // Test a real certificate
-        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         serno = CertTools.getSerialNumber(cert);
         assertEquals(271610737, serno.intValue());
         String str = CertTools.getSerialNumberAsString(cert);
@@ -1546,7 +1547,7 @@ public class CertToolsTest {
 
     @Test
     public void testReadPEMCertificate() throws Exception {
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(pemcert);
+        X509Certificate cert = CertTools.getCertfromByteArray(pemcert, X509Certificate.class);
         assertNotNull(cert);
         assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", cert.getSubjectDN().toString());
     }
@@ -1583,10 +1584,10 @@ public class CertToolsTest {
     @Test
     public void testCertCollectionFromArray() throws Exception {
     	Certificate[] certarray = new Certificate[3];
-    	certarray[0] = CertTools.getCertfromByteArray(testcert);
-    	certarray[1] = CertTools.getCertfromByteArray(guidcert);
-    	certarray[2] = CertTools.getCertfromByteArray(altNameCert);
-    	Collection<Certificate> certs = CertTools.getCertCollectionFromArray(certarray, "BC");
+    	certarray[0] = CertTools.getCertfromByteArray(testcert, Certificate.class);
+    	certarray[1] = CertTools.getCertfromByteArray(guidcert, Certificate.class);
+    	certarray[2] = CertTools.getCertfromByteArray(altNameCert, Certificate.class);
+    	Collection<Certificate> certs = CertTools.getCertCollectionFromArray(certarray, BouncyCastleProvider.PROVIDER_NAME);
     	assertEquals(3, certs.size());
     	Iterator<Certificate> iter = certs.iterator();
     	assertEquals("CN=p12test,O=PrimeTest,C=SE", CertTools.getSubjectDN(iter.next()));
@@ -1602,9 +1603,7 @@ public class CertToolsTest {
     	// NotBefore: Wed Sep 24 08:48:04 CEST 2003 (1064386084000)
     	// NotAfter: Fri Sep 23 08:58:04 CEST 2005 (1127458684000)
     	//
-    	Certificate cert = CertTools.getCertfromByteArray(testcert);
-//    	System.out.println(CertTools.getNotBefore(cert).getTime());
-//    	System.out.println(CertTools.getNotAfter(cert).getTime());
+    	Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
     	assertEquals(1064386084000L, CertTools.getNotBefore(cert).getTime());
     	assertEquals(1127458684000L, CertTools.getNotAfter(cert).getTime());
     	CertTools.checkValidity(cert, new Date(1064386084001L));
@@ -1625,7 +1624,7 @@ public class CertToolsTest {
     
     @Test
     public void testFingerprint() throws Exception {
-    	Certificate cert = CertTools.getCertfromByteArray(testcert);
+    	Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
     	assertEquals("4d66df0017deb32f669346c51c80600964816c84", CertTools.getFingerprintAsString(cert));
     	assertEquals("4d66df0017deb32f669346c51c80600964816c84", CertTools.getFingerprintAsString(testcert));
     	assertEquals("c61bfaa15d733532c5e795756c8001d4", new String(Hex.encode(CertTools.generateMD5Fingerprint(testcert))));
@@ -1949,7 +1948,7 @@ public class CertToolsTest {
                 +"JDlbioUjBIRX/xElQjdKqYJjUERgZxmk0+zmeF4bAN0nVJtAv6N/JOw7VOsUAea7"
                 +"uICq887NuvFm3bo5s6vFsGlPLbNDgresVimkvhmliuUuA5Q8U38QHZ33oZI1XA=="
                 +"\n-----END CERTIFICATE-----").getBytes();
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(customerCertificate, "BC");
+        X509Certificate cert = CertTools.getCertfromByteArray(customerCertificate, BouncyCastleProvider.PROVIDER_NAME, X509Certificate.class);
         String dn = CertTools.getSubjectDN(cert);
         assertEquals("JurisdictionCountry=NL,STREET=Kroezenhoek  8,BusinessCategory=Private Organization,CN=www.fotokonijnenberg.nl,SN=08148310,OU=,O=Foto Konijnenberg B.V.,L=Den Ham,ST=Overijssel,C=NL", dn);
     }
@@ -1989,7 +1988,7 @@ public class CertToolsTest {
                 + "84bjb9kdIpqDaYl6x8JuaLlKim9249IAiYm/0IH+aLMyE9LO1+ohUSq4nCoZ30dV"
                 + "5OkLGTRxw1vYfHKgf1BHMOki/PKVxxE5qas5p43xFcdp8r94LeErvlm5NtgJFHA0" + "zSNkEEEgGMdf2/MyB49NTuqyJWtz94Ox0HKvHPCfLtG/Ib4="
                 + "\n-----END CERTIFICATE-----").getBytes();
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(customerCertificate, "BC");
+        X509Certificate cert = CertTools.getCertfromByteArray(customerCertificate, BouncyCastleProvider.PROVIDER_NAME, X509Certificate.class);
         String dn = CertTools.getSubjectDN(cert);
         assertEquals("JurisdictionCountry=BR,STREET=Avenida Paraiba,BusinessCategory=Private Organization,CN=morenarosagroup.com,SN=\\#CNPJ:15.095.271/0001-45,OU=Morena Rosa Group,O=Morena Rosa Industria e Comercio de Confeccoes S.A.,L=Cianorte,ST=Parana,C=BR", dn);
     }

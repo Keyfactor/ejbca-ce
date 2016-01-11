@@ -27,6 +27,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Random;
@@ -287,24 +288,24 @@ public class CertificateRequestThrowAwayTest {
      * 
      * @param raw true if an encoded request should be sent, false if an EJBCA PKCS10RequestMessage should be used.
      */
-    private Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws InvalidAlgorithmParameterException,
+    private X509Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws InvalidAlgorithmParameterException,
             OperatorCreationException, IOException, CertificateParsingException, InvalidKeyException, CADoesntExistsException, NotFoundException,
             NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, ObjectNotFoundException,
             CertificateException, ApprovalException, AuthorizationDeniedException, CreateException, UserDoesntFullfillEndEntityProfile,
             EjbcaException, CesecoreException, CertificateExtensionException {
-        Certificate ret;
+        X509Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
         byte[] rawPkcs10req = CertTools
                 .genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(), new DERSet(),
                         rsakeys.getPrivate(), null).toASN1Structure().getEncoded();
         if (raw) {
             ret = CertTools.getCertfromByteArray(certificateRequestSession.processCertReq(admin, userData, new String(Base64.encode(rawPkcs10req)),
-                    CertificateConstants.CERT_REQ_TYPE_PKCS10, null, CertificateConstants.CERT_RES_TYPE_CERTIFICATE));
+                    CertificateConstants.CERT_REQ_TYPE_PKCS10, null, CertificateConstants.CERT_RES_TYPE_CERTIFICATE), X509Certificate.class);
         } else {
             PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(rawPkcs10req);
             pkcs10req.setUsername(userData.getUsername());
             pkcs10req.setPassword(userData.getPassword());
-            ret = ((X509ResponseMessage) certificateRequestSession.processCertReq(admin, userData, pkcs10req, X509ResponseMessage.class))
+            ret = (X509Certificate) ((X509ResponseMessage) certificateRequestSession.processCertReq(admin, userData, pkcs10req, X509ResponseMessage.class))
                     .getCertificate();
         }
         return ret;

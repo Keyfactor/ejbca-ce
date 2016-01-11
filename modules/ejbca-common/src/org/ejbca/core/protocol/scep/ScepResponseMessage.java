@@ -168,7 +168,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     @Override
     public Certificate getCertificate() {
         try {
-            return CertTools.getCertfromByteArray(cert.getEncoded());
+            return CertTools.getCertfromByteArray(cert.getEncoded(), Certificate.class);
         } catch (CertificateEncodingException e) {
             throw new Error("Could not encode certificate. This should not happen", e);
         } catch (CertificateException e) {
@@ -283,7 +283,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 // Envelope the CMS message
                 if (recipientKeyInfo != null) {
                     try {
-                        X509Certificate rec = (X509Certificate)CertTools.getCertfromByteArray(recipientKeyInfo);
+                        X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo, X509Certificate.class);
                         log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
                         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                     } catch (CertificateParsingException e) {

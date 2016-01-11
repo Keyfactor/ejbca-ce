@@ -132,7 +132,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
                 CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
-            Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
+            Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
                     CertTools.getSubjectDN(cert), userdata.getDN());
             // Try again with a user that does not exist and use values that we will
@@ -178,7 +178,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
                 CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
-            Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
+            Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
                     CertTools.getSubjectDN(cert));
         } finally {

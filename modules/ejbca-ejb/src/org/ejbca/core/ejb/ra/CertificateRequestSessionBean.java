@@ -264,7 +264,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         byte[] retval = null;
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);
-        java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         if (responseType == CertificateConstants.CERT_RES_TYPE_CERTIFICATE) {
             retval = cert.getEncoded();
         }

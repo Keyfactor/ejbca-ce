@@ -93,7 +93,7 @@ public class OcspExtensionsTest {
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
                 BouncyCastleProvider.PROVIDER_NAME).build(caKeyPair.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        certificate = CertTools.getCertfromByteArray(certHolder.getEncoded());
+        certificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), Certificate.class);
         fileOutputStream = new FileOutputStream(trustedCertificateFile);
         try {
             fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(certificate)));

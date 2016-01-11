@@ -102,7 +102,7 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 			if (!cachainfile.equalsIgnoreCase("NULL")){
 				try {
 					FileInputStream in = new FileInputStream(cachainfile);
-					Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+					Collection<Certificate> certs = CertTools.getCertsFromPEM(in, Certificate.class);
 					Iterator<Certificate> iter = certs.iterator();
 					while (iter.hasNext()) {
 						Certificate cert = iter.next();
@@ -111,7 +111,7 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 				} catch (IOException e) {
 					// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
 					byte[] certbytes = FileTools.readFiletoBuffer(cachainfile);
-					Certificate cert = CertTools.getCertfromByteArray(certbytes); // check if it is a good cert, decode PEM if it is PEM, etc
+					Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
 					cachain.add(cert.getEncoded());
 				}
 			}

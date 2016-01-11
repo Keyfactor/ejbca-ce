@@ -802,8 +802,7 @@ public class BatchEnrollmentGUIView extends FrameView {
             } else {
                 try {
                     trustedCerts = new HashSet<Certificate>();
-                    trustedCerts.addAll(CertTools.getCertsFromPEM(
-                            getApp().getSettings().getTruststorePath()));
+                    trustedCerts.addAll(CertTools.getCertsFromPEM(getApp().getSettings().getTruststorePath(), Certificate.class));
                 } catch (IOException ex) {
                     LOG.error("Load trusted certificates failed", ex);
                 } catch (CertificateException ex) {

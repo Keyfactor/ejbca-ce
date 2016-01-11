@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ca.sign;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 
@@ -72,7 +73,7 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @throws AuthorizationDeniedException 
      */
-    byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+    byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain) throws CADoesntExistsException,
             SignRequestSignatureException, AuthorizationDeniedException;
 
     /**

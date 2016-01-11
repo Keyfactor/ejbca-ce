@@ -456,7 +456,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
                     BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
             final X509CertificateHolder certHolder = certbuilder.build(signer);
-            X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+            X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
@@ -531,7 +531,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
                         BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
-                X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+                X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
@@ -603,7 +603,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
                         BouncyCastleProvider.PROVIDER_NAME).build(externalCaKeys.getPrivate()), 20480);
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
-                X509Certificate importedCertificate = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+                X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_REVOKED, CertificateConstants.CERTTYPE_ENDENTITY,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());

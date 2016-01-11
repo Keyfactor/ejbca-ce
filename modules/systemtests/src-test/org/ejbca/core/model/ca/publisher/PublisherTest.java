@@ -130,7 +130,7 @@ public class PublisherTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Certificate cert = CertTools.getCertfromByteArray(testcert);
+		Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
 		int caid = CertTools.getIssuerDN(cert).hashCode();
 		String subjectDn = CertTools.getSubjectDN(cert);
 		String cN = CertTools.getPartsFromDN(subjectDn, "CN").get(0);
@@ -286,7 +286,7 @@ public class PublisherTest {
 	@Test
 	public void test07StoreCertToDummy() throws CertificateException, AuthorizationDeniedException {
 		log.trace(">test07StoreCertToDummy()");
-		final Certificate cert = CertTools.getCertfromByteArray(testcert);
+		final Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
 		final ArrayList<Integer> publishers = new ArrayList<Integer>();
 		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
 
@@ -332,7 +332,7 @@ public class PublisherTest {
             publisherProxySession.testConnection(publisherId);
             publishers.add(publisherId);
         }
-        final Certificate testCertificate = CertTools.getCertfromByteArray(testcert);
+        final Certificate testCertificate = CertTools.getCertfromByteArray(testcert, Certificate.class);
         final String cafp = "CA fingerprint could be anything in this test.";
         final CertificateData cd = new CertificateData(testCertificate, testCertificate.getPublicKey(), "username", cafp, CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "tag", System.currentTimeMillis(), true);

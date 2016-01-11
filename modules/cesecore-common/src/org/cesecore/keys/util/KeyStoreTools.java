@@ -193,7 +193,7 @@ public class KeyStoreTools {
             if ( cert==null ) {
                 throw new CertificateException("Self signing of certificate failed.");
             }
-            return (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
+            return CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
         } catch (TaskWithSigningException e) {
             log.error("Error creating content signer: ", e);
             throw new CertificateException(e);
@@ -534,7 +534,7 @@ public class KeyStoreTools {
     public void installCertificate(final String fileName) {
         try( final InputStream is = new FileInputStream(fileName) ) {
             final X509Certificate chain[];
-            chain = CertTools.getCertsFromPEM(is).toArray(new X509Certificate[0]);
+            chain = CertTools.getCertsFromPEM(is, X509Certificate.class).toArray(new X509Certificate[0]);
             final PublicKey importPublicKey = chain[0].getPublicKey();
             final String importKeyHash = CertTools.getFingerprintAsString(importPublicKey.getEncoded());
             final Enumeration<String> eAlias = getKeyStore().aliases();
@@ -568,7 +568,7 @@ public class KeyStoreTools {
      */
     public void installTrustedRoot(String fileName) {
         try( final InputStream is = new FileInputStream(fileName) ) {
-            final List<Certificate> chain = CertTools.getCertsFromPEM(is);
+            final List<Certificate> chain = CertTools.getCertsFromPEM(is, Certificate.class);
             if ( chain.size()<1 ) {
                 throw new KeyUtilRuntimeException("No certificate in file");
             }

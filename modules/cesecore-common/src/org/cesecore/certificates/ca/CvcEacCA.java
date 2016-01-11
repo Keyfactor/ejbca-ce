@@ -197,7 +197,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	        try {
 	            // We don't know if this is a PEM or binary certificate or request request so we first try to 
 	            // decode it as a PEM certificate, and if it's not we try it as a PEM request and finally as a binary request 
-	            binbytes = CertTools.getCertsFromPEM(new ByteArrayInputStream(request)).get(0).getEncoded();
+	            binbytes = CertTools.getCertsFromPEM(new ByteArrayInputStream(request), Certificate.class).get(0).getEncoded();
 	        } catch (Exception e) {
 	            log.debug("This is not a PEM certificate?: "+e.getMessage());
 	            try {

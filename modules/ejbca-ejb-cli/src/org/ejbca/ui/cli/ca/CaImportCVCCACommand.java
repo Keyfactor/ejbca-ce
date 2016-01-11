@@ -152,12 +152,12 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
             Certificate cert = null;
             try {
                 // First check if it was a PEM formatted certificate
-                Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+                Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
                 cert = certs.iterator().next();
             } catch (CertificateException e) {
                 // This was not a PEM certificate, I hope it's binary...
                 try {
-                    cert = CertTools.getCertfromByteArray(certbytes);
+                    cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
                 } catch (CertificateParsingException e1) {
                     log.error("File " + certFile + " did not contain a correct certificate.");
                     return CommandResult.FUNCTIONAL_FAILURE;

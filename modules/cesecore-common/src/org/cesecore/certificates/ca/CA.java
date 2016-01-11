@@ -26,6 +26,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -408,7 +409,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 this.requestcertchain = new ArrayList<Certificate>();
                 for (final String b64Cert : storechain) {
                     try {
-                        this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
+                        this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class));
                     } catch (CertificateParsingException e) {
                        throw new IllegalStateException("Database seems to contain invalid certificate information.", e);
                     }
@@ -451,7 +452,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             while (iter.hasNext()) {
                 String b64Cert = iter.next();
                 try {
-                    Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+                    Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class);
                     if (cert != null) {
                         if (log.isDebugEnabled()) {
                             log.debug("Adding CA certificate from CERTIFICATECHAIN to certificatechain:");
@@ -514,7 +515,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             final String b64Cert = (String)o;
             try {
                 final byte[] decoded = Base64.decode(b64Cert.getBytes("US-ASCII"));
-                final Certificate cert = CertTools.getCertfromByteArray(decoded);
+                final Certificate cert = CertTools.getCertfromByteArray(decoded, Certificate.class);
                 chain.add(cert);
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException(e);
@@ -861,7 +862,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
      */
-    public abstract byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException;
+    public abstract byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException;
     
     /**
      * Creates a roll over PKCS7 for the next CA certificate, signed with the current CA key. Used by ScepServlet.

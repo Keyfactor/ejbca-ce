@@ -162,11 +162,11 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     @Override
     public Certificate getCertificate() {
         try {
-            return CertTools.getCertfromByteArray(cert.getEncoded());
+            return CertTools.getCertfromByteArray(cert.getEncoded(), Certificate.class);
         } catch (CertificateEncodingException e) {
-            throw new Error("Could not encode certificate. This should not happen", e);
+            throw new IllegalStateException("Could not encode certificate. This should not happen", e);
         } catch (CertificateException e) {
-            throw new Error("Response was created without containing valid certificate. This should not happen", e);
+            throw new IllegalStateException("Response was created without containing valid certificate. This should not happen", e);
         }
     }
 

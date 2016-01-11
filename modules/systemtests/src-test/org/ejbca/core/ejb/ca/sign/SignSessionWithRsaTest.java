@@ -271,7 +271,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             p10.setUsername(RSA_USERNAME);
             p10.setPassword("foo123");
             ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             log.info("cert with DN '" + CertTools.getSubjectDN(cert) + "' should not be issued?");
         } catch (Exception e) {
             // RSASignSession should throw an IllegalKeyException here.
@@ -335,7 +335,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             pkcs10req.setUsername(RSA_USERNAME);
             pkcs10req.setPassword("foo123");
             final ResponseMessage resp = signSession.createCertificate(internalAdmin, pkcs10req, X509ResponseMessage.class, null);
-            final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+            final X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
             final int keyUsage = getKeyUsageValueFromCertificate(cert);
@@ -352,7 +352,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         pkcs10req.setUsername(RSA_USERNAME);
         pkcs10req.setPassword("foo123");
         final ResponseMessage resp = signSession.createCertificate(internalAdmin, pkcs10req, X509ResponseMessage.class, null);
-        final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        final X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         final int keyUsage = getKeyUsageValueFromCertificate(cert);
@@ -385,7 +385,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.trace("<test05TestIEPKCS10()");
@@ -418,7 +418,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         // Verify error handling
@@ -450,7 +450,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.trace("<test04TestKeytoolPKCS10()");
@@ -1007,7 +1007,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         p10.setPassword("foo123");
         // See if the request message works...
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
@@ -1017,7 +1017,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         certificateProfileSession.changeCertificateProfile(internalAdmin, testName, prof);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
@@ -1087,7 +1087,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         Extensions p10exts = p10.getRequestExtensions();
         assertNotNull(p10exts);
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
         // check altNames, should be none
@@ -1099,7 +1099,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
         // check altNames, should be one altName
@@ -1253,7 +1253,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             p10.setUsername(dnOverrideEndEntityName);
             p10.setPassword("foo123");
             ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+            X509Certificate cert =  CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
             assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
             // Change so that we allow override of validity time
@@ -1262,7 +1262,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTDNOVERRIDE", prof);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+            cert =  CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
             assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
         } finally {
@@ -1325,7 +1325,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();

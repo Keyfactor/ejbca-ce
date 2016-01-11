@@ -491,7 +491,7 @@ public class ProtocolScepHttpTest {
             byte[] respBytes = baos.toByteArray();
             assertNotNull("Response can not be null.", respBytes);
             assertTrue(respBytes.length > 0);
-            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(respBytes);
+            X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
             // Check that we got the right cert back
             assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         }
@@ -531,7 +531,7 @@ public class ProtocolScepHttpTest {
             byte[] respBytes = baos.toByteArray();
             assertNotNull("Response can not be null.", respBytes);
             assertTrue(respBytes.length > 0);
-            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(respBytes);
+            X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
             // Check that we got the right cert back
             assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         }
@@ -855,7 +855,7 @@ public class ProtocolScepHttpTest {
             log.debug("Received an item of type "+obj.getClass().getName()+": "+obj);
             if (obj instanceof X509CertificateHolder) {
                 final byte[] certbytes = ((X509CertificateHolder)obj).getEncoded();
-                final Certificate cert = CertTools.getCertfromByteArray(certbytes);
+                final Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
                 ret.add(cert);
             }
         }

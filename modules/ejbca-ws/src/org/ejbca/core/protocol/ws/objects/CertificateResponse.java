@@ -81,7 +81,7 @@ public class CertificateResponse  {
 	 * Returns a certificate from the data in the WS response.
 	 */
 	public X509Certificate getCertificate() throws CertificateException{
-        return (X509Certificate) CertTools.getCertfromByteArray(getRawData()); 
+        return CertTools.getCertfromByteArray(getRawData(), X509Certificate.class); 
 	}
 	
 	/**
