@@ -66,11 +66,11 @@ public class HexTest {
 		byte[] certBytes = Base64.decode(testcert_oneline.getBytes());
 		assertNotNull(certBytes);
 		// This should be a cert
-		Certificate cert = CertTools.getCertfromByteArray(certBytes);
+		Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
 		assertNotNull(cert);
 		byte[] hexBytes = Hex.decode(hexCert.getBytes());
 		assertEquals(new String(Base64.encode(certBytes)),new String(Base64.encode(hexBytes)));
-		Certificate cert1 = CertTools.getCertfromByteArray(hexBytes);
+		Certificate cert1 = CertTools.getCertfromByteArray(hexBytes, Certificate.class);
 		assertEquals(CertTools.getSubjectDN(cert), CertTools.getSubjectDN(cert1));
 		byte[] hexBytes2 = Hex.encode(cert1.getEncoded());
 		assertEquals(new String(hexBytes2), hexCert);

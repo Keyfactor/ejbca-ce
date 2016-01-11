@@ -165,7 +165,7 @@ public class CustomerLdapPublisher1UnitTest {
         instance.init(GOOD_PROPERTIES);
         
         // Successfull storage and logging of an ACTIVE ENDENTITY certificate
-        final Certificate cert = CertTools.getCertfromByteArray(ANY_CERT_BYTES);
+        final Certificate cert = CertTools.getCertfromByteArray(ANY_CERT_BYTES, Certificate.class);
         instance.storeCertificate(ANY_ADMIN, cert, ANY_USERNAME, ANY_PASSWORD, ANY_SUBJECTDN, ANY_CAFP, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, 0, 0, ANY_TAG, 0, 0, null);
         assertTrue("doStoreCertificate called", instance.isDoStoreCertificateCalled());
         assertTrue("storeLog called", instance.isStoreLogCalled());
@@ -232,7 +232,7 @@ public class CustomerLdapPublisher1UnitTest {
         instance.init(GOOD_PROPERTIES);
         
         // Should not store ROOT CA certificates
-        final Certificate cert = CertTools.getCertfromByteArray(ANY_CERT_BYTES);
+        final Certificate cert = CertTools.getCertfromByteArray(ANY_CERT_BYTES, Certificate.class);
         instance.storeCertificate(ANY_ADMIN, cert, ANY_USERNAME, ANY_PASSWORD, ANY_SUBJECTDN, ANY_CAFP, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA, 0, 0, ANY_TAG, 0, 0, null);
         assertFalse("doStoreCertificate called for ROOTCA", instance.isDoStoreCertificateCalled());
         assertFalse("storeLog called for root ca", instance.isStoreLogCalled());
@@ -437,8 +437,8 @@ public class CustomerLdapPublisher1UnitTest {
     @Test
     public void testDoStoreCertificate() throws Exception {
         
-        final X509Certificate bcCert = (X509Certificate) CertTools.getCertfromByteArray(CERT_BYTES);
-        final X509Certificate sunCert = (X509Certificate) CertTools.getCertfromByteArray(CERT_BYTES, "SUN");
+        final X509Certificate bcCert = CertTools.getCertfromByteArray(CERT_BYTES, X509Certificate.class);
+        final X509Certificate sunCert = CertTools.getCertfromByteArray(CERT_BYTES, "SUN", X509Certificate.class);
         
         // Test storage of an new entry
         SecondMockedCustomerLdapPublisher1 instance = new SecondMockedCustomerLdapPublisher1();

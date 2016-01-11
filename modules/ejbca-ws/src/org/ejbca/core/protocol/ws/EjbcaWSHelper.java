@@ -832,7 +832,7 @@ public class EjbcaWSHelper {
 			CAInfo cainfo = caSession.getCAInfo(admin, caname);
 			// create response messages, for CVC certificates we use a regular X509ResponseMessage
 			X509ResponseMessage msg = new X509ResponseMessage();
-			msg.setCertificate(CertTools.getCertfromByteArray(cert));
+			msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
 			// Activate the CA's token using the provided keystorepwd if any
 			if (keystorepwd!=null) {
 	            cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());

@@ -288,7 +288,7 @@ public class Base64Test {
         byte[] certBytes = Base64.decode(testcert_oneline.getBytes());
         assertNotNull(certBytes);
         // This should be a cert
-        Certificate cert = CertTools.getCertfromByteArray(certBytes);
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
         assertNotNull(cert);
         // Base64 encode it again
         byte[] encBytes = Base64.encode(cert.getEncoded(), false);
@@ -297,7 +297,7 @@ public class Base64Test {
         certBytes = Base64.decode(testcert_crlf.getBytes());
         assertNotNull(certBytes);
         // This should be a cert
-        cert = CertTools.getCertfromByteArray(certBytes);
+        cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
         assertNotNull(cert);
         // Base64 encode it again
         encBytes = Base64.encode(cert.getEncoded(), true);

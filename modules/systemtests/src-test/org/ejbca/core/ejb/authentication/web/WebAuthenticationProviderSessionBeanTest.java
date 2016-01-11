@@ -312,7 +312,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(
                 BouncyCastleProvider.PROVIDER_NAME).build(privKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        final X509Certificate selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        final X509Certificate selfcert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
     
         return selfcert;
     }

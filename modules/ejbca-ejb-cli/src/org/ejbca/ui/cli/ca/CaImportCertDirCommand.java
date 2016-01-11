@@ -418,7 +418,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private Certificate loadcert(final String filename) throws FileNotFoundException, IOException, CertificateParsingException {
         final byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(filename), "-----BEGIN CERTIFICATE-----",
                 "-----END CERTIFICATE-----");
-        return CertTools.getCertfromByteArray(bytes);
+        return CertTools.getCertfromByteArray(bytes, Certificate.class);
 
     }
 

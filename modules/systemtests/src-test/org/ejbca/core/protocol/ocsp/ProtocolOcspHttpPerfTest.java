@@ -142,8 +142,8 @@ public class ProtocolOcspHttpPerfTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-    	cacert = CertTools.getCertfromByteArray(cacertbytes);
-    	tomastest = CertTools.getCertfromByteArray(tomastestbytes);
+    	cacert = CertTools.getCertfromByteArray(cacertbytes, Certificate.class);
+    	tomastest = CertTools.getCertfromByteArray(tomastestbytes, Certificate.class);
     	
     	// Read sernos.txt into a nice map
         BufferedReader in = new BufferedReader(new FileReader(sernofile));

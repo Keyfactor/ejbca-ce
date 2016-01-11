@@ -172,7 +172,7 @@ public class ApprovalDataVOView implements Serializable {
     public ApprovalDataVO getApproveActionDataVO() {
         if (!initialized) {
             try {
-            	X509Certificate certificate = (X509Certificate)CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert);
+            	X509Certificate certificate = CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert, X509Certificate.class);
                 Set<X509Certificate> credentials = new HashSet<X509Certificate>();
                 credentials.add(certificate);
                 Set<X500Principal> principals = new HashSet<X500Principal>();

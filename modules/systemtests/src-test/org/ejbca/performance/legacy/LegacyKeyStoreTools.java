@@ -156,7 +156,7 @@ public class LegacyKeyStoreTools {
             log.debug("Keystore signing algorithm " + sigAlg);
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(this.providerName).build(keyPair.getPrivate()), 20480);
             final X509CertificateHolder cert = cg.build(signer);
-            return (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
+            return CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
         } catch (OperatorCreationException e) {
             log.error("Error creating content signer: ", e);
             throw new CertificateException(e);
@@ -451,7 +451,7 @@ public class LegacyKeyStoreTools {
      * @throws Exception
      */
     public void installCertificate(final String fileName) throws Exception {
-        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
+        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName), X509Certificate.class)).toArray(new X509Certificate[0]);
         final PublicKey importPublicKey = chain[0].getPublicKey();
         final String importKeyHash = CertTools.getFingerprintAsString(importPublicKey.getEncoded());
         final Enumeration<String> eAlias = getKeyStore().aliases();
@@ -482,7 +482,7 @@ public class LegacyKeyStoreTools {
      * @throws Exception
      */
     public void installTrustedRoot(String fileName) throws Exception {
-        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
+        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName), X509Certificate.class)).toArray(new X509Certificate[0]);
         if ( chain.length<1 ) {
             throw new Exception("No certificate in file");
         }

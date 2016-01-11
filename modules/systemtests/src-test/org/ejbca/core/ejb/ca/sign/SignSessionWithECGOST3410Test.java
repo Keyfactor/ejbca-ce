@@ -149,7 +149,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
         
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();

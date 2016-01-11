@@ -136,7 +136,7 @@ public class CertificateRetrievalTest {
         AuthenticationToken adm = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         final HashSet<Certificate> m_certs = new HashSet<Certificate>();
         m_certfps = new HashSet<String>();
-        cert = CertTools.getCertfromByteArray(testrootcert);
+        cert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
         m_certs.add(cert);
         m_certfps.add(CertTools.getFingerprintAsString(cert));
         // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
@@ -149,7 +149,7 @@ public class CertificateRetrievalTest {
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                                                          null, new Date().getTime());
             }
-            cert = CertTools.getCertfromByteArray(testcacert);
+            cert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
             m_certs.add(cert);
             m_certfps.add(CertTools.getFingerprintAsString(cert));
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
@@ -160,7 +160,7 @@ public class CertificateRetrievalTest {
                                                          CertificateConstants.CERTTYPE_SUBCA,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
             }
-            cert = CertTools.getCertfromByteArray(testcert);
+            cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
             m_certs.add(cert);
             m_certfps.add(CertTools.getFingerprintAsString(cert));
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
@@ -286,9 +286,9 @@ public class CertificateRetrievalTest {
         List<BigInteger> sernos;
         Collection<Certificate> certfps;
 
-        rootcacert = CertTools.getCertfromByteArray(testrootcert);
-        subcacert = CertTools.getCertfromByteArray(testcacert);
-        cert = CertTools.getCertfromByteArray(testcert);
+        rootcacert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
+        subcacert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
+        cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
 
         sernos = new ArrayList<BigInteger>();
         sernos.add(CertTools.getSerialNumber(subcacert));
@@ -335,7 +335,7 @@ public class CertificateRetrievalTest {
     public void test07FindCACertificatesWithIssuer() throws Exception {
         log.trace(">test07FindCACertificatesWithIssuer()");
 
-        Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
+        Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
 
         // List all certificates to see
         Collection<Certificate> certfps = EJBTools.unwrapCertCollection(
@@ -366,8 +366,8 @@ public class CertificateRetrievalTest {
         Certificate subcacert;
 
         ArrayList<BigInteger> sernos = new ArrayList<BigInteger>();
-        rootcacert = CertTools.getCertfromByteArray(testrootcert);
-        subcacert = CertTools.getCertfromByteArray(testcacert);
+        rootcacert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
+        subcacert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
         sernos.add(CertTools.getSerialNumber(rootcacert));
         sernos.add(CertTools.getSerialNumber(subcacert));
 

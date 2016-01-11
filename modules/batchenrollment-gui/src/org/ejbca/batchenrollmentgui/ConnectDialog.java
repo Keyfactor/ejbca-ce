@@ -470,7 +470,7 @@ public class ConnectDialog extends javax.swing.JDialog {
                     keystoreTrusted = KeyStore.getInstance("JKS");
                     keystoreTrusted.load(null, null);
                     final Collection<Certificate> certs = CertTools.getCertsFromPEM(
-                            new FileInputStream(settings.getTruststoreFile()));
+                            new FileInputStream(settings.getTruststoreFile()), Certificate.class);
                     int i = 0;
                     for (Object o : certs) {
                         if (o instanceof Certificate) {

@@ -153,13 +153,13 @@ public class X509CATest {
     private void doTestX509CABasicOperations(String algName) throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
-        Certificate cacert = x509ca.getCACertificate();
+        X509Certificate cacert = (X509Certificate) x509ca.getCACertificate();
         
         // Start by creating a PKCS7
         byte[] p7 = x509ca.createPKCS7(cryptoToken, cacert, true);
         assertNotNull(p7);
         CMSSignedData s = new CMSSignedData(p7);
-        Store certstore = s.getCertificates();
+        Store<X509CertificateHolder> certstore = s.getCertificates();
         Collection<X509CertificateHolder> certs = certstore.getMatches(null);
         assertEquals(2, certs.size());
         p7 = x509ca.createPKCS7(cryptoToken, cacert, false);

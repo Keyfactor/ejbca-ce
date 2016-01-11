@@ -212,7 +212,7 @@ public class Ocsp extends ClientToolBox {
 
     static X509Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
         byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName), "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-        return (X509Certificate) CertTools.getCertfromByteArray(bytes);
+        return CertTools.getCertfromByteArray(bytes, X509Certificate.class);
     }
 
     /* (non-Javadoc)

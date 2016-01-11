@@ -110,7 +110,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
                 try {
-                    this.cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
+                    this.cacert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
                 } catch (Exception e) {
                     throw new Error(e);
                 }

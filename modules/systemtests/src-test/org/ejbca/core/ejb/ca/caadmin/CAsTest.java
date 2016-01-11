@@ -266,7 +266,7 @@ public class CAsTest extends CaTestCase {
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSA"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSA"));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             checkECKey(pk);
             ret = true;
@@ -309,7 +309,7 @@ public class CAsTest extends CaTestCase {
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN="+CaTestCase.TEST_ECGOST3410_CA_NAME));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN="+CaTestCase.TEST_ECGOST3410_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             checkECGOST3410Key(pk);
             ret = true;
@@ -348,7 +348,7 @@ public class CAsTest extends CaTestCase {
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN="+CaTestCase.TEST_DSTU4145_CA_NAME));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN="+CaTestCase.TEST_DSTU4145_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             checkDSTU4145Key(pk);
             ret = true;
@@ -824,7 +824,7 @@ public class CAsTest extends CaTestCase {
             // That link certificate should have the same subjetcKeyId as cert3, but
             // be possible to verify with cert2.
             byte[] bytes = caAdminSession.getLatestLinkCertificate(getTestCAId());
-            X509Certificate cacert5 = (X509Certificate) CertTools.getCertfromByteArray(bytes);
+            X509Certificate cacert5 = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
             // Same public key as in cacert3 -> same subject key id
             keyid1 = new String(CertTools.getSubjectKeyId(cacert4));
             keyid2 = new String(CertTools.getSubjectKeyId(cacert5));
@@ -958,7 +958,7 @@ public class CAsTest extends CaTestCase {
                 + "DQYJKoZIhvcNAQEFBQADgYEAS4PvelI9Fmxxcbs0Nrx8qk+TlREOeDX+rsXvKcJ2"
                 + "gGEhtMX1yCNn0uSQuc/mM4Dz5faxCCQQMZl8Vp07d1MrTMYcka+P6RtEKneXfLim"
                 + "fXnqR22xd2P7ssXE52/tTnAyJbYUrOOCI6iiek3dZN8oTmGhZUBHIgFzxC/8MgHa" + "G6Y=").getBytes());
-        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         removeOldCa(caname); // for the test
         List<Certificate> certs = new ArrayList<Certificate>();
         certs.add(cert);

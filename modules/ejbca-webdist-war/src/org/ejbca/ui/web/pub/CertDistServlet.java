@@ -26,6 +26,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -353,11 +354,11 @@ public class CertDistServlet extends HttpServlet {
                     log.debug("No CA certificate of level "+level+" exist.");
                     return;
                 }
-                Certificate cacert = (Certificate)chain[level];
+                Certificate cacert = chain[level];
                 String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "ca");
                 byte[] enccert = null;
                 if (pkcs7) {
-                    enccert = signSession.createPKCS7(administrator, cacert, true);
+                    enccert = signSession.createPKCS7(administrator, (X509Certificate) cacert, true);
                 } else {
                     enccert = cacert.getEncoded();
                 }
@@ -500,7 +501,7 @@ public class CertDistServlet extends HttpServlet {
         if (StringUtils.equals(format, "PEM")) {
             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
         } else if (StringUtils.equals(format, "PKCS7")) {
-            byte[] pkcs7 = signSession.createPKCS7(administrator, certcert, true);
+            byte[] pkcs7 = signSession.createPKCS7(administrator, (X509Certificate) certcert, true);
             RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
         } else if (StringUtils.equals(format, "chain")) {
             int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();

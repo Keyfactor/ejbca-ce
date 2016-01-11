@@ -173,7 +173,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+    public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain) throws CADoesntExistsException,
             SignRequestSignatureException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
         return createPKCS7(admin, caid.intValue(), cert, includeChain);
@@ -202,7 +202,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA
      * @throws SignRequestSignatureException if the certificate wasn't issued by the CA defined by caid
      */
-    private byte[] createPKCS7(AuthenticationToken admin, int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+    private byte[] createPKCS7(AuthenticationToken admin, int caId, X509Certificate cert, boolean includeChain) throws CADoesntExistsException,
             SignRequestSignatureException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
@@ -284,7 +284,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
             Certificate bccert;
             try {
-                bccert = CertTools.getCertfromByteArray(incert.getEncoded());
+                bccert = CertTools.getCertfromByteArray(incert.getEncoded(), Certificate.class);
                 bccert.verify(incert.getPublicKey());
             } catch (CertificateParsingException e) {
                 log.debug("CertificateParsingException verify POPO: ", e);

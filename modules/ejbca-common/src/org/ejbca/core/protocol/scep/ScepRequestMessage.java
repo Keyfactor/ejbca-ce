@@ -252,7 +252,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         requestKeyInfo = bOut.toByteArray();
                         //Create Certificate used for debugging
                         try {
-							signercert = CertTools.getCertfromByteArray(requestKeyInfo);
+							signercert = CertTools.getCertfromByteArray(requestKeyInfo, Certificate.class);
 							if (log.isDebugEnabled()) {
 								log.debug("requestKeyInfo is SubjectDN: " + CertTools.getSubjectDN(signercert) +
 										", Serial=" + CertTools.getSerialNumberAsString(signercert) +

@@ -160,7 +160,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         caid = ISSUER_DN.hashCode();
-        unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
+        unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes, X509Certificate.class);
     }
     
     @Test

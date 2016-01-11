@@ -166,7 +166,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -230,7 +230,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         p10.setUsername(ECDSA_USERNAME);
         p10.setPassword("foo123");
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -305,7 +305,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             p10.setUsername(ecDsaImplicitCaUserName);
             p10.setPassword("foo123");
             ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)

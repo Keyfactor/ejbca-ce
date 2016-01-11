@@ -482,7 +482,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+    public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate
         try {
             if (cert != null) {
@@ -515,7 +515,7 @@ public class X509CA extends CA implements Serializable {
         ArrayList<X509CertificateHolder> certList = new ArrayList<X509CertificateHolder>();
         try {
             if (cert != null) {
-                certList.add(new JcaX509CertificateHolder((X509Certificate) cert));
+                certList.add(new JcaX509CertificateHolder(cert));
             }
             if (includeChain) {
                 for (Certificate certificate : chain) {
@@ -1086,7 +1086,7 @@ public class X509CA extends CA implements Serializable {
                 final ContentSigner signer = new BufferingContentSigner(
                         new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
-                final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+                final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
                 // Get certificate chain
                 final List<Certificate> chain = new ArrayList<Certificate>();
@@ -1144,7 +1144,7 @@ public class X509CA extends CA implements Serializable {
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate cert;
         try {
-            cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+            cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
         } catch (IOException e) {
             throw new IllegalStateException("Unexpected IOException caught when parsing certificate holder.", e);
         } catch (CertificateException e) {

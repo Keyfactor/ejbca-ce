@@ -153,7 +153,7 @@ public class PublisherQueueProcessTest {
 
         // We must add new entries to the queue, since we could not know the
         // publisherId before
-        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         try {
             certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(cert), "TestPublishQueueProcessService", null, CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
@@ -232,7 +232,7 @@ public class PublisherQueueProcessTest {
         }
 
         // If the dummy cert was put in the database, remove it
-        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         internalCertStoreSession.removeCertificate(cert);
 
         serviceSession.removeService(admin, "TestPublishQueueProcessService12345");

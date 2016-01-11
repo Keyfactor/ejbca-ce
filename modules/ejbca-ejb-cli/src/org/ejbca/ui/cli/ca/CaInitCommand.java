@@ -563,7 +563,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             List<Certificate> cachain = null;
             if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
                 try {
-                    cachain = CertTools.getCertsFromPEM(extcachainName);
+                    cachain = CertTools.getCertsFromPEM(extcachainName, Certificate.class);
                 } catch (CertificateException e) {
                     log.error("Certificate file " + extcachainName + " did not contain a correct certificate.");
                     return CommandResult.FUNCTIONAL_FAILURE;

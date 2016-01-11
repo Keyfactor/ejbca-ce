@@ -967,13 +967,13 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(cc);
         final CMPCertificate cmpcert = cc.getCertificate();
         assertNotNull(cmpcert);
-        final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
+        final X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
         checkDN(userDN, new JcaX509CertificateHolder(cert).getSubject());
-        assertArrayEquals(cert.getIssuerX500Principal().getEncoded(), ((X509Certificate)cacert).getSubjectX500Principal().getEncoded());
+        assertArrayEquals(cert.getIssuerX500Principal().getEncoded(), (cacert).getSubjectX500Principal().getEncoded());
         
         // Verify the issuer of cert
         CMPCertificate respCmpCaCert = c.getCaPubs()[0];
-        final X509Certificate respCaCert = (X509Certificate) CertTools.getCertfromByteArray(respCmpCaCert.getEncoded());
+        final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
         assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
 
         Collection<X509Certificate> cacerts = new ArrayList<>();

@@ -64,7 +64,7 @@ public class Asn1DumpCommand extends EjbcaCommandBase {
         CryptoProviderTools.installBCProvider();
         try {
             try {
-                coll = CertTools.getCertsFromPEM(filename);
+                coll = CertTools.getCertsFromPEM(filename, Certificate.class);
                 if (coll.isEmpty()) {
                     iscert = false;
                 }

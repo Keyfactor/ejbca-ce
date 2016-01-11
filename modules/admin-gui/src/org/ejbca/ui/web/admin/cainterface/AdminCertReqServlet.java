@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.beans.Beans;
 import java.io.IOException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -273,7 +272,7 @@ public class AdminCertReqServlet extends HttpServlet {
             p10.setUsername(username);
             p10.setPassword(password);
             ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
-            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             pkcs7 = signSession.createPKCS7(admin, cert, true);
         } catch (EjbcaException e) {
             // EJBCA did not accept any of all parameters in the request.

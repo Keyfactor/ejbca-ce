@@ -229,12 +229,12 @@ public class RequestHelper {
             CertificateResponseType resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
             CertificateEncodingException, CertificateException, CertificateExtensionException {
         byte[] encoded = null;
-        Certificate cert = null;
+        X509Certificate cert = null;
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
         ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
-        cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         switch (resulttype) {
         case ENCODED_CERTIFICATE:            
             encoded = Base64.encode(cert.getEncoded(), doSplitLines);
@@ -300,7 +300,7 @@ public class RequestHelper {
             req.setPassword(password);
             // Yes it says X509ResponseMessage, but for CVC it means it just contains the binary certificate blob
             ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
-            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             byte[] result = cert.getEncoded();
             log.debug("Created CV certificate for " + username);
             if (debug != null) {
@@ -545,7 +545,7 @@ public class RequestHelper {
      * @throws Exception
      */
     public static void sendResultPage(byte[] certbytes, HttpServletResponse out, boolean hidemenu, CertificateResponseType resulttype) throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         String issuerDN = CertTools.getIssuerDN(cert);
         String serialNumber = CertTools.getSerialNumberAsString(cert);
         String resultTypeStr = String.valueOf(resulttype.getNumber()); 
@@ -562,7 +562,7 @@ public class RequestHelper {
      *                         which means "most browsers except IE".
      */
     public static void sendResultPage(byte[] certbytes, HttpServletResponse out, boolean hidemenu, String installToBrowser) throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         
         String issuerDN = CertTools.getIssuerDN(cert);
         String serialNumber = CertTools.getSerialNumberAsString(cert);

@@ -565,7 +565,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 }
                 return null;
             }
-            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()));
+            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()), Certificate.class);
         } catch (CertificateException ce) {
             log.error("Can't decode certificate.", ce);
             return null;
@@ -591,7 +591,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 }
                 return null;
             }
-            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()));
+            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()), Certificate.class);
         } catch (CertificateException ce) {
             log.error("Can't decode certificate.", ce);
             return null;

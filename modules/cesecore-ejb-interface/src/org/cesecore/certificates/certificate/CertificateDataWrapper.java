@@ -89,7 +89,7 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
         if (certificate==null && certificateBytes!=null) {
             // Lazy restore in case of deserialization
             try {
-                certificate = CertTools.getCertfromByteArray(certificateBytes);
+                certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             } catch (CertificateParsingException e) {
                 throw new IllegalStateException(e);
             }

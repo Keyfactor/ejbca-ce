@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.common;
 
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -22,7 +23,6 @@ import org.cesecore.util.CertTools;
  * Class used to generate a java.security.Certificate from a 
  * org.ejbca.core.protocol.ws.common.Certificate
  * 
- * @author Philip Vendil
  *
  * $Id$
  */
@@ -53,8 +53,8 @@ public class CertificateHelper {
 	/**
 	 * Method that builds a certificate from the data in the WS response.
 	 */
-	public static java.security.cert.Certificate getCertificate(byte[] certificateData) throws CertificateException{
-        java.security.cert.Certificate retval = CertTools.getCertfromByteArray(Base64.decode(certificateData)); 
+	public static Certificate getCertificate(byte[] certificateData) throws CertificateException{
+        Certificate retval = CertTools.getCertfromByteArray(Base64.decode(certificateData), Certificate.class); 
         return retval; 
 	}
 	

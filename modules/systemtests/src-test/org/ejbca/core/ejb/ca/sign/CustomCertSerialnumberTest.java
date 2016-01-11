@@ -166,7 +166,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         user.setExtendedinformation(ei);
         ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
 
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("foo certificate serialnumber: " + cert.getSerialNumber());
@@ -201,7 +201,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
         ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
 
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("foo2 certificate serialnumber: " + cert.getSerialNumber());

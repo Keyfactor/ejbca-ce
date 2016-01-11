@@ -14,7 +14,7 @@ package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
 import java.security.KeyPair;
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -120,7 +120,7 @@ public abstract class CvcCA extends CA implements Serializable {
 	public abstract String getCvcType();
 	
 	@Override
-	public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) {
+	public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) {
         log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}

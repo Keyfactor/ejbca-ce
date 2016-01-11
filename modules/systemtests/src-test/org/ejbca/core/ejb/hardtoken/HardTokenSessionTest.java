@@ -109,7 +109,7 @@ public class HardTokenSessionTest extends CaTestCase {
 
         ArrayList<Certificate> certs = new ArrayList<Certificate>();
 
-        certs.add(CertTools.getCertfromByteArray(testcert));
+        certs.add(CertTools.getCertfromByteArray(testcert, Certificate.class));
 
         hardTokenSessionRemote.addHardToken(internalAdmin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
 
@@ -145,7 +145,7 @@ public class HardTokenSessionTest extends CaTestCase {
     public void test03FindHardTokenByCertificate() throws Exception {
         log.trace(">test03FindHardTokenByCertificate()");
 
-        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         // Store the dummy cert for test.
         if (certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
             certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(cert), "DUMMYUSER",
@@ -219,7 +219,7 @@ public class HardTokenSessionTest extends CaTestCase {
         try {
             SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
             ArrayList<Certificate> certs = new ArrayList<Certificate>();
-            certs.add(CertTools.getCertfromByteArray(testcert));
+            certs.add(CertTools.getCertfromByteArray(testcert, Certificate.class));
             hardTokenSessionRemote.addHardToken(internalAdmin, "12344321", "TESTUSERSQL", "CN=TESTSQL", SecConst.TOKEN_SWEDISHEID, token, certs, null);
             // One search that must return result
             Collection<String> tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber("12344321");

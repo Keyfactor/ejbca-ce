@@ -61,7 +61,7 @@ public class InternalKeyBindingImportCertificateCommand extends RudInternalKeyBi
         final String filename = parameters.get(PEM_FILE_KEY);
         try {
             final InputStream is = new FileInputStream(filename);
-            final List<Certificate> certificates = CertTools.getCertsFromPEM(is);
+            final List<Certificate> certificates = CertTools.getCertsFromPEM(is, Certificate.class);
             is.close();
             // Import first non-CA cert
             boolean imported = false;

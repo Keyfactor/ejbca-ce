@@ -72,7 +72,7 @@ public class ApprovalTest {
 		Approval ap = new Approval("test");
 		Date apDate = ap.getApprovalDate();
 		
-		X509Certificate testcert = (X509Certificate)CertTools.getCertfromByteArray(testcertenc);
+		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc, X509Certificate.class);
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         credentials.add(testcert);
         Set<X500Principal> principals = new HashSet<X500Principal>();

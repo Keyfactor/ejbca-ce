@@ -311,7 +311,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             try {
                 // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1
                 // will not verify (at least not as of jdk6)
-                Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded());
+                Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded(), Certificate.class);
                 cacert.verify(cacert.getPublicKey());
             } catch (GeneralSecurityException se) {
                 String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorrootnotverify");
@@ -326,8 +326,8 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         try {
             // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1 will
             // not verify (at least not as of jdk6)
-            Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded());
-            Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded());
+            Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded(), Certificate.class);
+            Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded(), Certificate.class);
             usercert.verify(cacert.getPublicKey());
         } catch (GeneralSecurityException se) {
             String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorgennotverify");

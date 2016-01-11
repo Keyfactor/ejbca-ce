@@ -610,7 +610,7 @@ public class RequestInstance {
      * @throws CertificateException
      */
     private boolean isCertIssuerThrowAwayCA(final byte[] certbytes, final String username) throws CADoesntExistsException, CertificateException {
-        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         String issuerDN = CertTools.getIssuerDN(cert);
         int caid = issuerDN.hashCode();
         CAInfo caInfo = caSession.getCAInfoInternal(caid);

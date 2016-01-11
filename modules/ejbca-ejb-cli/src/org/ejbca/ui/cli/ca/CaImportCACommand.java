@@ -209,7 +209,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
             }
             Collection<Certificate> cacerts;
             try {
-                cacerts = CertTools.getCertsFromPEM(parameters.get(CA_CERTIFICATE_FILE_KEY));
+                cacerts = CertTools.getCertsFromPEM(parameters.get(CA_CERTIFICATE_FILE_KEY), Certificate.class);
             } catch (CertificateException e) {
                 log.error("File " + parameters.get(CA_CERTIFICATE_FILE_KEY) + " was not a correctly formatted PEM file.");
                 return CommandResult.FUNCTIONAL_FAILURE;

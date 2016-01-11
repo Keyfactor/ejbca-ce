@@ -58,7 +58,7 @@ final class CertificateSerializableWrapper implements CertificateWrapper, Serial
         if (certificate == null && certificateBytes != null) {
             // Lazy restore in case of deserialization
             try {
-                certificate = CertTools.getCertfromByteArray(certificateBytes);
+                certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             } catch (CertificateParsingException e) {
                 throw new IllegalStateException(e);
             }

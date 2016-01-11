@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -160,7 +161,7 @@ public class CACertReqServlet extends HttpServlet {
                         filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
                     } catch (Exception e) { // NOPMD
                         // Nope, not a certificate request either, see if it was an X.509 certificate
-                        Certificate cert = CertTools.getCertfromByteArray(request);
+                        Certificate cert = CertTools.getCertfromByteArray(request, Certificate.class);
                         filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
                         if (filename == null) {
                             filename = "cert";
@@ -228,7 +229,7 @@ public class CACertReqServlet extends HttpServlet {
 		 }
 		if (command.equalsIgnoreCase(COMMAND_CERTPKCS7)) {
 			 try {
-				Certificate cert = cabean.getProcessedCertificate();		
+			     X509Certificate cert = (X509Certificate) cabean.getProcessedCertificate();		
 		        byte[] pkcs7 = signSession.createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
 			    byte[] b64cert = Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					

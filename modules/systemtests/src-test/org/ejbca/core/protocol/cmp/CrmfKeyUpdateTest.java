@@ -62,6 +62,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -550,13 +551,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
                 "+UKXLIkk1L84q0WQfblNzYkcDXMsxwJ1dv2Yd/dxIjtVjrhVIUrRMA70jtWs31CH" +
                 "t9ofdgncIdtzZo49mLRQDwhTCApoLf0BCNb2rWpzCPWQTa97y0u5T65m7DAkBTV/" +
                 "JAkFQIZCLSAci++qPA==").getBytes() );
-        fakeCert = CertTools.getCertfromByteArray(fakecertBytes);
+        fakeCert = CertTools.getCertfromByteArray(fakecertBytes, Certificate.class);
         
         req = genRenewalReq(fakeUserDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         extraCert = getCMPCert(fakeCert);
-        req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(req);
         
         bao = new ByteArrayOutputStream();
@@ -1328,7 +1329,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             assertNotNull(c);            
             CMPCertificate cmpcert = c.getResponse()[0].getCertifiedKeyPair().getCertOrEncCert().getCertificate();
             assertNotNull(cmpcert);
-            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
+            X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
             assertNotNull("Failed to renew the certificate", cert);
             assertEquals("CN=cmpTestAdmin, C=SE", cert.getSubjectX500Principal().toString());
         }
@@ -1561,14 +1562,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(cc);
         final CMPCertificate cmpcert = cc.getCertificate();
         assertNotNull(cmpcert);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
+        X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
         final X500Name name = new X500Name(CertTools.getSubjectDN(cert));
         assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
         assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(issuerCert));
         
         // Verify the issuer of cert
         CMPCertificate respCmpCaCert = c.getCaPubs()[0];
-        final X509Certificate respCaCert = (X509Certificate) CertTools.getCertfromByteArray(respCmpCaCert.getEncoded());
+        final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
         assertEquals(CertTools.getFingerprintAsString(issuerCert), CertTools.getFingerprintAsString(respCaCert));
         
         Collection<X509Certificate> cacerts = new ArrayList<>();

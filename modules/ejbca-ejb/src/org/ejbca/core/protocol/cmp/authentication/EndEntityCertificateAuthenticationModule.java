@@ -199,7 +199,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         CMPCertificate cmpcert = extraCerts[0];
         Certificate excert = null;
         try {
-            excert = CertTools.getCertfromByteArray(cmpcert.getEncoded());
+            excert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), Certificate.class);
             if(log.isDebugEnabled()) {
                 log.debug("Obtaning the certificate from extraCert field was done successfully");
             }

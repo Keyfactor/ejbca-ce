@@ -91,7 +91,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			Certificate incert = null;
 			try {
 				FileInputStream in = new FileInputStream(certfile);
-				Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+				Collection<Certificate> certs = CertTools.getCertsFromPEM(in, Certificate.class);
 				Iterator<Certificate> iter = certs.iterator();
 				if (iter.hasNext()) {
 					incert = (Certificate)iter.next();
@@ -99,7 +99,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			} catch (IOException e) {
 				// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
 				byte[] bytes = FileTools.readFiletoBuffer(certfile);
-				incert = CertTools.getCertfromByteArray(bytes); // check if it is a good cert, decode PEM if it is PEM, etc
+				incert = CertTools.getCertfromByteArray(bytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
 			}
 
 			getPrintStream().println("Importing certificate with subjectDN '"+CertTools.getSubjectDN(incert)+"', and issuerDN '"+CertTools.getIssuerDN(incert)+"'.");
@@ -107,7 +107,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			List<byte[]> cachain = new ArrayList<byte[]>();
 			try {
 				FileInputStream in = new FileInputStream(cachainfile);
-				Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+				Collection<Certificate> certs = CertTools.getCertsFromPEM(in, Certificate.class);
 				Iterator<Certificate> iter = certs.iterator();
 				while (iter.hasNext()) {
 					Certificate c = iter.next();
@@ -116,7 +116,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			} catch (IOException e) {
 				// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
 				byte[] bytes = FileTools.readFiletoBuffer(cachainfile);
-				Certificate c = CertTools.getCertfromByteArray(bytes); // check if it is a good cert, decode PEM if it is PEM, etc
+				Certificate c = CertTools.getCertfromByteArray(bytes, Certificate.class); // check if it is a good cert, decode PEM if it is PEM, etc
 				cachain.add(c.getEncoded());
 			}
 	        getEjbcaRAWS().caCertResponse(caname, incert.getEncoded(), cachain, keystorepwd);

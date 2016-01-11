@@ -120,7 +120,7 @@ public class RequestHelperTest {
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caKeys
                 .getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        final X509Certificate signedCert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        final X509Certificate signedCert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
         //Setup mocks
         SignSessionLocal signsession = EasyMock.createMock(SignSessionLocal.class);
@@ -142,7 +142,7 @@ public class RequestHelperTest {
 
         //Perform test
         byte[] result = requestHelper.pkcs10CertRequest(signsession, caSession, PRE_GENERATED_CSR, "foo", "foo123", CertificateResponseType.ENCODED_CERTIFICATE_CHAIN).getEncoded();
-        List<Certificate> certChain =  CertTools.getCertsFromPEM(new ByteArrayInputStream(result));
+        List<Certificate> certChain =  CertTools.getCertsFromPEM(new ByteArrayInputStream(result), Certificate.class);
         assertEquals(signedCert, certChain.get(0));
         assertEquals(caCert, certChain.get(1));
         

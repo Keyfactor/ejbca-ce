@@ -121,7 +121,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     @Override
     public Certificate getCertificate() {     
         try {
-            return CertTools.getCertfromByteArray(getResponseMessage());
+            return CertTools.getCertfromByteArray(getResponseMessage(), Certificate.class);
         } catch (CertificateEncodingException e) {
             throw new Error("Could not encode certificate. This should not happen", e);
         } catch (CertificateException e) {

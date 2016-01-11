@@ -202,7 +202,7 @@ public class KeyToolsTest {
 
     @Test
     public void testCreateP12() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);
@@ -223,7 +223,7 @@ public class KeyToolsTest {
 
     @Test
     public void testCreateJKS() throws Exception {
-        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);
@@ -609,7 +609,7 @@ public class KeyToolsTest {
      */
     @Test
     public void testGetBytes() throws Exception {
-        final Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        final Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         
         final byte[] der = cert.getPublicKey().getEncoded();
         final byte[] pem = CertTools.getPEMFromPublicKey(der);
