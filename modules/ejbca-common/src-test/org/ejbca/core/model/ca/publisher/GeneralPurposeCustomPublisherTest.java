@@ -21,27 +21,34 @@ import static org.junit.Assert.fail;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Properties;
 
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Was doing some unit testing when I realized that these run without a running
- * database and should be unit tests instead.
  * 
- * 
- * @author mikek
  * @version $Id$
  * 
  */
 public class GeneralPurposeCustomPublisherTest {
-
+    
     private static final String EXTERNAL_COMMAND_UNIX = "ls";
     private static final String EXTERNAL_COMMAND_WINDOWS = "cmd.exe /c dir";
     private static final String EXTERNAL_COMMAND_UNIX_FAILSAFE = "echo";
@@ -71,13 +78,16 @@ public class GeneralPurposeCustomPublisherTest {
     private String command;
     private String invalidOption;
     private String commandFailsafe;
+    
+    @BeforeClass
+    public static void beforeClass() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException, InterruptedException {
     	admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
-        //admin = new Admin(Admin.TYPE_INTERNALUSER);
         gpcPublisher = new GeneralPurposeCustomPublisher();
-
         // Make sure an external command exists for testing purposes
         command = null;
         commandFailsafe = null;
@@ -101,12 +111,10 @@ public class GeneralPurposeCustomPublisherTest {
         gpcPublisher = null;
 
     }
-
+    
     /**
      * Test normal operation of GeneralPurposeCustomPublisher.
-     * 
-     * @throws Exception
-     *             error
+     *            
      */
     @Test
     public void testStoreCRL() {
@@ -123,6 +131,28 @@ public class GeneralPurposeCustomPublisherTest {
             e.printStackTrace();
         }
         assertTrue("Store CRL with GeneralPurposeCustomPublisher failed.", ret);
+
+    }
+    
+
+    /**
+     * Tests storing a certificate using arguments passed to the command. 
+     */
+    @Test
+    public void  testStoreCertificateWithArguments() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, PublisherException {
+        Properties props = new Properties();
+        // Test function by calling a command that is available on most platforms
+        boolean ret = false;
+        props.setProperty(GeneralPurposeCustomPublisher.certExternalCommandPropertyName, commandFailsafe);
+        gpcPublisher.init(props);
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        String certificateDn = "CN=Foo Bar, OU=Xyz Abc";
+        X509Certificate cert = CertTools.genSelfCert(certificateDn, 10L, "1.1.1.1", keys.getPrivate(), keys.getPublic(), "SHA256WithRSA", true);
+
+        ret = gpcPublisher.storeCertificate(admin, cert, "foo", "foo123", certificateDn, "foo", CertificateConstants.CERT_ACTIVE,
+                CertificateConstants.CERTTYPE_ENDENTITY, 0, 0, null, 0, 0, null);
+
+        assertTrue("Store Certificate with GeneralPurposeCustomPublisher failed.", ret);
 
     }
 
@@ -312,10 +342,11 @@ public class GeneralPurposeCustomPublisherTest {
      * @param externalCommandToTest
      *            The String to run.
      * @return Returns false on error.
+
      */
-    private boolean isValidCommand(String externalCommandToTest) {
+    private boolean isValidCommand(String externalCommandToTest) throws IOException, InterruptedException {
         boolean ret = false;
-        try {
+  
             String[] cmdarray = externalCommandToTest.split("\\s");
             Process externalProcess = Runtime.getRuntime().exec(cmdarray, null, null);
             BufferedReader br = new BufferedReader(new InputStreamReader(externalProcess.getInputStream()));
@@ -323,9 +354,7 @@ public class GeneralPurposeCustomPublisherTest {
             if (externalProcess.waitFor() == 0) {
                 ret = true;
             }
-        } catch (IOException e) {
-        } catch (InterruptedException e) {
-        }
+     
         return ret;
     }
 
