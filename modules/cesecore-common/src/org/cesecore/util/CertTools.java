@@ -1447,16 +1447,18 @@ public abstract class CertTools {
         return ret;
     }
     
+    /**
+     * 
+     * @param provider a provider name 
+     * @param cert a byte array containing an encoded certificate
+     * @return a decoded X509Certificate
+     * @throws CertificateParsingException if the byte array wasn't valid, or contained a certificate other than an X509 Certificate. 
+     */
     private static X509Certificate parseX509Certificate(String provider, byte[] cert) throws CertificateParsingException {
         final CertificateFactory cf = CertTools.getCertificateFactory(provider);
         try {
-            X509Certificate result = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));
-            if(result != null) {
-                return result;
-            } else {
-                throw new CertificateException("Could not parse byte array as X509Certificate.");
-            }        
-        } catch (CertificateException e) {
+           return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));      
+        } catch (CertificateException | ClassCastException e) {
             throw new CertificateParsingException("Could not parse byte array as X509Certificate.", e);
         }
     }
@@ -2614,10 +2616,10 @@ public abstract class CertTools {
      * @return true if verified OK
      * @throws CertPathValidatorException if certificate could not be validated
      */
-    public static boolean verify(Certificate certificate, Collection<X509Certificate> caCertChain, Date date, PKIXCertPathChecker... pkixCertPathCheckers)
+    public static boolean verify(X509Certificate certificate, Collection<X509Certificate> caCertChain, Date date, PKIXCertPathChecker... pkixCertPathCheckers)
             throws CertPathValidatorException {
         try {
-            ArrayList<Certificate> certlist = new ArrayList<Certificate>();
+            ArrayList<X509Certificate> certlist = new ArrayList<>();
             // Create CertPath
             certlist.add(certificate);
             // Add other certs...
@@ -2625,7 +2627,7 @@ public abstract class CertTools {
             
             // Create TrustAnchor. Since EJBCA use BouncyCastle provider, we assume
             // certificate already in correct order
-            X509Certificate[] cac = caCertChain.toArray(new X509Certificate[] {});
+            X509Certificate[] cac = caCertChain.toArray(new X509Certificate[caCertChain.size()]);
             TrustAnchor anchor = new TrustAnchor(cac[0], null);
             // Set the PKIX parameters
             PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
@@ -2661,7 +2663,7 @@ public abstract class CertTools {
      * @return true if verified OK
      * @throws CertPathValidatorException if verification failed
      */
-    public static boolean verify(Certificate certificate, Collection<X509Certificate> caCertChain) throws CertPathValidatorException {
+    public static boolean verify(X509Certificate certificate, Collection<X509Certificate> caCertChain) throws CertPathValidatorException {
         return verify(certificate, caCertChain, null);
     }
     
@@ -2675,7 +2677,7 @@ public abstract class CertTools {
      * @param optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      */
-    public static boolean verifyWithTrustedCertificates(Certificate certificate, List< Collection<X509Certificate>> trustedCertificates, PKIXCertPathChecker...pkixCertPathCheckers) {
+    public static boolean verifyWithTrustedCertificates(X509Certificate certificate, List< Collection<X509Certificate>> trustedCertificates, PKIXCertPathChecker...pkixCertPathCheckers) {
         
         if(trustedCertificates == null) {
             if(log.isDebugEnabled()) {
@@ -2693,7 +2695,7 @@ public abstract class CertTools {
         
         BigInteger certSN = getSerialNumber(certificate);
         for(Collection<X509Certificate> trustedCertChain : trustedCertificates) {
-            Certificate trustedCert = trustedCertChain.iterator().next();
+            X509Certificate trustedCert = trustedCertChain.iterator().next();
             BigInteger trustedCertSN = getSerialNumber(trustedCert);
             if(certSN.equals(trustedCertSN)) {
                 // If the serial number of the certificate matches the serial number of a certificate in the list, make sure that it in 
