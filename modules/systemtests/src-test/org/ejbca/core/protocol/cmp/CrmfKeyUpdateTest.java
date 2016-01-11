@@ -1575,7 +1575,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         Collection<X509Certificate> cacerts = new ArrayList<>();
         cacerts.add(issuerCert);
         assertTrue(CertTools.verify(cert, cacerts));
-        cacerts = new ArrayList<>();
+        cacerts.clear();
         cacerts.add(respCaCert);
         assertTrue(CertTools.verify(cert,  cacerts));
         return cert;
