@@ -148,7 +148,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
                 throw new PublisherException(msg);
             }
             // Run internal method to create tempfile and run the command
-            List<String> arguments = new ArrayList<String>(); // <String>
+            List<String> arguments = new ArrayList<String>(); 
             arguments.add(String.valueOf(type));
             try {
                 arguments.add(CertTools.getSubjectDN(incert));
@@ -337,6 +337,13 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
         try {
             tempFileName = tempFile.getCanonicalPath();
             String[] cmdcommand = (externalCommand).split("\\s");
+            for(int i = 0; i < additionalArguments.size(); i++) {
+                String argument = additionalArguments.get(i);
+                //Add quotes to encapsulate argument. 
+                if(!argument.startsWith("\"") && !argument.endsWith("\"")) {
+                    additionalArguments.set(i, "\"" + argument + "\"");
+                }
+            }
             additionalArguments.add(0, tempFileName);
 
             String[] cmdargs = (String[]) additionalArguments.toArray(new String[additionalArguments.size()]);
