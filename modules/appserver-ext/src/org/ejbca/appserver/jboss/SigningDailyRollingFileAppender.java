@@ -24,6 +24,7 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.tsp.TSPAlgorithms;
 import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TSPValidationException;
@@ -354,7 +355,7 @@ class SignerThread implements Runnable { // NOPMD this is not run in the ejb app
 			if (infile != null) {
 				digestBytes = FileTools.readFiletoBuffer(infile);
 			}
-			MessageDigest dig = MessageDigest.getInstance(TSPAlgorithms.SHA1.getId(), "BC");
+			MessageDigest dig = MessageDigest.getInstance(TSPAlgorithms.SHA1.getId(), BouncyCastleProvider.PROVIDER_NAME);
 			dig.update(digestBytes);
 			byte[] digest = dig.digest();
 			TimeStampRequest timeStampRequest = timeStampRequestGenerator.generate(TSPAlgorithms.SHA1, digest, BigInteger.valueOf(nonce));

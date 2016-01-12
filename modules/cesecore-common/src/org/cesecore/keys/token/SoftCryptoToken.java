@@ -266,7 +266,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
     private boolean checkSoftKeystorePassword(final char[] authenticationCode, int cryptoTokenId) {
         try {
             if (keystoreData != null) {
-                KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+                KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
                 keystore.load(new java.io.ByteArrayInputStream(keystoreData), authenticationCode);
             }
             return true;

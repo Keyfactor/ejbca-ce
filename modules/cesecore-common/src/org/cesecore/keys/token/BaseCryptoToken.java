@@ -45,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -508,7 +509,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 if (log.isDebugEnabled()) {
                     log.debug("Using explicit parameter encoding for ECC key.");
                 }
-                publicK = ECKeyUtil.publicToExplicitParameters(publicK, "BC");
+                publicK = ECKeyUtil.publicToExplicitParameters(publicK, BouncyCastleProvider.PROVIDER_NAME);
             }
             return publicK;
         } catch (KeyStoreException e) {

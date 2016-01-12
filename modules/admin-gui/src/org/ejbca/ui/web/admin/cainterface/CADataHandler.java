@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
@@ -116,7 +117,7 @@ public class CADataHandler implements Serializable {
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
   public void importCAFromKeyStore(String caname, byte[] p12file, String keystorepass, String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
-      final KeyStore ks = KeyStore.getInstance("PKCS12","BC");
+      final KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
       ks.load(new ByteArrayInputStream(p12file), keystorepass.toCharArray());
       if (privateSignatureKeyAlias.equals("")) {
           Enumeration<String> aliases = ks.aliases();
