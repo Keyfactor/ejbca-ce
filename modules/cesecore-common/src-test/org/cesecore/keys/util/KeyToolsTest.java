@@ -183,7 +183,7 @@ public class KeyToolsTest {
         	KeyTools.testKey(pk, keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
         	assertTrue(false);
         } catch (InvalidKeyException e) {
-        	assertEquals("Not possible to sign and then verify with key pair.", e.getMessage());
+        	assertEquals("Signature was not correctly verified.", e.getMessage());
         }
         
         AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(keys.getPublic());
@@ -266,7 +266,7 @@ public class KeyToolsTest {
         	KeyTools.testKey(keys1.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
         	assertTrue(false);
         } catch (InvalidKeyException e) {
-        	assertEquals("Not possible to sign and then verify with key pair.", e.getMessage());
+        	assertEquals("Signature was not correctly verified.", e.getMessage());
         }
 
         // This will not do anything for a key which is not an org.ejbca.cvc.PublicKeyEC
