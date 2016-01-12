@@ -1456,10 +1456,16 @@ public abstract class CertTools {
      */
     private static X509Certificate parseX509Certificate(String provider, byte[] cert) throws CertificateParsingException {
         final CertificateFactory cf = CertTools.getCertificateFactory(provider);
+        X509Certificate result;
         try {
-           return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));      
-        } catch (CertificateException | ClassCastException e) {
+           result = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));      
+        } catch (CertificateException e) {
             throw new CertificateParsingException("Could not parse byte array as X509Certificate.", e);
+        }
+        if(result != null) {
+            return result;
+        } else {
+            throw new CertificateParsingException("Could not parse byte array as X509Certificate.");
         }
     }
     
