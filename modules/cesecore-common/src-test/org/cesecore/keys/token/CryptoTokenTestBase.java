@@ -689,11 +689,6 @@ public abstract class CryptoTokenTestBase {
 
             //get encryption key
             Key encryptionKey = token.getKey("encryptkeytest001");
-
-            KeyPair keyPair = KeyTools.genKeys("512", "RSA");
-            byte[] encodedPrivate = keyPair.getPrivate().getEncoded();
-            ASN1InputStream deb = new ASN1InputStream(encodedPrivate);
-            System.err.println("moo:\n"+ASN1Dump.dumpAsString(deb.readObject()));
             
             //unwrap private key and check if it is ok
             // since SUN PKCS11 Provider does not implements WRAP_MODE,
