@@ -22,6 +22,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -40,6 +41,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -681,23 +685,28 @@ public abstract class CryptoTokenTestBase {
             //extract the private key
             byte[] cbcIv = { 0x01, 0x23, 0x45, 0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF };
             IvParameterSpec ivParam = new IvParameterSpec( cbcIv );
-            byte[] wrappedkey = token.extractKey("DESede/CBC/NoPadding", ivParam, "encryptkeytest001", "extractkeytest001");
+            byte[] wrappedkey = token.extractKey("DESede/CBC/PKCS7Padding", ivParam, "encryptkeytest001", "extractkeytest001");
 
             //get encryption key
             Key encryptionKey = token.getKey("encryptkeytest001");
 
+            KeyPair keyPair = KeyTools.genKeys("512", "RSA");
+            byte[] encodedPrivate = keyPair.getPrivate().getEncoded();
+            ASN1InputStream deb = new ASN1InputStream(encodedPrivate);
+            System.err.println("moo:\n"+ASN1Dump.dumpAsString(deb.readObject()));
+            
             //unwrap private key and check if it is ok
             // since SUN PKCS11 Provider does not implements WRAP_MODE,
             // DECRYPT_MODE with encoded private key will be used instead, giving the same result
-            Cipher c = Cipher.getInstance( "DESede/CBC/NoPadding" ,token.getEncProviderName());
+            Cipher c = Cipher.getInstance( "DESede/CBC/PKCS7Padding" ,token.getEncProviderName());
             c.init(Cipher.DECRYPT_MODE, encryptionKey, ivParam);
             byte[] decryptedBytes = c.doFinal(wrappedkey);
 
-            KeyFactory kf = KeyFactory.getInstance("RSA", "BC");
+            KeyFactory kf = KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
             PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(decryptedBytes);
             PrivateKey unwrappedkey = kf.generatePrivate(ks);
 
-            KeyTools.testKey((PrivateKey)unwrappedkey, token.getPublicKey("extractkeytest001"), "BC");
+            KeyTools.testKey((PrivateKey)unwrappedkey, token.getPublicKey("extractkeytest001"), BouncyCastleProvider.PROVIDER_NAME);
 
             assertEquals(token.getPrivateKey("extractkeytest001"), unwrappedkey);
         } catch (PrivateKeyNotExtractableException e) {

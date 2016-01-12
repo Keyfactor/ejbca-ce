@@ -23,6 +23,8 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 
 /** This class is used as crypto Token for virtual CAs that does not have a keystore, such as external SubCAs.
  * 
@@ -41,7 +43,7 @@ public class NullCryptoToken extends BaseCryptoToken {
     @Override
     public void init(Properties properties, byte[] data, int id) throws Exception {
     	// We only need to set JCA provider, if JCE provider is the same (which is the common case)
-    	setJCAProviderName("BC");
+    	setJCAProviderName(BouncyCastleProvider.PROVIDER_NAME);
     	this.id = id;
     }
 

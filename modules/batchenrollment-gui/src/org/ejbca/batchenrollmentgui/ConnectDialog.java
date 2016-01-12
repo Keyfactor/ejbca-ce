@@ -51,6 +51,7 @@ import javax.swing.JOptionPane;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
@@ -433,7 +434,7 @@ public class ConnectDialog extends javax.swing.JDialog {
                     // PKCS12 must use BC as provider but not JKS
                     final String provider;
                     if (settings.getKeystoreType().equals("PKCS12")) {
-                        provider = "BC";
+                        provider = BouncyCastleProvider.PROVIDER_NAME;
                     } else {
                         provider = null;
                     }

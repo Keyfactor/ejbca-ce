@@ -29,6 +29,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -125,7 +126,7 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 
 	@Override
 	String getProvider() {
-		return "BC";
+		return BouncyCastleProvider.PROVIDER_NAME;
 	}
 
 	public static CryptoToken createSoftToken(boolean nodefaultpwd) {

@@ -966,7 +966,7 @@ ASN1Sequence extraAdminCertSeq = (ASN1Sequence)dIn.readObject();
 X509CertificateStructure extraCert = new X509CertificateStructure(ASN1Sequence.getInstance(extraAdminCertSeq));
 crmfMsg.addExtraCert(extraCert);
 
-final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
 sig.initSign(eekeys.getPrivate());
 sig.update(crmfMsg.getProtectedBytes());
 byte[] eeSignature = sig.sign();
@@ -983,7 +983,7 @@ PKIBody myPKIBody = new PKIBody(crmfMsg, 20); // NestedMessageContent
 PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 //Signing myPKIMessage
 KeyPair raKeys = getRAKeys();
-final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
 sig.initSign(rakeys.getPrivate());
 sig.update(myPKIMessage.getProtectedBytes());
 byte[] eeSignature = sig.sign();
@@ -1214,7 +1214,7 @@ GeneralName sender = new GeneralName(subjectDN);
 msgbuilder.setAuthInfoSender(sender);
 Control control = new RegTokenControl("foo123");
 msgbuilder.addControl(control);
-Provider prov = Security.getProvider("BC");
+Provider prov = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
 ContentSigner popsigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider(prov).build(keyPair.getPrivate());
 msgbuilder.setProofOfPossessionSigningKeySigner(popsigner);
 CertificateRequestMessage msg = msgbuilder.build();
@@ -4207,7 +4207,7 @@ org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jc
     curve,
     curve.decodePoint(Hex.decode(ecdsa.implicitlyca.g)), // G
     new BigInteger(ecdsa.implicitlyca.n)); // n
-ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
+ConfigurableProvider config = (ConfigurableProvider)Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
 config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);
 </source>
 </subsection>
