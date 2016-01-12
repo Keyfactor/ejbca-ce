@@ -59,9 +59,11 @@ public class CompressedCollection<T extends Serializable> implements Collection<
     
     @Override
     public boolean add(final T object) {
+        if (compressedData!=null) {
+            throw new IllegalStateException("closeForWrite() has alread been called without clear() for this CompressedCollection.");
+        }
         boolean ret = false;
         if (object!=null) {
-            //estimateSize(object);
             try {
                 getObjectOutputStream().writeObject(object);
                 ret = true;
