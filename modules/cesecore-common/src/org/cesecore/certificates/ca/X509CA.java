@@ -1475,7 +1475,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         try {
-            final ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().setProvider("BC").build(verifyKey);
+            final ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(verifyKey);
             if (!crl.isSignatureValid(verifier)) {
                 throw new SignatureException("Error verifying CRL to be returned.");
             }
@@ -1672,7 +1672,7 @@ public class X509CA extends CA implements Serializable {
         ObjectInputStream ois = null;
         JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
         rec.setProvider(cryptoToken.getEncProviderName());
-        rec.setContentProvider("BC");
+        rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
         // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
         // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
         // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
@@ -1691,7 +1691,7 @@ public class X509CA extends CA implements Serializable {
         final String keyAlias = getCAToken().getAliasFromPurpose(cAKeyPurpose);
         JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(keyAlias));
         rec.setProvider(cryptoToken.getSignProviderName());
-        rec.setContentProvider("BC");
+        rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
         // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
         // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
         // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)

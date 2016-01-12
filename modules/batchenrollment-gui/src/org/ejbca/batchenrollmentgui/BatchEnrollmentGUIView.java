@@ -1063,7 +1063,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         // Validate path
         final CertPathValidator cpv = CertPathValidator.getInstance("PKIX");
         final PKIXParameters params = new PKIXParameters(anchors);
-        params.setSigProvider("BC");
+        params.setSigProvider(BouncyCastleProvider.PROVIDER_NAME);
         params.setRevocationEnabled(false);
 
         PKIXCertPathValidatorResult result =

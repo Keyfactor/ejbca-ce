@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -72,7 +73,7 @@ public class CVCRequestMessage implements RequestMessage {
     /** Private key used for signing/encrypting response, if needed */
     private PrivateKey responsePrivateKey;
     /** Security provider used for the responsePrivateKey */
-    private String responseProvider = "BC";
+    private String responseProvider = BouncyCastleProvider.PROVIDER_NAME;
 
     /**
      * Constructs a new empty message handler object.

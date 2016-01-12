@@ -64,6 +64,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -2271,7 +2272,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         null, details);
             }
             // load keystore
-            java.security.KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+            java.security.KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new java.io.ByteArrayInputStream(p12file), keystorepass.toCharArray());
             // Extract signature keys
             if (privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias)) {
@@ -2386,7 +2387,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new Exception("CA already has an existing CryptoToken reference: " + cryptoToken.getId());
             }
             // load keystore from input
-            KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+            KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(p12file), keystorepass.toCharArray());
             // Extract signature keys
             if (privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias)) {
@@ -2429,12 +2430,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final String testSigAlg = AlgorithmTools.getSignatureAlgorithms(thisCa.getCACertificate().getPublicKey()).get(0);
             // Sign with imported private key
             byte[] input = "Test data...".getBytes();
-            Signature signature = Signature.getInstance(testSigAlg, "BC");
+            Signature signature = Signature.getInstance(testSigAlg, BouncyCastleProvider.PROVIDER_NAME);
             signature.initSign(p12PrivateSignatureKey);
             signature.update(input);
             byte[] signed = signature.sign();
             // Verify with public key from CA certificate
-            signature = Signature.getInstance(testSigAlg, "BC");
+            signature = Signature.getInstance(testSigAlg, BouncyCastleProvider.PROVIDER_NAME);
             signature.initVerify(thisCa.getCACertificate().getPublicKey());
             signature.update(input);
             if (!signature.verify(signed)) {
@@ -2516,7 +2517,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         try {
             // Currently only RSA keys are supported
-            KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+            KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(null, null);
 
             // The CAs certificate is first in chain
@@ -2851,7 +2852,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             } else {
                 log.debug("Exporting PKCS12 keystore");
                 format = "PKCS12";
-                KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+                KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
                 keystore.load(null, keystorepass.toCharArray());
                 // Load keys into keystore
                 Certificate[] certificateChainSignature = (Certificate[]) thisCa.getCertificateChain().toArray(new Certificate[0]);

@@ -1065,7 +1065,7 @@ public final class KeyTools {
                 signature.initVerify(pub);
                 signature.update(input);
                 if (!signature.verify(signBV)) {
-                    throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
+                    throw new InvalidKeyException("Signature was not correctly verified.");
                 }
             }
         } catch ( InvalidKeyException e ) {

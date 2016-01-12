@@ -694,7 +694,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         // this.cert = cert;
         this.privateKey = key;
         if (provider == null) {
-        	this.jceProvider = "BC";
+        	this.jceProvider = BouncyCastleProvider.PROVIDER_NAME;
         } else {
             this.jceProvider = provider;        	
         }

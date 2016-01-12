@@ -37,6 +37,7 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.audit.AuditDevicesConfig;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -160,7 +161,7 @@ public class StartupSingletonBean {
         // We really need BC to be installed. This is an attempt to fix a bug where the ServiceSessionBean
         // crashes from not finding the BC-provider.
         int waitTime = 0;
-        while (Security.getProvider("BC") == null && waitTime++ < 5) {
+        while (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null && waitTime++ < 5) {
             log.info("Waiting for BC provider to be installed..");
             try {
                 Thread.sleep(2000);
