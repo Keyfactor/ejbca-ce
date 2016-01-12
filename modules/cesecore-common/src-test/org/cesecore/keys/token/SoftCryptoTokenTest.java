@@ -154,16 +154,20 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 	}
 
 
-	@Test
-	public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException, IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException {
-    	CryptoToken token = createSoftToken(true, false);
-		doExtractKeyFalse(token);
-	}
+    @Test
+    public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException,
+            IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException,
+            SignatureException, NoSuchPaddingException, IllegalBlockSizeException {
+        CryptoToken token = createSoftToken(true, false);
+        doExtractKeyFalse(token);
+    }
 
-
-	@Test
-	public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException, BadPaddingException, InvalidKeySpecException{
-    	CryptoToken token = createSoftToken(true, true);
-		doExtractKey(token);
-	}
+    @Test
+    public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException,
+            CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException,
+            BadPaddingException, InvalidKeySpecException {
+        CryptoToken token = createSoftToken(true, true);
+        doExtractKey(token);
+    }
 }

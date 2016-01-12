@@ -186,7 +186,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
             CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException,
             BadPaddingException, InvalidKeySpecException, NoSuchSlotException {
         File f = File.createTempFile("tokentest", "txt");
-	f.deleteOnExit();
+        f.deleteOnExit();
 		FileOutputStream fos = new FileOutputStream(f);
 		fos.write(attributesExtract.getBytes());
 		fos.close();
