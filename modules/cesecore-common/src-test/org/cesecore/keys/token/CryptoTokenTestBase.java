@@ -682,7 +682,7 @@ public abstract class CryptoTokenTestBase {
             //extract the private key
             byte[] cbcIv = { 0x01, 0x23, 0x45, 0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF };
             IvParameterSpec ivParam = new IvParameterSpec( cbcIv );
-            byte[] wrappedkey = token.extractKey("DESede/CBC/PKCS7Padding", ivParam, "encryptkeytest001", "extractkeytest001");
+            byte[] wrappedkey = token.extractKey("DESede/CBC/PKCS5Padding", ivParam, "encryptkeytest001", "extractkeytest001");
 
             //get encryption key
             Key encryptionKey = token.getKey("encryptkeytest001");
