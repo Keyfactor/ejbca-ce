@@ -22,7 +22,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -41,8 +40,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.internal.InternalResources;
@@ -693,7 +690,7 @@ public abstract class CryptoTokenTestBase {
             //unwrap private key and check if it is ok
             // since SUN PKCS11 Provider does not implements WRAP_MODE,
             // DECRYPT_MODE with encoded private key will be used instead, giving the same result
-            Cipher c = Cipher.getInstance( "DESede/CBC/PKCS7Padding" ,token.getEncProviderName());
+            Cipher c = Cipher.getInstance( "DESede/CBC/PKCS5Padding", token.getEncProviderName());
             c.init(Cipher.DECRYPT_MODE, encryptionKey, ivParam);
             byte[] decryptedBytes = c.doFinal(wrappedkey);
 
