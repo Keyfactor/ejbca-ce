@@ -62,7 +62,6 @@
   boolean usekeyrecovery          = false;   
   CertificateView certificatedata = null;
   String certificateserno         = null;
-  String issuerdn                 = null;
   String username                 = null;         
   String tokensn                  = null;
   String message                  = null;
@@ -104,9 +103,9 @@
      noparameter = false;
   }
   if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
-		 String certificateSerno = request.getParameter(SERNO_PARAMETER);
+		 certificateserno = request.getParameter(SERNO_PARAMETER);
 		 caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-	     rabean.loadCertificates(new BigInteger(certificateSerno,16), caid); 
+	     rabean.loadCertificates(new BigInteger(certificateserno,16), caid); 
 	     notauthorized = false;
 	     noparameter = false;
   } else if( request.getParameter(CACERT_PARAMETER ) != null){
@@ -155,7 +154,7 @@
          if(username != null) {
            rabean.loadCertificates(username);
          } else {
-           rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+           rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
          }
        }
        notauthorized = false;
@@ -190,7 +189,7 @@
 				if(username != null) {
 					rabean.loadCertificates(username);
 				} else {
-					rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+					rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
 				}
 			}
 			notauthorized = false;
@@ -221,7 +220,7 @@
          if(username != null) {
            rabean.loadCertificates(username);
          } else {
-           rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+           rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
          }
        }
        notauthorized = false;
@@ -237,13 +236,15 @@
      certificatedata = rabean.getCertificate(currentindex);
      message = cabean.republish(certificatedata); 
      try{
-       if(tokensn !=null)
+       if(tokensn !=null) {
          rabean.loadTokenCertificates(tokensn);
-       else 
-         if(username != null)
+       } else { 
+         if(username != null) {
            rabean.loadCertificates(username);
-         else
-           rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+         } else {
+           rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
+         }
+       }
        notauthorized = false;
      }catch(AuthorizationDeniedException e){
      }
@@ -346,7 +347,8 @@ function confirmrepublish(){
      <input type="hidden" name='<%= HARDTOKENSN_PARAMETER%>' value='<c:out value="<%= tokensn %>"/>'> 
      <% }       
     if(certificateserno != null){ %>
-     <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<c:out value="<%= certificateserno %>"/>'> 
+     <input type="hidden" name='<%= SERNO_PARAMETER %>' value='<c:out value="<%= certificateserno %>"/>'> 
+     <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<c:out value="<%= caid %>"/>'> 
      <% } 
     if(cacerts){ %>
      <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<c:out value="<%= caid %>"/>'> 
