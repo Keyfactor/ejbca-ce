@@ -867,7 +867,7 @@ public class EjbcaWebBean implements Serializable {
     public String[] getCertSernoAndIssuerdn(String certdata) {
         final String[] ret = StringTools.parseCertData(certdata);
         if (log.isDebugEnabled()) {
-            log.debug("getCertSernoAndIssuerdn: " + certdata + " -> " + ret[0] + "," + ret[1]);
+            log.debug("getCertSernoAndIssuerdn: " + certdata + " -> " + (ret==null?"null":(ret[0] + "," + ret[1])));
         }
         return ret;
     }
