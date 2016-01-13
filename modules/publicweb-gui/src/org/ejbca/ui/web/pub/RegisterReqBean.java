@@ -84,7 +84,7 @@ public class RegisterReqBean {
     private String captcha;
     
     // Form errors
-    private final List<String> errors = new ArrayList<String>();
+    private final List<String> errors = new ArrayList<>();
     private boolean initialized = false;
     private String remoteAddress;
     
@@ -93,7 +93,7 @@ public class RegisterReqBean {
      * and returns a map with these keys and values.
      */
     public Map<String,String> getCertificateTypes() {
-        Map<String,String> certtypes = new HashMap<String,String>();
+        Map<String,String> certtypes = new HashMap<>();
         for (Entry<Object,Object> entry : EjbcaConfigurationHolder.getAsProperties().entrySet()) {
             final Object k = entry.getKey();
             final Object v = entry.getValue();
@@ -180,7 +180,7 @@ public class RegisterReqBean {
     
     public String getUsernameMapping() {
         String um = EjbcaConfigurationHolder.getString("web.selfreg.certtypes."+certType+".usernamemapping");
-        return um != null ? um.toLowerCase(Locale.ROOT) : null; 
+        return um != null ? um.toUpperCase(Locale.ROOT) : null; 
     }
     
     public String getDefaultCertType() {
@@ -193,7 +193,7 @@ public class RegisterReqBean {
      * end-entity profile of the given certtype.
      */
     public List<DNFieldDescriber> getDnFields() {
-        List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
+        List<DNFieldDescriber> fields = new ArrayList<>();
         
         int numberofsubjectdnfields = eeprofile.getSubjectDNFieldOrderLength();
         for (int i=0; i < numberofsubjectdnfields; i++) {
@@ -205,7 +205,7 @@ public class RegisterReqBean {
     }
     
     public List<DNFieldDescriber> getAltNameFields() {
-        List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
+        List<DNFieldDescriber> fields = new ArrayList<>();
         
         int numberofaltnamefields = eeprofile.getSubjectAltNameFieldOrderLength();
         for (int i=0; i < numberofaltnamefields; i++) {
@@ -217,7 +217,7 @@ public class RegisterReqBean {
     }
     
     public List<DNFieldDescriber> getDirAttrFields() {
-        List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
+        List<DNFieldDescriber> fields = new ArrayList<>();
         
         int count = eeprofile.getSubjectDirAttrFieldOrderLength();
         for (int i=0; i < count; i++) {
@@ -286,7 +286,7 @@ public class RegisterReqBean {
     }
     
     public List<TokenTypeInfo> getSelectableTokenTypeItems() {
-        List<TokenTypeInfo> items = new ArrayList<TokenTypeInfo>();
+        List<TokenTypeInfo> items = new ArrayList<>();
         for (String keystore : getAvailableTokenTypes()) {
             items.add(new TokenTypeInfo(keystore, getTokenTypeName(keystore)));
         }
@@ -326,7 +326,7 @@ public class RegisterReqBean {
         if (dn.isEmpty()) {
             return field;
         } else {
-            return dn + ", " + field;
+            return dn + "," + field;
         }
     }
     
@@ -349,7 +349,7 @@ public class RegisterReqBean {
         String usernameMapping = getUsernameMapping();
 
         // Get all fields
-        final Map<String,String> dnFields = new HashMap<String,String>();
+        final Map<String,String> allFields = new HashMap<>();
         @SuppressWarnings("rawtypes")
         Enumeration en = request.getParameterNames();
         while (en.hasMoreElements()) {
@@ -361,7 +361,7 @@ public class RegisterReqBean {
                 if (!value.isEmpty()) {
                     String dnName = DNFieldDescriber.extractSubjectDnNameFromId(eeprofile, id);
                     subjectDN = appendToDN(subjectDN, dnName, value);
-                    dnFields.put(dnName.toUpperCase(Locale.ROOT), value);
+                    allFields.put(dnName.toUpperCase(Locale.ROOT), value);
                 }
             }
             
@@ -369,6 +369,7 @@ public class RegisterReqBean {
                 if (!value.isEmpty()) {
                     String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
                     subjectAltName = appendToDN(subjectAltName, altName, value);
+                    allFields.put(altName.toUpperCase(Locale.ROOT), value);
                 }
             }
             
@@ -376,20 +377,12 @@ public class RegisterReqBean {
                 if (!value.isEmpty()) {
                     String dirAttr = DNFieldDescriber.extractSubjectDirAttrFromId(eeprofile, id);
                     subjectDirAttrs = appendToDN(subjectDirAttrs, dirAttr, value);
+                    allFields.put(dirAttr.toUpperCase(Locale.ROOT), value);
                 }
             }
         }
         
         // User account
-        if (isUsernameVisible()) {
-            username = request.getParameter("username");
-        } else {
-            username = dnFields.get(usernameMapping.toUpperCase(Locale.ROOT));
-            if (!dnFields.isEmpty() && username == null) {
-                internalError("DN field of usernamemapping doesn't exist: "+usernameMapping);
-            }
-        }
-        
         email = request.getParameter("email");
         String domain = request.getParameter("emaildomain");
         if (domain != null && !email.isEmpty()) email += "@" + domain;
@@ -399,12 +392,23 @@ public class RegisterReqBean {
         tokenType = Integer.parseInt(tokenStr != null ? tokenStr : getDefaultTokenType());
         if ("1".equals(request.getParameter("emailindn"))) {
             subjectDN = appendToDN(subjectDN, "E", email);
+            allFields.put("E", email);
         }
         
         if (request.getParameter("emailinaltname") != null) {
             String id = request.getParameter("emailinaltname");
             String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
             subjectAltName = appendToDN(subjectAltName, altName, email);
+            allFields.put(altName, email);
+        }
+        
+        if (isUsernameVisible()) {
+            username = request.getParameter("username");
+        } else {
+            username = allFields.get(usernameMapping);
+            if (!allFields.isEmpty() && username == null) {
+                internalError("DN field of usernamemapping doesn't exist: "+usernameMapping);
+            }
         }
         
         remoteAddress = request.getRemoteAddr();
@@ -446,7 +450,7 @@ public class RegisterReqBean {
      * Returns a list of errors to be displayed by the .jsp
      */
     public List<String> getErrors() {
-        return new ArrayList<String>(errors);
+        return new ArrayList<>(errors);
     }
     
     /**
