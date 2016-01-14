@@ -386,13 +386,10 @@ public class CmpMessageHelper {
         }
         CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
         resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-        
-        
-            resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
-            resp.setSender(pkiHeader.getRecipient());
-            resp.setRecipient(pkiHeader.getSender());
-            resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));
-  
+        resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
+        resp.setSender(pkiHeader.getRecipient());
+        resp.setRecipient(pkiHeader.getSender());
+        resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));  
         resp.setFailInfo(failInfo);
         resp.setFailText(failText);
         try {
