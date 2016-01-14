@@ -417,6 +417,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         } catch (AuthorizationDeniedException e) {
             log.debug("Authorization was denied to list statedump templates");
         }
+        sortSelectItemsByLabel(templates);
         return templates;
     }
     
