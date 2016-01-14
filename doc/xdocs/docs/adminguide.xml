@@ -2210,7 +2210,7 @@ Variables used with approvals:
   ${requestAdmin.CN}               = The common name of the requesting administrator.
 </li>
 <li>
-  ${requestAdmin.SN}               = The common name of the requesting administrator.
+  ${requestAdmin.SN}               = The requesting administrator's DN serialNumber.
 </li>
 <li>
   ${requestAdmin.O}                = The requesting administrator's organization
@@ -2231,7 +2231,7 @@ Variables used with approvals:
  ${approvalAdmin.CN}              = The common name of the approving administrator.
 </li>
 <li>
- ${approvalAdmin.SN}              = The common name of the approving administrator. 
+ ${approvalAdmin.SN}              = The approving administrator's DN serialNumber. 
 </li>
 <li>
  ${approvalAdmin.O}               = The approving administrator's organization
