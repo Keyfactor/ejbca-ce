@@ -259,7 +259,7 @@ public class CmpMessageHelper {
         }
         return result;
     }
-
+        
     public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId,
             int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         if (LOG.isTraceEnabled()) {
