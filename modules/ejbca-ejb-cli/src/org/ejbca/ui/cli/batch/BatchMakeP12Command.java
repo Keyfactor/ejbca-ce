@@ -225,8 +225,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             p12topem.setExportPath(PEMfilename);
             p12topem.createPEM();
         } else {
-            FileOutputStream os = new FileOutputStream(keyStoreFilename);
-            ks.store(os, kspassword.toCharArray());
+            try (final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilename);) {
+                ks.store(fileOutputStream, kspassword.toCharArray());
+            }
         }
 
         log.debug("Keystore stored in " + keyStoreFilename);
@@ -304,10 +305,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         }
 
         // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = (Certificate[]) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
-                .getCertificateChain(caid).toArray(new Certificate[0]);
+        Certificate[] cachain = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).getCertificateChain(caid).toArray(new Certificate[0]);
         // Verify CA-certificate
-        if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
+        if (CertTools.isSelfSigned(cachain[cachain.length - 1])) {
             try {
                 // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1
                 // will not verify (at least not as of jdk6)
