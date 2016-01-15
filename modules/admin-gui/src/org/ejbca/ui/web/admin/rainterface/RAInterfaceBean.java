@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
-import java.beans.ExceptionListener;
-import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +61,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -1066,15 +1065,15 @@ public class RAInterfaceBean implements Serializable {
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
         EndEntityProfile eprofile = new EndEntityProfile();
         try {
-            XMLDecoder decoder = getXMLDecoder(is);
+            final SecureXMLDecoder decoder = new SecureXMLDecoder(is);
 
             // Add end entity profile
             Object data = null;
             try {
                 data = decoder.readObject();
-            } catch(IllegalArgumentException e) {
+            } catch(IOException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("IllegalArgumentException parsing certificate profile data: "+e.getMessage());
+                    log.debug("Error parsing certificate profile data: "+e.getMessage());
                 }
                 return null;
             }
@@ -1180,28 +1179,6 @@ public class RAInterfaceBean implements Serializable {
         }
         
         return false;
-    }
-    
-    private XMLDecoder getXMLDecoder(ByteArrayInputStream is) {
-        // Without the exception listener, when a faulty xml file is read, the XMLDecoder catches the exception,
-        // writes an error message to stderr and continues reading. Ejbca wouldn't notice that the profile created 
-        // based on this XML file is faulty until it is used.
-        ExceptionListener elistener = new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                // This probably means that an extra byte is found or something. The certprofile that raises this exception 
-                // does not seem to be faulty at all as far as I can test.
-                if(StringUtils.equals("org.apache.xerces.impl.io.MalformedByteSequenceException", e.getClass().getName())) {
-                    log.error("org.apache.xerces.impl.io.MalformedByteSequenceException: " + e.getMessage());
-                    log.error("Continuing ...");
-                } else {
-                    log.error(e.getClass().getName() + ": " + e.getMessage());
-                    throw new IllegalArgumentException(e);
-                }
-            }
-        };
-        
-        return new XMLDecoder(is, null, elistener);
     }
     
 }
