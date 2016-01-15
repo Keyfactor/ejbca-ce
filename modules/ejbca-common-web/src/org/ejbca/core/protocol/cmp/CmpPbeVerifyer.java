@@ -31,6 +31,7 @@ import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -53,7 +54,13 @@ public class CmpPbeVerifyer {
 	private byte[] salt = null;
 	private String lastUsedRaSecret = null;
 	
-	public CmpPbeVerifyer(final PKIMessage msg) {
+	/**
+	 * Constructor for CmpPbeVerifyer
+	 * 
+	 * @param msg the PKIMessage payload from the CMP Message
+	 * @throws InvalidCmpProtectionException if this class is invoked on a message not signed with a password based MAC.
+	 */
+	public CmpPbeVerifyer(final PKIMessage msg) throws InvalidCmpProtectionException {
 		final PKIHeader head = msg.getHeader();
 		protectedBytes = CmpMessageHelper.getProtectedBytes(msg);
 		protection = msg.getProtection();
@@ -61,7 +68,7 @@ public class CmpPbeVerifyer {
 		final ASN1ObjectIdentifier algId = pAlg.getAlgorithm();
 		if (!StringUtils.equals(algId.getId(), CMPObjectIdentifiers.passwordBasedMac.getId())) {
             final String errMsg = "Protection algorithm id expected '"+CMPObjectIdentifiers.passwordBasedMac.getId()+"' (passwordBasedMac) but was '"+algId.getId()+"'.";
-            throw new IllegalArgumentException(errMsg);   
+            throw new InvalidCmpProtectionException(errMsg);   
 		}
 		final PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
 		iterationCount = pp.getIterationCount().getPositiveValue().intValue();
@@ -80,7 +87,14 @@ public class CmpPbeVerifyer {
 		salt = pp.getSalt().getOctets();
 	}
 	
-	public boolean verify(String raAuthenticationSecret) throws  InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+	/**
+	 * 
+	 * @param raAuthenticationSecret
+	 * @return
+	 * @throws InvalidKeyException if the iterator count for this verifier was set higher than 10000, or if the key was not compatible with this MAC
+	 * @throws NoSuchAlgorithmException if the algorithm for the Owf or the MAC weren't found
+	 */
+	public boolean verify(String raAuthenticationSecret) throws  InvalidKeyException, NoSuchAlgorithmException {
 		lastUsedRaSecret = raAuthenticationSecret;
 		boolean ret = false;
 		// Verify the PasswordBased protection of the message
@@ -98,21 +112,25 @@ public class CmpPbeVerifyer {
 	        System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
 	        System.arraycopy(salt, 0, basekey, raSecret.length, salt.length);
 			// Construct the base key according to rfc4210, section 5.1.3.1
-			MessageDigest dig = MessageDigest.getInstance(owfOid, "BC");
-			for (int i = 0; i < iterationCount; i++) {
-				basekey = dig.digest(basekey);
-				dig.reset();
-			}
-			// HMAC/SHA1 is normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
-			Mac mac = Mac.getInstance(macOid, "BC");
-			SecretKey key = new SecretKeySpec(basekey, macOid);
-			mac.init(key);
-			mac.reset();
-			mac.update(protectedBytes, 0, protectedBytes.length);
-			byte[] out = mac.doFinal();
-			// My out should now be the same as the protection bits
-			byte[] pb = protection.getBytes();
-			ret = Arrays.equals(out, pb);
+            try {
+                MessageDigest dig = MessageDigest.getInstance(owfOid, BouncyCastleProvider.PROVIDER_NAME);
+                for (int i = 0; i < iterationCount; i++) {
+                    basekey = dig.digest(basekey);
+                    dig.reset();
+                }
+                // HMAC/SHA1 is normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
+                Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
+                SecretKey key = new SecretKeySpec(basekey, macOid);
+                mac.init(key);
+                mac.reset();
+                mac.update(protectedBytes, 0, protectedBytes.length);
+                byte[] out = mac.doFinal();
+                // My out should now be the same as the protection bits
+                byte[] pb = protection.getBytes();
+                ret = Arrays.equals(out, pb);
+            } catch (NoSuchProviderException e) {
+                throw new IllegalStateException("BouncyCastle provider not found.");
+            }
 		}
 		return ret;
 	}

@@ -203,7 +203,9 @@ public class CrmfRequestMessageTest {
     }
 
 	@Test
-	public void testNovosecRARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
+    public void testNovosecRARequest()
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
+            CertificateEncodingException, SignatureException, IllegalStateException, InvalidCmpProtectionException {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with RAVerifiedPOP and PBE protection to see that we can process it
         ASN1InputStream in = new ASN1InputStream(novosecrapopir);
@@ -322,16 +324,18 @@ public class CrmfRequestMessageTest {
     }
 
 	@Test
-    public void testBc146RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    public void testBc146RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidCmpProtectionException {
     	internalBcRARequestTest(bc146rapopir);
     }
 
 	@Test
-    public void testBc147RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    public void testBc147RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
+            InvalidCmpProtectionException {
     	internalBcRARequestTest(bc147rapopir);
     }
 
-    private void internalBcRARequestTest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    private void internalBcRARequestTest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
+            SignatureException, InvalidCmpProtectionException {
     	// Check that we can parse request from BouncyCastle version 1.46.
     	// Read an initialization request with RAVerifiedPOP with PBE protection to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);

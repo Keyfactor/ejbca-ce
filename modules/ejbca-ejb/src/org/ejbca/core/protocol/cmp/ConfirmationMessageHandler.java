@@ -56,7 +56,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
  * However, EJBCA does not keep track of the transaction and always responds
  * with a ResponseStatus.SUCCESS Certificate Confirmation ACK.
  * 
- * @author tomas
  * @version $Id$
  */
 public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
@@ -79,6 +78,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 		this.caSession = caSession;
         this.cryptoTokenSession = cryptoTokenSession;
 	}
+	
 	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
@@ -101,24 +101,20 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			cresp.setTransactionId(msg.getTransactionId());
 
 			if (StringUtils.equals(responseProtection, "pbe")) {
-			    setPbeParameters(cresp, msg, authenticated);
+			    try {
+                    setPbeParameters(cresp, msg, authenticated);
+                } catch (InvalidCmpProtectionException e) {
+                    throw new IllegalArgumentException(e);
+                }
 			} else if (StringUtils.equals(responseProtection, "signature")) {
 			    signResponse(cresp, msg);
 			}
 			resp = cresp;
-			try {
-				resp.create();
-			} catch (InvalidKeyException e) {
-				LOG.error("Exception during CMP processing: ", e);			
-			} catch (NoSuchAlgorithmException e) {
-				LOG.error("Exception during CMP processing: ", e);			
-			} catch (NoSuchProviderException e) {
-				LOG.error("Exception during CMP processing: ", e);			
-			} catch (CertificateEncodingException e) {
-			    LOG.error("Exception during CMP processing: ", e);      
-            } catch (CRLException e) {
-                LOG.error("Exception during CMP processing: ", e);      
-            } 						
+            try {
+                resp.create();
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | CertificateEncodingException | CRLException e) {
+                LOG.error("Exception during CMP processing: ", e);
+            }						
 		} else {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Cmp1999 - Not creating a PKI confirm message response");
@@ -127,7 +123,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 		return resp;
 	}
 	
-	private void setPbeParameters(final CmpConfirmResponseMessage cresp, final BaseCmpMessage msg, final boolean authenticated) {
+	private void setPbeParameters(final CmpConfirmResponseMessage cresp, final BaseCmpMessage msg, final boolean authenticated) throws InvalidCmpProtectionException {
         final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
 	    
         String owfAlg = null;

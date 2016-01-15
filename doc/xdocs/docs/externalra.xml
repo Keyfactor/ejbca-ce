@@ -415,12 +415,38 @@ wether using HTTP backend of External RA backend. Example command, using cmpforo
 ./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp/cmpalias --srvcert ManagementCA.cacert.pem --ir --user mykeyid --password password --newclcert clcert.der --newkey privkey.pem --subject "CN=user1,O=My Organization,C=SE"
 </source>
 </subsection>
-<subsection name="Security options">
+<subsection name="Security Options">
 <p>
 Using the External RA, the CA works in the same was as if a client connects directly, which means you can use client or RA mode etc.
 See CMP documentation for full information about that.
 You can use whitelisting and signed external RA messages to further limit capabilities of the external RA host itself.
 </p>
+</subsection>
+<subsection name="Message Protection">
+<p>The same options for verifying message contents exist on the External RA as on the CA: Password MAC and Signatures. These can be activated in 
+<i>cmpProxy.properties</i>. CMP message headers only allow one form of protection per message, so activating both modes will allow messages to use
+either form. Rejected messages will never pass the External RA, but will rejected in the same form as if they had been rejected from the CA. 
+</p>
+<subsubsection name="Password MAC">
+<p>Password based MAC verification can be activated by setting the following value to true in <i>cmpProxy.properties</i>:</p>
+<source>
+cmp.backend.hmacPasswordValidationRequired=true
+</source>
+<p>In addition to this, KeyId/password pairs need to be defined, where they KeyID is the name of the CA and the password is the <i>CMP RA Authentication Secret</i> for that CA.</p>
+<source>cmp.backend.hmacPassword.keylist=[ca1:foo][ca2:bar]</source>
+</subsubsection>
+<subsubsection name="Signature">
+<p>This form can be activated by setting the following value:
+</p>
+<source>
+cmp.backend.signatureRequired=true
+</source>
+<p>In addition to this, the following value needs to be defined:</p>
+<source>
+cmp.backend.extra.issuerchainpath
+</source>
+<p>This value can either be set to a single PEM file or to a directory containing multiple PEM files, representing one or more valid issuers of signing certificates. </p>
+</subsubsection>
 </subsection>
 </section>
 <section name="Clustering External RA">

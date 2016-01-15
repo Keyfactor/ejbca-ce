@@ -36,6 +36,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
+import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 
 /**
  * Checks the authentication of the PKIMessage.
@@ -128,7 +129,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
 
         try {
             verifyer = new CmpPbeVerifyer(msg);
-        } catch(IllegalArgumentException e) {
+        } catch(InvalidCmpProtectionException e) {
             this.errorMessage = "Could not create CmpPbeVerifyer. "+e.getMessage();
             return false;
         }
@@ -144,7 +145,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             }
 
             // Check that the value of KeyId from the request is allowed 
-            // Note that this restriction only applies to HMAC and not EndEntityCertificate because in the later, the use of profiles can be restricted through 
+            // Note that this restriction only applies to HMAC and not EndEntityCertificate because in the latter, the use of profiles can be restricted through 
             // Administrator privileges. Other authentication modules are not used in RA mode
             if(StringUtils.equals(cmpConfiguration.getRAEEProfile(confAlias), "KeyId") ||  StringUtils.equals(cmpConfiguration.getRACertProfile(confAlias), "KeyId") ) {
                 final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
@@ -174,19 +175,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                             LOG.info(errmsg);
                         }   
                     }
-                } catch (InvalidKeyException e) {
-                    this.errorMessage = e.getLocalizedMessage();
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug(this.errorMessage, e);
-                    }
-                    return false;
-                } catch (NoSuchAlgorithmException e) {
-                    this.errorMessage = e.getLocalizedMessage();
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug(this.errorMessage, e);
-                    }
-                    return false;
-                } catch (NoSuchProviderException e) {
+                } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                     this.errorMessage = e.getLocalizedMessage();
                     if(LOG.isDebugEnabled()) {
                         LOG.debug(this.errorMessage, e);
@@ -215,19 +204,11 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                                     LOG.info(verifyer.getErrMsg());
                                 }
                             }
-                        } catch (InvalidKeyException e) {
+                        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                             this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                             LOG.error(this.errorMessage, e);
                             return false;
-                        } catch (NoSuchAlgorithmException e) {
-                            this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                            LOG.error(this.errorMessage, e);
-                            return false;
-                        } catch (NoSuchProviderException e) {
-                            this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                            LOG.error(this.errorMessage, e);
-                            return false;
-                        }
+                        } 
                     } else {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("CMP password is null from CA '"+cainfo.getName()+"'.");
@@ -313,19 +294,11 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                             this.errorMessage = errmsg;
                             return false;
                         }
-                    } catch (InvalidKeyException e) {
+                    } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                         this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(this.errorMessage, e);
                         return false;
-                    } catch (NoSuchAlgorithmException e) {
-                        this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(this.errorMessage, e);
-                        return false;
-                    } catch (NoSuchProviderException e) {
-                        this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(this.errorMessage, e);
-                        return false;
-                    }
+                    } 
                 } else {
                     this.errorMessage = "No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.";
                     return false;
