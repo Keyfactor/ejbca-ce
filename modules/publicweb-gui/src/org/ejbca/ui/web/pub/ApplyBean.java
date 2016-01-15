@@ -16,8 +16,11 @@ package org.ejbca.ui.web.pub;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -26,9 +29,13 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -358,7 +365,92 @@ public class ApplyBean implements Serializable {
         return keylengths == null ? 0 : keylengths.length; 
     }
     
-	
+    public int getAvailableTokenKeySpecsSize() throws IllegalStateException, AuthorizationDeniedException {
+        return getAvailableTokenKeySpecs().length;
+    }
+	public String[] getAvailableTokenKeySpecs() throws IllegalStateException, AuthorizationDeniedException {
+	    return getAvailableTokenKeySpecs(defaultUsername);
+	}
+    public String[] getAvailableTokenKeySpecs(String username) throws IllegalStateException, AuthorizationDeniedException {
+        final List<String> ret = new ArrayList<>();
+        if(!username.equals(this.username) || this.endEntityInformation == null){        
+            this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
+        }
+        this.username = username;
+        CertificateProfile certificateProfile = null;
+        if (endEntityInformation != null) {
+            final int certprofile = endEntityInformation.getCertificateProfileId();
+            if (certprofile != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+                certificateProfile = ejbLocalHelper.getCertificateProfileSession().getCertificateProfile(certprofile);
+            } else {
+                throw new IllegalStateException("End entity must have a certificate profile.");
+            }
+        }
+        final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
+        final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            for (final int availableBitLength : availableBitLengths) {
+                if (availableBitLength==1024) {
+                    ret.add(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength + ";" + AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits");
+                }
+            }
+        }
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            for (final int availableBitLength : availableBitLengths) {
+                if (availableBitLength>=1024) {
+                    ret.add(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength + ";" + AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits");
+                }
+            }
+        }
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
+            final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+            Arrays.sort(keys);
+            for (final String ecNamedCurve : keys) {
+                final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
+                if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                    final StringBuilder names = new StringBuilder();
+                    for (final String alias : namedEcCurvesMap.get(ecNamedCurve)) {
+                        if (names.length()!=0) {
+                            names.append(" / ");
+                        }
+                        names.append(alias);
+                    }
+                    ret.add(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve + ";"+AlgorithmConstants.KEYALGORITHM_ECDSA + " " + names.toString());
+                } else {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Excluding " + ecNamedCurve + " from enrollment options since bit length " + bitLength + " is not available.");
+                    }
+                }
+            }
+        }
+        for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
+            if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
+                    final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
+                    final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
+                    if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
+                        ret.add(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name + ";" + CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg));
+                    } else {
+                        if (log.isTraceEnabled()) {
+                            log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
+                        }
+                    }
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            final StringBuilder sb = new StringBuilder();
+            for (final String availableTokenKeySpec : ret) {
+                if (sb.length()>0) {
+                    sb.append(", ");
+                }
+                sb.append(availableTokenKeySpec);
+            }
+            log.debug("<availableBitLengths(" + username + ") --> " + sb.toString());
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
 
     /**
      * Returns the default encryption key lengths.

@@ -33,6 +33,8 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.internal.InternalResources;
@@ -50,7 +52,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 38.0;
+    public static final float LATEST_VERSION = (float) 39.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -142,6 +144,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
     protected static final String ALLOWDNOVERRIDEBYEEI = "allowdnoverridebyeei";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
+    protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
@@ -358,6 +361,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
         setCertificatePolicies(policies);
 
+        setAvailableKeyAlgorithmsAsList(getAvailableKeyAlgorithmsAvailable());
         setAvailableBitLengths(DEFAULTBITLENGTHS);
 
         setUseKeyUsage(true);
@@ -1012,15 +1016,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_ENDENTITY;
     }
 
+    public String[] getAvailableKeyAlgorithms() {
+        final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
+        return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
+    }
     @SuppressWarnings("unchecked")
+    public List<String> getAvailableKeyAlgorithmsAsList() {
+        return (ArrayList<String>) data.get(AVAILABLEKEYALGORITHMS);
+    }
+    public void setAvailableKeyAlgorithms(final String[] availableKeyAlgorithms) {
+        setAvailableKeyAlgorithmsAsList(Arrays.asList(availableKeyAlgorithms));
+    }
+    public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
+        data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
+    }
+    public List<String> getAvailableKeyAlgorithmsAvailable() {
+        return AlgorithmTools.getAvailableKeyAlgorithms();
+    }
+
 	public int[] getAvailableBitLengths() {
-        List<Integer> availablebitlengths = (List<Integer>) data.get(AVAILABLEBITLENGTHS);
-        int[] returnval = new int[availablebitlengths.size()];
-
+        final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
+        final int[] returnval = new int[availablebitlengths.size()];
         for (int i = 0; i < availablebitlengths.size(); i++) {
-            returnval[i] = ((Integer) availablebitlengths.get(i)).intValue();
+            returnval[i] = availablebitlengths.get(i).intValue();
         }
-
         return returnval;
     }
     @SuppressWarnings("unchecked")
@@ -2387,6 +2406,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if(data.get(DOCUMENTTYPELIST) == null) { // v 37
             	setDocumentTypeList(new ArrayList<String>());
+            }
+            if(data.get(AVAILABLEKEYALGORITHMS) == null) { // v 39
+                // Make some intelligent guesses what key algorithm this profile is used for
+                final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAvailable();
+                if (getMinimumAvailableBitLength()>521) {
+                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECDSA);
+                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSTU4145);
+                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+                }
+                if (getMinimumAvailableBitLength()>1024 || getMaximumAvailableBitLength()<1024) {
+                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSA);
+                }
+                if (getMaximumAvailableBitLength()<1024) {
+                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_RSA);
+                }
+                setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
             }
                         
             data.put(VERSION, new Float(LATEST_VERSION));

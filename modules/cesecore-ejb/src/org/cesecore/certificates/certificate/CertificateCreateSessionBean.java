@@ -83,6 +83,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -695,22 +696,21 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
      * @throws IllegalKeyException if the PublicKey does not fulfill policy in CertificateProfile
      */
     private void verifyKey(final PublicKey pk, final CertificateProfile certProfile) throws IllegalKeyException {
-        // Verify key length that it is compliant with certificate profile
+        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(pk);
         final int keyLength = KeyTools.getKeyLength(pk);
         if (log.isDebugEnabled()) {
-            log.debug("Keylength = " + keyLength);
+            log.debug("KeyAlgorithm: " + keyAlgorithm + " KeyLength: " + keyLength);
         }
+        // Verify that the key algorithm is compliant with the certificate profile
+        if (!certProfile.getAvailableKeyAlgorithmsAsList().contains(keyAlgorithm)) {
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
+        }
+        // Verify key length that it is compliant with certificate profile
         if (keyLength == -1) {
-            final String text = intres.getLocalizedMessage("createcert.unsupportedkeytype", pk.getClass().getName());
-            // logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null,
-            // LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
-            throw new IllegalKeyException(text);
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", pk.getClass().getName()));
         }
         if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1)) || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
-            final String text = intres.getLocalizedMessage("createcert.illegalkeylength", Integer.valueOf(keyLength));
-            // logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null,
-            // LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
-            throw new IllegalKeyException(text);
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", Integer.valueOf(keyLength)));
         }
     }
 

@@ -14,6 +14,7 @@ package org.cesecore.certificates.util;
 
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -33,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,6 +46,7 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
@@ -134,6 +138,82 @@ public abstract class AlgorithmTools {
             }
         }
         return keyAlg;
+    }
+
+    /** @return a list of all available key algorithms */
+    public static List<String> getAvailableKeyAlgorithms() {
+        final List<String> ret = new ArrayList<>(Arrays.asList(AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmConstants.KEYALGORITHM_ECDSA,
+                AlgorithmConstants.KEYALGORITHM_RSA));
+        for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
+            ret.add(CesecoreConfiguration.getExtraAlgTitle(algName));
+        }
+        return ret;
+    }
+
+    /**
+     * Get unique available named elliptic curves and their aliases.
+     * 
+     * @param hasToBeKnownByDefaultProvider if the curve name needs to be known by the default provider (e.g. so Sun PKCS#11 can use it)
+     * @return a Map with elliptic curve names as key and the key+any alias as the value.
+     */
+    public static Map<String,List<String>> getNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
+        final Map<String,List<String>> processedCurveNames = new HashMap<>();
+        @SuppressWarnings("unchecked")
+        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+        while (ecNamedCurves.hasMoreElements()) {
+            final String ecNamedCurve = ecNamedCurves.nextElement();
+            // Only add it if the key-length is sufficient
+            try {
+                final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
+                final int bitLength = parameterSpec.getN().bitLength();
+                KeyTools.checkValidKeyLength(AlgorithmConstants.KEYALGORITHM_ECDSA, bitLength);
+                // Check if this exists under another alias
+                boolean added = false;
+                for (final String name : processedCurveNames.keySet()) {
+                    final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(name);
+                    if (parameterSpec.equals(parameterSpec2)) {
+                        // We have already listed this curve under another name
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    if (hasToBeKnownByDefaultProvider) {
+                        if (AlgorithmTools.isNamedECKnownInDefaultProvider(ecNamedCurve)) {
+                            processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+                        }
+                    } else {
+                        processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+                    }
+                }
+            } catch (InvalidKeyException e) {
+                // Ignore very silently
+                if (log.isTraceEnabled()) {
+                    log.trace("Not adding keys that are not allowed to key list: "+e.getMessage());
+                }
+            } catch (Exception e) {
+                // Ignore
+                if (log.isDebugEnabled()) {
+                    log.debug(e.getMessage());
+                }
+            }
+        }
+        return processedCurveNames;
+    }
+
+    /** @return the number of bits a named elliptic curve has or 0 if the curve name is unknown. */
+    public static int getNamedEcCurveBitLength(final String ecNamedCurve) {
+        ECNamedCurveParameterSpec ecNamedCurveParameterSpec = ECGOST3410NamedCurveTable.getParameterSpec(ecNamedCurve);
+        if (ecNamedCurveParameterSpec!=null) {
+            // This always returns 0, so try to use the field size as an estimate of the bit strength
+            //return ECGOST3410NamedCurveTable.getParameterSpec(ecNamedCurve).getN().bitLength()
+            return ecNamedCurveParameterSpec.getCurve().getFieldSize(); 
+        }
+        ecNamedCurveParameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
+        if (ecNamedCurveParameterSpec==null) {
+            return 0;
+        }
+        return ecNamedCurveParameterSpec.getN().bitLength();
     }
 
     /**

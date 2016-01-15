@@ -78,9 +78,14 @@
 				action="#{certProfileBean.setTypeSubCa}" value="#{certProfileBean.typeSubCa?'✓':' '}#{web.text.SUBCA}"/>
 			<h:commandButton rendered="#{certProfileBean.typeRootCaAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeRootCa or certProfilesBean.viewOnly}" styleClass="selectButton largeSelectButton #{certProfileBean.typeRootCa?'selected':''} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				action="#{certProfileBean.setTypeRootCa}" value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}"/>
-			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable or certProfilesBean.viewOnly}" disabled="#{certProfileBean.typeHardToken or certProfilesBean.viewOnly}"  styleClass="selectButton largeSelectButton #{certProfileBean.typeHardToken?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+			<h:commandButton rendered="#{certProfileBean.typeHardTokenAvailable or (certProfilesBean.viewOnly and web.ejbcaWebBean.globalConfiguration.issueHardwareTokens)}" disabled="#{certProfileBean.typeHardToken or certProfilesBean.viewOnly}"  styleClass="selectButton largeSelectButton #{certProfileBean.typeHardToken?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
 				action="#{certProfileBean.setTypeHardToken}" value="#{certProfileBean.typeHardToken?'✓':' '}#{web.text.HARDTOKEN}"/>
 		</h:panelGroup>
+
+		<h:outputLabel for="selectavailablekeyalgorithms" value="#{web.text.AVAILABLEKEYALGORITHMS}"/>
+		<h:selectManyListbox id="selectavailablekeyalgorithms" value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}" size="5" disabled="#{certProfilesBean.viewOnly}">
+			<f:selectItems value="#{certProfileBean.availableKeyAlgorithmsAvailable}"/>
+		</h:selectManyListbox>
 
 		<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>
 		<h:selectManyListbox id="selectavailablebitlengths" value="#{certProfileBean.certificateProfile.availableBitLengths}" size="5" styleClass="number" disabled="#{certProfilesBean.viewOnly}">
