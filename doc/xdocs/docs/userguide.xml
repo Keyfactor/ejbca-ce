@@ -737,6 +737,19 @@ is in the format certprofile_PROFILENAME-PROFILEID.xml. Any file with a name tha
 </subsection>
 
 <subsection name="Certificate Profile Fields">
+<subsubsection name="Available key algorithms">
+<p>
+List of allowed key algorithms that public key used in the certificate requests must comply with.
+</p>
+</subsubsection>
+<subsubsection name="Available bit lengths">
+<p>
+List of allowed key sizes that public key used in the certificate requests must comply with.
+Currently this validation only checks that the used key's size is within the interval of lowest and highest selected value. 
+Select 0 bits for implicit EC curves.
+</p>
+</subsubsection>
+
 <subsubsection name="Validity">
 <p>
 The validity determines the validity in days of certificates from the time the certificate is issued.

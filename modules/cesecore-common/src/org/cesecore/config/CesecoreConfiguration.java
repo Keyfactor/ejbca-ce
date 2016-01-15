@@ -275,6 +275,11 @@ public final class CesecoreConfiguration {
         return ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
     }
     
+    /** Returns title of the algorithm */
+    public static String getExtraAlgTitle(String algName) {
+        return ConfigurationHolder.getString("extraalgs." + algName.toLowerCase() + ".title");
+    }
+
     /** Returns "subalgorithms", e.g. different keylengths or curves */
     public static List<String> getExtraAlgSubAlgs(String algName) {
         return ConfigurationHolder.getPrefixedPropertyNames("extraalgs." + algName + ".subalgs");

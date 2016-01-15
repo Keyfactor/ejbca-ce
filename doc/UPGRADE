@@ -29,6 +29,13 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 6.4.2 to EJBCA 6.5.0
+-------------------------------
+EJBCA 6.5.0 allows configuration of key algorithm constraints in certificate profiles and by default any type compatible with the current allowed
+key lengths will be preselected during the upgrade. If you allow 1024 bits, both RSA and DSA will be allowed and since it is now possible to
+request tokens using any allowed key algorithm from the public web, requesting a DSA 1024 keystore will be allowed compared to earlier when only RSA
+was available over this interface.
+
 From EJBCA 6.4.0 to EJBCA 6.4.2
 -------------------------------
 EJBCA 6.4.2 adds a couple of additional rules to any existing Auditors introduced since 6.4.0, as well as their analogs (i.e. an admin with edit

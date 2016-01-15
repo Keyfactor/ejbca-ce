@@ -258,7 +258,17 @@ public class RequestInstance {
             if (certprofile==null) { 
                 certprofile = getParameter("certprofile"); 
             }
-
+            if (keyalgstring==null && keylengthstring==null) {
+            	// For token generation the option comes in the form "KEYALGORITHM_KEYSPEC"
+                final String tokenKeySpec = getParameter("tokenKeySpec"); 
+                if (tokenKeySpec!=null) {
+                    final String[] tokenKeySpecSplit = tokenKeySpec.split("_");
+                    if (tokenKeySpecSplit.length==2) {
+                        keyalgstring = tokenKeySpecSplit[0];
+                        keylengthstring = tokenKeySpecSplit[1];
+                    }
+                }
+            }
             if (keylengthstring==null) { 
                 keylengthstring = getParameter("keylength"); 
             }

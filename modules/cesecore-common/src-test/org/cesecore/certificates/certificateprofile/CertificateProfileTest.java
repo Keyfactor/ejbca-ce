@@ -31,6 +31,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
 import org.junit.Test;
@@ -82,6 +83,7 @@ public class CertificateProfileTest {
         assertEquals(8192, availablebitlen[14]);
         assertEquals(0, prof.getMinimumAvailableBitLength());
         assertEquals(8192, prof.getMaximumAvailableBitLength());
+        assertTrue("Default profile should have all enabled key algorithms available.", prof.getAvailableKeyAlgorithmsAsList().containsAll(AlgorithmTools.getAvailableKeyAlgorithms()));
         assertEquals(true, prof.getUseKeyUsage());
         final boolean[] ku = prof.getKeyUsage();
         assertEquals(9, ku.length);
