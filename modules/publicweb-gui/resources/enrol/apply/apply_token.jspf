@@ -26,7 +26,8 @@
 
 <hr />
 
-<c:set var="hasOptions" value="${applybean.numberOfLengthsAvailable > 1 || applybean.certificateProfileListShown || applybean.openVPNInstallerConfigured}" />
+<c:set var="availableTokenKeySpecs" value="${applybean.availableTokenKeySpecs}" />
+<c:set var="hasOptions" value="${fn:length(availableTokenKeySpecs) > 1 || applybean.certificateProfileListShown || applybean.openVPNInstallerConfigured}" />
 
 
 <!-- Information text -->
@@ -56,17 +57,17 @@
 	<input name="password" type="hidden" value="<c:out value="${password}" />">
 	<input type="hidden" name="hidemenu" value="<c:out value="${hidemenu}" />" />
 	
-	<c:if test="${applybean.numberOfLengthsAvailable > 1}">
-    	<label for="keylength">Key length:</label>
-            <select name="keylength" id="keylength" size="1">
-    			<c:forEach var="keylength" items="${availablekeylengths}">
-    				<option value="${keylength}">${keylength} bits</option>
+	<c:if test="${fn:length(availableTokenKeySpecs) > 1}">
+    	<label for="tokenKeySpec">Key specification:</label>
+            <select name="tokenKeySpec" id="tokenKeySpec" size="1">
+    			<c:forEach var="tokenKeySpec" items="${availableTokenKeySpecs}">
+    				<option value="${fn:split(tokenKeySpec,";")[0]}">${fn:split(tokenKeySpec,";")[1]}</option>
     			</c:forEach>
             </select>
         <br/>
     </c:if>
-	<c:if test="${applybean.numberOfLengthsAvailable == 1}">
-    	<input name="keylength" type="hidden" value="${availablekeylengths[0]}" />
+	<c:if test="${fn:length(availableTokenKeySpecs) == 1}">
+    	<input name="tokenKeySpec" type="hidden" value="${fn:split(availableTokenKeySpecs[0],";")[0]}" />
     </c:if>
     
     <c:if test="${applybean.certificateProfileListShown}">

@@ -709,58 +709,25 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int size : SIZES_DSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA+size, AlgorithmConstants.KEYALGORITHM_DSA+" "+size));
         }
-        final Map<String,String> processedCurveNames = new HashMap<String,String>();
-        @SuppressWarnings("unchecked")
-        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
-        while (ecNamedCurves.hasMoreElements()) {
-            final String ecNamedCurve = ecNamedCurves.nextElement();
-            // Only add it if the key-length is sufficient
-            try {
-                final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
-                final int bitLength = parameterSpec.getN().bitLength();
-                KeyTools.checkValidKeyLength(AlgorithmConstants.KEYALGORITHM_ECDSA, bitLength);
-                // Check if this exists under another alias
-                boolean added = false;
-                for (final String name : processedCurveNames.keySet()) {
-                    final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(name);
-                    if (parameterSpec.equals(parameterSpec2)) {
-                        // We have already listed this curve under another name
-                        added = true;
-                        break;
+        try {
+            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()));
+            final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+            Arrays.sort(keys);
+            for (final String name : keys) {
+                final StringBuilder names = new StringBuilder();
+                for (final String alias : namedEcCurvesMap.get(name)) {
+                    if (names.length()!=0) {
+                        names.append(" / ");
                     }
+                    names.append(alias);
                 }
-                if (!added) {
-                    if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
-                        if (AlgorithmTools.isNamedECKnownInDefaultProvider(ecNamedCurve)) {
-                            processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
-                        }
-                    } else {
-                        processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
-                    }
-                }
-            } catch (InvalidKeyException e) {
-                // Ignore very silently
-                if (log.isTraceEnabled()) {
-                    log.trace("Not adding keys that are not allowed to key list: "+e.getMessage());
-                }
-            } catch (Exception e) {
-                // Ignore
-                if (log.isDebugEnabled()) {
-                    log.debug(e);
-                }
+                availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + names.toString()));
+            }
+        } catch (AuthorizationDeniedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Ignoring exception " + e.getMessage());
             }
         }
-        String[] keys = processedCurveNames.keySet().toArray(new String[0]);
-        Arrays.sort(keys, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareTo(o2);
-            }
-        });
-        for (String name : keys) {
-            availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " "+processedCurveNames.get(name)));
-        }
-        
         for (String alg : CesecoreConfiguration.getExtraAlgs()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
@@ -768,7 +735,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 availableKeySpecs.add(new SelectItem(name, title));
             }
         }
-        
         return availableKeySpecs;
     }
 

@@ -43,6 +43,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -136,6 +137,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         try {
             // Perform last minute validations before saving
             CertificateProfile prof = getCertificateProfile();
+            if (prof.getAvailableKeyAlgorithmsAsList().isEmpty()) {
+                addErrorMessage("ONEAVAILABLEKEYALGORITHM");
+                success = false;
+            }
             if (prof.getAvailableBitLengthsAsList().isEmpty()) {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
                 success = false;
@@ -192,6 +197,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();
     }
     
+    public List<SelectItem/*<String,String>*/> getAvailableKeyAlgorithmsAvailable() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
+            ret.add(new SelectItem(current));
+        }
+        return ret;
+    }
+
     public List<SelectItem/*<Integer,String*/> getAvailableBitLengthsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final int current : CertificateProfile.DEFAULTBITLENGTHS) {
