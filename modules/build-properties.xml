@@ -210,6 +210,10 @@
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
+	<path id="lib.xmlpull.classpath">
+		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/xstream" includes="xpp3_min-*.jar"/>
+	</path>
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.jaxb-namespaceprfixmapper-interfaces.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/></path>
 

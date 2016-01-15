@@ -21,6 +21,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.xmlpull.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 	</path>
 
@@ -40,6 +41,7 @@
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.easymock.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
