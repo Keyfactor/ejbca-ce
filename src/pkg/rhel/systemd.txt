@@ -1,0 +1,32 @@
+systemd configuration contributed by Christian Felsing.
+
+----------
+This is a ejbca.service file which works with EJBCA, it should be
+located at /usr/lib/systemd/system and works with CentOS7.2.
+Note the dependencies to specific services such as MariaDB.
+
+---cut here--
+[Unit]
+Description=EJBCA PKI
+After=network.target mariadb.service
+
+[Service]
+Type=simple
+User=ejbca
+Group=ejbca
+WorkingDirectory=/home/ejbca
+ExecStart=/home/ejbca/jboss/bin/standalone.sh -b 127.0.0.1
+ExecStop=/home/ejbca/jboss/bin/jboss-cli.sh --connect command=:shutdown
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target
+---cut here--
+
+It assumes:
+
+* EJBCA is running as user ejbca
+* JBoss is installed on /home/ejbca/jboss
+* not forking
+* database is MariaDB
