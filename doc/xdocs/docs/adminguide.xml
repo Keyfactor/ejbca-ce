@@ -1568,7 +1568,7 @@ ejbcaClientToolBox.sh EjbcaWsRaCli revokeendentity testuser2 SUPERSEDED false
 You can use the Web Service interface to integrate EJBCA from other applications.
 </p><p>
 If you are using another language than Java you should start by downloading the WSDL
-file at http://hostname:8080/ejbca/ejbcaws/ejbcaws?wsdl
+file at http://hostname:8080/ejbca/ejbcaws/ejbcaws?wsdl. With this you can use your programming language tools to generate client stubs.
 </p><p>
 When using java you can find the required libs in 'dist/ejbcawscli' and it's 'lib' 
 subdirectory. 
@@ -1592,13 +1592,13 @@ To initialize the web service:
   ejbcaraws = service.getEjbcaWSPort();  
 </source>
 <p>
-Example call to find all users having 'Vendil' in their subject dn:
+Example call to find all users having 'Smith' in their subject dn:
 </p>
 <source>
   UserMatch usermatch = new UserMatch();
   usermatch.setMatchwith(UserMatch.MATCH_WITH_DN);
   usermatch.setMatchtype(UserMatch.MATCH_TYPE_CONTAINS);
-  usermatch.setMatchvalue("Vendil");
+  usermatch.setMatchvalue("Smith");
   List&lt;UserDataVOWS&gt; result = ejbcaraws.findUser(usermatch);
 </source>
 <p>
@@ -1614,7 +1614,7 @@ Example generating a certificate from a PKCS10 request:
   user1.setEndEntityProfileName("EMPTY");
   user1.setCertificateProfileName("ENDUSER");
 			
-  KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+  KeyPair keys = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
   PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA256WithRSA",
   CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
 
@@ -1643,6 +1643,43 @@ Example checking the revocation status of a certificate:
 </source>
 </subsection>
 
+<subsection name="Developing against the web service SOAP API">
+<p>
+The SOAP API is compatible with all development languages that can handle SOAP messages. This includes programming languages such as Java, C# and PHP.
+The normal approach is to use your programming languages tools to generate client stubs, which are classes to be used in your client program. For Java, such stub classes are already included as part of the clientToolBox WS client we provide.
+</p><p>
+Client stubs are generated from the WSDL file, which includes all information to use the WS API. The WSDL can be accessed from your installed EJBCA at <a href="https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl">https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl</a>.
+In the WSDL all methods and parameters are described, but without detailed documentation. For a simple example lets take the getProfile method. This is described in the WSDL as:
+</p>
+<source>
+&lt;xs:complexType name="getProfile">
+  &lt;xs:sequence>
+    &lt;xs:element name="arg0" type="xs:int"/>
+    &lt;xs:element minOccurs="0" name="arg1" type="xs:string"/>    
+  &lt;/xs:sequence>
+&lt;/xs:complexType>
+</source>
+<p>
+You can see that there are two parameters to the method arg0 that is an integer and arg1 that is a string. From the Javadoc API documentation we provide for the WS API you can find 
+detailed description of the arguments. The <a href="https://www.ejbca.org/docs/ws/index.html">WS API documentation</a> contains detailed descriptions and in particular the 
+<a href="https://www.ejbca.org/docs/ws/org/ejbca/core/protocol/ws/client/gen/EjbcaWS.html">EjbcaWS</a> class is most interesting.
+<br/>
+Here you can see for the methods the parameters, return value, privileges needed to use the method (based on the TLS client certificate) and errors that can occur, returned as SOAP error classes.
+<br/>
+For the getProfile method there is documented:
+</p>
+<source>
+Parameters:
+    profileId - ID of the profile we want to retrieve.
+    profileType - The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
+Returns:
+    a byte array containing the specified profile in XML format
+</source>
+<p>
+Now you can use your client stubs, in any programming language you want to call the WS SOAP getProfile method with an integer and a string parameter, getting back a profile in XML format.
+</p>
+</subsection>
+
 <subsection name="Sample code">
 <p>
 See the file modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common/IEjbcaWS
@@ -1652,12 +1689,9 @@ Sample code can be taken from:
 <ul>
 <li>The JUnit tests for the WS-API: modules/systemtests/src/org/ejbca/core/protocol/ws/EjbcaWSTest.java</li>
 <li>The WS-API CLI: modules/ejbca-ws-cli/src/org/ejbca/core/protocol/ws/client/*.java</li>
-<li>A fully working RA Admin sample program written in Java and using the web services API; this may be downloaded from <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA">the WebServiceRA project on SourceForge</a>.  
-For more information, see the <a href="howto.html#Creating and Running a custom RA Administrator application using EJBCA Web Services and Java">Web Services section of the howto file</a>.
-A short movie demonstrating the program may be downloaded from 
-<a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA/WebServiceRA_Demo.m4v">SourceForge</a>
-or
-<a href="http://www.youtube.com/watch?v=QRpPMze7BBE">YouTube</a>.
+<li>An example RA Admin sample program written in Java (for an older version of EJBCA though) and using the web services API may be downloaded from <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA">the WebServiceRA project on SourceForge</a>.  
+For more information, see the <a href="../guides.html#Creating%20a%20custom%20RA%20application%20using%20EJBCA%20Web%20Services%20and%20Java">Web Services custom RA section of the Guides</a>.
+<br/>A short movie demonstrating the program may be viewed on <a href="http://www.youtube.com/watch?v=QRpPMze7BBE">YouTube</a>, or <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA/WebServiceRA_Demo.m4v">downloaded</a> from SourceForge.
 </li>
 </ul>
 </p>
