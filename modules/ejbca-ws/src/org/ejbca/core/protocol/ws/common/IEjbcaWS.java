@@ -997,7 +997,7 @@ public interface IEjbcaWS {
 	 * </pre>
 	 *
 	 * @param profileId ID of the profile we want to retrieve.
-	 * @param profileType The type of the profile we want to retriev. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
+	 * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
 	 * @return a byte array contaning the specified profile in XML format
 	 * @throws EjbcaException if an error occured
 	 * @throws AuthorizationDeniedException
