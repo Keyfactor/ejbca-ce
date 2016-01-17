@@ -1527,9 +1527,9 @@ Windows Registry Editor Version 5.00
 	</p>
   </section>
    
-  <section name="Creating and Running a custom RA Administrator application using EJBCA Web Services and Java">
+  <section name="Creating a custom RA application using EJBCA Web Services and Java">
     <p>
-    A fully working RA Admin sample program, written using Java and EJBCA web services, may be downloaded from 
+    (for an older version of EJBCA): A fully working RA Admin sample program, written using Java and EJBCA web services, may be downloaded from 
     <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA">the WebServiceRA project on SourceForge</a>.
     </p>
     <p>
@@ -1546,10 +1546,7 @@ Windows Registry Editor Version 5.00
 	its troubleshooting.txt (further tips on running the application), and todo.txt (notes and issues for developers).
     </p>
     <p>
-    A short movie demonstrating the program may be downloaded from 
-    <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA/WebServiceRA_Demo.m4v">SourceForge</a>
-    or
-    <a href="http://www.youtube.com/watch?v=QRpPMze7BBE">YouTube</a>.
+    A short movie demonstrating the program may be viewed on <a href="http://www.youtube.com/watch?v=QRpPMze7BBE">YouTube</a>, or <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA/WebServiceRA_Demo.m4v">downloaded</a> from SourceForge.
     </p>
   </section>
 
