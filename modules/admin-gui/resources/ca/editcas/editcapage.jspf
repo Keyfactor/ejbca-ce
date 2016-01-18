@@ -328,6 +328,11 @@ function checkallfields(){
       illegalfields++;
       if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_DELTACRLPERIOD%>'; }
     }
+    if((document.ca.<%= TEXTFIELD_NEWSUBJECTDN %>.value.indexOf("=")==-1)){
+		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>");
+		illegalfields++;
+		if(jumpTo == '') { jumpTo = '<%=TEXTFIELD_NEWSUBJECTDN%>'; }
+    }
     <%
     } %> 
      if(jumpTo != '') {
@@ -336,7 +341,12 @@ function checkallfields(){
     	 document.getElementById(jumpTo).focus();
      }
      return illegalfields == 0;  
-   } 
+   }
+   
+function toggleCANameChange(){
+	var value =  document.getElementById('<%=ID_CHECKBOX_CANAMECHANGE%>').checked ? false : true;
+	document.getElementById('<%=ID_NEWSUBJECTDN%>').disabled = value;
+}
 -->
 
 </script>
@@ -840,6 +850,7 @@ function checkallfields(){
                <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
+    
     <% } %>
 
     <%-- ---------- CA certificate data -------------------- --%>
@@ -1623,7 +1634,24 @@ function checkallfields(){
                             </select>
                         </td>
                     </tr>
-                    <tr>
+                    <% if (catype!=CAInfo.CATYPE_CVC) { 
+                        		String newCAName = cainfo.getSubjectDN();%>
+                        <tr id="Row<%=row%2%>"> 
+					        <td width="50%" align="left"> 
+					            <%= ejbcawebbean.getText("RENEWCA_USECANAMECHANGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Name%20Change") %>
+					        </td>
+					        <td width="50%"> 
+					            <input id="<%=ID_CHECKBOX_CANAMECHANGE%>" type="checkbox" name="<%=CHECKBOX_CANAMECHANGE %>" value="<%=CHECKBOX_VALUE %>" onchange="toggleCANameChange()" <%= (hasEditRights ? "" : "disabled") %> />
+					        </td>
+					    </tr>
+	                    <tr id="Row<%=row++%2%>">
+	                        <td align="left" ><%= ejbcawebbean.getText("RENEWCA_NEW_SUBJECT_DN_ICAO") %></td>
+	                        <td>
+	                            <input type="text" id="<%=ID_NEWSUBJECTDN%>" name="<%= TEXTFIELD_NEWSUBJECTDN %>" value="<%=newCAName%>" size="45" maxlength="225" title="<%= ejbcawebbean.getText("FORMAT_DN") %>" disabled />
+	                        </td>
+	                    </tr>
+                    <%  } %>
+                    <tr id="Row<%=row++%2%>">
                         <td><%= ejbcawebbean.getText("RENEWCA_LINKCERTIFICATE") %></td>
                         <td>
                         <% if (catype==CAInfo.CATYPE_CVC) { %>
@@ -1633,13 +1661,13 @@ function checkallfields(){
                         <% } %>
                         </td>
                     </tr>
-                    <tr>
+                    <tr id="Row<%=row++%2%>">
                         <td></td>
                         <td>
                             <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" <%= (hasEditRights ? "" : "disabled") %> />
                         </td>
                     </tr>
-                    <tr>
+                    <tr id="Row<%=row++%2%>">
                         <td><%= ejbcawebbean.getText("RENEWCA_FROMLASTRENEWAL") %></td>
                         <td>
                         <% if (cabean.getLinkCertificate(caid)!=null) { %>

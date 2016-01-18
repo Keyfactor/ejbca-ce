@@ -51,7 +51,7 @@ public interface CvcPlugin {
      * @see org.cesecore.certificates.ca.CA#createOrRemoveLinkCertificate(CryptoToken, boolean, CertificateProfile) 
      */
     void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-            AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException;   
+            AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean isCaNameChange) throws CryptoTokenOfflineException;   
 
     /** 
      * @see org.cesecore.certificates.ca.CA#generateCertificate(CryptoToken, EndEntityInformation, RequestMessage, PublicKey, int, Date, Date, CertificateProfile, Extensions, String) 

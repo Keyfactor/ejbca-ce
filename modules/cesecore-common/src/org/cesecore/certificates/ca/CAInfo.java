@@ -89,7 +89,9 @@ public abstract class CAInfo implements Serializable {
     /** A CAId or CAInfo.SELFSIGNED */
     protected int signedby;
     protected Collection<CertificateWrapper> certificatechain;
+    protected Collection<CertificateWrapper> renewedcertificatechain;
     protected transient Collection<Certificate> certificatechainCached;
+    protected transient Collection<Certificate> renewedcertificatechainCached;
     protected CAToken catoken;
     protected String description;
     protected int revocationReason;
@@ -206,6 +208,21 @@ public abstract class CAInfo implements Serializable {
     public void setCertificateChain(Collection<Certificate> certificatechain) {
         this.certificatechainCached = certificatechain;
         this.certificatechain = EJBTools.wrapCertCollection(certificatechain);
+    }
+    
+    public Collection<Certificate> getRenewedCertificateChain() {
+        if (renewedcertificatechain == null) {
+            return null;
+        }
+        if (renewedcertificatechainCached == null) {
+            renewedcertificatechainCached = EJBTools.unwrapCertCollection(renewedcertificatechain);
+        }
+        return renewedcertificatechainCached;
+    }
+
+    public void setRenewedCertificateChain(Collection<Certificate> certificatechain) {
+        this.renewedcertificatechainCached = certificatechain;
+        this.renewedcertificatechain = EJBTools.wrapCertCollection(certificatechain);
     }
 
     public CAToken getCAToken() {

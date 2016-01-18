@@ -58,6 +58,10 @@ public class CAData extends ProtectedData implements Serializable {
 	private String data;
 	private int rowVersion = 0;		// not null, we need a default
 	private String rowProtection;
+	
+	public static Integer calculateCAId(final String subjectdn){
+	    return Integer.valueOf(subjectdn.hashCode());
+	}
     
 	/**
 	 * Entity Bean holding data of a CA.
@@ -67,7 +71,7 @@ public class CAData extends ProtectedData implements Serializable {
 	 * @param ca CA to store
 	 */
 	public CAData(final String subjectdn, final String name, final int status, final CA ca) {
-	    setCaId(Integer.valueOf(subjectdn.hashCode()));
+	    setCaId(calculateCAId(subjectdn));
 	    setName(name);
 	    setSubjectDN(subjectdn);
 	    if (ca.getCACertificate() != null) {
