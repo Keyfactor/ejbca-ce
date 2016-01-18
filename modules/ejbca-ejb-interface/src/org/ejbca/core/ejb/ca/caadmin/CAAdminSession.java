@@ -258,6 +258,68 @@ public interface CAAdminSession {
      */
     void renewCA(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate)
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
+    /**
+     * Renews an existing CA certificate using the requested keys or by generating new keys. After renewal CA certificate will have
+     * new name (subjectDN) specified with newCAName. CA name change operation is not part of RFC 5280 and is introduced with ICAO 9303 7th edition.
+     * If generated, linked certificates will have IssuerDN of old-named and SubjectDN of new-named CA certificate
+     * and will be signed by old-named CA certificate. This operation is intended to be used with ICAO CSCA,
+     * although it should work with every X509 CA. This operation is not supported for CVC CA.
+     * The specified notBefore date and newCAName will be used. Other data about the new CA is taken from database. 
+     * This method is used for renewing CAs internally in EJBCA. For renewing CAs
+     * signed by external CAs, makeRequest is used to generate a certificate request.
+     * 
+     * @param caid the caid of the CA that will be renewed
+     * @param regenerateKeys
+     *            if true and the CA have a soft CAToken the keys are
+     *            regenerated before the certificate request.
+     * @param customNotBefore 
+     *            date to use as notBefore date in the new certificate
+     *            or null if not custom date should be used which means 
+     *            that the current time will be used (normal case).
+     * @param createLinkCertificate
+     *            generates an additional certificate stored in the CA object
+     *            with the new keys signed by the current keys.
+     *            For CVC CAs this is ignored and the link certificate is always generated.
+     * @param newCAName 
+     *            new CA name and SubjectDN/IssuerDN of CA certificate
+     * @throws AuthorizationDeniedException if admin was not authorized to this CA
+     * @throws CADoesntExistsException if CA with ID caid didn't exist.
+     * @throws CryptoTokenOfflineException 
+     */
+    void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate, String newCAName)
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
+    /**
+     * Renews an existing CA certificate using the requested keys or by generating new keys. After renewal CA certificate will have
+     * new name (subjectDN) specified with newCAName. CA name change operation is not part of RFC 5280 and is introduced with ICAO 9303 7th edition.
+     * If generated, linked certificates will have IssuerDN of old-named and SubjectDN of new-named CA certificate
+     * and will be signed by old-named CA certificate. This operation is intended to be used with ICAO CSCA,
+     * although it should work with every X509 CA. This operation is not supported for CVC CA.
+     * The specified notBefore date and newCAName will be used. Other data about the new CA is taken from database. 
+     * This method is used for renewing CAs internally in EJBCA. For renewing CAs
+     * signed by external CAs, makeRequest is used to generate a certificate request.
+     * 
+     * @param caid the caid of the CA that will be renewed
+     * @param nextSignKeyAlias
+     *            The cryptoTokenAlias to use for the next keys or null to
+     *            generate a new key pair using the CA key sequence.
+     * @param customNotBefore 
+     *            date to use as notBefore date in the new certificate
+     *            or null if not custom date should be used which means 
+     *            that the current time will be used (normal case).
+     * @param createLinkCertificate
+     *            generates an additional certificate stored in the CA object
+     *            with the new keys signed by the current keys.
+     *            For CVC CAs this is ignored and the link certificate is always generated.
+     * @param newCAName 
+     *            new CA name and SubjectDN/IssuerDN of CA certificate
+     * @throws AuthorizationDeniedException if admin was not authorized to this CA
+     * @throws CADoesntExistsException if CA with ID caid didn't exist.
+     * @throws CryptoTokenOfflineException 
+     */
+    void renewCANewSubjectDn(AuthenticationToken admin, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate, String newCAName)
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
      * Method that revokes the CA. After this is all certificates created by

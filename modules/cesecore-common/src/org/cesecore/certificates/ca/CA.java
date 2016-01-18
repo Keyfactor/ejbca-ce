@@ -91,6 +91,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String VALIDITY = "validity";
     protected static final String EXPIRETIME = "expiretime";
     protected static final String CERTIFICATECHAIN = "certificatechain";
+    protected static final String RENEWEDCERTIFICATECHAIN = "renewedcertificatechain";
     protected static final String ROLLOVERCERTIFICATECHAIN = "rollovercertificatechain";
     public static final String CATOKENDATA = "catoken";
     protected static final String SIGNEDBY = "signedby";
@@ -121,6 +122,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
 
     private ArrayList<Certificate> certificatechain = null;
+    private ArrayList<Certificate> renewedcertificatechain = null;
     private ArrayList<Certificate> requestcertchain = null;
 
     private CAInfo cainfo = null;
@@ -488,6 +490,56 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         this.certificatechain = new ArrayList<Certificate>();
         this.certificatechain.addAll(certificatechain);
         this.cainfo.setCertificateChain(certificatechain);
+    }
+    
+    public ArrayList<Certificate> getRenewedCertificateChain() {
+        if (renewedcertificatechain == null) {
+            @SuppressWarnings("unchecked")
+            Collection<String> storechain = (Collection<String>) data.get(RENEWEDCERTIFICATECHAIN);
+            if (storechain == null) {
+                return null;
+            }
+            Iterator<String> iter = storechain.iterator();
+            this.renewedcertificatechain = new ArrayList<Certificate>();
+            while (iter.hasNext()) {
+                String b64Cert = iter.next();
+                try {
+                    Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+                    if (cert != null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Adding CA certificate from RENEWEDCERTIFICATECHAIN to renewedcertificatechain:");
+                            log.debug("Cert subjectDN: " + CertTools.getSubjectDN(cert));
+                            log.debug("Cert issuerDN: " + CertTools.getIssuerDN(cert));
+                        }
+                        this.renewedcertificatechain.add(cert);
+                    } else {
+                        throw new IllegalArgumentException("Can not create certificate object from: " + b64Cert);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return renewedcertificatechain;
+    }
+
+    public void setRenewedCertificateChain(Collection<Certificate> certificatechain) {
+        Iterator<Certificate> iter = certificatechain.iterator();
+        ArrayList<String> storechain = new ArrayList<String>();
+        while (iter.hasNext()) {
+            Certificate cert = iter.next();
+            try {
+                String b64Cert = new String(Base64.encode(cert.getEncoded()));
+                storechain.add(b64Cert);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        data.put(RENEWEDCERTIFICATECHAIN, storechain);
+
+        this.renewedcertificatechain = new ArrayList<Certificate>();
+        this.renewedcertificatechain.addAll(certificatechain);
+        this.cainfo.setRenewedCertificateChain(certificatechain);
     }
 
     public void setRolloverCertificateChain(Collection<Certificate> certificatechain) {
@@ -1064,7 +1116,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
     public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile, 
-            AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException;
+            AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean isCaNameChange) throws CryptoTokenOfflineException;
 
     /** Store the latest link certificate in this object. */
     protected void updateLatestLinkCertificate(byte[] encodedLinkCertificate) {

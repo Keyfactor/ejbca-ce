@@ -370,6 +370,22 @@ public class CADataHandler implements Serializable {
           return true;
       }
   }
+  
+  public boolean renewAndRenameCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate, String newSubjectDn) throws Exception {
+      if (getCAInfo(caid).getCAInfo().getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+          return false;
+      } else {
+          if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
+              // Generate new keys
+              caadminsession.renewCANewSubjectDn(administrator, caid, true, null, createLinkCertificate, newSubjectDn);
+          } else {
+              // Use existing keys
+              caadminsession.renewCANewSubjectDn(administrator, caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
+          }
+          info.cAsEdited();
+          return true;
+      }
+  }
 
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
   public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {

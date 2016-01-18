@@ -57,6 +57,7 @@ public class X509CAInfo extends CAInfo{
 	private List<String> nameConstraintsPermitted;
 	private List<String> nameConstraintsExcluded;
 	private String externalCdp;
+	private boolean nameChanged;
     
     /**
      * This constructor can be used when creating a CA.
@@ -196,7 +197,6 @@ public class X509CAInfo extends CAInfo{
         this.authorityInformationAccess = authorityInformationAccess;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
-        
     }
 
     /** Constructor that should be used when updating CA data. */
@@ -361,5 +361,15 @@ public class X509CAInfo extends CAInfo{
     /** Set what should be a String formatted URL pointing to an external CA's CDP. */
     public void setExternalCdp(final String externalCdp) {
         this.externalCdp = externalCdp;
+    }
+
+    /** @return true if CA has undergone through name change at some renewal process, otherwise false. */
+    public boolean getNameChanged() {
+        return nameChanged;
+    }
+    
+    /** NameChanged attribute should only be set when X509CA is retrieved from DB */
+    void setNameChanged(final boolean value){
+        nameChanged = value;
     }
 }

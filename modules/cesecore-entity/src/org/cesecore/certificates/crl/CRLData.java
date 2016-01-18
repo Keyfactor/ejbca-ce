@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -262,6 +263,17 @@ public class CRLData extends ProtectedData implements Serializable {
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
         return (CRLData) QueryResultWrapper.getSingleResult(query);
+    }
+    
+    /**
+     * @return the all list of CRLData for specified issuerDN
+     */
+    public static List<CRLData> findByIssuerDN(EntityManager entityManager, String issuerDN) {
+        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN");
+        query.setParameter("issuerDN", issuerDN);
+        @SuppressWarnings("unchecked")
+        List<CRLData> resultList = query.getResultList();
+        return resultList;
     }
 
     /**

@@ -150,6 +150,7 @@ java.security.InvalidAlgorithmParameterException
   static final String TEXTFIELD_AUTHORITYINFORMATIONACCESS  = "textfieldauthorityinformationaccess";
   static final String TEXTFIELD_NAMECONSTRAINTSPERMITTED    = "textfieldnameconstraintspermitted";
   static final String TEXTFIELD_NAMECONSTRAINTSEXCLUDED     = "textfieldnameconstraintsexcluded";
+  static final String TEXTFIELD_NEWSUBJECTDN          = "textfieldnewsubjectdn";
 
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
@@ -171,6 +172,7 @@ java.security.InvalidAlgorithmParameterException
   static final String CHECKBOX_CREATELINKCERTIFICATE              = "checkboxcreatelinkcertificate";
   static final String CHECKBOX_INCLUDEINHEALTHCHECK               = "checkboxincludeinhealthcheck";
   static final String CHECKBOX_FUTUREROLLOVER                     = "checkboxfuturerollover";
+  static final String CHECKBOX_CANAMECHANGE		                  = "checkboxcanamechange";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   static final String CHECKBOX_ACTIVATECMSSERVICE                 = "checkboxactivatecmsservice";
@@ -200,6 +202,9 @@ java.security.InvalidAlgorithmParameterException
   static final String FILE_RECIEVEFILE_MAKEREQUEST                = "filerecievefilemakerequest";
   static final String FILE_RECIEVEFILE_RECEIVEREQUEST             = "filerecievefilerecieverequest";
   static final String FILE_RECIEVEFILE_IMPORTED_RENEWAL           = "filerecievefileimportrenewal";
+  
+  static final String ID_NEWSUBJECTDN    						  = "idnewsubjectdn";
+  static final String ID_CHECKBOX_CANAMECHANGE			    	  = "idcheckboxcanamechange";
 
   static final String CERTSERNO_PARAMETER       = "certsernoparameter"; 
 
@@ -454,8 +459,17 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(BUTTON_RENEWCA) != null) {
                 final String nextSignKeyAlias = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY_RENEW);
                 final boolean createLinkCertificate = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CREATELINKCERTIFICATE));
+                final boolean cANameChange = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CANAMECHANGE));
+                final String newSubjectDn = requestMap.get(TEXTFIELD_NEWSUBJECTDN);
                 try {
-                    carenewed = cadatahandler.renewCA(caid, nextSignKeyAlias, createLinkCertificate);
+                	if(cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()){
+                		if(newSubjectDn.indexOf('=') == -1){
+                			throw new ParameterException(ejbcawebbean.getText("SUBJECTDNINVALID"));
+                		}
+                		carenewed = cadatahandler.renewAndRenameCA(caid, nextSignKeyAlias, createLinkCertificate, newSubjectDn);
+                	}else{
+                    	carenewed = cadatahandler.renewCA(caid, nextSignKeyAlias, createLinkCertificate);
+                	}
                 } catch (EjbcaException e) { 
                     includefile="choosecapage.jspf"; 
                     errormessage = e.getMessage(); 

@@ -52,9 +52,11 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
@@ -185,6 +187,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String NAMECONSTRAINTSPERMITTED = "nameconstraintspermitted";
     protected static final String NAMECONSTRAINTSEXCLUDED = "nameconstraintsexcluded";
     protected static final String EXTERNALCDP = "externalcdp";
+    protected static final String NAMECHANGED = "namechanged";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -217,6 +220,7 @@ public class X509CA extends CA implements Serializable {
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
         data.put(VERSION, new Float(LATEST_VERSION));
+        
     }
 
     /**
@@ -251,6 +255,7 @@ public class X509CA extends CA implements Serializable {
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
                 isDoEnforceUniqueSubjectDNSerialnumber(), isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), getCmpRaAuthSecret());
         ((X509CAInfo)info).setExternalCdp(getExternalCdp());
+        ((X509CAInfo)info).setNameChanged(getNameChanged());
         super.setCAInfo(info);
         setCAId(caId);
     }
@@ -444,6 +449,21 @@ public class X509CA extends CA implements Serializable {
             return defaultValue;
         }
         return o;
+    }
+    
+    public void setNameChanged(boolean nameChanged) {
+        if(getNameChanged() && !nameChanged){
+            //This must not happen. Once CA "Name Changed" value is set to true it mustn't be set to false again
+            log.warn("Not supported operation of setting CA Name Change value from TRUE to FALSE. Value not set!");
+            return;
+        }
+        data.put(NAMECHANGED, Boolean.valueOf(nameChanged));
+    }
+
+    /** Retrieving NAMECHANGED flag that shows if this CA has gone through the Name Change any time in its history renewal. */
+    public boolean getNameChanged() {
+        Boolean v = ((Boolean) data.get(NAMECHANGED));
+        return (v == null) ? false : v.booleanValue();
     }
 
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
@@ -684,7 +704,7 @@ public class X509CA extends CA implements Serializable {
 
     @Override
     public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-            final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean caNameChange) throws CryptoTokenOfflineException {
         byte[] ret = null;
         if (createLinkCertificate) {
             try {
@@ -703,13 +723,13 @@ public class X509CA extends CA implements Serializable {
                 // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
-                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig);
+                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, createLinkCertificate, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
                 throw e;
             } catch (Exception e) {
-                throw new RuntimeException("Bad CV CA certificate.", e);
+                throw new RuntimeException("Error withing creating or removing link certificate.", e);
             }
         }
         updateLatestLinkCertificate(ret);
@@ -729,7 +749,7 @@ public class X509CA extends CA implements Serializable {
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(purpose));
         final String provider = cryptoToken.getSignProviderName();
         return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
-                caPublicKey, caPrivateKey, provider, certGenParams, cceConfig);
+                caPublicKey, caPrivateKey, provider, certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
     }
 
     /**
@@ -748,7 +768,7 @@ public class X509CA extends CA implements Serializable {
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
             final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, 
-            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException {
 
@@ -888,7 +908,18 @@ public class X509CA extends CA implements Serializable {
             if (log.isDebugEnabled()) {
                 log.debug("Using subject DN also as issuer DN, because it is a root CA");
             }
-            issuerDNName = subjectDNName;
+            if(linkCertificate && caNameChange){
+                Collection<Certificate> renewedCertificateChain = getRenewedCertificateChain();
+                if(renewedCertificateChain == null || renewedCertificateChain.isEmpty()){
+                    //"Should not happen" error
+                    log.error("CA name change is in process but renewed (old) certificates chain is empty");
+                    throw new CertificateCreateException("CA name change is in process but renewed (old) certificates chain is empty");
+                }
+                Iterator<Certificate> iterator = renewedCertificateChain.iterator();
+                issuerDNName = X500Name.getInstance(((X509Certificate)iterator.next()).getSubjectX500Principal().getEncoded());
+            }else{
+                issuerDNName = subjectDNName;
+            }
         } else {
             issuerDNName = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
             if (log.isDebugEnabled()) {
@@ -1011,8 +1042,17 @@ public class X509CA extends CA implements Serializable {
                 }
             }
         }
-
-        // Fourth, check for custom Certificate Extensions that should be added.
+        
+        // Fourth, ICAO standard extensions. Only Name Change extension is used and added only for link certificates
+        if (caNameChange) {
+            try {
+                extgen.addExtension(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover, false, DERNull.INSTANCE);
+            } catch (IOException e) {/*IOException with DERNull.INSTANCE will never happen*/}
+        }
+        
+        //
+        
+        // Fifth, check for custom Certificate Extensions that should be added.
         // Custom certificate extensions is defined in AdminGUI -> SystemConfiguration -> Custom Certificate Extensions
         final List<Integer> usedCertExt = certProfile.getUsedCertificateExtensions();
         final Iterator<Integer> certExtIter = usedCertExt.iterator();
@@ -1176,11 +1216,11 @@ public class X509CA extends CA implements Serializable {
         } catch (CertificateException e) {
             throw new CertificateCreateException(e);
         }
-
-        // If we have a CA-certificate, verify that we have all path verification stuff correct
-        if (cacert != null) {
+        
+        //Sub CA certificates check: Check AKI against parent CA SKI and IssuerDN against parent CA SubjectDN
+        if(!isRootCA && !linkCertificate){
             final byte[] aki = CertTools.getAuthorityKeyId(cert);
-            final byte[] ski = CertTools.getSubjectKeyId(isRootCA ? cert : cacert);
+            final byte[] ski = CertTools.getSubjectKeyId(cacert);
             if ((aki != null) && (ski != null)) {
                 final boolean eq = Arrays.equals(aki, ski);
                 if (!eq) {
@@ -1188,7 +1228,7 @@ public class X509CA extends CA implements Serializable {
                     final String skistr = new String(Hex.encode(ski));
                     final String msg = intres.getLocalizedMessage("createcert.errorpathverifykeyid", akistr, skistr);
                     log.error(msg);
-                    // This will differ if we create link certificates, NewWithOld, therefore we can not throw an exception here.
+                    throw new CertificateCreateException(msg);
                 }
             }
             final Principal issuerDN = cert.getIssuerX500Principal();
@@ -1196,12 +1236,13 @@ public class X509CA extends CA implements Serializable {
             if ((issuerDN != null) && (caSubjectDN != null)) {
                 final boolean eq = issuerDN.equals(caSubjectDN);
                 if (!eq) {
-                	final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), caSubjectDN.getName());
+                    final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), caSubjectDN.getName());
                     log.error(msg);
                     throw new CertificateCreateException(msg);
                 }
             }
         }
+        
         // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
         if (request != null) {
             request.setResponseKeyInfo(caPrivateKey, provider);
@@ -1357,7 +1398,7 @@ public class X509CA extends CA implements Serializable {
         if (certs != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
-            }          
+            }
             final Iterator<RevokedCertInfo> it = certs.iterator();
             while (it.hasNext()) {
                 final RevokedCertInfo certinfo = (RevokedCertInfo) it.next();
@@ -1608,7 +1649,10 @@ public class X509CA extends CA implements Serializable {
                 data.put(EXTENDEDCASERVICES, types);
                 // Remove any data if it exists
                 data.remove(EXTENDEDCASERVICE+2);                
-            }            
+            }
+            if(data.get(NAMECHANGED) == null) {
+                setNameChanged(false);
+            }
         }
     }
 
