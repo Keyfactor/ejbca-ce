@@ -249,46 +249,6 @@ public interface CryptoToken extends Serializable {
     void testKeyPair(final String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException;
 
     /**
-     * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
-     *
-     * @param privKeyTransform - transformation algorithm - if CBC mode is requested, the following IV is used: 0x0000000000000000
-     * @param encryptionKeyAlias - alias of the symmetric key that will encrypt the private key
-     * @param privateKeyAlias - alias for the PrivateKey to be extracted
-     * @return byte[] with the encrypted extracted key
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeyException
-     * @throws IllegalBlockSizeException
-     * @throws CryptoTokenOfflineException
-     * @throws PrivateKeyNotExtractableException
-     * @throws InvalidAlgorithmParameterException
-     */
-    byte[] extractKey(String privKeyTransform, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException, NoSuchPaddingException,
-            NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException, InvalidAlgorithmParameterException;
-
-    /**
-     * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key. This method is used
-     * when you need to supply additional information for the encryption algorithm, e.g: IvParameterSpec for CBC mode.
-     *
-     * @param privKeyTransform - transformation algorithm
-     * @param spec - transformation algorithm spec (e.g: IvParameterSpec for CBC mode)
-     * @param encryptionKeyAlias - alias of the symmetric key that will encrypt the private key
-     * @param privateKeyAlias - alias for the PrivateKey to be extracted
-     * @return byte[] with the encrypted extracted key
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeyException
-     * @throws IllegalBlockSizeException
-     * @throws CryptoTokenOfflineException
-     * @throws PrivateKeyNotExtractableException
-     * @throws InvalidAlgorithmParameterException
-     */
-    byte[] extractKey(String privKeyTransform, AlgorithmParameterSpec spec, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException, NoSuchPaddingException,
-            NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException, InvalidAlgorithmParameterException;
-
-    /**
      * Checks if generated private keys are allowed to be extracted.
      *
      * @return false if the private key is not extractable.

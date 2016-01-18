@@ -201,28 +201,6 @@ public class PublicCryptoToken implements CryptoToken {
 	}
 
 	@Override
-	public byte[] extractKey(String privKeyTransform,
-			String encryptionKeyAlias, String privateKeyAlias)
-			throws NoSuchAlgorithmException, NoSuchPaddingException,
-			NoSuchProviderException, InvalidKeyException,
-			IllegalBlockSizeException, CryptoTokenOfflineException,
-			PrivateKeyNotExtractableException,
-			InvalidAlgorithmParameterException {
-		return null;
-	}
-
-	@Override
-	public byte[] extractKey(String privKeyTransform,
-			AlgorithmParameterSpec spec, String encryptionKeyAlias,
-			String privateKeyAlias) throws NoSuchAlgorithmException,
-			NoSuchPaddingException, NoSuchProviderException,
-			InvalidKeyException, IllegalBlockSizeException,
-			CryptoTokenOfflineException, PrivateKeyNotExtractableException,
-			InvalidAlgorithmParameterException {
-		return null;
-	}
-
-	@Override
 	public boolean doPermitExtractablePrivateKey() {
 		return false;
 	}

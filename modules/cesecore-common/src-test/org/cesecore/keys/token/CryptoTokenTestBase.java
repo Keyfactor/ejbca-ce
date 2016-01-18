@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -30,8 +29,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
@@ -40,7 +37,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -631,83 +627,5 @@ public abstract class CryptoTokenTestBase {
     }
     */
     
-    protected void doExtractKeyFalse(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException {
-
-        assertFalse("Token should not allow extraction on this test", token.doPermitExtractablePrivateKey());
-
-        //create encryption key
-        token.activate(tokenpin.toCharArray());
-        assertEquals(CryptoToken.STATUS_ACTIVE, token.getTokenStatus());
-        token.deleteEntry("encryptkeytest001");
-        token.generateKey("DESede", 128, "encryptkeytest001");
-
-        //create the key pair
-        token.generateKeyPair("1024", "extractkeytest001");
-        token.testKeyPair("extractkeytest001");
-
-        //extract the private key
-        try {
-            token.extractKey("DESede/ECB/PKCS5Padding", "encryptkeytest001", "extractkeytest001");
-            fail("Should have received an exception");
-        } catch (PrivateKeyNotExtractableException e) {
-            // NOPMD
-        } catch (InvalidKeyException e) {
-            // NOPMD
-        }
-        token.deleteEntry("encryptkeytest001");
-        token.deleteEntry("extractkeytest001");
-
-    }
-
-    protected void doExtractKey(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, PrivateKeyNotExtractableException, BadPaddingException, InvalidKeySpecException {
-
-        assertTrue("Token should allow extraction on this test", token.doPermitExtractablePrivateKey());
-
-        //create encryption key
-        token.activate(tokenpin.toCharArray());
-        assertEquals(CryptoToken.STATUS_ACTIVE, token.getTokenStatus());
-        try {
-            token.deleteEntry("encryptkeytest001");
-            token.deleteEntry("extractkeytest001");
-            token.generateKey("DESede", 168, "encryptkeytest001");
-
-            //create the key pair
-            try {
-                token.generateKeyPair("1024", "extractkeytest001");
-            } catch (java.security.ProviderException e ) {
-                fail("Unable to generate extractable private key, this failure is normal on a SafeNet Luna, but should work on a Utimaco and SafeNet ProtectServer.");
-            }
-            token.testKeyPair("extractkeytest001");
-
-            //extract the private key
-            byte[] cbcIv = { 0x01, 0x23, 0x45, 0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF };
-            IvParameterSpec ivParam = new IvParameterSpec( cbcIv );
-            byte[] wrappedkey = token.extractKey("DESede/CBC/PKCS5Padding", ivParam, "encryptkeytest001", "extractkeytest001");
-
-            //get encryption key
-            Key encryptionKey = token.getKey("encryptkeytest001");
-            
-            //unwrap private key and check if it is ok
-            // since SUN PKCS11 Provider does not implements WRAP_MODE,
-            // DECRYPT_MODE with encoded private key will be used instead, giving the same result
-            Cipher c = Cipher.getInstance( "DESede/CBC/PKCS5Padding", token.getEncProviderName());
-            c.init(Cipher.DECRYPT_MODE, encryptionKey, ivParam);
-            byte[] decryptedBytes = c.doFinal(wrappedkey);
-
-            KeyFactory kf = KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
-            PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(decryptedBytes);
-            PrivateKey unwrappedkey = kf.generatePrivate(ks);
-
-            KeyTools.testKey((PrivateKey)unwrappedkey, token.getPublicKey("extractkeytest001"), BouncyCastleProvider.PROVIDER_NAME);
-
-            assertEquals(token.getPrivateKey("extractkeytest001"), unwrappedkey);
-        } catch (PrivateKeyNotExtractableException e) {
-            fail("Private key is not extractable, this failure is normal on a SafeNet Luna, but should work on a Utimaco and SafeNet ProtectServer.");
-        } finally {
-            token.deleteEntry("encryptkeytest001");
-            token.deleteEntry("extractkeytest001");
-        }
-    }
-
     abstract String getProvider();
 }

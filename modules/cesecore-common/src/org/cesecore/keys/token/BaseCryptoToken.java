@@ -14,7 +14,6 @@ package org.cesecore.keys.token;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -28,22 +27,16 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
@@ -609,106 +602,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             // NOPMD, ignore status is offline
         }
         return ret;
-    }
-
-    /**
-     * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
-     *
-     * @param privKeyTransform - transformation algorithm
-     * @param encryptionKeyAlias - alias of the symmetric key that will encrypt the private key
-     * @param privateKeyAlias - alias for the PrivateKey to be extracted
-     * @return byte[] with the encrypted extracted key
-     * @throws NoSuchAlgorithmException if privKeyTransform is null, empty, in an invalid format, or if no Provider supports a CipherSpi
-     *             implementation for the specified algorithm.
-     * @throws NoSuchPaddingException if privKeyTransform contains a padding scheme that is not available.
-     * @throws NoSuchProviderException if BouncyCastle is not registered in the security provider list.
-     * @throws InvalidKeyException if the encryption key derived from encryptionKeyAlias was invalid.
-     * @throws IllegalBlockSizeException if the Cipher created using privKeyTransform is a block cipher, no padding has been requested, and the length
-     *             of the encoding of the key to be wrapped is not a multiple of the block size.
-     * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
-     * @throws InvalidAlgorithmParameterException if using CBC mode and the IV 0x0000000000000000 is not accepted.
-     */
-    public byte[] extractKey(String privKeyTransform, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException,
-            NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException,
-            PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
-        IvParameterSpec ivParam = null;
-        if (privKeyTransform.matches( ".+\\/CBC\\/.+" )){
-            byte[] cbcIv = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            ivParam = new IvParameterSpec(cbcIv);
-        }
-        return extractKey(privKeyTransform, ivParam, encryptionKeyAlias, privateKeyAlias);
-    }
-
-    /**
-     * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
-     *
-     * @param privKeyTransform - transformation algorithm
-     * @param spec - transformation algorithm spec (e.g: IvParameterSpec for CBC mode)
-     * @param encryptionKeyAlias - alias of the symmetric key that will encrypt the private key
-     * @param privateKeyAlias - alias for the PrivateKey to be extracted
-     * @return byte[] with the encrypted extracted key
-     * @throws NoSuchAlgorithmException if privKeyTransform is null, empty, in an invalid format, or if no Provider supports a CipherSpi
-     *             implementation for the specified algorithm.
-     * @throws NoSuchPaddingException if privKeyTransform contains a padding scheme that is not available.
-     * @throws NoSuchProviderException if BouncyCastle is not registered in the security provider list.
-     * @throws InvalidKeyException if the encryption key derived from encryptionKeyAlias was invalid.
-     * @throws IllegalBlockSizeException if the Cipher created using privKeyTransform is a block cipher, no padding has been requested, and the length
-     *             of the encoding of the key to be wrapped is not a multiple of the block size.
-     * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
-     * @throws InvalidAlgorithmParameterException if spec id not valid or supported.
-     * @throws PrivateKeyNotExtractableException if the key is not extractable, does not exist or encryption fails
-     */
-    public byte[] extractKey(String privKeyTransform, AlgorithmParameterSpec spec, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException,
-            NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException,
-            PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
-
-        if (doPermitExtractablePrivateKey()) {
-            // get encryption key
-            Key encryptionKey = getKey(encryptionKeyAlias);
-            // get private key to wrap
-            PrivateKey privateKey = getPrivateKey(privateKeyAlias);
-            if (privateKey == null) {
-            	throw new PrivateKeyNotExtractableException("Extracting key with alias '"+privateKeyAlias+"' return null.");
-            }
-
-            // since SUN PKCS11 Provider does not implements WRAP_MODE,
-            // ENCRYPT_MODE with encoded private key will be used instead, giving the same result
-            Cipher c = null;
-            c = Cipher.getInstance(privKeyTransform, getEncProviderName());
-            if (spec == null){
-                c.init(Cipher.ENCRYPT_MODE, encryptionKey);
-            } else {
-              c.init(Cipher.ENCRYPT_MODE, encryptionKey, spec);
-            }
-
-            // wrap key
-            byte[] encryptedKey;
-            try {
-                byte[] data = privateKey.getEncoded();
-                if (StringUtils.containsIgnoreCase(privKeyTransform, "NoPadding")) {
-                    // We must add PKCS7/PKCS5 padding ourselves to the data
-                    final PKCS7Padding padding = new PKCS7Padding();
-                    // Calculate the number of pad bytes needed
-                    final int rem = data.length % c.getBlockSize();
-                    final int padlen = c.getBlockSize()-rem;
-                    if (log.isDebugEnabled()) {
-                        log.debug("Padding key data with "+padlen+" bytes, using PKCS7/5Padding. Total len: "+(data.length+padlen));
-                    }
-                    byte[] newdata = Arrays.copyOf(data, data.length+padlen);
-                    padding.addPadding(newdata, data.length);
-                    data = newdata;
-                }
-                encryptedKey = c.doFinal(data);
-            } catch (BadPaddingException e) {
-                throw new PrivateKeyNotExtractableException("Extracting key with alias '"+privateKeyAlias+"' failed.");
-            }
-
-            return encryptedKey;
-        } else {
-            final String msg = intres.getLocalizedMessage("token.errornotextractable", privateKeyAlias, encryptionKeyAlias);
-            throw new PrivateKeyNotExtractableException(msg);
-        }
-    }
+    }    
 
     @Override
     public List<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException {
