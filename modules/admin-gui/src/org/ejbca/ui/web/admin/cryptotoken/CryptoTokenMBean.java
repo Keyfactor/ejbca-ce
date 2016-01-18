@@ -699,7 +699,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private String newKeyPairSpec = AlgorithmConstants.KEYALGORITHM_RSA+"4096";
     
     /** @return a List of available (but not necessarily supported by the underlying CryptoToken) key specs */
-    public List<SelectItem> getAvailbleKeySpecs() {
+    public List<SelectItem> getAvailableKeySpecs() {
         final List<SelectItem> availableKeySpecs = new ArrayList<SelectItem>();
         final int[] SIZES_RSA = {1024, 1536, 2048, 3072, 4096, 6144, 8192};
         final int[] SIZES_DSA = {1024};
