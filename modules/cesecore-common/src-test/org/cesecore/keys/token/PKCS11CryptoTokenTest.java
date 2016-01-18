@@ -15,23 +15,8 @@ package org.cesecore.keys.token;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Security;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -144,55 +129,6 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         assertEquals("foo", newSlotPropertiesWithLabel.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
         assertEquals(Pkcs11SlotLabelType.SLOT_LABEL.getKey(), newSlotPropertiesWithLabel.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
     }
-
-    @Test
-    public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException,
-            IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            SignatureException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchSlotException {
-        CryptoToken token = createPKCS11Token("testExtractKeyFalse", false);
-        doExtractKeyFalse(token);
-    }
-
-	private String attributesExtract = "attributes(*, *, *) = {\n"+
-	  "CKA_TOKEN = true\n"+
-	"}\n"+
-	"attributes(*, CKO_PUBLIC_KEY, *) = {\n"+
-	  "CKA_ENCRYPT = true\n"+
-	  "CKA_VERIFY = true\n"+
-	  "CKA_WRAP = true\n"+
-	"}\n"+
-	"attributes(*, CKO_PRIVATE_KEY, *) = {\n"+
-	  "CKA_PRIVATE = true\n"+
-	  "CKA_SENSITIVE = false\n"+
-	  "CKA_EXTRACTABLE = true\n"+
-	  "CKA_DECRYPT = true\n"+
-	  "CKA_SIGN = true\n"+
-	  "CKA_UNWRAP = true\n"+
-	  "}\n"+
-	"attributes(*, CKO_SECRET_KEY, *) = {\n"+
-	  "CKA_SENSITIVE = true\n"+
-	  "CKA_EXTRACTABLE = false\n"+
-	  "CKA_ENCRYPT = true\n"+
-	  "CKA_DECRYPT = true\n"+
-	  "CKA_SIGN = true\n"+
-	  "CKA_VERIFY = true\n"+
-	  "CKA_WRAP = true\n"+
-	  "CKA_UNWRAP = true\n"+
-	"}";
-
-	@Test
-    public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException,
-            CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException,
-            BadPaddingException, InvalidKeySpecException, NoSuchSlotException {
-        File f = File.createTempFile("tokentest", "txt");
-        f.deleteOnExit();
-		FileOutputStream fos = new FileOutputStream(f);
-		fos.write(attributesExtract.getBytes());
-		fos.close();
-    	CryptoToken token = createPKCS11TokenWithAttributesFile(f.getAbsolutePath(), "testExtractKey", true);
-		doExtractKey(token);
-	}
 
 	@Override
 	String getProvider() {

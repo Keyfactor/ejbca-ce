@@ -14,20 +14,7 @@ package org.cesecore.keys.token;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -153,21 +140,4 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 		return catoken;
 	}
 
-
-    @Test
-    public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException,
-            IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            SignatureException, NoSuchPaddingException, IllegalBlockSizeException {
-        CryptoToken token = createSoftToken(true, false);
-        doExtractKeyFalse(token);
-    }
-
-    @Test
-    public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException,
-            CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException,
-            BadPaddingException, InvalidKeySpecException {
-        CryptoToken token = createSoftToken(true, true);
-        doExtractKey(token);
-    }
 }
