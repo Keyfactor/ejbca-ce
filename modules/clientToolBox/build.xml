@@ -82,7 +82,7 @@
 			<map from="${ejbca.home}/" to=""/>
 		</pathconvert>
 		<mkdir dir="${mod.clientToolBox.dist}/ext"/>
-		<copy todir="${mod.clientToolBox.dist}/ext" flatten="true" >
+		<copy failonerror="false" todir="${mod.clientToolBox.dist}/ext" flatten="true" >
 			<fileset dir="${mod.cesecore-p11.dist}" />
 		</copy>
 		<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
