@@ -702,7 +702,7 @@ function toggleCANameChange(){
                 <%  if (extendedServicesKeySpecParam == null) {
                         extendedServicesKeySpecParam = "2048";
                     }
-                    for (final Entry<String,String> entry : cabean.getAvailbleKeySpecs()) {
+                    for (final Entry<String,String> entry : cabean.getAvailableKeySpecs()) {
                         final String selectedEntry = entry.getKey().equals(extendedServicesKeySpecParam) ? " selected " : ""; %>
                         <option value="<%= entry.getKey() %>"<%= selectedEntry %>><%= entry.getValue() %></option>  
                 <%  } %>
