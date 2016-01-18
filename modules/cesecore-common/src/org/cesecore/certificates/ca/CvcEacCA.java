@@ -231,7 +231,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 
     @Override
 	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-	        final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
+	        final AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean dummyIsCaNameChange) throws CryptoTokenOfflineException {
 	    byte[] ret = null;
 	    if (createLinkCertificate) {
 	        try {

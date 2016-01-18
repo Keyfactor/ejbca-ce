@@ -641,6 +641,23 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         setValue(AVAILCAS,0, builder.toString());
     }
+    
+    /** Sets available CA ids. These are stored as a ; separated string in the end entity profile
+     * 
+     * @param ids Collection of CA ids
+     */
+    public void setAvailableCAsIDsAsStrings(Collection<String> ids) throws NumberFormatException {
+        StringBuilder builder = new StringBuilder();
+        for (String id: ids) {
+            Integer.parseInt(id);   //Test if it's an integer!
+            if (builder.length() == 0) {
+                builder.append(id);
+            } else {
+                builder.append(';').append(id);
+            }
+        }
+        setValue(AVAILCAS,0, builder.toString());
+    }
 
     /** Gets a Collection of available certificate profile ids
      * Use String.valueOf(caidstring) to get the int value

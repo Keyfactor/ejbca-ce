@@ -144,6 +144,15 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             entityManager.remove(crld);
         }
     }
+	
+	@Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void removeCRLs(final AuthenticationToken admin, final String issuerDN) throws AuthorizationDeniedException {
+        List<CRLData> crls = CRLData.findByIssuerDN(entityManager, issuerDN);
+        for(CRLData crl : crls){
+            entityManager.remove(crl);
+        }
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)

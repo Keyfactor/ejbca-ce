@@ -118,4 +118,6 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** @return a raw Base64CertData row */
     Base64CertData getBase64CertData(String fingerprint);
+
+    void removeCRLs(AuthenticationToken admin, String issuerDN) throws AuthorizationDeniedException;
 }

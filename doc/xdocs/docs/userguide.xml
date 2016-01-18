@@ -478,6 +478,25 @@ If "cmp.ra.authenticationsecret" in cmp.properties is set, this field will be ig
 <p>An empty value in this field will deny all RA mode CMP requests (unless cmp.ra.authenticationsecret is configured).</p>
 </subsubsection>
 
+<subsubsection name="CA Name Change">
+<p>
+The CA Name Change feature has been introduced with the document ICAO 9303 7th edition part 12.
+Some information can also be found in the document supplements to ICAO 9303 6th edition. At this moment this feature is NOT part of X509 standard (RFC5280). 
+</p>
+<p>
+The CA Name Change renewal process beside default X509 renewal covers following:
+<ul>
+<li> Renewed CA certificate will have specified new Subject DN </li>
+<li> CRL issued with renamed CA will still contain certificates revoked before renaming </li>
+<li> If created, link certificates will have CA Name Change extension specified with ICAO 9303 document </li>
+</ul>
+</p>
+<p>
+<strong>Note:</strong>CRLs checking procedure for CRLs issued by CA that has gone through Name Change process will have to be modified from standard X509 CRL checking procedure.
+More details about it can be found in ICAO 9303 7th edition part 12 in appendix chapter D1.2.3 CRL Processing.
+</p>
+</subsubsection>
+
 </subsection> 
 
 <subsection name="Creating a SubCA signed by an external CA">

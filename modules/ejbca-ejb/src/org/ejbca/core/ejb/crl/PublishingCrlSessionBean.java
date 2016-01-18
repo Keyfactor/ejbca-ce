@@ -15,8 +15,11 @@ package org.ejbca.core.ejb.crl;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,6 +53,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -376,9 +380,33 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         CA ca = caSession.getCA(admin, caid);
         return internalCreateCRL(admin, ca) != null;
     }
+    
+    @Override
+    public boolean forceCRL(AuthenticationToken admin, int caid, int renamedOldCAID) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+        CA ca = caSession.getCA(admin, caid);
+        return internalCreateCRL(admin, ca) != null;
+    }
 
     @Override
     public boolean forceDeltaCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+        CA ca = caSession.getCA(admin, caid);
+        final CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), false);
+        // if no full CRL has been generated we can't create a delta CRL
+        boolean ret = false;
+        if (crlInfo != null) {
+            CAInfo cainfo = ca.getCAInfo();
+            if (cainfo.getDeltaCRLPeriod() > 0) {
+                byte[] crl = internalCreateDeltaCRL(admin, ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
+                ret = (crl != null);    
+            }
+        } else {
+            log.info("No full CRL exists when trying to generate delta CRL for caid "+caid);
+        }
+        return ret;
+    }
+    
+    @Override
+    public boolean forceDeltaCRL(AuthenticationToken admin, int caid, int renamedOldCAID) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         CA ca = caSession.getCA(admin, caid);
         final CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), false);
         // if no full CRL has been generated we can't create a delta CRL
@@ -433,6 +461,41 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Listing revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
                 }          
                 revokedCertificates = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
+                
+                //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
+                if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
+                    if (log.isDebugEnabled()) {
+                        log.debug("Gathering all revocation information published by this CA since its beggining. Important only if CA has gone undergone name change");
+                    }
+                    Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
+                    Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();
+                    if(renewedCertificateChain != null){
+                        Collection<String> differentSubjectDNs = new HashSet<String>();
+                        differentSubjectDNs.add(caCertSubjectDN);
+                        for(Certificate renewedCertificate : renewedCertificateChain){
+                            String renewedCertificateSubjectDN = CertTools.getSubjectDN(renewedCertificate);
+                            
+                            if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
+                                }
+                                differentSubjectDNs.add(renewedCertificateSubjectDN);
+                                Collection<RevokedCertInfo> revokedCertInfo = certificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
+                                for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
+                                    revokedCertificatesBeforeLastCANameChange.add(tmp);
+                                }
+                            }
+                        }
+                    }    
+                    //Make sure new compressed collection is created if revokedCertificatesBeforeLastCANameChange need to be added!
+                    Collection<RevokedCertInfo> revokedCertificatesAfterLastCANameChange = revokedCertificates;
+                    revokedCertificates = new CompressedCollection<RevokedCertInfo>();
+                    if(!revokedCertificatesBeforeLastCANameChange.isEmpty()){
+                        revokedCertificates.addAll(revokedCertificatesBeforeLastCANameChange);
+                    }
+                    revokedCertificates.addAll(revokedCertificatesAfterLastCANameChange);
+                }
+                               
                 if (log.isDebugEnabled()) {
                     log.debug("Found "+revokedCertificates.size()+" revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
                 }
@@ -555,6 +618,41 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 }
                 // Find all revoked certificates
                 revcertinfos = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, baseCrlCreateTime);
+                
+                // if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
+                if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
+                    if (log.isDebugEnabled()) {
+                        log.debug("Gathering all revocation information published by this CA since its beggining. Important only if CA has gone undergone name change");
+                    }
+                    Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
+                    Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();
+                    if(renewedCertificateChain != null){
+                        Collection<String> differentSubjectDNs = new HashSet<String>();
+                        differentSubjectDNs.add(caCertSubjectDN);
+                        for(Certificate renewedCertificate : renewedCertificateChain){
+                            String renewedCertificateSubjectDN = CertTools.getSubjectDN(renewedCertificate);
+                            
+                            if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
+                                }
+                                differentSubjectDNs.add(renewedCertificateSubjectDN);
+                                Collection<RevokedCertInfo> revokedCertInfo = certificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
+                                for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
+                                    revokedCertificatesBeforeLastCANameChange.add(tmp);
+                                }
+                            }
+                        }
+                    }    
+                    //Make sure new compressed collection is created if revokedCertificatesBeforeLastCANameChange need to be added!
+                    Collection<RevokedCertInfo> revokedCertificatesAfterLastCANameChange = revcertinfos;
+                    revcertinfos = new CompressedCollection<RevokedCertInfo>();
+                    if(!revokedCertificatesBeforeLastCANameChange.isEmpty()){
+                        revcertinfos.addAll(revokedCertificatesBeforeLastCANameChange);
+                    }
+                    revcertinfos.addAll(revokedCertificatesAfterLastCANameChange);
+                }
+                
                 if (log.isDebugEnabled()) {
                     log.debug("Found "+revcertinfos.size()+" revoked certificates.");
                 }
@@ -602,14 +700,36 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         if (log.isDebugEnabled()) {
             log.debug("Storing CRL in publishers");
         }
-        String cafp = CertTools.getFingerprintAsString(ca.getCACertificate());
-        final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate()); 
+        final String cafp = CertTools.getFingerprintAsString(ca.getCACertificate());
+        String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
+        
+        //If this is the first time to create CRL for CA that has gone through Name Change process make sure
+        //that first CRL will continue CRL numbering where CA left before the last Name Change process
+        if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged() && (crlSession.getLastCRL(certSubjectDN, false) == null)){
+            Certificate lastRenewedCACertificate = null;
+            ArrayList<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
+            if(renewedCertificateChain == null){
+                throw new IllegalStateException("Was not able to retrieve renewed certificate chain for CA = " + ca.getName() + ". Could not proceed with generating and storing CRL");
+            }
+            lastRenewedCACertificate = renewedCertificateChain.get(renewedCertificateChain.size()-1);
+            String lastRenewedCACertificateSubjectDN = CertTools.getSubjectDN((X509Certificate)lastRenewedCACertificate);
+            if(!lastRenewedCACertificateSubjectDN.equalsIgnoreCase(certSubjectDN)){
+                if (log.isDebugEnabled()) {
+                    log.debug("First creation of CRL detected after CA has gone through Name Change process. Continuing CRL number left with old CA name " + lastRenewedCACertificateSubjectDN);
+                }
+                certSubjectDN = lastRenewedCACertificateSubjectDN;
+            }else{
+                throw new IllegalStateException("CA " + ca.getName() + " is marked as it has gone through CA Name Change but old name seems the same as new one! Could not proceed with generating and storing CRL");
+            }
+        }
+        
         int fullnumber = crlSession.getLastCRLNumber(certSubjectDN, false);
         int deltanumber = crlSession.getLastCRLNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
-        int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
+        int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1;
         byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, certs, basecrlnumber, nextCrlNumber);
         this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, cafp, nextCrlNumber, ca.getSubjectDN());
         return crlBytes;
     }
+
 }
